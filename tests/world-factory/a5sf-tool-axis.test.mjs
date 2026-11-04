@@ -72,6 +72,19 @@
  *       mounted (the sibling fiber is disposed and the preset definition comes
  *       back).
  *
+ *   TA11 DEFERRED ACCEPT (2026-11-03, unblocks the live half of Alpha.5) — the
+ *       pinned module registers `read_image` from `ctx.inject(['attachments'])`
+ *       AFTER `apply`; the mount settles a bounded window, lets the child run
+ *       through the SAME router, and ACCEPTS. The deferred definition is the
+ *       routed one, the name set is unchanged, and the routed read still
+ *       enforces the compiled intersection (binding-realm facts only).
+ *
+ *   TA12/TA13/TA14 FAILED / UNSETTLED / UNCOVERED — the three refusal shapes
+ *       are kept: a deferred child that throws is refused (typed), one that
+ *       never settles is refused within the bound (no hang), and a name no
+ *       fiber of the mount forwards is refused with the name in the reason
+ *       (#561's protection, not regressed).
+ *
  * S-2 IS NOT USED: no per-call multiplexer, no AsyncLocalStorage, and the
  * effect boundary is untouched (a tool body still receives only
  * `exec.signal`; TA5 pins the absence structurally). The only new authority is
@@ -890,55 +903,187 @@ test('TA10 TEARDOWN: router fibers are disposed before the confined providers, a
 })
 
 // ===========================================================================
-// TA11 — DEFERRED registration (read_image) is refused, never silently on BASE
+// TA11 — DEFERRED registration (read_image): settle → inspect → ACCEPT
 // ===========================================================================
 
-test('TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path', async () => {
+test('TA11 DEFERRED ACCEPT: a module registering read_image from ctx.inject([attachments]) mounts, and BOTH the synchronous and the deferred definitions are the routed ones', async () => {
   const root = await makeRoot({ attachments: false })
   const fixture = makeFixture('deferred')
   const sink = tmpSink('deferred')
   const ceiling = memberPolicy(fixture.dir)
   const effective = compileBinding(ceiling, readRestriction(fixture.inside))
-  // `attachments` is mounted for the agent world: the pinned module now really
+  // `attachments` is mounted for the agent world: the pinned module really
   // registers `read_image` — from a DEFERRED `ctx.inject` child, after `apply`.
   const { realm, agentCtx, agentKey } = await mountRealm({ root, ceiling, bindings: [effective], sinkPath: sink.path, attachments: true })
   try {
     assert.equal(toolNames(root, agentKey).includes('read_image'), true, 'the preset world really exposes read_image')
     const presetReadImage = root.get('tools').get('read_image', agentKey)
     const presetRead = root.get('tools').get('read', agentKey)
+    const presetWrite = root.get('tools').get('write', agentKey)
+    const namesBefore = toolNames(root, agentKey).slice().sort()
 
-    // THE ARM: the attach must refuse. Accepting would leave `read_image`
-    // executing on the BASE provider with ZERO guard facts while every name
-    // stayed equal (the leak the reviewer measured).
+    // THE ARM: the attach must ACCEPT. #561 refused here because the deferred
+    // child could not run inside the router; the seam now lets it run (its
+    // inject carries the router's services), settles a bounded window and
+    // judges the OUTCOME.
+    const fibers = await attach(realm, agentCtx, sink.path, agentKey)
+    assert.deepEqual(toolNames(root, agentKey).slice().sort(), namesBefore, 'the model-visible NAME SET is unchanged (the surface check stays green)')
+
+    // EVERY forwarded name — sync AND deferred — resolves to a definition this
+    // attach registered, never the preset one.
+    assert.notEqual(root.get('tools').get('read', agentKey), presetRead, 'read is the routed definition')
+    assert.notEqual(root.get('tools').get('write', agentKey), presetWrite, 'write is the routed definition')
+    assert.notEqual(root.get('tools').get('read_image', agentKey), presetReadImage, 'the DEFERRED read_image is the routed definition, not the preset one')
+
+    // ... and the router's receipt proves read_image was forwarded through the
+    // SAME partition machinery as the synchronous names.
+    const routings = routingsOf(fibers)
+    const ceilingRouting = routings.find((routing) => routing.realm === 'ceiling')
+    const bindingRouting = routings.find((routing) => routing.realm === 'binding')
+    assert.ok(ceilingRouting.forwarded.includes('read_image'), `the ceiling fiber did not forward the deferred read_image: ${JSON.stringify(ceilingRouting)}`)
+    assert.ok(ceilingRouting.forwarded.includes('edit'), 'the ceiling fiber still forwards its synchronous names')
+    assert.deepEqual(bindingRouting.forwarded, ['read'], 'the binding fiber still owns exactly read')
+
+    // The routed read still enforces the compiled intersection: in-lane works,
+    // out-of-lane is REFUSED with exactly one binding-realm guard fact.
+    const insideOutcome = await dispatchRead(root, agentKey, fixture.insideFile, 'call-deferred-inside')
+    assert.equal(insideOutcome.isError, false, `the routed read must serve the in-lane file: ${insideOutcome.text}`)
+    const outsideOutcome = await dispatchRead(root, agentKey, fixture.ceilingOnly, 'call-deferred-outside')
+    assert.equal(outsideOutcome.isError, true, 'the routed read must refuse the binding-denied locator')
+    const facts = readFacts(sink.path)
+    // The routed in-lane read consults `stat` then `readText` (both allow); the
+    // out-of-lane call is refused at `stat` (deny). EVERY fact is attributed to
+    // the BINDING realm: nothing was served by the preset definition.
+    assert.equal(facts.filter((fact) => fact.realm === 'binding').length, facts.length, `every fact must come from the binding realm: ${JSON.stringify(facts)}`)
+    assert.deepEqual(facts.map((fact) => fact.decision), ['allow', 'allow', 'deny'], 'the in-lane read allows (stat+readText), the out-of-lane read denies at stat')
+    assert.equal(facts[facts.length - 1].decidedBy, 'IO_READ_DENIED', 'the refusal is the binding lane, not a transport error')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// TA12 — a deferred child that ends FAILED is REFUSED (typed, fail closed)
+// ===========================================================================
+
+test('TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and the surface is restored', async () => {
+  const root = await makeRoot({ attachments: false })
+  const fixture = makeFixture('deferred-failed')
+  const sink = tmpSink('deferred-failed')
+  const ceiling = memberPolicy(fixture.dir)
+  const { realm, agentKey } = await mountRealm({ root, ceiling, sinkPath: sink.path, attachments: true })
+  try {
+    const namesBefore = toolNames(root, agentKey).slice().sort()
+    const failingModule = {
+      name: 'test-deferred-failed',
+      inject: ['tools', 'fs', 'systemPrompt'],
+      apply(ctx) {
+        ctx.inject(['attachments'], () => { throw new Error('TA12 deferred boom') })
+      },
+    }
     await assert.rejects(
-      () => attach(realm, agentCtx, sink.path, agentKey),
+      () => realm.mountNativeToolModules([{ module: failingModule }], { scope: agentKey }),
       (error) => {
-        assert.match(
-          error.message,
-          /registers asynchronously|deferred registration/,
-          `the refusal must name the deferred registration, got: ${error.message}`,
-        )
+        assert.equal(error.code, 'SERVICE_MOUNT_FAILED', `the refusal must be typed: ${JSON.stringify({ name: error.name, code: error.code })}`)
+        assert.match(error.message, /DEFERRED registration that failed/, `the refusal must say the deferred registration failed: ${error.message}`)
+        assert.match(error.message, /deferred registration failed, waiting on \[attachments,tools,systemPrompt\]/, 'the refusal must name the public fiber state and its inject names')
         return true
       },
-      'a module whose deferred registration cannot run inside the routed mount must be refused',
+      'a FAILED deferred registration must refuse the mount',
     )
+    assert.deepEqual(toolNames(root, agentKey).slice().sort(), namesBefore, 'the surface is restored after the refusal')
+  } finally {
+    await realm.dispose()
+  }
+})
 
-    // Fail-closed, not fail-dirty: the surface is unchanged and the preset
-    // definitions are the ones that remain — no half-mounted shadow survives.
-    assert.deepEqual(toolNames(root, agentKey).sort(), ['edit', 'read', 'read_image', 'write'], 'the surface is restored exactly')
-    assert.equal(root.get('tools').get('read', agentKey), presetRead, 'no shadow survives the refusal')
-    assert.equal(root.get('tools').get('read_image', agentKey), presetReadImage, 'read_image is still the preset definition')
-    assert.equal(readFacts(sink.path).length, 0, 'the refused attach wrote no guard fact')
+// ===========================================================================
+// TA13 — a deferred child that never settles is REFUSED, and does not hang
+// ===========================================================================
 
-    // The unshadowed path consults NOTHING: the preset `read` serves the
-    // ceiling-only locator on the BASE provider and writes ZERO guard facts.
-    // That is exactly the leak the refusal prevents from being the live path
-    // (accepting the attach would have left read_image — and its siblings once a
-    // deferred child errors — on this same unguarded definition).
-    const outcome = await dispatchRead(root, agentKey, fixture.ceilingOnly, 'call-deferred-read')
-    assert.equal(outcome.isError, false, `the preset path still runs: ${outcome.text}`)
-    assert.match(outcome.text, /CEILING_ONLY_CLAIM/)
-    assert.equal(readFacts(sink.path).length, 0, 'zero guard facts on the unshadowed path: this is exactly what the attach refuses to leave behind')
+test('TA13 DEFERRED UNSETTLED: a deferred child that never resolves is REFUSED within the bound (no hang, no accept)', async () => {
+  const root = await makeRoot({ attachments: false })
+  const fixture = makeFixture('deferred-unsettled')
+  const sink = tmpSink('deferred-unsettled')
+  const ceiling = memberPolicy(fixture.dir)
+  const { realm, agentKey } = await mountRealm({ root, ceiling, sinkPath: sink.path, attachments: true })
+  try {
+    const namesBefore = toolNames(root, agentKey).slice().sort()
+    const stuckModule = {
+      name: 'test-deferred-unsettled',
+      inject: ['tools', 'fs', 'systemPrompt'],
+      apply(ctx) {
+        ctx.inject(['attachments'], () => new Promise(() => {}))
+      },
+    }
+    const started = Date.now()
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: stuckModule }], { scope: agentKey }),
+      (error) => {
+        assert.equal(error.code, 'SERVICE_MOUNT_FAILED', 'the refusal must be typed')
+        assert.match(error.message, /did not settle within \d+ macrotasks/, `the refusal must say it did not settle: ${error.message}`)
+        return true
+      },
+      'a never-settling deferred registration must refuse the mount',
+    )
+    assert.ok(Date.now() - started < 5000, 'the refusal is BOUNDED, it does not hang on the child')
+    assert.deepEqual(toolNames(root, agentKey).slice().sort(), namesBefore, 'the surface is restored after the refusal')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// TA14 — a deferred registration landing an UNCOVERED name is still REFUSED
+// ===========================================================================
+
+test('TA14 DEFERRED UNCOVERED: a deferred name no fiber of the mount forwards is REFUSED and the reason NAMES it (#561 protection kept)', async () => {
+  const root = await makeRoot({ attachments: false })
+  const fixture = makeFixture('deferred-uncovered')
+  const sink = tmpSink('deferred-uncovered')
+  const ceiling = memberPolicy(fixture.dir)
+  const effective = compileBinding(ceiling, readRestriction(fixture.inside))
+  const { realm, agentKey } = await mountRealm({ root, ceiling, bindings: [effective], sinkPath: sink.path, attachments: true })
+  try {
+    const namesBefore = toolNames(root, agentKey).slice().sort()
+    const presetRead = root.get('tools').get('read', agentKey)
+    const uncoveredModule = {
+      name: 'test-deferred-uncovered',
+      inject: ['tools', 'fs', 'systemPrompt'],
+      apply(ctx) {
+        ctx.tools.register({
+          name: 'read',
+          description: 'binding-owned read',
+          parameters: { type: 'object', properties: { file_path: { type: 'string' } }, required: ['file_path'], additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: String(value) }] },
+          async execute() { return 'ok\n' },
+        })
+        ctx.inject(['attachments'], (imageCtx) => {
+          imageCtx.tools.register({
+            name: 'x_a5sf_uncovered',
+            description: 'a deferred name no fiber of this mount forwards',
+            parameters: { type: 'object', properties: {}, additionalProperties: false },
+            output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: String(value) }] },
+            async execute() { return 'ok\n' },
+          })
+        })
+      },
+    }
+    // BINDING-ONLY mount (the ceiling sibling would forward any non-binding
+    // name; the row expander always emits it, which is why this shape is a seam
+    // invariant rather than a row-expressible one — stated in the evidence).
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: uncoveredModule, toolBindingIdentity: READ_BINDING }], { scope: agentKey }),
+      (error) => {
+        assert.equal(error.code, 'SERVICE_MOUNT_FAILED', 'the refusal must be typed')
+        assert.match(error.message, /UNCOVERED name\(s\)/, `the refusal must call the name uncovered: ${error.message}`)
+        assert.match(error.message, /x_a5sf_uncovered/, 'the refusal must NAME the uncovered name')
+        return true
+      },
+      'a deferred registration no fiber covers must be refused (fail closed)',
+    )
+    assert.deepEqual(toolNames(root, agentKey).slice().sort(), namesBefore, 'the surface is restored after the refusal')
+    assert.equal(root.get('tools').get('read', agentKey), presetRead, 'the preset read definition is visible again: no half shadow survives')
   } finally {
     await realm.dispose()
   }

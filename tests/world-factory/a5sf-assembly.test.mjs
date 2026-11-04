@@ -283,6 +283,37 @@ export function apply(ctx) {
   return pathToFileURL(file).href
 }
 
+/**
+ * A module that returns ACTIVE with NO registration, then registers `toolName`
+ * from a 30 ms timer (the same already-active fiber). The timer runs AFTER the
+ * bounded settle window, so this is the `a5sf-s1` §3.2 late-registration shape:
+ * the router forwards it (live and confined), but the attach's receipt was
+ * already built. `toolName` must exist on the PRESET surface (and not be
+ * forwarded by the attach) so the name-set gate cannot see the change.
+ */
+function writeLateModule(label, toolName, delayMs = 30) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-late-${label}-`)))
+  const file = join(dir, 'late.mjs')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-late-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+  setTimeout(() => {
+    try {
+      ctx.tools.register({
+        name: ${JSON.stringify(toolName)},
+        description: ${JSON.stringify(`late ${label} ${toolName}`)},
+        parameters: { type: 'object', properties: {}, additionalProperties: false },
+        output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+        async execute() { return 'late' },
+      })
+    } catch {}
+  }, ${String(delayMs)})
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
 /** The PRESET row for one tool, mounted on the standing (parent) scope. */
 function presetPlugin(toolName, options = {}) {
   return {
@@ -978,6 +1009,44 @@ test('P0-3 disposing EVERY shadow fiber invalidates and denies — never a silen
     const writeAfter = await dispatch(root, agentKey, 'write', { file_path: fixture.insideFile, content: 'x' })
     assert.equal(writeAfter.isError, true, `the covered write must be REFUSED too: ${writeAfter.text}`)
     assert.equal(writeAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+    await realm.whenNativeVerificationSettled()
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('C3 (review 2026-11-03) a registration by an ALREADY-ACTIVE fiber AFTER the settle window is FOLDED IN and INVALIDATES — never an unrecorded live shadow', async () => {
+  // Measured pre-fix shape: an ACTIVE module fiber registers from a 30 ms timer.
+  // The router forwards it (live, confined), but the attach's receipt is already
+  // built, and `x_assembly_probe` is on the PRESET surface, so the name set does
+  // not change either. Result was ACCEPT; live; unrecorded; invalidation null —
+  // and after any later teardown the name resolved to the PRESET definition while
+  // the admission deny (keyed on the attach's managed names) did not cover it, so
+  // the preset body executed. The mount now folds a late forwarded name into the
+  // managed set and invalidates, so the deny covers it.
+  const lateModule = writeLateModule('c3', 'x_assembly_probe')
+  const world = await makeWorld('late-registration', { bindingIdentities: [], modules: [lateModule] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetProbe = definitionOf(root, agentKey, 'x_assembly_probe')
+    await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.equal(realm.nativeInvalidation ?? null, null, 'the ATTACH itself is accepted; the late registration has not landed yet')
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'a post-settle registration by an ACTIVE fiber must be RECORDED, not accepted silently')
+    assert.deepEqual([...record.lateRegistrations], ['x_assembly_probe'], `the record must name the late registration: ${JSON.stringify(record)}`)
+    assert.match(record.reason, /after the mount settled/, 'the reason states the post-settle rule')
+    assert.deepEqual([...record.surfaceAdded], [], 'the surface name set did not change — the fold, not the surface gate, caught it')
+    assert.deepEqual([...record.uncovered], [], 'the late registration was live when caught, so nothing was "uncovered"')
+
+    // THE DENY COVERS IT: folded in BEFORE the teardown, so the preset body that
+    // becomes visible again may not serve this Member.
+    const after = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(after.isError, true, `the late-registered name must be REFUSED at admission: ${after.text}`)
+    assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
+    assert.equal(after.text.includes('late'), false, 'neither the late body nor the preset body may serve it')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'the preset definition is visible again (and denied) after the teardown')
     await realm.whenNativeVerificationSettled()
   } finally {
     await realm.dispose()

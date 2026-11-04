@@ -1,0 +1,32 @@
+# pnpm ci:local --base origin/master — condensed transcript (full 1.2M transcript kept out of evidence; verdict block, the failing test and the isolation run are verbatim)
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=3 wall=233.1s
+[ELIFECYCLE] Command failed with exit code 1.
+EXIT=1
+
+
+
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
+   Start at  08:18:47
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/a5g6-install-face-render.test.ts:146:3
+    144|   }
+    145|
+    146|   it('the four definitions all carry a render that returns an array of…
+       |   ^
+    147|     const definitions = await buildDefinitions()
+    148|     // U7-F: the process family's second row mounts at its fixed native
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+--- isolation at the SAME tree ---
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  08:22:34
+   Duration  2.39s (transform 1.85s, setup 0ms, import 1.56s, tests 747ms, environment 0ms)

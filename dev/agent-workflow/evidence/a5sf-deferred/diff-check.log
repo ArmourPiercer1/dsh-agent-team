@@ -1,0 +1,1 @@
+git diff --check origin/master..HEAD: clean (no whitespace errors, no blank line at EOF)

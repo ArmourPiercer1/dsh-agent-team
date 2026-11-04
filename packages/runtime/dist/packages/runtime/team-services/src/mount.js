@@ -23,15 +23,17 @@
  * disposed before the typed install error propagates. `dispose()` is
  * idempotent and disposes bindings before Member ceilings.
  *
- * COVERAGE, NOT JUST NAMES: a module that registers from a DEFERRED
- * `ctx.inject(...)` child cannot register inside the router's isolated service
- * scope (measured: `cannot get property "tools" without inject`, or a child that
- * stays pending). Its tool would then keep executing on the UNGUARDED preset
- * definition while a name-set surface check stayed green. A mount therefore
- * settles its fiber window and REFUSES (typed `SERVICE_MOUNT_FAILED`) when a
- * descendant fiber did not reach ACTIVE and one of its inject names resolves in
- * the surrounding Member scope; an optional dependency that exists nowhere stays
- * benign. Refusing disposes the router fiber, so the surface is restored.
+ * COVERAGE, NOT JUST NAMES: a module may register from a DEFERRED
+ * `ctx.inject(...)` child after `apply` returns (the pinned `dsh-tool-fs`
+ * registers `read_image` that way). A mount therefore SETTLES a bounded window,
+ * lets the child run THROUGH THE SAME ROUTER (its deferred inject carries the
+ * router's two services, see `routedModuleContext`), and then INSPECTS the
+ * result: a FAILED child, a child that never settles, or a name no fiber of the
+ * attach forwards is refused (typed `SERVICE_MOUNT_FAILED`) — while a child that
+ * forwards a covered name is accepted, identity-tracked and verified exactly
+ * like a synchronous registration. An optional dependency absent everywhere
+ * stays benign (the child never runs and registers nothing). Refusing disposes
+ * every fiber this mount created, so the preset surface is restored.
  *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
@@ -56,8 +58,32 @@ function toolNameOfBindingIdentity(toolBindingIdentity) {
  * 5 unloading). Named here so the intent survives a reader who has no Cordis
  * enum at hand; `Fiber.state` itself is public and typed.
  */
-const FIBER_ACTIVE = 2;
 const FIBER_FAILED = 3;
+const FIBER_PENDING = 0;
+const FIBER_LOADING = 1;
+const FIBER_UNLOADING = 5;
+/**
+ * The bounded settle window for DEFERRED registrations, in macrotask rounds.
+ *
+ * WHY ROUNDS, NOT A WALL-CLOCK TIMEOUT: a deferred `ctx.inject(...)` child
+ * starts from a microtask (Cordis `_reload` awaits one microtask before running
+ * `apply`), so its registration lands within a macrotask on any machine. The
+ * rounds are the bound this seam is allowed to wait; a child still transient
+ * after them is refused (fail closed) instead of hanging the attach or being
+ * accepted with an unknown registration outcome. A module that needs seconds to
+ * register its tools is outside this seam's contract — the mount is synchronous
+ * setup, and accepting a shadow the seam cannot verify would be #561's leak.
+ */
+const DEFERRED_SETTLE_ROUNDS = 20;
+/**
+ * The two services THIS mount's registration router provides. A deferred child
+ * of the module gets them merged into its inject map (see
+ * `routedModuleContext`), because Cordis resolves a service access made from
+ * that child against the ROOT isolation label while the child's parent chain
+ * carries the router's own label — so the child's `ctx.tools` would throw
+ * `cannot get property "tools" without inject` even though the router serves it.
+ */
+const ROUTED_SERVICE_NAMES = ['tools', 'systemPrompt'];
 /** Is `fiber` (transitively) a CHILD fiber of `ancestor`? Fiber ancestry, not scope ancestry. */
 function isDescendantOf(fiber, ancestor) {
     let cursor = fiber.parent;
@@ -129,6 +155,110 @@ function createRoutedService(real, fallbackCtx, overrides) {
 function owningContextOf(receiver, fallback) {
     const ctx = receiver?.ctx;
     return ctx !== undefined && ctx !== null ? ctx : fallback;
+}
+/**
+ * The module context for a routed mount: the router fiber's context PLUS an
+ * `inject` that also requires the services this router provides.
+ *
+ * WHY THIS IS NECESSARY, MEASURED (not assumed): `@deepseek-ai/dsh-tool-fs`
+ * registers `read_image` from `ctx.inject(['attachments'], …)`. That child is
+ * created under the module fiber, whose service scope is the router's isolated
+ * scope. Cordis resolves a direct access from a context against
+ * `target[Context.isolate][name]` — the ROOT isolate label — while the walk up
+ * the CHILD's parent chain compares against the router's label, so
+ * `childCtx.tools` throws `cannot get property "tools" without inject` and the
+ * child ends FAILED. (The module's own `ctx.tools` works only because the
+ * module fiber's `store` already holds the routed service.) The public fix is
+ * to make the deferred child INJECT the routed services itself: its own fiber
+ * then stores them, so its registration goes through the SAME router and the
+ * partition records it. Nothing is bypassed and no registration reaches the
+ * real (preset) `tools` service.
+ *
+ * Only `tools`/`systemPrompt` are added — the two services the router owns. The
+ * child's own declared dependencies (e.g. `attachments`) stay required, so an
+ * optional capability that is absent anywhere still leaves the child pending
+ * (benign, registers nothing) instead of being forced to run.
+ */
+function routedModuleContext(routerCtx) {
+    return routerCtx.extend({
+        inject(names, callback) {
+            const plugin = { inject: mergeRoutedInject(names), apply: callback };
+            const owner = this;
+            return owner.plugin(plugin, undefined);
+        },
+    });
+}
+/**
+ * Merge the router's two services into a deferred child's declaration WITHOUT
+ * changing its SHAPE: an array stays a deduplicated array, and an OBJECT (a
+ * name → per-service intercept config map, Cordis `Inject`) stays an object
+ * with every declared config preserved. Added services get `null`, the same
+ * default `Inject.resolve` assigns to an omitted config (`inject[name] ?? null`),
+ * so a per-service intercept config the module declared is never flattened
+ * away — dropping it would silently change the child's dependency semantics.
+ */
+function mergeRoutedInject(names) {
+    if (Array.isArray(names))
+        return [...new Set([...names, ...ROUTED_SERVICE_NAMES])];
+    const declared = (names ?? {});
+    const merged = {};
+    for (const key of Object.keys(declared))
+        merged[key] = declared[key];
+    for (const name of ROUTED_SERVICE_NAMES)
+        if (!(name in merged))
+            merged[name] = null;
+    return merged;
+}
+/** Is this descendant fiber still in a transient (not yet settled) state? */
+function isTransientFiber(fiber) {
+    return fiber.state === FIBER_PENDING || fiber.state === FIBER_LOADING || fiber.state === FIBER_UNLOADING;
+}
+/**
+ * Settle the deferred-registration window and judge it by OUTCOME, not by
+ * reachability: wait (bounded) until every descendant fiber is ACTIVE, FAILED
+ * or disposed, then report the two failure shapes — a FAILED child and a child
+ * that is still transient after the bound with its declared dependencies
+ * satisfiable (a genuinely stuck registration). A PENDING child with an
+ * unresolvable declared dependency is an ABSENT OPTIONAL CAPABILITY (measured:
+ * the pinned tool-fs always declares `ctx.inject(['attachments'])`); it never
+ * ran, never registered, and stays benign.
+ */
+async function settleDeferredRegistrationWindow(descendants, target) {
+    for (let round = 0; round < DEFERRED_SETTLE_ROUNDS; round += 1) {
+        if (!descendants.some(isTransientFiber))
+            break;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    const failed = descendants.filter((fiber) => fiber.state === FIBER_FAILED);
+    const unsettled = descendants.filter((fiber) => {
+        if (!isTransientFiber(fiber))
+            return false;
+        if (fiber.state !== FIBER_PENDING)
+            return true;
+        // PENDING means "waiting for an injected service". If one of the declared
+        // names is absent everywhere, the capability simply does not exist here.
+        return Object.keys(fiber.inject).every((name) => target.get(name) !== undefined);
+    });
+    return { failed, unsettled };
+}
+/**
+ * Dispose ONE fiber without letting a never-settling descendant block the
+ * refusal path: start the disposal, wait at most the settle bound for it to
+ * finish, then continue. A child whose `apply` never resolves keeps its own
+ * fiber `inertia` pending (Cordis awaits it on the parent's dispose), so an
+ * unbounded `await fiber.dispose()` would make the REFUSAL hang — the exact
+ * failure mode this seam must not introduce. The registration effects this
+ * mount created are disposed by the same `_unload` pass, concurrently with the
+ * stuck child, so the surface is restored even though the overall disposal
+ * promise never settles (the stuck child is a broken module's promise, inert
+ * after the refusal).
+ */
+async function disposeFiberBounded(fiber) {
+    let settled = false;
+    void Promise.resolve(fiber.dispose()).then(() => { settled = true; }, () => { settled = true; });
+    for (let round = 0; round < DEFERRED_SETTLE_ROUNDS && !settled; round += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    }
 }
 /**
  * The narrowest registration router: intercept `tools.register` and
@@ -286,6 +416,14 @@ export async function mountA5sfRealm(input) {
     /** name -> the exact definition this attach registered (the coverage signal). */
     const expectedDefinitions = new Map();
     /**
+     * Every registering fiber's LIVE partition, in mount order. The sets are the
+     * router's own accounting objects and keep growing while the fiber lives, so
+     * continuous verification can see a registration that lands AFTER the bounded
+     * settle window (the `a5sf-s1` §3.2 late-timer escape) instead of missing it
+     * because the receipt was snapshotted at attach time.
+     */
+    const managedPartitions = [];
+    /**
      * P0: name -> the realm that owned its (now disposed) shadow, so a refusal
      * can NAME the realm and the Member instead of being an anonymous error.
      */
@@ -333,21 +471,24 @@ export async function mountA5sfRealm(input) {
      * realm refuses further native mounts, so a caller cannot re-create a partial
      * shadow over the same managed names.
      */
-    const invalidateNativeShadow = (uncovered, surfaceAdded = [], surfaceRemoved = []) => {
+    const invalidateNativeShadow = (uncovered, surfaceAdded = [], surfaceRemoved = [], lateRegistrations = []) => {
         if (disposed || invalidation !== null)
             return;
         const lostShadow = uncovered.length > 0;
         const changedSurface = surfaceAdded.length > 0 || surfaceRemoved.length > 0;
         const record = Object.freeze({
             schema: 'a5sf-native-invalidation/1',
-            reason: lostShadow && changedSurface
-                ? 'the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled'
-                : lostShadow
-                    ? 'a managed native tool is no longer shadowed by this attach after the mount settled'
-                    : 'the Member tool surface changed after the native mount settled',
+            reason: lateRegistrations.length > 0
+                ? 'a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify'
+                : lostShadow && changedSurface
+                    ? 'the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled'
+                    : lostShadow
+                        ? 'a managed native tool is no longer shadowed by this attach after the mount settled'
+                        : 'the Member tool surface changed after the native mount settled',
             uncovered: Object.freeze([...new Set(uncovered)]),
             surfaceAdded: Object.freeze([...new Set(surfaceAdded)]),
             surfaceRemoved: Object.freeze([...new Set(surfaceRemoved)]),
+            lateRegistrations: Object.freeze([...new Set(lateRegistrations)]),
             observedAt: new Date().toISOString(),
         });
         // ORDER IS LOAD-BEARING (P0, 2026-11-03): the record is set FIRST, so the
@@ -402,6 +543,26 @@ export async function mountA5sfRealm(input) {
         if (tools === undefined || tools === null)
             return;
         try {
+            // LATE REGISTRATION (review C1/C2, 2026-11-03): a fiber that was already
+            // ACTIVE at settle time can register LATER (a timer/IO callback). The
+            // router forwarded it, so it is live and confined, but it was never part
+            // of the accepted receipt. FOLD IT IN FIRST (so the admission deny covers
+            // it once the shadow is torn down), then invalidate: a post-settle
+            // registration is outside what this attach verified, and silently
+            // accepting it was the measured `a5sf-s1` §3.2 escape.
+            const lateRegistrations = [];
+            for (const entry of managedPartitions) {
+                for (const name of entry.partition.forwarded) {
+                    if (expectedDefinitions.has(name))
+                        continue;
+                    const definition = entry.partition.forwardedDefinitions.get(name);
+                    if (definition === undefined)
+                        continue;
+                    expectedDefinitions.set(name, definition);
+                    managedRealmOf.set(name, { realm: entry.realm, toolBindingIdentity: entry.label });
+                    lateRegistrations.push(name);
+                }
+            }
             const uncovered = [];
             if (typeof tools.get === 'function') {
                 for (const [name, definition] of expectedDefinitions) {
@@ -431,8 +592,8 @@ export async function mountA5sfRealm(input) {
                     if (!now.has(name))
                         surfaceRemoved.push(name);
             }
-            if (uncovered.length > 0 || surfaceAdded.length > 0 || surfaceRemoved.length > 0) {
-                invalidateNativeShadow(uncovered, surfaceAdded, surfaceRemoved);
+            if (lateRegistrations.length > 0 || uncovered.length > 0 || surfaceAdded.length > 0 || surfaceRemoved.length > 0) {
+                invalidateNativeShadow(uncovered, surfaceAdded, surfaceRemoved, lateRegistrations);
             }
         }
         catch {
@@ -588,6 +749,7 @@ export async function mountA5sfRealm(input) {
                 }
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
+                managedPartitions.length = 0;
             }
             expectedSurfaceNames = undefined;
             await disposeNative();
@@ -661,9 +823,14 @@ export async function mountA5sfRealm(input) {
                 created.length = 0;
                 // A refused attach leaves NO managed names behind: the coverage maps
                 // describe what THIS attach shadows, so a rollback clears them with it.
+                // The LIVE partitions describe disposed fibers after the rollback, so
+                // they are cleared too or a later attach's verification would mistake
+                // their stale names for a late registration.
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
+                managedPartitions.length = 0;
             };
+            const routedPartitions = managedPartitions;
             for (const [index, mount] of modules.entries()) {
                 const binding = observeOnly || mount.toolBindingIdentity === undefined
                     ? undefined
@@ -726,53 +893,48 @@ export async function mountA5sfRealm(input) {
                     // Mount the module from the ALREADY-ACTIVE router fiber's context, as
                     // its child, instead of from inside `apply`: a module that registers
                     // through a deferred `ctx.inject(...)` needs an active parent context,
-                    // or its injected child fiber never becomes eligible to start.
-                    inner = routerFiber.ctx.plugin(mount.module, mount.config);
+                    // or its injected child fiber never becomes eligible to start. The
+                    // module context ALSO merges the router's services into every deferred
+                    // child's inject (see `routedModuleContext`), which is what lets the
+                    // child actually register THROUGH this router instead of failing on
+                    // Cordis's isolate-label walk.
+                    const moduleCtx = routedModuleContext(routerFiber.ctx);
+                    inner = moduleCtx.plugin(mount.module, mount.config);
                     await inner;
-                    // Settle the deferred-registration window for BOTH mount kinds.
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                    // SETTLE, THEN INSPECT (the deferred-registration state machine):
+                    // wait a bounded number of macrotasks for every descendant fiber to
+                    // reach a terminal state, then judge the RESULT — a FAILED child or a
+                    // child that never settles is refused; a child that registered is
+                    // judged by the partition below. A pending child whose declared
+                    // capability is absent everywhere is benign (it never ran).
+                    const descendants = windowFibers
+                        .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null);
+                    const settled = await settleDeferredRegistrationWindow(descendants, target);
                     if (!observeOnly) {
-                        // COVERAGE (S-1): a module may register through a DEFERRED
-                        // `ctx.inject(...)` child. Under the router's isolated service scope
-                        // that child cannot reach the shadowed services (measured:
-                        // `cannot get property "tools" without inject`), so its tool would
-                        // stay UNSHADOWED on the preset definition — executing on the BASE
-                        // provider with ZERO guard facts while every surface name stayed equal.
-                        // Settle the window, then refuse if any descendant fiber did not reach
-                        // ACTIVE: a deferred registration is either served by the router or the
-                        // whole mount is refused — never silently left on BASE.
-                        const unsettled = windowFibers
-                            .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== FIBER_ACTIVE)
-                            // An OPTIONAL dependency that is absent everywhere is benign: the
-                            // module declares an extra registration it cannot make (measured:
-                            // the pinned tool-fs ALWAYS declares `ctx.inject(['attachments'])`).
-                            // The dangerous shape is a dependency the REST of this Member CAN
-                            // resolve — the preset would have registered that tool, so refusing
-                            // is the only way to keep it off the unshadowed BASE path.
-                            .filter((created) => Object.keys(created.inject).some((name) => target.get(name) !== undefined));
-                        if (unsettled.length > 0) {
-                            // PUBLIC state only: `Fiber.state` is the documented surface, and a
-                            // fiber at FAILED says the registration threw without this seam
-                            // reaching into the fiber's private error slot (CORE PATCH BUDGET = 0
-                            // and AGENTS.md forbid upstream private API). The consequence, stated
-                            // honestly in the evidence: the refusal names the MODULE, its pending
-                            // inject names and the public fiber state — it does NOT quote the
-                            // upstream error text, which this seam never reads.
-                            const detail = unsettled
-                                .map((created) => {
-                                const deps = Object.keys(created.inject).join(',');
-                                const state = created.state === FIBER_FAILED ? 'failed' : `state ${created.state}`;
-                                return `deferred registration ${state}, waiting on [${deps}]`;
-                            })
-                                .join('; ');
-                            throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} registers asynchronously and its deferred registration cannot run inside the routed mount (${detail}); refusing the mount instead of leaving those tools on the unshadowed preset path`);
+                        // PUBLIC state only: `Fiber.state` is the documented surface, and a
+                        // fiber at FAILED says the registration threw without this seam
+                        // reaching into the fiber's private error slot (CORE PATCH BUDGET = 0
+                        // and AGENTS.md forbid upstream private API). The refusal names the
+                        // MODULE, its inject names and the public fiber state — it does NOT
+                        // quote the upstream error text, which this seam never reads.
+                        const describe = (created) => {
+                            const deps = Object.keys(created.inject).join(',');
+                            const state = created.state === FIBER_FAILED ? 'failed' : `state ${String(created.state)}`;
+                            return `deferred registration ${state}, waiting on [${deps}]`;
+                        };
+                        if (settled.failed.length > 0) {
+                            throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} started a DEFERRED registration that failed inside the routed mount (${settled.failed.map(describe).join('; ')}); refusing the mount instead of leaving those tools on the unshadowed preset path`);
+                        }
+                        if (settled.unsettled.length > 0) {
+                            throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} started a DEFERRED registration that did not settle within ${String(DEFERRED_SETTLE_ROUNDS)} macrotasks (${settled.unsettled.map(describe).join('; ')}); refusing the mount instead of hanging on it or accepting a shadow it cannot verify`);
                         }
                     }
                 }
                 catch (error) {
                     if (typeof detachWindow === 'function')
                         detachWindow();
-                    await fiber?.dispose().catch(() => undefined);
+                    if (fiber !== undefined)
+                        await disposeFiberBounded(fiber);
                     await rollbackCreated();
                     throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', error instanceof TeamServiceInstallError
                         ? error.detail
@@ -793,6 +955,13 @@ export async function mountA5sfRealm(input) {
                             toolBindingIdentity: binding?.toolBindingIdentity ?? null,
                         });
                     }
+                }
+                if (!observeOnly) {
+                    routedPartitions.push({
+                        partition,
+                        realm: binding === undefined ? 'ceiling' : 'binding',
+                        label: mount.toolBindingIdentity ?? null,
+                    });
                 }
                 const routing = Object.freeze({
                     realm: binding === undefined ? 'ceiling' : 'binding',
@@ -819,6 +988,32 @@ export async function mountA5sfRealm(input) {
             // disposes them after reading `a5sfRegistrationRouting.observed`.
             if (observeOnly)
                 return Object.freeze([...created]);
+            // COVERAGE OF THE DEFERRED REGISTRATIONS, judged ONCE per attach (never
+            // per fiber — a drop is normally delegated to a sibling fiber). Every name
+            // the module attempted to register must be FORWARDED by SOME fiber of this
+            // call. A name that no fiber forwards was dropped by every router and
+            // therefore never got a confined definition: accepting it would leave the
+            // preset definition serving the Member with ZERO guard facts — #561's
+            // measured leak. Refuse (fail closed), name the names, and roll back.
+            const covered = new Set();
+            for (const entry of routedPartitions)
+                for (const name of entry.partition.forwarded)
+                    covered.add(name);
+            const uncovered = new Map();
+            for (const entry of routedPartitions) {
+                for (const name of entry.partition.observed) {
+                    if (covered.has(name))
+                        continue;
+                    if (!uncovered.has(name))
+                        uncovered.set(name, entry.label);
+                }
+            }
+            if (uncovered.size > 0) {
+                await rollbackCreated();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module ${JSON.stringify([...new Set(uncovered.values())])} registered UNCOVERED name(s) `
+                    + `${JSON.stringify([...uncovered.keys()])} through a deferred registration: no fiber of this mount forwards them, `
+                    + 'so they would stay on the unshadowed preset definition with zero guard facts; refusing the mount (fail closed)');
+            }
             // ASSEMBLY GAP 2: arm re-verification AFTER the last registration, so the
             // mount's own writes cannot be mistaken for a later change.
             // P0 (2026-11-03): arming is fail-closed. If either listener cannot be
