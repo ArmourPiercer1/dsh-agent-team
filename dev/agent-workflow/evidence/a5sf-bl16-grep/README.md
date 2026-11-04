@@ -627,3 +627,68 @@ git worktree carries none). Four of those symlinks were initially DANGLING
 `ENOENT … packages/tools/node_modules`. Removing the dangling links fixed it (21/21).
 This is worktree hygiene, not a product change: the same test passes on the main checkout,
 where pnpm has created those directories.
+
+### 7.4 BL-17 round (2026-11-04): the binding-realm refusal, gates verbatim
+
+Head of this round: `19e87deeba7ec2b1afc596b4e8ada07945ef8be7`. The measured
+refusal is `TeamServiceInstallError.code = SUBPROCESS_UNCONFINED_REALM`
+(exported token `A5SF_SUBPROCESS_UNCONFINED_REALM`), thrown by
+`mountNativeToolModules` **before** the mount loop
+(`packages/runtime/team-services/src/mount.ts`, the
+“INTERSECTION INVARIANT AT THE REALM BOUNDARY” block) and again by the
+post-settle deferred-child check for a `ctx.inject(['subprocess'], …)` child.
+
+```
+$ vitest run packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests)
+      Tests  4 passed (4)
+
+$ vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts \
+             packages/runtime/test/a5sf-bl16-grep-realm.test.ts \
+             packages/runtime/test/a5sf-service-install.test.ts \
+             packages/runtime/test/a5sf-subprocess-contract.test.ts \
+             packages/runtime/test/a5sf-provider-composition.test.ts \
+             packages/runtime/test/a5sf-member-policy.test.ts \
+             packages/runtime/test/a5p4-lane-hygiene.test.ts
+ Test Files  8 passed (8)
+      Tests  83 passed (83)
+
+$ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+
+$ node dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs
+18 arms measured; receipt -> dev/agent-workflow/evidence/a5sf-bl16-grep/arms.json
+```
+
+Negative controls, measured (all inside the `U1` arm): the binding realm's
+`faces.subprocess` is `null`; the base `subprocess` tripwire counter is
+unchanged (`BaseSubprocessService.calls === baseBefore`); the confined
+provider's `spawnCalls === 0`; the refused call creates `0` fibers
+(`root.on('internal/plugin')` count during the call); `tools.get('grep', scope)`
+is the SAME object before and after (no definition was registered). `U1b`
+repeats the refusal through `attachA5sfNativeToolModules`, so the product-row
+composition and the seam agree. RED control (measured, not asserted): with both
+refusal sites disabled, `U1` and `U1b` both fail; with only the pre-mount check
+disabled, `U1` still refuses via the deferred-child check but creates fibers, so
+the pre-mount check is what gives the zero-fiber control.
+
+```
+$ node_modules/.bin/tsc -p packages/runtime/tsconfig.json --noEmit   → clean
+$ pnpm -r run typecheck                                              → every project Done
+$ eslint <4 touched TS paths + evidence script>                      → 0 errors
+$ node --test tests/world-factory/a5sf-{native-route-c,p2-wiring,f1-ctx,assembly}.test.mjs
+  ℹ tests 61   ℹ pass 61   ℹ fail 0
+$ node scripts/check-artifacts-committed.mjs
+  DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1924 glue=101
+$ node scripts/check-artifacts-at-head.mjs
+  DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1924 drift=0
+$ git diff --check origin/master...HEAD                              → rc=0
+```
+
+Unsupported after this change: anything that needs a confined process on a
+**binding** realm (there is no binding `subprocess` face — this change makes
+that a refusal instead of an inherited-service mount), plus everything already
+listed in §6.3 (the `/etc`+`/proc` allowance until BL-39's audit, the
+pre-existing in-lane hardlink served with an ALLOW fact, `spec.env` unchecked,
+the layer-2-only nested symlink, no Host boot / V@B).
