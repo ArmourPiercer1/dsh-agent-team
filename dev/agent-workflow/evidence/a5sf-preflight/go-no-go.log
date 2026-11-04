@@ -1,9 +1,9 @@
-PASS dry-run evidence exists and is green: {"checks":48,"failed":0}
+PASS dry-run evidence exists and is green: {"checks":50,"failed":0}
 PASS the PRODUCT tree matches the one the dry run measured: {"committed":"6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65","now":"6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is the preflight branch: task/a5sf-preflight-20261103
-PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl","rows":2,"intents":1,"bootRows":1,"unparseable":0,"orphanBootRuns":[],"plannedMismatch":[],"bootsInPool":6,"remaining":5}
-PASS ledger: each intent's plannedStarts equals the boot rows charged to it: {"intents":1,"mismatch":[]}
-PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=1 remaining=5
+PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl","rows":5,"intents":3,"bootRows":2,"unparseable":0,"orphanBootRuns":[],"plannedMismatch":[{"runId":"a5sf-acceptance-2026-11-04T08-11-28-364Z","plannedStarts":1,"bootRows":0,"ok":false}],"bootsInPool":6,"remaining":4}
+REFUSE ledger: each intent's plannedStarts equals the boot rows charged to it: {"intents":3,"mismatch":[{"runId":"a5sf-acceptance-2026-11-04T08-11-28-364Z","plannedStarts":1,"bootRows":0,"ok":false}]}
+PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=2 remaining=4
 PASS boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment): {"poolFile":"dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json","item":"P2-01 live read (BL-14 / G2 live half)","boots":6,"why":"amended allocation present"}
 PASS pinned host tree is at the pinned commit and clean: {"hostHead":"639ed015397290b3745d163aafe02ffee4aa3f84","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","porcelain":""}

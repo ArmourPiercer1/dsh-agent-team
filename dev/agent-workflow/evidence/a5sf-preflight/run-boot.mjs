@@ -72,7 +72,7 @@
  *
  * @module dev/agent-workflow/evidence/a5sf-acceptance/run-boot
  */
-import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -740,6 +740,41 @@ function attachmentsProviderComposition() {
 // boot mode — which is how an attempt was once lost to `ReferenceError: relative is not defined`
 // at line 799 with the Host never started. `--plan` now calls this too, so the whole literal is
 // exercised host-free and a broken record cannot cost a start.
+// The ledger is the ONE counter, so the boot sequence is read from it rather than assumed.
+function readLedgerRows(path) {
+  if (!existsSync(path)) return []
+  return readFileSync(path, 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      try { return JSON.parse(line) } catch { return null }
+    })
+    .filter(Boolean)
+}
+
+// A boot overwrites the record it is compared against, so a CRASHED boot silently destroys the
+// previous run's fixture (measured 2026-11-04: the `homePin` abort rewrote run.log and
+// run-record.json, and the dry run's row-6 replay then had no stop instant). The previous run's
+// mutable evidence is therefore MOVED into runs/<stamp>/ before this one starts.
+const RUN_ARCHIVE_FILES = [
+  'run.log', 'run-record.json', 'oracle-samples.json', 'guard-facts.json', 'consultations.jsonl',
+  'counter.json', 'teardown.json', 'ledger-rows.json', 'boot-console.log', 'grant.json',
+]
+
+function archivePreviousRun() {
+  const present = RUN_ARCHIVE_FILES.filter((name) => existsSync(join(HERE, name)))
+  if (present.length === 0) return null
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const dir = join(HERE, 'runs', stamp)
+  mkdirSync(dir, { recursive: true })
+  for (const name of present) {
+    try { renameSync(join(HERE, name), join(dir, name)) } catch { /* keep going: one locked file must not stop the run */ }
+  }
+  log(`previous run evidence archived: runs/${stamp} (${present.join(', ')})`)
+  return `runs/${stamp}`
+}
+
 function runBindings(head, grant) {
   return {
     teamSha: head,
@@ -893,13 +928,39 @@ async function boot() {
   }
 
   // ── the per-run grant, bound to the EXACT HEAD this run executes on ──────
+  // ONE GRANT PER BOOT. The grant carries maxStarts = intent + start, so keying it to the
+  // HEAD alone makes a second run at the same head collide with the first run's two rows and
+  // the BL-14 gate refuses with GRANT_EXHAUSTED (observed 2026-11-04, and the refusal is
+  // correct — the bookkeeping was not). The sequence is derived from the ledger, so it cannot
+  // be faked by re-running, and it is capped by the DEDICATED allocation: three preflight-gated
+  // P2-01 starts, never the pool reserve.
+  const ledgerRowsSoFar = readLedgerRows(LEDGER_PATH)
+  const archivedPreviousRun = archivePreviousRun()
+  const priorRows = ledgerRowsSoFar.length
+  const priorBoots = ledgerRowsSoFar.filter((row) => String(row?.phase ?? '').startsWith('a5sf-acceptance-boot')).length
+  const bootSequence = priorBoots + 1
+  const DEDICATED_STARTS = 3
+  if (bootSequence > DEDICATED_STARTS) {
+    const refusal = new Error(`BUDGET_NOT_GRANTED reason=DEDICATED_ALLOCATION_EXHAUSTED: this driver's dedicated allocation is ${DEDICATED_STARTS} starts and the ledger already holds ${priorBoots} boot row(s); a further run needs a new user ruling, not the pool reserve`)
+    refusal.code = 'BUDGET_NOT_GRANTED'
+    refusal.reason = 'DEDICATED_ALLOCATION_EXHAUSTED'
+    refusal.detail = `dedicated starts=${DEDICATED_STARTS} ledger boot rows=${priorBoots}`
+    throw refusal
+  }
+  log(`boot sequence: ${String(bootSequence)} of ${String(DEDICATED_STARTS)} dedicated P2-01 start(s) (ledger boot rows=${String(priorBoots)})`)
   const grant = {
-    grantId: `grant-a5sf-acceptance-${head.slice(0, 12)}`,
-    maxStarts: 2,
+    grantId: `grant-a5sf-acceptance-${head.slice(0, 12)}-b${String(bootSequence)}`,
+    // CUMULATIVE, not per-run: the BL-14 gate compares the SHARED LEDGER's row count against
+    // maxStarts (one intent row + one boot row per lease). Keying it to 2 made the second run
+    // at any head refuse with GRANT_EXHAUSTED — measured 2026-11-04 — so this run's grant pays
+    // for every earlier row plus its own two.
+    maxStarts: priorRows + 2,
     grantedBy: 'user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item "P2-01 live read (BL-14 / G2 live half)" now holds 6 boots, three of them newly granted and dedicated to the post-preflight six-row acceptance. The preflight in evidence/a5sf-preflight/ must be green before the first of those three is spent; this driver is the one that preflight certifies. Prior P2-01 boots: a5sf-live-native (activation refused by the unscoped-ctx seam), a5sf-live-native2 (Loader compose abort on a composition defect), a5sf-live-native3 (confined native read proven, teardown seam open), a5sf-acceptance (6/6 NOT_REACHED: create-root/observe-root split). The pool reserve is NOT touched.',
     allocationItem: 'P2-01 live read (BL-14 / G2 live half)',
     boundCommit: head,
-    note: 'maxStarts = 1 pre-registration (intent) row + 1 boot (the BL-14 gate counts shared-ledger rows, not spawns)',
+    note: `maxStarts = ${String(priorRows)} prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = ${String(priorRows + 2)}; the BL-14 gate counts shared-ledger rows, not spawns`,
+    bootSequence,
+    dedicatedStarts: DEDICATED_STARTS,
   }
   writeFileSync(GRANT_PATH, JSON.stringify(grant, null, 2) + '\n')
   log(`grant materialised: ${GRANT_PATH} maxStarts=${grant.maxStarts} boundCommit=${grant.boundCommit} item=${grant.allocationItem}`)
@@ -961,6 +1022,16 @@ async function boot() {
    *  a live regression must never be laundered into NOT_REACHED (review B2). */
   let hostReached = false
   let abortStage = 'pre-boot'
+  // Computed ONCE, before the record that cites it. This used to be declared further down, so
+  // the boot path referenced a binding that did not exist yet (`ReferenceError: homePin is not
+  // defined`) — and by then the intent row had been written, so the attempt was already visible
+  // in the ledger. The `--plan` smoke cannot see this class; a `no-undef` lint can.
+  // HOISTED out of the try: the finally-block that writes oracle-samples.json used to reference a
+  // `const` declared inside that try — out of scope there, so `no-undef` caught it and, on the
+  // boot path, it would have thrown AFTER the Host was up (a real start lost). Similarly the home
+  // pin must exist before the evidence record that cites it (`homePin is not defined`, 08:11Z).
+  const oracleSamples = {}
+  const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
   const evidence = {
     worldId: world.id,
     homePatch: { path: homePin.path, mode: homePin.mode, workspaceRoot: homePin.workspaceRoot },
@@ -1003,7 +1074,7 @@ async function boot() {
     world.u6Fs.rows.push(...rows)
 
     // ── the home-level pin, written BEFORE the spawn (helper header) ────────
-    const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
+    // homePin was computed once above (single source; see the note there).
     writeFileSync(homePin.path, homePin.yaml)
     const homePinRead = readFileSync(homePin.path, 'utf8')
     if (homePinRead !== homePin.yaml) throw new Error(`the home patch did not persist verbatim: ${homePin.path}`)
@@ -1264,7 +1335,6 @@ async function boot() {
     // FAIL — the #575 record printed FAIL:6 for exactly that reason. The sample
     // each judge received is persisted in `oracle-samples.json` so a reader can
     // re-run the decision without the World.
-    const oracleSamples = {}
     const memberARequest = surfacePerMemberRequest[0] ?? null
     const preconditionSample = {
       hostAlive: hostAlive(),
@@ -1787,7 +1857,7 @@ async function boot() {
     log(`ledger rows (${String(ledgerRows.length)}): ${ledgerRows.map((r) => `${String(r.kind ?? r.phase ?? '?')}:${String(r.grantId ?? r.world ?? '')}`).join(' | ')}`)
     const finalized = record.finalize()
     writeFileSync(join(HERE, 'run-record.json'), JSON.stringify(finalized, null, 2) + '\n')
-    if (typeof oracleSamples !== 'undefined') {
+    if (Object.keys(oracleSamples).length > 0) {
       writeFileSync(join(HERE, 'oracle-samples.json'), JSON.stringify({
         schema: 'a5sf-acceptance-preflight/oracle-samples/1',
         note: 'the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.',

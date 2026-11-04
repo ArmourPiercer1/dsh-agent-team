@@ -1,34 +1,41 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
   "branch": "task/a5sf-preflight-20261103",
-  "evidenceHeadAtDryRun": "d8f9ae1c6493e45c7a5b7f273e48255d33dd76de",
+  "evidenceHeadAtDryRun": "0dec8f2d6144a2ccdf40f097ec30ee4ea8086473",
   "productTreeDigest": "6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-01 live read (BL-14 / G2 live half)",
     "boots": 6,
     "allocated": true,
-    "consumed": 1,
-    "remaining": 5
+    "consumed": 2,
+    "remaining": 4
   },
   "ledger": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
-    "rows": 2,
-    "intents": 1,
-    "bootRows": 1,
+    "rows": 5,
+    "intents": 3,
+    "bootRows": 2,
     "unparseable": 0,
     "orphanBootRuns": [],
-    "plannedMismatch": [],
+    "plannedMismatch": [
+      {
+        "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
+        "plannedStarts": 1,
+        "bootRows": 0,
+        "ok": false
+      }
+    ],
     "bootsInPool": 6,
-    "remaining": 5
+    "remaining": 4
   },
-  "go": true,
+  "go": false,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 48,
+        "checks": 50,
         "failed": 0
       }
     },
@@ -55,28 +62,42 @@
       "ok": true,
       "detail": {
         "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
-        "rows": 2,
-        "intents": 1,
-        "bootRows": 1,
+        "rows": 5,
+        "intents": 3,
+        "bootRows": 2,
         "unparseable": 0,
         "orphanBootRuns": [],
-        "plannedMismatch": [],
+        "plannedMismatch": [
+          {
+            "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
+            "plannedStarts": 1,
+            "bootRows": 0,
+            "ok": false
+          }
+        ],
         "bootsInPool": 6,
-        "remaining": 5
+        "remaining": 4
       }
     },
     {
       "id": "ledger: each intent's plannedStarts equals the boot rows charged to it",
-      "ok": true,
+      "ok": false,
       "detail": {
-        "intents": 1,
-        "mismatch": []
+        "intents": 3,
+        "mismatch": [
+          {
+            "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
+            "plannedStarts": 1,
+            "bootRows": 0,
+            "ok": false
+          }
+        ]
       }
     },
     {
       "id": "budget: at least ONE start of the P2-01 pool is still available",
       "ok": true,
-      "detail": "boots=6 spent=1 remaining=5"
+      "detail": "boots=6 spent=2 remaining=4"
     },
     {
       "id": "boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)",

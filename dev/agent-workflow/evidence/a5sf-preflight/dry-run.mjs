@@ -139,6 +139,52 @@ check('driver: full teardown observations are persisted', !/observations\.slice\
   'teardown.json carries the entire observation array, no tail-N window')
 check('driver: declares expectedTools on the row', driverSource.includes('a5sfExpectedTools'),
   'the live attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping a preset read_image')
+// THE BOOT PATH IS NOT REACHABLE HOST-FREE, so a missing import, an out-of-scope variable or a
+// use-before-define inside it can only fail after an intent row (or a Host start) is spent —
+// measured three times on 2026-11-04: `relative is not defined` before the spawn, `homePin` after
+// the intent row, and an `oracleSamples` shadow that would have thrown with the Host already up.
+// A no-undef + no-use-before-define lint over the drivers is the only static net over that path.
+const lintTargets = [
+  join(HERE, 'run-boot.mjs'),
+  join(HERE, 'dry-run.mjs'),
+  join(HERE, 'go-no-go.mjs'),
+  join(HERE, 'negative-controls.mjs'),
+  join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-acceptance-preflight.mjs'),
+]
+const eslintBin = join(REPO_ROOT, 'node_modules', '.bin', 'eslint')
+const lintConfig = join(HERE, 'no-undef.config.mjs')
+let lintResult = { ok: false, detail: 'eslint binary not found' }
+if (existsSync(eslintBin)) {
+  const run = spawnSync(eslintBin, ['--config', lintConfig, ...lintTargets], { encoding: 'utf8' })
+  const errors = String(run.stdout ?? '').split('\n').filter((line) => /\s+error\s/.test(line))
+  lintResult = {
+    ok: run.status === 0 && errors.length === 0,
+    detail: errors.length === 0
+      ? `exit=${String(run.status)} no undefined/use-before-define errors across ${String(lintTargets.length)} boot-path files`
+      : errors.slice(0, 4).join(' | '),
+  }
+}
+check('boot path: no undefined identifiers in the driver or the oracle', lintResult.ok, lintResult.detail)
+
+// The lint is only worth its runtime if a probe that reproduces the 08:11Z shape is REFUSED: a
+// rule that silently stopped applying would leave this green forever.
+let tdzResult = { ok: false, detail: 'eslint binary not found' }
+if (existsSync(eslintBin)) {
+  const probe = join(HERE, '.tdz-probe.mjs')
+  writeFileSync(probe, 'function f(){ return late }\nconst late = 1\nexport default f\n')
+  try {
+    const run = spawnSync(eslintBin, ['--config', lintConfig, probe], { encoding: 'utf8' })
+    const caught = /no-use-before-define/.test(String(run.stdout ?? '')) && run.status !== 0
+    tdzResult = {
+      ok: caught,
+      detail: caught ? 'the use-before-define probe is refused, so the TDZ rule is load-bearing' : 'the probe passed lint, so the TDZ rule is NOT active',
+    }
+  } finally {
+    try { rmSync(probe) } catch { /* the probe is disposable */ }
+  }
+}
+check('boot path: a use-before-define in a driver is refused (the homePin shape)', tdzResult.ok, tdzResult.detail)
+
 check('driver: the boot-mode run-record bindings are exercised host-free', /function runBindings\(/.test(driverSource) && /bindings: runBindings\(head, grant\)/.test(driverSource) && /runBindings: runBindings\(/.test(driverSource),
   'a broken binding literal (e.g. a missing import used only by those strings) must fail in --plan, not after a start is spent')
 check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', driverSource.includes('RUN_ABORTED_AFTER_HOST_REACHED') && /add\(id, hostReached \? 'FAIL' : 'NOT_REACHED'/.test(driverSource),

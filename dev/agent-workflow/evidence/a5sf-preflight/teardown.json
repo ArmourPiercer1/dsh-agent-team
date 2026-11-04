@@ -142,7 +142,7 @@
     "body": {
       "ok": false,
       "error": {
-        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
       }
     }
   },
@@ -337,7 +337,7 @@
     "body": {
       "ok": false,
       "error": {
-        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
       }
     }
   },
@@ -347,13 +347,13 @@
       "status": 200,
       "code": null,
       "ok": false,
-      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
     },
     {
       "status": 200,
       "code": null,
       "ok": false,
-      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
     }
   ],
   "healthAfterDrop": {
@@ -371,8 +371,10 @@
       "toolCount": 15
     }
   },
-  "sinkFactsBefore": 5,
-  "sinkFactsAfter": 7,
+  "stopInstant": "2026-11-04T08:19:27.285Z",
+  "archiveDispatchedAt": "2026-11-04T08:19:27.240Z",
+  "sinkFactsBefore": 8,
+  "sinkFactsAfter": 10,
   "hostAlive": true,
   "seamsObserved": [
     "product archive lifecycle: team_archive_member dispatched through the row tool route (as the acceptance root/leader)",
@@ -393,18 +395,18 @@
     "worldTeardown": {
       "host": {
         "wasRunning": true,
-        "pid": 35,
+        "pid": 84,
         "killed": true,
         "portFree": true
       },
-      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z",
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z",
       "releasedPorts": [
-        3183,
-        3493,
-        3183
+        3182,
+        3491,
+        3182
       ],
       "killedPids": [
-        35
+        84
       ],
       "notes": []
     },
