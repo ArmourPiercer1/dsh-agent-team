@@ -359,10 +359,22 @@ describe('A6 root wiring — production entry opt-in', () => {
     expect(wakes[0]!.targetSessionId).toBe('session-a6wake-officer')
 
     root.alpha6TurnLatchStart?.('session-a6wake-officer')
-    await root.alpha6TurnLatchEnd?.('session-a6wake-officer')
-
+    // A request arriving DURING the active turn is dirty, never a second
+    // delivery: the latch is held and the wake would interrupt the reviewer.
     await ask(4)
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    expect(wakes.length).toBe(1)
+    await root.alpha6TurnLatchEnd?.('session-a6wake-officer')
     await until(() => wakes.length === 2)
+    expect(wakes[1]!.wakeId).not.toBe(wakes[0]!.wakeId)
+
+    // The next turn claims wake 2; work arriving inside it is again dirty.
+    root.alpha6TurnLatchStart?.('session-a6wake-officer')
+    await ask(5)
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    expect(wakes.length).toBe(2)
+    await root.alpha6TurnLatchEnd?.('session-a6wake-officer')
+    await until(() => wakes.length === 3)
     destroyDir(base)
   })
 })
