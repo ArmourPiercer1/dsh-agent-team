@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  createAlpha6RootControlNotifier,
   createComposedControlNotifier,
   renderOfficerReviewWake,
 } from '../alpha6/notifier.js'
@@ -73,5 +74,48 @@ describe('A6-PR6 notifier composition', () => {
       rootSessionId: 'root-a6-pr6',
       requestId: 'req-a6-pr6-1',
     })
+  })
+})
+
+describe('A6 root control notifier — trusted reviewer resolution', () => {
+  const legRequest = {
+    ...request,
+    approvalCaseId: 'case-a6-root-1',
+    legOrdinal: 1,
+  } as ControlRequestRecord
+
+  it('resolves the current Officer through the facts port and wakes that child session', async () => {
+    const deliver = vi.fn(async () => {})
+    const resolve = vi.fn(async () => ({ instanceId: 'inst-officer' }))
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: resolve,
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+    })
+    await notifier.notifyLeaderRequest(legRequest)
+    expect(resolve).toHaveBeenCalledWith({
+      rootSessionId: 'root-a6-pr6',
+      approvalCaseId: 'case-a6-root-1',
+      currentLegRequestId: 'req-a6-pr6-1',
+      legOrdinal: 1,
+    })
+    expect(deliver).toHaveBeenCalledWith({
+      targetSessionId: 'session-officer-child',
+      wakeId: 'review:req-a6-pr6-1',
+      text: renderOfficerReviewWake(legRequest),
+    })
+  })
+
+  it('throws instead of falling back to the Leader when no reviewer resolves', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async () => null,
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+    })
+    await expect(notifier.notifyLeaderRequest(legRequest)).rejects.toThrow(/no Leader fallback/)
+    expect(deliver).not.toHaveBeenCalled()
   })
 })
