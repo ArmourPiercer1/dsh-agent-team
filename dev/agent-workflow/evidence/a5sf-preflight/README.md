@@ -296,3 +296,54 @@ Shared contract (tracked, not in this directory):
 | ports bound | **0** (`plan.json.world.teardown.releasedPorts = []`) |
 | DSH_HOME created | 0 (plan worlds live under `tests/homes/` and are deleted; `dshHome` for the attachment store is an OS temp dir, deleted) |
 | P2-01 allocation after preflight | unchanged: 6 boots, 3 newly granted dedicated to the six-row acceptance |
+
+---
+
+## 10. Gates (all run in this worktree; raw transcripts in this directory)
+
+| gate | result | raw |
+| --- | --- | --- |
+| `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | **21/21 PASS, exit 0, `goNoGo=true`** | `dry-run.log` / `dry-run.json` |
+| all ten a5sf node suites (`node --test tests/world-factory/a5sf-*.test.mjs`) | **139/139** (17+30+12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
+| `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
+| law suites + p4t6 (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`, `p4t6-session-event-scan`), p4t6 last | **54/54, 4 files** | `law-and-p4t6.log` |
+| `pnpm typecheck` (9 projects) | pass | `typecheck.log` |
+| `pnpm build` | pass | `build.log` |
+| `node scripts/place-dist-glue.mjs` | 101 placements, byte-identical, **no dist diff** | `place-dist-glue.log` |
+| `node scripts/check-artifacts-committed.mjs` | pass (1916 compared, 101 glue) | `check-artifacts-committed.log` |
+| `node scripts/check-artifacts-at-head.mjs` | pass (1916 compared, drift 0) | `check-artifacts-at-head.log` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, `findings=0` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-ci-required.mjs` | pass, `workflows=9 findings=0` | `eb3-ci-required.log` |
+| `node scripts/eb3-ci-negative-controls.mjs` | **26/26** controls behaved as required | `eb3-negative-controls.log` |
+| `node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities` | pass (4/4 legs) | `ci-pr-gate.log` |
+| `git diff --check origin/master..HEAD` | clean (exit 0) | `git-diff-check.log` |
+| `pnpm ci:local --base origin/master` | **exit 2, `coverage=undetermined`** — see below | `ci-local.log` |
+
+### Why `ci:local` is exit 2 (deliberate, not a failure)
+
+All five steps it ran passed (`failed=0`). It returns 2 because the change adds ONE
+path it refuses to guess a blast radius for:
+
+```
+tests/world-factory/lib/a5sf-acceptance-preflight.mjs
+```
+
+That is the tool's designed answer for a **new shared test library**
+(`scripts/ci-local.mjs` header: "anything whose blast radius cannot be named (root
+configs, shared test libraries, non-CI scripts) returns `coverage=undetermined` with
+exit code 2 … Push and let L1/L2 cover it"), and its own unit test pins the identical
+answer for `tests/world-factory/lib/a5sf-harness.mjs` (`scripts/ci-local.test.mjs`
+L49–50). The library is nevertheless directly covered: its contract is imported by the
+new `tests/world-factory/a5sf-acceptance-preflight.test.mjs` (17 tests, selected and
+run by `ci:local` and by `dry-run.mjs`) and by the driver. Escaping the verdict would
+require moving the contract into the test file (worse layering) or widening
+`ci-local.mjs` (a CI-file change this evidence lane must not make); L1/L2 covers the
+remainder exactly as the tool instructs.
+
+### p4t6 tie
+
+The p4t6 scanner total is **not re-booked** by this lane: the change adds only
+`dev/**` evidence and `tests/world-factory/**` test/library files, no scanned source,
+so `tests/paths.mjs`'s `A5SF` booking and the measured tie are unchanged. The p4t6
+suite was measured **last**, after every other suite and after the evidence was on
+disk (`law-and-p4t6.log`).
