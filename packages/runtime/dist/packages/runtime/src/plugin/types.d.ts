@@ -31,6 +31,7 @@ import type { LifecycleService } from '../../lifecycle/index.js';
 import type { OverlaySlot, TeamAgentBinder } from '../../agent-setup/binder/index.js';
 import type { MutationStore, PolicyReader } from '../../mutation/index.js';
 import type { GovernanceMutationService } from '../../governance/index.js';
+import type { A5sfProductRealmDeclaration } from '../../team-services/src/product-assembly.js';
 import type { DurableModelSelection, DurableModelSelectionArgs, resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import type { DurableMcpFacet, DurableMcpFacetArgs, resolveDurableMcpFacet } from '../../agent-setup/capability/index.js';
 import type { ActivityLedger } from '../../activity/index.js';
@@ -167,16 +168,65 @@ export interface TeamPluginConfig {
      * Alpha.5 P2 WIRING (this round, optional): the JSONL path the a5sf
      * guard-consult evidence sink appends to. It comes from the RUN/evidence
      * configuration the operator boots with — the glue never derives, invents
-     * or hardcodes it. Enablement law: the wiring is active ONLY
-     * when this key is present AND the row composition provides the optional
-     * `teamA5sfRealm` service (the compiled-realm provider). Either half absent
-     * = the legacy path byte-for-byte: no provider call, no realm mount, no
-     * sink, no file write. A present non-blank string that points outside the
-     * runner's evidence directory is the operator's call — this entry does not
-     * sandbox the path, it only transports. The file's parent directory must
-     * already exist; a write failure fails the guarded call closed.
+     * or hardcodes it. Enablement law (CORRECTED 2026-11-05): the realm is
+     * enabled by THIS key (evidence round) OR by the product declaration
+     * `a5sfMemberPolicies`; with a declaration this key is only an optional
+     * observation sink. The old law ("this key AND the `teamA5sfRealm` service")
+     * made an evidence file path the only switch that turned enforcement on —
+     * exactly the product/evidence split the external review named, and the
+     * reason `a5sfMemberPolicies` exists. With NEITHER key the legacy path is
+     * byte-for-byte: no provider call, no realm mount, no sink, no file write. A
+     * present non-blank string that points outside the runner's evidence
+     * directory is the operator's call — this entry does not sandbox the path, it
+     * only transports. The file's parent directory must already exist; a write
+     * failure fails the guarded call closed.
      */
     readonly a5sfEvidencePath?: string;
+    /**
+     * PRODUCT ASSEMBLY (2026-11-05, optional and ADDITIVE): the PRODUCT-VISIBLE
+     * declaration that gives the Members it names their compiled a5sf realm
+     * (confined `fs` Provider, the two-axis lane, and — through
+     * `a5sfNativeToolModules` — the native tool shadow).
+     *
+     * WHY THIS KEY EXISTS: before it, the only enablement the product row
+     * understood was `a5sfEvidencePath` (an evidence SINK) plus a `teamA5sfRealm`
+     * service that no product code provided, so a World composed from the
+     * acceptance preset alone gave no agent a confined face — measured by the
+     * search live round. This key is the declaration that fixes that: a Member
+     * whose TEMPLATE is declared here is managed even with no evidence path, and
+     * the declaration is compiled by the ONE two-axis compiler and mounted by the
+     * ONE install/mount seam the evidence rows use.
+     *
+     * SHAPE: the closed `A5sfProductRealmDeclaration`
+     * (`team-services/src/product-assembly.ts`): `{ schema, teamId,
+     * blueprintRevision, authority: { revision, admitted }, members: [{ templateId,
+     * instanceGeneration, ceiling: <v4 memberIoCeilings[].io>, toolRestrictions?:
+     * <v4 toolBindings[] entries> }] }`. `authority` is the composition's
+     * REFERENCE to the Alpha.4 effective authority — this lane never evaluates an
+     * approval; call-time admission stays Alpha.4's.
+     *
+     * SEMANTICS:
+     *   - a TEMPLATE absent from `members` is UNMANAGED: `compiledFor` answers
+     *     `undefined`, no realm is mounted, no fact is written, the tool surface
+     *     is unchanged;
+     *   - `a5sfEvidencePath` becomes an OPTIONAL observation sink for the managed
+     *     Members; the declaration, not the path, is what enables enforcement;
+     *   - a declaration that asks for a face this realm does not own
+     *     (`executionBoundary: confined-subprocess` -> `SUBPROCESS_UNCONFINED_REALM`,
+     *     `delegated-remote` or a `network: deny` lane -> `NETWORK_UNCONFINED_REALM`)
+     *     REFUSES at row assembly rather than mounting a narrower answer; a
+     *     malformed declaration — including a `toolRestrictions` entry the shipped
+     *     v4 `toolBindings` grammar refuses, or an `authorization: deny` the realm
+     *     cannot honour (review B3/B4) — refuses with `REALM_DECLARATION_INVALID`;
+     *   - when the row carries `config.blueprintSource` for the SAME team, the
+     *     declared ceilings must be a NARROWING of the blueprint's
+     *     `memberIoCeilings[template]` on read/write/network, otherwise the row
+     *     refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` (review B2): a row-config
+     *     edit may not raise a ceiling without a new blueprint/authority revision.
+     *     A `blueprintSource` for a different team is not this Team's authority and
+     *     is not reconciled.
+     */
+    readonly a5sfMemberPolicies?: A5sfProductRealmDeclaration;
     /**
      * ROUTE C (this round, optional): the NATIVE tool modules to re-mount INSIDE
      * each Member's isolated `fs` scope, so the model-visible native

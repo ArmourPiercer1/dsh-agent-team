@@ -39,6 +39,7 @@
     "work-completion-notification",
     "policy-adapter.ts",
     "team-services/src/mount.ts",
-    "team-services/src/guard-observability.ts"
+    "team-services/src/guard-observability.ts",
+    "team-services/src/product-assembly.ts"
   ]
 }

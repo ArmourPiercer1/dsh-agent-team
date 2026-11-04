@@ -13,11 +13,17 @@
  * every refusal and every rollback stays in the seam that owns it.
  *
  * DEFAULT-PRESERVING (the law this module adds):
- *   ENABLED  IFF the row config carries a non-blank `a5sfEvidencePath` AND
- *            the row's composition supplies `a5sfRealmProvider`.
+ *   ENABLED  IFF the row config carries a non-blank `a5sfEvidencePath`
+ *            (evidence round) OR a product declaration `a5sfMemberPolicies`
+ *            (2026-11-05 — the PRODUCT path; see `product-assembly.ts`).
  *   Otherwise this module returns `undefined` WITHOUT creating a sink, calling
  *   the provider, touching the filesystem or mounting anything — the legacy
  *   path is byte-identical (no observer, no mount, no file writes).
+ *
+ *   With a product declaration, `a5sfEvidencePath` is an OPTIONAL observation
+ *   sink only: the declaration itself makes the realm REQUIRED. That is the
+ *   correction the external review asked for — an evidence file path must
+ *   never be the only switch that turns a security face on.
  *
  * The evidence path ALWAYS comes from row configuration (the run/evidence
  * config the caller boots with); it is never derived here and never hardcoded.
@@ -75,9 +81,30 @@ import { pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'
+import {
+  A5SF_MEMBER_POLICIES_KEY,
+  createProductRealmProvider,
+  parseProductRealmDeclaration,
+} from '../../../team-services/src/product-assembly.js'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
+
+/**
+ * The row-config key carrying the PRODUCT declaration that gives declared
+ * Members their compiled realm (2026-11-05).
+ *
+ * RE-EXPORTED from `team-services/src/product-assembly.ts` (one token, one
+ * parser, one compiler): this plain-JS row only forwards it. See that module
+ * for the declaration shape, the refusal vocabulary and the faces the seam
+ * does not own.
+ *
+ * ENABLEMENT LAW (superseded text below, kept accurate): the realm is enabled
+ * by `a5sfEvidencePath` (evidence round, an observation SINK) OR by this
+ * PRODUCT declaration. A declaration also accepts `a5sfEvidencePath` as an
+ * optional sink, but the sink is never what turns enforcement on.
+ */
+export { A5SF_MEMBER_POLICIES_KEY }
 
 /**
  * The row-config key carrying the NATIVE tool modules to re-mount inside each
@@ -207,10 +234,20 @@ export function a5sfToolPlaneOf(realm) {
 /**
  * Read the row's a5sf wiring out of its config.
  *
- * ABSENT (`undefined`/`null` key) = the row is not a5sf-wired at all: returns
- * `undefined`, the legacy path. PRESENT but not a non-blank string = a
+ * ENABLEMENT: at least one ENABLING key present — `a5sfEvidencePath` (the
+ * evidence sink) OR `a5sfMemberPolicies` (the product declaration). ABSENT both
+ * (`undefined`/`null`) = the row is not a5sf-wired at all: returns `undefined`,
+ * the legacy path. PRESENT but not a non-blank string (evidence path) = a
  * configuration fault (fail loudly at row assembly, never a silently disabled
  * sandbox lane).
+ *
+ * `a5sfMemberPolicies` is parsed by the ONE product parser. When the row ALSO
+ * carries `config.blueprintSource` (the Team's bound blueprint), that source is
+ * passed as the parse context so the declared ceilings are reconciled with
+ * `memberIoCeilings[template]` (review B2): a declaration that exceeds the
+ * blueprint refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` instead of mounting.
+ * When `blueprintSource` parses to a different team, no reconciliation happens
+ * (it is not this Team's authority) and both declaration forms keep working.
  *
  * `a5sfNativeToolModules`, when present, is validated here too (route C): a
  * non-array, an empty array entry, or an entry that is neither a non-blank
@@ -220,19 +257,46 @@ export function a5sfToolPlaneOf(realm) {
  * unaffected).
  *
  * @param {object|undefined|null} config - the row config.
- * @returns {{ evidencePath: string, nativeToolModules?: readonly object[] } | undefined}
- *   the frozen wiring block.
+ * @returns {{
+ *   evidencePath?: string,
+ *   memberPolicies?: object,
+ *   nativeToolModules?: readonly object[],
+ * } | undefined} the frozen wiring block: `evidencePath` only when an evidence
+ *   sink is configured, `memberPolicies` only when the product declaration is
+ *   present (the parsed plan), `nativeToolModules` only when route C declares
+ *   modules. Keys are omitted, never `undefined`-valued.
  */
 export function a5sfRealmConfigOf(config) {
-  const raw = config === undefined || config === null ? undefined : config[A5SF_EVIDENCE_PATH_KEY]
-  if (raw === undefined || raw === null) return undefined
-  if (typeof raw !== 'string' || raw.trim() === '') {
-    throw new TypeError(
-      `agent-bindings: config.${A5SF_EVIDENCE_PATH_KEY} must be a non-blank string when present (the a5sf guard-consult evidence path)`,
-    )
+  const settings = config === undefined || config === null ? undefined : config
+  const rawEvidence = settings === undefined ? undefined : settings[A5SF_EVIDENCE_PATH_KEY]
+  const rawPolicies = settings === undefined ? undefined : settings[A5SF_MEMBER_POLICIES_KEY]
+  const hasEvidence = rawEvidence !== undefined && rawEvidence !== null
+  const hasPolicies = rawPolicies !== undefined && rawPolicies !== null
+  if (!hasEvidence && !hasPolicies) return undefined
+
+  let evidencePath
+  if (hasEvidence) {
+    if (typeof rawEvidence !== 'string' || rawEvidence.trim() === '') {
+      throw new TypeError(
+        `agent-bindings: config.${A5SF_EVIDENCE_PATH_KEY} must be a non-blank string when present (the a5sf guard-consult evidence path)`,
+      )
+    }
+    evidencePath = rawEvidence
   }
-  const declarations = expectedToolsDeclarationsOf(config[A5SF_EXPECTED_TOOLS_KEY])
-  const modules = nativeToolModulesOf(config[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)
+  // PRODUCT ASSEMBLY: the declaration is parsed by the ONE product-assembly
+  // parser (typed `TeamServiceInstallError` refusals), never by this row. It is
+  // parsed even when no evidence path is configured: the declaration — not a
+  // sink path — is what makes the realm REQUIRED for the Members it names.
+  // `config.blueprintSource` rides along as the B2 reconciliation anchor; the
+  // parser ignores a blank/non-string value and a different team's blueprint.
+  const memberPolicies = hasPolicies
+    ? parseProductRealmDeclaration(rawPolicies, {
+      blueprintSource: settings === undefined ? undefined : settings.blueprintSource,
+    })
+    : undefined
+
+  const declarations = expectedToolsDeclarationsOf(settings[A5SF_EXPECTED_TOOLS_KEY])
+  const modules = nativeToolModulesOf(settings[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)
   if (declarations !== undefined) {
     // A declaration keyed by a specifier NO entry names is a typo that would
     // silently declare nothing — the exact hole this map exists to close.
@@ -246,7 +310,8 @@ export function a5sfRealmConfigOf(config) {
     }
   }
   return Object.freeze({
-    evidencePath: raw,
+    ...(evidencePath === undefined ? {} : { evidencePath }),
+    ...(memberPolicies === undefined ? {} : { memberPolicies }),
     ...(modules === undefined ? {} : { nativeToolModules: modules }),
   })
 }
@@ -421,30 +486,54 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
 }
 
 /**
- * Mount one admitted Member's compiled a5sf realm, wired to a row-configured
- * file sink — the exact call the live Member setup performs.
+ * Mount one admitted Member's compiled a5sf realm — the exact call the live
+ * Member setup performs.
  *
- * The ENABLEMENT LAW above lives here, in one place: either half of the wiring
- * absent => `undefined`, and nothing happens.
+ * TWO PROVIDER SOURCES, ONE MOUNT:
+ *   - the row's product declaration (`a5sfConfig.memberPolicies`, 2026-11-05):
+ *     `createProductRealmProvider` compiles it with the ONE compiler, so a
+ *     product-configured Member gets the SAME realm an evidence row gets;
+ *   - the composition's lazy `teamA5sfRealm` accessor (the evidence rounds).
+ * Exactly ONE may answer: two compiled-realm sources for one Member is a fork
+ * and refuses. An absent/`undefined` answer from both => `undefined`, nothing
+ * happens (the legacy path).
+ *
+ * The row-config sink is OPTIONAL: with a product declaration but no
+ * `a5sfEvidencePath`, no observer is installed at all (the installer's
+ * default-preserving path).
  *
  * @param {object} input
  * @param {object} input.root - the Cordis Context the realm installs into (the
  *   agent scope the live setup received).
- * @param {{ evidencePath: string } | undefined} input.a5sfConfig - the block
- *   `a5sfRealmConfigOf` returned.
+ * @param {{ evidencePath?: string, memberPolicies?: object } | undefined} input.a5sfConfig
+ *   - the block `a5sfRealmConfigOf` returned.
  * @param {Function | undefined} input.provider - the row's LAZY provider
  *   accessor (`() => { compiledFor } | undefined`, the glue's
  *   `deps.a5sfRealmProvider`). It is NEVER called while the row is
  *   unconfigured.
  * @param {object} input.member - the admitted member descriptor forwarded to
- *   `provider.compiledFor`.
+ *   `compiledFor`.
  * @returns {Promise<object | undefined>} the mounted realm (`dispose()` must be
  *   kept on the row), or `undefined` when not configured / nothing compiled.
  */
 export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member }) {
   if (a5sfConfig === undefined || a5sfConfig === null) return undefined
-  if (typeof provider !== 'function') return undefined
-  const resolved = provider()
+  // PRODUCT ASSEMBLY (2026-11-05): the declaration is a COMPLETE provider —
+  // `createProductRealmProvider` wraps the ONE compiler over the declaration
+  // the row already parsed. A composition that carries BOTH a declaration and
+  // a `teamA5sfRealm` service would have two compiled-realm authorities for the
+  // same Member, which is exactly the fork this lane forbids, so it refuses.
+  const fromDeclaration = a5sfConfig.memberPolicies === undefined
+    ? undefined
+    : createProductRealmProvider(a5sfConfig.memberPolicies)
+  const fromService = typeof provider === 'function' ? provider() : undefined
+  if (fromDeclaration !== undefined && fromService !== undefined && fromService !== null) {
+    throw new TypeError(
+      'agent-bindings: the row config declares `a5sfMemberPolicies` AND the composition provides the `teamA5sfRealm` service;'
+      + ' two compiled-realm sources for one Member is ambiguous — keep exactly one',
+    )
+  }
+  const resolved = fromDeclaration ?? fromService
   if (resolved === undefined || resolved === null) return undefined
   if (typeof resolved.compiledFor !== 'function') {
     throw new TypeError('agent-bindings: deps.a5sfRealmProvider must answer a { compiledFor } object when the row is a5sf-wired')
@@ -481,15 +570,20 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   }
 
   // The row's configured path, never a derived or hardcoded one. The sink owns
-  // no counter/ledger: one fact per consultation, in call order.
-  const sink = createGuardConsultFileSink({ path: a5sfConfig.evidencePath })
+  // no counter/ledger: one fact per consultation, in call order. PRODUCT MODE
+  // without a sink is the DEFAULT-PRESERVING install path: `onGuardConsult` is
+  // omitted entirely (no wrapper, no extra call), exactly as
+  // `installMemberIoProviders` documents for an unobserved realm.
+  const sink = a5sfConfig.evidencePath === undefined
+    ? undefined
+    : createGuardConsultFileSink({ path: a5sfConfig.evidencePath })
   const mountInput = {
     root,
     members: compiled.members,
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
     ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
-    onGuardConsult: (fact) => sink.record(fact),
+    ...(sink === undefined ? {} : { onGuardConsult: (fact) => sink.record(fact) }),
   }
   // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C
   // attaches the shadow LATER, through `attachA5sfNativeToolModules`, called by

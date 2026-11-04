@@ -18,8 +18,10 @@ export {
   coversLocator,
   intersectAllowLocators,
   intersectPathRuleSets,
+  laneWithinLane,
   locatorWithinRuleSet,
   toLocatorKey,
+  toPathRuleSet,
   checkWriteRequiresRead,
   WRITE_REQUIRES_READ_REFUSAL_CODES,
 } from './path-rules.js'

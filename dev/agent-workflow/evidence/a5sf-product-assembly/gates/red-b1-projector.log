@@ -1,0 +1,60 @@
+# RED (pre-fix sources; the new B1 projector arm only)
+# $(git rev-parse --short HEAD) + new test arm, sources stashed
+$ node_modules/.bin/vitest run packages/runtime/test/a5sf-member-policy.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly
+
+ ❯ packages/runtime/test/a5sf-member-policy.test.ts (17 tests | 1 failed) 97ms
+     ✓ compiles A from its own row: A’s policy never carries B’s locators 22ms
+     ✓ refuses an undeclared ceiling instead of synthesizing allow-all 4ms
+     ✓ refuses a destination-restricted network ceiling (never coerced to boolean) 3ms
+     ✓ refuses untrusted / mismatched identities and stale generations 17ms
+     ✓ write-only never implies read (the axes are independent) 2ms
+     ✓ keeps locators verbatim (directory vs single file, no normalization, order kept) 2ms
+     ✓ derives a stable, content-addressed revision (same inputs ⇒ same revision) 7ms
+     ✓ returns frozen policies (a consumer cannot widen a compiled ceiling) 2ms
+     ✓ a tool `all` lane cannot exceed the Member ceiling 4ms
+     × a mode-all restriction that carries a deny narrows read AND write (deny is never dropped) 5ms
+     ✓ the same Member’s read tool narrows further (∩, not replacement) 3ms
+     ✓ an unknown CLI gets the SAME Member ceiling (no per-tool ceiling bypass) 5ms
+     ✓ network is deny unless BOTH axes allow (deny always wins) 7ms
+     ✓ `ask` survives the intersection and is never promoted to allow 2ms
+     ✓ approvedOnce is NOT an input to the policy compiler (no widening channel exists) 5ms
+     ✓ refuses mismatched / stale invocations 4ms
+     ✓ carries the invocation identity through (auditability of one call) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-member-policy.test.ts > P1-02 · EffectiveIo = MemberCeiling ∩ ToolRestriction > a mode-all restriction that carries a deny narrows read AND write (deny is never dropped)
+AssertionError: expected 'no-additional-narrowing' to deeply equal { mode: 'all', allow: [], …(2) }
+
+- Expected:
+{
+  "allow": [],
+  "ask": [],
+  "deny": [
+    "/work/a/secret",
+  ],
+  "mode": "all",
+}
+
++ Received:
+"no-additional-narrowing"
+
+ ❯ packages/runtime/test/a5sf-member-policy.test.ts:267:34
+    265|     expect(projected.ok).toBe(true)
+    266|     if (!projected.ok) return
+    267|     expect(projected.value.read).toEqual({ mode: 'all', allow: [], ask…
+       |                                  ^
+    268|     expect(projected.value.write).toEqual({ mode: 'all', allow: [], as…
+    269|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  03:26:39
+   Duration  465ms (transform 221ms, setup 0ms, import 275ms, tests 97ms, environment 0ms)
+
+rc=1

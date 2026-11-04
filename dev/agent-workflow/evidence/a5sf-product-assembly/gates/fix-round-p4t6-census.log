@@ -1,0 +1,12 @@
+$ node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 12ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  03:33:07
+   Duration  511ms (transform 70ms, setup 0ms, import 402ms, tests 12ms, environment 0ms)
+
+rc=0

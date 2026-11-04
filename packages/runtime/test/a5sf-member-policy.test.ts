@@ -16,6 +16,7 @@ import {
   compileMemberPolicy,
   projectToolIoRestriction,
 } from '../member-io-policy/src/compile.js'
+import { locatorWithinRuleSet } from '../member-io-policy/src/path-rules.js'
 import type {
   Alpha4EffectiveAuthority,
   BoundBlueprint,
@@ -239,6 +240,63 @@ describe('P1-02 · EffectiveIo = MemberCeiling ∩ ToolRestriction', () => {
     expect(effective.value.read).toEqual(member.read)
     expect(effective.value.write).toEqual(member.write)
     expect(effective.value.network.access).toBe('allow')
+  })
+
+  it('a mode-all restriction that carries a deny narrows read AND write (deny is never dropped)', () => {
+    // Alpha.5 PRODUCT ASSEMBLY review, finding B1 (2026-11-05): a LEGAL v4 lane
+    // `{ mode: 'all', deny: [...] }` — the only form a v4 `all` lane may take,
+    // because `deny` is REQUIRED there — was projected to
+    // `'no-additional-narrowing'`, i.e. the deny was dropped and the tool could
+    // read/write everything the Member ceiling allowed, including the denied
+    // subtree. This arm is RED against that projector.
+    const member = compiled()
+    const entry = {
+      owner: 'dsh.fs',
+      name: 'read',
+      authorization: 'ask',
+      io: {
+        read: { mode: 'all', deny: ['/work/a/secret'] },
+        write: { mode: 'all', deny: ['/work/b/locked'] },
+        network: { mode: 'allow' },
+      },
+      execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' },
+    } as unknown as V4ToolBindingAuthoring
+    const projected = projectToolIoRestriction(entry)
+    expect(projected.ok).toBe(true)
+    if (!projected.ok) return
+    expect(projected.value.read).toEqual({ mode: 'all', allow: [], ask: [], deny: ['/work/a/secret'] })
+    expect(projected.value.write).toEqual({ mode: 'all', allow: [], ask: [], deny: ['/work/b/locked'] })
+
+    const effective = compileEffectiveIo(member, projected.value, invocationFor(member, projected.value))
+    expect(effective.ok).toBe(true)
+    if (!effective.ok) return
+    expect(effective.value.read).toEqual({
+      mode: 'restricted',
+      allow: ['/work/a'],
+      ask: [],
+      deny: ['/work/a/secret'],
+    })
+    expect(effective.value.write.deny).toEqual(['/work/b/locked'])
+    expect(locatorWithinRuleSet(effective.value.read, '/work/a/secret')).toBe(false)
+    expect(locatorWithinRuleSet(effective.value.write, '/work/b/locked')).toBe(false)
+    // ... and the narrowing is a deny, not a whole-lane refusal: its sibling is still served.
+    expect(locatorWithinRuleSet(effective.value.read, '/work/a/report.txt')).toBe(true)
+
+    // The empty-deny form stays the identity sentinel: it declares no path, so it
+    // can neither widen nor narrow (the pre-existing law, not weakened).
+    const identityEntry = {
+      ...entry,
+      io: {
+        read: { mode: 'all', deny: [] },
+        write: { mode: 'all', deny: [] },
+        network: { mode: 'allow' },
+      },
+    } as unknown as V4ToolBindingAuthoring
+    const identity = projectToolIoRestriction(identityEntry)
+    expect(identity.ok).toBe(true)
+    if (!identity.ok) return
+    expect(identity.value.read).toBe('no-additional-narrowing')
+    expect(identity.value.write).toBe('no-additional-narrowing')
   })
 
   it('the same Member’s read tool narrows further (∩, not replacement)', () => {

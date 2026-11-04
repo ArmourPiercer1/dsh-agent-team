@@ -1,0 +1,10 @@
+# are the two host.ts eslint errors PRE-EXISTING? lint the committed HEAD copy via stdin
+$ git show HEAD:packages/runtime/src/plugin/host.ts | node_modules/.bin/eslint --stdin --stdin-filename packages/runtime/src/plugin/host.ts
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/packages/runtime/src/plugin/host.ts
+   112:15  error  'TemplatePermissionPolicy' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3311:15  error  Empty block statement                                                                       no-empty
+
+✖ 2 problems (2 errors, 0 warnings)
+
+rc=1

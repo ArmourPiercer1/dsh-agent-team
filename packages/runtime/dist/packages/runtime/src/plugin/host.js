@@ -1592,12 +1592,15 @@ export async function apply(ctx, config) {
             // strict ctx.get('fs') global-store read — see the accessor's
             // rationale). Additive optional dep: never in the hard inject array.
             fsBackend,
-            // Alpha.5 P2 WIRING (this round): the LAZY compiled-realm provider. The
-            // a5sf realm is reachable from the product row ONLY through this accessor
-            // + `config.a5sfEvidencePath` (both required); no service = the legacy
-            // path. Read per setup call via the strict ctx.get (the jobs/agentPresets
-            // accessor pattern), so the providing row may apply after this one.
-            // Additive optional dep: never in the hard inject array.
+            // Alpha.5 P2 WIRING + PRODUCT ASSEMBLY (2026-11-05): the LAZY compiled-realm
+            // provider. The a5sf realm is reachable from the product row in ONE of two
+            // ways, and the row's enablement law is `a5sfMemberPolicies` (the product
+            // declaration, which needs NO provider) OR `config.a5sfEvidencePath` (the
+            // evidence sink, which needs this accessor behind it). With NEITHER the row
+            // returns undefined before touching this accessor: the legacy path. Read
+            // per setup call via the strict ctx.get (the jobs/agentPresets accessor
+            // pattern), so the providing row may apply after this one. Additive
+            // optional dep: never in the hard inject array.
             a5sfRealmProvider: () => ctx.get('teamA5sfRealm'),
             // strict-read + core-spill (Phase D/E): the shared artifact-authority
             // reference (filled by the bootstrap after the authority is

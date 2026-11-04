@@ -1,0 +1,16 @@
+$ node_modules/.bin/vitest run packages/runtime/test/a5sf-member-policy.test.ts packages/runtime/test/a5sf-service-install.test.ts packages/runtime/test/a5sf-provider-composition.test.ts packages/runtime/test/a5sf-bl16-grep-realm.test.ts packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly
+
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 22ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 62ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 78ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (17 tests) 132ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (6 tests) 880ms
+
+ Test Files  5 passed (5)
+      Tests  52 passed (52)
+   Start at  03:32:50
+   Duration  1.46s (transform 1.05s, setup 0ms, import 1.50s, tests 1.17s, environment 1ms)
+
+rc=0

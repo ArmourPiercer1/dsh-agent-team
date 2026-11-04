@@ -1,0 +1,278 @@
+/**
+ * The SHIPPING v4 authoring→internal mapping tables (VNEXT-SCHEMA-ADR §1 B3
+ * mapping laws, M-2 "mapping tables"). Pure data + pure composition over the
+ * frozen DEFAULT-DENY engine (`field-mapping.ts`) — no I/O, no clock.
+ *
+ * Shape of the composition: the ENGINE owns each closed lane record (exact
+ * cover both ways: every source leaf mapped, every map source present); a
+ * thin WRAPPER owns the closed GROUPING (entry → core + three lanes +
+ * execution), and it refuses with the SAME closed code vocabulary. A key the
+ * tables do not name is therefore refused at every level — there is no
+ * branch of this file that drops an unmapped field.
+ *
+ * Resource declarations: RESTRICTED lanes list concrete locators, so each
+ * list item becomes one resource DECLARATION candidate
+ * `{lane, disposition, locator, inferredKind, rights}` (the schema phase
+ * stays ZERO-NORMALIZATION — B5/NRM-1: canonicalization to a canonical
+ * ResourceRef is the trusted provider's step, and `parseResourceRef` stays
+ * the single parser that turns one into a `ResourceRef`; test a5sr3 pins
+ * every filesystem candidate through it). A mode-`all` lane declares NO
+ * locator on purpose: emitting a synthesized realm-root locator would be a
+ * migration INVENTING a resource; the mode flag alone carries the
+ * declaration and the trusted assembly instantiates the realm.
+ *
+ * @module @dsh-agent-team/domain/vnext-field-mapping/v4-authoring-map
+ */
+import { declareFieldMapping, projectThroughMap } from './field-mapping.js';
+function checked(label, decl, failures) {
+    if (decl.ok)
+        return decl.map;
+    failures.push(`${label}: ${decl.code}`);
+    return null;
+}
+/**
+ * Declare every v4 authoring map. Declaration-time law: a collision or a
+ * malformed path here is a refusal of the WHOLE table set (partial tables
+ * must never exist).
+ */
+export function declareV4AuthoringMaps() {
+    const failures = [];
+    const core = checked('core', declareFieldMapping([
+        { sourcePath: 'owner', targetKey: 'authoringOwner' },
+        { sourcePath: 'name', targetKey: 'toolName' },
+        { sourcePath: 'authorization', targetKey: 'authorization' },
+    ]), failures);
+    const execution = checked('execution', declareFieldMapping([
+        { sourcePath: 'implementationOrigin', targetKey: 'implementationOrigin' },
+        { sourcePath: 'executionBoundary', targetKey: 'executionBoundary' },
+    ]), failures);
+    const rwAll = checked('rw.all', declareFieldMapping([
+        { sourcePath: 'mode', targetKey: 'mode' },
+        { sourcePath: 'deny', targetKey: 'deny' },
+    ]), failures);
+    const rwRestricted = checked('rw.restricted', declareFieldMapping([
+        { sourcePath: 'mode', targetKey: 'mode' },
+        { sourcePath: 'allow', targetKey: 'allow' },
+        { sourcePath: 'ask', targetKey: 'ask' },
+        { sourcePath: 'deny', targetKey: 'deny' },
+    ]), failures);
+    const networkAllow = checked('network.allow', declareFieldMapping([{ sourcePath: 'mode', targetKey: 'mode' }]), failures);
+    const networkRestricted = checked('network.restricted', declareFieldMapping([
+        { sourcePath: 'mode', targetKey: 'mode' },
+        { sourcePath: 'allow', targetKey: 'allow' },
+        { sourcePath: 'ask', targetKey: 'ask' },
+        { sourcePath: 'deny', targetKey: 'deny' },
+        { sourcePath: 'default', targetKey: 'default' },
+    ]), failures);
+    const networkDeny = checked('network.deny', declareFieldMapping([
+        { sourcePath: 'mode', targetKey: 'mode' },
+        { sourcePath: 'default', targetKey: 'default' },
+    ]), failures);
+    if (core === null || execution === null || rwAll === null || rwRestricted === null || networkAllow === null || networkRestricted === null || networkDeny === null) {
+        return { ok: false, code: 'invalid-path', detail: `v4 authoring tables refused at declaration: ${failures.join('; ')}`, fields: failures };
+    }
+    return {
+        ok: true,
+        maps: Object.freeze({
+            core,
+            execution,
+            rwByMode: Object.freeze({ all: rwAll, restricted: rwRestricted }),
+            networkByMode: Object.freeze({ allow: networkAllow, restricted: networkRestricted, deny: networkDeny }),
+        }),
+    };
+}
+function reject(code, detail, fields) {
+    return { ok: false, code, detail, fields };
+}
+function isRec(v) {
+    return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+const LANE_RIGHT = Object.freeze({
+    read: Object.freeze(['read']),
+    write: Object.freeze(['write']),
+    network: Object.freeze(['connect']),
+});
+function inferKind(lane, locator) {
+    if (lane === 'network')
+        return 'network-destination';
+    if (locator.startsWith('~/'))
+        return 'realm-home';
+    if (locator.startsWith('/') || /^[A-Za-z]:[\\/]/.test(locator))
+        return 'absolute-path';
+    return 'workspace';
+}
+function declarationsFor(lane, projected) {
+    const out = [];
+    for (const disposition of ['allow', 'ask', 'deny']) {
+        const list = projected[disposition];
+        if (!Array.isArray(list))
+            continue; // mode:all lanes carry no locator lists BY LAW (see module header)
+        for (const locator of list) {
+            if (typeof locator !== 'string')
+                continue;
+            out.push(Object.freeze({ lane, disposition, locator, inferredKind: inferKind(lane, locator), rights: LANE_RIGHT[lane], canonical: false }));
+        }
+    }
+    return out;
+}
+/**
+ * Project one authoring `toolBindings` entry through the shipped v4 tables.
+ * Default-deny at BOTH levels: the wrapper refuses keys outside the closed
+ * grouping, the engine refuses keys outside each lane map, and every mapped
+ * source must be PRESENT (no implicit defaults).
+ */
+export function projectV4ToolBindingAuthoring(maps, entry) {
+    if (!isRec(entry))
+        return reject('unmapped-source-field', 'a toolBindings entry must be a record before any map applies', ['$']);
+    const ENTRY_KEYS = ['owner', 'name', 'authorization', 'io', 'execution'];
+    for (const key of Object.keys(entry)) {
+        if (!ENTRY_KEYS.includes(key))
+            return reject('unmapped-source-field', `entry key '${key}' has no v4 mapping and is never dropped silently`, [key]);
+    }
+    const missing = ENTRY_KEYS.filter((key) => !Object.hasOwn(entry, key));
+    if (missing.length > 0)
+        return reject('missing-source-field', 'declared entries map with no implicit defaults', missing);
+    const core = projectThroughMap(maps.core, { owner: entry['owner'], name: entry['name'], authorization: entry['authorization'] });
+    if (!core.ok)
+        return core;
+    const execution = projectThroughMap(maps.execution, entry['execution']);
+    if (!execution.ok)
+        return { ...execution, fields: execution.fields.map((f) => `execution.${f}`) };
+    if (!isRec(entry['io']))
+        return reject('unmapped-source-field', 'io must be a record of the three closed lanes', ['io']);
+    const io = entry['io'];
+    const IO_KEYS = ['read', 'write', 'network'];
+    for (const key of Object.keys(io)) {
+        if (!IO_KEYS.includes(key))
+            return reject('unmapped-source-field', `io key '${key}' has no v4 mapping and is never dropped silently`, [`io.${key}`]);
+    }
+    const ioMissing = IO_KEYS.filter((key) => !Object.hasOwn(io, key));
+    if (ioMissing.length > 0)
+        return reject('missing-source-field', 'all three io lanes are declared when io is declared', ioMissing.map((k) => `io.${k}`));
+    const laneResults = {};
+    for (const lane of ['read', 'write']) {
+        const laneValue = io[lane];
+        if (!isRec(laneValue))
+            return reject('unmapped-source-field', `io.${lane} must be a record with an explicit mode`, [`io.${lane}`]);
+        const mode = laneValue['mode'];
+        if (mode !== 'all' && mode !== 'restricted') {
+            // Default deny: no map exists for an undeclared mode value — the
+            // table set is closed, so there is nothing to project through.
+            return reject('unmapped-source-field', `mode '${String(mode)}' selects no declared rw variant`, [`io.${lane}.mode`]);
+        }
+        const projected = projectThroughMap(maps.rwByMode[mode], laneValue);
+        if (!projected.ok)
+            return { ...projected, fields: projected.fields.map((f) => `io.${lane}.${f}`) };
+        laneResults[lane] = projected.value;
+    }
+    {
+        const laneValue = io['network'];
+        if (!isRec(laneValue))
+            return reject('unmapped-source-field', 'io.network must be a record with an explicit mode', ['io.network']);
+        const mode = laneValue['mode'];
+        if (mode !== 'allow' && mode !== 'restricted' && mode !== 'deny') {
+            return reject('unmapped-source-field', `mode '${String(mode)}' selects no declared network variant`, ['io.network.mode']);
+        }
+        const projected = projectThroughMap(maps.networkByMode[mode], laneValue);
+        if (!projected.ok)
+            return { ...projected, fields: projected.fields.map((f) => `io.network.${f}`) };
+        laneResults['network'] = projected.value;
+    }
+    const resourceDeclarations = [
+        ...declarationsFor('read', laneResults['read']),
+        ...declarationsFor('write', laneResults['write']),
+        ...declarationsFor('network', laneResults['network']),
+    ];
+    return Object.freeze({
+        ok: true,
+        value: Object.freeze({
+            ...core.value,
+            io: Object.freeze({ read: laneResults['read'], write: laneResults['write'], network: laneResults['network'] }),
+            execution: execution.value,
+            resourceDeclarations: Object.freeze(resourceDeclarations),
+        }),
+    });
+}
+const MEMBER_CEILING_ENTRY_KEYS = ['templateId', 'io'];
+const MEMBER_CEILING_IO_KEYS = ['read', 'write', 'network'];
+function projectCeilingLane(maps, lane, value, fields) {
+    if (!isRec(value))
+        return reject('unmapped-source-field', `io.${lane} must be a record with an explicit mode`, [...fields, `io.${lane}`]);
+    const mode = value['mode'];
+    if (mode !== 'all' && mode !== 'restricted') {
+        return reject('unmapped-source-field', `mode '${String(mode)}' selects no declared rw variant`, [...fields, `io.${lane}.mode`]);
+    }
+    return projectThroughMap(maps.rwByMode[mode], value);
+}
+/**
+ * Project one `memberIoCeilings` entry through the SAME shipped v4 tables.
+ * Default-deny at every level: keys outside the closed grouping or lane maps
+ * are refused, and every mapped source must be PRESENT.  The returned value
+ * is deeply frozen so a consumer cannot mutate a ceiling into a wider one.
+ */
+export function projectV4MemberIoCeiling(maps, entry) {
+    if (!isRec(entry))
+        return reject('unmapped-source-field', 'a memberIoCeilings entry must be a record before any map applies', ['$']);
+    for (const key of Object.keys(entry)) {
+        if (!MEMBER_CEILING_ENTRY_KEYS.includes(key)) {
+            return reject('unmapped-source-field', `entry key '${key}' has no member-ceiling mapping and is never dropped silently`, [key]);
+        }
+    }
+    const missing = MEMBER_CEILING_ENTRY_KEYS.filter((key) => !Object.hasOwn(entry, key));
+    if (missing.length > 0)
+        return reject('missing-source-field', 'a declared Member ceiling maps with no implicit defaults', missing);
+    const templateId = entry['templateId'];
+    if (typeof templateId !== 'string' || templateId.trim() === '') {
+        return reject('unmapped-source-field', 'templateId must be a non-empty string (the validated grammar owns the closed-reference check)', ['templateId']);
+    }
+    const ioRaw = entry['io'];
+    if (!isRec(ioRaw))
+        return reject('unmapped-source-field', 'io must be a record of the three closed lanes', ['io']);
+    for (const key of Object.keys(ioRaw)) {
+        if (!MEMBER_CEILING_IO_KEYS.includes(key)) {
+            return reject('unmapped-source-field', `io key '${key}' has no member-ceiling mapping and is never dropped silently`, [`io.${key}`]);
+        }
+    }
+    const ioMissing = MEMBER_CEILING_IO_KEYS.filter((key) => !Object.hasOwn(ioRaw, key));
+    if (ioMissing.length > 0)
+        return reject('missing-source-field', 'all three io lanes are declared when io is declared', ioMissing.map((k) => `io.${k}`));
+    const read = projectCeilingLane(maps, 'read', ioRaw['read'], []);
+    if (!read.ok)
+        return { ...read, fields: read.fields.map((f) => (f === 'io.read' ? f : `io.read.${f}`)) };
+    const write = projectCeilingLane(maps, 'write', ioRaw['write'], []);
+    if (!write.ok)
+        return { ...write, fields: write.fields.map((f) => (f === 'io.write' ? f : `io.write.${f}`)) };
+    const networkRaw = ioRaw['network'];
+    if (!isRec(networkRaw))
+        return reject('unmapped-source-field', 'io.network must be a record with an explicit mode', ['io.network']);
+    const networkMode = networkRaw['mode'];
+    if (networkMode !== 'allow' && networkMode !== 'restricted' && networkMode !== 'deny') {
+        return reject('unmapped-source-field', `mode '${String(networkMode)}' selects no declared network variant`, ['io.network.mode']);
+    }
+    const network = projectThroughMap(maps.networkByMode[networkMode], networkRaw);
+    if (!network.ok)
+        return { ...network, fields: network.fields.map((f) => (f === 'io.network' ? f : `io.network.${f}`)) };
+    const io = Object.freeze({
+        read: Object.freeze({ ...read.value }),
+        write: Object.freeze({ ...write.value }),
+        network: Object.freeze({ ...network.value }),
+    });
+    const resourceDeclarations = Object.freeze([
+        ...declarationsFor('read', read.value),
+        ...declarationsFor('write', write.value),
+        ...declarationsFor('network', network.value),
+    ]);
+    const networkCeiling = networkMode === 'restricted'
+        ? Object.freeze({ kind: 'unsupported', declaredMode: 'restricted', reason: 'network-destination-restricted-not-enforced' })
+        : Object.freeze({ kind: 'boolean', access: networkMode, declaredMode: networkMode });
+    return Object.freeze({
+        ok: true,
+        value: Object.freeze({
+            templateId,
+            io,
+            networkCeiling,
+            resourceDeclarations,
+        }),
+    });
+}
+//# sourceMappingURL=v4-authoring-map.js.map

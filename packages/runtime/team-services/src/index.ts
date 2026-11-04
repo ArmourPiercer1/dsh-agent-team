@@ -59,6 +59,27 @@ export type {
   MountA5sfRealmInput,
   MountedA5sfRealm,
 } from './mount.js'
+/**
+ * PRODUCT ASSEMBLY (2026-11-05): the product-visible declaration
+ * (`config.a5sfMemberPolicies`) that gives a declared Member its compiled
+ * realm through the SAME install/mount seams the evidence rows use. See
+ * `product-assembly.ts` for the declaration shape, the refusal vocabulary and
+ * the faces this lane deliberately does not own.
+ */
+export {
+  A5SF_MEMBER_POLICIES_KEY,
+  A5SF_PRODUCT_REALM_SCHEMA,
+  createProductRealmProvider,
+  parseProductRealmDeclaration,
+} from './product-assembly.js'
+export type {
+  A5sfProductCompiledAnswer,
+  A5sfProductManagedMember,
+  A5sfProductMemberDeclaration,
+  A5sfProductRealmDeclaration,
+  A5sfProductRealmPlan,
+  A5sfProductRealmProvider,
+} from './product-assembly.js'
 export {
   createGuardConsultFileSink,
   GUARD_ALLOW_DECIDED_BY,

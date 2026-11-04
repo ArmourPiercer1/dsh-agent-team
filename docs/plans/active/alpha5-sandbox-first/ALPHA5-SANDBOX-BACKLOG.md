@@ -68,6 +68,37 @@
 > 5. **boot 排序调整**：① 1 次 boot 完成 F1 实体验证（Team Tool Plane 拒绝并记录 consulted；原生 read 仍走 Base——这是**旁路基线记录**，不是验收成功）；② 优先复核 BL-22 路线 C；③ 原生工具 × ToolBinding 实际绑定；④ 之后才做 P2-01/02/03 的 C2 验收。**当前 3 次 F1 预算只用 1 次**，其余转入路线 C 与绑定验收。
 > 6. **风险趋势**：若连续多轮只完善 Team 自有工具面而原生工具仍走 Base，会重新形成两套执行体系 —— 这正是 Sandbox-First 要避免的。**下一轮的首要工作是把原生工具接入真实产品执行路径。**
 >
+> **P2 统一前置 — 2026-11-05 审查修复轮（PR #590；B1–B8，本条不新增条目）**：外部审查在**机制层**复现一个
+> 阻断缺陷（B1）：`projectToolIoRestriction` 把合法 v4 `{mode:'all', deny:[…]}` 塌缩为
+> `'no-additional-narrowing'`，deny 被丢弃、realm 服务被拒路径（实测 `readText(secret)` 成功）。已修
+> （只有 deny 为空的 all lane 才是恒等元）并在投影层 + realm 层各加回归臂（矩阵 §0 已同步）。同轮按协调
+> 裁决落地：**B2** 行内 `config.blueprintSource`（同队）对声明天花板做逐轴 narrowing 对账，越界以新增
+> `REALM_DECLARATION_EXCEEDS_BLUEPRINT` 拒绝（§9 的 embedded-vs-derived 决定**仍未定**，但现在只关乎
+> 重复书写，不再是加宽通道）；**B3** `authorization` 按 shipped 枚举校验、`deny` 拒绝而非挂载（文档化选择）；
+> **B4** `toolRestrictions` 走 shipped v4 `toolBindings` 校验（缺陷按路径点名）；**B5** `teamId`/
+> `blueprintRevision`/`instanceGeneration` 记录为 declared-not-bound；**B6** 陈旧注释/README 措辞修正；
+> **B7** 产品套件入列 CI（workflow + eb3-ci-manifest 腿，`eb3-ci-required` pass）；**B8** contentHash/revision
+> 覆盖 bindings。证据 = `dev/agent-workflow/evidence/a5sf-product-assembly/README.md` §10（含 RED 日志与逐项门）。
+>
+> **P2 统一前置 — 2026-11-05 状态（缺口 a 的产品半场已补；本条不新增条目）**：外部审查指出的「新系统基本建在
+> acceptance profile 里，产品装配尚未消费它」已按**产品可见声明**处理：Team 行 config 新增 `a5sfMemberPolicies`
+> （`packages/runtime/team-services/src/product-assembly.ts`；声明即受管、未声明模板走原路径），挂载仍走**同一个**
+> `mountMemberA5sfRealm` → `mountA5sfRealm` → `installMemberIoProviders`/`installToolBindingRealm`，编译仍走
+> **同一个** `compileMemberPolicy`/`compileEffectiveIo`（无第二套评审、无 forked policy）。因此：
+> - （1）**已闭合（产品侧）**：glue 早已接线，缺的是产品可声明的 provider；现在声明面本身就是产品调用者，且
+>   `a5sfEvidencePath` 不再是唯一开关（有声明时它只是可选 sink）。证据=`dev/agent-workflow/evidence/a5sf-product-assembly/README.md`
+>   （PA1 声明即挂载 / PA2 受管-非受管判别对 / PA3 交集双向 / PA5 证据路径回归）。
+> - （2）**已闭合**：`tsconfig.build.json` 增加 `team-services/src/product-assembly.ts`（其 `member-io-policy/src/compile.ts`
+>   等依赖由 tsc 传递发射）；无需新增 `scripts/dist-placements` 条目（新增文件是 `.ts`，由 tsc 直接发射）。
+> - （3）**已闭合**：`packages/runtime/dist` 在同一 commit 重新生成并提交（含传递产物 `member-io-policy/src/*` 与
+>   `domain/vnext-field-mapping/*`），过 `check-artifacts-committed` 与 `check-artifacts-at-head`。
+> - （4）**仍开放**：真实 Host 运行 = `live` 半场（boot 池仍 0，本轮**未 boot、未启动、未碰 :3080**）；另有**产品 config
+>   不可表达**的残差，按要求**拒绝而非假装支持**——confined `subprocess`/search face（需组合提供 P1-07
+>   `ConfinedProcessProvider` + launcher pin；声明 `executionBoundary=confined-subprocess` 在**组合期**以
+>   `SUBPROCESS_UNCONFINED_REALM` 拒绝）、网络轴收窄（realm 无 web face → `NETWORK_UNCONFINED_REALM`）。
+>   **本仓库无任何 shipped composition/preset 声明 `a5sfMemberPolicies`**，故 preset-only World 仍无受限面
+>   （`evidence/a5sf-search-live/README.md` §4 F2 结论不变）。
+>
 > **P2 统一前置（2026-11-03 实测；PR #548 后状态更新）**：缺口（b）「guard 咨询不可观测」已作为**机制**闭合（`onGuardConsult` 观察者 + `a5sf-guard-consult/1` 事实 + 跨进程 JSONL 传输 + `mountA5sfRealm` 单一挂载入口，子进程pid 证明真实跨进程）；缺口（a）**部分闭合**：入口存在且被真实调用者（R2 harness）使用，但产品行仍未接线。剩余工作已实测为**多于一个调用点**：（1）`packages/runtime/src/plugin/live/agent-bindings.mjs` 成员装配回调接线；（2）emit 入列（`packages/runtime/tsconfig.build.json` 目前 **不含** `team-services/src` 与 `member-io-policy/src`）+ `scripts/dist-placements` 布局；（3）重新生成并**提交** `packages/runtime/dist`（该树受 `check-artifacts-committed` 新鲜度门约束）；（4）真实 Host 运行 + 用户 boot 预算裁决（池仍 0）。
 >
 > 原缺口描述（2026-11-03 首测）：所有 P2 纵切的真实 Host 半场都被同一对缺口卡住 ——（a）`installMemberIoProviders`/`installToolBindingRealm` **没有生产调用者**，a5sf realm 在已启动 Host 中是惰性的；（b）`installToolBindingRealm` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点向上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 断言的“经 Provider 读取/guard 已咨询”都只是 driver 自述。boot 预算池仍为 0，live 运行需用户新裁。
