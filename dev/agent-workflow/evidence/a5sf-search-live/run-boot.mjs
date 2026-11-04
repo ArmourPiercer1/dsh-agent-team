@@ -63,7 +63,7 @@ import {
   tcpConnectProbe,
 } from '../../../../tests/world-factory/lib/world-factory.mjs'
 import {
-  createRunRecord, formatSummary, overallVerdict, readAuthorityBinding,
+  createRunRecord, formatSummary, readAuthorityBinding,
 } from '../../../../tests/world-factory/lib/run-record.mjs'
 import { TEST_USE_BASELINE_SHA } from '../../../../tests/paths.mjs'
 import { createA5sfHarness } from '../../../../tests/world-factory/lib/a5sf-harness.mjs'
@@ -76,7 +76,8 @@ import {
   classifyDisposeFaults, P2_01_ACCEPTANCE_ROOTS, assertAcceptanceRootWiring,
 } from '../../../../tests/world-factory/lib/a5sf-acceptance-preflight.mjs'
 import {
-  SEARCH_CASES, SEARCH_CASE_IDS, judgeNegativeControl, judgeSearchRow, toRunVerdict,
+  SEARCH_CASES, SEARCH_CASE_IDS, judgeCase, judgeNegativeControl, judgeSearchRow,
+  sampleCompleteness, summarizeRun,
 } from '../../../../tests/world-factory/lib/a5sf-search-live.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -157,6 +158,7 @@ const CALL_IDS = Object.freeze({
 const PLAN_ONLY = process.argv.includes('--plan')
 const RULING_PATH = join(dirname(fileURLToPath(import.meta.url)), 'lane-ruling.json')
 const PLAN_ROWS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'plan-rows.json')
+const PLAN_PATHS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'plan-paths.json')
 
 /**
  * The handoff, in ONE place so `--plan` and `boot()` cannot diverge.
@@ -219,10 +221,14 @@ async function waitForComposedProfile(world, expectedRowIds, timeoutMs) {
 /** Read the lane's ruling file: how many starts are authorised, and by whom. */
 function readRuling() {
   const ruling = JSON.parse(readFileSync(RULING_PATH, 'utf8'))
-  const starts = Number(ruling.authorisedStarts)
-  if (!Number.isFinite(starts) || starts < 1) throw new Error(`lane-ruling.json has no usable authorisedStarts: ${String(ruling.authorisedStarts)}`)
-  if (!Array.isArray(ruling.rulings) || ruling.rulings.reduce((sum, row) => sum + Number(row?.starts ?? 0), 0) !== starts) {
-    throw new Error('lane-ruling.json: the ruling entries do not sum to authorisedStarts — a start must name who granted it')
+  // The NAMED entries are the authorisation; `authorisedStarts` is the frozen ORIGINAL
+  // allocation that a re-grant may never edit (it appends an entry instead).
+  if (!Array.isArray(ruling.rulings) || ruling.rulings.length === 0) throw new Error('lane-ruling.json: no ruling entries')
+  const starts = ruling.rulings.reduce((sum, row) => sum + Number(row?.starts ?? 0), 0)
+  if (!Number.isFinite(starts) || starts < 1) throw new Error(`lane-ruling.json has no usable ruling entries: ${JSON.stringify(ruling.rulings)}`)
+  const declared = Number(ruling.authorisedStarts)
+  if (!Number.isFinite(declared) || declared < 1 || declared > starts) {
+    throw new Error(`lane-ruling.json: authorisedStarts=${String(ruling.authorisedStarts)} must be >= 1 and <= the ${String(starts)} named start(s) — a re-grant appends an entry, it never edits the frozen number`)
   }
   for (const row of ruling.rulings) {
     if (String(row?.by ?? '') === '' || String(row?.reason ?? '') === '') throw new Error('lane-ruling.json: every ruling needs `by` and `reason`')
@@ -378,7 +384,19 @@ function teamRowConfig({ home }) {
     seamUrl,
     // ── route C enablement: the sink + the two native tool modules ──────────
     a5sfEvidencePath: join(home, 'a5sf-consult.jsonl'),
-    a5sfNativeToolModules: [pathToFileURL(HOST_TOOL_FS).href, pathToFileURL(HOST_TOOL_FS_SEARCH).href],
+    // The search module's Config REQUIRES `sampleOverCapGlobResults` (no default),
+    // so a bare string entry mounts it with an empty config and the product
+    // refuses the realm install:
+    //   SERVICE_MOUNT_FAILED: native tool module re-mount failed: invalid config:
+    //   $.sampleOverCapGlobResults missing required value
+    // (captured verbatim in delegate-artifact.json, 2026-11-04T19:05Z). False is
+    // the deterministic choice: an over-cap glob page keeps the modification-time
+    // head instead of sampling across top-level entries, so row 1 and row 5 do not
+    // depend on sampling. `tool-fs` keeps the string form: its config is defaulted.
+    a5sfNativeToolModules: [
+      pathToFileURL(HOST_TOOL_FS).href,
+      { url: pathToFileURL(HOST_TOOL_FS_SEARCH).href, config: { sampleOverCapGlobResults: false } },
+    ],
     // The identity declaration: grants nothing, but the attach REFUSES before
     // any row if the settled fibers do not forward every declared name.
     a5sfExpectedTools: {
@@ -406,7 +424,13 @@ function rowPathsOf({ home, workspaceDir }) {
      *  out-of-lane operand. */
     globDir: join(inLane, 'glob'),
     restrictedFile: join(workspace, 'lane', 'outside-restriction.txt'),
-    fifo: join(workspace, 'lane', 'blocking.fifo'),
+    // The FIFO must sit INSIDE the effective read lane (`lane/inside`), because the
+    // tool restriction narrows reads to that subtree. At `lane/blocking.fifo` the
+    // guard refused it (fact: deny IO_READ_DENIED), no confined spawn ever happened,
+    // the cancellation window never opened and the run aborted with
+    // CANCELLATION_WINDOW_NO_CONFINED_SPAWN after 240 s (2026-11-04T19:17Z). The
+    // window needs an ADMITTED search that then blocks, so the operand must be legal.
+    fifo: join(inLane, 'blocking.fifo'),
     outsideDir: join(home, 'ceiling-outside'),
     outsideFile: join(home, 'ceiling-outside', 'secret.txt'),
     outsideGlobDir: join(home, 'ceiling-outside-glob'),
@@ -553,6 +577,26 @@ function countAssistantToolUses(req, name) {
   }
   return n
 }
+/**
+ * The tool results the transcript carries, by `tool_use_id`.
+ *
+ * WHY THIS EXISTS (2026-11-04T18:58Z run): counting ASSISTANT tool_use blocks does
+ * not survive this harness's follow-up requests — the assistant echo is not there,
+ * so every turn's counter stayed 0 and the mock re-issued the same call. Each turn
+ * then burned its full 120 s settle timeout and issued a DUPLICATE tool call (two
+ * rg spawns 121 s apart). Tool RESULTS are present and are keyed by id, so the
+ * mock now decides on what it has actually been told back.
+ */
+function resultIdsOf(req) {
+  const ids = new Set()
+  for (const message of messagesOf(req)) {
+    if (!Array.isArray(message?.content)) continue
+    for (const block of message.content) {
+      if (block?.type === 'tool_result' && block?.tool_use_id !== undefined) ids.add(String(block.tool_use_id))
+    }
+  }
+  return ids
+}
 function userTextOf(req) {
   return messagesOf(req).filter((m) => m?.role === 'user')
     .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? ''))).join('\n')
@@ -588,28 +632,21 @@ function makeDecide({ rowPaths, claims }) {
 
     // ── MEMBER LANE ────────────────────────────────────────────────────────
     if (userText.includes(`${MEMBER_ENVELOPE}${TOK_D1}`)) {
-      const greps = countAssistantToolUses(req, 'grep')
-      const globs = countAssistantToolUses(req, 'glob')
-      if (greps < 1) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepIn, name: 'grep', arguments: { pattern: claims.needle, path: rowPaths.inLaneDir } }] }
-      }
-      if (greps < 2) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideCeiling, name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
-      }
-      if (greps < 3) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideRestriction, name: 'grep', arguments: { pattern: claims.restrictedPattern, path: rowPaths.restrictedFile } }] }
-      }
-      if (greps < 4) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepInvalid, name: 'grep', arguments: { pattern: 'A5SF_(', path: rowPaths.invalidDir } }] }
-      }
-      if (globs < 1) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globIn, name: 'glob', arguments: { pattern: 'needle.txt', path: rowPaths.globDir } }] }
-      }
-      if (globs < 2) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globOutside, name: 'glob', arguments: { pattern: 'secret.txt', path: rowPaths.outsideGlobDir } }] }
-      }
-      if (greps < 5) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepFifo, name: 'grep', arguments: { pattern: claims.fifoPattern, path: rowPaths.fifo } }] }
+      // Sequenced by TOOL RESULTS (ids), not by assistant tool_use counts: this
+      // harness does not echo the assistant tool_use block back, so a counter over
+      // them never advances and the mock would re-issue call #1 forever.
+      const seen = resultIdsOf(req)
+      const chain = [
+        [CALL_IDS.grepIn, 'grep', { pattern: claims.needle, path: rowPaths.inLaneDir }],
+        [CALL_IDS.grepOutsideCeiling, 'grep', { pattern: claims.outsidePattern, path: rowPaths.outsideDir }],
+        [CALL_IDS.grepOutsideRestriction, 'grep', { pattern: claims.restrictedPattern, path: rowPaths.restrictedFile }],
+        [CALL_IDS.grepInvalid, 'grep', { pattern: 'A5SF_(', path: rowPaths.invalidDir }],
+        [CALL_IDS.globIn, 'glob', { pattern: 'needle.txt', path: rowPaths.globDir }],
+        [CALL_IDS.globOutside, 'glob', { pattern: 'secret.txt', path: rowPaths.outsideGlobDir }],
+        [CALL_IDS.grepFifo, 'grep', { pattern: claims.fifoPattern, path: rowPaths.fifo }],
+      ]
+      for (const [id, name, args] of chain) {
+        if (!seen.has(id)) return { kind: 'tool-call', toolCalls: [{ id, name, arguments: args }] }
       }
       return { kind: 'text', content: `${DONE_D1} ${lastToolResultText(req).slice(0, 160)}` }
     }
@@ -623,31 +660,21 @@ function makeDecide({ rowPaths, claims }) {
     // needle; the counter records `base-spawn-failed` with the Node cause, so a
     // failure here is attributable instead of a bare "ripgrep launch failed".
     if (lastUser.includes(MK_PROBE)) {
-      // Count only the greps this probe issued: the control turn already put a
-      // grep in the transcript (with a DIFFERENT path), so a name-only count
-      // would answer immediately and the probe would look for a call nobody made.
-      const greps = messagesOf(req)
-        .filter((m) => m?.role === 'assistant' && Array.isArray(m?.content))
-        .flatMap((m) => m.content)
-        .filter((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === rowPaths.inLaneDir).length
-      if (greps < 1) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-probe')) {
         return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-probe', name: 'grep', arguments: { pattern: claims.needle, path: rowPaths.inLaneDir } }] }
       }
       return { kind: 'text', content: 'A5SF_SEARCH_PROBE_DONE' }
     }
 
     if (lastUser.includes(MK_DISC)) {
-      const greps = countAssistantToolUses(req, 'grep')
-      if (greps < 1) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-control')) {
         return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-control', name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
       }
       return { kind: 'text', content: 'A5SF_SEARCH_DISC_DONE' }
     }
     const isLeader = lastUser.includes(MK_L1) || allText.includes(MK_L1) || allText.includes('[team-work-settled')
     if (isLeader) {
-      const teamCalls = ['team_delegate', 'team_archive_member', 'team_follow_up']
-        .map((n) => countAssistantToolUses(req, n)).reduce((a, b) => a + b, 0)
-      if (teamCalls === 0) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-delegate')) {
         return {
           kind: 'tool-call',
           toolCalls: [{ id: 'call-a5sfsrch-delegate', name: 'team_delegate', arguments: {
@@ -813,6 +840,30 @@ async function planOnly() {
     },
   }
   writeFileSync(PLAN_ROWS_PATH, JSON.stringify(planRows, null, 2) + '\n')
+  // THE LANE INPUTS, as the boot will compose them. Not a decision: the dry run
+  // runs `rowPathsOf` (this function) inside `--plan`, so the artifact carries
+  // the SAME paths `boot()` will hand to the row, and the dry run checks the
+  // FIFO's position against the product algebra itself. A FIFO one directory
+  // outside the restriction (`lane/blocking.fifo`) passed every text-level check
+  // and cost the 2026-11-04T19:17Z run 240 s and all six rows.
+  const planPaths = {
+    schema: 'a5sf-search-live/plan-paths/1',
+    at: new Date().toISOString(),
+    head,
+    /** The ceiling READ allow list the row compiles from `allowRoot`. */
+    ceilingReadAllow: [dry.paths.workspace],
+    /** The narrower tool restriction the row compiles from config. */
+    restrictionReadAllow: [...dry.paths.restrictionReadAllow],
+    inLaneDir: dry.paths.inLaneDir,
+    inLaneFile: dry.paths.inLaneFile,
+    restrictedFile: dry.paths.restrictedFile,
+    outsideFile: dry.paths.outsideFile,
+    outsideGlobFile: dry.paths.outsideGlobFile,
+    /** The cancellation operand: it must be ADMITTED by the effective lane. */
+    fifo: dry.paths.fifo,
+  }
+  writeFileSync(PLAN_PATHS_PATH, JSON.stringify(planPaths, null, 2) + '\n')
+  log(`plan paths: ${JSON.stringify({ ceilingReadAllow: planPaths.ceilingReadAllow, restrictionReadAllow: planPaths.restrictionReadAllow, fifo: planPaths.fifo })}`)
   log(`plan rows: ${JSON.stringify({ emittedRowIds, worldRowIds, identityHolds: planRows.identityHolds, healthProbeRowPresent: planRows.healthProbeRowPresent, allFourRowsPresent: planRows.allFourRowsPresent, handoff: planRows.handoff })}`)
   if (planRows.identityHolds !== true) throw new Error(`the emitted rows and the rows handed to the World DIFFER: emitted=${JSON.stringify(emittedRowIds)} world=${JSON.stringify(worldRowIds)} — this is the 2026-11-04 defect`)
   if (planRows.healthProbeRowPresent !== true || planRows.allFourRowsPresent !== true) throw new Error(`the World would not compose the health probe and the four evidence rows: ${JSON.stringify(worldRowIds)}`)
@@ -937,9 +988,138 @@ async function boot() {
   let abortStage = 'pre-boot'
   let abortStageDetail = 'fixtures / rows / grant / policy before any Host exists'
   /** What the catch can still inspect: set as soon as each path exists. */
-  const stageCtx = { rows: null, paths: null, counterPath: null, laneReportPath: null, sinkPath: null, composedProfile: null, member: null }
+  const stageCtx = {
+    rows: null, paths: null, counterPath: null, laneReportPath: null, sinkPath: null,
+    composedProfile: null, member: null,
+    /** The evidence the ABORT path must be able to re-judge from: the lane
+     *  inputs, the counter slice that excludes the pre-realm control, the
+     *  cancellation answer and the claims. Without these, an abort can only
+     *  report "nothing was measured" — which is what the 2026-11-04T19:17Z run
+     *  did with seven facts in hand. */
+    claims: null, counterPrefixEnd: null, cancelCall: null,
+    /** Set once the sink/counter transcript copier exists, so the abort path
+     *  uses it instead of a second, drifting copy implementation. */
+    persistRunChannels: null,
+  }
   const oracleSamples = {}
   const negativeControl = { sample: null, verdict: null }
+
+  // ── THE PARTIAL-RUN MACHINERY ───────────────────────────────────────────
+  // The sample builders live in ONE place so the success path and the ABORT
+  // path cannot drift: an abort that rebuilt samples its own way would be a
+  // second oracle. `settledSamples()` reads only what exists at the call site
+  // (sink facts, counter rows, lane report, mock transcript), and the judges
+  // decide the rest.
+  const readSinkFacts = () => {
+    try { return parseJsonl(stageCtx.sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1') } catch { return [] }
+  }
+  const readCounterRows = () => {
+    try {
+      const all = parseJsonl(stageCtx.counterPath)
+      const from = stageCtx.counterPrefixEnd === null ? 0 : stageCtx.counterPrefixEnd
+      return all.slice(from)
+    } catch { return [] }
+  }
+  const readLaneReport = () => {
+    try { return stageCtx.laneReportPath !== null && existsSync(stageCtx.laneReportPath) ? readJson(stageCtx.laneReportPath) : null } catch { return null }
+  }
+  const settledSamples = ({ requests = [], includeFifo = false } = {}) => {
+    const allFacts = readSinkFacts()
+    const allRecords = readCounterRows()
+    const laneReport = readLaneReport()
+    const claimsNow = stageCtx.claims
+    const p = stageCtx.paths
+    if (p === null || claimsNow === null) return {}
+    const resultOf = (callId) => toolResultFor(requests, callId)
+    const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')
+    const recordsFor = (operand) => allRecords.filter((row) => (row?.argv ?? []).some((a) => normPath(a) === normPath(operand)))
+    const factsFor = (operand) => allFacts.filter((f) => normPath(f?.locator) === normPath(operand))
+    const samples = {
+      [SEARCH_CASE_IDS.row1]: {
+        result: resultOf(CALL_IDS.grepIn),
+        facts: factsFor(p.inLaneDir),
+        records: recordsFor(p.inLaneDir),
+        declaredRoot: p.inLaneDir,
+        needle: claimsNow.needle,
+        fileName: 'needle.txt',
+      },
+      [SEARCH_CASE_IDS.row2]: {
+        result: resultOf(CALL_IDS.grepOutsideCeiling),
+        facts: factsFor(p.outsideDir),
+        records: recordsFor(p.outsideDir),
+        declaredRoot: p.outsideDir,
+        forbidden: [claimsNow.outsideClaim, claimsNow.outsideSecond],
+      },
+      [SEARCH_CASE_IDS.row3]: {
+        result: resultOf(CALL_IDS.grepOutsideRestriction),
+        facts: factsFor(p.restrictedFile),
+        records: recordsFor(p.restrictedFile),
+        declaredRoot: p.restrictedFile,
+        forbidden: [claimsNow.restrictedClaim],
+        laneReport,
+      },
+      [SEARCH_CASE_IDS.row5]: {
+        result: resultOf(CALL_IDS.grepInvalid),
+        facts: factsFor(p.invalidDir),
+        records: recordsFor(p.invalidDir),
+        declaredRoot: p.invalidDir,
+        pattern: 'A5SF_(',
+      },
+    }
+    if (includeFifo) {
+      samples[SEARCH_CASE_IDS.row4] = {
+        result: resultOf(CALL_IDS.grepFifo),
+        facts: factsFor(p.fifo),
+        records: recordsFor(p.fifo),
+        declaredRoot: p.fifo,
+        needle: claimsNow.needle,
+        // The acknowledgement lives at body.result.ok (+ value.accepted), because the
+        // shipped route answers an RPC envelope. Reading body.ok read `undefined`
+        // and row 4's interruptAcknowledged clause failed on a cancel the product
+        // had accepted (2026-11-04T20:15:27.439Z, body result.ok=true,
+        // value.accepted=true).
+        interrupt: stageCtx.cancelCall === null ? null : {
+          status: stageCtx.cancelCall.status,
+          ok: stageCtx.cancelCall.status === 200
+            && stageCtx.cancelCall.body?.result?.ok === true
+            && stageCtx.cancelCall.body?.result?.value?.accepted !== false,
+          accepted: stageCtx.cancelCall.body?.result?.value?.accepted ?? null,
+        },
+        transcriptAfterCall: '',
+      }
+    }
+    return samples
+  }
+  /**
+   * Judge every SETTLED row whose sample is COMPLETE, and nothing else. An
+   * incomplete sample is NOT frozen here: its call may still be in flight, and
+   * freezing "not reached" would be its own inaccuracy. Only the abort path
+   * (which knows the run stopped) is allowed to turn incompleteness into
+   * NOT_REACHED.
+   */
+  const judgeSettledRows = (stage, { includeFifo = false } = {}) => {
+    const requests = world?.mock?.requests ?? []
+    const samples = settledSamples({ requests, includeFifo })
+    const judgedNow = []
+    for (const [id, sample] of Object.entries(samples)) {
+      if (oracleSamples[id] !== undefined) continue
+      const completeness = sampleCompleteness(id, sample)
+      if (completeness.complete !== true) continue
+      const judged = judgeCase(id, sample, { stage })
+      oracleSamples[id] = { sample, ...judged, judgedAtStage: stage }
+      add(id, judged.verdict, {
+        status: judged.status,
+        reason: judged.reason,
+        failed: judged.failed,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: stage,
+      })
+      judgedNow.push(`${id}=${judged.verdict}`)
+    }
+    log(`judged ${String(judgedNow.length)} settled row(s) at ${stage}${judgedNow.length === 0 ? '' : `: ${judgedNow.join(' ')}`}`)
+    return judgedNow
+  }
 
   try {
     world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
@@ -963,6 +1143,7 @@ async function boot() {
       restrictedPattern: 'A5SF_SEARCH_RESTRICTION',
       fifoPattern: 'A5SF_SEARCH_FIFO',
     }
+    stageCtx.claims = claims
     const sinkPath = join(world.home, 'a5sf-consult.jsonl')
     stageCtx.rows = rows
     stageCtx.paths = paths
@@ -1084,33 +1265,6 @@ async function boot() {
     log(`p6t6 health=${String(healthOk)} hostAlive=${String(hostAlive())}`)
     if (!healthOk) throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
 
-    // ── THE NEGATIVE CONTROL, before any Member exists ──────────────────────
-    abortStage = 'negative-control'
-    abortStageDetail = 'the anchor leader (no Member realm) must grep the out-of-lane file and LEAK; a refusal here means the control is vacuous'
-    const discPrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sfsrch')
-    log(`discovery prompt status=${String(discPrompt.status)}`)
-    const controlDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_DISC_DONE')), 180_000)
-    await new Promise((r) => setTimeout(r, 800))
-    const controlRequests = world.mock?.requests ?? []
-    const controlCall = controlRequests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
-      .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.outsideDir) ?? null
-    const controlResult = controlCall === null ? null : toolResultFor(controlRequests, controlCall.id)
-    const counterAtControl = parseJsonl(counterPath)
-    const controlSample = {
-      result: controlResult,
-      forbidden: [claims.outsideClaim, claims.outsideSecond],
-      guardFactsBeforeRealm: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1'),
-      baseSpawns: counterAtControl.filter((row) => row?.leg === 'base-spawn'),
-      confinedSpawns: counterAtControl.filter((row) => row?.leg === 'confined-spawn'),
-      controlDone,
-    }
-    const counterPrefixEnd = parseJsonl(counterPath).length
-    const control = judgeNegativeControl(controlSample)
-    negativeControl.sample = controlSample
-    negativeControl.verdict = control
-    log(`NEGATIVE CONTROL: verdict=${control.verdict} reason=${control.reason} failed=${JSON.stringify(control.failed)} detail=${JSON.stringify(control.detail).slice(0, 700)}`)
-    writeFileSync(join(HERE, 'negative-control.json'), JSON.stringify({ sample: controlSample, verdict: control }, null, 2) + '\n')
-
     // ── CONDITION 2: the leader grep probe, and the channels it writes ──────
     // `persistRunChannels` copies the counter and the fact sink OUT of the World
     // home. Teardown deletes the home, and that is what swallowed F1's cause
@@ -1126,9 +1280,18 @@ async function boot() {
           out[name] = `${String(bytes.length)} bytes`
         } catch (error) { out[name] = `copy failed: ${String(error?.message ?? error)}` }
       }
+      // THE THIRD CHANNEL: the mock transcript. It carries the TOOL RESULTS —
+      // the bytes every row judge compares against — and it lived only in this
+      // process's memory until now. That is exactly why attempt 6's seven facts
+      // could not be re-judged offline: the sink and the counter were copied out,
+      // the results were not.
+      out['mock-requests.json'] = writeMockTranscript(world, label)
       log(`run channels persisted (${label}): ${JSON.stringify(out)}`)
       return out
     }
+    stageCtx.persistRunChannels = persistRunChannels
+
+    const counterPrefixEndAtProbe = parseJsonl(counterPath).length
     abortStage = 'leader-grep-probe'
     abortStageDetail = 'the anchor leader must be able to grep the in-lane file through the base subprocess face; a failure here makes the negative control vacuous'
     const probePrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_PROBE, 'a5sfsrch')
@@ -1139,7 +1302,7 @@ async function boot() {
       .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.inLaneDir) ?? null
     const probeResult = probeCall === null ? null : toolResultFor(probeRequests, probeCall.id)
     const probeText = String(probeResult?.text ?? '')
-    const probeCounter = parseJsonl(counterPath).slice(counterPrefixEnd)
+    const probeCounter = parseJsonl(counterPath).slice(counterPrefixEndAtProbe)
     const probeRowsForOperand = probeCounter.filter((row) => (row?.argv ?? []).some((a) => String(a) === paths.inLaneDir))
     const probeArtifact = {
       schema: 'a5sf-search-live/leader-grep-probe/1',
@@ -1162,6 +1325,37 @@ async function boot() {
       throw new Error(`LEADER_GREP_PROBE_FAILED: the anchor leader's unconfined grep did not return the needle (isError=${String(probeResult?.isError)}); text=${redact(probeText).slice(0, 200)}; base-spawn-failed=${JSON.stringify(probeArtifact.baseSpawnFailedRows).slice(0, 600)} — the base subprocess face cannot launch rg, so the negative control is vacuous and no Member row can be measured`)
     }
 
+    // ── THE NEGATIVE CONTROL, before any Member exists ──────────────────────
+    abortStage = 'negative-control'
+    abortStageDetail = 'the anchor leader (no Member realm) must grep the out-of-lane file and LEAK; a refusal here means the control is vacuous'
+    const discPrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sfsrch')
+    log(`discovery prompt status=${String(discPrompt.status)}`)
+    const controlDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_DISC_DONE')), 180_000)
+    await new Promise((r) => setTimeout(r, 800))
+    const controlRequests = world.mock?.requests ?? []
+    const controlCall = controlRequests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
+      .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.outsideDir) ?? null
+    const controlResult = controlCall === null ? null : toolResultFor(controlRequests, controlCall.id)
+    const counterAtControl = parseJsonl(counterPath)
+    const controlSample = {
+      result: controlResult,
+      forbidden: [claims.outsideClaim, claims.outsideSecond],
+      guardFactsBeforeRealm: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1'),
+      baseSpawns: counterAtControl.filter((row) => row?.leg === 'base-spawn'),
+      confinedSpawns: counterAtControl.filter((row) => row?.leg === 'confined-spawn'),
+      controlDone,
+    }
+    const counterPrefixEnd = parseJsonl(counterPath).length
+    // The abort path slices the counter at the same boundary: everything before
+    // this index belongs to the leader probe / the unconfined control and must
+    // never be counted as a Member row's process.
+    stageCtx.counterPrefixEnd = counterPrefixEnd
+    const control = judgeNegativeControl(controlSample)
+    negativeControl.sample = controlSample
+    negativeControl.verdict = control
+    log(`NEGATIVE CONTROL: verdict=${control.verdict} reason=${control.reason} failed=${JSON.stringify(control.failed)} detail=${JSON.stringify(control.detail).slice(0, 700)}`)
+    writeFileSync(join(HERE, 'negative-control.json'), JSON.stringify({ sample: controlSample, verdict: control }, null, 2) + '\n')
+
     // ── team.create + state ─────────────────────────────────────────────────
     abortStage = 'surface'
     abortStageDetail = 'the discovery turn must expose `grep` on the model-visible surface of the anchor preset'
@@ -1182,11 +1376,43 @@ async function boot() {
 
     abortStage = 'team-create'
     abortStageDetail = 'team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed'
-    const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
+    // THE CANCELLATION WINDOW OPENS INSIDE `team.create`, NOT AFTER IT.
+    // `initialWork` makes the create call wait for the leader's first turn, and that
+    // turn is the synchronous delegate: leader -> member -> the member's FIFO grep,
+    // which blocks. So the ONLY moment at which the FIFO search is in flight is
+    // while the create promise is unresolved (attempt 7, 2026-11-04T20:07Z: the
+    // child was already gone — exit 143 from the module's OWN 30 s timeout — by the
+    // time the driver got control back, and the cancel arrived 0.9 s too late).
+    // Therefore: issue the create, and watch + interrupt CONCURRENTLY.
+    const createPromise = remoteCall(fetchJson, origin, cookie, 'team.create', {
       rootSessionId: ACCEPTANCE_ROOT,
       blueprintId: BP_MAIN_ID,
       initialWork: { prompt: MK_L1 },
     }, 'a5sfsrch')
+    const cancelWatch = (async () => {
+      const deadline = Date.now() + 180_000
+      let spawnSeen = null
+      let session = ''
+      while (Date.now() < deadline) {
+        const rows = parseJsonl(counterPath)
+        spawnSeen = rows.find((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))) ?? null
+        if (spawnSeen !== null) {
+          try {
+            const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 10_000)
+            const worker = (Array.isArray(st.body?.members) ? st.body.members : []).find((m) => String(m?.templateId) === 'worker' && String(m?.childSessionId ?? '') !== '')
+            session = String(worker?.childSessionId ?? '')
+          } catch { session = '' }
+          if (session !== '') break
+        }
+        await new Promise((r) => setTimeout(r, 120))
+      }
+      if (spawnSeen === null || session === '') return { spawnSeen, session, cancelCall: null, at: null }
+      const call = await apiSessionCancel(origin, cookie, session, 'a5sfsrch')
+      log(`concurrent cancel: fifo spawn observed; session=${session.slice(0, 24)}… status=${String(call.status)} body=${redact(JSON.stringify(call.body ?? null)).slice(0, 200)}`)
+      return { spawnSeen, session, cancelCall: call, at: new Date().toISOString() }
+    })()
+    const created = await createPromise
+    const cancelEarly = await cancelWatch
     const createOk = created.status === 200 && created.body?.result?.ok === true
     log(`team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
     if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 300)}`)
@@ -1218,6 +1444,34 @@ async function boot() {
     const memberSession = String(member?.childSessionId ?? '')
     stageCtx.member = { visible: memberVisible, instanceId: String(member?.instanceId ?? ''), hasSession: memberSession !== '' }
     log(`member visible=${String(memberVisible)} instanceId=${String(member?.instanceId ?? '')} childSessionId=${memberSession === '' ? '<none>' : '<set>'}`)
+    // The attribution the abort needs: what the delegate call itself SAID. Until
+    // this artifact existed, "no Member appeared" could mean refused, accepted but
+    // the worker failed to start, or a turn the mock never drove.
+    const teamToolNames = ['team_delegate', 'team_create_member', 'team_list_members', 'team_inspect_config']
+    const teamCalls = []
+    for (const message of (world.mock?.requests ?? []).flatMap((r) => messagesOf(r))) {
+      if (message?.role !== 'assistant' || !Array.isArray(message?.content)) continue
+      for (const block of message.content) {
+        if (block?.type !== 'tool_use' || !teamToolNames.includes(String(block?.name))) continue
+        const result = toolResultFor(world.mock?.requests ?? [], block.id)
+        teamCalls.push({ name: block.name, id: block.id, input: block.input, result })
+      }
+    }
+    const delegateArtifact = {
+      schema: 'a5sf-search-live/team-call-artifact/1',
+      at: new Date().toISOString(),
+      stage: 'member-install',
+      memberSeen: { visible: memberVisible, instanceId: String(member?.instanceId ?? ''), childSessionId: memberSession === '' ? null : '<set>' },
+      teamCalls,
+      rawState: stateFresh.body ?? null,
+      mockRequests: (world.mock?.requests ?? []).length,
+      memberTurnSeen: (world.mock?.requests ?? []).some((r) => userTextOf(r).includes(`${MEMBER_ENVELOPE}${TOK_D1}`)),
+      note: 'tool_result text is the product-side answer to the call; a refusal carries its typed error, an acceptance with no Member means the worker never started',
+    }
+    writeFileSync(join(HERE, 'delegate-artifact.json'), JSON.stringify(delegateArtifact, null, 2) + '\n')
+    stageCtx.delegate = delegateArtifact
+    log(`team calls: ${JSON.stringify(teamCalls.map((c) => ({ name: c.name, isError: c.result?.isError, text: String(c.result?.text ?? '').slice(0, 220) }))).slice(0, 900)}`)
+    persistRunChannels('member-install abort')
     if (member === null || memberSession === '') {
       throw new Error(`MEMBER_INSTALL_NO_WORKER: the team reports no worker instance with a session after 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, team.create was ok). The delegate produced no Member, so no row can be measured`)
     }
@@ -1233,6 +1487,13 @@ async function boot() {
     if (!dispatched) {
       throw new Error(`DELEGATE_DISPATCH_NEVER_REACHED_MEMBER: a worker instance exists (${String(member?.instanceId ?? '')}) but no request ever carried the team-work envelope within 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}). The broken handoff is leader -> member dispatch`)
     }
+    // Judge the settled rows AS SOON AS their evidence is complete — before the
+    // cancellation window, which is where the 2026-11-04T19:17Z run died with
+    // four rows already measured. A complete sample is judged by the normal
+    // judge whatever happens next; an incomplete one is left alone (its call may
+    // still be in flight) and is only resolved by the abort path or the end.
+    persistRunChannels('member turn dispatched')
+    judgeSettledRows('delegate-dispatch')
 
     // The FIFO call must be in flight before the cancel is dispatched. Poll the
     // confined-provider record for the exact operand, then cancel through the
@@ -1243,15 +1504,18 @@ async function boot() {
     // the lane report tells which.
     abortStage = 'cancellation-window'
     abortStageDetail = 'the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched'
-    const fifoInFlight = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
+    const fifoInFlight = cancelEarly.spawnSeen !== null || await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
     log(`fifo call admitted (confined spawn observed)=${String(fifoInFlight)}`)
     if (!fifoInFlight) {
       const rows = parseJsonl(counterPath)
       throw new Error(`CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, confined-spawn=${String(rows.filter((row) => row?.leg === 'confined-spawn').length)}, base-spawn=${String(rows.filter((row) => row?.leg === 'base-spawn').length)}, installFs=${String(rows.filter((row) => row?.leg === 'install-fs').length)}). The search never reached the confined face`)
     }
+    // The interrupt was already dispatched concurrently with `team.create`; only fall
+    // back to the post-hoc route if that watcher never saw the spawn.
+    let cancelCall = cancelEarly.cancelCall
+    if (cancelCall !== null) log(`cancel already dispatched in the activity window at ${String(cancelEarly.at)}`)
     await new Promise((r) => setTimeout(r, 600))
-    let cancelCall = null
-    if (fifoInFlight) {
+    if (cancelCall === null && fifoInFlight) {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         cancelCall = await apiSessionCancel(origin, cookie, memberSession, 'a5sfsrch')
         log(`cancel attempt ${String(attempt)}: status=${String(cancelCall.status)} body=${redact(JSON.stringify(cancelCall.body ?? null)).slice(0, 300)}`)
@@ -1261,8 +1525,15 @@ async function boot() {
     }
     const fifoExited = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-exit' && (row?.argv ?? []).some((a) => String(a).endsWith('/blocking.fifo'))), 60_000)
     log(`fifo call terminated=${String(fifoExited)}`)
+    // The cancellation answer is evidence for row 4, and it must survive an
+    // abort in the row-6/teardown stages, so it is parked where the abort path
+    // can read it.
+    stageCtx.cancelCall = cancelCall
     const chainOk = await waitFor(() => replySeen(DONE_L1), 240_000)
     log(`leader chain closed (${DONE_L1})=${String(chainOk)}`)
+    // A row whose result arrived late (after the dispatch flush) is judged here,
+    // still before anything that could throw in row 6 / teardown.
+    judgeSettledRows('post-cancel')
     await new Promise((r) => setTimeout(r, 1500))
 
     // ── evidence collection: results, facts, and the counter ────────────────
@@ -1297,7 +1568,17 @@ async function boot() {
       log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)}`)
     }
 
-    // ── rows 1, 2, 3, 5 ─────────────────────────────────────────────────────
+    // Row 1 is a two-way test: an in-lane grep that exits 2 is a REAL refuted row
+    // (the pinned module maps exit not in {0,1} to SearchError), and the reason is in
+    // the payload's stderr, not in the tool text. Log both before judging.
+    for (const row of recordsAll) {
+      if (row?.leg !== 'confined-exit') continue
+      const isRow1 = (row?.argv ?? []).some((a) => String(a).replace(/\/+$/u, '') === paths.inLaneDir)
+      if (!isRow1) continue
+      log(`row 1 confined-exit code=${String(row.code)} signal=${String(row.signal)} stderrBytes=${String(row.stderrBytes ?? 0)} stderr=${JSON.stringify(String(row.stderr ?? '').slice(0, 600))}`)
+    }
+
+    // ── rows 1, 2, 3, 5 + row 4 (the cancelled search) ─────────────────────
     const resultOf = (callId) => toolResultFor(requests, callId)
     const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')
     // EXACT locator match: every call has its OWN operand (see rowPathsOf), so a
@@ -1305,55 +1586,23 @@ async function boot() {
     const recordsFor = (operand) => recordsAll.filter((row) => (row?.argv ?? []).some((a) => normPath(a) === normPath(operand)))
     const factsFor = (operand) => factsAll.filter((f) => normPath(f?.locator) === normPath(operand))
 
-    const row1Sample = {
-      result: resultOf(CALL_IDS.grepIn),
-      facts: factsFor(paths.inLaneDir),
-      records: recordsFor(paths.inLaneDir),
-      declaredRoot: paths.inLaneDir,
-      needle: claims.needle,
-      fileName: 'needle.txt',
+    // The SAME builders the abort path uses (settledSamples), so the two paths
+    // cannot drift into two oracles. Rows already judged at dispatch keep that
+    // verdict: re-judging identical evidence would only invite a different answer.
+    const settled = settledSamples({ requests, includeFifo: true })
+    for (const id of [SEARCH_CASE_IDS.row1, SEARCH_CASE_IDS.row2, SEARCH_CASE_IDS.row3, SEARCH_CASE_IDS.row5, SEARCH_CASE_IDS.row4]) {
+      if (oracleSamples[id] !== undefined) continue
+      const judged = judgeCase(id, settled[id], { stage: 'evidence-collection' })
+      oracleSamples[id] = { sample: settled[id], ...judged, judgedAtStage: 'evidence-collection' }
+      add(id, judged.verdict, {
+        status: judged.status,
+        reason: judged.reason,
+        failed: judged.failed,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: 'evidence-collection',
+      })
     }
-    oracleSamples[SEARCH_CASE_IDS.row1] = { sample: row1Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row1, row1Sample) }
-
-    const row2Sample = {
-      result: resultOf(CALL_IDS.grepOutsideCeiling),
-      facts: factsFor(paths.outsideDir),
-      records: recordsFor(paths.outsideDir),
-      declaredRoot: paths.outsideDir,
-      forbidden: [claims.outsideClaim, claims.outsideSecond],
-    }
-    oracleSamples[SEARCH_CASE_IDS.row2] = { sample: row2Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row2, row2Sample) }
-
-    const row3Sample = {
-      result: resultOf(CALL_IDS.grepOutsideRestriction),
-      facts: factsFor(paths.restrictedFile),
-      records: recordsFor(paths.restrictedFile),
-      declaredRoot: paths.restrictedFile,
-      forbidden: [claims.restrictedClaim],
-      laneReport,
-    }
-    oracleSamples[SEARCH_CASE_IDS.row3] = { sample: row3Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row3, row3Sample) }
-
-    const row5Sample = {
-      result: resultOf(CALL_IDS.grepInvalid),
-      facts: factsFor(paths.invalidDir),
-      records: recordsFor(paths.invalidDir),
-      declaredRoot: paths.invalidDir,
-      pattern: 'A5SF_(',
-    }
-    oracleSamples[SEARCH_CASE_IDS.row5] = { sample: row5Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row5, row5Sample) }
-
-    // ── row 4 (the cancelled search) ────────────────────────────────────────
-    const row4Sample = {
-      result: resultOf(CALL_IDS.grepFifo),
-      facts: factsFor(paths.fifo),
-      records: recordsFor(paths.fifo),
-      declaredRoot: paths.fifo,
-      needle: claims.needle,
-      interrupt: cancelCall === null ? null : { status: cancelCall.status, ok: cancelCall.status === 200 && cancelCall.body?.ok === true },
-      transcriptAfterCall: '',
-    }
-    oracleSamples[SEARCH_CASE_IDS.row4] = { sample: row4Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row4, row4Sample) }
 
     // ── M-07: the SAME face for `glob` (not one of the six rows; reported
     //    alongside them so M-07 is never promoted on grep evidence alone) ──
@@ -1453,7 +1702,12 @@ async function boot() {
       confinedSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'confined-spawn'),
       baseSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'base-spawn'),
     }
-    oracleSamples[SEARCH_CASE_IDS.row6] = { sample: { ...row6Sample, observations: observations.length, membersAfter: membersAfter.length }, ...judgeSearchRow(SEARCH_CASE_IDS.row6, row6Sample) }
+    const row6Judged = judgeCase(SEARCH_CASE_IDS.row6, row6Sample, { stage: 'teardown' })
+    oracleSamples[SEARCH_CASE_IDS.row6] = {
+      sample: { ...row6Sample, observations: observations.length, membersAfter: membersAfter.length },
+      ...row6Judged,
+      judgedAtStage: 'teardown',
+    }
 
     const teardownEvidence = {
       archive: archiveCall === null ? null : { status: archiveCall.status, body: archiveCall.body },
@@ -1480,18 +1734,36 @@ async function boot() {
     }, null, 2) + '\n')
 
     // ── the verdicts ───────────────────────────────────────────────────────
+    // Rows judged earlier (at dispatch / evidence-collection / teardown) are
+    // already in the record; only a row nothing ever observed is resolved here.
     for (const id of CASES) {
+      if (record.getCase(id) !== undefined) continue
       const judged = oracleSamples[id]
       if (judged === undefined) {
-        add(id, 'NOT_REACHED', { reason: 'NO_SAMPLE' })
+        const unresolved = judgeCase(id, null, { stage: 'verdict-fold' })
+        add(id, unresolved.verdict, {
+          status: unresolved.status,
+          reason: unresolved.reason,
+          missing: unresolved.missing,
+          sampleComplete: false,
+          judgedAtStage: 'verdict-fold',
+        })
         continue
       }
-      add(id, toRunVerdict(judged.verdict), {
+      add(id, judged.verdict, {
+        status: judged.status,
         reason: judged.reason,
         failed: judged.failed,
         detail: judged.detail,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: judged.judgedAtStage,
       })
     }
+    // The RUN-level fold: on a completed run this is the worst case verdict; an
+    // abort below overrides it to FAIL via `record.markAborted()`.
+    const runFold = summarizeRun([...CASES].map((id) => record.getCase(id)).filter(Boolean), { abortedAt: null })
+    record.record.runVerdict = runFold
     // The negative control is NOT a Member row: it is reported, never folded in.
     record.record.negativeControl = {
       verdict: negativeControl.verdict?.verdict ?? null,
@@ -1539,16 +1811,55 @@ async function boot() {
     } catch { /* best-effort */ }
     log(`stage probe: ${JSON.stringify(probe).slice(0, 900)}`)
     try {
-      for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
-        if (source !== null && existsSync(source)) writeFileSync(join(HERE, name), readFileSync(source))
+      if (stageCtx.persistRunChannels !== null) {
+        stageCtx.persistRunChannels('abort path, before teardown deletes the home')
+      } else {
+        for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
+          if (source !== null && existsSync(source)) writeFileSync(join(HERE, name), readFileSync(source))
+        }
+        const transcript = writeMockTranscript(world, `abort path (${abortStage})`)
+        log(`run channels persisted (abort path, before teardown deletes the home): mock-requests.json=${transcript}`)
       }
-      log('run channels persisted (abort path, before teardown deletes the home)')
     } catch (copyError) { log(`run channel copy failed: ${String(copyError?.message ?? copyError)}`) }
     if (hostReached) {
-      // A live regression must never be laundered into NOT_REACHED.
-      for (const id of CASES) {
-        if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}`, stage: abortStage, stageDetail: abortStageDetail, error: redact(String(error?.message ?? error)).slice(0, 300) })
+      // ── JUDGE WHAT WAS MEASURED, AND ONLY WHAT WAS MEASURED ────────────────
+      // The 2026-11-04T19:17Z run measured seven live guard facts in 400 ms and
+      // then aborted in the cancellation window. The old loop here turned all six
+      // rows into `FAIL / DRIVER_ABORTED`, discarding every observation it had
+      // made. The rule that must survive is "never launder a MISSING observation
+      // into a pass"; the rule that must not is "discard observations you made".
+      // So: a COMPLETE sample is judged by the row's normal judge and keeps its
+      // real verdict (a PASS is a CASE verdict); an INCOMPLETE one is NOT_REACHED
+      // with status `driver-aborted`; and the RUN is FAIL + partial, always.
+      const abortDetail = redact(String(error?.message ?? error))
+      record.markAborted({ stage: abortStage, detail: abortStageDetail, error: abortDetail.slice(0, 300) })
+      log(`abort: run verdict FAIL (partial=true, stage=${abortStage}); re-judging what was measured`)
+      try {
+        judgeSettledRows(`abort:${abortStage}`, { includeFifo: true })
+      } catch (judgeError) {
+        log(`abort re-judge failed (the run is still FAIL and partial): ${redact(String(judgeError?.message ?? judgeError))}`)
       }
+      let rebuilt = {}
+      try { rebuilt = settledSamples({ requests: world?.mock?.requests ?? [], includeFifo: true }) } catch { rebuilt = {} }
+      for (const id of CASES) {
+        if (record.getCase(id) !== undefined) continue
+        const sample = rebuilt[id] ?? null
+        const judged = judgeCase(id, sample, { abortedAt: abortStage, stage: `abort:${abortStage}` })
+        oracleSamples[id] = { sample, ...judged, judgedAtStage: `abort:${abortStage}` }
+        add(id, judged.verdict, {
+          status: judged.status,
+          reason: judged.reason,
+          missing: judged.missing,
+          sampleComplete: judged.sampleComplete,
+          abortedAt: abortStage,
+          stage: abortStage,
+          stageDetail: abortStageDetail,
+          error: abortDetail.slice(0, 300),
+          judgedAtStage: `abort:${abortStage}`,
+        })
+      }
+      record.record.runVerdict = summarizeRun([...CASES].map((id) => record.getCase(id)).filter(Boolean), { abortedAt: abortStage })
+      record.record.abortDetail = abortStageDetail
     } else {
       throw error
     }
@@ -1563,8 +1874,10 @@ async function boot() {
     try {
       writeFileSync(join(HERE, 'oracle-samples.json'), JSON.stringify({
         schema: 'a5sf-search-live/oracle-samples/1',
-        note: 'the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.',
+        note: 'the exact sample object handed to each judge, plus the judge output and WHY (status/reason/missing). Re-running the judge over the sample reproduces the verdict without a Host; a sample with `missing` non-empty is NOT judgeable and can never be a pass.',
         roots: ROOTS,
+        partial: record.isAborted(),
+        abortedAt: record.isAborted() ? abortStage : null,
         cases: oracleSamples,
         negativeControl,
       }, null, 2) + '\n')
@@ -1574,7 +1887,7 @@ async function boot() {
     const finalized = record.finalize()
     writeFileSync(join(HERE, 'run-record.json'), JSON.stringify(finalized, null, 2) + '\n')
     log(formatSummary(finalized))
-    log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(overallVerdict(finalized.cases))} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
+    log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(finalized.overall)} partial=${String(finalized.partial === true)} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
   }
 
   // An abort must reconcile itself: the intent row is spent even when no start is.
@@ -1611,8 +1924,41 @@ async function boot() {
 // small helpers that reference the world only through arguments
 // ─────────────────────────────────────────────────────────────────────────────
 
-function toolResultFor(requests, callId) {
-  for (const req of requests) {
+/**
+ * Persist the mock transcript — the ONLY channel that carries the tool-result
+ * bytes a row judge compares against. Teardown deletes the World home, and the
+ * transcript otherwise lives in this process's memory only: attempt 6's sink and
+ * counter were copied out, its results were not, and the seven facts it measured
+ * became un-re-judgeable the moment the driver was certain it had failed.
+ *
+ * Capped by request COUNT only, so the file has a bound; this is a test
+ * transcript, not a model context, and writing it adds no token to any prompt.
+ *
+ * @param {{mock?: {requests?: object[]}}|null} world
+ * @param {string} label why it was written (stage name)
+ * @returns {string} a one-line status for the caller's log
+ */
+function writeMockTranscript(world, label) {
+  try {
+    const requests = (world?.mock?.requests ?? []).slice(-60).map((r) => ({
+      seq: r?.seq ?? null,
+      reply: r?.reply ?? null,
+      messages: messagesOf(r),
+    }))
+    writeFileSync(join(HERE, 'mock-requests.json'), JSON.stringify({
+      schema: 'a5sf-search-live/mock-requests/1',
+      at: new Date().toISOString(),
+      label,
+      note: 'the model-visible transcript the tool-result bytes live in; written OUTSIDE the World home so teardown cannot swallow it',
+      requests,
+    }, null, 2) + '\n')
+    return `${String(requests.length)} request(s)`
+  } catch (error) {
+    return `write failed: ${String(error?.message ?? error)}`
+  }
+}
+
+function toolResultFor(requests, callId) {  for (const req of requests) {
     for (const m of messagesOf(req)) {
       for (const b of Array.isArray(m?.content) ? m.content : []) {
         const id = b?.type === 'tool_result' ? (b?.tool_use_id ?? b?.call_use_id ?? null) : (m?.role === 'tool' ? m?.tool_call_id : null)

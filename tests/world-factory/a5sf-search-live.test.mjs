@@ -20,11 +20,13 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import {
+  CASE_STATUS,
   READ_DENIED,
   SEARCH_CASES,
   SEARCH_CASE_IDS,
   SUBPROCESS_GUARD_METHOD,
   guardFacts,
+  judgeCase,
   judgeNegativeControl,
   judgeRow1,
   judgeRow2,
@@ -33,6 +35,8 @@ import {
   judgeRow5,
   judgeRow6,
   judgeSearchRow,
+  sampleCompleteness,
+  summarizeRun,
   toRunVerdict,
 } from './lib/a5sf-search-live.mjs'
 
@@ -505,4 +509,94 @@ test('SEARCH_CASE_IDS is the named contract the driver imports', () => {
 
 test('guardFacts ignores non-fact rows (the sink may carry other schemas)', () => {
   assert.equal(guardFacts([fact(), { schema: 'other/1' }, null, undefined]).length, 1)
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE PARTIAL-RUN CONTRACT
+//
+// The 2026-11-04T19:17Z run measured seven live guard facts in 400 ms, then
+// aborted in the cancellation window, and the driver reported six
+// `FAIL / DRIVER_ABORTED` rows — discarding every observation. The rule that
+// must survive is "never launder a MISSING observation into a pass"; these arms
+// pin the rule that replaces the over-correction: a COMPLETE sample keeps the
+// verdict its own judge gives it, an INCOMPLETE one is NOT_REACHED, and the RUN
+// is FAIL + partial either way. `negative-controls.mjs` breaks each law in turn
+// and requires the suite to go RED.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ABORT = 'cancellation-window'
+const completeRow1 = () => row1Proven()
+const incompleteRow1 = () => ({ ...row1Proven(), result: null })
+const wrongBytesRow1 = () => ({ ...row1Proven(), result: ok('No matches found') })
+
+test('partial run: a COMPLETE sample after a later abort is judged by its normal judge — PASS at CASE level', () => {
+  const judged = judgeCase(SEARCH_CASE_IDS.row1, completeRow1(), { abortedAt: ABORT, stage: 'delegate-dispatch' })
+  assert.equal(judged.verdict, 'PASS', JSON.stringify(judged))
+  assert.equal(judged.status, CASE_STATUS.JUDGED)
+  assert.equal(judged.sampleComplete, true)
+  assert.deepEqual(judged.missing, [])
+  assert.equal(judged.abortedAt, ABORT)
+})
+
+test('partial run: an INCOMPLETE sample after an abort is NOT_REACHED + driver-aborted, never PASS', () => {
+  const judged = judgeCase(SEARCH_CASE_IDS.row1, incompleteRow1(), { abortedAt: ABORT })
+  assert.equal(judged.verdict, 'NOT_REACHED', JSON.stringify(judged))
+  assert.equal(judged.status, CASE_STATUS.DRIVER_ABORTED)
+  assert.equal(judged.sampleComplete, false)
+  assert.deepEqual(judged.missing, ['result'])
+  assert.notEqual(judged.verdict, 'PASS')
+})
+
+test('partial run: a COMPLETE sample with the WRONG bytes is FAIL, never PASS', () => {
+  const judged = judgeCase(SEARCH_CASE_IDS.row1, wrongBytesRow1(), { abortedAt: ABORT })
+  assert.equal(judged.verdict, 'FAIL', JSON.stringify(judged))
+  assert.equal(judged.status, CASE_STATUS.JUDGED)
+  assert.equal(judged.sampleComplete, true)
+  assert.ok(judged.failed.includes('matchReturned'), JSON.stringify(judged.failed))
+})
+
+test('partial run: on a COMPLETED run the same incomplete sample is not-reached, not driver-aborted', () => {
+  const judged = judgeCase(SEARCH_CASE_IDS.row1, incompleteRow1(), { abortedAt: null })
+  assert.equal(judged.verdict, 'NOT_REACHED')
+  assert.equal(judged.status, CASE_STATUS.NOT_REACHED)
+})
+
+test('partial run: the RUN is FAIL + partial even when every judged case PASSED', () => {
+  const cases = [
+    judgeCase(SEARCH_CASE_IDS.row1, completeRow1(), { abortedAt: ABORT }),
+    judgeCase(SEARCH_CASE_IDS.row1, incompleteRow1(), { abortedAt: ABORT }),
+  ]
+  const fold = summarizeRun(cases, { abortedAt: ABORT })
+  assert.equal(fold.overall, 'FAIL', JSON.stringify(fold))
+  assert.equal(fold.partial, true)
+  assert.equal(fold.passed.length, 1)
+  assert.deepEqual(fold.judged, [SEARCH_CASE_IDS.row1])
+  assert.deepEqual(fold.neverObserved, [SEARCH_CASE_IDS.row1])
+  // A completed run with one never-reached case is NOT_REACHED, never PASS.
+  assert.equal(summarizeRun(cases, { abortedAt: null }).overall, 'NOT_REACHED')
+  // All cases passed and nothing aborted: the one green path.
+  assert.equal(summarizeRun([judgeCase(SEARCH_CASE_IDS.row1, completeRow1())], { abortedAt: null }).overall, 'PASS')
+})
+
+test('partial run: CASE_STATUS is exactly the three machine-checkable reasons', () => {
+  assert.deepEqual(Object.values(CASE_STATUS).sort(), ['driver-aborted', 'judged', 'not-reached'])
+  assert.equal(Object.isFrozen(CASE_STATUS), true)
+})
+
+test('partial run: sampleCompleteness names the channel a judge is missing, per row', () => {
+  assert.deepEqual(sampleCompleteness(SEARCH_CASE_IDS.row1, incompleteRow1()).missing, ['result'])
+  assert.equal(sampleCompleteness(SEARCH_CASE_IDS.row1, completeRow1()).complete, true)
+  // Row 3 needs the lane report's probe on the exact locator, not just a result.
+  const row3NoReport = { ...completeRow1(), declaredRoot: RESTRICTED, laneReport: null }
+  assert.deepEqual(sampleCompleteness(SEARCH_CASE_IDS.row3, row3NoReport).missing, ['laneReport'])
+  const row3NoProbe = { ...row3NoReport, laneReport: { probePaths: [{ locator: ROOT }] } }
+  assert.deepEqual(sampleCompleteness(SEARCH_CASE_IDS.row3, row3NoProbe).missing, ['laneReportProbe'])
+  // Row 4 needs an ADMITTED process AND the interruption; a deny fact alone is not a window.
+  const row4NoSpawn = { result: null, facts: [fact({ locator: FIFO, decision: 'deny', decidedBy: READ_DENIED })], records: [], declaredRoot: FIFO, interrupt: null }
+  const row4Missing = sampleCompleteness(SEARCH_CASE_IDS.row4, row4NoSpawn)
+  assert.deepEqual([...row4Missing.missing].sort(), ['confinedSpawn', 'interrupt'])
+  assert.equal(judgeCase(SEARCH_CASE_IDS.row4, row4NoSpawn, { abortedAt: ABORT }).verdict, 'NOT_REACHED')
+  // A null sample names the sample itself.
+  assert.deepEqual(sampleCompleteness(SEARCH_CASE_IDS.row6, null).missing, ['sample'])
+  assert.throws(() => sampleCompleteness('live:nope', {}), /no search-live completeness rule/u)
 })
