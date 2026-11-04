@@ -107,3 +107,86 @@ export function createAlpha6RootComposition(input: Alpha6RootCompositionInput): 
 
   return { mode: 'alpha6', ports, officerInstanceId: officer.instanceId }
 }
+
+/**
+ * The LIVE-VIEW variant used by a long-lived Host composition.
+ *
+ * The static factory above pins a member SNAPSHOT. Production creates members
+ * AFTER the control service exists, so a snapshot would either be empty or
+ * stale. This variant takes the durable member LOOKUP (get/list) and does NOT
+ * pin an Officer:
+ *
+ *  - construction checks only the static policy face (v5 routing enabled, a
+ *    non-empty Officer template that is not the Leader template);
+ *  - every assigned-Officer evaluation re-resolves exactly ONE live RUNNING
+ *    Officer through `AssignedOfficerFactsPort`, so zero/multiple/archived
+ *    states refuse AT THE QUERY, never against a startup snapshot.
+ *
+ * No notifier swap and no root mutation happen here either.
+ */
+export type Alpha6LiveRootComposition =
+  | { readonly mode: 'legacy'; readonly reason: 'disabled' }
+  | { readonly mode: 'refused'; readonly refused: Alpha6CompositionRefusal }
+  | { readonly mode: 'alpha6'; readonly ports: Alpha6ControlPorts }
+
+export interface Alpha6LiveRootCompositionInput {
+  readonly enabled: boolean
+  readonly blueprintSource: string
+  readonly rootSessionId: string
+  readonly leaderTemplateId: string
+  readonly members: {
+    readonly get: (
+      rootSessionId: string,
+      instanceId: string,
+    ) => Promise<AssignedOfficerMemberSnapshot | undefined> | AssignedOfficerMemberSnapshot | undefined
+    readonly list: (
+      rootSessionId: string,
+    ) => Promise<readonly AssignedOfficerMemberSnapshot[]> | readonly AssignedOfficerMemberSnapshot[]
+  }
+  readonly control: Alpha6RootCompositionInput['control']
+  readonly permissionOverlay?: Alpha6PermissionOverlayPort
+}
+
+export function createAlpha6LiveRootComposition(
+  input: Alpha6LiveRootCompositionInput,
+): Alpha6LiveRootComposition {
+  if (input.enabled !== true) return { mode: 'legacy', reason: 'disabled' }
+
+  const parsed = parseAlpha6Routing(input.blueprintSource)
+  if (parsed === null) return { mode: 'refused', refused: 'blueprint-not-v5' }
+
+  // Reuse the ONE static decision for the policy face. The member count is not
+  // a construction fact here; the facts port applies the unique-Officer law on
+  // every query, so the probe list only satisfies the signature.
+  const decision = decideAlpha6Composition({
+    enabled: true,
+    blueprintDocumentVersion: parsed.blueprint.schemaVersion,
+    reviewRouting: {
+      enabled: parsed.routing.enabled,
+      officerTemplateId: parsed.routing.officerTemplateId,
+    },
+    activeMemberTemplateIds: [parsed.routing.officerTemplateId],
+    leaderTemplateId: input.leaderTemplateId,
+  })
+  if (decision.mode !== 'alpha6') return decision
+
+  const generation = createAlpha6AuthorityGenerationReader(input.permissionOverlay)
+  const ports = createAlpha6ControlPorts({
+    rootSessionId: input.rootSessionId,
+    routing: parsed,
+    control: {
+      readControlState: async (rootSessionId) =>
+        (await input.control.readControlState(rootSessionId)) as never,
+    },
+    members: {
+      get: (rootSessionId, instanceId) =>
+        rootSessionId === input.rootSessionId ? input.members.get(rootSessionId, instanceId) : undefined,
+      list: (rootSessionId) =>
+        rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
+    },
+    authorityGeneration: async ({ rootSessionId, reviewerInstanceId }) =>
+      generation({ teamSessionId: rootSessionId, memberInstanceId: reviewerInstanceId }),
+    fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
+  })
+  return { mode: 'alpha6', ports }
+}

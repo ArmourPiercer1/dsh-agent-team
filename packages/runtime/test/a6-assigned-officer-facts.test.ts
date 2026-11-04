@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService, CurrentLegTransferRecord } from '../control/index.js'
 import { createAlpha6AuthorityGenerationReader } from '../alpha6/authority-generation.js'
-import { createAlpha6RootComposition } from '../alpha6/root-composition.js'
+import { createAlpha6LiveRootComposition, createAlpha6RootComposition } from '../alpha6/root-composition.js'
 import { createAlpha6CategoryLookup, createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
 import type {
   Alpha6ControlPorts,
@@ -693,6 +693,38 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
     })
     return { service, ports }
   }
+
+  it('live root composition pins no startup Officer and resolves the current unique one at query time', async () => {
+    const world = await makeWorld('a6-live-root-composition')
+    try {
+      let service!: ControlService
+      const composition = createAlpha6LiveRootComposition({
+        enabled: true,
+        blueprintSource: v5Source('7'),
+        rootSessionId: P6T4_ROOT,
+        leaderTemplateId: BASE_ROUTING.blueprint.leader.templateId,
+        members: memberLookup(world),
+        control: { readControlState: (root) => service.readControlState(root) },
+        permissionOverlay: {
+          latest: async ({ memberInstanceId }) => memberInstanceId === OFFICER ? { metadata: { generation: GENERATION } } : undefined,
+        },
+      })
+      expect(composition.mode).toBe('alpha6')
+      if (composition.mode !== 'alpha6') throw new Error('expected alpha6')
+      service = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        ...composition.ports,
+      })
+      const leg = await makeLeg(service, 'corr-a6-live-root-composition')
+      // Resolved from the LIVE repository after construction, not a snapshot.
+      expect(await composition.ports.currentReviewerForTransfer(queryOf(leg))).toEqual({ instanceId: OFFICER })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
 
   it('readControlState reports leg AND transfer rows with listControlState parity, without taking the lock', async () => {
     const world = await makeWorld('a6-reader-snapshot')
