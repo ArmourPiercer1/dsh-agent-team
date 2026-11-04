@@ -461,6 +461,24 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   if (compiled.bindings !== undefined && !Array.isArray(compiled.bindings)) {
     throw new TypeError('agent-bindings: a5sfRealmProvider.compiledFor answered a non-array `bindings`')
   }
+  // BL-16: the OPTIONAL confined `subprocess` face. It is forwarded verbatim to
+  // the realm mount, which mounts it on the SAME isolated Member scope the
+  // native modules are re-mounted into. Only its SHAPE is checked here: the
+  // policy is compiled by the provider and the OS provider is P1-07's, so this
+  // glue never evaluates a lane or builds a launcher.
+  if (compiled.subprocess !== undefined) {
+    const subprocess = compiled.subprocess
+    const shapeOk = typeof subprocess === 'object' && subprocess !== null
+      && typeof subprocess.effective === 'object' && subprocess.effective !== null
+      && typeof subprocess.provider === 'object' && subprocess.provider !== null
+      && typeof subprocess.provider.spawnStreaming === 'function'
+    if (!shapeOk) {
+      throw new TypeError(
+        'agent-bindings: a5sfRealmProvider.compiledFor answered a `subprocess` face without { effective, provider.spawnStreaming };'
+        + ' a declared confined subprocess face that cannot mount must refuse rather than silently leave grep/glob on the host service',
+      )
+    }
+  }
 
   // The row's configured path, never a derived or hardcoded one. The sink owns
   // no counter/ledger: one fact per consultation, in call order.
@@ -470,6 +488,7 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     members: compiled.members,
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
+    ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
     onGuardConsult: (fact) => sink.record(fact),
   }
   // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C

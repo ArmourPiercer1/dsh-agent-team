@@ -1,0 +1,105 @@
+/**
+ * Alpha.5 P1-07 — execution profile compilation (policy → OS rules).
+ *
+ * The OS runner never receives the Member policy loosely: it receives a
+ * COMPILED PROFILE derived from the effective two-axis policy, and it refuses
+ * to run when the profile cannot make an honest promise.
+ *
+ * EXPRESSIBLE (and enforced by the Landlock launcher):
+ *  - read allow locators → READ_FILE | READ_DIR on exactly those subtrees;
+ *  - write allow locators → WRITE_FILE | MAKE_REG | TRUNCATE | REMOVE_FILE;
+ *  - a write locator that is NOT also readable → the write-only entry, with the
+ *    read bits absent (the kernel default-denies reads of it);
+ *  - network `deny` → the child is refused when the backend cannot enforce the
+ *    network dimension (no `--unshare-net`-less fallback).
+ *
+ * NOT EXPRESSIBLE, therefore REFUSED rather than approximated:
+ *  - `mode: all` on either axis (a "no allowlist" policy cannot be turned into
+ *    a default-deny ruleset without changing its meaning);
+ *  - `ask` dispositions (an ask is not an allow: the profile never upgrades it);
+ *  - a DENY that is a strict descendant of an allow on the same axis (Landlock
+ *    has no negative rules; granting the parent would grant the denial);
+ *  - for a write locator nested under a readable parent the kernel read bit on
+ *    the parent also covers it: the module reports it as readable, not as
+ *    write-only (no silent write-only claim for a nested path);
+ *  - `chmod` (Landlock cannot restrict it for a same-uid owner; disclosed in the
+ *    evidence, never silently claimed).
+ *
+ * @module @dsh-agent-team/runtime/team-sandbox/profile
+ */
+import { coversLocator } from '../../member-io-policy/src/path-rules.js';
+export const PROFILE_REFUSAL_CODES = [
+    'PATH_LANE_UNRESTRICTED',
+    'PATH_LANE_UNSUPPORTED',
+    'PATH_NESTED_DENY_UNEXPRESSIBLE',
+    'NETWORK_DENY_UNEXPRESSIBLE',
+    'NO_NAMED_SUBTREE',
+];
+function refuse(code, detail) {
+    return Object.freeze({ ok: false, code, detail });
+}
+const READ_BITS = Object.freeze({ readFile: true, readDir: true });
+const WRITE_BITS = Object.freeze({ writeFile: true, makeReg: true, truncate: true, removeFile: true });
+/**
+ * Compile one execution profile. `read` and `write` are compiled independently:
+ * a write-only subtree is a real, first-class outcome (it is exactly what a
+ * Member with `write: allow` and no matching `read: allow` gets), not a bug.
+ */
+export function compileExecutionProfile(policy) {
+    const lanes = [
+        ['read', policy.read],
+        ['write', policy.write],
+    ];
+    for (const [axis, lane] of lanes) {
+        if (lane.mode === 'all') {
+            return refuse('PATH_LANE_UNRESTRICTED', `${axis} axis is 'all' (no allowlist); a default-deny OS ruleset cannot express it without changing the policy`);
+        }
+        if (lane.ask.length > 0) {
+            return refuse('PATH_LANE_UNSUPPORTED', `${axis} axis carries 'ask' destinations; an ask is not an OS grant and the profile never upgrades it`);
+        }
+        // Landlock rules are ADDITIVE: there is no negative rule, so a deny that is
+        // a strict DESCENDANT of an allow cannot be expressed at all. Keep the
+        // equal-or-ancestor case (dropping that allow is exactly the deny), refuse
+        // the descendant case rather than silently granting the denied subtree.
+        for (const denied of lane.deny) {
+            const covered = lane.allow.some((allowed) => coversLocator(allowed, denied) && allowed !== denied);
+            if (covered) {
+                return refuse('PATH_NESTED_DENY_UNEXPRESSIBLE', `the ${axis} lane denies '${denied}' inside an allowed subtree; the OS backend has no negative rules, so this profile cannot be expressed without widening`);
+            }
+        }
+        // deny entries need no rule: the ruleset is default-deny. `deny` wins over a
+        // matching `allow` by construction, because we drop denied allows below.
+    }
+    const readAllow = policy.read.allow.filter((locator) => !laneDenies(policy.read, locator));
+    const writeAllow = policy.write.allow.filter((locator) => !laneDenies(policy.write, locator));
+    if (readAllow.length === 0 && writeAllow.length === 0) {
+        return refuse('NO_NAMED_SUBTREE', 'neither axis names a permitted subtree; an empty ruleset would deny everything (refused instead of spawning a useless child)');
+    }
+    const readWrite = readAllow.filter((locator) => writeAllow.includes(locator));
+    const readOnly = readAllow.filter((locator) => !writeAllow.includes(locator));
+    const writeOnly = writeAllow.filter((locator) => !readAllow.includes(locator));
+    const allowPaths = [
+        ...readWrite.map((path) => ({ path, accessBits: Object.freeze({ ...READ_BITS, ...WRITE_BITS }) })),
+        ...readOnly.map((path) => ({ path, accessBits: READ_BITS })),
+        ...writeOnly.map((path) => ({ path, accessBits: WRITE_BITS })),
+    ];
+    return Object.freeze({
+        ok: true,
+        value: Object.freeze({
+            allowPaths: Object.freeze(allowPaths),
+            networkProfile: policy.network.access === 'deny' ? 'deny' : undefined,
+            readPaths: Object.freeze([...readWrite, ...readOnly]),
+            writeOnlyPaths: Object.freeze(writeOnly),
+            readWritePaths: Object.freeze(readWrite),
+        }),
+    });
+}
+/** A locator denied by its own lane (deny wins over allow, segment-aware). */
+function laneDenies(lane, locator) {
+    const normalized = locator.replace(/\\/g, '/').replace(/\/+$/, '');
+    return lane.deny.some((denied) => {
+        const rule = denied.replace(/\\/g, '/').replace(/\/+$/, '');
+        return normalized === rule || normalized.startsWith(`${rule}/`) || rule === '';
+    });
+}
+//# sourceMappingURL=profile.js.map

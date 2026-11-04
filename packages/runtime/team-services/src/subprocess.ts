@@ -263,9 +263,21 @@ export function isShellClassProgram(programName: string): boolean {
  *
  * The rule is a declared allow-list plus a per-program argv contract:
  *  - the program's basename must be in {@link CONFINED_SUBPROCESS_STATIC_PROGRAMS};
- *  - for `rg`, `--no-config` MUST be present (otherwise a ripgrep config file is
- *    read without appearing in any operand) and the flags that EXECUTE another
- *    program (`--pre`, `--search-zip`/`-z`) are refused.
+ *  - for `rg`, only the flag SHAPES the shipped `grep`/`glob` module emits are
+ *    admitted (see {@link rgArgvRefusal}); `--no-config` must be the FIRST
+ *    argument (a positional `--no-config` after `--` is an operand, and a
+ *    ripgrep config could inject `--pre`); `-f`/`--file`/`--ignore-file`
+ *    (pattern/ignore file reads), `--pre`/`--search-zip`/`-z` (another program
+ *    or decompressor runs) and every other flag are refused.
+ *
+ * The NAME check is not an identity check. {@link programWriteLaneRefusal} is
+ * the second half: a program whose realpath is inside the Member's effective
+ * write lane is refused even when its basename is `rg`.
+ *
+ * Every other program — including `sh`, `bash`, `python*`, `node`, `perl`,
+ * `ruby`, `awk`, `xargs`, `find` and any unknown binary — is refused. An
+ * unknown program cannot be proven to read only its operands, so the face
+ * fails closed instead of guessing.
  *
  * Every other program — including `sh`, `bash`, `python*`, `node`, `perl`,
  * `ruby`, `awk`, `xargs`, `find` and any unknown binary — is refused. An
@@ -294,24 +306,104 @@ export function programAttributionRefusal(
       target: program,
     })
   }
-  if (name === 'rg') {
-    if (!spec.argv.includes('--no-config')) {
-      return Object.freeze({
-        code: 'IO_READ_DENIED',
-        detail: 'argv[0] rg did not pass --no-config: a ripgrep config file would be read without appearing in the declared operands',
-        target: program,
-      })
+  if (name === 'rg') return rgArgvRefusal(program, spec.argv)
+  return undefined
+}
+
+/**
+ * The `rg` flag shapes the shipped `grep`/`glob` module emits. This is an
+ * ALLOW-LIST of shapes, not a deny-list of dangerous flags:
+ * `buildGrepCommand` emits `--json`, `--regexp=…`, optional `--glob=…` and the
+ * root behind `--`; `buildGlobCommand` emits `--files`, `--glob=…`,
+ * `--sort=modified`, `--no-ignore`, `--hidden` and the VCS-exclude `--glob=!…`
+ * pairs; `runRipgrep` prepends `--no-config`. Anything else — including
+ * `-f`/`--file`/`--ignore-file` (a pattern/ignore file read), `--pre`/
+ * `--search-zip`/`-z` (another program runs), `--follow` (a nested symlink is
+ * followed), or a `--no-config` that fell behind `--` and became an operand —
+ * is refused before any process.
+ */
+const RG_ADMITTED_FLAGS: readonly string[] = Object.freeze([
+  '--json',
+  '--files',
+  '--sort=modified',
+  '--no-ignore',
+  '--hidden',
+])
+const RG_ADMITTED_PREFIXES: readonly string[] = Object.freeze(['--regexp=', '--glob='])
+
+/** The per-program argv contract for `rg` (called only after the name check). */
+function rgArgvRefusal(program: string, argv: readonly string[]): ProgramAttributionRefusal | undefined {
+  const refusal = (detail: string): ProgramAttributionRefusal =>
+    Object.freeze({ code: 'IO_READ_DENIED', detail: `argv[0] rg ${detail}`, target: program })
+  // B2 (review round 3): the token must be the FIRST argument, before any `--`.
+  // `argv.includes('--no-config')` was position-insensitive: a lane file named
+  // `--no-config` placed after `--` satisfied it while rg never received the
+  // flag, so `RIPGREP_CONFIG_PATH` could inject `--pre` and execute a program.
+  if (argv[1] !== '--no-config') {
+    return refusal('must pass --no-config as its FIRST argument (immediately after the program, before the first --): a --no-config after -- is an OPERAND, not a flag, and a ripgrep config file could otherwise inject --pre')
+  }
+  const separator = argv.indexOf('--')
+  const flags = argv.slice(1, separator === -1 ? argv.length : separator)
+  for (const token of flags.slice(1)) {
+    if (RG_ADMITTED_FLAGS.includes(token) || RG_ADMITTED_PREFIXES.some((prefix) => token.startsWith(prefix))) continue
+    if (token === '--pre' || token.startsWith('--pre=')) {
+      return refusal(`passes ${JSON.stringify(token)}, which executes another program whose reads are not in the declared operands`)
     }
-    const escaping = spec.argv.find((token) => token === '--pre' || token.startsWith('--pre=')
-      || token === '--search-zip' || token === '-z'
-      || (token.length > 1 && token.startsWith('-') && !token.startsWith('--') && token.slice(1).includes('z')))
-    if (escaping !== undefined) {
-      return Object.freeze({
-        code: 'IO_READ_DENIED',
-        detail: `argv[0] rg passes ${JSON.stringify(escaping)}, which executes another program (or a decompressor) whose reads are not in the declared operands`,
-        target: program,
-      })
+    if (token === '--search-zip' || token === '-z'
+      || (token.length > 1 && token.startsWith('-') && !token.startsWith('--') && token.slice(1).includes('z'))) {
+      return refusal(`passes ${JSON.stringify(token)}, which runs a decompressor (search-zip) whose reads are not in the declared operands`)
     }
+    if (token === '-f' || token === '--file' || token.startsWith('--file=')
+      || token === '--ignore-file' || token.startsWith('--ignore-file=')) {
+      return refusal(`passes ${JSON.stringify(token)}, which reads a pattern/ignore FILE that is not a declared operand; only the shipped search argv shapes are admitted`)
+    }
+    return refusal(`passes ${JSON.stringify(token)}, which is not one of the argv shapes the shipped grep/glob module emits (${[...RG_ADMITTED_FLAGS, '--regexp=…', '--glob=…'].join(', ')}); every other flag fails closed`)
+  }
+  return undefined
+}
+
+/**
+ * B3 (review round 3): refuse a program whose REALPATH lies inside the
+ * Member's effective WRITE lane. The allow-list above keys on the program
+ * NAME, so `inside/rg` — a shell script the caller can write — passed the name
+ * check and executed. A caller cannot legitimately supply a program it can
+ * write, so the spawn is refused before any process instead.
+ *
+ * The decision reuses the SAME `evaluateLocatorAccess` (write access, the same
+ * resolver) the `fs` face uses, so there is no second policy evaluator. It
+ * resolves symlinks: an authored in-lane link whose target also resolves into
+ * the lane is refused; a link resolving outside the lane is accepted (the
+ * target is not writable through this lane).
+ */
+export async function programWriteLaneRefusal(
+  program: string,
+  writeLane: PathRuleSet,
+  resolver: PathIdentityResolver = NODE_PATH_IDENTITY_RESOLVER,
+): Promise<ProgramAttributionRefusal | undefined> {
+  if (typeof program !== 'string' || program.length === 0) return undefined
+  let decision
+  try {
+    decision = await evaluateLocatorAccess({ lane: writeLane, locator: program, access: 'write', resolver })
+  } catch (error) {
+    return Object.freeze({
+      code: 'IO_READ_DENIED',
+      detail: `argv[0] ${JSON.stringify(program)} could not be resolved against the Member write lane (${error instanceof Error ? error.message : String(error)}); an unresolvable program is refused fail-closed`,
+      target: program,
+    })
+  }
+  if (decision.decision === 'allow') {
+    return Object.freeze({
+      code: 'IO_READ_DENIED',
+      detail: `argv[0] ${JSON.stringify(program)} resolves inside the Member's effective WRITE lane ('${decision.resolved}'); a program the caller can write is not statically attributable (the caller could replace its bytes), so the spawn is refused before any process`,
+      target: program,
+    })
+  }
+  if (decision.decision === 'unsupported') {
+    return Object.freeze({
+      code: 'IO_READ_DENIED',
+      detail: `argv[0] ${JSON.stringify(program)} could not be resolved by the path identity Provider (${decision.detail}); an unresolvable program is refused fail-closed`,
+      target: program,
+    })
   }
   return undefined
 }
@@ -705,15 +797,20 @@ export function createConfinedSubprocessClass(
       const attribution = programAttributionRefusal(spec)
       const intents = attribution === undefined ? readIntentsOf(spec) : Object.freeze([] as string[])
       const started = (async () => {
-        if (attribution !== undefined) {
-          pendingAttribution.push(attribution)
-          await guard(SUBPROCESS_GUARD_METHOD, attribution.target)
+        // B3 (review round 3): the name allow-list cannot tell a shipped `rg`
+        // from a Member-writable script that happens to be named `rg`. A
+        // program whose realpath is inside the effective WRITE lane is refused
+        // through the SAME guard/evaluator, before any provider call.
+        const refusal = attribution ?? await programWriteLaneRefusal(spec.argv[0] as string, effective.write)
+        if (refusal !== undefined) {
+          pendingAttribution.push(refusal)
+          await guard(SUBPROCESS_GUARD_METHOD, refusal.target)
           // The guard rethrows the typed denial above; this line is defence
           // against an admission invariant breaking silently.
-          throw new TeamIoDenial(attribution.code, attribution.detail, {
+          throw new TeamIoDenial(refusal.code, refusal.detail, {
             memberIdentity: effective.memberIdentity,
             method: SUBPROCESS_GUARD_METHOD,
-            target: attribution.target,
+            target: refusal.target,
           })
         }
         for (const intent of intents) await guard(SUBPROCESS_GUARD_METHOD, intent)

@@ -35,15 +35,23 @@
  *              succeeds — the allowance boundary, pinned rather than described
  *   PIN-ETC    layer 2 directly: a direct `/etc/passwd` read SUCCEEDS (the
  *              launcher's runtime_base), with ZERO guard facts
- *   PIN-SYMLINK an in-lane symlink -> `/etc/passwd` is served through rg
- *              (`--follow`), one ALLOW fact on the declared in-lane root
+ *   PIN-SYMLINK layer 2 directly (raw provider, admission bypassed): an in-lane
+ *              link to `/etc/passwd` is served when rg is given `--follow`; the
+ *              ADMISSION refuses `--follow` (not a shipped shape), so the
+ *              product seam cannot reach this
  *   PIN-HARDLINK a PRE-EXISTING in-lane hardlink to an outside inode is served
  *              (rg default arm), one ALLOW fact — the limit, measured
  *   PIN-CAPS   the in-lane capability narrowing, measured: write-a-file yes;
  *              mkdir, symlink creation and in-lane execve are DENIED; a
  *              hardlink BETWEEN two in-lane paths IS created (no link bit)
- *   PIN-PROGDIR a Member-writable copy NAMED `rg` executes: the allow-list is
- *              a name contract, not a byte-identity check (residual #3)
+ *   B1-FILE    `rg -f /etc/hostname` is refused at admission: a pattern file is
+ *              not a declared operand (one deny fact, no process, no bytes)
+ *   B1-FILEEQ  the same through `--file=/etc/hostname`
+ *   B2-NOCONFIG `--no-config` after `--` is an OPERAND: with
+ *              RIPGREP_CONFIG_PATH injecting `--pre=/bin/sh` the spawn is
+ *              refused before rg reads the config
+ *   B3-PROG    a shell script NAMED `rg` inside the Member write lane is
+ *              refused: the name allow-list is not a program-identity check
  */
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
@@ -116,10 +124,19 @@ linkSync(join(outside, 'secret.txt'), join(inside, 'hard-secret'))
 writeFileSync(join(inside, 's.sh'), '#!/bin/sh\necho RAN\n')
 chmodSync(join(inside, 's.sh'), 0o755)
 const RG_PATH = join(BASELINE, 'node_modules', '.pnpm', '@vscode+ripgrep-linux-x64@1.18.0', 'node_modules', '@vscode', 'ripgrep-linux-x64', 'bin', 'rg')
-// A Member-writable copy of the allowed program name (residual #3 measured).
+// B3: a shell script the Member can write, NAMED rg (the name allow-list would
+// otherwise admit it).
+writeFileSync(join(inside, 'rg'), '#!/bin/sh\necho RG-NAMED-SCRIPT-EXECUTED\ncat /etc/hostname\n')
+chmodSync(join(inside, 'rg'), 0o755)
+// A Member-writable copy of the allowed program name (formerly residual #3).
 mkdirSync(join(inside, 'tools'), { recursive: true })
 copyFileSync(RG_PATH, join(inside, 'tools', 'rg'))
 chmodSync(join(inside, 'tools', 'rg'), 0o755)
+// B2 fixtures: a ripgrep config that would execute /bin/sh per file, and the
+// lane file literally named `--no-config` that used to satisfy the check while
+// sitting AFTER `--` as an operand.
+writeFileSync(join(inside, 'rgrc'), '--pre=/bin/sh\n')
+writeFileSync(join(inside, '--no-config'), '')
 const sinkOf = (name) => join(world, `consult-${name}.jsonl`)
 const factsOf = async (path) => (existsSync(path) ? await guarded.readGuardConsultFile(path) : [])
 const factLine = (f) => `${f.realm}/${String(f.toolBindingIdentity)}/${f.memberIdentity}/${f.method}/${f.decision}/${f.decidedBy}/${f.locator}`
@@ -259,6 +276,30 @@ async function arm(label, fn) {
   const line = await fn()
   results.push(`${label}: ${line}`)
   console.log(`${label}: ${line}`)
+}
+
+/**
+ * Drive ONE refused spawn through the mounted product seam and return the
+ * measured outcome. The counter is the provider's own `spawnStreaming` count,
+ * so `before === after` is the negative control against "filter after the
+ * fact"; `text` is the collected stdout (must be empty).
+ */
+async function refusedSpawn(w, argv, env) {
+  const service = w.realm.installation.members[0]?.subprocess
+  assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
+  const before = w.spawns.count
+  const handle = service.spawn({
+    argv,
+    cwd: inside,
+    stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
+    graceMs: 5000,
+    ...(env === undefined ? {} : { env }),
+  })
+  const denial = await handle.done.then(() => undefined, (error) => error)
+  const after = w.spawns.count
+  const facts = await factsOf(w.sinkPath)
+  const text = handle.collected?.stdout?.readFrom(0).text ?? ''
+  return { before, after, denial, facts, text }
 }
 
 const IN_LANE = { read: [inside], write: [inside], restriction: [inside] }
@@ -467,45 +508,92 @@ try {
     return `mkdir=DENIED writeFile=ALLOWED symlink=DENIED(symInLane+symToEtc) hardlinkInLane=ALLOWED inLaneExecve=DENIED (raw provider) stdout=${JSON.stringify(text.replace(/\n/g, '\\n').slice(0, 200))}`
   })
 
-  // --- PIN-SYMLINK: an in-lane symlink to /etc is served --------------------
-  await arm('PIN-SYMLINK (in-lane symlink -> /etc/passwd served; one ALLOW fact)', async () => {
-    const w = await worldWith({ ...IN_LANE, name: 'pinsym' })
+  // --- PIN-SYMLINK: layer 2 serves it; the admission refuses `--follow` ------
+  await arm('PIN-SYMLINK (raw provider: in-lane link -> /etc/passwd served with --follow; admission refuses --follow)', async () => {
+    const effective = effectiveOf(IN_LANE.read, IN_LANE.write, IN_LANE.restriction)
+    const realmId = 'realm-bl16-pinsym'
+    const text = await rawSpawnText(makeRaw(realmId, 'pinsym'), realmId, effective,
+      [RG_PATH, '--no-config', '--follow', '--regexp=root:', '--', inside])
+    assert.match(text, /link-passwd:root:x:0:0/, `the kernel did not serve the in-lane symlink: ${text}`)
+    // The product seam cannot reach that layer-2 allowance: `--follow` is not a
+    // shape the shipped module emits, so admission refuses it.
+    const w = await worldWith({ ...IN_LANE, name: 'pinsymrefuse' })
     try {
-      const service = w.realm.installation.members[0]?.subprocess
-      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
-      const handle = service.spawn({
-        argv: [RG_PATH, '--no-config', '--follow', '--regexp=root:', '--', inside],
-        cwd: inside,
-        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
-        graceMs: 5000,
-      })
-      await handle.done
-      const text = handle.collected.stdout?.readFrom(0).text ?? ''
-      const facts = await factsOf(w.sinkPath)
-      assert.match(text, /link-passwd:root:x:0:0/, `rg did not follow the in-lane symlink: ${text}`)
-      assert.equal(facts.length, 1, `expected one fact, got ${JSON.stringify(facts)}`)
-      assert.equal(facts[0].decision, 'allow')
-      assert.equal(facts[0].locator, inside)
-      return `symlinkTarget=/etc/passwd SERVED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} facts=[${facts.map(factLine).join(',')}]`
+      const refused = await refusedSpawn(w, [RG_PATH, '--no-config', '--follow', '--regexp=root:', '--', inside])
+      assert.notEqual(refused.denial, undefined, '--follow was admitted through the product seam')
+      assert.equal(refused.after, refused.before, 'a process was spawned for a refused --follow')
+      assert.equal(refused.facts.length, 1)
+      assert.equal(refused.facts[0].decision, 'deny')
+      assert.equal(refused.text, '')
+      return `layer2 SERVED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} facts=0; admission --follow REFUSED denial=${refused.denial.code} spawns=${refused.before}->${refused.after}`
     } finally { await w.realm.dispose(); w.active = false }
   })
 
-  // --- PIN-PROGDIR: the allow-list is a NAME, not a byte identity ------------
-  await arm('PIN-PROGDIR (a Member-writable copy named rg EXECUTES; the allow-list is by name)', async () => {
-    const w = await worldWith({ ...IN_LANE, name: 'pinprog' })
+  // --- B3: the name allow-list is not a program-identity check ---------------
+  await arm('B3-PROG (a shell script NAMED rg in the Member write lane is REFUSED)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'b3prog' })
     try {
-      const service = w.realm.installation.members[0]?.subprocess
-      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
-      const handle = service.spawn({
-        argv: [join(inside, 'tools', 'rg'), '--no-config', '--regexp=INSIDE-NEEDLE', '--', inside],
-        cwd: inside,
-        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
-        graceMs: 5000,
-      })
-      await handle.done
-      const text = handle.collected.stdout?.readFrom(0).text ?? ''
-      assert.match(text, /needle\.txt:INSIDE-NEEDLE/, `the in-lane program copy did not execute: ${text}`)
-      return `memberWritableProgram EXECUTED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} (programDir grant; residual #3)`
+      const refused = await refusedSpawn(w, [join(inside, 'rg'), '--no-config', '--regexp=INSIDE-NEEDLE', '--', inside])
+      assert.notEqual(refused.denial, undefined, 'the Member-writable script named rg was ADMITTED')
+      assert.equal(refused.after, refused.before, 'a process was spawned for a refused writable program')
+      assert.equal(refused.facts.length, 1, `expected one fact, got ${JSON.stringify(refused.facts)}`)
+      assert.equal(refused.facts[0].decision, 'deny')
+      assert.equal(refused.facts[0].decidedBy, 'IO_READ_DENIED')
+      assert.equal(refused.facts[0].locator, join(inside, 'rg'))
+      assert.match(String(refused.denial.detail ?? refused.denial.message), /WRITE lane|resolves inside/)
+      assert.equal(refused.text, '', 'a refused writable program returned bytes')
+      return `spawns=${refused.before}->${refused.after} denial=${refused.denial.code} facts=[${refused.facts.map(factLine).join(',')}] bytes=${JSON.stringify(refused.text)} detail=${JSON.stringify(String(refused.denial.message).slice(0, 120))}`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  // --- B1: a pattern FILE is not a declared operand -------------------------
+  await arm('B1-FILE (rg -f /etc/hostname is REFUSED: undeclared pattern-file read)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'b1file' })
+    try {
+      const refused = await refusedSpawn(w, [RG_PATH, '--no-config', '--json', '-f', '/etc/hostname', '--', inside])
+      assert.notEqual(refused.denial, undefined, 'rg -f /etc/hostname was ADMITTED')
+      assert.equal(refused.after, refused.before, 'a process was spawned for a refused -f read')
+      assert.equal(refused.facts.length, 1, `expected one fact, got ${JSON.stringify(refused.facts)}`)
+      assert.equal(refused.facts[0].decision, 'deny')
+      assert.equal(refused.facts[0].decidedBy, 'IO_READ_DENIED')
+      assert.equal(refused.facts[0].locator, RG_PATH)
+      assert.match(String(refused.denial.detail ?? refused.denial.message), /pattern\/ignore FILE/)
+      assert.equal(refused.text, '')
+      return `spawns=${refused.before}->${refused.after} denial=${refused.denial.code} facts=[${refused.facts.map(factLine).join(',')}] bytes=${JSON.stringify(refused.text)}`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  await arm('B1-FILEEQ (rg --file=/etc/hostname is REFUSED)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'b1fileeq' })
+    try {
+      const refused = await refusedSpawn(w, [RG_PATH, '--no-config', '--json', '--file=/etc/hostname', '--', inside])
+      assert.notEqual(refused.denial, undefined, 'rg --file=/etc/hostname was ADMITTED')
+      assert.equal(refused.after, refused.before, 'a process was spawned for a refused --file read')
+      assert.equal(refused.facts.length, 1)
+      assert.equal(refused.facts[0].decision, 'deny')
+      assert.equal(refused.facts[0].decidedBy, 'IO_READ_DENIED')
+      assert.equal(refused.text, '')
+      return `spawns=${refused.before}->${refused.after} denial=${refused.denial.code} facts=[${refused.facts.map(factLine).join(',')}] bytes=${JSON.stringify(refused.text)}`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  // --- B2: --no-config after `--` is an operand, not a flag -----------------
+  await arm('B2-NOCONFIG (--no-config after `--` + RIPGREP_CONFIG_PATH --pre=/bin/sh is REFUSED)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'b2noconfig' })
+    try {
+      const refused = await refusedSpawn(
+        w,
+        [RG_PATH, '--json', '--regexp=PRE-EXECUTED', '--', inside, '--no-config'],
+        { RIPGREP_CONFIG_PATH: join(inside, 'rgrc') },
+      )
+      assert.notEqual(refused.denial, undefined, 'the positional --no-config argv was ADMITTED')
+      assert.equal(refused.after, refused.before, 'a process was spawned before rg received --no-config')
+      assert.equal(refused.facts.length, 1, `expected one fact, got ${JSON.stringify(refused.facts)}`)
+      assert.equal(refused.facts[0].decision, 'deny')
+      assert.equal(refused.facts[0].decidedBy, 'IO_READ_DENIED')
+      assert.match(String(refused.denial.detail ?? refused.denial.message), /FIRST argument|OPERAND/)
+      assert.equal(refused.text, '')
+      return `spawns=${refused.before}->${refused.after} denial=${refused.denial.code} facts=[${refused.facts.map(factLine).join(',')}] bytes=${JSON.stringify(refused.text)}`
     } finally { await w.realm.dispose(); w.active = false }
   })
 

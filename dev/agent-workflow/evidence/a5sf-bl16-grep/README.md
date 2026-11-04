@@ -38,26 +38,35 @@ Three additions, all on existing seams (no new policy evaluator, no upstream pat
 
 | File | What it does |
 | --- | --- |
-| `packages/runtime/team-services/src/subprocess.ts` (new) | `readIntentsOf` (declared read roots), `programAttributionRefusal` + `CONFINED_SUBPROCESS_STATIC_PROGRAMS` (the typed statically-attributable allow-list: `rg`), `createMemberSubprocessGuard` (the SAME `FsGuard` shape, the SAME `evaluateLocatorAccess` decision, the SAME `TeamIoDenial` codes), `createConfinedOutputReader` (bounded, offset-based collect), `createConfinedSubprocessClass` (the Service subclass that replaces `spawn`) |
+| `packages/runtime/team-services/src/subprocess.ts` (new) | `readIntentsOf` (declared read roots), `programAttributionRefusal` + `CONFINED_SUBPROCESS_STATIC_PROGRAMS` (the typed statically-attributable allow-list: `rg`) and `programWriteLaneRefusal` (a correctly-named program the caller can WRITE is still refused), `createMemberSubprocessGuard` (the SAME `FsGuard` shape, the SAME `evaluateLocatorAccess` decision, the SAME `TeamIoDenial` codes), `createConfinedOutputReader` (bounded, offset-based collect), `createConfinedSubprocessClass` (the Service subclass that replaces `spawn`) |
 | `packages/runtime/team-services/src/install.ts` / `mount.ts` / `src/plugin/live/a5sf-realm-row.mjs` | an **optional** `subprocess` face: `compiledFor` may answer `{ effective, provider, realmId? }`; the installer nests `root.isolate('fs', label).isolate('subprocess', label2)` so the confined process service lives in the SAME isolated chain the route-C native modules are re-mounted into |
 
 Two layers, and neither one is a filter over results:
 
-1. **ADMISSION (before any process).** Two decisions, in this order:
+1. **ADMISSION (before any process).** Three decisions, in this order:
    **(a) attribution** — a spawn whose reads cannot be statically attributed to the
    declared read roots is refused: `sh`, `bash`, `dash`, `zsh`, `python*`, `node`,
    `perl`, `ruby`, `awk`, `xargs`, `find`, … and every binary not on the declared,
-   typed allow-list (`CONFINED_SUBPROCESS_STATIC_PROGRAMS = ['rg']`) fail closed, and
-   for `rg` the argv contract is enforced (`--no-config` required; `--pre`,
-   `--search-zip`/`-z` refused). This refusal is a typed `TeamIoDenial`
-   (`IO_READ_DENIED`) carrying the truthful attribution reason, plus exactly one
-   `a5sf-guard-consult/1` fact (`decision=deny`, `locator=argv[0]`) — and **zero**
-   provider calls. **(b) lane** — the request's declared read roots (operands after
-   `--`, resolved against `cwd`; `cwd` itself when the argv names no operand) are
-   consulted one by one against the **effective** lane (`ceiling ∩ restriction`, the
-   output of the ONE compiler `compileEffectiveIo`). A root outside it throws the same
-   typed denial and one fact, again **before** `provider.spawnStreaming`. The negative
-   control is a counter, not a string: `spawns=0->0` (§4 `SHELL-DENY`, `GREP-OUT`).
+   typed allow-list (`CONFINED_SUBPROCESS_STATIC_PROGRAMS = ['rg']`) fail closed.
+   For `rg` the argv contract is an **allow-list of the shapes the shipped module
+   emits**: `--no-config` must be the FIRST argument, before any `--` (a
+   `--no-config` after `--` is an OPERAND and was the round-3 B2 hole); the only
+   admitted flags are `--json`, `--regexp=…`, `--glob=…`, `--files`,
+   `--sort=modified`, `--no-ignore`, `--hidden` and the `--` root. `-f` / `--file` /
+   `--ignore-file` (a pattern/ignore FILE read — B1), `--pre` / `--search-zip` / `-z`
+   (another program/decompressor runs), `--follow` and every other flag are refused.
+   **(a2) program identity** — the name check is not a byte check, so a program whose
+   REALPATH lies inside the Member's effective WRITE lane is refused (B3) through the
+   SAME `evaluateLocatorAccess` (write access, same resolver), before any process.
+   Each refusal is a typed `TeamIoDenial` (`IO_READ_DENIED`) carrying the truthful
+   reason, plus exactly one `a5sf-guard-consult/1` fact (`decision=deny`,
+   `locator=argv[0]`) — and **zero** provider calls. **(b) lane** — the request's
+   declared read roots (operands after `--`, resolved against `cwd`; `cwd` itself
+   when the argv names no operand) are consulted one by one against the **effective**
+   lane (`ceiling ∩ restriction`, the output of the ONE compiler
+   `compileEffectiveIo`). A root outside it throws the same typed denial and one fact,
+   again **before** `provider.spawnStreaming`. The negative control is a counter, not
+   a string: `spawns=0->0` (§4 `SHELL-DENY`, `GREP-OUT`, `B1-*`, `B2-*`, `B3-PROG`).
 2. **CONTAINMENT (the OS).** The same effective policy is compiled by the SAME
    P1-07 compiler (`compileExecutionProfile`) into a Landlock allowlist, and the child
    runs under the real launcher. **Its boundary is narrower than "everything the
@@ -136,13 +145,26 @@ SHELL-DENY  sh -c 'cat /etc/passwd; cat <outside>/secret.txt'
 The declared allow-list is `rg` (the binary the shipped `grep`/`glob` argv executes),
 not a heuristic shell-name filter: an unknown binary cannot be proven to read only its
 operands, so it fails closed until a future tool adds its program **and its argv
-contract** deliberately. `rg`'s contract is enforced too (`--no-config` mandatory, so a
-ripgrep config file can never be read off-operand; `--pre`/`--search-zip` rejected
-because they execute another program). Consequence, stated because it is a real
+contract** deliberately. `rg`'s contract is now an **allow-list of the shipped argv
+shapes**, not a deny-list of remembered bad flags. `--no-config` must be the FIRST
+argument (before any `--`; the round-3 B2 probe placed a lane file literally named
+`--no-config` after `--`, so `argv.includes` passed while rg never received the flag and
+`RIPGREP_CONFIG_PATH` could inject `--pre=/bin/sh`). The admitted flag shapes are the
+ones `buildGrepCommand`/`buildGlobCommand` emit (`--json`, `--regexp=…`, `--glob=…`,
+`--files`, `--sort=modified`, `--no-ignore`, `--hidden`); `-f`/`--file`/`--ignore-file`
+(B1: a pattern/ignore FILE is not a declared operand), `--pre`/`--search-zip`/`-z`,
+`--follow` and every other flag are refused. Consequence, stated because it is a real
 limitation: the shipped search argv still executes, but an ad-hoc caller that omits
-`--no-config` is refused (the reviewer's own probe passes such an argv, and it now
-denies — see §4.3). The kernel stays as defence in depth; it is no longer the layer
-that a shell body reaches.
+`--no-config` (or passes any non-shipped flag) is refused — see §4.3 and the reviewer's
+own probes. The kernel stays as defence in depth; it is no longer the layer that a
+shell body reaches.
+
+Review round 3 additionally closes the name/identity gap (B3): a shell script the Member
+can write and names `rg` passed the basename check and executed through the
+program-directory grant. `programWriteLaneRefusal` now asks the SAME
+`evaluateLocatorAccess` whether `argv[0]`'s realpath lies inside the Member's effective
+WRITE lane, and refuses if it does — before any process, with the same one typed denial
+and one fact.
 
 
 ## 4. What the arms measured (this host, this run)
@@ -171,11 +193,14 @@ SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged): s
 KERNEL (raw provider: out-of-lane refused, in-lane served): facts=0 stdout="cat: <outside>/secret.txt: Permission denied\nRC=1\nINSIDE-NEEDLE\n"
 PIN-ETC (raw provider: direct /etc, /usr and /proc reads SUCCEED, zero guard facts): kernelRead=/etc/passwd+/usr/lib/os-release+/proc/self/status SUCCEEDED facts=0 … stdout="root:x:0:0:root:/root:/bSEP\nPRETTY_NAME=\"Ubuntu 26.0SEP\nName:\thead\nUmask:\t0022\n…"
 PIN-CAPS (raw provider: write-file yes; mkdir/symlink/execve DENIED; in-lane hardlink ALLOWED): mkdir=DENIED writeFile=ALLOWED symlink=DENIED(symInLane+symToEtc) hardlinkInLane=ALLOWED inLaneExecve=DENIED …
-PIN-SYMLINK (in-lane symlink -> /etc/passwd served; one ALLOW fact): symlinkTarget=/etc/passwd SERVED result="<inside>/link-passwd:root:x:0:0:root:/root:/b" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
-PIN-PROGDIR (a Member-writable copy named rg EXECUTES; the allow-list is by name): memberWritableProgram EXECUTED result="<inside>/needle.txt:INSIDE-NEEDLE" (programDir grant; residual #3)
+PIN-SYMLINK (raw provider: in-lane link -> /etc/passwd served with --follow; admission refuses --follow): layer2 SERVED result="<inside>/link-passwd:root:x:0:0:root:/root:/b" facts=0; admission --follow REFUSED denial=IO_READ_DENIED spawns=0->0
+B3-PROG (a shell script NAMED rg in the Member write lane is REFUSED): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<inside>/rg] bytes="" detail="argv[0] \"<inside>/rg\" resolves inside the Member's effective WRITE lane (…)"
+B1-FILE (rg -f /etc/hostname is REFUSED: undeclared pattern-file read): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<rg-path>] bytes=""
+B1-FILEEQ (rg --file=/etc/hostname is REFUSED): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<rg-path>] bytes=""
+B2-NOCONFIG (--no-config after `--` + RIPGREP_CONFIG_PATH --pre=/bin/sh is REFUSED): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<rg-path>] bytes=""
 PIN-HARDLINK (pre-existing in-lane hardlink to an outside inode served; one ALLOW fact): outsideInode SERVED result="<inside>/hard-secret:OUTSIDE-SECRET-MUST-NOT-" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
 
-15 arms measured; receipt -> dev/agent-workflow/evidence/a5sf-bl16-grep/arms.json
+18 arms measured; receipt -> dev/agent-workflow/evidence/a5sf-bl16-grep/arms.json
 ```
 
 Reading the lines, precisely:
@@ -207,23 +232,38 @@ Reading the lines, precisely:
   facts** when the admission is bypassed. The allowance is
   `lane ∪ /bin,/usr,/lib,/lib64,programDir ∪ /etc,/proc`; the admission is the only
   layer for a declared root inside it.
-* `PIN-SYMLINK` / `PIN-HARDLINK`: with the declared root `inside` (in lane), an
-  in-lane symlink to `/etc/passwd` and a pre-existing in-lane hardlink to an outside
-  inode are both **served**, each with one `ALLOW` fact on the in-lane root. That is
-  the residual aid the kernel gives a nested link; no claim here says otherwise.
+* `PIN-SYMLINK`: at **layer 2 alone** (raw provider, `--follow` passed deliberately),
+  an in-lane symlink to `/etc/passwd` is **served** with zero admission facts. The
+  product seam cannot reach that allowance: `--follow` is not a shape the shipped
+  module emits, so the same request through the confined face is refused at admission
+  (`spawns=0->0`, one deny fact). `PIN-HARDLINK` remains reachable through the product
+  seam (rg reads an in-lane hardlink by name) and is served with one `ALLOW` fact on
+  the in-lane root.
 * `PIN-CAPS` measures the in-lane capability narrowing: file write succeeds; `mkdir`,
   symlink creation and in-lane `execve` are **DENIED**; a hardlink between two in-lane
   paths **IS created** (the profile has no link bit). The shorthand "no link creation"
   would have been false for hardlinks and is not used.
-* `PIN-PROGDIR` measures the allow-list's limit: a Member-writable copy **named `rg`**
-  executes through the in-lane program-directory grant and reads the in-lane needle.
-  The admission keys on the basename, not on the binary's bytes.
+* `B1-FILE`/`B1-FILEEQ` are review round 3's closure: `rg -f /etc/hostname` and
+  `rg --file=/etc/hostname` used to read an undeclared pattern file and return a match
+  with an `ALLOW` fact. The argv allow-list refuses both before any process — one
+  `deny/IO_READ_DENIED` fact (`locator=argv[0]`), `spawns=0->0`, empty bytes. The same
+  rule refuses `--ignore-file`.
+* `B2-NOCONFIG` is the positional check: `--json --regexp=… -- <inside> --no-config`
+  with `RIPGREP_CONFIG_PATH` pointing at a config whose `--pre=/bin/sh` would execute
+  a script. Because `--no-config` is now required as the FIRST argument (before any
+  `--`), the token after `--` is an OPERAND and the spawn is refused (one deny fact,
+  zero provider calls, empty bytes).
+* `B3-PROG` is review round 3's identity closure: a shell script the Member can write,
+  named `rg`, used to execute through the in-lane program-directory grant. Its realpath
+  is inside the effective WRITE lane, so `programWriteLaneRefusal` refuses it (one deny
+  fact, `spawns=0->0`, empty bytes). The shipped `rg` (outside the write lane) is
+  admitted by the same check — the unit suite's negative control.
 
 ### 4.2 The CI-collected suites
 
 ```
 node_modules/.bin/vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts
-  → 16 tests passed
+  → 21 tests passed
 node_modules/.bin/vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts
   → 6 tests passed
 ```
@@ -231,16 +271,19 @@ node_modules/.bin/vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts
 `a5sf-confined-subprocess.test.ts` (unit, no process) pins: intent extraction
 (operands after `--`, cwd fallback, a pattern/`--flag=` is never a path; a shell `-c`
 body is not a path); the attribution allow-list (`rg` admitted, `sh` refused with a
-truthful detail, unknown binaries refused, `--no-config` required, `--pre`/`-z`
-refused); admission allow + the request's `allowPaths` bits + the fact shape; refusal
-outside the CEILING; refusal INSIDE the ceiling but OUTSIDE the tool restriction (the
-two-axis algebra is not a single-axis check); a `..` escape through cwd; cwd-out-of-lane
-when no operand is named; `mode:'all'` refusal; stdio refusals; `spawnTerminal` refusal;
-exit `0/1/2` fidelity; `{form:'missing'}` rejection; signal death; cancellation
-terminating the child. Its real-OS leg now does both halves: (a) the shell body is
-refused at admission with `providerCalls=0` and one deny fact; (b) the raw provider
-(same request builder) serves `/etc/passwd` and refuses `../outside` — the kernel
-boundary pinned rather than described.
+truthful detail, unknown binaries refused, `--no-config` required as the FIRST
+argument, the shipped grep/glob shapes admitted, `--pre`/`-z`/`-f`/`--file`/
+`--ignore-file`/`--follow` refused); admission allow + the request's `allowPaths`
+bits + the fact shape; B3 refusal of a program whose realpath is in the effective
+WRITE lane **and** the negative control (the shipped `rg` path outside it is
+admitted); refusal outside the CEILING; refusal INSIDE the ceiling but OUTSIDE the
+tool restriction (the two-axis algebra is not a single-axis check); a `..` escape
+through cwd; cwd-out-of-lane when no operand is named; `mode:'all'` refusal; stdio
+refusals; `spawnTerminal` refusal; exit `0/1/2` fidelity; `{form:'missing'}`
+rejection; signal death; cancellation terminating the child. Its real-OS leg now does
+both halves: (a) the shell body is refused at admission with `providerCalls=0` and one
+deny fact; (b) the raw provider (same request builder) serves `/etc/passwd` and
+refuses `../outside` — the kernel boundary pinned rather than described.
 
 `a5sf-bl16-grep-realm.test.ts` (product seam, real pinned module, real rg) pins:
 `R0/R1` the preset definition reaches the INHERITED service (its tripwire throws) while
@@ -253,10 +296,25 @@ refused at admission (one fact, zero spawns) **plus** the direct layer-2 measure
 
 ### 4.3 The reviewer's probes, re-run against this build
 
-The five probes in `.reviewer-tmp/` were written independently of the author's arms.
-Their outcomes on the corrected build, verbatim from the run:
+The probes in `.reviewer-tmp/` (including the round-3 `r2/bypass.mjs`) were written
+independently of the author's arms. Their outcomes on this build, verbatim from the
+run:
 
 ```
+r2/bypass.mjs                 hostname=DESKTOP-D
+                              A1 rg -f /etc/hostname            → rejected IO_READ_DENIED, 1 deny fact, out=""
+                              A2 rg --file=/etc/hostname        → rejected IO_READ_DENIED, 1 deny fact, out=""
+                              A3 rg -L over in-lane symlink     → rejected IO_READ_DENIED, 1 deny fact, out=""
+                              A4 shell script NAMED rg          → rejected IO_READ_DENIED, 1 deny fact, out=""
+                              A5 shebang script (name not listed) → rejected IO_READ_DENIED
+                              A6 /usr/bin/env sh -c id          → rejected IO_READ_DENIED
+                              A7 /bin/sh -c cat /etc/passwd     → rejected IO_READ_DENIED
+                              A8 bare name rg                   → sync Throw SUBPROCESS_PROGRAM_NOT_ABSOLUTE
+                              A9 --search-zip, A10 --pre        → rejected IO_READ_DENIED
+                              A11 --glob=../out/*               → admitted, 0 matches, bytes=0
+                              B1 positional --no-config + RIPGREP_CONFIG_PATH --pre=/bin/sh
+                                                                → rejected IO_READ_DENIED, 1 deny fact, out=""
+                              A12 declared root = outside       → rejected IO_READ_DENIED
 probe-q1.mjs                  A..K shell arms ALL "DONE REJECTED IO_READ_DENIED";
                               leaked=false; RG arms also rejected (their argv omits
                               --no-config, so the rg contract refuses them); admission
@@ -273,6 +331,12 @@ probe-order.mjs               providerCalls: 0, facts: 1, order: [FACT:deny] —
 probe-isolate.mjs             member fs confined, ctx subprocess confined, root
                               services unchanged; out-of-lane fs read refused
 ```
+
+`r2/bypass.mjs` is the round-3 measurement that failed B1 (`A1`/`A2`), B2 (`B1` row
+above) and B3 (`A4`): all three now reject before any process, with one typed deny fact
+and empty collected bytes. `A11` is admitted because `--glob=` is a shipped shape; it
+produced zero matches and zero outside bytes (the kernel and the lane still bound the
+traversal). `A3` (`-L`) is now refused because `--follow` is not a shipped shape.
 
 The two probes that abort do so **because the shell hole is closed**: they call
 `sh -c` and await `done` without a rejection handler. Their old measurements are
@@ -313,11 +377,20 @@ second policy evaluator).
 * A shell/interpreter/unknown-argv spawn is refused at ADMISSION with one typed
   `IO_READ_DENIED` fact, no process, and no bytes (`SHELL-DENY`; the same `sh -c`
   command was measured returning `/etc/passwd` before the edit).
+* `rg`'s argv contract holds as an ALLOW-LIST of the shipped shapes: `--no-config`
+  before the first `--`, and only `--json`/`--regexp=…`/`--glob=…`/`--files`/
+  `--sort=modified`/`--no-ignore`/`--hidden` plus the `--` root. `-f` and `--file=`
+  (B1: undeclared pattern-file read), `--ignore-file`, a positional `--no-config`
+  with `RIPGREP_CONFIG_PATH` `--pre` (B2), `--pre`/`--search-zip`/`-z`, `--follow`
+  and every other flag are refused (one deny fact, no process, no bytes).
+* A program the Member can write is refused even when its basename is `rg` (B3):
+  realpath-in-effective-write-lane → one deny fact, no process, no bytes; the shipped
+  `rg` outside that lane is still admitted (unit negative control).
 * Exit `0/1/2` fidelity, an unrecordable exit rejection, signal death, cancellation.
 * Layer 2, measured directly: the kernel refuses an out-of-lane read while an in-lane
   read in the same process succeeds (content-read ENFORCED on this host), **and** it
-  serves direct `/etc`, `/usr`, `/proc`, in-lane symlinks to them, and a pre-existing
-  in-lane hardlink (`PIN-ETC`/`PIN-SYMLINK`/`PIN-HARDLINK`).
+  serves direct `/etc`, `/usr`, `/proc`, an in-lane symlink to them under `--follow`,
+  and a pre-existing in-lane hardlink (`PIN-ETC`/`PIN-SYMLINK`/`PIN-HARDLINK`).
 
 ### 6.2 Needs a live Host (not run; no boot authorised — P2-01 start budget spent)
 * That the production preset/glue actually supplies a `subprocess` face and that the
@@ -337,24 +410,33 @@ second policy evaluator).
    (`packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py`, the same
    builder both exec arms use). Consequence, measured: a direct `/etc/passwd`,
    `/usr/lib/os-release`, `/proc/self/status` read SUCCEEDS; an in-lane symlink to any
-   of them succeeds; a pre-existing in-lane hardlink to an outside inode succeeds. The
+   of them succeeds under `--follow` (the admission refuses `--follow`, so the product
+   seam cannot reach it); a pre-existing in-lane hardlink to an outside inode succeeds
+   through the product seam. The
    kernel refuses `/home`, `/srv`, `/var` and scratch siblings. **The admission is the
    only layer for a declared root inside the allowance.** Narrowing the shared base is
    P1-07 code and an owner decision, recorded as backlog BL-39 — it may be needed by
    other tools, so this lane does not change it.
-2. **Nested links/hardlinks inside an admitted root are served with an ALLOW fact.**
-   The admission consults the declared ROOT, not every entry under it. A nested symlink
-   to `/etc` or a hardlink to an outside inode therefore reads successfully and records
-   `decision=allow` on the in-lane root (`PIN-SYMLINK`, `PIN-HARDLINK`). This is the
-   kernel allowance above showing through the search path; no claim in this file says
-   the admission inspects the tree.
-3. **The allow-list is by program NAME, not program BYTES — measured, not inferred.**
-   `rg` is admitted by basename; the face does not hash the binary. `PIN-PROGDIR`
-   copied the pinned `rg` into the Member's write lane and executed it successfully
-   through the program-directory grant. A Member-writable executable named `rg` is
-   therefore executed. The shipped binary is outside the Member write lane, and no
-   Member-write path to the shipped binary was measured; a binary-identity check is
-   follow-up, not done.
+2. **Nested links/hardlinks inside an admitted root are still served at layer 2.**
+   The admission consults the declared ROOT, not every entry under it. A pre-existing
+   in-lane HARDLINK to an outside inode reads successfully through the product seam and
+   records `decision=allow` on the in-lane root (`PIN-HARDLINK`). A nested SYMLINK to
+   `/etc` is served by the kernel too, but the product seam cannot reach it: following
+   it requires `--follow`, which is not a shape the shipped module emits and which the
+   admission now refuses (`PIN-SYMLINK` measures both halves). No claim in this file
+   says the admission inspects the tree.
+3. **Program identity is checked against the effective WRITE lane, not the bytes.**
+   `programWriteLaneRefusal` refuses `argv[0]` whose realpath (via the same
+   `evaluateLocatorAccess`, symlinks resolved) lies inside the **effective** write lane
+   (`ceiling ∩ restriction` for this realm). It does not hash the binary, and it does
+   not consult a broader Member write set outside this face's effective lane: a path
+   the Member can write only through a *different* binding is outside this realm's
+   write lane and is not seen. It also does not inspect `spec.env`: a caller that
+   controls env can set `LD_PRELOAD`/`LD_AUDIT` and have the loader execute code inside
+   the confined child (the kernel still bounds its reads). Reachability precondition
+   for both gaps: a caller that supplies `argv`/`env` directly; the pinned search
+   module exposes neither (fixed argv, no env override), and this PR does not add a
+   caller surface.
 4. **The model-facing text of a refusal is generic.** The pinned module catches the
    `done` rejection and reports `grep subprocess failed before reporting an outcome
    (ripgrep provider failure)`; the typed code lives in the thrown `TeamIoDenial` and
@@ -404,12 +486,16 @@ this rule).
 | typecheck (the touched program) | `node_modules/.bin/tsc -p packages/runtime/tsconfig.json --noEmit` | **clean**, no output |
 | lint (touched files) | `eslint` on the 4 touched TS paths + the evidence script | **0 errors**; the evidence script is eslint-ignored (one warning, not an error); earlier `prefer-const`/`no-explicit-any` were fixed, not suppressed |
 | lint (repo-wide, NOT a gate) | `pnpm lint` | **red: 129 errors / 32 warnings, ALL in files this branch does not touch** (`action-router/effects.ts`, `control/service.ts`, `src/plugin/host.ts`, …). Pre-existing debt; disclosed, not attributed to this lane |
-| new unit suite | `vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts` | **16/16 pass** |
+| new unit suite | `vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts` | **21/21 pass** |
 | new realm suite | `vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts` | **6/6 pass** |
 | lane-hygiene suite (touched ledger) | `vitest run packages/runtime/test/a5p4-lane-hygiene.test.ts` | **8/8 pass** (the new types-only edge is booked with its pinned import line) |
-| product-seam probe | `node dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs` | **15/15 arms**, receipt `arms.json` |
-| reviewer probe set | `node .reviewer-tmp/probe-{q1,symlink-allowance,narrow,order,isolate}.mjs` | re-run against this build; outcomes in §4.3 (shell closure measured; two probes abort on the now-closed shell path) |
+| service install / subprocess contract | `vitest run packages/runtime/test/a5sf-service-install.test.ts packages/runtime/test/a5sf-subprocess-contract.test.ts` | **16/16** and **3/3 pass** |
+| search / glob backends | `vitest run packages/runtime/test/alpha5-search-backend.test.ts packages/runtime/test/alpha5-glob-backend.test.ts` | **42/42** and **53/53 pass** (95/95 in the run) |
+| product-seam probe | `node dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs` | **18/18 arms**, receipt `arms.json` |
+| reviewer probe set | `node .reviewer-tmp/r2/bypass.mjs` + `node .reviewer-tmp/probe-{q1,symlink-allowance,narrow,order,isolate}.mjs` | re-run against this build; outcomes in §4.3 (B1/B2/B3 measured refused; shell closure measured; two probes abort on the now-closed shell path) |
 | world-factory (node:test) | `node --test tests/world-factory/a5sf-{native-route-c,p2-wiring,f1-ctx,assembly}.test.mjs` | **61/61 pass** |
+| artifact gate (index) | `node scripts/check-artifacts-committed.mjs` | **`verdict=ok compared=1924 glue=101`** |
+| artifact gate (head) | `node scripts/check-artifacts-at-head.mjs` | **carries its own build** (see §7.1) |
 | scripts/checks (node:test) | `node --test scripts/ci-local.test.mjs`, `node --test tests/checks/dist-placements.test.mjs` | **pass / pass** |
 | whitespace | `git diff --check origin/master...HEAD` | **clean, rc=0** (the earlier "clean" was the WORKING TREE only; the reviewer was right — two trailing-blank-line findings are fixed) |
 | full runtime suite (parallel) | `vitest run packages/runtime` | **6008/6015 pass**; the 7 failures were all 5 s vitest timeouts under full-suite load — isolation proof below (`runtime-full.verdict.txt`) |
@@ -421,12 +507,41 @@ Raw verdict extracts live next to this file: `ci-local-1.verdict.txt`,
 (the full 1.2 MB CI logs are NOT committed — the extracts carry every failure identity
 and the verdict line).
 
-### 7.1 The historical `ci:local` verdicts (pre-review-round-2; not re-run)
+### 7.1 Artifact-gate verdicts, and the historical `ci:local` runs
 
-These two runs belong to the AUTHOR's original tree. This correction round did not run
-`pnpm ci:local` (known load-flaky; the reviewer already isolated all four flake
-identities). They are kept because they are the reason the flake set is known, not as
-a current verdict.
+The round-3 CI failure was `DSH-ARTIFACT-VERDICT script=check-artifacts-committed
+subject=index verdict=stale compared=1924 drift=20 sites=20`: the branch changed
+`src` (install/mount/types/subprocess) and never rebuilt the committed `dist`. The
+rebuild command is the one CI runs, from the worktree root:
+
+```
+pnpm run build
+node scripts/place-dist-glue.mjs
+node scripts/build-client-composition.mjs packages/client packages/client/composition-shim
+```
+
+and the two gates then report (exact lines):
+
+```
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1924 glue=101
+
+$ node scripts/check-artifacts-at-head.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=<HEAD> verdict=ok compared=1924
+[check-artifacts-at-head] <HEAD> carries its own build: the committed surface IS a fresh build of itself (1924 compared file(s)).
+```
+
+The newly produced files (never committed before on this branch) are
+`packages/runtime/team-services/src/subprocess.{js,d.ts,js.map,d.ts.map}` and
+`packages/runtime/team-sandbox/src/profile.{js,d.ts,js.map,d.ts.map}`; they are real
+build outputs of `tsc -p packages/runtime/tsconfig.build.json` reached transitively
+through `team-services/src/mount.ts`, so they are committed with their source. No
+`dist` file is hand-edited and none is excluded.
+
+These two `ci:local` runs belong to the AUTHOR's original tree. This correction round
+did not run `pnpm ci:local` (known load-flaky; the reviewer already isolated all four
+flake identities). They are kept because they are the reason the flake set is known,
+not as a current verdict.
 
 ```
 run #1 @ 18:57  DSH-CI-LOCAL verdict=fail steps=5 failed=1 coverage=determined files=4 wall=275.1s

@@ -24,6 +24,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import { type FsProviderConstructor, type FsProviderSurface } from './fs.js';
+import { createConfinedSubprocessClass, type ConfinedProcessProvider, type SubprocessProviderConstructor } from './subprocess.js';
 import { type GuardConsultObserver } from './guard-observability.js';
 import { type MemberIoInstallation } from './types.js';
 /** One Member to install: identity + its compiled policy (or the refusal). */
@@ -53,6 +54,39 @@ export interface InstallMemberIoProvidersInput {
      * `guard-observability.ts`.
      */
     readonly onGuardConsult?: GuardConsultObserver;
+    /**
+     * BL-16 (additive, default-preserving): mount a CONFINED `subprocess`
+     * Provider on the SAME isolated Member scope, so a routed native module that
+     * injects `subprocess` (the pinned `grep`/`glob` module does) executes on the
+     * Member's lane instead of the inherited host service. Omitted = nothing is
+     * mounted and the inherited service is untouched (the historical behavior).
+     */
+    readonly subprocess?: ConfinedSubprocessRealmSpec;
+}
+/**
+ * The confined `subprocess` face of ONE Member realm.
+ *
+ * `effective` is the compiled `EffectiveIo` the ceiling-routed tools enforce —
+ * for `grep`/`glob` that is `ceiling ∩ tool restriction`, produced by the ONE
+ * compiler (`compileEffectiveIo`); this lane never re-derives an intersection.
+ * `provider` is P1-07's OS-confined process provider, created by the
+ * composition that owns the launcher pin (the realm must not guess an assembly).
+ */
+export interface ConfinedSubprocessRealmSpec {
+    readonly effective: EffectiveIoPolicy;
+    readonly provider: ConfinedProcessProvider;
+    readonly realmId?: string;
+    readonly bindingId?: string;
+    readonly memberScope?: string;
+    readonly env?: Readonly<Record<string, string>>;
+    readonly runtimeAllowPaths?: Parameters<typeof createConfinedSubprocessClass>[1]['runtimeAllowPaths'];
+    /** Explicit base class; omitted = sample the live `subprocess` service. */
+    readonly providerClass?: SubprocessProviderConstructor;
+}
+/** The mounted confined `subprocess` service (structural, provider-private). */
+export interface ConfinedSubprocessSurface {
+    spawn(spec: unknown): unknown;
+    spawnTerminal?(spec: unknown): Promise<unknown>;
 }
 /**
  * Install one confined Provider per Member into its own isolated `fs` scope.

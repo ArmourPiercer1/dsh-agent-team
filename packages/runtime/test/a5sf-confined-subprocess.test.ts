@@ -241,6 +241,43 @@ describe('BL-16 read-intent extraction (pure)', () => {
     expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '-z', '--', inside] })?.detail).toMatch(/search-zip|-z/)
     expect(programAttributionRefusal({ argv: ['/tmp/not-authored', '--', inside] })?.detail).toMatch(/unknown binary/)
   })
+
+  it('B1: refuses the pattern/ignore-file flags that read an undeclared path', () => {
+    // `rg -f /etc/hostname` returned a MATCH with an ALLOW fact before this
+    // rule: `-f` names a pattern file, not a declared operand.
+    const short = programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--json', '-f', '/etc/hostname', '--', inside] })
+    expect(short?.code).toBe('IO_READ_DENIED')
+    expect(short?.detail).toMatch(/-f/)
+    expect(short?.detail).toMatch(/pattern\/ignore FILE/)
+    for (const flag of ['--file=/etc/hostname', '--file', '--ignore-file=/etc/hostname', '--ignore-file=.gitignore']) {
+      expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--json', flag, '--', inside] })?.detail).toMatch(/pattern\/ignore FILE/)
+    }
+  })
+
+  it('B2: requires --no-config BEFORE the first `--` (a lane file named --no-config is an operand)', () => {
+    // The reviewer's arm: the token is present, but AFTER `--`, so rg never
+    // receives it; RIPGREP_CONFIG_PATH could then inject --pre=/bin/sh.
+    const positional = programAttributionRefusal({
+      argv: ['/usr/bin/rg', '--json', '--regexp=PRE-EXECUTED', '--', inside, '--no-config'],
+    })
+    expect(positional?.code).toBe('IO_READ_DENIED')
+    expect(positional?.detail).toMatch(/FIRST argument/)
+    expect(positional?.detail).toMatch(/OPERAND/)
+    // The shipped module always emits it immediately after the program.
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--json', '--regexp=x', '--', inside] })).toBeUndefined()
+  })
+
+  it('admits exactly the shipped grep and glob argv shapes (allow-list, not a deny-list)', () => {
+    // buildGrepCommand
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--json', '--regexp=NEEDLE', '--glob=**/*.ts', '--', inside] })).toBeUndefined()
+    // buildGlobCommand
+    expect(programAttributionRefusal({
+      argv: ['/usr/bin/rg', '--no-config', '--files', '--glob=*.txt', '--sort=modified', '--no-ignore', '--hidden', '--glob=!**/.git', '--glob=!**/.git/**', '--', inside],
+    })).toBeUndefined()
+    // Anything the module never emits fails closed (here: --follow, which
+    // would make rg read an in-lane symlink target).
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--follow', '--regexp=x', '--', inside] })?.detail).toMatch(/not one of the argv shapes/)
+  })
 })
 
 describe('BL-16 admission (unit, no process)', () => {
@@ -296,6 +333,36 @@ describe('BL-16 admission (unit, no process)', () => {
     await expect(handle.done).rejects.toThrowError(/IO_READ_DENIED|outside/)
     expect(provider.spawnCalls).toBe(0)
     expect(facts[0]).toMatchObject({ decision: 'deny', decidedBy: 'IO_READ_DENIED', locator: outside })
+  })
+
+  it('B3: REFUSES a program whose realpath is inside the Member write lane (a shell script named rg)', async () => {
+    // The name allow-list admits `rg`; this program is the CALLER's bytes.
+    const policy = effective(lane([inside]), lane([inside]), lane([inside]))
+    const provider = fakeProvider()
+    const facts: { method: string; locator: string; decision: string; decidedBy: string }[] = []
+    const Confined = confined(policy, provider, facts)
+    const writableProgram = join(inside, 'rg')
+    const spec = { ...grepSpec(world, inside), argv: [writableProgram, '--no-config', '--json', '--regexp=NEEDLE', '--', inside] }
+
+    const handle = new Confined({}).spawn(spec)
+    await expect(handle.done).rejects.toThrowError(/IO_READ_DENIED|WRITE lane/)
+    expect(provider.spawnCalls).toBe(0)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]).toMatchObject({ method: 'spawn', locator: writableProgram, decision: 'deny', decidedBy: 'IO_READ_DENIED' })
+    expect(String(handle.collected.stdout?.readFrom(0).text ?? '')).toBe('')
+  })
+
+  it('ADMITS the shipped rg path, which is outside the Member write lane', async () => {
+    // Negative control for B3: the same name, a program the caller cannot write.
+    const policy = effective(lane([inside]), lane([inside]), lane([inside]))
+    const provider = fakeProvider({ stdout: '{"type":"match"}\n', payloadExit: { form: 'recorded', rc: 0, pid: 4242 } })
+    const facts: { method: string; locator: string; decision: string; decidedBy: string }[] = []
+    const Confined = confined(policy, provider, facts)
+    const handle = new Confined({}).spawn(grepSpec(world, inside))
+    await handle.done
+    expect(provider.spawnCalls).toBe(1)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]).toMatchObject({ decision: 'allow', decidedBy: 'ALLOW', locator: inside })
   })
 
   it('REFUSES a `..` operand that escapes the lane through cwd resolution', async () => {

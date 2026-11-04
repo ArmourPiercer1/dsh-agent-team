@@ -344,6 +344,7 @@ export async function mountA5sfRealm(input) {
         members: input.members,
         ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
         ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
+        ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
     });
     // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
     // Member's isolated scope by the CALLER, through this realm's

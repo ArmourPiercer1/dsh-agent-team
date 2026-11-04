@@ -19,6 +19,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderSurface } from './fs.js';
+import type { ConfinedSubprocessSurface } from './install.js';
 /** Closed per-call denial vocabulary of an installed Provider. */
 export declare const TEAM_IO_DENIAL_CODES: readonly ["IO_READ_DENIED", "IO_WRITE_DENIED", "IO_WRITE_REQUIRES_READ", "IO_POLICY_UNSUPPORTED"];
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number];
@@ -67,6 +68,12 @@ export interface MemberServiceInstallation {
     }>;
     readonly ctx: Context;
     readonly fs: FsProviderSurface;
+    /**
+     * BL-16: the confined `subprocess` face mounted on the same isolated scope,
+     * when the realm supplier declared one. Absent = no subprocess face was
+     * declared (the inherited host service is untouched).
+     */
+    readonly subprocess?: ConfinedSubprocessSurface;
     readonly dispose: () => Promise<void>;
 }
 export interface MemberIoInstallation {
