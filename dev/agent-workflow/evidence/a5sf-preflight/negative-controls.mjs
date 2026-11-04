@@ -17,10 +17,16 @@
  *        then carries ZERO read-path facts for B, because a refused read is
  *        recorded at `stat`)                          -> C9 must fail;
  *   NC2a row 4a ignores a write fact on the read lane    -> C14 must fail;
- *   NC2b row 4b accepts ANY refusal instead of the read-coupling sentence
- *        (the live row-4 text WAS an error — a host sandbox denial)  -> C14;
+ *   NC2b row 4b credits a TEAM LANE refusal as "not the lane voice"
+ *        (boot 2: the guard allowed the write; a lane refusal is the opposite
+ *        answer)                                                   -> C14;
+ *   NC2c row 4b ignores a write allow laundered onto the read lane -> C14;
+ *   NC2d row 4b accepts a write the guard DENIED (no ceiling allow fact) -> C14;
  *   NC3a row 6 drops the temporal clause (back to "always true")     -> C15;
  *   NC3b row 6 stops requiring a parseable `observedAt`              -> C15;
+ *   NC3c row 6 judges the PROBE DELTA as product facts (the boot-2 defect:
+ *        the row refutes itself on its own stimulus)                 -> C15;
+ *   NC3d row 6 stops requiring the probe delta to be refusals        -> C15;
  *   NC4  the write-method partition loses `editText`                 -> C16.
  *
  * SAFETY. The library is backed up byte-for-byte BEFORE the first mutation, a
@@ -86,20 +92,28 @@ const CONTROLS = [
     why: 'a write-allow laundered onto the read lane would be credited as a clean 4a as soon as ANY write fact exists',
   },
   {
+    id: 'NC2b-row4b-accepts-a-team-lane-refusal',
+    fix: 'boot-2 correction (4b clause 2: the outcome must NOT be a Team-lane refusal)',
+    find: "    notTeamLaneRefusal: LANE_REFUSAL.test(text) !== true && /A5SF_[A-Z0-9_]+/.test(text) !== true,",
+    replace: '    notTeamLaneRefusal: true,',
+    expectFailing: ['C14'],
+    why: 'a guard refusal means the ceiling did NOT admit the write — the opposite of the two-axis claim — so crediting it as "not the lane voice" would launder a wrong answer into the row',
+  },
+  {
     id: 'NC2c-row4b-accepts-a-laundered-read-lane-allow',
-    fix: 'correction 2 (4b: the refusal must not be laundered into the read lane)',
+    fix: 'correction 2 (4b clause 1: no write-allow on the read lane)',
     find: '    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,',
     replace: '    noReadLaneWriteAllow: true,',
     expectFailing: ['C14'],
     why: 'a write-allow on the binding (read) realm is the one channel crossing 4b must refuse',
   },
   {
-    id: 'NC2b-row4b-accepts-any-refusal',
-    fix: 'correction 2 (4b: the refusal must BE the read coupling)',
-    find: '    typedReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text),',
-    replace: '    typedReadCouplingRefusal: true,',
+    id: 'NC2d-row4b-accepts-a-write-the-guard-denied',
+    fix: 'boot-2 correction (4b clause 1: the guard must have ALLOWED the write on the ceiling)',
+    find: '    ceilingWriteAllowed: ceilingWriteAllowFacts.length >= 1,',
+    replace: '    ceilingWriteAllowed: true,',
     expectFailing: ['C14'],
-    why: 'the live row-4 text WAS an error (host sandbox denial under the old root); only the write⇐read sentence makes it the asked question',
+    why: 'without a ceiling-realm allow fact the guard denied the write, which is a different product behaviour and must refute',
   },
   {
     id: 'NC3a-row6-drops-the-temporal-clause',
@@ -116,6 +130,22 @@ const CONTROLS = [
     replace: '    factsAreTimestamped: true,',
     expectFailing: ['C15'],
     why: 'a fact that cannot be shown to precede the stop must refute, not slip past the bound',
+  },
+  {
+    id: 'NC3c-row6-judges-the-probe-delta-as-product-facts',
+    fix: 'boot-2 correction (the bound runs over the STOP-TIME sink, not the post-probe sink)',
+    find: '  const dated = stopTimeFacts.map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? \'\')) }))',
+    replace: '  const dated = [...stopTimeFacts, ...probeTimeFacts].map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? \'\')) }))',
+    expectFailing: ['C15'],
+    why: 'this is EXACTLY the boot-2 defect: the row\'s own post-stop probes append real facts, and feeding them to the bound refutes a clean teardown',
+  },
+  {
+    id: 'NC3d-row6-accepts-a-served-probe',
+    fix: 'boot-2 correction (a fact the probes appended must be a refusal)',
+    find: "    probeFactsAreRefusals: probeTimeFacts.length === 0 || probeTimeFacts.every((fact) => fact?.decision === 'deny'),",
+    replace: '    probeFactsAreRefusals: true,',
+    expectFailing: ['C15'],
+    why: 'a stopped Member that is still SERVED (an allow fact from a probe) must refute; without this clause the probe delta is never judged',
   },
   {
     id: 'NC4-write-partition-loses-editText',

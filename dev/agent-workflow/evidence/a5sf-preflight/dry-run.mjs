@@ -58,6 +58,7 @@ import {
   ACCEPTANCE_CASE_IDS,
   IO_WRITE_REQUIRES_READ_PROSE,
   WRITE_PATH_METHODS,
+  judgeRow6,
 } from '../../../../tests/world-factory/lib/a5sf-acceptance-preflight.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -126,8 +127,8 @@ check('driver: imports the shared contract', /P2_01_ACCEPTANCE_ROOTS/.test(drive
   'root identity + dispose classification are imported, not re-implemented')
 check('driver: every case is judged by the shared oracle', ['judgePrecondition', 'judgeRow1', 'judgeRow2', 'judgeRow3', 'judgeRow4a', 'judgeRow4b', 'judgeRow5', 'judgeRow6'].every((name) => driverSource.includes(`${name}(`)),
   'all eight decisions call into a5sf-acceptance-preflight.mjs')
-check('driver: row 4 is SPLIT, and the retired single-row id/judge is gone', driverSource.includes('judgeRow4a(') && driverSource.includes('judgeRow4b(') && !/judgeRow4\b(?!a|b)/.test(driverSource) && !driverSource.includes('live:row4-write-b-ceiling-allowed-no-read-lane-fact'),
-  'the write the product allows (4a) and the write it refuses (4b) are two questions, two ids and two dispatches')
+check('driver: row 4 is SPLIT (4a the write the product allows, 4b the ceiling-allowed / read-not-implied write)', driverSource.includes('judgeRow4a(') && driverSource.includes('judgeRow4b(') && !/judgeRow4\b(?!a|b)/.test(driverSource) && !driverSource.includes('live:row4-write-b-ceiling-allowed-no-read-lane-fact'),
+  '4a and 4b are two questions, two ids and two dispatches; the retired single-row id/judge is absent')
 const createIndex = driverSource.indexOf("'team.create'")
 const stateAssertIndex = driverSource.indexOf('st.body?.rootSessionId === ACCEPTANCE_ROOT')
 check('driver: create precedes the state assertion on the SAME root', createIndex > 0 && stateAssertIndex > createIndex,
@@ -254,10 +255,28 @@ report.row4bWitness = {
   matched: omitArm === null ? null : IO_WRITE_REQUIRES_READ_PROSE.test(omitArm),
   sentence: omitArm === null ? null : (omitArm.match(/must read[^`]*write does not imply read/) ?? [null])[0],
 }
-check('lib: the row-4b refusal prose IS the product\'s IO_WRITE_REQUIRES_READ sentence', report.row4bWitness.matched === true,
+check('lib: the product read-coupling sentence is DEFINED so row 4b can refuse to credit it', report.row4bWitness.matched === true,
   report.row4bWitness.sentence ?? 'the call site was not found in fs.ts')
 check('lib: a SECOND IO_WRITE_REQUIRES_READ arm exists with different wording (the row must not credit it)', (fsSource.match(/IO_WRITE_REQUIRES_READ/g) ?? []).length === 2 && fsSource.includes('and the read axis refused it'),
   'the "outside the read rule set" arm is the one row 4b asks for; the "read axis refused it" arm is a different answer')
+
+// ── 0c. THE BOOT-2 CORRECTIONS (2026-11-04T08:19Z) ─────────────────────────
+// Both remaining FAILs were again defects of the question. Each is bound here to
+// the exact live answer it now asserts, so a later edit cannot quietly restore
+// the old question.
+check('lib: row 4b asserts the CEILING-allowed / read-not-implied answer, not a Team refusal',
+  libSource.includes("CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED")
+  && libSource.includes('ceilingWriteAllowed')
+  && libSource.includes('notTeamLaneRefusal')
+  && libSource.includes('notReadCouplingRefusal')
+  && libSource.includes('noReadLaneWriteAllow')
+  && !libSource.includes('typedReadCouplingRefusal'),
+  'boot 2 measured writeText/allow on realm "member" and the Host read-before-write refusal; the row must not demand the Team read coupling (a different answer) nor describe the Host policy as a Team-lane property')
+check('contract: the row-4b id names the measured claim', ACCEPTANCE_CASE_IDS.row4b === 'live:row4b-write-b-ceiling-allowed-read-not-implied',
+  ACCEPTANCE_CASE_IDS.row4b)
+check('lib: row 6 judges the STOP-TIME sink and the probe delta separately',
+  libSource.includes('probeFactsAreRefusals') && libSource.includes('probeFactsObserved') && libSource.includes('stopTimeFacts'),
+  'boot 2 counted the facts its own post-stop probes appended as "facts after the stop"; the bound now runs over the stop-time snapshot and the probe delta must be refusals')
 
 // the case list
 report.caseIds = [...ACCEPTANCE_CASES]
@@ -275,6 +294,46 @@ const stopFromLog = (() => {
   return line === undefined ? null : (/^\[(\d{4}-\d{2}-\d{2}T[0-9:.]+Z)\]/.exec(line)?.[1] ?? null)
 })()
 const liveAfter = stopFromLog === null ? null : liveFacts.filter((fact) => Date.parse(fact.observedAt) > Date.parse(stopFromLog))
+// THE FROZEN BOOT-2 STREAM. `consultations.jsonl` is the stop-time sink of the
+// CURRENT run (rewritten by every run), so it is checked against the CURRENT
+// run.log. The regression stream the oracle suite pins is the frozen fixture
+// (factsAtStop + probeFacts), which is what the driver actually judged in boot 2.
+const ROW6_FIXTURE = join(REPO_ROOT, 'tests', 'world-factory', 'fixtures', 'a5sf-boot2-row6-sample.json')
+const row6Stream = JSON.parse(readFileSync(ROW6_FIXTURE, 'utf8'))
+const row6StopMs = Date.parse(row6Stream.stopInstant)
+const row6AtStop = row6Stream.factsAtStop
+const row6Probe = row6Stream.probeFacts
+const row6Base = {
+  member: { instanceId: 'inst-1', templateId: 'worker', childSessionId: 'session-child-1' },
+  archive: { status: 200, body: { ok: true } },
+  membersAfter: [{ templateId: 'worker', lifecycle: 'ARCHIVED', childSessionId: 'session-child-1' }],
+  observations: [],
+  managed: { sessionId: 'session-child-1', instanceId: 'inst-1' },
+  duringManagedDisposal: true,
+  managedRealmCount: 1,
+  postStopDispatches: [{ status: 200, body: { ok: false } }, { status: 200, body: { ok: false } }],
+  residencyDrop: { status: 200, body: { ok: true, dropped: true } },
+  forbiddenClaim: 'A5SF_ACC_B',
+  stopInstant: row6Stream.stopInstant,
+  sinkDelta: 2,
+  healthStatus: 200,
+  hostAlive: true,
+}
+const row6Judge = judgeRow6({ ...row6Base, facts: row6AtStop, probeFacts: row6Probe })
+const row6Unsplit = judgeRow6({ ...row6Base, facts: [...row6AtStop, ...row6Probe], probeFacts: [] })
+const row6Injected = judgeRow6({ ...row6Base, facts: [...row6AtStop, { ...row6AtStop[0], observedAt: new Date(row6StopMs + 1000).toISOString() }], probeFacts: row6Probe })
+report.row6Stream = {
+  path: relative(REPO_ROOT, ROW6_FIXTURE),
+  stopInstant: row6Stream.stopInstant,
+  factsAtStop: row6AtStop.length,
+  probeFacts: row6Probe.length,
+  everyStopFactBefore: row6AtStop.every((fact) => Date.parse(fact.observedAt) < row6StopMs),
+  everyProbeFactAfter: row6Probe.every((fact) => Date.parse(fact.observedAt) > row6StopMs),
+  probeFactsAreDenials: row6Probe.every((fact) => fact.decision === 'deny'),
+  splitVerdict: row6Judge.verdict,
+  unsplitVerdict: row6Unsplit.verdict,
+  injectedVerdict: row6Injected.verdict,
+}
 report.liveStream = {
   path: relative(REPO_ROOT, LIVE_STREAM),
   facts: liveFacts.length,
@@ -283,10 +342,17 @@ report.liveStream = {
   newestObservedAt: liveFacts.map((f) => f.observedAt).sort().at(-1) ?? null,
   injectedReplay: liveAfter === null ? null : [...liveFacts, { ...liveFacts[0], observedAt: new Date(Date.parse(stopFromLog) + 1000).toISOString() }].filter((fact) => Date.parse(fact.observedAt) > Date.parse(stopFromLog)).length,
 }
-check('row6: the REAL live stream carries NO fact after the stop instant', liveFacts.length === 5 && stopFromLog !== null && liveAfter !== null && liveAfter.length === 0,
+check('row6: the CURRENT run stop-time sink carries NO fact after its stop instant', liveFacts.length >= 5 && stopFromLog !== null && liveAfter !== null && liveAfter.length === 0,
   `facts=${String(liveFacts.length)} stop=${String(stopFromLog)} newest=${String(report.liveStream.newestObservedAt)} afterStop=${String(report.liveStream.factsAfterStop)}`)
 check('row6: injecting ONE later observedAt makes the same bound fail (the control)', report.liveStream.injectedReplay === 1,
   `afterStop=${String(report.liveStream.injectedReplay)} (the assertion is load-bearing, not vacuous)`)
+check('row6: the FROZEN boot-2 stream splits cleanly at its stop instant', report.row6Stream.everyStopFactBefore && report.row6Stream.everyProbeFactAfter && report.row6Stream.probeFactsAreDenials,
+  JSON.stringify(report.row6Stream))
+check('row6: over that REAL stream, the split PROVES and the unsplit (boot-2) input REFUTES',
+  row6Judge.verdict === 'PROVEN' && row6Unsplit.verdict === 'REFUTED' && row6Unsplit.detail.factsAfterStop.length === row6Probe.length,
+  JSON.stringify({ split: row6Judge.verdict, unsplit: row6Unsplit.verdict, unsplitFactsAfterStop: row6Unsplit.detail.factsAfterStop.length }))
+check('row6: one fact 1 s after the stop REFUTES the split input (the refuting twin)', row6Injected.verdict === 'REFUTED' && row6Injected.detail.failed.includes('noFactAfterStop'),
+  JSON.stringify(row6Injected.detail.failed))
 check('oracle: row 6 no longer checks a fact COUNT', libSource.includes('noFactAfterStop: afterStop.length === 0') && libSource.includes('NO_STOP_INSTANT') && libSource.includes('factsAreTimestamped') && !libSource.includes('noFactAfterStop: sinkDelta === 0'),
   'live defect 3: an append-only file makes `sinkDelta === 0` structurally unable to express "nothing after the stop"; the old clause refuted a clean stream')
 
@@ -320,7 +386,7 @@ report.negativeControls = negative === null ? null : {
   librarySha256Before: negative.librarySha256Before,
   librarySha256After: negative.librarySha256After,
 }
-check('negative controls: every correction, when re-broken, makes the oracle suite FAIL', negative !== null && negative.allControlsBehaved === true && negative.controls.length >= 7,
+check('negative controls: every correction, when re-broken, makes the oracle suite FAIL', negative !== null && negative.allControlsBehaved === true && negative.controls.length >= 10,
   negative === null ? 'negative-controls.json was not written' : `controls=${String(negative.controls.length)} behaved=${String(negative.controls.filter((c) => c.behaved === true).length)}`)
 check('negative controls: the oracle library is left byte-identical (no mutation survives)', negative !== null && negative.libraryPristineAfter === true && negative.librarySha256After === report.oracleLibSha256Before,
   negative === null ? null : `${String(negative.librarySha256Before)} -> ${String(negative.librarySha256After)}`)
@@ -356,6 +422,12 @@ report.preserved.runLogRestoredVerbatim = preservedRunLog === null
   ? null
   : (existsSync(RUN_LOG) && readFileSync(RUN_LOG, 'utf8') === preservedRunLog)
 report.preserved.planLogBytes = existsSync(PLAN_LOG) ? statSync(PLAN_LOG).size : null
+// The plan checks below read plan.json, which a FAILED plan run leaves STALE
+// (the previous run's file). Boot 2's repair round found this the hard way: a
+// driver case-list drift made `--plan` exit 1 while every plan check still
+// passed against the previous file. The run's own exit status is the gate.
+check('plan: the plan run itself succeeded before any plan.json check reads it', report.runs.plan.status === 0,
+  `status=${String(report.runs.plan.status)} stderr=${String(report.runs.plan.stderr ?? '').slice(0, 300)}`)
 const plan = JSON.parse(readFileSync(join(HERE, 'plan.json'), 'utf8'))
 check('plan: root wiring', plan.rootWiring?.ok === true, plan.rootWiring)
 check('plan: attachments provider composed', plan.attachmentsProvider?.mounted === true, plan.attachmentsProvider?.evidence ?? null)

@@ -224,7 +224,7 @@ const CASES = Object.freeze([
   'live:row2-read-b-binding-deny-on-read-path',
   'live:row3-read-c-refused-no-widening',
   'live:row4a-write-in-lane-readable-allowed-ceiling-only',
-  'live:row4b-write-b-refused-read-not-implied',
+  'live:row4b-write-b-ceiling-allowed-read-not-implied',
   'live:row5-post-invalidation-refused-shadow-invalidated',
   'live:row6-teardown-no-usable-unconstrained-shadow',
 ])
@@ -667,6 +667,16 @@ function assertCaseListMatchesContract() {
   }
 }
 
+/**
+ * Copy the World sink into the evidence directory.
+ *
+ * Called BEFORE the row-6 stop and BEFORE the two post-stop probe dispatches, so
+ * this file is the STOP-TIME sink, not the whole run's sink. Boot 2 read it as
+ * "the complete live sink" and blamed the oracle for a fact that was not in it;
+ * the facts the probes append afterwards are persisted separately
+ * (`teardown.json.probeFacts` / `oracle-samples.json` row 6 `sample.probeFacts`),
+ * and that split is the defect-A repair (README §12.8.1).
+ */
 function writeConsultCopy(sourcePath) {
   const dest = join(HERE, 'consultations.jsonl')
   if (existsSync(sourcePath)) {
@@ -1453,13 +1463,16 @@ async function boot() {
       note: 'the native write was ALLOWED and landed on disk; EVERY write fact is ceiling-realm (realm:"member", toolBindingIdentity:null). No write fact exists on the read (binding) lane — the allow did not cross channels.',
     })
 
-    // ── row 4b: native write to B is REFUSED (write does not imply read) ───
-    // The SAME property, asserted on the refusal: B is inside the ceiling write
-    // lane but OUTSIDE the binding read allowance, so the product's write⇒read
-    // coupling refuses it (#579). The ceiling lane still ADMITS the write (the
-    // live run measured `writeText`/allow on realm `member`), and the row treats
-    // that as expected — what must not happen is a write-allow fact on the READ
-    // lane, i.e. a refusal laundered into the other channel.
+    // ── row 4b: native write to B is CEILING-allowed and READ-not-implied ──
+    // Boot 2 measured the product: B is inside the ceiling write lane but
+    // OUTSIDE the binding read allowance, and the guard ALLOWS the write (the
+    // restriction constrains READ only); the fact lands on the CEILING realm.
+    // The write reaches the confined provider and the HOST's read-before-write
+    // policy then refuses it downstream ("file has not been read") — the planted
+    // content is unchanged and no planted byte comes back. That host refusal is
+    // the upstream tool policy, NOT a Team-lane security property. The row
+    // asserts the two-axis statement + "not delivered blindly"; the provider
+    // counter is reported, not checked (§12.8).
     const writeFactsB = factsB.filter((f) => /write|edit/i.test(String(f.method ?? '')))
     const writeCounterRows = rowsForPath(writeRows, rowPaths.b.path)
     const row4bSample = {
@@ -1481,8 +1494,8 @@ async function boot() {
       writeFacts: writeFactsB.map((f) => ({ realm: f.realm, toolBindingIdentity: f.toolBindingIdentity, method: f.method, decision: f.decision, decidedBy: f.decidedBy })),
       readLaneFactsForBOverall: factsB.filter((f) => f.realm === 'binding').map((f) => ({ method: f.method, decision: f.decision })),
       counterRows: writeCounterRows.map((r) => ({ leg: r.leg, method: r.method, instance: r.instance, isBase: r.isBase })),
-      lane: 'B is inside the ceiling write lane [workspace] but OUTSIDE the binding read allowance [workspace/axis/allow]',
-      note: 'the write was REFUSED with the product write⇒read coupling (the ceiling realm admitted it, the guard did not translate that into read access); the planted content is unchanged and NO write-allow fact exists on the read lane. The refusal is the intended product behavior, measured host-free in #579 — the row checks it, it does not relax it.',
+      lane: 'B is inside the ceiling write lane [workspace] but OUTSIDE the binding read allowance [workspace/axis/allow]; the binding restriction constrains READ only, so the guard ADMITS the write on the ceiling realm',
+      note: 'the guard ALLOWED the write (writeText/allow, realm "member") because the binding restriction constrains the READ axis only — a write is bounded by the ceiling alone. The write reached the confined provider; the HOST read-before-write policy then refused it ("file has not been read"), the planted content is unchanged, and no planted byte came back to the model. That refusal is the upstream tool policy, NOT a Team-lane refusal and NOT a security property of the Team lanes; the row asserts exactly that, plus that the two lanes were not crossed.',
     })
 
     // ── row 5: post-invalidation managed call (THE P0 ROW) ─────────────────
@@ -1627,6 +1640,12 @@ async function boot() {
       }, 60_000)
     const stopInstant = new Date().toISOString()
     log(`archive via product tool route: status=${String(archiveCall?.status)} dispatchedAt=${archiveDispatchedAt} stopInstant=${stopInstant} body=${redact(JSON.stringify(archiveCall?.body ?? null)).slice(0, 600)}`)
+    // THE STOP-TIME SINK, captured as an ARRAY immediately after the archive was
+    // answered and BEFORE any post-stop probe. This is the set the temporal bound
+    // is judged over. Boot 2 re-read the sink after its own probes and counted
+    // the two facts those probes appended as "facts after the stop" — the row
+    // refuted itself (§12.8.1). The probes' delta is carried separately.
+    const factsAtStop = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1')
     const stateAfterArchive = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
     const membersAfter = Array.isArray(stateAfterArchive.body?.members) ? stateAfterArchive.body.members : []
     const observations = Array.isArray(stateAfterArchive.body?.observations) ? stateAfterArchive.body.observations : []
@@ -1644,7 +1663,7 @@ async function boot() {
       duringManagedDisposal: true,
       managedRealmCount: membersAfter.filter((m) => String(m.templateId) === 'worker').length || 1,
     })
-    const factsBefore6 = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1').length
+    const factsBefore6 = factsAtStop.length
 
     // seam 1: the product dispatch route. Only a LIVE agent can be dispatched
     // to; an archived member must answer NO_LIVE_AGENT (422) — no usable shadow.
@@ -1680,9 +1699,14 @@ async function boot() {
         headers: { 'content-type': 'application/json', cookie },
         body: JSON.stringify({ name: 'read', args: { file_path: rowPaths.b.path }, as: targetSession, callId: 'a5sfacc-post-drop-read' }),
       }, 90_000)
-    const factsAfter6 = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1').length
+    const factsAtEnd = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1')
+    // THE PROBE DELTA: every fact the sink gained after the stop-time snapshot.
+    // The row's two probes are the only dispatches in this window, so the delta
+    // is their stimulus; it is judged as "must be a refusal", never as a leak.
+    const probeFacts = factsAtEnd.slice(factsAtStop.length)
+    const factsAfter6 = factsAtEnd.length
     const healthAfter = await fetchJson(`${origin}/__p6t6/health`, undefined, 20_000)
-    log(`row6: archive=${String(archiveCall?.status)} postArchiveRead=${String(postArchiveRead?.status)} residencyDrop=${JSON.stringify(residencyDrop?.body ?? null)} postDropRead=${String(postDropRead?.status)} health=${String(healthAfter.status)} sinkDelta=${String(factsAfter6 - factsBefore6)}`)
+    log(`row6: archive=${String(archiveCall?.status)} postArchiveRead=${String(postArchiveRead?.status)} residencyDrop=${JSON.stringify(residencyDrop?.body ?? null)} postDropRead=${String(postDropRead?.status)} health=${String(healthAfter.status)} factsAtStop=${String(factsAtStop.length)} probeFacts=${String(probeFacts.length)} sinkDelta=${String(factsAfter6 - factsBefore6)}`)
     const postArchiveNoLive = postArchiveRead !== null && postArchiveRead.status === 422
     const archiveOk = archiveCall !== null && archiveCall.status === 200 && archiveCall.body?.ok === true
     // THE PROPERTY, not the mechanism: after the stop, a dispatch to that scope
@@ -1709,12 +1733,12 @@ async function boot() {
       postStopDispatches: dispatchedAfterStop,
       residencyDrop,
       forbiddenClaim: claimB,
-      // THE TEMPORAL BOUND: every guard-consultation fact the World produced.
+      // THE TEMPORAL BOUND: the sink AS OF THE STOP (captured before any probe).
       // The judge compares each `observedAt` with the stop instant; the old
       // `sinkDelta` count is carried as an informational number and is NOT a
-      // check (an append-only file makes a delta structurally unable to express
-      // "nothing happened after the stop" — README §12.3).
-      facts: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1'),
+      // check. The probe delta is a SECOND, separate input (must be refusals).
+      facts: factsAtStop,
+      probeFacts,
       stopInstant,
       sinkDelta: factsAfter6 - factsBefore6,
       healthStatus: healthAfter.status,
@@ -1740,21 +1764,22 @@ async function boot() {
       healthAfterDrop: { status: healthAfter.status, body: healthAfter.body },
       stopInstant,
       archiveDispatchedAt,
-      sinkFactsBefore: factsBefore6,
-      sinkFactsAfter: factsAfter6,
+      sinkFactsAtStop: factsAtStop.length,
+      probeFacts,
+      sinkFactsAfterProbes: factsAfter6,
       hostAlive: hostAlive(),
       seamsObserved: [
         'product archive lifecycle: team_archive_member dispatched through the row tool route (as the acceptance root/leader)',
         'product dispatch seam: POST /__p6t6/tool {as:<member child session>} — only a LIVE agent can be dispatched to; an archived member must answer NO_LIVE_AGENT (422)',
         'the product residency seam: POST /__p6t6/residency/drop {sessionId} — disposes the live agent handle, draining the setup disposers (incl. the a5sf realm)',
         'the row dispose-observation channel: GET /__p6t6/state .observations (classified against the CLOSED fault grammar and this Member\'s exact session id; the identity-less realm fault only inside this disposal window)',
-        'the a5sf sink: the fact count after teardown (no fact can appear for a scope that no longer runs)',
+        'the a5sf sink: the fact set AS OF THE STOP (captured before any probe) plus the probe delta; the row asserts no STOP-TIME fact follows the stop and every probe-added fact is a refusal',
         'the process seam: the Host child alive + the World teardown report (port released, home deleted)',
       ],
       seamsNotReached: [
         'an in-process read of the DISPOSED scope\'s tool registry (tools.get("read", <old agent>)) — no public HTTP route exposes a disposed scope, and this lane did not fork an infrastructure plugin for it',
       ],
-      note: 'PROVEN for the three asked properties as OBSERVED through the seams above: no dispatch path reaches the stopped Member (so no usable shadow, constrained or not), no MANAGED dispose fault was reported, no fact was written after the stop, and the Host/port/home teardown is clean. NOT claimed: that the disposed scope\'s definition registry is empty — that needs an in-process seam this lane did not add. The realm-dispose observation carries NO session identity in the product text; it is attributed by the disposal window + single-managed-realm rule and that residual gap is disclosed, not hidden.',
+      note: 'PROVEN for the asked properties as OBSERVED through the seams above: no dispatch path reaches the stopped Member with a success (so no usable shadow, constrained or not), no MANAGED dispose fault was reported, no STOP-TIME fact was written after the stop, every fact the row\'s own post-stop probes appended is a refusal, and the Host/port/home teardown is clean. NOT claimed: that the disposed scope\'s definition registry is empty — that needs an in-process seam this lane did not add. The realm-dispose observation carries NO session identity in the product text; it is attributed by the disposal window + single-managed-realm rule and that residual gap is disclosed, not hidden.',
     }
     evidence.teardown = teardownEvidence
     writeFileSync(join(HERE, 'teardown.json'), JSON.stringify(teardownEvidence, null, 2) + '\n')
@@ -1770,7 +1795,9 @@ async function boot() {
       anySuccessAfterStop: anySuccessAfterStop.length,
       stopInstant,
       archiveDispatchedAt,
+      factsAtStop: row6.detail.factsObserved ?? null,
       factsAfterStop: row6.detail.factsAfterStop ?? null,
+      probeFactsObserved: row6.detail.probeFactsObserved ?? null,
       sinkDeltaObserved: factsAfter6 - factsBefore6,
       disposeFaultsAtArchive: faultsAtArchive,
       disposeFaultsAfterDrop: faultsAfterDrop,

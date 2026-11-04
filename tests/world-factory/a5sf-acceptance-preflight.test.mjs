@@ -283,32 +283,50 @@ const WRITE_4A = 'A5SF_ACC_WRITE_4A_world\n'
 const ORIG_4A = 'A5SF_ACC_WRITE4A_ORIG_world\n'
 
 /**
- * THE REAL LIVE STREAM (session 2026-11-04T07:28Z, the first six-row run):
- * `dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl`, copied
- * verbatim by the driver from the World sink. It is the fixture the previous
- * round should have used: the synthetic C9 stream contained a `readText` deny,
- * which the product never emits (the `read` tool STATS first and the denied
- * target never reaches `readText`), so the oracle was pinned against a stream
- * the World cannot produce.
+ * THE BOOT-2 LIVE STREAM (2026-11-04T08:19Z), FROZEN — `fixtures/
+ * a5sf-boot2-row6-sample.json`. The file is extracted verbatim from the
+ * committed `oracle-samples.json` row-6 sample (the 10 facts the driver actually
+ * judged) and split at the `run-record.json` stop instant:
+ *
+ *   - `factsAtStop` (8) — byte-identical to the committed `consultations.jsonl`
+ *     (the stop-time sink). Rows 1–4a's facts are in here.
+ *   - `probeFacts` (2) — the `stat`/deny/binding facts the row's OWN post-stop
+ *     probes (`postArchiveRead` + `postDropRead` of b.txt) appended. Boot 2 fed
+ *     them to the temporal bound as if the product had emitted them; that is
+ *     the defect-A repair (README §12.8.1).
+ *
+ * WHY A FROZEN FIXTURE AND NOT `consultations.jsonl`: the evidence file is
+ * rewritten by every live run, so pinning tests to it made the suite red as soon
+ * as boot 2 landed (C1/C5/C9/C15 failed on 2026-11-04). The regression stream
+ * must not move under the suite. The fixture's provenance names the evidence it
+ * was extracted from.
  */
-const LIVE_CONSULTATIONS = readFileSync(
-  new URL('../../dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl', import.meta.url),
-  'utf8',
-).split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line))
+const BOOT2 = JSON.parse(readFileSync(new URL('./fixtures/a5sf-boot2-row6-sample.json', import.meta.url), 'utf8'))
+const LIVE_CONSULTATIONS = BOOT2.factsAtStop
+const LIVE_PROBE_FACTS = BOOT2.probeFacts
+const LIVE_STOP_INSTANT = BOOT2.stopInstant
 const LIVE_B_LOCATOR = LIVE_CONSULTATIONS.find((fact) => String(fact.locator).endsWith('/axis/b.txt'))?.locator ?? ''
 const LIVE_A_LOCATOR = LIVE_CONSULTATIONS.find((fact) => String(fact.locator).endsWith('/axis/allow/a.txt'))?.locator ?? ''
 const liveFactsAt = (locator) => LIVE_CONSULTATIONS.filter((fact) => fact.locator === locator)
-/** The archive instant of that run (`run.log` @ 1465d3ef7: `07:28:28.916Z`). */
-const LIVE_STOP_INSTANT = '2026-11-04T07:28:28.916Z'
 /**
- * The live row-4 refusal, VERBATIM from `run-record.json` of that run: the Host
- * file sandbox denied the write because the deployment root (`process.cwd()` of
- * the `dsh web` process) did not cover the World home. It is NOT the product's
- * write⇒read refusal, and row 4b must refuse to credit it.
+ * The live row-4 refusal, VERBATIM from `run-record.json` of the FIRST run: the
+ * Host file sandbox denied the write because the deployment root
+ * (`process.cwd()` of the `dsh web` process) did not cover the World home. It is
+ * not the Team lanes and not the read coupling; row 4b must not credit it as
+ * either.
  */
 const LIVE_ROW4_SANDBOX_DENIAL = 'Error: [sandbox: file access denied under workspace-write mode]\n'
   + '[sandbox: escalation available — retry this exact operation once with sandbox permissions '
   + '(the narrowest wider mode that suffices) + justification; the approval prompt asks the user]'
+/**
+ * The boot-2 row-4b outcome, VERBATIM from `run-record.json`: the guard ALLOWED
+ * the write on the ceiling realm and the write reached the confined provider;
+ * the refusal is the Host's read-before-write policy. It is NOT a lane refusal
+ * and NOT the Team write⇒read coupling.
+ */
+const LIVE_ROW4B_HOST_POLICY_REFUSAL = 'Error: cannot modify "<world>/workspace/axis/b.txt": file has not been read — read the file, then retry'
+/** The Team read-coupling refusal the FIRST row 4b demanded (a different answer). */
+const TEAM_READ_COUPLING_REFUSAL = "Error: native writeText must read '/w/b.txt' before rewriting it, but the Member read axis does not cover it; write does not imply read"
 
 const readCall = (path) => ({ callId: `call-${path}`, name: 'read', args: { file_path: path } })
 const writeCall = (path) => ({ callId: `call-${path}-write`, name: 'write', args: { file_path: path } })
@@ -373,13 +391,18 @@ const PASS = {
   },
   row4b: {
     call: writeCall('/w/b.txt'),
-    result: result("Error: native writeText must read '/w/b.txt' before rewriting it, but the Member read axis does not cover it; write does not imply read", true),
+    // THE BOOT-2 LIVE ANSWER, verbatim in shape: the guard admitted the write on
+    // the CEILING realm, the confined provider received it, and the HOST's own
+    // read-before-write policy refused it downstream.
+    result: result(LIVE_ROW4B_HOST_POLICY_REFUSAL, true),
     plantedContent: `${CLAIM_B}\n`,
     disk: `${CLAIM_B}\n`,
-    // The ceiling admit is expected here (measured live): the refusal comes from
-    // the write tool's read coupling, AFTER the ceiling lane allowed the write.
+    // The ceiling ALLOW is the row's first clause (the binding lane's read
+    // restriction is not a write restriction); the read lane must not gain one.
     facts: [writeFact('member', 'allow')],
-    counterRows: [],
+    // REPORTED, not checked: the live counter recorded the write reaching the
+    // confined provider (writeText, instance fs-4) before the Host policy refused.
+    counterRows: [{ leg: 'write-call', isBase: false, instance: 'fs-4' }],
   },
   row5: {
     member: { instanceId: 'inst-1', templateId: 'worker', childSessionId: 'session-child-1' },
@@ -418,10 +441,13 @@ const PASS = {
     ],
     residencyDrop: { status: 200, body: { ok: true, dropped: true } },
     forbiddenClaim: CLAIM_B,
+    // The stop-time sink (8 facts, the ones actually judged against the bound)...
     facts: LIVE_CONSULTATIONS,
+    // ...and the 2 facts the row's own post-stop probes appended (must be denials).
+    probeFacts: LIVE_PROBE_FACTS,
     stopInstant: LIVE_STOP_INSTANT,
-    // The old rule's input: TWO facts sit inside the window, both from BEFORE
-    // the archive. It is reported, never checked.
+    // The old rule's input: the count grew by the 2 probe facts INSIDE the
+    // window. It is reported, never checked.
     sinkDelta: 2,
     healthStatus: 200,
     hostAlive: true,
@@ -472,10 +498,12 @@ const REFUTED_SAMPLES = {
     ...PASS.row4a,
     facts: [writeFact('member', 'allow'), writeFact('binding', 'allow')],
   },
-  // Asked and answered, but not by the read coupling: the live sandbox denial.
+  // Asked and answered by the TEAM read coupling — the answer the boot-2 row
+  // must NOT be credited for: it means the guard refused the write on the read
+  // axis, i.e. the ceiling did NOT admit it.
   [ACCEPTANCE_CASE_IDS.row4b]: {
     ...PASS.row4b,
-    result: result(LIVE_ROW4_SANDBOX_DENIAL, true),
+    result: result(TEAM_READ_COUPLING_REFUSAL, true),
   },
   [ACCEPTANCE_CASE_IDS.row5]: {
     ...PASS.row5,
@@ -483,7 +511,9 @@ const REFUTED_SAMPLES = {
   },
   [ACCEPTANCE_CASE_IDS.row6]: {
     ...PASS.row6,
-    facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: '2026-11-04T07:28:29.500Z', locator: '/w/late-fact.txt' }],
+    // ONE fact 1 s after the stop, in the STOP-TIME set: the temporal bound must
+    // refute it.
+    facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: new Date(Date.parse(LIVE_STOP_INSTANT) + 1000).toISOString(), locator: '/w/late-fact.txt' }],
   },
 }
 
@@ -601,11 +631,12 @@ test('C8 each verdict carries a closed reason code (auditable without prose)', (
 })
 
 test('C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN', () => {
-  // The fixture is `consultations.jsonl` from the 2026-11-04T07:28Z run, not a
-  // synthetic stream: the old clause counted `method === 'readText'` facts and
-  // this stream has NONE (the denied target is refused at `stat`), which is how
-  // the live row 2 was reported FAIL while the product had refused correctly.
-  assert.equal(LIVE_CONSULTATIONS.length, 5, 'the live sink carried five facts')
+  // The fixture is the boot-2 stop-time sink (8 facts, extracted verbatim from
+  // the committed `consultations.jsonl` / oracle sample), not a synthetic stream:
+  // the old clause counted `method === 'readText'` facts and this stream has
+  // NONE (the denied target is refused at `stat`), which is how the live row 2
+  // was reported FAIL while the product had refused correctly.
+  assert.equal(LIVE_CONSULTATIONS.length, 8, 'the boot-2 stop-time sink carried eight facts')
   const factsForB = liveFactsAt(LIVE_B_LOCATOR)
   assert.equal(factsForB.length, 2, 'B carries the stat deny AND the row-4 writeText allow')
   const judged = judgeRow2({ ...PASS.row2, facts: factsForB })
@@ -751,21 +782,43 @@ test('C14 rows 4a/4b: the split is two questions, and neither loosens the other'
   // ...or if the CONFINED write the product refused is credited as an allow:
   assert.equal(judgeRow4a({ ...PASS.row4a, result: result('permission denied', true) }).verdict, 'REFUTED')
 
-  // 4b: the SAME property (no channel crossing) asserted on the refusal.
+  // 4b: the CEILING admits a write the binding lane cannot read, and the bytes do
+  // not land. Two claims, two clauses — neither is a claim about the Team lanes.
   const fourB = judgeRow4b(PASS.row4b)
   assert.equal(fourB.verdict, 'PROVEN', JSON.stringify(fourB))
-  assert.equal(fourB.detail.checks.typedReadCouplingRefusal, true)
-  assert.equal(fourB.detail.checks.ceilingFactReported, undefined, 'no invented clause')
-  assert.equal(fourB.detail.writeDecisions.length, 1, 'the ceiling allow is REPORTED (measured live), not a violation')
+  assert.equal(fourB.reason, 'CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED')
+  assert.equal(fourB.detail.checks.ceilingWriteAllowed, true, 'the guard ALLOWED the write (ceiling realm)')
+  assert.equal(fourB.detail.checks.noReadLaneWriteAllow, true)
+  assert.equal(fourB.detail.writeDecisions.length, 1, 'the ceiling allow is the row FIRST clause, not a violation')
   assert.equal(fourB.detail.writeDecisions[0].realm, 'member')
-  // the LIVE row-4 refusal (host sandbox, not the read coupling) must NOT be
-  // credited to 4b — that is exactly the wrong-question failure being repaired.
-  const sandbox = judgeRow4b(REFUTED_SAMPLES[ACCEPTANCE_CASE_IDS.row4b])
-  assert.equal(sandbox.verdict, 'REFUTED')
-  assert.equal(sandbox.detail.checks.typedReadCouplingRefusal, false)
-  assert.equal(sandbox.detail.checks.isError, true, 'it IS an error — just not the one the row asks for')
-  // a write that CHANGED the file is REFUTED even with the right prose
+  assert.equal(fourB.detail.providerWrote, true, 'the write reached the confined provider — REPORTED, not checked')
+  // The TEAM read coupling is a DIFFERENT answer: the guard refused on the read
+  // axis, i.e. the ceiling did NOT admit the write. This is what the retired row
+  // demanded and what boot 2 refuted.
+  const coupled = judgeRow4b(REFUTED_SAMPLES[ACCEPTANCE_CASE_IDS.row4b])
+  assert.equal(coupled.verdict, 'REFUTED')
+  assert.equal(coupled.detail.checks.ceilingWriteAllowed, true, 'the ceiling fact was there...')
+  assert.equal(coupled.detail.checks.noReadLaneWriteAllow, true, '...and no write crossed to the read lane...')
+  assert.equal(coupled.detail.checks.notReadCouplingRefusal, false, '...but the answer is the other contract, so it is not this row')
+  // A Team LANE refusal is not the answer either: it means the guard denied it.
+  const laneRefused = judgeRow4b({ ...PASS.row4b, result: result('read refused: path is outside every allow subtree of the lane', true) })
+  assert.equal(laneRefused.verdict, 'REFUTED')
+  assert.equal(laneRefused.detail.checks.notTeamLaneRefusal, false)
+  // nor is an A5SF_* typed admission refusal
+  const typed = judgeRow4b({ ...PASS.row4b, result: result('a5sf: A5SF_NATIVE_SHADOW_INVALIDATED refused', true) })
+  assert.equal(typed.verdict, 'REFUTED')
+  assert.equal(typed.detail.checks.notTeamLaneRefusal, false)
+  // no ceiling allow fact = the guard did not allow the write = clause 1 fails
+  const noCeiling = judgeRow4b({ ...PASS.row4b, facts: [] })
+  assert.equal(noCeiling.verdict, 'REFUTED')
+  assert.equal(noCeiling.detail.checks.ceilingWriteAllowed, false)
+  // the OLD first-run refusal (Host sandbox before the pin) is also not the answer
+  assert.equal(judgeRow4b({ ...PASS.row4b, result: result(LIVE_ROW4_SANDBOX_DENIAL, true) }).verdict, 'PROVEN',
+    'a host-side error that is neither a lane nor a read-coupling refusal is exactly the observed shape')
+  // a write that CHANGED the file is REFUTED even with a non-lane error
   assert.equal(judgeRow4b({ ...PASS.row4b, disk: WRITE_B }).verdict, 'REFUTED')
+  // returned planted bytes are a leak
+  assert.equal(judgeRow4b({ ...PASS.row4b, result: result(`${CLAIM_B}\n then: cannot modify`, true) }).verdict, 'REFUTED')
   // an unplanted target is an ABSENCE (the "unchanged" claim has no baseline)
   assert.equal(judgeRow4b({ ...PASS.row4b, plantedContent: '' }).reason, 'NO_PLANTED_B')
   // a laundered allow on the read lane is REFUTED
@@ -777,46 +830,64 @@ test('C14 rows 4a/4b: the split is two questions, and neither loosens the other'
   assert.equal(Object.values(ACCEPTANCE_CASE_IDS).some((id) => /row4-write-b/.test(id)), false)
 })
 
-test('C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt', () => {
-  // The live stream's newest fact is 07:28:27.080Z; the archive was answered at
-  // 07:28:28.916Z. NOTHING follows the stop — and the old `sinkDelta === 0`
-  // clause reported FAIL on this same stream because two facts from rows 1–2
-  // landed inside its "after" window.
+test('C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin', () => {
+  // THE LIVE STREAM. Boot 2 judged 10 facts: 8 at or before the stop instant
+  // (08:19:27.285Z; newest 08:19:25.470Z) and 2 AFTER it (08:19:27.332Z and
+  // .385Z) — both `stat`/deny/binding at b.txt, appended by the row's own
+  // post-stop probes (`postArchiveRead`, `postDropRead`). The frozen fixture is
+  // that stream, split the way the repaired driver now splits it.
+  assert.equal(LIVE_CONSULTATIONS.length, 8, 'the stop-time sink')
+  assert.equal(LIVE_PROBE_FACTS.length, 2, 'the probe-added facts')
+  const stopMs = Date.parse(LIVE_STOP_INSTANT)
+  assert.equal(LIVE_CONSULTATIONS.every((fact) => Date.parse(fact.observedAt) < stopMs), true, 'every stop-time fact precedes the stop')
+  assert.equal(LIVE_PROBE_FACTS.every((fact) => Date.parse(fact.observedAt) > stopMs), true, 'every probe fact follows it')
+  assert.equal(LIVE_PROBE_FACTS.every((fact) => fact.decision === 'deny' && String(fact.locator).endsWith('/axis/b.txt')), true,
+    'each probe was a refused read of the probe target')
+  assert.equal(LIVE_PROBE_FACTS.every((fact) => fact.method === 'stat' && fact.realm === 'binding'), true,
+    'the refusal is recorded where the product records it: the binding stat')
+
   const live = judgeRow6(PASS.row6)
   assert.equal(live.verdict, 'PROVEN', JSON.stringify(live))
   assert.equal(live.detail.checks.noFactAfterStop, true)
-  assert.equal(live.detail.factsObserved, 5)
+  assert.equal(live.detail.checks.probeFactsAreRefusals, true)
+  assert.equal(live.detail.factsObserved, 8)
+  assert.equal(live.detail.probeFactsObserved, 2)
   assert.deepEqual(live.detail.factsAfterStop, [])
   assert.equal(live.detail.stopInstant, LIVE_STOP_INSTANT)
-  const newest = Math.max(...LIVE_CONSULTATIONS.map((fact) => Date.parse(fact.observedAt)))
-  assert.equal(newest < Date.parse(LIVE_STOP_INSTANT), true, 'every live fact precedes the stop')
-  // The replaced rule, evaluated inline: the live run recorded sinkDelta = 2 for
-  // this window (both facts from before the archive), so a count-based clause
-  // necessarily refuted a clean stream. `PASS.row6.sinkDelta` carries that 2.
+
+  // THE BOOT-2 FAIL, REPRODUCED: hand the SAME 10 facts to the bound as one
+  // array (what the driver did) and the row refutes itself on its own stimulus.
+  const unsplit = judgeRow6({
+    ...PASS.row6,
+    facts: [...LIVE_CONSULTATIONS, ...LIVE_PROBE_FACTS],
+    probeFacts: [],
+  })
+  assert.equal(unsplit.verdict, 'REFUTED', JSON.stringify(unsplit))
+  assert.deepEqual(unsplit.detail.failed, ['noFactAfterStop'])
+  assert.equal(unsplit.detail.factsAfterStop.length, 2)
+  assert.equal(unsplit.detail.factsAfterStop[0].locator, LIVE_PROBE_FACTS[0].locator)
+  assert.equal(unsplit.detail.factsAfterStop[1].observedAt, LIVE_PROBE_FACTS[1].observedAt)
+
+  // The old count input is CARRIED but not checked: the verdict is unchanged for
+  // sinkDelta 0 and 2 on the same stream.
   assert.equal(PASS.row6.sinkDelta, 2, 'the old window input, as measured live')
-  // The count input is CARRIED but not checked: the same sample with the old
-  // sinkDelta (2) still PROVES, which is what makes the fix load-bearing.
   assert.equal(judgeRow6({ ...PASS.row6, sinkDelta: 2 }).verdict, 'PROVEN')
   assert.equal(judgeRow6({ ...PASS.row6, sinkDelta: 0 }).verdict, 'PROVEN')
 
-  // Injected one fact with a LATER observedAt → REFUTED, and the fact is named.
+  // The refuting twin: ONE fact with a LATER observedAt, in the stop-time set.
+  const injectedAt = new Date(Date.parse(LIVE_STOP_INSTANT) + 1000).toISOString()
   const injected = judgeRow6({
     ...PASS.row6,
-    facts: [...LIVE_CONSULTATIONS, {
-      ...LIVE_CONSULTATIONS[0],
-      method: 'writeText',
-      locator: '/w/after-stop.txt',
-      observedAt: '2026-11-04T07:28:29.500Z',
-    }],
+    facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], method: 'writeText', locator: '/w/after-stop.txt', observedAt: injectedAt }],
   })
   assert.equal(injected.verdict, 'REFUTED')
   assert.equal(injected.reason, 'ROW6_CLAUSE_FAILED')
   assert.deepEqual(injected.detail.failed, ['noFactAfterStop'])
   assert.equal(injected.detail.factsAfterStop.length, 1)
-  assert.equal(injected.detail.factsAfterStop[0].observedAt, '2026-11-04T07:28:29.500Z')
+  assert.equal(injected.detail.factsAfterStop[0].observedAt, injectedAt)
   assert.equal(injected.detail.factsAfterStop[0].locator, '/w/after-stop.txt')
 
-  // A fact AT the stop instant is not "after" it (boundary is strict).
+  // A fact AT the stop instant is not "after" it (the bound is strict).
   assert.equal(judgeRow6({ ...PASS.row6, facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: LIVE_STOP_INSTANT }] }).verdict, 'PROVEN')
   // A fact with NO parseable observedAt cannot be proven to precede the stop.
   const undated = judgeRow6({ ...PASS.row6, facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: null }] })
@@ -826,7 +897,15 @@ test('C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one
   const noStop = judgeRow6({ ...PASS.row6, stopInstant: null })
   assert.equal(noStop.verdict, 'NOT_REACHED')
   assert.equal(noStop.reason, 'NO_STOP_INSTANT')
-  // The other three clauses are unchanged and still fire.
+  // A probe fact that is an ALLOW means the stopped Member was SERVED — the
+  // second repaired clause is load-bearing.
+  const served = judgeRow6({ ...PASS.row6, probeFacts: [...LIVE_PROBE_FACTS, { ...LIVE_PROBE_FACTS[0], decision: 'allow' }] })
+  assert.equal(served.verdict, 'REFUTED')
+  assert.deepEqual(served.detail.failed, ['probeFactsAreRefusals'])
+  assert.equal(served.detail.probeFactsObserved, 3)
+  // A probe fact with no decision is not a proven refusal either (fail-closed).
+  assert.equal(judgeRow6({ ...PASS.row6, probeFacts: [{ ...LIVE_PROBE_FACTS[0], decision: null }] }).verdict, 'REFUTED')
+  // The other clauses are unchanged and still fire.
   assert.equal(judgeRow6({ ...PASS.row6, postStopDispatches: [{ status: 200, body: { ok: true, value: { text: CLAIM_B } } }] }).detail.checks.noSuccessAfterStop, false)
   assert.equal(judgeRow6({ ...PASS.row6, postStopDispatches: [{ status: 200, body: { ok: true, value: { text: CLAIM_B } } }] }).detail.checks.noForbiddenBytesAfterStop, false)
   assert.equal(judgeRow6({ ...PASS.row6, healthStatus: 500 }).detail.checks.hostHealthy, false)

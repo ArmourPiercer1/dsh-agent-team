@@ -51,6 +51,20 @@
  * Each correction is stated at its judge, and each has a replay over the REAL
  * live stream plus a mutation-based negative control (`negative-controls.mjs`).
  *
+ * SECOND CORRECTION ROUND AFTER BOOT 2 (2026-11-04T08:19Z, 6 PROVEN / 2 FAIL).
+ * Both remaining FAILs were again defects of the question, and both are stated
+ * at their judge:
+ *   - row 4b asserted a refusal the algebra does not produce. The guard ALLOWS a
+ *     write that the binding lane cannot read (the restriction constrains READ
+ *     only; `edit` was what #579 measured), and what refused the live write was
+ *     the Host's own read-before-write policy. The row now asserts the two-axis
+ *     statement (ceiling-bounded write) plus "the bytes are not delivered
+ *     blindly", and does NOT describe the Host policy as a Team-lane property;
+ *   - row 6 re-read the sink AFTER its own post-stop probes, so the two facts
+ *     those probes appended (a real `stat`/deny per probe) were counted as "a
+ *     fact after the stop". The temporal bound now runs over the stop-time sink
+ *     and the probe delta is separately required to be refusals.
+ *
  * WHAT THIS MODULE IS NOT: it does not observe anything, spawn anything, or
  * read a Host log. It is a pure decision contract over evidence the driver
  * collected. Every value it returns is a verdict plus the reason codes that
@@ -85,14 +99,17 @@ export function toRunVerdict(verdict) {
  * (2026-11-04T07:28Z) proved that a positional index is a latent defect of its
  * own: splitting row 4 into 4a/4b renumbers rows 4–6.
  *
- * `row2` and `row4*` were RENAMED by the 2026-11-04 correction round, because
+ * `row2` and `row4*` were RENAMED by the 2026-11-04 correction rounds, because
  * the old names stated assertions the oracle no longer makes:
  *   - `live:row2-read-b-binding-deny-exactly-one-fact` (the count of `readText`
  *     facts) → `…-binding-deny-on-read-path` (every read-PATH consultation for B
  *     is a binding-lane deny; see {@link judgeRow2});
  *   - `live:row4-write-b-ceiling-allowed-no-read-lane-fact` (ONE row asserting an
  *     allowance the product correctly denies) → `live:row4a-…` and
- *     `live:row4b-…` (see {@link judgeRow4a} / {@link judgeRow4b}).
+ *     `live:row4b-write-b-ceiling-allowed-read-not-implied` (see
+ *     {@link judgeRow4a} / {@link judgeRow4b}; 4b was renamed again after boot 2
+ *     because the live answer was "the ceiling allows it, the read lane is not
+ *     implied, and the bytes still do not land").
  * The historical `run-record.json` of the first live run keeps the old ids: it
  * is append-only evidence, not a current contract.
  */
@@ -102,7 +119,7 @@ export const ACCEPTANCE_CASE_IDS = Object.freeze({
   row2: 'live:row2-read-b-binding-deny-on-read-path',
   row3: 'live:row3-read-c-refused-no-widening',
   row4a: 'live:row4a-write-in-lane-readable-allowed-ceiling-only',
-  row4b: 'live:row4b-write-b-refused-read-not-implied',
+  row4b: 'live:row4b-write-b-ceiling-allowed-read-not-implied',
   row5: 'live:row5-post-invalidation-refused-shadow-invalidated',
   row6: 'live:row6-teardown-no-usable-unconstrained-shadow',
 })
@@ -685,16 +702,18 @@ export function judgeRow3({ call, result, claim, denyFacts = [], bindingDenyFact
  *
  * WHY 4a AND 4b ARE TWO ROWS, NOT ONE (the first live run's contradiction):
  * row 4 wrote to B — inside the ceiling write lane but OUTSIDE the restriction
- * read allowance — and asked for "allowed AND no read-lane fact". The product
- * refuses that write with `IO_WRITE_REQUIRES_READ` (write⇒read coupling, #579),
- * so the question could only ever have one answer: FAIL. The write lanes are
- * not the only axis: a Member that may write a subtree but may not read it is
- * refused by design. The split keeps the real property ("a write must not cross
- * channels") in BOTH halves:
- *   4a  the write the product allows   → ceiling-only facts, disk matches;
- *   4b  the write the product refuses  → typed refusal, disk unchanged, and NO
- *       write-allow fact on the read (binding) lane, i.e. the refused write did
- *       not get laundered into the other channel.
+ * read allowance — and asked for "allowed AND no read-lane fact". Boot 2 showed
+ * that the guard actually ALLOWS that write (the binding restriction constrains
+ * READ only) and the Host's own read-before-write policy is what refuses it
+ * downstream, so the question had two different answers mixed into one verdict.
+ * The split keeps the real property ("a write must not cross channels") in BOTH
+ * halves:
+ *   4a  a write inside the readable in-lane subtree → ceiling-only facts, disk
+ *       matches (the allow did not cross into the read lane);
+ *   4b  a write to B → the guard allows it on the CEILING realm, NO write-allow
+ *       on the read (binding) lane, and the bytes do not land: the Host policy
+ *       refuses, the disk is unchanged, no planted byte reaches the model
+ *       (see {@link judgeRow4b}; this is NOT a Team-lane security claim).
  * Both halves are measured live; neither is inferred from the other.
  *
  * The target is read by the model BEFORE it is written (the fixture script
@@ -743,24 +762,46 @@ export function judgeRow4a({ call, result, expectedContent, disk, facts = [], co
 }
 
 /**
- * Row 4b (second half) — native `write` to B (inside the ceiling, outside the
- * restriction read allowance, EXISTING on disk) is REFUSED with the product's
- * typed `IO_WRITE_REQUIRES_READ`, the planted content is unchanged, and NO
- * write-allow fact exists on the read (binding) lane.
+ * Row 4b (second half) — the CEILING write lane admits a write the BINDING lane
+ * cannot read, and the bytes are not delivered blindly.
  *
- * The ceiling-realm `writeText` allow fact that the live run recorded for the
- * same locator (`realm: "member"`, `toolBindingIdentity: null`) is EXPECTED and
- * is not a violation: the ceiling lane admitted the write, the write tool's
- * read coupling then refused it. What must never happen is the write crossing
- * into the read lane's fact stream as an allow — that would mean the refusal
- * was laundered.
+ * WHAT THE PRODUCT ACTUALLY PROMISES (boot 2, 2026-11-04T08:19Z; `edit`, not
+ * `write`, was the operation #579 measured): the binding restriction constrains
+ * the READ axis only. A `write` is bounded by the ceiling alone, so the guard
+ * ALLOWS `writeText` to B (inside the ceiling, outside the read allowance) and
+ * records the fact on the CEILING realm (`realm:'member'`,
+ * `toolBindingIdentity:null`). The bytes do not reach the file anyway: the
+ * Host's own read-before-write policy refuses the write downstream
+ * (`cannot modify "<path>": file has not been read — read the file, then retry`),
+ * the planted content is unchanged, and no byte of B comes back to the model.
+ *
+ * THAT HOST REFUSAL IS NOT A SECURITY PROPERTY OF THE TEAM LANES. It is the
+ * upstream tool policy answering a different question ("was the target read?"),
+ * not a lane refusal and not the Team write⇒read coupling. This row must not
+ * describe it as either, and must not credit a Team refusal as this outcome.
+ *
+ * TWO CLAUSES (two claims, not one property twice):
+ *   1. **The guard allows a write the binding lane cannot read.**
+ *      `ceilingWriteAllowed` (≥1 write-ALLOW fact on the ceiling realm) and
+ *      `noReadLaneWriteAllow` (no write-allow laundered onto the binding/read
+ *      realm). The two-axis statement: a write is ceiling-bounded.
+ *   2. **The bytes are not delivered blindly.** `isError`, and the error is
+ *      neither an `A5SF_*`/lane refusal (`notTeamLaneRefusal`) nor the typed
+ *      read-coupling refusal (`notReadCouplingRefusal`), the disk still holds the
+ *      planted content (`diskUnchanged`), and the planted bytes did not come back
+ *      to the model (`noPlantedBytesReturned`).
+ *
+ * The provider counter is REPORTED, not checked: the live run measured that the
+ * write DID reach the confined provider (`writeText`, instance `fs-4`) before the
+ * Host policy refused it. Asserting "no provider write" would contradict the
+ * measured product behaviour.
  *
  * NOT_REACHED: the write never happened, or the driver did not plant the target
  * (the "unchanged" claim has no baseline without it).
- * REFUTED: asked and answered differently — including the case where the
- * refusal is NOT the typed read coupling (e.g. a host file-sandbox denial, or
- * the read-before-edit policy's `createIfAbsent` failure): those are different
- * refusals and the row must not be credited for them.
+ * REFUTED: asked and answered differently — the guard denied the write (a lane
+ * refusal means the ceiling did NOT admit it), the product refused it with the
+ * read coupling (a different contract), an `A5SF_*` admission refusal, a changed
+ * disk, or returned planted bytes.
  */
 export function judgeRow4b({ call, result, plantedContent, disk, facts = [], counterRows = [] }) {
   if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_WRITE_CALL_4B' : 'NO_WRITE_RESULT_4B' })
@@ -768,14 +809,18 @@ export function judgeRow4b({ call, result, plantedContent, disk, facts = [], cou
   const text = textOfResult(result)
   const list = Array.isArray(facts) ? facts : []
   const writeFacts = list.filter((fact) => isWritePathConsultation(fact))
+  const ceilingWriteAllowFacts = writeFacts.filter((fact) => String(fact?.realm ?? '') === 'member'
+    && (fact?.toolBindingIdentity ?? null) === null
+    && fact?.decision === 'allow')
   const readLaneWriteAllowFacts = writeFacts.filter((fact) => String(fact?.realm ?? '') === 'binding' && fact?.decision === 'allow')
   const checks = {
     isError: result.isError === true,
-    typedReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text),
+    ceilingWriteAllowed: ceilingWriteAllowFacts.length >= 1,
+    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,
+    notTeamLaneRefusal: LANE_REFUSAL.test(text) !== true && /A5SF_[A-Z0-9_]+/.test(text) !== true,
+    notReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text) !== true,
     noPlantedBytesReturned: text.includes(plantedContent.trim()) !== true,
     diskUnchanged: disk === plantedContent,
-    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,
-    noProviderWrite: counterRows.length === 0,
   }
   const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
   const detail = {
@@ -787,11 +832,17 @@ export function judgeRow4b({ call, result, plantedContent, disk, facts = [], cou
     observed: text,
     writeFacts: writeFacts.length,
     writeDecisions: writeFacts.map((fact) => ({ method: fact?.method ?? null, decision: fact?.decision ?? null, realm: fact?.realm ?? null })),
+    ceilingWriteAllowFacts: ceilingWriteAllowFacts.length,
     readLaneWriteAllowFacts: readLaneWriteAllowFacts.length,
+    // REPORTED, never checked: the live run measured that the write reached the
+    // confined provider before the Host policy refused it. A row demanding
+    // "no provider write" would be asking the product for something it does not
+    // promise on the write axis.
     counterRows: counterRows.length,
+    providerWrote: counterRows.length > 0,
   }
   if (failed.length > 0) return refuted('ROW4B_CLAUSE_FAILED', detail)
-  return proven({ reason: 'WRITE_REFUSED_READ_NOT_IMPLIED', ...detail })
+  return proven({ reason: 'CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED', ...detail })
 }
 
 /**
@@ -908,7 +959,15 @@ export function judgeRow5({
  * NOT_REACHED: no member existed to stop, or the archive/dispatch the row
  * observes never happened (scenario premise absent).
  * REFUTED: the stop happened and the product served the forbidden bytes, or a
- * managed dispose fault was reported, or a fact appeared after the stop.
+ * managed dispose fault was reported, or a STOP-TIME fact appeared after the
+ * stop, or one of the row's own post-stop probe consultations was NOT a refusal.
+ *
+ * WHY THE PROBE FACTS ARE SEPARATE: the driver probes the stopped Member after
+ * the archive (`postArchiveRead`, `postDropRead`); each probe is a real guard
+ * consultation and appends a real fact. Those facts are the row's stimulus, not
+ * a leak. Boot 2 re-read the sink after the probes and counted them as "facts
+ * after the stop" — the row refuted itself. The stop-time sink (`facts`) carries
+ * the temporal bound; the probe delta (`probeFacts`) must consist of refusals.
  *
  * Identity is enforced by {@link classifyDisposeFaults}: a fault naming ANOTHER
  * session is `foreign`; a non-fault observation containing the managed
@@ -925,8 +984,20 @@ export function judgeRow6({
   postStopDispatches = [],
   residencyDrop = null,
   forbiddenClaim,
-  /** Every `a5sf-guard-consult/1` fact the World produced (all rows). */
+  /**
+   * Every `a5sf-guard-consult/1` fact the World produced UP TO the stop instant
+   * (the driver snapshots the sink before it dispatches any post-stop probe).
+   */
   facts = [],
+  /**
+   * The facts the row's OWN post-stop probe dispatches appended (the delta
+   * between the stop-time snapshot and the sink after `postArchiveRead` +
+   * `postDropRead`). These are the row's stimulus, not an observation of the
+   * product after the stop: judging them as "facts after the stop" made the row
+   * refute itself (boot 2). They are judged separately — a stopped Member must
+   * not be SERVED anything, so every probe fact must be a refusal.
+   */
+  probeFacts = [],
   /**
    * The instant the product ANSWERED the archive dispatch — the stop instant.
    * Recorded by the driver; the row's temporal bound.
@@ -956,16 +1027,24 @@ export function judgeRow6({
   // ── THE TEMPORAL BOUND (replaces the `sinkDelta === 0` count) ─────────────
   // The fact file is APPEND-ONLY and spans the whole run, so facts from rows
   // 1–5 land inside any "after the stop" window and a DELTA can never express
-  // "nothing happened after the stop" (live: 2 facts between the row-6 baseline
-  // and the end, both from before the archive → the count clause reported FAIL
-  // on a clean stream). The row's claim is temporal: NO fact may carry an
-  // `observedAt` LATER than the stop instant. A fact whose `observedAt` cannot
-  // be parsed cannot be proven to precede the stop, so it also refutes
-  // (fail-closed).
+  // "nothing happened after the stop". The row's claim is temporal: NO fact may
+  // carry an `observedAt` LATER than the stop instant. A fact whose
+  // `observedAt` cannot be parsed cannot be proven to precede the stop, so it
+  // also refutes (fail-closed).
+  //
+  // THE BOOT-2 DEFECT THIS REPLACES: the driver re-read the sink AFTER it had
+  // dispatched its own two post-stop probes (`postArchiveRead` + `postDropRead`
+  // of b.txt). Each probe is a real guard consultation and appends a real fact
+  // (`stat`/deny, binding), so the row counted its own stimulus as "a fact after
+  // the stop" and refuted a clean teardown. The bound is now judged over the
+  // STOP-TIME sink (`facts`), and the probe-added facts are a separate clause:
+  // a stopped Member may be consulted, but every such consultation must be a
+  // refusal — an ALLOW would mean it was still being served.
   const stopMs = Date.parse(String(stopInstant ?? ''))
   if (!Number.isFinite(stopMs)) return reached({ reason: 'NO_STOP_INSTANT', stopInstant: stopInstant ?? null })
-  const typedFacts = (Array.isArray(facts) ? facts : []).filter((fact) => fact !== null && fact !== undefined)
-  const dated = typedFacts.map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? '')) }))
+  const stopTimeFacts = (Array.isArray(facts) ? facts : []).filter((fact) => fact !== null && fact !== undefined)
+  const probeTimeFacts = (Array.isArray(probeFacts) ? probeFacts : []).filter((fact) => fact !== null && fact !== undefined)
+  const dated = stopTimeFacts.map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? '')) }))
   const undated = dated.filter((entry) => !Number.isFinite(entry.at))
   const afterStop = dated.filter((entry) => Number.isFinite(entry.at) && entry.at > stopMs)
   const identity = classifyDisposeFaults({ observations, managed, duringManagedDisposal, managedRealmCount })
@@ -983,6 +1062,7 @@ export function judgeRow6({
     noUnattributedRealmFault: identity.unattributed.length === 0,
     factsAreTimestamped: undated.length === 0,
     noFactAfterStop: afterStop.length === 0,
+    probeFactsAreRefusals: probeTimeFacts.length === 0 || probeTimeFacts.every((fact) => fact?.decision === 'deny'),
     hostHealthy: healthStatus === 200,
     hostAlive: hostAlive === true,
   }
@@ -993,9 +1073,11 @@ export function judgeRow6({
     identity,
     archive: { status: archive.status, ok: archive.body?.ok ?? null },
     stopInstant: String(stopInstant),
-    factsObserved: typedFacts.length,
+    factsObserved: stopTimeFacts.length,
     factsAfterStop: afterStop.map((entry) => ({ method: entry.fact?.method ?? null, locator: entry.fact?.locator ?? null, realm: entry.fact?.realm ?? null, observedAt: entry.fact?.observedAt ?? null })),
     factsWithoutObservedAt: undated.length,
+    probeFactsObserved: probeTimeFacts.length,
+    probeFacts: probeTimeFacts.map((fact) => ({ method: fact?.method ?? null, locator: fact?.locator ?? null, realm: fact?.realm ?? null, decision: fact?.decision ?? null, observedAt: fact?.observedAt ?? null })),
     residencyDrop: residencyDrop === null || residencyDrop === undefined ? null : residencyDrop.body ?? null,
     postStop: postStopDispatches.map((reply) => reply === null || reply === undefined
       ? null

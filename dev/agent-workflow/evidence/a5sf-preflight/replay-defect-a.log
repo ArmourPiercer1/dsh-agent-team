@@ -1,0 +1,19 @@
+stopInstant (run-record.json)            = 2026-11-04T08:19:27.285Z
+A. consultations.jsonl                    = 8 facts
+   newest observedAt in that file        = 2026-11-04T08:19:25.470Z
+   judgeRow6(sink, stop)                 = {"verdict":"PROVEN","reason":"NO_USABLE_UNCONSTRAINED_SHADOW","factsObserved":8,"factsAfterStop":[],"probeFacts":0,"failed":[]}
+B. the LIVE sample the driver judged     = 10 facts (oracle-samples.json row6)
+   newest observedAt in that sample      = 2026-11-04T08:19:27.385Z
+   judgeRow6(live sample, stop)          = {"verdict":"REFUTED","reason":"ROW6_CLAUSE_FAILED","factsObserved":10,"factsAfterStop":[{"method":"stat","locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt","realm":"binding","observedAt":"2026-11-04T08:19:27.332Z"},{"method":"stat","locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt","realm":"binding","observedAt":"2026-11-04T08:19:27.385Z"}],"probeFacts":0,"failed":["noFactAfterStop"]}
+   facts after the stop, verbatim:
+     2026-11-04T08:19:27.332Z  stat/deny  realm=binding  b.txt
+     2026-11-04T08:19:27.385Z  stat/deny  realm=binding  b.txt
+C. attribution: factsAtStop(8) === consultations.jsonl(8)? true
+   every post-stop fact targets b.txt? true; teardown.json refusalCodesAfterStop has 2 entries (the row's own postArchiveRead + postDropRead), each a refusal:
+     status=200 ok=false "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+     status=200 ok=false "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+   the row's own probes appended exactly the facts it then counted: after = before + 2
+D. repaired split: factsAtStop=8, probeFacts=2
+   judgeRow6({facts: factsAtStop, probeFacts: factsAfterStop}) = {"verdict":"PROVEN","reason":"NO_USABLE_UNCONSTRAINED_SHADOW","factsObserved":8,"factsAfterStop":[],"probeFacts":2,"failed":[]}
+   judgeRow6({facts: factsAtStop + one fact at stop+1s})       = {"verdict":"REFUTED","reason":"ROW6_CLAUSE_FAILED","factsObserved":9,"factsAfterStop":[{"method":"stat","locator":"/w/after-stop.txt","realm":"binding","observedAt":"2026-11-04T08:19:28.285Z"}],"probeFacts":2,"failed":["noFactAfterStop"]}
+   judgeRow6({facts, probeFacts with one ALLOW})             = {"verdict":"REFUTED","reason":"ROW6_CLAUSE_FAILED","factsObserved":8,"factsAfterStop":[],"probeFacts":3,"failed":["probeFactsAreRefusals"]}
