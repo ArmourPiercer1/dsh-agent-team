@@ -33,6 +33,13 @@ export const TEAM_SERVICE_INSTALL_CODES = [
     'PROVIDER_INCOMPATIBLE',
     'SERVICE_ALREADY_INSTALLED',
     'SERVICE_MOUNT_FAILED',
+    /**
+     * BL-17 (2026-11-04): a module that CONSUMES `subprocess` was about to be
+     * mounted on a realm that owns no confined `subprocess` face. Refused at
+     * composition time, before any tool exists — never resolved against the
+     * inherited base service.
+     */
+    'SUBPROCESS_UNCONFINED_REALM',
 ];
 /**
  * The per-call denial raised by an installed Provider method. Carries the

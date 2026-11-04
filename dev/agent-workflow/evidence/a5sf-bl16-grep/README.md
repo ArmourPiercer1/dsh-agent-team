@@ -39,7 +39,7 @@ Three additions, all on existing seams (no new policy evaluator, no upstream pat
 | File | What it does |
 | --- | --- |
 | `packages/runtime/team-services/src/subprocess.ts` (new) | `readIntentsOf` (declared read roots), `programAttributionRefusal` + `CONFINED_SUBPROCESS_STATIC_PROGRAMS` (the typed statically-attributable allow-list: `rg`) and `programWriteLaneRefusal` (a correctly-named program the caller can WRITE is still refused), `createMemberSubprocessGuard` (the SAME `FsGuard` shape, the SAME `evaluateLocatorAccess` decision, the SAME `TeamIoDenial` codes), `createConfinedOutputReader` (bounded, offset-based collect), `createConfinedSubprocessClass` (the Service subclass that replaces `spawn`) |
-| `packages/runtime/team-services/src/install.ts` / `mount.ts` / `src/plugin/live/a5sf-realm-row.mjs` | an **optional** `subprocess` face: `compiledFor` may answer `{ effective, provider, realmId? }`; the installer nests `root.isolate('fs', label).isolate('subprocess', label2)` so the confined process service lives in the SAME isolated chain the route-C native modules are re-mounted into |
+| `packages/runtime/team-services/src/install.ts` / `mount.ts` / `src/plugin/live/a5sf-realm-row.mjs` | an **optional** `subprocess` face: `compiledFor` may answer `{ effective, provider, realmId? }`; the installer nests `root.isolate('fs', label).isolate('subprocess', label2)` so the confined process service lives in the SAME isolated chain the route-C native modules are re-mounted into. **BL-17 (2026-11-04):** every installed realm reports the confined faces it owns (`faces: RealmServiceFaces`, required, `subprocess` = face or `null`); `mountNativeToolModules` refuses a `subprocess`-consuming module on a `null` realm with the typed `SUBPROCESS_UNCONFINED_REALM` before any fiber exists |
 
 Two layers, and neither one is a filter over results:
 
@@ -294,6 +294,21 @@ discriminating pair; `R2` out-of-lane refused with `spawns` unchanged and one
 refused at admission (one fact, zero spawns) **plus** the direct layer-2 measurement
 (`/etc` served, outside refused).
 
+`a5sf-subprocess-unconfined-realm.test.ts` (BL-17, host-free composition seam) pins the
+binding-realm refusal and its negative controls: `U1` a binding-realm mount of the real
+pinned search module is refused with `SUBPROCESS_UNCONFINED_REALM`, naming the realm
+(`binding realm 'dsh.search/grep'`) and the module (`tool-fs-search`), with
+`spawns=0`, the base `subprocess` tripwire counter unchanged, **zero** fibers created by
+the refused call and the `grep` definition still the pre-call one; `U1b` the PRODUCT ROW
+(`attachA5sfNativeToolModules`) refuses the same binding mount, so seam and composition
+agree; `U2` the discriminating control — the Member realm (which OWNS the face) mounts
+the SAME module and the routed `grep` executes on the confined provider with the base
+tripwire untouched; `U3` the nested two-axis arm: a read restriction narrower than the
+ceiling is refused at admission for the binding-effective face (zero provider calls, one
+deny fact) while the SAME target through a ceiling-only face runs — the discriminating
+pair. A RED control with both refusal sites disabled turns `U1` and `U1b` red (measured;
+`U1` then reports the deferred-fiber refusal instead of the pre-mount one).
+
 ### 4.3 The reviewer's probes, re-run against this build
 
 The probes in `.reviewer-tmp/` (including the round-3 `r2/bypass.mjs`) were written
@@ -415,8 +430,13 @@ second policy evaluator).
    through the product seam. The
    kernel refuses `/home`, `/srv`, `/var` and scratch siblings. **The admission is the
    only layer for a declared root inside the allowance.** Narrowing the shared base is
-   P1-07 code and an owner decision, recorded as backlog BL-39 — it may be needed by
-   other tools, so this lane does not change it.
+   P1-07 code and an owner decision, now an explicit backend-hardening task (backlog
+   BL-39, scope: enumerate which runtime dependencies are actually unavoidable, whether
+   each can be narrowed to a specific file/directory, and which exceptions belong to
+   the trusted host rather than an untrusted child); this lane does not change it.
+   **Until that audit lands the OS profile is NOT a global read whitelist** — it is an
+   allowance that includes `/etc` and `/proc`, and nothing in this file may be read as
+   "the kernel limits a confined child to the lane".
 2. **Nested links/hardlinks inside an admitted root are still served at layer 2.**
    The admission consults the declared ROOT, not every entry under it. A pre-existing
    in-lane HARDLINK to an outside inode reads successfully through the product seam and
@@ -449,12 +469,33 @@ second policy evaluator).
    caller may pass it, but the product mount does not. For search this is not a loss:
    search has no `dsh.fs/*` binding, so the ceiling realm is the intended fact realm;
    a future binding-scoped subprocess lane would need the field wired through.
-6. **The binding-realm gap (BL-17 hazard).** `mountNativeToolModules` routes a
-   binding-owned mount to `binding?.ctx`; `installToolBindingRealm` isolates `fs` only
-   and mounts **no** `subprocess` face. A future binding-mounted native module that
-   injects `subprocess` would resolve the inherited, unconfined host service, silently.
-   Search does not hit this (it mounts on the ceiling `memberTarget`), but BL-17 must
-   not be built on the premise that the binding realm confines processes.
+6. **The binding-realm gap is a REFUSAL AT COMPOSITION (BL-17, 2026-11-04), not a latent
+   hole.** It used to be: `mountNativeToolModules` routes a binding-owned mount to
+   `binding?.ctx`; `installToolBindingRealm` isolates `fs` only and mounts **no**
+   `subprocess` face, so a future binding-mounted native module that injects
+   `subprocess` would resolve the inherited, unconfined host service — silently.
+   That is no longer reachable through the mount seam. Every installed realm now
+   STATES the confined faces it owns (`RealmServiceFaces`, a **required** total
+   answer: `subprocess` is the mounted confined face or `null`; "did not say" is not
+   expressible). A module whose declared `inject` contains `subprocess`, targeted at a
+   realm whose answer is `null`, is refused **before any fiber, tool definition or
+   service lookup exists** with the typed `TeamServiceInstallError` code
+   `SUBPROCESS_UNCONFINED_REALM` (exported token `A5SF_SUBPROCESS_UNCONFINED_REALM`);
+   the refusal names the realm and the module. A module that instead defers
+   `ctx.inject(['subprocess'], …)` is caught at the same composition boundary by the
+   post-settle child-fiber check. Measured (host-free, real pinned module):
+   `a5sf-subprocess-unconfined-realm.test.ts` `U1`/`U1b` — binding-realm mount and
+   product-row attach both refuse with that code, `spawns=0`, the base `subprocess`
+   tripwire counter unchanged, **zero** fibers created by the refused call, and the
+   `grep` definition still the pre-call one. `U2` is the discriminating control: the
+   Member realm (which owns the face) mounts the SAME module and the routed `grep`
+   executes on the confined provider, base tripwire untouched. Search is unaffected
+   because it mounts on the ceiling `memberTarget`. **What a future binding-mounted
+   subprocess consumer must do to become supported:** install a confined `subprocess`
+   provider on that binding realm's isolated scope and report it in
+   `faces.subprocess` (`installToolBindingRealm` does not mount one today) — otherwise
+   the mount is refused. It must not widen the mount seam and must not resolve the
+   inherited base service.
 7. **The in-lane capability set is narrower than a normal shell.** Measured
    (`PIN-CAPS`, raw provider): file write succeeds; `mkdir`, symlink creation and
    in-lane `execve` are DENIED; a hardlink between two in-lane paths **is created**
@@ -488,6 +529,8 @@ this rule).
 | lint (repo-wide, NOT a gate) | `pnpm lint` | **red: 129 errors / 32 warnings, ALL in files this branch does not touch** (`action-router/effects.ts`, `control/service.ts`, `src/plugin/host.ts`, …). Pre-existing debt; disclosed, not attributed to this lane |
 | new unit suite | `vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts` | **21/21 pass** |
 | new realm suite | `vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts` | **6/6 pass** |
+| BL-17 refusal suite (new) | `vitest run packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts` | **4/4 pass** (`U1` binding-realm refusal, `U1b` product-row refusal, `U2` Member-realm control, `U3` nested restriction); with both refusal sites disabled `U1`/`U1b` go red |
+| census booking law | `npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` | **20/20 pass** (the new scannable spec is booked in `a5sfbl16.json`, measured `1428 -> 1432`) |
 | lane-hygiene suite (touched ledger) | `vitest run packages/runtime/test/a5p4-lane-hygiene.test.ts` | **8/8 pass** (the new types-only edge is booked with its pinned import line) |
 | service install / subprocess contract | `vitest run packages/runtime/test/a5sf-service-install.test.ts packages/runtime/test/a5sf-subprocess-contract.test.ts` | **16/16** and **3/3 pass** |
 | search / glob backends | `vitest run packages/runtime/test/alpha5-search-backend.test.ts packages/runtime/test/alpha5-glob-backend.test.ts` | **42/42** and **53/53 pass** (95/95 in the run) |

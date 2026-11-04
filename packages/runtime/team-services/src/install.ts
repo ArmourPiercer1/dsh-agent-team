@@ -46,6 +46,7 @@ import {
   TeamServiceInstallError,
   type MemberIoInstallation,
   type MemberServiceInstallation,
+  type RealmServiceFaces,
 } from './types.js'
 
 /** One Member to install: identity + its compiled policy (or the refusal). */
@@ -323,6 +324,14 @@ export async function installMemberIoProviders(
     }
 
     let disposed = false
+    // BL-17 (2026-11-04): the realm STATES which confined faces it owns, as a
+    // total answer. `subprocess: null` is the explicit "no process face here",
+    // which `mountNativeToolModules` turns into a composition-time refusal for a
+    // `subprocess`-consuming module instead of a silent inherited-service mount.
+    const faces: RealmServiceFaces = Object.freeze({
+      fs: 'confined' as const,
+      subprocess: subprocess ?? null,
+    })
     const installation: MemberServiceInstallation = Object.freeze({
       identity: spec.identity,
       serviceIdentity: Object.freeze({
@@ -333,7 +342,7 @@ export async function installMemberIoProviders(
       }),
       ctx: scoped,
       fs,
-      ...(subprocess === undefined ? {} : { subprocess }),
+      faces,
       dispose: async (): Promise<void> => {
         if (disposed) return
         disposed = true
@@ -378,6 +387,17 @@ export interface ToolBindingRealm {
   readonly policyRevision: string
   readonly ctx: Context
   readonly fs: FsProviderSurface
+  /**
+   * BL-17 (2026-11-04): the confined faces this BINDING realm owns.
+   *
+   * Today `installToolBindingRealm` isolates `fs` only, so `subprocess` is
+   * `null` — an EXPLICIT answer, not an omission. `mountNativeToolModules`
+   * refuses a `subprocess`-consuming module targeted at this realm instead of
+   * letting it resolve the inherited base service. A future binding-scoped
+   * process lane must mount its confined `subprocess` provider on THIS realm's
+   * isolated scope and report it here; until then, refusal is the contract.
+   */
+  readonly faces: RealmServiceFaces
   dispose(): Promise<void>
 }
 
@@ -462,6 +482,9 @@ export async function installToolBindingRealm(input: {
     policyRevision: spec.effective.policyRevision,
     ctx: scoped,
     fs: scoped.get('fs'),
+    // BL-17: the total answer. This installer mounts `fs` only; saying so
+    // explicitly is what lets the mount seam refuse a process consumer.
+    faces: Object.freeze({ fs: 'confined' as const, subprocess: null }),
     dispose: async (): Promise<void> => {
       if (disposed) return
       disposed = true

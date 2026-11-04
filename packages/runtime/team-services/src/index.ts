@@ -52,7 +52,7 @@ export type {
   ProgramAttributionRefusal,
   SubprocessProviderConstructor,
 } from './subprocess.js'
-export { mountA5sfRealm } from './mount.js'
+export { A5SF_SUBPROCESS_UNCONFINED_REALM, mountA5sfRealm } from './mount.js'
 export type {
   A5sfRealmBinding,
   A5sfRealmMember,
@@ -88,6 +88,7 @@ export {
 export type {
   MemberIoInstallation,
   MemberServiceInstallation,
+  RealmServiceFaces,
   TeamIoDenialCode,
   TeamServiceInstallCode,
 } from './types.js'

@@ -26,7 +26,7 @@ import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdent
 import { type FsProviderConstructor, type FsProviderSurface } from './fs.js';
 import { createConfinedSubprocessClass, type ConfinedProcessProvider, type SubprocessProviderConstructor } from './subprocess.js';
 import { type GuardConsultObserver } from './guard-observability.js';
-import { type MemberIoInstallation } from './types.js';
+import { type MemberIoInstallation, type RealmServiceFaces } from './types.js';
 /** One Member to install: identity + its compiled policy (or the refusal). */
 export interface MemberServiceSpec {
     readonly identity: TrustedMemberIdentity;
@@ -107,6 +107,17 @@ export interface ToolBindingRealm {
     readonly policyRevision: string;
     readonly ctx: Context;
     readonly fs: FsProviderSurface;
+    /**
+     * BL-17 (2026-11-04): the confined faces this BINDING realm owns.
+     *
+     * Today `installToolBindingRealm` isolates `fs` only, so `subprocess` is
+     * `null` — an EXPLICIT answer, not an omission. `mountNativeToolModules`
+     * refuses a `subprocess`-consuming module targeted at this realm instead of
+     * letting it resolve the inherited base service. A future binding-scoped
+     * process lane must mount its confined `subprocess` provider on THIS realm's
+     * isolated scope and report it here; until then, refusal is the contract.
+     */
+    readonly faces: RealmServiceFaces;
     dispose(): Promise<void>;
 }
 /**

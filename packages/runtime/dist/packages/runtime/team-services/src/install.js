@@ -199,6 +199,14 @@ export async function installMemberIoProviders(input) {
             subprocess = mounted;
         }
         let disposed = false;
+        // BL-17 (2026-11-04): the realm STATES which confined faces it owns, as a
+        // total answer. `subprocess: null` is the explicit "no process face here",
+        // which `mountNativeToolModules` turns into a composition-time refusal for a
+        // `subprocess`-consuming module instead of a silent inherited-service mount.
+        const faces = Object.freeze({
+            fs: 'confined',
+            subprocess: subprocess ?? null,
+        });
         const installation = Object.freeze({
             identity: spec.identity,
             serviceIdentity: Object.freeze({
@@ -209,7 +217,7 @@ export async function installMemberIoProviders(input) {
             }),
             ctx: scoped,
             fs,
-            ...(subprocess === undefined ? {} : { subprocess }),
+            faces,
             dispose: async () => {
                 if (disposed)
                     return;
@@ -297,6 +305,9 @@ export async function installToolBindingRealm(input) {
         policyRevision: spec.effective.policyRevision,
         ctx: scoped,
         fs: scoped.get('fs'),
+        // BL-17: the total answer. This installer mounts `fs` only; saying so
+        // explicitly is what lets the mount seam refuse a process consumer.
+        faces: Object.freeze({ fs: 'confined', subprocess: null }),
         dispose: async () => {
             if (disposed)
                 return;

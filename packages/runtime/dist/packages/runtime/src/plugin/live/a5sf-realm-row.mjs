@@ -775,6 +775,15 @@ function uncoveredShadowedTools(root, scope, fibers, beforeDefinitions) {
  * recomputed — the selected realm's guard already holds the compiled
  * intersection.
  *
+ * BL-17 (2026-11-04) — NO PROCESS CONSUMER ON AN UNCONFINED REALM. This
+ * expansion may produce a binding mount, and a binding realm installs a
+ * confined `fs` but no `subprocess` face. `mountNativeToolModules` therefore
+ * REFUSES a module that injects `subprocess` on any realm whose required
+ * `faces.subprocess` answer is `null` (typed `SUBPROCESS_UNCONFINED_REALM`,
+ * before any fiber exists). This row adds no second check and no fallback: a
+ * future binding-scoped process lane must install its confined face on that
+ * realm and report it, or stay refused.
+ *
  * @param {readonly object[]} nativeToolModules - imported module specs.
  * @param {object} realm - the mounted realm (its `bindings` are the routing table).
  * @returns {Promise<readonly object[]>} the mounts to hand to `mountNativeToolModules`.

@@ -285,7 +285,7 @@ async function arm(label, fn) {
  * fact"; `text` is the collected stdout (must be empty).
  */
 async function refusedSpawn(w, argv, env) {
-  const service = w.realm.installation.members[0]?.subprocess
+  const service = w.realm.installation.members[0]?.faces?.subprocess
   assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
   const before = w.spawns.count
   const handle = service.spawn({
@@ -430,7 +430,7 @@ try {
   await arm('SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged)', async () => {
     const w = await worldWith({ ...IN_LANE, name: 'shelldeny' })
     try {
-      const service = w.realm.installation.members[0]?.subprocess
+      const service = w.realm.installation.members[0]?.faces?.subprocess
       assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
       const before = w.spawns.count
       const handle = service.spawn({
@@ -601,7 +601,7 @@ try {
   await arm('PIN-HARDLINK (pre-existing in-lane hardlink to an outside inode served; one ALLOW fact)', async () => {
     const w = await worldWith({ ...IN_LANE, name: 'pinhard' })
     try {
-      const service = w.realm.installation.members[0]?.subprocess
+      const service = w.realm.installation.members[0]?.faces?.subprocess
       assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
       const handle = service.spawn({
         argv: [RG_PATH, '--no-config', '--regexp=OUTSIDE-SECRET', '--', inside],
