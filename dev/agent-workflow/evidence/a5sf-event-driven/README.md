@@ -396,3 +396,16 @@ changes are edits inside existing files; every new file is under `tests/` or
   fresh install.
 - CORE PATCH BUDGET = 0: `mount.ts` and `a5sf-realm-row.mjs` are team-owned, no upstream
   source touched, `agent-bindings.mjs` sha256 unchanged (above).
+
+## 11. Head
+
+Base `origin/master` = `d0cbef9af2949f88839741efdad758ba75c52743`. The branch head this
+evidence describes is the commit that last touched this directory:
+
+```
+git log -1 --format='%H %s' -- dev/agent-workflow/evidence/a5sf-event-driven
+```
+
+(`git diff --stat origin/master..HEAD` at that head: `mount.ts` +74/−14, the row
++119/−9, the assembly suite +223, the rebuilt `mount.js`/maps and the row's composition
+copy, and this evidence directory.)
