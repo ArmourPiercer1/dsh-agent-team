@@ -201,8 +201,8 @@ describe('A6 root wiring — production entry opt-in', () => {
       environmentFacts: [],
       externalPolicyFacts: { hard: {}, capabilityExists: {} },
     }
-    const boot = (blueprintSource: string, withWake = true): unknown => {
-      const config = { ...baseConfig, blueprintSource, alpha6ReviewRouting: true }
+    const boot = (blueprintSource: string, withWake = true, enabled = true): unknown => {
+      const config = { ...baseConfig, blueprintSource, alpha6ReviewRouting: enabled }
       const teamToolsRef = { current: undefined }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
       const live: any = createStubBindings({ config, teamToolsRef, domain })
@@ -227,6 +227,16 @@ describe('A6 root wiring — production entry opt-in', () => {
     // The opt-in requires a REAL wake seam; absence refuses rather than
     // silently notifying nobody or falling back to the Leader.
     expect(() => boot(v5Source('8'), false)).toThrow(/live wake seam|deliverReviewWake/)
+    // Opt-in OFF: the SAME v5 source boots with NO wake seam and exposes NO
+    // Alpha.6 turn-latch surface (the Alpha.5 path stays byte-identical).
+    const legacyRoot = boot(v5Source('9'), false, false) as {
+      readonly alpha6TurnLatchStart?: unknown
+      readonly alpha6TurnLatchEnd?: unknown
+      readonly alpha6RecoverWakeLatches?: unknown
+    }
+    expect(legacyRoot.alpha6TurnLatchStart).toBeUndefined()
+    expect(legacyRoot.alpha6TurnLatchEnd).toBeUndefined()
+    expect(legacyRoot.alpha6RecoverWakeLatches).toBeUndefined()
     destroyDir(base)
   })
 })

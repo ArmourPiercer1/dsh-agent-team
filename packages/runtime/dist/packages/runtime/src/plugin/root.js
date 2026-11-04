@@ -1741,6 +1741,9 @@ export function createTeamProductionRoot(params) {
                 rootSessionId: rootSid,
                 coordinators: [coordinator],
                 ...(intent === undefined ? {} : { intent }),
+                ...(live.reviewWakeInbox === undefined
+                    ? {}
+                    : { inbox: live.reviewWakeInbox(input.targetSessionId) }),
                 deliver: async (delivery, targetSessionId) => {
                     if (live.deliverReviewWake === undefined) {
                         throw new Error('Alpha.6 wake seam disappeared after boot');
@@ -1796,6 +1799,9 @@ export function createTeamProductionRoot(params) {
             const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
             const result = await releaseLatch(coordinator, work, {
                 ...(intent === undefined ? {} : { intent }),
+                ...(live.reviewWakeInbox === undefined
+                    ? {}
+                    : { inbox: live.reviewWakeInbox(targetSessionId) }),
                 deliver: async (delivery) => {
                     if (live.deliverReviewWake === undefined) {
                         throw new Error('Alpha.6 wake seam disappeared after boot');
