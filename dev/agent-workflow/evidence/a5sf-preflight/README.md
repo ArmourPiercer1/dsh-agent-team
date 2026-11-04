@@ -473,7 +473,7 @@ Shared contract (tracked, not in this directory):
 | all ten a5sf node suites | **156/156** (unchanged total; the oracle file is still 29 tests) | `all-a5sf-node-suites.log` |
 | `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** (unchanged — host-free seams) | `vitest-a5sf.log` |
 | `git diff --check` (working tree and `origin/master..HEAD`) | clean (exit 0) | `git-diff-check.log` |
-| `node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs` | **GO**, no boot spent by this round (see §12.8.4) | `go-no-go.log` / `go-no-go.json` |
+| `node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs` | **GO** — no boot spent by this round; ledger `intents=3 bootRows=2 aborts=1 remaining=4` of the pool's 6 | `go-no-go.log` / `go-no-go.json` |
 
 ### Why `ci:local` is exit 2 (deliberate, not a failure)
 
@@ -1009,7 +1009,14 @@ driver list was updated.
 | all ten a5sf node suites | **156/156** | `all-a5sf-node-suites.log` |
 | `vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | `git diff --check` | clean (working tree and `origin/master..HEAD`) | `git-diff-check.log` |
-| `go-no-go.mjs` | see the committed `go-no-go.log` (no boot spent by this round) | `go-no-go.log` / `go-no-go.json` |
+| `go-no-go.mjs` | **GO**, no boot spent by this round (verbatim below) | `go-no-go.log` / `go-no-go.json` |
+
+Verbatim final line (`go-no-go.log`):
+
+```
+PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=2 remaining=4
+GO — head=cf2f1ab9c61f385383f172495f510ed9f9c3fe40 digest=35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782
+```
 
 The controls that are load-bearing for THIS round: `NC2b` (4b credits a Team lane
 refusal), `NC2c` (4b launders a read-lane allow), `NC2d` (4b accepts a
