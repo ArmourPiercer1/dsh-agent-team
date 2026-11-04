@@ -2521,6 +2521,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : undefined
   const alpha6WakeCoordinators = new Map<string, LatchCoordinator>()
   const alpha6WakeBySession = new Map<string, LatchCoordinator>()
+  /**
+   * Process-local serialization for ONE latch. Boot recovery (after readiness)
+   * and a concurrent readiness-gated dispatch otherwise interleave at every
+   * await (recovery probe, store.clear), which can clobber a queued latch or
+   * delete the row of a message that was just delivered. Cross-process is
+   * excluded by the single-writer contract.
+   */
+  const alpha6WakeLocks = new Map<string, Promise<void>>()
+  const withAlpha6WakeLock = async <T>(mapKey: string, fn: () => Promise<T>): Promise<T> => {
+    const prior = alpha6WakeLocks.get(mapKey) ?? Promise.resolve()
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    alpha6WakeLocks.set(mapKey, prior.then(() => gate))
+    await prior
+    try {
+      return await fn()
+    } finally {
+      release()
+    }
+  }
   const alpha6DispatchWake =
     alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
       ? async (input: {
@@ -2537,6 +2557,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }
           const key = latchKeyFor(wake, rootSid, config.generation)
           const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`
+          return withAlpha6WakeLock(mapKey, async () => {
           let coordinator = alpha6WakeCoordinators.get(mapKey)
           if (coordinator === undefined) {
             coordinator = createLatchCoordinator(key)
@@ -2570,6 +2591,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               `Alpha.6 wake dispatch failed: ${result.failures.map((failure) => failure.message).join('; ')}`,
             )
           }
+          })
         }
       : undefined
   const alpha6ReviewWakeTurnStart =
@@ -2734,52 +2756,56 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               continue
             }
             const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
-            // A concurrent readiness-gated dispatch may already own this
-            // latch. Its coordinator is authoritative; never recover over it.
-            if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId)) continue
-            const coordinator = createLatchCoordinator(intent.key)
-            // Register BEFORE the first await: recovery now runs after
-            // readiness, so a concurrent readiness-gated request could
-            // otherwise build a second coordinator for the same latch and
-            // deliver a duplicate. The map entry is removed again if this row
-            // is not adopted.
-            alpha6WakeCoordinators.set(mapKey, coordinator)
-            alpha6WakeBySession.set(targetSessionId, coordinator)
-            const recovered = await recoverLatch(
-              coordinator,
-              alpha6WakeIntents.forKey(intent.key),
-              live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
-            )
-            // Only a row the protocol actually discarded may be rebuilt. An
-            // unreadable Inbox, a concurrent state change, a refusal or a
-            // sticky Stop must keep the registered coordinator and row.
-            if (recovered.reason === 'absent' || recovered.reason === 'mismatch') {
+            let rebuild = false
+            await withAlpha6WakeLock(mapKey, async () => {
+              // A concurrent readiness-gated dispatch may already own this
+              // latch. Its coordinator is authoritative; never recover over it.
+              if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId)) return
+              const coordinator = createLatchCoordinator(intent.key)
+              // Register BEFORE the first await: recovery now runs after
+              // readiness. The lock is what makes the registration + probe +
+              // clear atomic against a concurrent dispatch (which takes the
+              // same lock), so the probe cannot resolve onto a latch the
+              // dispatch already moved.
+              alpha6WakeCoordinators.set(mapKey, coordinator)
+              alpha6WakeBySession.set(targetSessionId, coordinator)
+              const recovered = await recoverLatch(
+                coordinator,
+                alpha6WakeIntents.forKey(intent.key),
+                live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
+              )
+              // Only a row the protocol actually discarded may be rebuilt. An
+              // unreadable Inbox, a concurrent state change, a refusal or a
+              // sticky Stop must keep the registered coordinator and row.
+              if (recovered.reason !== 'absent' && recovered.reason !== 'mismatch') return
               if (alpha6WakeCoordinators.get(mapKey) === coordinator) alpha6WakeCoordinators.delete(mapKey)
               if (alpha6WakeBySession.get(targetSessionId) === coordinator) alpha6WakeBySession.delete(targetSessionId)
-              // Windows (b)/(d): the native message is gone (claimed and
-              // consumed by a crashed turn, or never delivered). Nothing in
-              // production re-plans it, so rebuild the wake from the durable
-              // ledger in THIS boot. A sticky Stop outranks re-waking.
-              if (!coordinator.state.stopped && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
-                const current = controlRef.current
-                const requests = (await current.readControlState(rootSid)).requests
-                const fresh = await collectAlpha6DelegableLegs({
-                  rootSessionId: rootSid,
+              rebuild = true
+            })
+            if (!rebuild) continue
+            // Windows (b)/(d): the native message is gone (claimed and consumed
+            // by a crashed turn, or never delivered). Rebuild the wake from the
+            // durable ledger in THIS boot; dispatch re-converges with any
+            // concurrent notification through the same map + in-flight guard.
+            // A sticky Stop outranks re-waking.
+            if (!alpha6WakeCoordinators.has(mapKey) && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
+              const current = controlRef.current
+              const requests = (await current.readControlState(rootSid)).requests
+              const fresh = await collectAlpha6DelegableLegs({
+                rootSessionId: rootSid,
+                reviewerInstanceId: intent.key.reviewerInstanceId,
+                readRequests: async () => requests,
+                reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+              })
+              if (fresh.length > 0) {
+                await alpha6DispatchWake({
                   reviewerInstanceId: intent.key.reviewerInstanceId,
-                  readRequests: async () => requests,
-                  reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
-                  resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
-                  route: alpha6Router.route,
+                  targetSessionId,
+                  currentLegIds: fresh.map((entry) => entry.requestId),
                 })
-                if (fresh.length > 0) {
-                  await alpha6DispatchWake({
-                    reviewerInstanceId: intent.key.reviewerInstanceId,
-                    targetSessionId,
-                    currentLegIds: fresh.map((entry) => entry.requestId),
-                  })
-                }
               }
-              continue
             }
           }
         }

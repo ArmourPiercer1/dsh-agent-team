@@ -98,13 +98,17 @@ describe('A6 file intent store + recovery', () => {
     expect((await store.read())?.status).toBe('accepted')
   })
 
-  it('discards a queued row whose Inbox message is gone', async () => {
+  it('reports absent without clearing a row whose Inbox message is gone', async () => {
     const store = createFileWakeIntentStore({ filePath: file })
     await store.persistQueued({ key: KEY, wakeId: 'wake-gone', workFingerprint: 'fp-1' })
     const coordinator = createReviewWakeCoordinator(KEY)
     const adopted = await recoverReviewWake(coordinator, store, { has: () => false })
     expect(adopted.adopted).toBe(false)
-    await expect(store.read()).resolves.toBeNull()
+    expect(adopted.reason).toBe('absent')
+    // The caller re-plans and overwrites this stale row. Recovery must not
+    // await a clear here: that window could delete a row a concurrent
+    // dispatch just persisted.
+    await expect(store.read()).resolves.not.toBeNull()
   })
 })
 

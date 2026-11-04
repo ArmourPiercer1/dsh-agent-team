@@ -123,8 +123,14 @@ export async function recoverReviewWake(
 ): Promise<ReviewWakeRecoverResult> {
   const initialStatus = coordinator.state.status
   const initialWakeId = coordinator.state.wakeId
+  const initialFingerprint = coordinator.state.observedWorkFingerprint
   const changed = (): boolean =>
-    coordinator.state.status !== initialStatus || coordinator.state.wakeId !== initialWakeId
+    coordinator.state.status !== initialStatus ||
+    coordinator.state.wakeId !== initialWakeId ||
+    // turn-end preserves the baseline while clearing status/wakeId: a full
+    // dispatch→claim→turn-end→release cycle can land back on idle/null, and
+    // recovery must not wipe the progress that cycle recorded.
+    coordinator.state.observedWorkFingerprint !== initialFingerprint
   const busy = (): ReviewWakeRecoverResult => ({
     adopted: false,
     wakeId: null,
@@ -172,10 +178,11 @@ export async function recoverReviewWake(
   }
   if (!exists) {
     if (changed()) return busy()
-    // Window (b): the intent is not a delivered wake. Discard it; only an
-    // actual Inbox message may be adopted.
-    if (changed()) return busy()
-    await store.clear(intent.wakeId)
+    // Do NOT clear here: `store.clear` is an await, and a dispatch that moves
+    // the latch during it could otherwise have its freshly persisted row (same
+    // deterministic wakeId) deleted. Recovery only reports `absent`; the next
+    // plan overwrites the stale row, and a boot with no work leaves it for the
+    // next boot rather than risking a live row.
     return {
       adopted: false,
       wakeId: null,
@@ -192,8 +199,16 @@ export async function recoverReviewWake(
 
   if (coordinator.state.stopped) {
     // Sticky Stop outranks a persisted queued wake: withdraw it from the
-    // native Inbox instead of adopting it.
-    await inbox.remove?.(intent.wakeId)
+    // native Inbox instead of adopting it. An unreadable/refused remove keeps
+    // the row; the throw must not abort the whole boot recovery loop.
+    try {
+      const removed = await inbox.remove?.(intent.wakeId)
+      if (removed === false && (await inbox.has(intent.wakeId)) !== false) {
+        return { adopted: false, wakeId: null, reason: 'stopped', transition }
+      }
+    } catch {
+      return { adopted: false, wakeId: null, reason: 'stopped', transition }
+    }
     await store.clear(intent.wakeId)
     return { adopted: false, wakeId: null, reason: 'stopped', transition }
   }

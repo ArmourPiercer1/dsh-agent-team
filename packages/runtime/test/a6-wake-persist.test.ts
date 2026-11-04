@@ -274,8 +274,11 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     const recovered = await recoverReviewWake(coordinator, store, inbox)
     expect(recovered.adopted).toBe(false)
     expect(coordinator.state.status).toBe('idle')
-    // The undelivered intent is gone, not adopted as a phantom queued wake.
-    expect(store.size).toBe(0)
+    // Recovery reports `absent` without an awaited clear (the clear window
+    // could delete a row a concurrent dispatch just persisted); the next plan
+    // overwrites the stale row.
+    expect(recovered.reason).toBe('absent')
+    expect(store.size).toBe(1)
 
     const port = harness(inbox)
     const result = await dispatchReviewWakes({
@@ -361,7 +364,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     const afterCrash = coordinatorFor(plan)
     expect((await recoverReviewWake(afterCrash, store, inbox)).adopted).toBe(false)
     expect(afterCrash.state.status).toBe('idle')
-    expect(store.size).toBe(0)
+    expect(store.size).toBe(1)
 
     const replay = await dispatchReviewWakes({
       plan,
@@ -450,7 +453,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(recovered.wakeId).toBeNull()
     expect(coordinator.state.status).toBe('idle')
     expect(coordinator.state.wakeId).toBeNull()
-    expect(store.size).toBe(0)
+    expect(store.size).toBe(1)
   })
 
   it('sticky Stop outranks a persisted queued wake and withdraws the Inbox row', async () => {
