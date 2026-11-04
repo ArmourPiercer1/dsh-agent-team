@@ -646,7 +646,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     })
     inbox.remove = () => false
 
-    const revoked = await dispatchReviewWakes({
+    await dispatchReviewWakes({
       plan: EMPTY_PLAN,
       rootSessionId: ROOT,
       sessionGeneration: GENERATION,
