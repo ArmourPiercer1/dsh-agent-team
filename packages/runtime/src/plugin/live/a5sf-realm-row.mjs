@@ -93,6 +93,25 @@ export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
 export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
 
 /**
+ * OPTIONAL top-level declaration map, the SECOND way to declare
+ * `expectedTools` (2026-11-03 review, condition C2/C6).
+ *
+ * WHY it exists: the per-entry form lives on the OBJECT entry
+ * (`{ url, config?, expectedTools? }`), so a STRING entry — the form most
+ * fixtures and the shortest honest composition use — could not declare at all.
+ * A mitigation reachable only on a form nobody uses is not a mitigation.
+ *
+ * Shape: `{ "<module specifier>": ["tool", ...] }`, keyed by the SAME specifier
+ * the entry uses (`entry.url` after validation). Same semantics as the
+ * per-entry key: it declares, it does not authorize; the declared names must be
+ * forwarded by that module's settled fibers or the attach is refused. When both
+ * forms are present the union is required (a composition may split a list).
+ * Unknown keys are a configuration fault: a typo that silently declares nothing
+ * would recreate the hole.
+ */
+export const A5SF_EXPECTED_TOOLS_KEY = 'a5sfExpectedTools'
+
+/**
  * Typed refusal of the native ASSEMBLY path (assembly gaps 1 and 2, 2026-11-03).
  *
  * A `TypeError` subclass with a stable `code`, so a caller can tell these
@@ -109,10 +128,29 @@ export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
  *     what that module's ownership probe observed (a one-shot `apply` consumed
  *     by the probe, or a conditional registration that vanished), so a tool
  *     would stay on the unguarded preset definition while the name set matched.
+ *   - `A5SF_EXPECTED_TOOLS_UNSHADOWED` — a module entry DECLARED `expectedTools`
+ *     and the settled attach did not forward one or more of them (the provider
+ *     was absent, or the composition's two planes disagree), so the declared
+ *     managed names would fall back to whatever preset definition is visible.
+ *     Opt-in: an entry WITHOUT `expectedTools` keeps the pre-declaration
+ *     behaviour exactly.
+ *   - `A5SF_MANAGED_FRONTIER_EMPTY` — a module entry that CARRIES a `config`
+ *     (i.e. the composition configured a conditional module: a provider, a
+ *     feature switch) forwarded NOTHING at the settle boundary and did not
+ *     declare `expectedTools`. The row cannot see the preset plane's module
+ *     config, so it cannot tell "the provider is absent everywhere"
+ *     (availability only, harmless) from "the preset plane serves this name on
+ *     its own provider" (unguarded preset execution). Measured in
+ *     `dev/agent-workflow/evidence/a5sf-event-driven/README.md` §7: the two
+ *     worlds differ ONLY in the preset plane's config, which is not an input of
+ *     this function — so the decidable unit is the entry's own shape. A
+ *     composition that knows the frontier may legitimately stay empty opts in
+ *     with `allowEmpty: true` on that entry (see the README for the risk it
+ *     accepts and why the default is fail-closed).
  */
 export class A5sfNativeAssemblyError extends TypeError {
   /**
-   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED'} code
+   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED' | 'A5SF_EXPECTED_TOOLS_UNSHADOWED'} code
    * @param {string} detail
    */
   constructor(code, detail) {
@@ -189,7 +227,20 @@ export function a5sfRealmConfigOf(config) {
       `agent-bindings: config.${A5SF_EVIDENCE_PATH_KEY} must be a non-blank string when present (the a5sf guard-consult evidence path)`,
     )
   }
-  const modules = nativeToolModulesOf(config[A5SF_NATIVE_TOOL_MODULES_KEY])
+  const declarations = expectedToolsDeclarationsOf(config[A5SF_EXPECTED_TOOLS_KEY])
+  const modules = nativeToolModulesOf(config[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)
+  if (declarations !== undefined) {
+    // A declaration keyed by a specifier NO entry names is a typo that would
+    // silently declare nothing — the exact hole this map exists to close.
+    const named = new Set((modules ?? []).map((module) => module.url))
+    const orphans = [...declarations.keys()].filter((specifier) => !named.has(specifier))
+    if (orphans.length > 0) {
+      throw new TypeError(
+        `agent-bindings: config.${A5SF_EXPECTED_TOOLS_KEY} names ${JSON.stringify(orphans)} but no`
+        + ` ${A5SF_NATIVE_TOOL_MODULES_KEY} entry uses that specifier`,
+      )
+    }
+  }
   return Object.freeze({
     evidencePath: raw,
     ...(modules === undefined ? {} : { nativeToolModules: modules }),
@@ -197,13 +248,88 @@ export function a5sfRealmConfigOf(config) {
 }
 
 /**
+ * Validate one entry's OPTIONAL `expectedTools` declaration.
+ *
+ * `undefined` = undeclared (pre-declaration behaviour). Anything else must be a
+ * non-empty array of non-blank, unique strings: an empty declaration would read
+ * as "this module provides nothing", which is a contradiction, not an opt-out.
+ *
+ * @param {unknown} raw
+ * @param {string} where - the config path, for the fault message.
+ * @returns {readonly string[] | undefined}
+ */
+function expectedToolsOf(raw, where, label = 'expectedTools') {
+  if (raw === undefined) return undefined
+  if (!Array.isArray(raw)) {
+    throw new TypeError(`agent-bindings: ${where}.${label} must be an array of non-blank tool names when present`)
+  }
+  if (raw.length === 0) {
+    throw new TypeError(`agent-bindings: ${where}.${label} must not be empty (omit the key to declare nothing)`)
+  }
+  const seen = new Set()
+  for (const name of raw) {
+    if (typeof name !== 'string' || name.trim() === '') {
+      throw new TypeError(`agent-bindings: ${where}.${label} must contain only non-blank tool-name strings`)
+    }
+    if (seen.has(name)) {
+      throw new TypeError(`agent-bindings: ${where}.${label} lists ${JSON.stringify(name)} more than once`)
+    }
+    seen.add(name)
+  }
+  return Object.freeze([...raw])
+}
+
+/**
+ * Validate the OPTIONAL top-level `a5sfExpectedTools` map (C2/C6).
+ *
+ * @param {unknown} raw - the config value.
+ * @returns {ReadonlyMap<string, readonly string[]> | undefined} specifier → names.
+ */
+function expectedToolsDeclarationsOf(raw) {
+  if (raw === undefined || raw === null) return undefined
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new TypeError(`agent-bindings: config.${A5SF_EXPECTED_TOOLS_KEY} must be an object mapping a module specifier to an array of tool names when present`)
+  }
+  const entries = Object.entries(raw)
+  if (entries.length === 0) {
+    throw new TypeError(`agent-bindings: config.${A5SF_EXPECTED_TOOLS_KEY} must name at least one module specifier when present`)
+  }
+  const declarations = new Map()
+  for (const [specifier, names] of entries) {
+    if (specifier.trim() === '') {
+      throw new TypeError(`agent-bindings: config.${A5SF_EXPECTED_TOOLS_KEY} carries a blank module specifier`)
+    }
+    declarations.set(specifier, expectedToolsOf(names, `config.${A5SF_EXPECTED_TOOLS_KEY}[${JSON.stringify(specifier)}]`, 'entry'))
+  }
+  return declarations
+}
+
+/**
+ * Union two declarations of the same module's expected tools (a composition may
+ * split one list across the entry and the top-level map).
+ *
+ * @param {readonly string[] | undefined} perEntry
+ * @param {readonly string[] | undefined} bySpecifier
+ * @returns {readonly string[] | undefined}
+ */
+function mergeExpectedTools(perEntry, bySpecifier) {
+  if (perEntry === undefined) return bySpecifier
+  if (bySpecifier === undefined) return perEntry
+  const merged = [...perEntry]
+  for (const name of bySpecifier) if (!merged.includes(name)) merged.push(name)
+  return Object.freeze(merged)
+}
+
+/**
  * Validate the native-tool-module list (route C). `undefined`/`null` = the
  * module is not requested at all: the pre-route-C mount, byte-identical.
  *
  * @param {unknown} raw - the config value.
- * @returns {readonly {url: string, config?: object}[] | undefined} frozen specs.
+ * @param {ReadonlyMap<string, readonly string[]>} [declarations] - the
+ *   top-level `a5sfExpectedTools` map (string-entry declarations).
+ * @returns {readonly {url: string, config?: object, expectedTools?: string[], allowEmpty?: boolean}[] | undefined} frozen specs.
  */
-function nativeToolModulesOf(raw) {
+function nativeToolModulesOf(raw, declarations) {
   if (raw === undefined || raw === null) return undefined
   if (!Array.isArray(raw)) {
     throw new TypeError(`agent-bindings: config.${A5SF_NATIVE_TOOL_MODULES_KEY} must be an array when present (one entry per native tool module)`)
@@ -213,7 +339,11 @@ function nativeToolModulesOf(raw) {
     const where = `config.${A5SF_NATIVE_TOOL_MODULES_KEY}[${index}]`
     if (typeof entry === 'string') {
       if (entry.trim() === '') throw new TypeError(`agent-bindings: ${where} must be a non-blank module specifier`)
-      return Object.freeze({ url: entry })
+      const declared = declarations?.get(entry)
+      return Object.freeze({
+        url: entry,
+        ...(declared === undefined ? {} : { expectedTools: declared }),
+      })
     }
     if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
       throw new TypeError(`agent-bindings: ${where} must be a module specifier string or { url, config? }`)
@@ -226,7 +356,28 @@ function nativeToolModulesOf(raw) {
     if (pluginConfig !== undefined && (pluginConfig === null || typeof pluginConfig !== 'object' || Array.isArray(pluginConfig))) {
       throw new TypeError(`agent-bindings: ${where}.config must be a plain object when present`)
     }
-    return Object.freeze({ url, ...(pluginConfig === undefined ? {} : { config: pluginConfig }) })
+    // OPT-IN DECLARATION (event-driven shape, 2026-11-03). `expectedTools` states
+    // which tools the composition BELIEVES this module provides. It grants
+    // nothing and authorizes nothing: its only power is to make a module that
+    // forwards NONE of the declared names fail closed at assembly time
+    // instead of leaving the name on an unguarded preset definition. Absent =
+    // the pre-declaration behaviour, byte-identical.
+    const expectedTools = expectedToolsOf(entry.expectedTools, where)
+    const declaredBySpecifier = declarations?.get(url)
+    const mergedExpected = mergeExpectedTools(expectedTools, declaredBySpecifier)
+    // `allowEmpty` is the EXPLICIT opt-out of the empty-frontier refusal below.
+    // It is not a safety feature: it says "this composition accepts that the
+    // module may shadow nothing", which is exactly the state that, when the
+    // preset plane serves the name, executes the preset definition unguarded.
+    if (entry.allowEmpty !== undefined && typeof entry.allowEmpty !== 'boolean') {
+      throw new TypeError(`agent-bindings: ${where}.allowEmpty must be a boolean when present`)
+    }
+    return Object.freeze({
+      url,
+      ...(pluginConfig === undefined ? {} : { config: pluginConfig }),
+      ...(mergedExpected === undefined ? {} : { expectedTools: mergedExpected }),
+      ...(entry.allowEmpty === undefined ? {} : { allowEmpty: entry.allowEmpty }),
+    })
   }))
 }
 
@@ -398,7 +549,12 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     if (imported === null || (typeof imported !== 'object' && typeof imported !== 'function')) {
       throw new TypeError(`agent-bindings: ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)} did not evaluate to a Cordis plugin module`)
     }
-    return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
+    return Object.freeze({
+      module: imported,
+      ...(spec.config === undefined ? {} : { config: spec.config }),
+      ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
+      ...(spec.allowEmpty === undefined ? {} : { allowEmpty: spec.allowEmpty }),
+    })
   }))
   const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
@@ -450,6 +606,49 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
       + ` (${unreproduced.map((entry) => `${entry.moduleName} observed ${JSON.stringify(entry.missing)}`).join('; ')});`
       + ' a one-shot/conditional `apply` consumed by the probe would leave those tools on the unguarded preset definition'
       + ' while the surface name set stayed equal — refusing the attach (fail closed)',
+    )
+  }
+  // OPT-IN DECLARATION (event-driven shape, 2026-11-03): an entry that names its
+  // `expectedTools` must actually SHADOW every declared name by the settle
+  // boundary. A module that registers nothing (provider absent, or an
+  // event-driven registration that never fired) is accepted by the seam — it
+  // reports no evidence — so without this the declared name silently falls back
+  // to whatever PRESET definition the composition mounted for it, with zero guard
+  // facts. The declaration GRANTS NOTHING: it declares what the composition
+  // believes and turns a mismatch into a typed refusal. Undeclared entries keep
+  // the old behaviour exactly (the merged C1/C3/A7 contracts).
+  const unshadowedExpected = unshadowedExpectedTools(nativeToolModules, expansion, fibers)
+  if (unshadowedExpected.length > 0) {
+    await releaseAttach()
+    throw new A5sfNativeAssemblyError(
+      'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expectedTools that the settled attach did not shadow`
+      + ` (${unshadowedExpected.map((entry) => `${entry.moduleName} expected ${JSON.stringify(entry.expected)} but the attach forwarded ${JSON.stringify(entry.forwarded)}`).join('; ')});`
+      + ' a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero'
+      + ' guard facts — refusing the attach (fail closed)',
+    )
+  }
+  // EMPTY-FRONTIER REFUSAL (2026-11-03 review C2): a module entry that carries a
+  // `config` is a CONDITIONAL module — the composition configured the thing its
+  // registration depends on. If such a module forwards nothing at the settle
+  // boundary, the row cannot distinguish "the condition is absent everywhere, so
+  // the name exists for nobody" from "the preset plane serves the name on its own
+  // provider". Measured: the two worlds have IDENTICAL inputs to this function
+  // (same entry, same config, same empty frontier) and differ only in the preset
+  // plane's config, which this seam cannot read; the model-visible surface looks
+  // the same to it in the harmful case as a normal subset in the harmless one.
+  // So the decidable unit is the entry's own shape, and the default is fail
+  // closed; `allowEmpty: true` is the explicit, documented opt-out.
+  const emptyFrontiers = emptyManagedFrontiers(nativeToolModules, expansion, fibers)
+  if (emptyFrontiers.length > 0) {
+    await releaseAttach()
+    throw new A5sfNativeAssemblyError(
+      'A5SF_MANAGED_FRONTIER_EMPTY',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} left a CONFIGURED module with an empty routed frontier`
+      + ` (${emptyFrontiers.map((entry) => `${entry.moduleName} forwards nothing`).join('; ')});`
+      + ' a configured module that shadows nothing cannot be verified against the preset plane (the row cannot read'
+      + ' that plane\'s module config), and the name it was meant to own may execute on the PRESET definition with zero'
+      + ' guard facts — declare expectedTools, or pass allowEmpty: true if the empty frontier is intended',
     )
   }
   if (coverage.length > 0) {
@@ -652,6 +851,77 @@ function unreproducedObservations(expansion, fibers) {
     }
   }
   return unreproduced
+}
+
+/**
+ * Per-module OPT-IN declaration check: which declared `expectedTools` the
+ * settled attach did not SHADOW (forwarded by one of that module's fibers).
+ *
+ * `expectedTools` is a declaration of what the composition believes the module
+ * provides — not an allowlist and not a second authority. Its only effect is to
+ * make "the module forwarded nothing / something else" a typed refusal instead
+ * of a silently accepted zero-shadow attach.
+ *
+ * @param {readonly {module?: {name?: string}, expectedTools?: readonly string[]}[]} nativeToolModules
+ * @param {{ mountCounts: Uint32Array }} expansion
+ * @param {readonly object[]} fibers - the fibers the real mount returned, in mount order.
+ * @returns {{ moduleName: string, expected: string[], forwarded: string[] }[]}
+ */
+function unshadowedExpectedTools(nativeToolModules, expansion, fibers) {
+  const failures = []
+  let cursor = 0
+  for (const [index, module] of nativeToolModules.entries()) {
+    const count = expansion.mountCounts[index]
+    const moduleFibers = fibers.slice(cursor, cursor + count)
+    cursor += count
+    const declared = module.expectedTools
+    if (declared === undefined) continue
+    const forwarded = new Set()
+    for (const fiber of moduleFibers) {
+      const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+      for (const name of routing?.forwarded ?? []) forwarded.add(name)
+    }
+    const missing = declared.filter((name) => !forwarded.has(name))
+    if (missing.length > 0) {
+      failures.push({
+        moduleName: module.module?.name ?? `#${String(index)}`,
+        expected: [...declared],
+        forwarded: [...forwarded],
+      })
+    }
+  }
+  return failures
+}
+
+/**
+ * CONFIGURED modules whose routed frontier is empty and which did not opt out.
+ *
+ * "Configured" = the entry carried a `config` object (the composition configured
+ * a provider/feature switch). Entries without a config keep the merged
+ * behaviour: fixtures and the product's same-config shape are unaffected by
+ * default only when they are unconditional, and a conditional one must either
+ * declare `expectedTools` or `allowEmpty: true`.
+ *
+ * @param {readonly {module?: {name?: string}, config?: object, expectedTools?: readonly string[], allowEmpty?: boolean}[]} nativeToolModules
+ * @param {{ mountCounts: Uint32Array }} expansion
+ * @param {readonly object[]} fibers
+ * @returns {{ moduleName: string }[]}
+ */
+function emptyManagedFrontiers(nativeToolModules, expansion, fibers) {
+  const failures = []
+  let cursor = 0
+  for (const [index, module] of nativeToolModules.entries()) {
+    const count = expansion.mountCounts[index]
+    const moduleFibers = fibers.slice(cursor, cursor + count)
+    cursor += count
+    if (module.config === undefined || module.expectedTools !== undefined || module.allowEmpty === true) continue
+    let forwarded = 0
+    for (const fiber of moduleFibers) {
+      forwarded += fiber?.[NATIVE_REGISTRATION_ROUTING]?.forwarded?.length ?? 0
+    }
+    if (forwarded === 0) failures.push({ moduleName: module.module?.name ?? `#${String(index)}` })
+  }
+  return failures
 }
 
 /**
