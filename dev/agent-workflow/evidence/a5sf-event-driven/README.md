@@ -325,7 +325,13 @@ All logs in this directory.
 | `pnpm -s build` | EXIT=0 | `build.log` |
 | `pnpm -s lint` | pre-existing repo-wide debt (129 errors in untouched files); **zero findings in the files this lane touched** | `lint.log` |
 | `pnpm ci:local --base origin/master` | `verdict=fail steps=6 failed=1` — one 5000 ms load timeout in `a5p4-lane-hygiene.test.ts` (unrelated lane), passes alone in 668 ms | `ci-local.log`, `ci-local-red-isolation.log` |
-| artifacts / eb3 / ci-pr-gate / diff-check | see the committed logs | `check-artifacts-*.log`, `eb3-*.log`, `ci-pr-gate.log`, `diff-check.log` |
+| `node scripts/check-artifacts-committed.mjs` | `verdict=ok` (1916 compared, drift 0) | `check-artifacts-committed.log` |
+| `node scripts/check-artifacts-at-head.mjs` | `verdict=ok` — HEAD carries its own build | `check-artifacts-at-head.log` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, added=17, findings=0 | `eb3-evidence-guard.log` |
+| `node scripts/eb3-ci-required.mjs` | pass, workflows=9, findings=0 | `eb3-ci-required.log` |
+| `node scripts/eb3-ci-negative-controls.mjs` | 26/26 controls behaved as required | `eb3-negative-controls.log` |
+| `node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities` | `DSH-CI-VERDICT pass pass=4 fail=0` | `ci-pr-gate.log` |
+| `git diff --check origin/master..HEAD` | clean (exit 0) | `diff-check.log` |
 
 ## 8. `pnpm ci:local --base origin/master` — verbatim
 
@@ -354,6 +360,11 @@ It ran concurrently with `alpha5-glob-backend-adversarial.test.ts` (215 s, inclu
  ✓ self-typechecks with strict settings (...)  661ms
 EXIT=0
 ```
+
+`ci-local.log` is a bounded EXCERPT (7 KiB) of the 1.2 MiB transcript: it keeps the
+invocation, the failing block, both step verdicts and the final verdict verbatim (the full
+transcript exceeds the evidence bound; re-run `pnpm ci:local --base origin/master` to
+reproduce it).
 
 Per the lane rule, `verdict=fail` is not a pass: coverage is `determined` for the selected
 files and the single failure is a documented, reproduced-in-isolation timeout on an
