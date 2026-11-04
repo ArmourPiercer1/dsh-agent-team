@@ -2810,26 +2810,58 @@ export function createControlService(options) {
             };
         });
     }
+    // --- control-state read routes (one shared projection) -------------------------------
+    /**
+     * A6-PR5 (integration: A6 non-locking control reader) — the ONE projection
+     * behind BOTH read routes. It performs the two steps both routes owe the
+     * caller (validate the root's TeamSession, read the append-only ledger
+     * fresh) and maps every row family to its public record. `listControlState`
+     * calls it INSIDE the lock; `readControlState` calls it WITHOUT the lock.
+     * Keeping the whole read here is what makes the locking and non-locking
+     * answers incapable of drift: there is no second validation, no second
+     * projection, and no second row order.
+     *
+     * Nothing here writes, and nothing here is authority (invariant 45).
+     */
+    function projectControlState(root) {
+        if (repositories.teamSessions.get(root) === undefined) {
+            throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `ControlService: no TeamSession record for root session '${root}'`, { rootSessionId: root });
+        }
+        const state = loadControlState(root);
+        return {
+            requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
+            decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
+            consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
+            abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
+            // RULING 5-A: the refused rows are part of what the durable control
+            // state IS, so the route that reads that state reports them. Ordered by
+            // durable sequence like every other list here; a report, never a gate.
+            corruptLegs: state.corruptLegs.map((c) => toCorruptLegRecord(c.entry, c.payload)),
+            transfers: state.transfers.map((t) => toTransferRecord(t.entry, t.payload)),
+        };
+    }
     // --- listControlState ----------------------------------------------------------------
     async function listControlState(rootSessionId) {
         const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list');
-        return withTeamLock(teamLocks, root, async () => {
-            if (repositories.teamSessions.get(root) === undefined) {
-                throw new TeamRuntimeError(TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND, `ControlService: no TeamSession record for root session '${root}'`, { rootSessionId: root });
-            }
-            const state = loadControlState(root);
-            return {
-                requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
-                decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
-                consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
-                abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
-                // RULING 5-A: the refused rows are part of what the durable control
-                // state IS, so the route that reads that state reports them. Ordered by
-                // durable sequence like every other list here; a report, never a gate.
-                corruptLegs: state.corruptLegs.map((c) => toCorruptLegRecord(c.entry, c.payload)),
-                transfers: state.transfers.map((t) => toTransferRecord(t.entry, t.payload)),
-            };
-        });
+        return withTeamLock(teamLocks, root, async () => projectControlState(root));
+    }
+    // --- readControlState (A6 non-locking, read-only snapshot) ----------------------------
+    /**
+     * A6-PR5 (integration: A6 non-locking control reader) — the NON-LOCKING
+     * twin of `listControlState`, for a caller that is ALREADY inside a control
+     * operation (the per-team chain is not re-entrant, so the locking route
+     * deadlocks there).
+     *
+     * Same root/TeamSession validation and the same projections via the shared
+     * `projectControlState`. It deliberately takes NO lock: it is a read-only
+     * point-in-time snapshot with NO authority, it does not serialize against
+     * concurrent writers, and no decision (authorize / deny / consume / block)
+     * may be derived from it. Authority stays in the guarded mutations, which
+     * hold the lock and re-verify the durable rows.
+     */
+    async function readControlState(rootSessionId) {
+        const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list');
+        return projectControlState(root);
     }
     // --- checkExternalOperation (the A2C-4 shared read-only external check) --------------
     /**
@@ -5324,6 +5356,7 @@ export function createControlService(options) {
         resolveControl,
         abandonControlRequest,
         listControlState,
+        readControlState,
         transferCurrentLeg,
         listMyReviewTasks,
         guardOperation,
