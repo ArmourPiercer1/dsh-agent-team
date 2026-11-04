@@ -11,8 +11,18 @@ branch head it describes (see §12).
 admission point — not only the names in `expectedDefinitions`. This is not a second
 approval system: it consumes the invalidated state the realm already holds, at the one
 admission point that already existed. Rationale: the boundary has failed, so nothing
-further should execute; the deny lifts only on a full verified re-assembly, exactly as
-the existing P0 name-keyed deny does.
+further should execute. The deny is **realm-scoped**: it lasts while THIS realm is
+mounted and invalidated, and it lifts when the Member is disposed and re-assembled with
+a verified attach — which is a caller obligation, not a seam invariant (§7 states the
+measured boundary).
+
+**Scope note (measured limitation, named so it is not mistaken for a regression):**
+`definition.execute()` called DIRECTLY still runs the tool body while the realm is
+frozen. That is pre-existing and identical on the base tree; it is unreachable from the
+model/PTC path, which goes through `tools.execute` → `tools/pre-execute` and therefore
+hits the admission point this lane arms. The freeze is an ABSTRACTION-level refusal at
+the documented admission seam, not an OS-level confinement of a caller that already
+holds the definition object.
 
 Host boots = **0**. Ports = **0**. No `DSH_HOME`, no `tests/homes/**` write, no
 `tests/deepseek-harness-test-use/**` write; every arm is an in-process Cordis unit root
@@ -71,14 +81,14 @@ The E8 failure verbatim (pre-fix):
 ### 1.3 GREEN — same arms, same tree (this branch)
 
 ```
-[2026-11-04T05:18:55.482Z] E8-same-emission-dispatch-window-CLOSED: PASS
-[2026-11-04T05:18:55.498Z] E8-lift-full-reassembly-admits-again: PASS
-[2026-11-04T05:18:55.504Z] ACK-empty-frontier-recorded: PASS
-[2026-11-04T05:18:55.513Z] ACK-nonempty-frontier-not-acknowledged: PASS
-[2026-11-04T05:18:55.514Z] RESULT arms=4 PASS:4 FAIL:0
+[2026-11-04T06:08:42.733Z] E8-same-emission-dispatch-window-CLOSED: PASS
+[2026-11-04T06:08:42.751Z] E8-lift-full-reassembly-admits-again: PASS
+[2026-11-04T06:08:42.757Z] ACK-empty-frontier-recorded: PASS
+[2026-11-04T06:08:42.764Z] ACK-nonempty-frontier-not-acknowledged: PASS
+[2026-11-04T06:08:42.764Z] RESULT arms=4 PASS:4 FAIL:0
 ```
 
-Suite: `34/34` in `all-a5sf-node-suites.log`.
+Suite: `35/35` in `all-a5sf-node-suites.log` (34 before review #1's ACK-2b pin).
 
 ## 2. The fix — one admission point, the realm's own state
 
@@ -128,8 +138,15 @@ A successful managed attach publishes `realm.nativeAttachRecord`
 }
 ```
 
-- The record is `null` before an attach, after a caller refusal
-  (`disposeNativeToolModules`) and after `dispose()`; a non-empty attach records
+- **Lifecycle of the record (corrected 2026-11-04, review #1 C1 — the previous
+  sentence described a field the code does not produce):** `null` before any attach,
+  and after an attach that was ROLLED BACK (refused at verification) or abandoned by a
+  caller refusal while the realm was HEALTHY. It stays **non-null** while the realm is
+  invalidated, INCLUDING after `disposeNativeToolModules()` on that path (that method
+  deliberately keeps the deny and the covered names, so the record still describes the
+  attach that was verified and then invalidated); `dispose()` does not clear it either —
+  the realm object is unassembled and a reader still holding it gets the last attach's
+  record beside `nativeInvalidation`. A non-empty attach records
   `emptyFrontierAcknowledged: false`.
 - **`emptyFrontierSpecifiers` is what an operator needs to trace the acceptance** back
   to the configuration line; a boolean alone cannot be followed. The row forwards
@@ -139,7 +156,9 @@ A successful managed attach publishes `realm.nativeAttachRecord`
   unchanged). The ONE narrow exception is an entry that ALSO carries `allowEmpty: true`
   **and forwarded nothing**: the empty frontier is explicitly acknowledged, so the
   declared names are recorded as ACKNOWLEDGED (unshadowed, unverified) instead of
-  refused. A PARTIAL frontier is still refused even with `allowEmpty`. This is a
+  refused. A PARTIAL frontier is still refused even with `allowEmpty` — now MEASURED
+  as a contract by **ACK-2b** (`A5SF_EXPECTED_TOOLS_UNSHADOWED`, naming the declared
+  but unshadowed tool; review #1 C5), not merely by the merged EXPECT-2 path. This is a
   disclosure widening, not a verification: the row cannot see what the preset plane
   serves for the name.
 - **README statement the ruling requires:** `emptyFrontierAcknowledged: true` means
@@ -154,8 +173,15 @@ A successful managed attach publishes `realm.nativeAttachRecord`
 
 ## 5. Registration semantics did NOT change
 
-Listeners keep running; `tools/change` still triggers the fold/re-verification; a
-registration that arrives during invalidation is still recorded by the fold. Proof:
+Listeners keep running; `tools/change` still triggers the fold/re-verification. A
+registration that arrives **within the same synchronous emission** as the invalidation is
+still recorded by the fold (the teardown is deferred one microtask for exactly that).
+That is the whole scope of the claim: **after** the deferred teardown the router fiber is
+gone, so a later registration into it throws Cordis `INACTIVE_EFFECT` and never lands —
+a pre-existing deferral consequence, not introduced here, and nothing a caller should
+read as "late registrations keep being tracked". With the blanket freeze the fold is now
+the **name-keyed diagnostic** (it decides which typed code the refusal carries), no
+longer the last line of defence. Proof:
 
 - **E8** asserts a covered call **after** the emission returns
   `A5SF_NATIVE_SHADOW_INVALIDATED` — reachable only if the fold put the
@@ -226,24 +252,47 @@ themselves it is not a weakening:
   admission check keys off that one field. There is no other switch. The E8 arm first
   asserts the healthy realm admits the same unmanaged name and only then that the
   record freezes it.
-- **Lifted only by a full verified re-assembly.** The invalid realm refuses
-  `mountNativeToolModules` (typed `/invalidated/i`); the caller's
-  `disposeNativeToolModules()` does NOT drop the deny while invalid (asserted in the
-  E8 arm). Eligibility returns only by disposing the whole Member realm and mounting +
-  attaching a new one whose verification settles without a record — E8-lift does
-  exactly that on the same agent/tool plane and measures the admitted call afterwards
-  (`UNKNOWN_TOOL` for an unknown name; the re-attached shadow forwards `subagent` and
-  executes it once).
-- **A Member that can never re-assemble is permanently frozen (fail closed), and that
-  is NOT silent:** `realm.nativeInvalidation` is the typed observable record (reason,
-  `uncovered`, `surfaceAdded`, `surfaceRemoved`, `lateRegistrations`, `observedAt`) and
-  the seam writes one `console.error` line at invalidation time. **Remaining gap,
-  named rather than invented:** the frozen live glue
-  (`agent-bindings.mjs`, untouched by design) has no Member-status surface that
-  reports "this Member is out of service pending re-assembly"; an operator sees the
-  record/log but not a status. A permanent silent freeze is an availability failure
-  worse than the hole it closes, so the *availability* half of this ruling still needs
-  a product-level re-assembly/status path outside this lane's frozen file.
+- **The guarantee is REALM-SCOPED; the lift is a CALLER OBLIGATION (corrected
+  2026-11-04, review #1 C2 — the earlier "lifted only by a full verified re-assembly"
+  was stronger than the mechanism).** While THIS realm object is mounted and
+  invalidated, its admission listener refuses every call, and
+  `disposeNativeToolModules()` cannot lift that (asserted in the E8 arm). But the
+  freeze dies with the realm: review #1 measured on this tree that a plain `dispose()`,
+  a fresh mount with **no attach**, and a fresh mount whose attach is **refused** all
+  leave a live agent ctx with no managed admission at all — it serves the preset with
+  zero guard facts. The seam cannot distinguish "tear down for good" from
+  "re-assemble", so **the soundness of the lift is a product-lifecycle obligation, not
+  a seam invariant**: anything that disposes a realm and then dispatches on the same
+  live agent ctx is outside the managed-Member lifecycle and re-opens the Member on the
+  preset. The compliant path — dispose → fresh mount → attaching a new realm whose
+  verification settles without a record — is measured by E8-lift on the same
+  agent/tool plane (`UNKNOWN_TOOL` for an unknown name; the re-attached shadow forwards
+  `subagent` and executes it once). Product enforces the other half: `close()` in
+  `agent-bindings.mjs` awaits every `handle.dispose()` before the realm disposers, so a
+  realm is never disposed while its Member's agent ctx is live, and re-assembling a
+  Member means a new Member.
+  - **Why this lane carries NO cross-assembly freeze token (the choice, stated):**
+    `mount.ts` owns one realm and has no lifetime or authority beyond it. A
+    module-global freeze keyed by Member/agentKey would outlive the realm, could only
+    be cleared by its own inventor, and would silently freeze a fresh, legitimate
+    assembly (or leak across teams with a reused key) — a worse failure mode than the
+    disclosed obligation. Carrying a freeze across re-assembly is a product
+    lifecycle/status decision, not a seam patch; this lane therefore states the
+    obligation and does not invent cross-realm authority.
+- **A Member that can never re-assemble is permanently frozen (fail closed) — and in
+  product the ONLY signal is one stderr line (corrected 2026-11-04, review #1 C4).**
+  The seam records the typed `realm.nativeInvalidation` (reason, `uncovered`,
+  `surfaceAdded`, `surfaceRemoved`, `lateRegistrations`, `observedAt`) and writes one
+  `console.error` line at invalidation time. But the frozen live glue
+  (`agent-bindings.mjs`, untouched by design) **retains only the disposer closure, not
+  the realm object**, and has zero consumers of `nativeInvalidation` /
+  `nativeAttachRecord`; so "an operator sees the record" is NOT a present product
+  capability — the stderr line is the only product signal, with no status field and no
+  query. The typed record is available to tests/diagnostics that hold the realm.
+  **Tracked condition, named rather than invented:** the product still needs a
+  Member-status ("frozen pending re-assembly") and re-assembly path outside this lane's
+  frozen file; until it exists, a permanent freeze is an availability failure that is
+  visible only in the log, and the *availability* half of this ruling is not closed.
 
 ## 8. Arms
 
@@ -253,14 +302,15 @@ themselves it is not a weakening:
 | **E8 (precedence half)** | suite + probe | after the fold, the covered name still yields `A5SF_NATIVE_SHADOW_INVALIDATED`; no body runs |
 | **E8-lift** | suite + probe | freeze lifts only on a full verified re-assembly; invalid realm refuses partial re-attach; `disposeNativeToolModules` does not lift it; the fresh attach is verified (`forwarded:["subagent"]`, no ack) and admitted |
 | **ACK-1** | suite + probe | acknowledged-empty attach records the flag, the module name and the ROW-CONFIG specifier; a non-empty attach does not |
-| **ACK-2** | suite | `allowEmpty` + declared `expectedTools` on an EMPTY frontier is accepted with the names recorded as ACKNOWLEDGED; a partial frontier stays refused (unchanged) |
+| **ACK-2** | suite | `allowEmpty` + declared `expectedTools` on an EMPTY frontier is accepted with the names recorded as ACKNOWLEDGED |
+| **ACK-2b** | suite | `allowEmpty` acknowledges ONLY an empty frontier: a PARTIAL frontier that also declares an unshadowed name is still REFUSED with `A5SF_EXPECTED_TOOLS_UNSHADOWED` (review #1 C5), and the refused attach leaves no attach record (C1 lifecycle) |
 | **E3-fold (re-pinned)** | suite | see §6; registration/fold assertions unchanged, blanket-vs-name-keyed precedence asserted together |
 
 ## 9. Gates (all run on this tree, at the committed head)
 
 | gate | result | raw |
 | --- | --- | --- |
-| all a5sf node suites (9 files) | **126/126 pass** | `all-a5sf-node-suites.log` |
+| all a5sf node suites (9 files) | **127/127 pass** | `all-a5sf-node-suites.log` |
 | `vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | deferred-registration probe A1–A7 | **7/7 PASS**, then the committed JSON/log were restored | `deferred-probe.log` |
 | E8 probe (real pinned module) | **4/4 PASS** | `probe-e8-freeze.log`, `probe-e8-freeze.json` |
@@ -347,3 +397,19 @@ caller disposes and re-assembles. That can, in the worst case, stall the Member
 permanently, and it will be visible in tool errors but not in a status field. This lane
 does not invent that status path (the glue is frozen); it names it as the remaining
 product gap. A reviewer should also note the one merged-arm narrowing disclosed in §6.
+
+## 13. Review #1 corrections (2026-11-04) — disposition
+
+| # | condition | disposition |
+| --- | --- | --- |
+| **C1** | `nativeAttachRecord` non-null after a refused `disposeNativeToolModules()` while invalid contradicted its JSDoc and README | **Prose corrected, code unchanged** (the code is the intended semantics: the record describes the attach that was verified and then invalidated). `mount.ts` JSDoc and §4 now give the full lifecycle, including that `dispose()` does not clear it, and ACK-2b additionally pins that a ROLLED-BACK attach leaves no record. |
+| **C2** | "lifted only by a full verified re-assembly" was stronger than the mechanism (freeze dies with the realm; plain dispose / mount-without-attach / refused-attach all serve the preset with zero guard facts) | **Rephrased as a realm-scoped guarantee plus an explicit CALLER OBLIGATION** (§7, and the intro): the seam cannot distinguish teardown from re-assembly, product lifecycle (`close()` ordering, new Member) is what makes the lift sound, and dispatching on the same live ctx after disposing a realm re-opens the Member on the preset. **No cross-assembly token was added**; §7 states why (cross-realm module-global authority would outlive the realm and could silently freeze a fresh legitimate assembly — a worse failure mode than the disclosed obligation). |
+| **C3** | "a registration that arrives during invalidation is still recorded by the fold" was true only within the same synchronous emission | **Qualified** (§5): the fold catches a registration in the same synchronous emission; after the deferred teardown the fiber is gone, the registration throws `INACTIVE_EFFECT` and does not land (pre-existing deferral). §5 also now says the fold is the name-keyed diagnostic, not the last line of defence. |
+| **C4** | "an operator sees the record/log" overstated: the glue retains only the disposer closure and has zero `nativeInvalidation` consumers | **Corrected** (§7): in product the ONLY signal is the single stderr line; the typed record is available to tests/diagnostics that hold the realm. §7/§12 keep "permanent freeze, no status surface" and name the status/re-assembly path as a **tracked condition**, not a present capability. |
+| **C5** | README attributed the partial-frontier refusal to ACK-2, which did not assert it | **Assertion added**: `ACK-2b` (new, 35/35 suite) pins `allowEmpty` + one forwarded + one unshadowed declared name → `A5SF_EXPECTED_TOOLS_UNSHADOWED`, typed, naming the missing tool; it also pins the rolled-back attach's null record. |
+| scope | direct `definition.execute()` still runs the body (pre-existing, unreachable from the model/PTC path) | **Named** in the scope note at the top of this README so it is not mistaken for a regression. |
+
+Everything above is documentation plus one new assert-only arm: the seam's behaviour is
+unchanged from `449b79179`, and all logs in this directory were regenerated at the new
+head (`all-a5sf-node-suites.log` 127/127, `vitest-a5sf.log` 166/166, probe 4/4, deferred
+7/7, law+p4t6 54/54, gates and `pnpm ci:local` re-run).

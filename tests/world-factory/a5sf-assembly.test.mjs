@@ -1708,3 +1708,33 @@ test('ACK-2 (allowEmpty 2026-11-03) `allowEmpty` may acknowledge an EMPTY fronti
     await world.realm.dispose()
   }
 })
+
+test('ACK-2b (allowEmpty 2026-11-03) `allowEmpty` acknowledges only an EMPTY frontier: a PARTIAL frontier that also declares names is still REFUSED, typed', async () => {
+  // Review #1 C5: ACK-2 accepted the empty-frontier exception but did not pin
+  // the boundary of it. The implementation already refuses a PARTIAL frontier
+  // (`allowEmpty` is checked only when `forwarded.size === 0`); this arm makes
+  // that a contract, so a later widening to "allowEmpty excuses any declaration"
+  // goes red here.
+  const partial = writeNativeModule('ack2b', [{ name: 'x_ack_present' }])
+  const world = await makeWorld('ack-declared-partial', {
+    bindingIdentities: [],
+    modules: [{ url: partial, expectedTools: ['x_ack_present', 'x_ack_absent'], allowEmpty: true }],
+  })
+  try {
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(world.realm, world.agentCtx, world.config, world.agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_EXPECTED_TOOLS_UNSHADOWED', `a partial frontier is not acknowledged: ${error.name}: ${error.message}`)
+        assert.match(error.message, /x_ack_absent/, 'the refusal names the DECLARED-but-unshadowed tool')
+        return true
+      },
+      'allowEmpty means an EMPTY frontier, never "the frontier is whatever it is"',
+    )
+    // The refused attach rolled back: no attach record survives it (C1's
+    // lifecycle: a rollback clears it).
+    assert.equal(world.realm.nativeAttachRecord ?? null, null, 'a refused attach leaves no attach record')
+    assert.equal(world.realm.nativeInvalidation ?? null, null, 'a caller refusal is not an invalidation')
+  } finally {
+    await world.realm.dispose()
+  }
+})

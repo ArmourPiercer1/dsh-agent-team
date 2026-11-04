@@ -327,10 +327,22 @@ export interface MountedA5sfRealm {
     /**
      * E8 (2026-11-03) — the record of the LAST successful managed attach.
      *
-     * `null` before any attach, after a caller refusal
-     * (`disposeNativeToolModules`) and after `dispose()`. It exists so an
-     * acknowledged empty frontier (`allowEmpty: true`) is an EXPLICIT fact on the
-     * assembly record instead of a silence that reads like a verification.
+     * LIFECYCLE (corrected 2026-11-04, review #1 C1 — the previous text described
+     * a field the code does not produce):
+     * - `null` before any attach, and after an attach that was ROLLED BACK
+     *   (refused at verification) or abandoned by the caller's own refusal while
+     *   the realm was HEALTHY (`disposeNativeToolModules`).
+     * - NON-NULL while the realm is invalidated, INCLUDING after
+     *   `disposeNativeToolModules()` on that path: that method does not clear it,
+     *   because the record describes the attach that WAS verified and then
+     *   invalidated, and `nativeInvalidation` is the live signal beside it.
+     * - `dispose()` does not clear it either. The realm object is unassembled
+     *   after that call; a reader still holding the object gets the last attach's
+     *   record and the invalidation record.
+     *
+     * It exists so an acknowledged empty frontier (`allowEmpty: true`) is an
+     * EXPLICIT fact on the assembly record instead of a silence that reads like
+     * a verification.
      */
     readonly nativeAttachRecord: NativeAttachRecord | null;
     /**
