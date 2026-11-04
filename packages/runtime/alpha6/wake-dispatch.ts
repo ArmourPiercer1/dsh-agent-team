@@ -29,17 +29,19 @@
  * 2. Otherwise the merged authoritative read is dispatched as
  *    `scan-result { kind: 'ready', fingerprint }`.
  * 3. If — and only if — the reducer answers with a `deliver-wake` effect, the
- *    effect is handed to the `ReviewWakeDeliveryPort` (text rendered by
- *    `createReviewWakeDelivery`).
- * 4. Delivery success claims the wake (`turn-start`), releases it
- *    (`turn-end`) and answers the single post-turn `rescan` with the SAME
- *    merged read, so the cycle ends `idle`, not `queued`.
+ *    intent is persisted, the effect is handed to the `ReviewWakeDeliveryPort`
+ *    (text rendered by `createReviewWakeDelivery`), and the Inbox acceptance
+ *    is recorded (`markAccepted`).
+ * 4. Inbox acceptance means QUEUED, not claimed: the latch STAYS `queued`.
+ *    The Host adapter calls {@link claimReviewWake} when the recipient turn
+ *    actually starts, and {@link releaseReviewWake} at the real turn boundary.
+ *    Neither a recipient turn nor a `turn-end` is synthesized here.
  * 5. Delivery rejection is surfaced as `delivery-failed` (with the attempted
  *    `wakeId`), which releases `queued` and resets the progress baseline:
  *    the wake is retryable on a later cycle and is never claimed as delivered.
  *
- * A `dispatched` cycle is one recipient turn; it performs no I/O beyond the
- * caller's delivery port and reads no clock.
+ * A `dispatched` cycle performs no I/O beyond the caller's delivery port,
+ * intent store and Inbox reconcile port; it reads no clock.
  *
  * @module @dsh-agent-team/runtime/alpha6/wake-dispatch
  */
@@ -49,11 +51,17 @@ import type {
   ReviewWakeCoordinator,
   ReviewWakeDeliverEffect,
   ReviewWakeDeliveryPort,
+  ReviewWakeEffect,
   ReviewWakeKey,
   ReviewWakeRefusalCode,
   ReviewWakeStatus,
   ReviewWakeTransition,
+  ReviewWorkScan,
 } from '../review-wake/index.js'
+import type {
+  ReviewWakeInboxPort,
+  ReviewWakeIntentStore,
+} from './wake-intent.js'
 import type { PlannedWake, WakePlan } from './wake-plan.js'
 
 /** One dispatch cycle's dependency set. */
@@ -73,11 +81,26 @@ export interface WakeDispatchDeps {
   /** Current generation of the recipient latch; 0 when the caller omits it. */
   readonly sessionGeneration?: number
   /**
-   * Production turn ownership: when true the dispatcher claims the wake
-   * (`turn-start`) but does NOT synthesize `turn-end`. The caller must call
-   * {@link releaseReviewWake} from the recipient's REAL turn boundary.
+   * Production turn ownership: accepted for compatibility, but no longer
+   * changes the latch. Inbox acceptance NEVER claims a turn, so a dispatch
+   * always leaves the latch `queued` in both modes; the caller claims
+   * ({@link claimReviewWake}) and releases ({@link releaseReviewWake}) at the
+   * Host's real turn boundaries.
    */
   readonly deferTurnEnd?: boolean
+  /**
+   * The minimal persisted intent seam: one row per latch, written BEFORE the
+   * delivery attempt and marked accepted AFTER the Inbox accepts it. Optional
+   * for pure unit cycles; production supplies the durable port (window a–d
+   * recovery lives in `wake-intent.ts`).
+   */
+  readonly intent?: ReviewWakeIntentStore
+  /**
+   * The native Inbox probe used by the no-ready-work reconcile: a queued
+   * wake whose recipient is absent from the new plan is withdrawn from the
+   * Inbox (when the port offers `remove`) and the latch is revoked.
+   */
+  readonly inbox?: ReviewWakeInboxPort
 }
 
 /** Per-recipient outcome of one dispatch cycle. */
@@ -121,6 +144,14 @@ export interface WakeDispatchResult {
   readonly held: WakePlan['held']
   /** Human targets from the plan: no Agent inbox, never dispatched. */
   readonly humanLegIds: readonly string[]
+  /**
+   * Session ids whose stale queued wake the no-ready-work reconcile revoked
+   * because the recipient was ABSENT from this plan (an empty plan revokes
+   * every queued latch at this root/generation).
+   */
+  readonly revoked: readonly string[]
+  /** The withdrawn Inbox message ids (the reconcile effects actually drained). */
+  readonly revokedWakeIds: readonly string[]
   readonly failures: readonly WakeDispatchFailure[]
 }
 
@@ -331,10 +362,23 @@ export async function dispatchReviewWakes(
     }
 
     try {
+      // Crash window (a)/(b): the intent is durable BEFORE the Inbox call, so
+      // "decided but not delivered" is visible to recovery and can be
+      // discarded instead of adopted.
+      await deps.intent?.persistQueued({
+        key: effect.key,
+        wakeId: effect.wakeId,
+        workFingerprint: effect.workFingerprint,
+      })
       await deliver(effect)
+      // Crash window (c): the Inbox has the message, but the local mark may be
+      // lost. Recovery adopts from the Inbox truth, not from this call.
+      await deps.intent?.markAccepted(effect.wakeId)
     } catch (error) {
       // A port failure is the reducer's `delivery-failed`: it releases
-      // `queued`, resets the baseline and is never a claimed success.
+      // `queued`, resets the baseline and is never a claimed success. The
+      // intent row goes too: there is no delivered wake to recover.
+      await clearIntent(deps.intent, effect.wakeId)
       const failed = coordinator.dispatch({
         type: 'delivery-failed',
         wakeId: effect.wakeId,
@@ -362,71 +406,26 @@ export async function dispatchReviewWakes(
       continue
     }
 
-    if (deps.deferTurnEnd === true) {
-      // Inbox ACCEPTED is only `queued`: the recipient has not claimed or
-      // started a turn. The Host calls claimReviewWake() at the real boundary.
-      const accepted = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
-      deliveries.push(accepted)
-      delivered.push(accepted)
-      continue
-    }
-
-    // Non-deferred compatibility path: claim and release in one cycle.
-    const started = coordinator.dispatch({ type: 'turn-start' })
-    if (started.outcome === 'refused') {
-      failures.push(
-        failure(
-          wake.reviewerInstanceId,
-          'transition',
-          'the delivered wake could not be claimed (turn-start refused)',
-          started,
-          effect.wakeId,
-        ),
-      )
-      // Delivered to the port but the latch did not advance: surface both.
-      deliveries.push(outcome(wake, key, fingerprint, coordinator, true, effect.wakeId))
-      delivered.push(deliveries[deliveries.length - 1]!)
-      continue
-    }
-
-    const ended = coordinator.dispatch({ type: 'turn-end' })
-    if (ended.outcome === 'refused') {
-      failures.push(
-        failure(
-          wake.reviewerInstanceId,
-          'transition',
-          'the claimed wake could not be released (turn-end refused)',
-          ended,
-          effect.wakeId,
-        ),
-      )
-      deliveries.push(outcome(wake, key, fingerprint, coordinator, true, effect.wakeId))
-      delivered.push(deliveries[deliveries.length - 1]!)
-      continue
-    }
-
-    if (ended.effects.some((next) => next.kind === 'rescan')) {
-      const settled = coordinator.dispatch({
-        type: 'scan-result',
-        work: { kind: 'ready', fingerprint },
-      })
-      if (settled.outcome === 'refused') {
-        failures.push(
-          failure(
-            wake.reviewerInstanceId,
-            'coordinator',
-            'the post-turn re-read was refused',
-            settled,
-            effect.wakeId,
-          ),
-        )
-      }
-    }
-
+    // Inbox acceptance is QUEUED, never claimed: the wake sits in the native
+    // Inbox until the Host starts a turn. The dispatcher does not synthesize
+    // `turn-start`/`turn-end`; `claimReviewWake`/`releaseReviewWake` own them.
     const entry = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
     deliveries.push(entry)
     delivered.push(entry)
   }
+
+  // Latches ABSENT from this plan have no ready work in the authoritative
+  // read. Reconcile (withdraw) their stale queued wake; a running/claimed
+  // turn is never cancelled by absence.
+  const reconciled = await reconcileReviewWakes({
+    plan: deps.plan,
+    rootSessionId: deps.rootSessionId,
+    sessionGeneration: generation,
+    coordinators: deps.coordinators,
+    ...(deps.intent !== undefined ? { intent: deps.intent } : {}),
+    ...(deps.inbox !== undefined ? { inbox: deps.inbox } : {}),
+  })
+  failures.push(...reconciled.failures)
 
   return {
     deliveries,
@@ -435,57 +434,302 @@ export async function dispatchReviewWakes(
     dirty: deliveries.filter((entry) => entry.dirty).map((entry) => entry.sessionId),
     held: deps.plan.held,
     humanLegIds: deps.plan.humanLegIds,
+    revoked: reconciled.revoked,
+    revokedWakeIds: reconciled.wakeIds,
     failures,
   }
 }
 
+async function clearIntent(
+  store: ReviewWakeIntentStore | undefined,
+  wakeId: string,
+): Promise<void> {
+  try {
+    await store?.clear(wakeId)
+  } catch {
+    // The primary delivery/transition failure is the fact worth surfacing;
+    // a failing clear leaves the intent for `recoverReviewWake`, which will
+    // discard it when the Inbox has no such message.
+  }
+}
+
 
 /**
- * Release a wake claimed by `dispatchReviewWakes({ deferTurnEnd: true })` at
- * the recipient's REAL turn boundary. It is the only legal producer of the
- * post-delivery `turn-end`; the follow-up rescan uses the caller's fresh
- * authoritative fingerprint (not a stale one captured at delivery time).
+ * The Host's REAL turn-start claim: `queued` -> `running` only.
+ *
+ * A delivery port's acceptance proves the message reached the native Inbox;
+ * it does NOT prove the recipient claimed or started a turn. Only the Host
+ * adapter that owns the recipient Agent may call this, from the Agent's actual
+ * turn-start boundary. The reducer refuses it in every phase but `queued`.
  */
-export function claimReviewWake(coordinator: ReviewWakeCoordinator): ReviewWakeTransition {
+export function claimReviewWake(
+  coordinator: ReviewWakeCoordinator,
+): ReviewWakeTransition {
   return coordinator.dispatch({ type: 'turn-start' })
 }
 
-export function releaseReviewWake(
+/** Drain one emitted `deliver-wake` through the Host delivery seam. */
+export type ReviewWakeReleaseDeliver = (
+  effect: ReviewWakeDeliverEffect,
+) => void | Promise<void>
+
+/** Optional seams for a release; none of them is authority. */
+export interface ReviewWakeReleaseOptions {
+  /**
+   * Required whenever the release emits a fresh `deliver-wake` (the fresh
+   * fingerprint moved). A missing port THROWS instead of leaving an
+   * unconsumed queued wake behind.
+   */
+  readonly deliver?: ReviewWakeReleaseDeliver
+  /** Persist the fresh intent before its delivery; mark/clear around it. */
+  readonly intent?: ReviewWakeIntentStore
+  /** Native Inbox removal for a `withdraw-wake` effect. */
+  readonly inbox?: ReviewWakeInboxPort
+}
+
+export interface ReviewWakeReleaseFailure {
+  readonly scope: 'delivery' | 'transition'
+  readonly message: string
+  readonly wakeId?: string
+}
+
+/** Every effect a release produced, and how each one was consumed. */
+export interface ReviewWakeReleaseResult {
+  readonly outcome: ReviewWakeTransition['outcome']
+  readonly refusal?: ReviewWakeRefusalCode
+  /** The latch phase after the release (`queued` = a fresh wake is pending). */
+  readonly status: ReviewWakeStatus
+  readonly wakeId: string | null
+  readonly effects: readonly ReviewWakeEffect[]
+  /** The fresh wake ids this release delivered itself. */
+  readonly delivered: readonly string[]
+  /** The stale Inbox message ids this release withdrew itself. */
+  readonly withdrawn: readonly string[]
+  readonly failures: readonly ReviewWakeReleaseFailure[]
+}
+
+function releaseSnapshot(
   coordinator: ReviewWakeCoordinator,
-  work: { readonly kind: 'ready'; readonly fingerprint: string } | { readonly kind: 'no-ready-work' },
-): ReviewWakeTransition {
-  const ended = coordinator.dispatch({ type: 'turn-end' })
-  if (ended.outcome === 'refused') return ended
-  if (!ended.effects.some((next) => next.kind === 'rescan')) return ended
-  const settled = coordinator.dispatch({ type: 'scan-result', work })
-  if (settled.outcome === 'applied'
-    && settled.effects.some((next) => next.kind === 'deliver-wake')) {
-    // A pending wake MUST have an owner: the caller either drains it with
-    // releaseAndDeliverReviewWake() or this throw stops a silent queued ghost.
-    throw new Error('review-wake: release produced a deliver-wake effect; call releaseAndDeliverReviewWake()')
+  transition: ReviewWakeTransition,
+  effects: readonly ReviewWakeEffect[],
+  delivered: readonly string[],
+  withdrawn: readonly string[],
+  failures: readonly ReviewWakeReleaseFailure[],
+): ReviewWakeReleaseResult {
+  return {
+    outcome: transition.outcome,
+    ...(transition.outcome === 'refused' ? { refusal: transition.code } : {}),
+    status: coordinator.state.status,
+    wakeId: coordinator.state.wakeId,
+    effects,
+    delivered,
+    withdrawn,
+    failures,
   }
-  return settled
 }
 
 /**
- * Release the real turn AND drain the post-release `deliver-wake` effect.
- * This is the only safe release for a NEW fingerprint: the coordinator is
- * already `queued`, so no later dispatch would emit that effect again.
+ * Release a wake at the recipient's REAL turn boundary and CONSUME every
+ * effect it produces.
+ *
+ * The old shape returned the reducer transition and let a `deliver-wake`
+ * effect escape unconsumed (a fresh fingerprint after `turn-end` left a
+ * queued wake the caller never delivered). This function drains it: the fresh
+ * wake is persisted, delivered and marked accepted inside the same call, so a
+ * release with NEW work yields exactly one new delivery and the latch ends
+ * `queued` (never a phantom queued wake with no Inbox message).
+ *
+ * If the latch is still `queued` (the Host never claimed, or the claim was
+ * lost across a crash), the release claims it first: a real turn boundary is
+ * proof that the turn ran. `turn-end` is dispatched only from this function.
  */
-export async function releaseAndDeliverReviewWake(
+export async function releaseReviewWake(
   coordinator: ReviewWakeCoordinator,
-  work: { readonly kind: 'ready'; readonly fingerprint: string } | { readonly kind: 'no-ready-work' },
-  deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>,
-  targetSessionId: string,
-): Promise<{ readonly transition: ReviewWakeTransition; readonly deliveredWakeId?: string }> {
+  work: ReviewWorkScan,
+  deliverOrOptions: ReviewWakeReleaseDeliver | ReviewWakeReleaseOptions = {},
+): Promise<ReviewWakeReleaseResult> {
+  // The third argument may be the delivery port itself (the terse shape) or
+  // the full options object.
+  const options: ReviewWakeReleaseOptions =
+    typeof deliverOrOptions === 'function'
+      ? { deliver: deliverOrOptions }
+      : deliverOrOptions
+  const effects: ReviewWakeEffect[] = []
+  const delivered: string[] = []
+  const withdrawn: string[] = []
+  const failures: ReviewWakeReleaseFailure[] = []
+  const releasedWakeId = coordinator.state.wakeId
+
+  if (coordinator.state.status === 'queued') {
+    const claimed = claimReviewWake(coordinator)
+    if (claimed.outcome === 'refused') {
+      return releaseSnapshot(coordinator, claimed, effects, delivered, withdrawn, failures)
+    }
+    effects.push(...claimed.effects)
+  }
+
   const ended = coordinator.dispatch({ type: 'turn-end' })
-  if (ended.outcome === 'refused') return { transition: ended }
-  if (!ended.effects.some((next) => next.kind === 'rescan')) return { transition: ended }
-  const settled = coordinator.dispatch({ type: 'scan-result', work })
-  const effect = settled.outcome === 'applied'
-    ? settled.effects.find((next): next is ReviewWakeDeliverEffect => next.kind === 'deliver-wake')
-    : undefined
-  if (effect === undefined) return { transition: settled }
-  await createReviewWakeDelivery(async (input) => deliver(input, targetSessionId))(effect)
-  return { transition: settled, deliveredWakeId: effect.wakeId }
+  if (ended.outcome === 'refused') {
+    return releaseSnapshot(coordinator, ended, effects, delivered, withdrawn, failures)
+  }
+  effects.push(...ended.effects)
+
+  let transition: ReviewWakeTransition = ended
+  if (ended.effects.some((effect) => effect.kind === 'rescan')) {
+    // The caller's FRESH authoritative read answers the ONE post-turn rescan.
+    transition = coordinator.dispatch({ type: 'scan-result', work })
+    if (transition.outcome === 'refused') {
+      return releaseSnapshot(coordinator, transition, effects, delivered, withdrawn, failures)
+    }
+    effects.push(...transition.effects)
+  }
+
+  // The released turn's Inbox message was consumed at the turn boundary.
+  if (releasedWakeId !== null) await clearIntent(options.intent, releasedWakeId)
+
+  // Drain EVERY effect. `rescan` was answered above; `deliver-wake` and
+  // `withdraw-wake` are consumed here.
+  for (const effect of effects) {
+    if (effect.kind === 'withdraw-wake') {
+      try {
+        await options.inbox?.remove?.(effect.wakeId)
+        await options.intent?.clear(effect.wakeId)
+        withdrawn.push(effect.wakeId)
+      } catch (error) {
+        failures.push({
+          scope: 'transition',
+          message: error instanceof Error ? error.message : String(error),
+          wakeId: effect.wakeId,
+        })
+      }
+      continue
+    }
+    if (effect.kind !== 'deliver-wake') continue
+    if (options.deliver === undefined) {
+      // Fail closed: leaving this effect unconsumed is exactly the defect the
+      // release path is fixing.
+      throw new TypeError(
+        'review-wake: release emitted a deliver-wake effect but no delivery port was supplied',
+      )
+    }
+    try {
+      await options.intent?.persistQueued({
+        key: effect.key,
+        wakeId: effect.wakeId,
+        workFingerprint: effect.workFingerprint,
+      })
+      await options.deliver(effect)
+      await options.intent?.markAccepted(effect.wakeId)
+      delivered.push(effect.wakeId)
+    } catch (error) {
+      await clearIntent(options.intent, effect.wakeId)
+      const failed = coordinator.dispatch({
+        type: 'delivery-failed',
+        wakeId: effect.wakeId,
+      })
+      failures.push({
+        scope: 'delivery',
+        message: error instanceof Error ? error.message : String(error),
+        wakeId: effect.wakeId,
+      })
+      if (failed.outcome === 'refused') {
+        failures.push({
+          scope: 'transition',
+          message: 'delivery-failed was refused after the release delivery failed',
+          wakeId: effect.wakeId,
+        })
+      }
+    }
+  }
+
+  return releaseSnapshot(coordinator, transition, effects, delivered, withdrawn, failures)
 }
+
+/** One no-ready-work reconcile cycle's dependency set. */
+export interface WakeReconcileDeps {
+  readonly plan: WakePlan
+  readonly rootSessionId: string
+  readonly sessionGeneration?: number
+  readonly coordinators: readonly ReviewWakeCoordinator[]
+  readonly intent?: ReviewWakeIntentStore
+  readonly inbox?: ReviewWakeInboxPort
+}
+
+export interface WakeReconcileResult {
+  /** Session ids whose stale queued latch was revoked. */
+  readonly revoked: readonly string[]
+  /** The withdrawn Inbox message ids. */
+  readonly wakeIds: readonly string[]
+  readonly failures: readonly WakeDispatchFailure[]
+}
+
+/**
+ * Reconcile latches ABSENT from the new plan with the authoritative
+ * `no-ready-work` read.
+ *
+ * Plan absence means the router no longer sees ready work for that recipient.
+ * A stale `queued` wake must not survive it (it could wake the recipient for
+ * nothing and keep the single-flight latch occupied). The reconcile answers
+ * the rescan with `{ kind: 'no-ready-work' }`, drains the `withdraw-wake`
+ * effect through the native Inbox (when `remove` exists) and clears the
+ * persisted intent. A `running`/claimed turn is never cancelled this way.
+ *
+ * Dispatch calls this automatically at the end of every cycle, which makes an
+ * EMPTY plan revoke every queued latch at the same root/generation.
+ */
+export async function reconcileReviewWakes(
+  deps: WakeReconcileDeps,
+): Promise<WakeReconcileResult> {
+  const generation = deps.sessionGeneration ?? 0
+  const planned = new Set(
+    deps.plan.wakes.map((wake) => wake.reviewerInstanceId),
+  )
+  const revoked: string[] = []
+  const wakeIds: string[] = []
+  const failures: WakeDispatchFailure[] = []
+
+  for (const coordinator of deps.coordinators) {
+    const key = coordinator.state.key
+    if (key.rootSessionId !== deps.rootSessionId) continue
+    if (key.sessionGeneration !== generation) continue
+    if (planned.has(key.reviewerInstanceId)) continue
+    if (coordinator.state.stopped) continue
+
+    const reconciled = coordinator.dispatch({
+      type: 'scan-result',
+      work: { kind: 'no-ready-work' },
+    })
+    if (reconciled.outcome === 'refused') {
+      failures.push({
+        sessionId: key.reviewerInstanceId,
+        scope: 'transition',
+        message: 'the no-ready-work reconcile was refused',
+        refusal: reconciled.code,
+      })
+      continue
+    }
+
+    const withdrawals = reconciled.effects.filter(
+      (effect): effect is Extract<ReviewWakeEffect, { kind: 'withdraw-wake' }> =>
+        effect.kind === 'withdraw-wake',
+    )
+    for (const effect of withdrawals) {
+      try {
+        await deps.inbox?.remove?.(effect.wakeId)
+        await deps.intent?.clear(effect.wakeId)
+        wakeIds.push(effect.wakeId)
+      } catch (error) {
+        failures.push({
+          sessionId: key.reviewerInstanceId,
+          scope: 'transition',
+          message: error instanceof Error ? error.message : String(error),
+          wakeId: effect.wakeId,
+        })
+      }
+    }
+    if (withdrawals.length > 0) revoked.push(key.reviewerInstanceId)
+  }
+
+  return { revoked, wakeIds, failures }
+}
+
