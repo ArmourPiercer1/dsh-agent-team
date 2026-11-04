@@ -245,6 +245,9 @@ check('driver: the control counts only ITS OWN operand and the member-install ab
   && /teamCalls/u.test(driverSource)
   && /MEMBER_INSTALL_NO_WORKER/u.test(driverSource),
   'the probe turn runs first, so a name-only control count answers without its grep (NOT_REACHED at 18:53Z); and no-Member-appeared must carry what team_delegate answered')
+check('row artifact: the confined exit row carries the payload stderr',
+  /stderrChunks/u.test(providerSource) && /stderr: Buffer\.concat\(stderrChunks\)/u.test(providerSource) && /handleStderr\.on\('data'/u.test(providerSource),
+  'row 1 can fail as a real REFUTED verdict (an in-lane grep exiting 2); without the payload stderr the reason dies with the World home')
 check('driver: the search module is mounted WITH the config its schema requires',
   /sampleOverCapGlobResults: false/u.test(driverSource)
   && /\{ url: pathToFileURL\(HOST_TOOL_FS_SEARCH\)\.href, config:/u.test(driverSource),

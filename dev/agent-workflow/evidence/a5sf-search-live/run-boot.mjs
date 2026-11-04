@@ -1522,6 +1522,16 @@ async function boot() {
       log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)}`)
     }
 
+    // Row 1 is a two-way test: an in-lane grep that exits 2 is a REAL refuted row
+    // (the pinned module maps exit not in {0,1} to SearchError), and the reason is in
+    // the payload's stderr, not in the tool text. Log both before judging.
+    for (const row of recordsAll) {
+      if (row?.leg !== 'confined-exit') continue
+      const isRow1 = (row?.argv ?? []).some((a) => String(a).replace(/\/+$/u, '') === paths.inLaneDir)
+      if (!isRow1) continue
+      log(`row 1 confined-exit code=${String(row.code)} signal=${String(row.signal)} stderrBytes=${String(row.stderrBytes ?? 0)} stderr=${JSON.stringify(String(row.stderr ?? '').slice(0, 600))}`)
+    }
+
     // ── rows 1, 2, 3, 5 + row 4 (the cancelled search) ─────────────────────
     const resultOf = (callId) => toolResultFor(requests, callId)
     const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')

@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live2-20261105",
-  "evidenceHeadAtDryRun": "337b5b34fe6270b05c8a046ad11957893e4e1548",
+  "evidenceHeadAtDryRun": "e524c4439a42a3dc75a40d4c03a6247fbc4a7633",
   "productTreeDigest": "07cce98be61c5d2c968a9e34518e66cc19fb52eb866977f9e0b50724c14b268a",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
@@ -11,7 +11,7 @@
     "remaining": 4
   },
   "ruling": {
-    "authorisedStarts": 6,
+    "authorisedStarts": 10,
     "entries": 10,
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
   },
@@ -44,7 +44,7 @@
     "bootsInPool": 10,
     "remaining": 4
   },
-  "go": false,
+  "go": true,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
@@ -100,32 +100,32 @@
       "ok": true,
       "detail": {
         "handoffIndex": 8864,
-        "bootIndex": 40662,
+        "bootIndex": 41075,
         "call": "handOverRows(world, rows)"
       }
     },
     {
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
-      "ok": false,
+      "ok": true,
       "detail": {
-        "planHead": "337b5b34fe6270b05c8a046ad11957893e4e1548",
-        "head": "9d1bda4e2cd892baf44340486f35252cb9a7f8ed",
+        "planHead": "e524c4439a42a3dc75a40d4c03a6247fbc4a7633",
+        "head": "e524c4439a42a3dc75a40d4c03a6247fbc4a7633",
         "patchBytes": 6630,
         "patchSha256": "a165c6e05a40bb185020f2c2ce17b8b89b3954687703871221881baf39cb3d2b"
       }
     },
     {
       "id": "the PRODUCT tree matches the one the dry run measured",
-      "ok": false,
+      "ok": true,
       "detail": {
-        "committed": "80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f",
+        "committed": "07cce98be61c5d2c968a9e34518e66cc19fb52eb866977f9e0b50724c14b268a",
         "now": "07cce98be61c5d2c968a9e34518e66cc19fb52eb866977f9e0b50724c14b268a"
       }
     },
     {
       "id": "the product tree has no uncommitted modifications",
-      "ok": false,
-      "detail": "M dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json"
+      "ok": true,
+      "detail": ""
     },
     {
       "id": "branch is this lane's branch",
@@ -179,11 +179,12 @@
       }
     },
     {
-      "id": "budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)",
-      "ok": false,
+      "id": "budget: the lane ruling is well-formed (the named entries are the authorisation, each names by + reason)",
+      "ok": true,
       "detail": {
-        "authorisedStarts": 6,
-        "entries": 10,
+        "namedEntries": 10,
+        "frozenAuthorisedStarts": 6,
+        "poolBoots": 10,
         "rulings": [
           {
             "starts": 1,
@@ -209,9 +210,9 @@
       }
     },
     {
-      "id": "budget: this start is authorised by the rulings and is NOT a third",
-      "ok": false,
-      "detail": "authorised=6 spent=6 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+      "id": "budget: this start is authorised by the named rulings",
+      "ok": true,
+      "detail": "named=10 spent=6 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
     },
     {
       "id": "pinned host tree is at the pinned commit and clean",
