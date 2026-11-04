@@ -1,11 +1,9 @@
 $ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
-# exit=1 signal=null error=none seconds=15.6
+# exit=0 signal=null error=none seconds=13.9
 --- stdout ---
-lint-identities: 163 identity lines, 77 distinct (target .)
+lint-identities: 162 identity lines, 76 distinct (target .)
 lint-identities: universe: 1567 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
-baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 1, resolved 0
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
 
 --- stderr ---
-NEW IDENTITIES (1):
-  error prefer-const packages/runtime/test/a6-assigned-officer-facts.test.ts
 
