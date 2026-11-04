@@ -1,0 +1,25 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/dev/agent-workflow/evidence/a5sf-acceptance/ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-03T22:53:55.163Z",
+      "runId": "a5sf-acceptance-2026-11-03T22-53-54-833Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-acceptance-6d1b7a1fb63d",
+      "grantId": "grant-a5sf-acceptance-6d1b7a1fb63d",
+      "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"P2-01 live read (BL-14 / G2 live half)\", which holds 3 boots. This is that item's LAST boot: boot 1 (evidence/a5sf-live-native/) was refused at activation by the unscoped-ctx seam; boot 2 (evidence/a5sf-live-native2/) aborted at Loader compose on a composition defect; boot 3 (evidence/a5sf-live-native3/) proved the confined native read and left the teardown seam open. The +6 RCA reserve is NOT touched.",
+      "boundCommit": "6d1b7a1fb63dc4551fb24de199702d18ae2b2c06",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-03T22:54:01.628Z",
+      "runId": "a5sf-acceptance-2026-11-03T22-53-54-833Z",
+      "suite": "a5sf-acceptance",
+      "world": "u5a5sfacc-20261103T22-53-55Z",
+      "phase": "a5sf-acceptance-boot1"
+    }
+  ]
+}
