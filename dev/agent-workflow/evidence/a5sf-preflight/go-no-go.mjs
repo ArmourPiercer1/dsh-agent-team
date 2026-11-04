@@ -86,7 +86,6 @@ check('pinned host tree is at the pinned commit and clean', hostHead !== null &&
 
 const report = {
   schema: 'a5sf-acceptance-preflight/go-no-go/1',
-  head,
   branch,
   // `head` is a RUNTIME fact printed to stdout, deliberately not persisted:
   // a committed file cannot contain the hash of the commit that contains it.
