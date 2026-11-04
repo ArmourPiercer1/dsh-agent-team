@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-acceptance-preflight/negative-controls/1",
-  "at": "2026-11-04T08:33:53.321Z",
+  "at": "2026-11-04T09:03:56.004Z",
   "library": "tests/world-factory/lib/a5sf-acceptance-preflight.mjs",
   "librarySha256Before": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
   "librarySha256After": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
