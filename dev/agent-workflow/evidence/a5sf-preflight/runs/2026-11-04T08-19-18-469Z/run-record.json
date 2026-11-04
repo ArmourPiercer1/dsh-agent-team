@@ -1,0 +1,632 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-acceptance-2026-11-04T07-28-10-178Z",
+  "suite": "a5sf-acceptance",
+  "startedAt": "2026-11-04T07:28:10.178Z",
+  "selectedCases": [
+    "live:composition-precondition-read-surface",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-exactly-one-fact",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4-write-b-ceiling-allowed-no-read-lane-fact",
+    "live:row5-post-invalidation-refused-shadow-invalidated",
+    "live:row6-teardown-no-usable-unconstrained-shadow"
+  ],
+  "bindings": {
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound at the post-run repair of this record: the driver emitted no authority block, and EB3-D grades a NEW record strictly. The generation is the one the boot actually ran under (the pointer has not moved since 0a5b58418), so this adds a missing binding and re-attributes nothing."
+    },
+    "teamSha": "1ee898c33be444afd46b1dd09f8e2ee160e3abfd",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use",
+    "line": "a5sfacc",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-acceptance-1ee898c33be4",
+    "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs (no product provider exists at this base; byte-identical to the #575 composition row)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped host fs has no counter; in-memory prototype wrap, pass-through",
+    "lateToolTrigger": "test-composition HTTP route in the same evidence row: registers ONE unrelated tool through the public tools.register seam on demand (the invalidation it triggers is the product behaviour)",
+    "worldReuse": "dev/agent-workflow/evidence/a5sf-live-native3/run-boot.mjs world/heater, with the corrections documented in the README"
+  },
+  "cases": [
+    {
+      "id": "live:composition-precondition-read-surface",
+      "verdict": "PASS",
+      "at": "2026-11-04T07:28:28.840Z",
+      "reason": "MEMBER_ACTIVATED_ONE_READ",
+      "checks": {
+        "hostAlive": true,
+        "memberReadSchemas": true,
+        "noDuplicateNames": true,
+        "memberPromptNotDrifted": true,
+        "memberSectionNotDrifted": true,
+        "discoveryReadSchemas": true,
+        "readCallsAtLeast3": true
+      },
+      "memberSurfaceSize": 24,
+      "writeCalls": 1,
+      "surface": [
+        "bash",
+        "edit",
+        "glob",
+        "grep",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "note": "the a5sf-wired Member ACTIVATED and ran model turns whose surface carried exactly ONE native `read`; this is the precondition for every row below, not one of the six"
+    },
+    {
+      "id": "live:row1-read-a-inside-both-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-04T07:28:28.841Z",
+      "reason": "READ_A_ALLOWED_AND_CONFINED",
+      "checks": {
+        "notError": true,
+        "claimReturned": true,
+        "bindingAllowFact": true,
+        "providerServed": true,
+        "providerConfined": true
+      },
+      "allowFacts": 2,
+      "bindingAllowFacts": 2,
+      "counterRows": [
+        {
+          "leg": "read-call",
+          "method": "readText",
+          "instance": "fs-1",
+          "isBase": false
+        }
+      ],
+      "call": {
+        "callId": "call-a5sfacc-read-a",
+        "seq": 7,
+        "name": "read",
+        "args": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow/a.txt"
+        }
+      },
+      "observed": {
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow/a.txt</path>\n<type>file</type>\n<content>\n1: A5SF_ACC_A_u5a5sfacc-20261104T07-28-10Z\n\n(End of file - total 1 lines)\n</content>"
+      },
+      "bindingLaneAllowFacts": [
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "method": "stat",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1"
+        },
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "method": "readText",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1"
+        }
+      ],
+      "lane": "inside ceiling [workspace] AND inside the binding read restriction [workspace/axis/allow]",
+      "note": "the model-visible native `read` on A returned the planted bytes, the sink recorded allow facts on the BINDING realm (toolBindingIdentity dsh.fs/read), and the confined provider instance served it"
+    },
+    {
+      "id": "live:row2-read-b-binding-deny-exactly-one-fact",
+      "verdict": "FAIL",
+      "at": "2026-11-04T07:28:28.841Z",
+      "checks": {
+        "isError": true,
+        "typedLaneRefusal": true,
+        "noClaimLeak": true,
+        "noWriteContentLeak": true,
+        "exactlyOneReadFactForB": false,
+        "exactlyOneBindingDeny": true,
+        "noProviderRead": true
+      },
+      "failed": [
+        "exactlyOneReadFactForB"
+      ],
+      "readFactsForB": 0,
+      "nonReadFactsForB": [
+        {
+          "method": "stat",
+          "decision": "deny",
+          "realm": "binding"
+        },
+        {
+          "method": "writeText",
+          "decision": "allow",
+          "realm": "member"
+        }
+      ],
+      "factsForB": 2,
+      "bindingDenyFacts": 1,
+      "counterRows": 0,
+      "observed": {
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+      },
+      "reason": "ROW2_CLAUSE_FAILED",
+      "call": {
+        "callId": "call-a5sfacc-read-b",
+        "seq": 8,
+        "name": "read",
+        "args": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt"
+        }
+      },
+      "denyFactsForB": 1,
+      "bindingLaneDenyFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "memberIdentity": "inst-0b366g81a5yc",
+          "method": "stat",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
+          "sequence": 3,
+          "observedAt": "2026-11-04T07:28:27.026Z",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt"
+        }
+      ],
+      "providerReadRowsForB": 0,
+      "lane": "inside ceiling [workspace], OUTSIDE the binding read restriction [workspace/axis/allow]",
+      "note": "the binding lane refused it; exactly ONE deny fact carries realm:\"binding\" + toolBindingIdentity:\"dsh.fs/read\"; no provider read method ran for it"
+    },
+    {
+      "id": "live:row3-read-c-refused-no-widening",
+      "verdict": "PASS",
+      "at": "2026-11-04T07:28:28.841Z",
+      "reason": "REFUSED_WITHOUT_WIDENING",
+      "checks": {
+        "isError": true,
+        "typedLaneRefusal": true,
+        "noClaimLeak": true,
+        "exactlyOneBindingDeny": true,
+        "noProviderRead": true,
+        "ceilingDenies": true,
+        "restrictionAllows": true,
+        "effectiveDenies": true,
+        "noWidenedAllow": true
+      },
+      "effectiveReadAllow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow"
+      ],
+      "call": {
+        "callId": "call-a5sfacc-read-c",
+        "seq": 9,
+        "name": "read",
+        "args": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/restriction-outside/c.txt"
+        }
+      },
+      "observed": {
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/restriction-outside/c.txt' is outside every allow subtree of the lane"
+      },
+      "denyFactsForC": 1,
+      "bindingLaneDenyFacts": [
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "method": "stat",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED"
+        }
+      ],
+      "providerReadRowsForC": 0,
+      "laneReport": {
+        "computedBy": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets / matchLocator (the emitted product algebra; compileEffectiveIo is not in the host emitted set at this base)",
+        "ceilingReadAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace"
+        ],
+        "restrictionReadAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/restriction-outside"
+        ],
+        "effectiveReadAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow"
+        ],
+        "restrictionWrite": "no-additional-narrowing",
+        "effectiveWriteAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace"
+        ],
+        "dispositions": [
+          {
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow/a.txt",
+            "ceilingRead": "allow",
+            "restrictionRead": "allow",
+            "effectiveRead": "allow"
+          },
+          {
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt",
+            "ceilingRead": "allow",
+            "restrictionRead": "deny",
+            "effectiveRead": "deny"
+          },
+          {
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/restriction-outside/c.txt",
+            "ceilingRead": "deny",
+            "restrictionRead": "allow",
+            "effectiveRead": "deny"
+          }
+        ]
+      },
+      "lane": "OUTSIDE the ceiling [workspace], INSIDE the binding read restriction [<home>/restriction-outside]",
+      "note": "the restriction alone would ALLOW C; the request was refused anyway, and the product algebra report shows the binding lane enforces the INTERSECTION (ceiling deny + restriction allow => effective deny). A binding lane cannot widen the ceiling."
+    },
+    {
+      "id": "live:row4-write-b-ceiling-allowed-no-read-lane-fact",
+      "verdict": "FAIL",
+      "at": "2026-11-04T07:28:28.841Z",
+      "checks": {
+        "notError": false,
+        "diskMatches": false,
+        "allowFactPresent": true,
+        "everyWriteFactOnCeiling": true,
+        "noReadLaneFact": true,
+        "confinedProviderServed": true
+      },
+      "failed": [
+        "notError",
+        "diskMatches"
+      ],
+      "isError": true,
+      "disk": null,
+      "expectedContent": "A5SF_ACC_WRITE_u5a5sfacc-20261104T07-28-10Z\n",
+      "writeFacts": [
+        {
+          "realm": "member",
+          "toolBindingIdentity": null,
+          "method": "writeText",
+          "decision": "allow",
+          "decidedBy": "ALLOW"
+        }
+      ],
+      "ceilingFacts": 1,
+      "readLaneWriteFacts": 0,
+      "counterRows": [
+        {
+          "leg": "write-call",
+          "method": "writeText",
+          "instance": "fs-2",
+          "isBase": false
+        }
+      ],
+      "reason": "ROW4_CLAUSE_FAILED",
+      "call": {
+        "callId": "call-a5sfacc-write-b",
+        "seq": 10,
+        "name": "write",
+        "args": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt",
+          "content": "A5SF_ACC_WRITE_u5a5sfacc-20261104T07-28-10Z\n"
+        }
+      },
+      "observed": {
+        "isError": true,
+        "text": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+      },
+      "diskContent": null,
+      "readLaneFactsForBOverall": [
+        {
+          "method": "stat",
+          "decision": "deny"
+        }
+      ],
+      "lane": "B is inside the ceiling write lane [workspace]; the binding declares no-additional-narrowing for write",
+      "note": "the native write succeeded on the CEILING lane (realm:\"member\", toolBindingIdentity:null); NO read-lane fact (realm binding / dsh.fs/read) was produced by it — the sibling lane is not contaminated"
+    },
+    {
+      "id": "live:row5-post-invalidation-refused-shadow-invalidated",
+      "verdict": "PASS",
+      "at": "2026-11-04T07:28:28.863Z",
+      "reason": "SHADOW_INVALIDATED_AND_ADMISSION_REFUSED",
+      "checks": {
+        "refused": true,
+        "typedCode": true,
+        "notBlanketFreeze": true,
+        "typedName": true,
+        "noForbiddenBytes": true,
+        "noGuardFact": true,
+        "noProviderCall": true,
+        "inLaneAlsoRefused": true
+      },
+      "invalidationLine": "a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface",
+      "state": "{\"boot\":1,\"phase\":\"create\",\"rootSessionId\":\"session-a5sf-acceptance-team\",\"teamSession\":{\"rootSessionId\":\"session-a5sf-acceptance-team\",\"blueprintId\":\"team.a5sf.acceptance.main\",\"revision\":\"1\",\"contentHash\":\"sha256:17b773a4bed56dccab770ba8f468f97eee75bd5e6ca4beeb479a1f5ada2bcae0\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\",\"createdAt\":\"2026-11-04T07:28:26.536Z\",\"generation\":9},\"members\":[{\"instanceId\":\"inst-0b366g81a5yc\",\"templateId\":\"worker\",\"label\":\"a5sfacc-worker\",\"childSessionId\":\"session-team-child-6b1fff88913e06d268262394e2c47034\",\"lifecycle\":\"SETTLED\",\"activityVersion\":3},{\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"childSessionId\":\"undefined\",\"lifecycle\":\"undefined\",\"activityVersion\":1}],\"control\":{\"requests\":[],\"decisions\":[],\"consumptions\":[],\"abandonments\":[]},\"activity\":[{\"globalSequence\":4,\"factType\":\"activity-interval-opened\",\"instanceId\":\"inst-0b366g81a5yc\",\"subject\":\"work-unit\",\"sequence\":1,\"op\":\"interval-open\",\"progress\":\"in-progress\",\"correlation\":\"a5sfacc-d1-delegate\",\"requestToken\":\"a5sfacc-d1-delegate\"},{\"globalSequence\":5,\"factType\":\"activity-interval-closed\",\"instanceId\":\"inst-0b366g81a5yc\",\"subject\":\"work-unit\",\"sequence\":2,\"op\":\"interval-close\",\"progress\":\"completed\",\"correlation\":\"a5sfacc-d1-delegate\",\"requestToken\":\"a5sfacc-d1-delegate\"}],\"pendingDeliveries\":{\"recovered\":[],\"skipped\":[]},\"governance\":{\"overrides\":[],\"sessions\":{\"session-a5sf-acceptance-root\":{\"instanceId\":\"inst-leader\",\"model\":{\"current\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"assembled\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"selection\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"},\"mcp\":{\"servers\":{}}},\"session-a5sf-acceptance-team\":{\"instanceId\":\"inst-leader\",\"model\":{\"current\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"assembled\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"selection\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"},\"mcp\":{\"servers\":{}}},\"session-team-child-6b1fff88913e06d268262394e2c47034\":{\"instanceId\":\"inst-0b366g81a5yc\",\"model\":{\"current\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"assembled\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"selection\":{\"provider\":\"deepseek-official\",\"model\":\"a5sf-acceptance-model\"},\"source\":{\"layer\":\"unspecified\",\"origin\":\"static\",\"recordId\":null},\"suppressed\":[],\"unavailable\":false,\"deniedBy\":{\"by\":\"team\",\"reason\":\"unspecifiedFailClosed\"},\"pendingNextBoundary\":[],\"explanation\":\"model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified\"},\"mcp\":{\"servers\":{}}}}},\"observations\":[\"a5p1-guard: dispatcher-preparing agent=session-a5sf-acceptance-team to=PREPARING\",\"a5p1-guard: guard-installed agent=session-a5sf-acceptance-team scope=session-a5sf-acceptance-team\",\"a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/pre-execute armed=1 required=5\",\"a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/post-execute armed=2 required=5\",\"a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/result armed=3 required=5\",\"a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/execute armed=4 required=5\",\"a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools.guard armed=5 required=5\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"write\\\"] removed=[]\",\"a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"write\\\"] note=these names are refused at dispatch by the Guard\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_delegate\\\",\\\"write\\\"] removed=[]\",\"a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_delegate\\\",\\\"write\\\"] note=these names are refused at dispatch by the Guard\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_delegate\\\",\\\"team_follow_up\\\",\\\"write\\\"] removed=[]\",\"a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_delegate\\\",\\\"team_follow_up\\\",\\\"write\\\"] note=these names are refused at dispatch by the Guard\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_archive_member\\\",\\\"team_delegate\\\",\\\"team_follow_up\\\",\\\"write\\\"] removed=[]\",\"a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\\\"bash\\\",\\\"edit\\\",\\\"read\\\",\\\"read_image\\\",\\\"team_archive_member\\\",\\\"team_delegate\\\",\\\"team_follow_up\\\",\\\"write\\\"] note=these names are refused at dispatch by the Guard\",\"a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-acceptance-team verified=0 surface=8\",\"a5p1-guard: published-surface-unverified agent=session-a5sf-acceptance-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch\",\"a5p1-guard: surface-inherited agent=session-a5sf-acceptance-team verified=0\",\"a5p1-guard: dispatcher-active agent=session-a5sf-acceptance-team to=ACTIVE\",\"a5p1-guard: agent-published agent=session-a5sf-acceptance-team surface=8 masked=4 seams=[\\\"tools.guard\\\",\\\"tools/execute\\\",\\\"tools/post-execute\\\",\\\"tools/pre-execute\\\",\\\"tools/result\\\"] scope=session-a5sf-acceptance-team\",\"alpha2-artifact-grant: shell-result-observer installed\",\"a5p1-guard: dispatcher-call-begin agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfacc-delegate inFlight=1\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]\",\"a5p1-guard: dispatcher-result-observed agent=session-a5sf-acceptance-team callId=call-a5sfacc-delegate inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays\",\"a5p1-guard: dispatcher-call-end agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfacc-delegate inFlight=0\"]}",
+      "lateToolTrigger": {
+        "status": 200,
+        "body": {
+          "ok": true,
+          "already": false,
+          "name": "x_acceptance_late_unrelated",
+          "calls": 1
+        }
+      },
+      "lateToolReport": {
+        "route": "/__a5sf/late-tool",
+        "toolName": "x_acceptance_late_unrelated",
+        "registered": true,
+        "calls": 1,
+        "registeredAt": "2026-11-04T07:28:28.849Z",
+        "disposerType": "function",
+        "lastCallAt": "2026-11-04T07:28:28.849Z"
+      },
+      "presetDefinitionVisible": {
+        "observable": false,
+        "seamNeeded": "an in-process seam that reads tools.get(\"read\", <agent scope>) and compares it to the routed definition (the P0 host-free arm P0-1 asserts this identity directly)",
+        "indirectWitness": "a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface",
+        "note": "the run does not claim to have PRINTED the preset definition object; it claims the product recorded an invalidation and then refused the covered name at admission with A5SF_NATIVE_SHADOW_INVALIDATED, which is the refusal that exists BECAUSE the preset definition is the one the agent would resolve"
+      },
+      "postInvalidationRead": {
+        "status": 200,
+        "ok": false,
+        "error": {
+          "message": "a5sf: managed native tool \"read\" is REFUSED — Member \"inst-0b366g81a5yc\" (team \"team-a5sf-acceptance\", generation 1) / binding realm \"dsh.fs/read\" has an INVALIDATED native shadow; reason: the Member tool surface changed after the native mount settled; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+          "info": {
+            "name": "A5sfNativeShadowInvalidatedError",
+            "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+          }
+        },
+        "forbiddenBytesReturned": false
+      },
+      "postInvalidationInLaneRead": {
+        "status": 200,
+        "ok": false,
+        "error": {
+          "message": "a5sf: managed native tool \"read\" is REFUSED — Member \"inst-0b366g81a5yc\" (team \"team-a5sf-acceptance\", generation 1) / binding realm \"dsh.fs/read\" has an INVALIDATED native shadow; reason: the Member tool surface changed after the native mount settled; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+          "info": {
+            "name": "A5sfNativeShadowInvalidatedError",
+            "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+          }
+        },
+        "plantNotReturned": true
+      },
+      "lateToolControl": {
+        "status": 200,
+        "body": {
+          "ok": false,
+          "error": {
+            "message": "a5sf: the Member's managed realm is INVALIDATED — EVERY tool call is REFUSED. Member \"inst-0b366g81a5yc\" (team \"team-a5sf-acceptance\", generation 1) has an INVALIDATED managed realm; reason: the Member tool surface changed after the native mount settled; nothing further executes for this Member until a full re-assembly mounts a new realm and a new native attach verifies a new shadow (all calls refused until re-assembly)",
+            "info": {
+              "name": "A5sfMemberRealmInvalidatedError",
+              "code": "A5SF_MEMBER_REALM_INVALIDATED"
+            }
+          }
+        }
+      },
+      "sinkFactsBefore": 5,
+      "sinkFactsAfter": 5,
+      "counterRowsBefore": 3,
+      "counterRowsAfter": 3,
+      "hostLogLinesAdded": 1,
+      "note": "the P0 admission deny fires at tools/pre-execute, so it writes NO a5sf-guard-consult/1 fact and reaches NO provider method (sinkDelta 0 AND counterDelta 0 are the expected, asserted values — the refusal happens before either seam; that is the proof the forbidden bytes were never read). The witness is the typed refusal + the product invalidation line. A row whose invalidation event never fired is NOT_REACHED, never FAIL: the product was never asked."
+    },
+    {
+      "id": "live:row6-teardown-no-usable-unconstrained-shadow",
+      "verdict": "FAIL",
+      "at": "2026-11-04T07:28:29.017Z",
+      "checks": {
+        "archivedLifecycle": true,
+        "everyDispatchExplained": true,
+        "noSuccessAfterStop": true,
+        "noForbiddenBytesAfterStop": true,
+        "noManagedDisposeFault": true,
+        "noUnattributedRealmFault": true,
+        "noFactAfterStop": false,
+        "hostHealthy": true,
+        "hostAlive": true
+      },
+      "failed": [
+        "noFactAfterStop"
+      ],
+      "identity": {
+        "managed": [],
+        "foreign": [],
+        "unattributed": [],
+        "ignoredNonFaultCount": 162,
+        "liveSurfaceChanges": [],
+        "identity": {
+          "sessionId": "session-team-child-6b1fff88913e06d268262394e2c47034",
+          "instanceId": "inst-0b366g81a5yc",
+          "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+          "duringManagedDisposal": true,
+          "managedRealmCount": 1
+        }
+      },
+      "archive": {
+        "status": 200,
+        "ok": true
+      },
+      "residencyDrop": {
+        "sessionId": "session-team-child-6b1fff88913e06d268262394e2c47034",
+        "dropped": true
+      },
+      "postStop": [
+        {
+          "status": 200,
+          "ok": false,
+          "code": null
+        },
+        {
+          "status": 200,
+          "ok": false,
+          "code": null
+        }
+      ],
+      "successes": 0,
+      "sinkDelta": 2,
+      "reason": "ROW6_CLAUSE_FAILED",
+      "archiveOk": true,
+      "postArchiveReadStatus": 200,
+      "postArchiveNoLiveAgent": false,
+      "residencyDropped": true,
+      "postDropReadStatus": 200,
+      "refusalCodesAfterStop": [
+        {
+          "status": 200,
+          "code": null,
+          "ok": false,
+          "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "status": 200,
+          "code": null,
+          "ok": false,
+          "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        }
+      ],
+      "anySuccessAfterStop": 0,
+      "sinkDeltaAfterStop": 2,
+      "disposeFaultsAtArchive": {
+        "managed": [],
+        "foreign": [],
+        "unattributed": [],
+        "ignoredNonFaultCount": 86,
+        "liveSurfaceChanges": [],
+        "identity": {
+          "sessionId": "session-team-child-6b1fff88913e06d268262394e2c47034",
+          "instanceId": "inst-0b366g81a5yc",
+          "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+          "duringManagedDisposal": true,
+          "managedRealmCount": 1
+        }
+      },
+      "disposeFaultsAfterDrop": {
+        "managed": [],
+        "foreign": [],
+        "unattributed": [],
+        "ignoredNonFaultCount": 162,
+        "liveSurfaceChanges": [],
+        "identity": {
+          "sessionId": "session-team-child-6b1fff88913e06d268262394e2c47034",
+          "instanceId": "inst-0b366g81a5yc",
+          "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+          "duringManagedDisposal": true,
+          "managedRealmCount": 1
+        }
+      },
+      "seamsObserved": [
+        "product archive lifecycle: team_archive_member dispatched through the row tool route (as the acceptance root/leader)",
+        "product dispatch seam: POST /__p6t6/tool {as:<member child session>} — only a LIVE agent can be dispatched to; an archived member must answer NO_LIVE_AGENT (422)",
+        "the product residency seam: POST /__p6t6/residency/drop {sessionId} — disposes the live agent handle, draining the setup disposers (incl. the a5sf realm)",
+        "the row dispose-observation channel: GET /__p6t6/state .observations (classified against the CLOSED fault grammar and this Member's exact session id; the identity-less realm fault only inside this disposal window)",
+        "the a5sf sink: the fact count after teardown (no fact can appear for a scope that no longer runs)",
+        "the process seam: the Host child alive + the World teardown report (port released, home deleted)"
+      ],
+      "seamsNotReached": [
+        "an in-process read of the DISPOSED scope's tool registry (tools.get(\"read\", <old agent>)) — no public HTTP route exposes a disposed scope, and this lane did not fork an infrastructure plugin for it"
+      ],
+      "note": "PROVEN for the three asked properties as OBSERVED through the seams above: no dispatch path reaches the stopped Member (so no usable shadow, constrained or not), no MANAGED dispose fault was reported, no fact was written after the stop, and the Host/port/home teardown is clean. NOT claimed: that the disposed scope's definition registry is empty — that needs an in-process seam this lane did not add. The realm-dispose observation carries NO session identity in the product text; it is attributed by the disposal window + single-managed-realm rule and that residual gap is disclosed, not hidden."
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-04T07:28:10.238Z",
+        "runId": "a5sf-acceptance-2026-11-04T07-28-10-178Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-acceptance-1ee898c33be4",
+        "grantId": "grant-a5sf-acceptance-1ee898c33be4",
+        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-01 live read (BL-14 / G2 live half)\" now holds 6 boots, three of them newly granted and dedicated to the post-preflight six-row acceptance. The preflight in evidence/a5sf-preflight/ must be green before the first of those three is spent; this driver is the one that preflight certifies. Prior P2-01 boots: a5sf-live-native (activation refused by the unscoped-ctx seam), a5sf-live-native2 (Loader compose abort on a composition defect), a5sf-live-native3 (confined native read proven, teardown seam open), a5sf-acceptance (6/6 NOT_REACHED: create-root/observe-root split). The pool reserve is NOT touched.",
+        "boundCommit": "1ee898c33be444afd46b1dd09f8e2ee160e3abfd",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-04T07:28:16.793Z",
+        "runId": "a5sf-acceptance-2026-11-04T07-28-10-178Z",
+        "suite": "a5sf-acceptance",
+        "world": "u5a5sfacc-20261104T07-28-10Z",
+        "phase": "a5sf-acceptance-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-acceptance-boot1",
+      "world": "u5a5sfacc-20261104T07-28-10Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/logs/u5a5sfacc-20261104T07-28-10Z/instance-port3183.log"
+    }
+  ],
+  "evidence": {
+    "worldId": "u5a5sfacc-20261104T07-28-10Z",
+    "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/a5sf-consult.jsonl",
+    "sinkSha256": "052dbe4822e810d91b33f48a69d056cd3047db23e6fdf28feb59388268fbb940",
+    "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/a5sf-provider-counter.jsonl",
+    "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/lane-report.json",
+    "lateReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/late-tool-report.json",
+    "hostLogPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/logs/u5a5sfacc-20261104T07-28-10Z/instance-port3183.log",
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6fs_probe"
+    ],
+    "guardFacts": 5,
+    "counterRows": 3,
+    "rowPaths": {
+      "a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/allow/a.txt",
+      "b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/workspace/axis/b.txt",
+      "c": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-28-10Z/restriction-outside/c.txt"
+    }
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-11-04T07:28:29.144Z"
+}

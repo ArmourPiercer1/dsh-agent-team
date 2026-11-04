@@ -1,0 +1,121 @@
+{
+  "schema": "a5sf-acceptance-preflight/go-no-go/1",
+  "branch": "task/a5sf-preflight-20261103",
+  "evidenceHeadAtDryRun": "849973232b1f895b251366b2c8316db5324f7e9c",
+  "productTreeDigest": "fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17",
+  "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pool": {
+    "item": "P2-01 live read (BL-14 / G2 live half)",
+    "boots": 6,
+    "allocated": true,
+    "consumed": 3,
+    "remaining": 3
+  },
+  "ledger": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+    "rows": 8,
+    "intents": 4,
+    "bootRows": 3,
+    "unparseable": 0,
+    "orphanBootRuns": [],
+    "plannedMismatch": [],
+    "aborts": 1,
+    "orphanAbortRuns": [],
+    "bootsInPool": 6,
+    "remaining": 3
+  },
+  "go": true,
+  "checks": [
+    {
+      "id": "dry-run evidence exists and is green",
+      "ok": true,
+      "detail": {
+        "checks": 57,
+        "failed": 0
+      }
+    },
+    {
+      "id": "the PRODUCT tree matches the one the dry run measured",
+      "ok": true,
+      "detail": {
+        "committed": "fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17",
+        "now": "fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17"
+      }
+    },
+    {
+      "id": "the product tree has no uncommitted modifications",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "branch is the preflight branch",
+      "ok": true,
+      "detail": "task/a5sf-preflight-20261103"
+    },
+    {
+      "id": "ledger: every row parses and each boot row has its intent row",
+      "ok": true,
+      "detail": {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+        "rows": 8,
+        "intents": 4,
+        "bootRows": 3,
+        "unparseable": 0,
+        "orphanBootRuns": [],
+        "plannedMismatch": [],
+        "aborts": 1,
+        "orphanAbortRuns": [],
+        "bootsInPool": 6,
+        "remaining": 3
+      }
+    },
+    {
+      "id": "ledger: an abort row names an existing intent (an abort without an intent is a defect)",
+      "ok": true,
+      "detail": {
+        "abortRuns": [
+          "a5sf-acceptance-2026-11-04T08-11-28-364Z"
+        ]
+      }
+    },
+    {
+      "id": "ledger: each intent's plannedStarts equals the boot rows charged to it, net of declared aborts",
+      "ok": true,
+      "detail": {
+        "intents": 4,
+        "mismatch": []
+      }
+    },
+    {
+      "id": "budget: at least ONE start of the P2-01 pool is still available",
+      "ok": true,
+      "detail": "boots=6 spent=3 remaining=3"
+    },
+    {
+      "id": "boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)",
+      "ok": true,
+      "detail": {
+        "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
+        "item": "P2-01 live read (BL-14 / G2 live half)",
+        "boots": 6,
+        "why": "amended allocation present"
+      }
+    },
+    {
+      "id": "pinned host tree is at the pinned commit and clean",
+      "ok": true,
+      "detail": {
+        "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelain": ""
+      }
+    }
+  ],
+  "next": "node dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs  (ONE Host, ONE ledger row, port family 3180)",
+  "structurallyUnverifiableWithoutBoot": [
+    "a live `team.create` of the acceptance blueprint on the booted Host (it is an RPC against a running Host; no host-free entry point exists)",
+    "that the p6t6 directive the driver writes is the one the row reads (the directive path is World-internal and materialises only during boot)",
+    "that the seven rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)",
+    "that the Host's own teardown disposes the a5sf realm without a fault (the dispose observation channel is a live-State route)"
+  ]
+}

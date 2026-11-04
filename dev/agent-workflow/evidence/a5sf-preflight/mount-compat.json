@@ -1,0 +1,273 @@
+{
+  "schema": "a5sf-acceptance-preflight/mount-compat/1",
+  "at": "2026-11-04T09:03:56.282Z",
+  "head": null,
+  "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
+  "hostAttachmentLocal": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/attachment/attachment-local/lib/index.js",
+  "expectedTools": [
+    "read",
+    "write",
+    "edit",
+    "read_image"
+  ],
+  "note": "HOST-FREE: no Host process, no port, no DSH_HOME. The real attachment store receives an OS temp dir as dshHome, deleted with the arm.",
+  "arms": [
+    {
+      "label": "A-real-attachment-store",
+      "attachments": "real",
+      "expectedTools": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "mounted": true,
+      "routing": [
+        {
+          "realm": "ceiling",
+          "toolBindingIdentity": null,
+          "forwarded": [
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "dropped": [
+            "section:tool:read",
+            "read"
+          ]
+        },
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "forwarded": [
+            "read"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "dropped": [
+            "section:tool:write",
+            "write",
+            "section:tool:edit",
+            "edit",
+            "read_image"
+          ]
+        }
+      ],
+      "forwardedUnion": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "observedUnion": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "surface": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "declaredEveryForwarded": true,
+      "realmSurface": {
+        "bindingIdentities": [
+          "dsh.fs/read"
+        ],
+        "nativeInvalidation": null
+      }
+    },
+    {
+      "label": "B-stub-attachments",
+      "attachments": "stub",
+      "expectedTools": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "mounted": true,
+      "routing": [
+        {
+          "realm": "ceiling",
+          "toolBindingIdentity": null,
+          "forwarded": [
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "dropped": [
+            "section:tool:read",
+            "read"
+          ]
+        },
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "forwarded": [
+            "read"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit",
+            "read_image"
+          ],
+          "dropped": [
+            "section:tool:write",
+            "write",
+            "section:tool:edit",
+            "edit",
+            "read_image"
+          ]
+        }
+      ],
+      "forwardedUnion": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "observedUnion": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "surface": [
+        "edit",
+        "read",
+        "read_image",
+        "write"
+      ],
+      "declaredEveryForwarded": true,
+      "realmSurface": {
+        "bindingIdentities": [
+          "dsh.fs/read"
+        ],
+        "nativeInvalidation": null
+      }
+    },
+    {
+      "label": "C-no-attachments-declared",
+      "attachments": "none",
+      "expectedTools": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "mounted": false,
+      "error": {
+        "name": "A5sfNativeAssemblyError",
+        "code": "A5SF_EXPECTED_TOOLS_UNSHADOWED",
+        "detail": "",
+        "message": "agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)",
+        "stackHead": "A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)\n    at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:628:11)\n    at async arm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:274:20)\n    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:323:20"
+      }
+    },
+    {
+      "label": "D-no-attachments-undeclared",
+      "attachments": "none",
+      "expectedTools": null,
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "mounted": true,
+      "routing": [
+        {
+          "realm": "ceiling",
+          "toolBindingIdentity": null,
+          "forwarded": [
+            "write",
+            "edit"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit"
+          ],
+          "dropped": [
+            "section:tool:read",
+            "read"
+          ]
+        },
+        {
+          "realm": "binding",
+          "toolBindingIdentity": "dsh.fs/read",
+          "forwarded": [
+            "read"
+          ],
+          "observed": [
+            "read",
+            "write",
+            "edit"
+          ],
+          "dropped": [
+            "section:tool:write",
+            "write",
+            "section:tool:edit",
+            "edit"
+          ]
+        }
+      ],
+      "forwardedUnion": [
+        "edit",
+        "read",
+        "write"
+      ],
+      "observedUnion": [
+        "edit",
+        "read",
+        "write"
+      ],
+      "surface": [
+        "edit",
+        "read",
+        "write"
+      ],
+      "declaredEveryForwarded": true,
+      "realmSurface": {
+        "bindingIdentities": [
+          "dsh.fs/read"
+        ],
+        "nativeInvalidation": null
+      }
+    }
+  ]
+}

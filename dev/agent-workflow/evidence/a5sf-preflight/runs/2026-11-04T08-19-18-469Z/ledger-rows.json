@@ -1,0 +1,25 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-04T07:28:10.238Z",
+      "runId": "a5sf-acceptance-2026-11-04T07-28-10-178Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-acceptance-1ee898c33be4",
+      "grantId": "grant-a5sf-acceptance-1ee898c33be4",
+      "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-01 live read (BL-14 / G2 live half)\" now holds 6 boots, three of them newly granted and dedicated to the post-preflight six-row acceptance. The preflight in evidence/a5sf-preflight/ must be green before the first of those three is spent; this driver is the one that preflight certifies. Prior P2-01 boots: a5sf-live-native (activation refused by the unscoped-ctx seam), a5sf-live-native2 (Loader compose abort on a composition defect), a5sf-live-native3 (confined native read proven, teardown seam open), a5sf-acceptance (6/6 NOT_REACHED: create-root/observe-root split). The pool reserve is NOT touched.",
+      "boundCommit": "1ee898c33be444afd46b1dd09f8e2ee160e3abfd",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-04T07:28:16.793Z",
+      "runId": "a5sf-acceptance-2026-11-04T07-28-10-178Z",
+      "suite": "a5sf-acceptance",
+      "world": "u5a5sfacc-20261104T07-28-10Z",
+      "phase": "a5sf-acceptance-boot1"
+    }
+  ]
+}

@@ -49,8 +49,8 @@
 
 | ID | 工作包 | 状态 | 入口 / 证据 |
 |---|---|---|---|
-| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | PARTIAL（gate + dry harness；G2 未取得） | PR #546；`tests/world-factory/suites/150-a5sf-read.mjs` + `evidence/a5sf-p2-read/`；预算预登记门 + 真实 compiler/guard/chain/diag 的 host-free dry；**live 未跑**：`installToolBindingRealm` 无生产挂载点、guard 咨询不可观测（`install.ts:293`），需 seam + mount + 跨进程传输 + 用户 boot 预算裁决 |
-| BL-15 | P2-02 原生 `write`（原子替换/版本校验；禁写字节不变；写不自动获读） | READY | 同上 |
+| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | **live G2 已取得**（大文件窗口/流式仍 PARTIAL；矩阵行按 Q7 暂记 `NEEDS_REVALIDATION`，baseline 重切后复位，证据不删） | PR #581（`a5sf-preflight`）；`evidence/a5sf-preflight/README.md` §13：真实 Host 上 8/8 PASS——row1 内读被 confined provider 服务、row2 restriction 拒绝、row3 ceiling 拒绝，读路径咨询全落 binding realm；禁读真实拒绝与 in-lane 拒绝均为实测。**未覆盖**：>10MiB 中间窗口、流式、双 Member 同时并发（同轮两 Member 未做） |
+| BL-15 | P2-02 原生 `write`（原子替换/版本校验；禁写字节不变；写不自动获读） | PARTIAL（写轴 live 已证，原子/版本未验） | PR #581；row4a 在 lane 内写成功且 write fact 全在 ceiling realm；row4b 证明 guard **允许**写一个 binding lane 读不到的文件（binding restriction 只约束 read 轴），拒绝写出的是**原生 write 工具自身的 read-before-write 契约**，不是 Team lane。**已裁决（2026-11-04）**：`write` **不**蕴含 `read`——原生 `write` 的 read-before-write 契约保留，Team 代数不加 write⇒read 耦合（裁决原文 = `evidence/a5sf-preflight/README.md` §12.8.3 RULING）；只写不读/读被拒权限下的 team 行为 = BL-38。**未验**：原子替换、版本校验、禁写字节不变（本轮只验拒绝路径不改盘） |
 | BL-16 | P2-03 原生 `grep`（OS `rg` 真实拒绝、exit 0/1、取消、结果裁剪） | READY | `a5sf-grep.mjs` |
 | BL-17 | P2-04 原生持久 `bash`（同 PTY 多命令、只写不读、`chmod`/新建文件负控、禁网、旧代 PTY 拒用） | READY | `a5sf-bash.mjs` |
 | BL-18 | P2-05 原生 `web_fetch`（本地 mock provider、network=deny 前置拒绝、普通 DSH fetch 不受影响） | READY | `a5sf-web.mjs` |
@@ -100,6 +100,7 @@
 | BL-35 | P5-01 对抗性 I/O（TOCTOU、软链出界、`/proc/self/fd`、继承 FD、PATH 替换、孤儿进程、代理/UDS/host bridge） | BLOCKED（依赖 G4） |
 | BL-36 | P5-02 生命周期/故障恢复/上游升级演习（撤销/重启代际、崩溃、双装、无 Landlock/bwrap、僵尸清理） | BLOCKED（依赖 G4） |
 | BL-37 | P5-03 发布前产品/工程双验收（RUN-MANIFEST、GATE-REPORT、独立权威迁移 PR、用户最终裁决） | BLOCKED（依赖 G5.1/G5.2） |
+| BL-38 | P5-04 **只写不读 / 读被拒权限下的 Team 行为**（owner-owned 后续，**不在本阶段实施**）：一个 Member 被编译成有写 lane、无读 lane（或读被拒）时的 team 语义——写入是否可被指令盲投、是否需要在策略层耦合读写两轴、以及在 native `write` 之外（`edit`、shell、其他写面）的对应行为 | DEFERRED（owner-owned） |
 
 ## 6. 回归义务（BR）
 

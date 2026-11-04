@@ -1,0 +1,85 @@
+$ node scripts/ci-local.mjs --base origin/master
+
+▶ docs:probe
+docs:probe base=origin/master head=6d7899df2 changed=32 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
+✔ docs:probe (0.3s)
+
+▶ docs:sync --check
+docs:sync --check: docs=112 notes=4 plans=75(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261102r1.json","snapshot_version":"as20261102r1","content_digest":"sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+✔ docs:sync --check (0.3s)
+
+▶ ci shape (eb3-ci-required)
+EB3-CI-REQUIRED pass workflows=9 findings=0
+✔ ci shape (eb3-ci-required) (0.1s)
+
+▶ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+✔ pnpm typecheck (12.4s)
+
+▶ node --test (selected)
+✔ A1 the driver root constant is ONE value across every observation seam (0.869106ms)
+✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (0.337409ms)
+✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.534001ms)
+✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.198235ms)
+✔ A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED (0.276824ms)
+✔ A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED (0.086714ms)
+✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.298084ms)
+✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.350854ms)
+✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.268178ms)
+✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (0.889624ms)
+✔ B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result) (0.254482ms)
+✔ B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored) (0.139774ms)
+✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (0.577193ms)
+✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (0.830923ms)
+✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.119817ms)
+✔ C3 the row-level reason codes distinguish "never asked" from "asked and contradicted" (0.161346ms)
+✔ C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim) (0.117272ms)
+✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.165182ms)
+✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.109968ms)
+✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.074702ms)
+✔ C8 each verdict carries a closed reason code (auditable without prose) (0.128473ms)
+✔ C9 row 2 replay: the HEALTHY stream (read-B deny + later write-B allow at the same locator) is PASS (0.066636ms)
+✔ C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED (0.074401ms)
+✔ C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED (0.038052ms)
+✔ C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm freeze (0.279479ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.60798
+✔ node --test (selected) (0.1s)
+
+DSH-CI-LOCAL verdict=undetermined steps=5 failed=0 coverage=undetermined files=1 wall=13.1s
+ci-local: the selected checks passed, but this change's test blast radius is unnamed:
+  - tests/world-factory/fixtures/a5sf-575-teardown-observations.json
+  - tests/world-factory/lib/a5sf-acceptance-preflight.mjs
+ci-local: that is exit 2 on purpose. Push and let L1/L2 cover it.
+[ELIFECYCLE] Command failed with exit code 2.

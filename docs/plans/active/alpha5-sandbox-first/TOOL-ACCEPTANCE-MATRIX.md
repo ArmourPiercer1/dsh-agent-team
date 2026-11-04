@@ -29,9 +29,9 @@
 
 | ①行ID | ② 工具 / 面 | ③ 接入模式 | ④ 编译上界 | ⑤ 最低验收 | ⑥ 验证 | ⑦ 残余风险 | ⑧ 等级 | ⑨ V@B |
 |---|---|---|---|---|---|---|---|---|
-| read (M-01) | 原生 read（ctx.fs，经 routed native mount） | service-mediated:fs；per-tool ToolBinding realm（#561）+ 归属探针/持续校验/失效准入（#569/#574/#576） | MemberCeiling(read) ∩ ToolRestriction(read)（compiled intersection 被消费，不重算） | 大文件中间窗口、流式、禁读真实拒绝、双 Member 不串权 | 证据=dev/agent-workflow/evidence/a5sf-s1/six-arms.log,dev/agent-workflow/evidence/a5sf-assembly/green-arms.log,dev/agent-workflow/evidence/a5sf-p0/green-assembly-c1.log,dev/agent-workflow/evidence/a5sf-deferred/green-probe.log,dev/agent-workflow/evidence/a5sf-acceptance/README.md,dev/agent-workflow/evidence/a5sf-p1-05/SERVICE-REALM-EVIDENCE.md；**机制半场（host-free，已证明）**=ARM-1/2/3 + GAP1a/1b/1c（归属=观察所得，`A5SF_BINDING_OWNER_UNRESOLVED/_AMBIGUOUS` 拒绝）+ P0-1/P0-3（失效后准入 deny，禁止字节不返回）+ A1/A5/A7（deferred 接受 + post-settle 折叠失效）；**live 半场 = 从未运行**=README §1/§3（#575 六行全部 NOT_REACHED）；证据 HEAD `bb5315cd3`、`474a8d46d`、`84e9348fc`、`cfdf87267`，合并 HEAD `d0cbef9af` | live 六行未执行（见 §1.1）；`tools/change`/`tools/pre-execute` 是 setup 硬要求（缺失即 fail-closed）；scope-key 之外的注册不受本 seam 管；准入 deny 仅 in-process（直调 `.execute` 绕过）；生产 `teamA5sfRealm` provider 仍由证据行提供（`a5sf-acceptance/README.md` §6） | ENFORCE-PARTIAL | no |
-| write (M-02) | 原生 write（ctx.fs，ceiling partition） | service-mediated:fs；per-module ceiling mount（#561/#569） | MemberCeiling(write) ∩ ToolRestriction(write) | 原子替换与版本校验、禁写字节不变、写不自动获读 | 证据=dev/agent-workflow/evidence/a5sf-s1/six-arms.log,dev/agent-workflow/evidence/a5sf-assembly/green-arms.log,dev/agent-workflow/evidence/a5sf-acceptance/README.md；**机制半场（host-free，已证明）**=ARM-2（`insideWrite=ok`、`outsideWrite=denied`，两条事实属 `member/null` = ceiling realm）+ GAP1b（ceiling-only 模块的 tool 仍执行且不进 binding 车道）；**live row 4 未执行**=README §3.2；证据 HEAD `bb5315cd3`、`474a8d46d`，合并 HEAD `d0cbef9af` | live 未验收；只有 ceiling 车道的 host-free 正向+拒绝；写旧内容需读权限（edit）未测；同 realm 恶意 JS（TRUSTED_ONLY） | ENFORCE-PARTIAL | no |
-| edit (M-03) | 原生 edit（ctx.fs，ceiling partition） | service-mediated:fs；per-module ceiling mount | 读旧内容与写新内容两轴 | 版本冲突、禁写、读旧内容也需读权限 | 证据=dev/agent-workflow/evidence/a5sf-fs-tools/README.md,dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.log,dev/agent-workflow/evidence/a5sf-s1/six-arms.log；**执行/拒绝半场（host-free，本 lane 实测，真 pinned `@deepseek-ai/dsh-tool-fs` 0.2.0-rc.2 @ `639ed01539`，经 `mountMemberA5sfRealm`→`attachA5sfNativeToolModules`）**=EDIT-1（in-lane edit 经 routed/confined ceiling 定义执行，磁盘 `ALPHA\nbeta\n`，恰一条 `member/null/<member>/editText/allow/ALLOW` 事实；pre-attach preset 对照成功且 0 事实）+ EDIT-2（out-of-lane `IO_WRITE_DENIED`，字节不变，事实 `member/null/<member>/editText/deny`）+ EDIT-3a/3b（两轴分离：write 覆盖而 read 不覆盖 ⇒ `IO_WRITE_REQUIRES_READ`；反向 ⇒ `IO_WRITE_DENIED`，均字节不变）+ EDIT-3c（读要求以目标存在为条件：新建可，既有文件不可）+ EDIT-4（`edit` 只在 ceiling partition 恰一次，binding 车道无，surface 中性）；**live 半场未运行**（`a5sf-acceptance/README.md` §1/§3.2） | 只证明 ceiling 车道的 host-free 执行+拒绝+读写轴分离+surface 中性；无 `dsh.fs/edit` binding 车道的测量；content 不是 lane 维度（EDIT-3d：guard 先按路径 allow，再由工具 unique-match 拒绝）；**版本冲突与原子替换未测**（provider double 直接做 unique-match 替换，不触发 live provider 的 expected-version 校验/atomic rename）；EDIT-3c 的存在性边界经 `write` 兄弟测量（`edit` 不能建文件）；上游 `fs-observation-policy` 未挂载，本行测的是 Team 读轴而非上游会话观察策略；live 六行未执行；同 realm 恶意 JS（TRUSTED_ONLY）；本测量只评定 native routed 面（probe 未挂 `teamToolPlane` / governed `families/{fs,search}.mjs`），不对配置后的生产 Team 面断言 | ENFORCE-PARTIAL | no |
+| read (M-01) | 原生 read（ctx.fs） | service-mediated:fs（route C 重挂原生模块到 Member 隔离 fs scope） | MemberCeiling(read) ∩ ToolRestriction(read) | 大文件中间窗口、流式、禁读真实拒绝、双 Member 不串权 | **live 已实测**（8/8 acceptance 的 row1/row2/row3——lane 内读取由 confined provider 实际服务、restriction 拒绝、ceiling 拒绝；退出码与逐案判定见附录 A 与 README §13）；证据=dev/agent-workflow/evidence/a5sf-preflight/README.md；tested=44babbfcff2026b04395f2219a1c4a77565ff7af | 大文件中间窗口/流式仍未覆盖；工具尚未绑定到生产 preset（本行证明的是装配+准入+执行体）；可信 JS 可绕 ctx.fs（TRUSTED_ONLY）；**live 断言按 Q7 记 `NEEDS_REVALIDATION`**：授权 baseline 早于 63 个产品面路径，baseline 重切后复位为 `yes`，证据不删（§1.1 / 附录 A） | NEEDS_REVALIDATION | no |
+| write (M-02) | 原生 write（ctx.fs） | service-mediated:fs | MemberCeiling(write) ∩ ToolRestriction(write)（binding restriction 只约束 read 轴） | 原子替换与版本校验、禁写字节不变、写不自动获读 | **live 已实测（两半）**：row4a 在 lane 内可读路径上写成功，全部 write fact 落在 **ceiling realm**；row4b 证明 guard **允许**「写一个 binding lane 读不到的文件」，拒绝写出的是**原生 write 工具自身的 read-before-write 契约**（原生工具要求先 read，不是 Team lane 在拒绝）；证据=dev/agent-workflow/evidence/a5sf-preflight/README.md；tested=44babbfcff2026b04395f2219a1c4a77565ff7af | **2026-11-04 裁决（README §12.8.3 RULING）**：原生 write 的 read-before-write 契约保留，代数**不加** write⇒read 耦合；只写不读/读被拒权限下的 team 行为 = `BL-38`（owner-owned，非本 lane 实施）；原子替换/版本校验未单独验收；**live 断言按 Q7 记 `NEEDS_REVALIDATION`**（同上，证据不删） | NEEDS_REVALIDATION | no |
+| edit (M-03) | 原生 edit | service-mediated:fs | 读旧内容与写新内容两轴 | 版本冲突、禁写、读旧内容也需读权限 | **host-free 半场已实测；live 半场从未运行**：EDIT-1（routed/confined 定义在 lane 内执行，恰一条 `editText/allow` 事实，与 preset 对照可区分）+ EDIT-2（out-of-lane `IO_WRITE_DENIED`，字节不变）+ EDIT-3a/3b/3c（读写两轴分离：`IO_WRITE_REQUIRES_READ` / `IO_WRITE_DENIED`；读要求以目标存在为条件）+ EDIT-4（只在 ceiling partition 恰一次，surface 中性）；证据=dev/agent-workflow/evidence/a5sf-fs-tools/README.md；tested=93b007cd2f496877e70abec4ee5aec25f9be4753 | 版本冲突与原子替换未测（provider double 不触发 live 的 expected-version 校验/atomic rename）；只有 ceiling 车道；**六行 live 验收不含 `edit`**——该证据行自述 `V@B=no`，本行不得写成 live（2026-11-04 更正了此前的一句 live 误述） | ENFORCE-PARTIAL | no |
 | read_image (M-04) | 原生 read_image（routed deferred registration） | service-mediated:fs + attachments（原生 `ctx.inject(['attachments'])`，见 #576） | 读上界，附件服务单独识别 | 像素与大小上界、工具展示等价；附件来源不可绑定则 UNSUPPORTED | 证据=dev/agent-workflow/evidence/a5sf-deferred/green-probe.log,dev/agent-workflow/evidence/a5sf-deferred/all-a5sf-node-suites.log,dev/agent-workflow/evidence/a5sf-assembly/README.md,dev/agent-workflow/evidence/a5sf-p0/README.md,dev/agent-workflow/evidence/a5sf-acceptance/README.md；**机制半场（host-free，条件性证明）**=A1（`mounted=true`，`definitionIdentities.read_image="routed"`）+ TA11（deferred 定义经同一 partition，`read` 仍按编译交集拒绝）+ assembly §3.2（post-settle 注册折叠入账并 invalidate）+ P0 §3（admission deny 覆盖该 managed name）；**live 未验收**=acceptance §1/§9.2；证据 HEAD `cfdf87267`、`84e9348fc`、`6d1b7a1fb` | 依赖可解析的 `attachments`（缺失时该子 fiber 良性不注册、`read_image` 不在 surface）；依赖 `DEFERRED_SETTLE_ROUNDS=20` settle bound（有 attachments 时实测 ~4.2 ms / A1 端到端 10 ms；超界即 fail-closed 拒绝）；read_image 自身执行路径未经 guard fact 测量 | BOUNDED-DEFER | no |
 | str_replace_editor (M-05) | str_replace_editor（若 Host 提供） | service-mediated:fs | 读写两轴 | 原生编辑与原子写保留、逐工具拒绝 | 证据=dev/agent-workflow/evidence/a5sf-g1/G1-GATE-REPORT.md；机制级 | BL-21 库存已查明：模块存在于 pinned baseline（`@deepseek-ai/dsh-tool-str-replace-editor`，`inject=["tools","fs"]`，同步注册 `str_replace_editor`），但**不在产品 preset 里、也未进 `a5sfNativeToolModules`** → 未接入；见 `NATIVE-SOURCE-INVENTORY.md` §2/§3 | NOT_WIRED | no |
 | grep (M-06 native) | 原生 grep 经 OS rg | service-mediated:subprocess 加 os-confined:leaf | 读上界；进程 argv 不可注入越界路径 | exit 0/1、无匹配、非法模式、流与取消、真实 OS 拒读 | 证据=dev/agent-workflow/evidence/a5sf-p1-07/OS-RUNNER-EVIDENCE.md,dev/agent-workflow/evidence/a5sf-fs-tools/README.md,dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.log；**可采纳性已实测（host-free，真 pinned `@deepseek-ai/dsh-tool-fs-search` 0.2.0-rc.2 @ `639ed01539`）**=SEARCH-1（同步注册，`inject=["tools","systemPrompt","subprocess"]`，ceiling fiber 转发 `["glob","grep"]`，定义被 shadow，surface 中性）+ SEARCH-2（in-lane 真 `rg` 执行成功，guard facts=0——该模块不触 `fs`）+ SEARCH-3（**out-of-lane 搜索执行并返回越界内容**：`readAllow` 不含被搜目录，`grep=EXECUTED`、`glob=EXECUTED`、`guardFacts=0`）+ SEARCH-0（**attach 前 host-preset 对照**：同一越界搜索、未调用 attach、定义为 preset，仍 `EXECUTED` 且 `guardFacts=0`） | **未拒绝的原因 = 缺一个 OS 受限的 subprocess Provider**：realm 只 confine `fs`，模块经 `ctx.subprocess.spawn`（argv 向量、packaged rg）读文件，guard 不参与；P1-07 的 `os-confined:leaf` runner 尚未接入 `ctx.subprocess`（其 §3 自述）。**该洞先于本路由存在**：SEARCH-0 证明 attach 前的 host-preset 面已有同一越界搜索且 0 事实，纳入 routed mount 不引入、不扩大它，不构成本 lane 的回归。**移动该行只需一个 arm**：把 OS 受限 subprocess Provider 挂到 **ceiling/Member realm**（`grep`/`glob` 由 ceiling fiber 转发；search 不拥有 `dsh.fs/*` 绑定，`nativeToolMountsOf` 不会 binding-mount 它；若将来为 search 建 binding，则挂到该 binding realm）后重跑 SEARCH-3，要求 out-of-lane `grep` 被 OS/Provider 拒绝**且**有 guard fact、越界内容不出现；同一 arm 另钉 exit 0/1、no-match、bad-pattern、取消。未观察 OS 级拒绝；禁止以字符串过滤冒充；本测量只评定 native routed 面（probe 未挂 `teamToolPlane` / governed `families/{fs,search}.mjs`），不对生产 Team 面断言 | NOT_WIRED | no |
@@ -53,24 +53,31 @@
 
 <!-- q5:main-end -->
 
-## 1.1 唯一的 live-half 阻塞事实（全表共用）
+## 1.1 live 半场的现状（2026-11-04 更新）
 
-**六行 live 验收从未在真实 Host 上端到端执行过**——即 A/B/C 三行 `read` + `write` 不串通道 +
-运行中失效后受管调用被拒且禁止字节不返回 + 终止后无失控 shadow/后台进程/未结清调用。唯一预留的
-那次 boot 花在 **#575 的 NOT_REACHED 尝试**上：`dev/agent-workflow/evidence/a5sf-acceptance/README.md`
-§1/§3/§7 记录 a5sf-wired Member 在 #561 的 deferred-registration 拒绝处**根本没激活**，
-六行全部 `NOT_REACHED`（run record：`overall=FAIL cases=7`）。#576 修好了该机制
-（`dev/agent-workflow/evidence/a5sf-deferred/README.md` §2/§4.1），但**修好之后的六行仍未重跑**，
-所以 live 半场至今为零行证据。
+**历史（#575 的唯一一次预留 boot）**：`dev/agent-workflow/evidence/a5sf-acceptance/README.md`
+§1/§3/§7 记录 a5sf-wired Member 在 #561 的 deferred-registration 拒绝处**根本没激活**，六行全部
+`NOT_REACHED`（run record：`overall=FAIL cases=7`）；#576 修好了该机制
+（`dev/agent-workflow/evidence/a5sf-deferred/README.md` §2/§4.1）。此后 P2-01 的 boot 配额在该次
+尝试上耗尽（`a5sf-acceptance/README.md` §7：“P2-01's allocation is now exhausted”），池中剩余
+6 次属于 `reserve`(2) 与 `G1.5/G1.6/G1.8 closure`(4)
+（`dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json`），按池规则不是 live 验收预算。
 
-为什么不能在本轮补跑：P2-01 的 boot 配额已在该次尝试上耗尽（`a5sf-acceptance/README.md` §7：
-“P2-01's allocation is now exhausted”），而池中剩余的 6 次属于
-`reserve`(2) 与 `G1.5/G1.6/G1.8 closure`(4) 两个条目
-（`dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json`），按池规则只能用于重跑具名失败类与
-G1 边界项，**不是本 lane 可挪用的验收预算**；本 lane 也无 boot 授权。
+**现状（2026-11-04）**：那条 live 阻塞已解除——三个专用 P2-01 start 走完，**第三跳 8/8 PASS**，
+实测 sink 与逐案判定在 `dev/agent-workflow/evidence/a5sf-preflight/README.md` §13（head
+`44babbfcf`），本表附录 A 复刻了同一份八条事实。§1.1 先前那句“live 半场为零行”**已过期**，
+不再成立；但 live 覆盖的只有 `read`/`write` 两轴，`edit` 从未真跑 live（见 M-03 行）。
 
-因此本表的诚实上限是：FS 机制半场（host-free）有证据的行 = `ENFORCE-PARTIAL`/`BOUNDED-DEFER`/
-`WIRED-NOT-ACCEPTED`；`DONE`/`LIVE-CONFIRMED` **不得**出现在任何一行，直到六行真跑并逐行留证。
+**本表 live 断言当前记 `NEEDS_REVALIDATION`（⑨ = no）是机器新鲜度，不是能力撤回**：
+权威 baseline（`as20261102r1` 的 `17ce7043…`，2026-11-02 采集）早于产品面 63 个路径
+（`packages/`、`scripts/`、`tests/paths.mjs`、`package.json`、`pnpm-lock.yaml`），而
+`ci-pr-gate` 的 Q7 对“产品面已移动却仍宣称当前验证”的行是**点名红**；Q7 没有“对 HEAD 重新断言”
+的判定通道，因此机器的唯一合法编码 = 行级 `NEEDS_REVALIDATION` + `V@B=no`。**证据不删**：live
+结果在 `44babbfcf` 是既成事实，baseline 下次重切后这些行复位为 `ENFORCE-PARTIAL` / `V@B=yes`。
+这不是把 live 证据降级成 host-free，而是把它标成“等新 baseline 重新断言”。
+
+**诚实上限仍然成立**：任一行的 ⑤ 覆盖都未满（大文件窗口、流式、原子替换、版本冲突未验收），
+`DONE`/`LIVE-CONFIRMED` 仍不得出现在任何一行。
 
 ## 2. 静态工具名附录（与主矩阵的映射）
 
@@ -117,12 +124,48 @@ MCP 与插件注册、source package 与 SHA、Definition provenance）由 BL-21
 
 | Gate | 本矩阵中的对应 |
 |---|---|
-| G1 | P1 机制级证据（`evidence/a5sf-p1-0{1..8}/`、`a5sf-g1/G1-GATE-REPORT.md`）；工具级：`read`/`write` = `ENFORCE-PARTIAL`、`read_image` = `BOUNDED-DEFER`、`edit` = `ENFORCE-PARTIAL`（均 host-free；见 §1.1），其余仍 `NOT_WIRED` |
-| G2 | BL-14 至 BL-20 代表机制正向与基本拒绝；**host-free 机制半场**已有 FS 证据（`a5sf-s1/`、`a5sf-assembly/`、`a5sf-p0/`、`a5sf-deferred/`），**live 半场**从未执行（`a5sf-acceptance/README.md`） |
+| G1 | P1 机制级证据（`evidence/a5sf-p1-0{1..8}/`、`a5sf-g1/G1-GATE-REPORT.md`）；工具级：`read`/`write` = live 已实测（8/8，见附录 A）但按 Q7 暂记 `NEEDS_REVALIDATION`、`edit` = `ENFORCE-PARTIAL`（host-free，live 未跑）、`read_image` = `BOUNDED-DEFER`，其余仍 `NOT_WIRED` |
+| G2 | BL-14 至 BL-20 代表机制正向与基本拒绝；**host-free 机制半场**已有 FS 证据（`a5sf-s1/`、`a5sf-assembly/`、`a5sf-p0/`、`a5sf-deferred/`），**live 半场**已执行：六行 2026-11-04 8/8 PASS（`a5sf-preflight/README.md` §13），覆盖 `read`/`write`；`edit` 的 live 半场仍未跑 |
 | G3 | BL-22 至 BL-26 逐工具正向等价与最小权限负控（来源清单见 `NATIVE-SOURCE-INVENTORY.md`） |
 | G4 | BL-27 至 BL-34 全工具与 I/O 维度矩阵 |
 | G5 | BL-35 至 BL-37 对抗、故障、发布双验收 |
 
-**本表当前结论**：G1 机制级 = 有证据；FS 工具级 = 只有 host-free 机制半场（`read`/`write`/
-`read_image`/`edit`），live 半场为零行；其余工具级仍 `NOT_WIRED`；G2 至 G5 = 未完成。因此
-**本表不构成 release coverage**，不得把任一 `NOT_WIRED` 或 `ENFORCE-PARTIAL` 读作能力已交付。
+**本表当前结论**：G1 机制级 = 有证据；FS 工具级 = `read`/`write` 的 live 半场已实测（2026-11-04，
+8/8 PASS，head `44babbfcf`），`edit` 仍只有 host-free 半场，`read_image` 为条件性 `BOUNDED-DEFER`，
+其余工具级仍 `NOT_WIRED`；G2 至 G5 = 未完成。live 两行的断言当前记 `NEEDS_REVALIDATION`
+（baseline 早于 63 个产品面路径，见 §1.1），**这不是 release coverage**：不得把任一 `NOT_WIRED`、
+`ENFORCE-PARTIAL` 或 `NEEDS_REVALIDATION` 读作能力已交付。
+
+## 附录 A — live 验收的事实来源（2026-11-04）
+
+第一份**在真实 Host 上全绿**的工具级验收：`dev/agent-workflow/evidence/a5sf-preflight/README.md`
+§13（8/8 PASS，head `44babbfcf`，三个专用 P2-01 start 全部花在该轮，池储备未动）。
+
+可复用的判定事实（不是结论，是原始 sink）：
+
+```
+binding  stat allow a.txt     binding  readText allow a.txt
+binding  stat deny  b.txt     binding  stat deny   c.txt
+binding  stat allow w4a.txt   binding  readText allow w4a.txt
+member   writeText allow w4a.txt   member writeText allow b.txt
+```
+
+即：**读路径的所有咨询都落在 binding realm，写 fact 全部落在 ceiling realm**，且没有任何 write
+fact 越到读 lane。`V@B=yes` 的含义就是这个——"binding realm 上的约束被实测验证"——**不**指上面
+⑤ 列的全部最低验收项都已覆盖（大文件窗口、流式、原子替换、版本冲突仍未验收）。
+
+**这两行的 live 证据现在为什么记 `NEEDS_REVALIDATION` / ⑨ = `no`**：权威 baseline
+（`as20261102r1` 的 `17ce7043…`）早于产品面 63 个路径，`ci-pr-gate` 的 Q7 不允许"产品面移动后仍
+宣称当前验证"。**live 验证确实存在于 `44babbfcf`**（上面这份 sink 就是那一次），证据不删、判定
+不改，**等 baseline 下一次重切后这两行复位为 `ENFORCE-PARTIAL` / `V@B=yes`**；在那之前本表宁可
+让机器读成"等重新断言"，也不把它写成"当前已验证"。这不是把 live 降级成 host-free。
+
+**写轴的裁决（2026-11-04）**：`write` **不**蕴含 `read`——binding restriction 只约束读轴，写只受
+ceiling 约束；`write` 目标若在 binding lane 读不到，仍会被**原生 `write` 工具自身的
+read-before-write 契约**拒掉，该拒绝属于原生工具、**不属于** Team lane。裁决原文与边界见
+`dev/agent-workflow/evidence/a5sf-preflight/README.md` §12.8.3（RULING），后续
+"只写不读/读被拒权限下的 team 行为" = `ALPHA5-SANDBOX-BACKLOG.md` 的 `BL-38`（owner-owned）。
+
+失效面同样已 live 验证：被 invalidated 的 managed shadow 按名拒绝
+（`A5SF_NATIVE_SHADOW_INVALIDATED`），无字节、无 fact、无 provider 调用，in-lane 亦拒；停止后
+的派发可被咨询但绝不被服务（`probeFactsAreRefusals`）。

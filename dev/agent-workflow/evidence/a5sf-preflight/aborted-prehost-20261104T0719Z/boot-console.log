@@ -1,0 +1,15 @@
+[2026-11-04T07:19:19.053Z] BOOT MODE — exactly ONE Host start. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight
+[2026-11-04T07:19:19.054Z] root identity (boot): {"ok":true,"root":"session-a5sf-acceptance-team","bootRoot":"session-a5sf-acceptance-root","rootsCoincide":false,"productionRowRootChecked":true,"directiveRootChecked":true,"toolRouteRootIsLabel":true}
+[2026-11-04T07:19:19.054Z] hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-04T07:19:19.057Z] HEAD=483bfea4cf8e4901e4cddf755f9bdb6be4f7e149
+[2026-11-04T07:19:19.058Z] pre-boot row identity check: {"ok":true,"rows":[{"rowId":"a5sf-acceptance-realm","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs","packageName":"dsh-agent-team","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/package.json","hasClientHalf":true},{"rowId":"dsh-agent-team","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js","packageName":"@dsh-agent-team/runtime","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json","hasClientHalf":false},{"rowId":"p6t6-team-tools","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktr
+[2026-11-04T07:19:19.058Z] grant materialised: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/grant.json maxStarts=2 boundCommit=483bfea4cf8e4901e4cddf755f9bdb6be4f7e149 item=P2-01 live read (BL-14 / G2 live half)
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs:799
+      providerComposition: `test row ${relative(REPO_ROOT, EVIDENCE_ROW)} (no product provider exists at this base; byte-identical to the #575 composition row)`,
+                           ^
+
+ReferenceError: relative is not defined
+    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs:799:28)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs:1615:9
+
+Node.js v24.21.0
