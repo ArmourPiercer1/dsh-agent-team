@@ -1845,8 +1845,32 @@ export function createTeamProductionRoot(params) {
                     continue;
                 const coordinator = createLatchCoordinator(intent.key);
                 const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
-                if (!recovered.adopted)
+                if (!recovered.adopted) {
+                    // Windows (b)/(d): the native message is gone (claimed and
+                    // consumed by a crashed turn, or never delivered). Nothing in
+                    // production re-plans it, so rebuild the wake from the durable
+                    // ledger in THIS boot. A sticky Stop outranks re-waking.
+                    if (!coordinator.state.stopped && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
+                        const current = controlRef.current;
+                        const requests = (await current.readControlState(rootSid)).requests;
+                        const fresh = await collectAlpha6DelegableLegs({
+                            rootSessionId: rootSid,
+                            reviewerInstanceId: intent.key.reviewerInstanceId,
+                            readRequests: async () => requests,
+                            reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                            resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                            route: alpha6Router.route,
+                        });
+                        if (fresh.length > 0) {
+                            await alpha6DispatchWake({
+                                reviewerInstanceId: intent.key.reviewerInstanceId,
+                                targetSessionId,
+                                currentLegIds: fresh.map((entry) => entry.requestId),
+                            });
+                        }
+                    }
                     continue;
+                }
                 const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
                 alpha6WakeCoordinators.set(mapKey, coordinator);
                 alpha6WakeBySession.set(targetSessionId, coordinator);
