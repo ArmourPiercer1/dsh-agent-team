@@ -1,0 +1,106 @@
+{
+  "schema": "a5sf-search-live/negative-controls/1",
+  "at": "2026-11-04T15:41:00.768Z",
+  "controls": [
+    {
+      "id": "oracle: row 2 must REFUTE a refusal that still created a process",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "oracle: row 6 must REFUTE a fact whose observedAt is after the stop",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "oracle: row 4 must REFUTE a SUCCESS result as a cancellation",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "oracle: row 3 must REFUTE a widened effective lane",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "driver: the dry run must notice a MISSING expectedTools declaration",
+      "ok": true,
+      "detail": {
+        "file": "dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "[2026-11-04T15:40:54.176Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: declares expectedTools for BOTH native modules"
+      }
+    },
+    {
+      "id": "driver: the dry run must notice a test-composition cancel route",
+      "ok": true,
+      "detail": {
+        "file": "dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "[2026-11-04T15:40:57.442Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: the cancellation trigger is the SHIPPED client route"
+      }
+    },
+    {
+      "id": "driver: the dry run must notice rows that are emitted but NEVER given to the World",
+      "ok": true,
+      "detail": {
+        "file": "dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "[2026-11-04T15:41:00.740Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: the composed rows are GIVEN to the World (not only emitted)"
+      }
+    },
+    {
+      "id": "lane: the restriction INPUT flips the row-3 effective answer (the premise is sensitive)",
+      "ok": true,
+      "detail": {
+        "narrowRestriction": "deny",
+        "widenedRestriction": "allow",
+        "narrowEffective": "deny",
+        "widenedEffective": "allow",
+        "why": "the restriction input alone flips the effective answer, so the row-3 premise is measuring the restriction"
+      }
+    },
+    {
+      "id": "row 4 window: a regular file does NOT block (the FIFO premise is specific)",
+      "ok": true,
+      "detail": {
+        "status": 1,
+        "signal": null,
+        "error": null,
+        "why": "exit 1 (no match) on a regular file: the FIFO check is green only for a BLOCKING operand"
+      }
+    }
+  ],
+  "allControlsPassed": true,
+  "note": "every control restores the original bytes in a finally block and verifies the sha256; a failed restore is itself reported as a CONTROL-FAIL"
+}

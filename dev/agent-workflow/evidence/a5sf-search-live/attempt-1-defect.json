@@ -1,0 +1,53 @@
+{
+  "schema": "a5sf-search-live/attempt-1-defect/1",
+  "at": "2026-11-04T15:39:19Z",
+  "what": "The lane's ONE Host boot was spent on 2026-11-04T15:36-15:39Z. It aborted at post-boot, before any row was measured. The cause is a DRIVER defect, not a product finding.",
+  "defect": {
+    "id": "DRIVER_ROWS_EMITTED_NOT_GIVEN",
+    "file": "dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs",
+    "line_before_fix": 764,
+    "before": "const { rows, config, paths } = rowsFor(...)  // rows emitted, never handed to the World",
+    "missing": "world.u6Fs.rows.push(...rows)",
+    "after": "world.u6Fs.rows.push(...rows) — placed BEFORE homePin/mock/spawn, with a comment naming this failure",
+    "why_plan_was_green": "--plan checks the EMITTED patch text (`emitPatchLayer`) and the row identity, not whether the driver hands that row array to the World the harness boots. The composed profile the Host actually read carried only the base bundle.",
+    "proving_artifacts": [
+      "attempt-1-composed-profile.patch.yml — the profile the Host booted from: canary + probe rows + session-log toggles ONLY. No `a5sf-search-realm`, no `dsh-agent-team`, no `p6t6-team-tools`, no preset declaration.",
+      "run.log (15:36:59Z line) — the driver's own log shows the four rows were BUILT: `rows: a5sf-search-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-search-base`",
+      "attempt-1-instance.log — the Host printed its URL and nothing else: the web server listened, but the preludes the rows would have added (the p6t6 route, the Team row) were never composed",
+      "run.log (15:39:18Z) — `p6t6 health=false hostAlive=true` after the 120s poll, then `FAILURE at stage post-boot: the p6t6 harness route never answered`"
+    ]
+  },
+  "outcome": {
+    "rows_judged": 0,
+    "run_record": "overall=FAIL, 6/6 FAIL with reason DRIVER_ABORTED_AT_post-boot — the fail-closed encoding: a Host was reached, so an abort may NOT be laundered into NOT_REACHED, and no row may be read as a product verdict",
+    "product_finding": "NONE. No Member was created, no realm was installed, no search process ran. The six rows are UNMEASURED.",
+    "ledger": {
+      "path": "dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+      "rows": 2,
+      "intent": 1,
+      "boot": 1,
+      "abort": 0,
+      "invariant": "bootRows(1) === plannedStarts(1) - aborts(0) — the invariant holds",
+      "grant": "grant-a5sf-search-a2c56fb8457a-b1, maxStarts=2, boundCommit=a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9"
+    },
+    "cleanup": {
+      "port_3183_listening_after": false,
+      "home_exists_after_teardown": false,
+      "orphan_processes": 0,
+      "note": "verified after the run: /dev/tcp probe refused, `tests/homes/` empty, `ps` shows no process carrying the World home/workspace"
+    }
+  },
+  "net_added_for_this_class": {
+    "dry_run_check": "driver: the composed rows are GIVEN to the World (not only emitted) — asserts `world.u6Fs.rows.push(...rows)` appears BEFORE `harness.boot(`",
+    "negative_control": "driver: the dry run must notice rows that are emitted but NEVER given to the World — replaces the line with `void rows`, requires dry-run RED on that check, restores the bytes",
+    "status_after_fix": "dry-run 44/44 GREEN, negative controls 9/9 GREEN"
+  },
+  "budget": {
+    "pool_item": "P2-04 grep (BL-16)",
+    "allocated": 3,
+    "spent": 1,
+    "remaining": 2,
+    "this_lane_allowed": 1,
+    "retry": "NOT AUTHORISED. A second boot needs the coordinator's explicit ruling; the driver refuses it itself (`DEDICATED_STARTS = 1`) and the go/no-go gate refuses it (ONE-ATTEMPT rule)."
+  }
+}

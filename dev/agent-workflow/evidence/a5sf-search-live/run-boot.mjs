@@ -1,0 +1,1328 @@
+#!/usr/bin/env node
+/**
+ * run-boot.mjs — the LIVE half of P2-03 / BL-16 (the Search vertical).
+ *
+ * WHAT THIS MEASURES, AND AGAINST WHAT. Six rows are judged against the PRODUCT
+ * call chain — a Member's `grep`/`glob` tool call, routed by the production row
+ * through the isolated Member realm, down to the confined `subprocess` face and
+ * into the packaged ripgrep. Nothing in a row is satisfied by a unit test of the
+ * guard: `evidence/a5sf-bl16-grep/` already measured the seam host-free, and
+ * every one of its 18 arms stands. What was NOT measured — and what this boot
+ * exists to measure — is whether that seam is what a Member's tool call actually
+ * reaches on a real Host, with a real preset, a real realm and a real sink.
+ *
+ *   row 1  in-lane `grep` is SERVED; exactly ONE `allow` fact at the declared
+ *          root, method `spawn`
+ *   row 2  a root outside the CEILING is refused BEFORE any process exists;
+ *          exactly one `deny`/`IO_READ_DENIED` fact; no forbidden bytes
+ *   row 3  a root inside the ceiling but OUTSIDE the narrower binding
+ *          RESTRICTION is refused at admission (effective = ceiling ∩ restriction)
+ *   row 4  a search cancelled mid-process settles as CANCELLED — not success,
+ *          not a fabricated empty result
+ *   row 5  an invalid pattern is a TOOL ERROR, never "No matches found"
+ *   row 6  teardown: dead Host, released port, deleted home, no orphan, and no
+ *          callable shadow of the stopped Member
+ *
+ * ONE BOOT. The driver refuses a second start (`DEDICATED_STARTS = 1`). The pool
+ * item "P2-04 grep (BL-16)" holds 3 starts; the other 2 are NOT this driver's to
+ * spend, and a failed boot is reported rather than retried.
+ *
+ * MODES
+ *   node run-boot.mjs --plan     host-free: contract, wiring, patch, provider row,
+ *                                static composition preconditions. No gate, no row.
+ *   node run-boot.mjs            boot once, judge six rows, reconcile the ledger.
+ *
+ * WHAT IS FIXTURE (disclosed in README §3, not hidden here)
+ *   - the CEILING and the RESTRICTION inputs, and the confined `subprocess` face
+ *     itself, are supplied by the EVIDENCE provider row
+ *     (`a5sf-search-realm-provider-row.mjs`): the live preset does not compile a
+ *     v3 blueprint into a realm lane at this base, and BL-17 refuses a
+ *     binding-realm subprocess face;
+ *   - the counters (base fs / base subprocess / confined provider) are test
+ *     instrumentation in that same row;
+ *   - the model is a scripted mock; the interruption is the SHIPPED client route
+ *     `/api/session/cancel` (session-controller -> `agent.cancel({kind:'user'})`).
+ */
+import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
+import {
+  appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync,
+} from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+import {
+  TestWorldFactory,
+  apiPrompt,
+  apiSessionCancel,
+  authenticate,
+  emitPatchLayer,
+  fetchJson,
+  tcpConnectProbe,
+} from '../../../../tests/world-factory/lib/world-factory.mjs'
+import {
+  createRunRecord, formatSummary, overallVerdict,
+} from '../../../../tests/world-factory/lib/run-record.mjs'
+import { TEST_USE_BASELINE_SHA } from '../../../../tests/paths.mjs'
+import { createA5sfHarness } from '../../../../tests/world-factory/lib/a5sf-harness.mjs'
+import { preRegisterReadBudget, resolveHeadCommit } from '../../../../tests/world-factory/suites/150-a5sf-read.mjs'
+import {
+  lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
+} from '../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
+import { presetDeclarationRow, smokePresetPlugins } from '../../../../tests/kits/_shared/preset-seam.mjs'
+import {
+  classifyDisposeFaults, P2_01_ACCEPTANCE_ROOTS, assertAcceptanceRootWiring,
+} from '../../../../tests/world-factory/lib/a5sf-acceptance-preflight.mjs'
+import {
+  SEARCH_CASES, SEARCH_CASE_IDS, judgeNegativeControl, judgeSearchRow, toRunVerdict,
+} from '../../../../tests/world-factory/lib/a5sf-search-live.mjs'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = resolve(HERE, '..', '..', '..', '..')
+/** The host tree: this worktree's own pristine checkout if present, else the
+ *  main checkout's (worktrees share the gitignored baseline). */
+function hostTreePath() {
+  const local = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
+  if (existsSync(join(local, 'packages', 'fs', 'tool-fs-search', 'lib', 'index.js'))) return local
+  return join(REPO_ROOT, '..', '..', 'tests', 'deepseek-harness-test-use')
+}
+const HOST_TREE = hostTreePath()
+const HOST_TOOL_FS = join(HOST_TREE, 'packages', 'fs', 'tool-fs', 'lib', 'index.js')
+const HOST_TOOL_FS_SEARCH = join(HOST_TREE, 'packages', 'fs', 'tool-fs-search', 'lib', 'index.js')
+
+const LINE = 'a5sfsrch'
+const EVIDENCE_ROW = join(HERE, 'a5sf-search-realm-provider-row.mjs')
+const RUN_LOG = join(HERE, 'run.log')
+const GRANT_PATH = join(HERE, 'grant.json')
+const LEDGER_PATH = join(HERE, 'run-ledger.jsonl')
+const COUNTER_NAME = 'search-counter.jsonl'
+const LANE_REPORT_NAME = 'lane-report.json'
+const FACTS_NAME = 'guard-facts.json'
+
+/** Root identity, from the ONE pinned object (never a second literal). */
+const ROOTS = P2_01_ACCEPTANCE_ROOTS
+const BOOT_ROOT = ROOTS.bootRoot
+const ACCEPTANCE_ROOT = ROOTS.teamRoot
+
+const BP_ANCHOR_ID = 'team.a5sf.search.anchor'
+const BP_MAIN_ID = 'team.a5sf.search.main'
+const PRESET_ID = 'a5sf-search-base'
+
+const MK_DISC = 'A5SF_SEARCH_DISC'
+const MK_L1 = 'A5SF_SEARCH_L1_DRIVE'
+const TOK_D1 = 'a5sfsrch-d1'
+const MEMBER_ENVELOPE = '[team-work requestToken='
+const DONE_D1 = 'A5SF_SEARCH_D1_DONE'
+const DONE_L1 = 'A5SF_SEARCH_L1_DONE'
+const BINDING_IDENTITY = 'dsh.search/grep'
+
+/** Managed tool names: the native modules this boot shadows. `grep`/`glob` are
+ *  here so the leader's `builtinToolDeny` does not deny the NEGATIVE CONTROL
+ *  (the unconfined search outside any Member) and the Member surface stays
+ *  neutral. */
+const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'grep', 'glob']
+const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
+
+const CASES = Object.freeze([...SEARCH_CASES])
+
+const CALL_IDS = Object.freeze({
+  grepIn: 'call-a5sfsrch-grep-in',
+  grepOutsideCeiling: 'call-a5sfsrch-grep-out-ceiling',
+  grepOutsideRestriction: 'call-a5sfsrch-grep-out-restriction',
+  grepInvalid: 'call-a5sfsrch-grep-invalid',
+  globIn: 'call-a5sfsrch-glob-in',
+  globOutside: 'call-a5sfsrch-glob-out',
+  grepFifo: 'call-a5sfsrch-grep-fifo',
+})
+
+const PLAN_ONLY = process.argv.includes('--plan')
+const startedAt = new Date().toISOString()
+
+function log(line) {
+  const text = `[${new Date().toISOString()}] ${String(line)}`.replace(/[ \t]+$/u, '')
+  // eslint-disable-next-line no-console
+  console.log(text)
+  try {
+    appendFileSync(RUN_LOG, text + '\n')
+  } catch {
+    /* the console is still the live channel */
+  }
+}
+const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex')
+const redact = (text) => String(text ?? '').replace(/\?token=[A-Za-z0-9_-]+/gu, '?token=<redacted>')
+
+// ─────────────────────────────────────────────────────────────────────────────
+// blueprints
+// ─────────────────────────────────────────────────────────────────────────────
+
+function mainBlueprintYaml(denyList) {
+  const denyLines = denyList.length === 0 ? ['    builtinToolDeny: []'] : ['    builtinToolDeny:', ...denyList.map((n) => `      - ${n}`)]
+  return [
+    '---', 'schemaVersion: 3', `blueprintId: ${BP_MAIN_ID}`, 'revision: "1"',
+    'leader:', '  templateId: leader',
+    `  persona: ${JSON.stringify(`You are the leader of the a5sf search-live team. ${MK_L1} drives your chain: delegate the worker script once, then finish.`)}`,
+    '  capabilities:', '    teamTools:', '      kind: allow', '      items:',
+    '        - team_delegate', '        - team_archive_member', '        - team_follow_up',
+    ...denyLines,
+    '    skills:', '      kind: allow', '      items: []',
+    '    mcp:', '      kind: allow', '      items: []',
+    '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
+    // teardown NEEDS archive-member in the caller's mutation envelope (the
+    // native3 lane measured its omission as a DRIVER defect, not a finding).
+    'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - archive-member', '  deny: []',
+    'members:',
+    // The search Member: NO capabilities block (the population shape) — its
+    // ONLY confinement is the compiled member realm + the confined subprocess face.
+    '  - templateId: worker', '    displayName: "a5sf search worker"',
+    `    persona: ${JSON.stringify('You are the a5sf search worker. Follow the delegated script exactly, one tool call at a time.')}`,
+    'memberEnvelopes:',
+    '  - templateId: worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+    'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
+    'policyStates: []', 'metadata: {}', '---', '',
+  ].join('\n')
+}
+
+/** The ANCHOR team: the unconfined control lives here (no realm exists for the
+ *  anchor leader, and it declares no capabilities → no permission policy). */
+const BP_ANCHOR_YAML = [
+  '---', 'schemaVersion: 3', `blueprintId: ${BP_ANCHOR_ID}`, 'revision: "1"',
+  'leader:', '  templateId: leader',
+  `  persona: ${JSON.stringify(`You are the leader of the a5sf search-live anchor team. ${MK_DISC} is the discovery marker.`)}`,
+  'members:', '  - templateId: worker', '    persona: "You are the a5sf search anchor worker."',
+  'memberEnvelopes: []', 'requirements: []', 'permissionMutationEnvelope:', '  rules: []',
+  'teamHardEnvelope:', '  rules: []', 'policyStates: []', 'metadata: {}', '---', '',
+].join('\n')
+
+function blueprintFacade() {
+  const req = createRequire(join(REPO_ROOT, 'noop.cjs'))
+  return req(join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'domain', 'blueprint', 'src', 'index.js'))
+}
+function assertBlueprintText(text, wantId, wantMembers, label) {
+  const facade = blueprintFacade()
+  let parsed
+  try {
+    parsed = facade.parseBlueprint(text)
+  } catch (error) {
+    throw new Error(`${label} rejected by the host validator: ${String(error?.message ?? error)}`)
+  }
+  const doc = parsed.blueprint ?? parsed
+  if (doc.blueprintId !== wantId) throw new Error(`${label} resolves as ${String(doc.blueprintId)}, want ${wantId}`)
+  if (!Array.isArray(doc.members) || doc.members.length !== wantMembers) {
+    throw new Error(`${label} members=${String(doc.members?.length)}, want ${wantMembers}`)
+  }
+  return { ok: true, via: 'parseBlueprint(dist domain facade = the host own import)' }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// world material
+// ─────────────────────────────────────────────────────────────────────────────
+
+const p6t6Directive = ({ worldId, logDir }) => ({ boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: ACCEPTANCE_ROOT })
+
+function assertDriverRootWiring() {
+  return assertAcceptanceRootWiring(ROOTS, {
+    productionRowRoot: teamRowConfig({ home: join(HERE, '.rowcheck') }).rootSessionId,
+    directiveRoot: p6t6Directive({ worldId: 'rowcheck', logDir: '.rowcheck' }).rootSessionId,
+  })
+}
+
+function teamRowConfig({ home }) {
+  const dist = join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime')
+  const glueUrl = pathToFileURL(join(dist, 'src', 'plugin', 'live', 'agent-bindings.mjs')).href
+  const seamUrl = pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'root-binding', 'harness', 'seam.mjs')).href
+  return {
+    rootSessionId: BOOT_ROOT,
+    bootPhase: 'create',
+    blueprintSource: BP_ANCHOR_YAML,
+    blueprintDir: join(home, 'blueprints'),
+    rootPresetId: PRESET_ID,
+    memberPresetId: PRESET_ID,
+    seedMembers: [],
+    generation: 1,
+    staticModel: { provider: 'deepseek-official', model: 'a5sf-search-model' },
+    deniedSelection: null,
+    mcpServers: [],
+    mcpServer: null,
+    environmentFacts: [
+      { domain: 'tool', subject: 'web', available: true, generation: 1 },
+      { domain: 'skill', subject: 'base', available: true, generation: 1 },
+      { domain: 'persona', subject: 'standard', available: true, generation: 1 },
+    ],
+    externalPolicyFacts: { hard: {}, capabilityExists: {} },
+    glueUrl,
+    seamUrl,
+    // ── route C enablement: the sink + the two native tool modules ──────────
+    a5sfEvidencePath: join(home, 'a5sf-consult.jsonl'),
+    a5sfNativeToolModules: [pathToFileURL(HOST_TOOL_FS).href, pathToFileURL(HOST_TOOL_FS_SEARCH).href],
+    // The identity declaration: grants nothing, but the attach REFUSES before
+    // any row if the settled fibers do not forward every declared name.
+    a5sfExpectedTools: {
+      [pathToFileURL(HOST_TOOL_FS).href]: ['read', 'write', 'edit', 'read_image'],
+      [pathToFileURL(HOST_TOOL_FS_SEARCH).href]: ['grep', 'glob'],
+    },
+    // NOTE: no `teamToolPlane` — the ONLY confinement in this World is the a5sf
+    // member realm + its confined subprocess face.
+  }
+}
+
+function rowPathsOf({ home, workspaceDir }) {
+  const workspace = realpathSync(workspaceDir)
+  const inLane = join(workspace, 'lane', 'inside')
+  return {
+    workspace,
+    inLaneDir: inLane,
+    inLaneFile: join(inLane, 'needle.txt'),
+    /** A SUBDIRECTORY of the in-lane root for the invalid-pattern call: inside
+     *  the restriction, but a DIFFERENT locator, so row 1's "exactly one allow
+     *  fact at the declared root" cannot be polluted by row 5's consultation
+     *  (the sink is append-only and carries no call id). */
+    invalidDir: join(inLane, 'invalid'),
+    /** Same reasoning for the `glob` face check (M-07) and for the second
+     *  out-of-lane operand. */
+    globDir: join(inLane, 'glob'),
+    restrictedFile: join(workspace, 'lane', 'outside-restriction.txt'),
+    fifo: join(workspace, 'lane', 'blocking.fifo'),
+    outsideDir: join(home, 'ceiling-outside'),
+    outsideFile: join(home, 'ceiling-outside', 'secret.txt'),
+    outsideGlobDir: join(home, 'ceiling-outside-glob'),
+    outsideGlobFile: join(home, 'ceiling-outside-glob', 'secret.txt'),
+    /** The narrower read allow list: the in-lane subtree ONLY. `restrictedFile`
+     *  is inside the ceiling but outside this → the row-3 premise. */
+    restrictionReadAllow: [inLane],
+  }
+}
+
+function rowsFor({ home, workspaceDir }) {
+  const dist = join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime')
+  const PRODUCTION_ROW = pathToFileURL(join(dist, 'src', 'plugin', 'host.js')).href
+  const P6T6_ROW = pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'harness', 'plugin.mjs')).href
+  const providerRow = pathToFileURL(EVIDENCE_ROW).href
+  const paths = rowPathsOf({ home, workspaceDir })
+  const config = teamRowConfig({ home })
+  const basePlugins = [...smokePresetPlugins({
+    personaText: 'You are a coding agent powered by the {{model}} model.',
+    cwdSuffix: 'Your working directory is {{cwd}}.',
+    bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
+  }), { id: 'tool-fs-search', name: '@deepseek-ai/dsh-tool-fs-search', config: { sampleOverCapGlobResults: false } }]
+  return {
+    paths,
+    config,
+    rows: [
+      // ONE evidence row: it MUST mount before the Team row so
+      // `ctx.get('teamA5sfRealm')` resolves when the first Member setup runs.
+      { id: 'a5sf-search-realm', name: providerRow, config: {
+        allowRoot: paths.workspace,
+        restrictionReadAllow: paths.restrictionReadAllow,
+        bindingIdentity: BINDING_IDENTITY,
+        laneReportPath: join(home, LANE_REPORT_NAME),
+        laneProbePaths: [paths.inLaneFile, paths.restrictedFile, paths.outsideFile, paths.outsideGlobFile, paths.fifo],
+        counterPath: join(home, COUNTER_NAME),
+        scratchRoot: join(home, 'search-scratch'),
+      } },
+      { id: 'dsh-agent-team', name: PRODUCTION_ROW, config },
+      { id: 'p6t6-team-tools', name: P6T6_ROW },
+      presetDeclarationRow({
+        id: PRESET_ID,
+        displayName: 'a5sf search base',
+        description: `a5sf search-live boot preset (${LINE}) = smoke + tool-fs-search`,
+        plugins: basePlugins,
+      }),
+    ],
+  }
+}
+
+function rowIdentityCheck(rows) {
+  const byPackage = new Map()
+  const checked = []
+  for (const row of rows) {
+    const spec = String(row?.name ?? '')
+    if (!spec.startsWith('file://')) continue
+    const modulePath = fileURLToPath(spec)
+    if (!existsSync(modulePath)) {
+      return { ok: false, reason: 'ROW_MODULE_MISSING', detail: `${String(row.id)} -> ${modulePath} does not exist` }
+    }
+    let dir = dirname(modulePath)
+    let pkgPath = null
+    let pkg = null
+    for (;;) {
+      const candidate = join(dir, 'package.json')
+      if (existsSync(candidate)) {
+        try {
+          pkg = JSON.parse(readFileSync(candidate, 'utf8'))
+          pkgPath = candidate
+        } catch {
+          return { ok: false, reason: 'ROW_PACKAGE_UNREADABLE', detail: candidate }
+        }
+        break
+      }
+      const parent = dirname(dir)
+      if (parent === dir) break
+      dir = parent
+    }
+    const entry = { rowId: String(row.id), modulePath, packageName: pkg?.name ?? null, packagePath: pkgPath, hasClientHalf: pkg?.dsh?.client !== undefined }
+    checked.push(entry)
+    if (entry.hasClientHalf !== true) continue
+    const list = byPackage.get(entry.packagePath) ?? []
+    list.push(entry)
+    byPackage.set(entry.packagePath, list)
+  }
+  for (const [pkgPath, list] of byPackage) {
+    if (list.length > 1) {
+      return {
+        ok: false,
+        reason: 'DUPLICATE_CLIENT_PACKAGE_SOURCES',
+        detail: `package ${String(list[0].packageName)} (${String(pkgPath)}) would be sourced from ${String(list.length)} file-URL rows: ${list.map((e) => e.rowId).join(', ')} — the host client-modules registry refuses this`,
+        sources: list,
+      }
+    }
+  }
+  return { ok: true, rows: checked }
+}
+
+function homeSandboxPin({ home, workspaceRoot }) {
+  const root = realpathSync(workspaceRoot)
+  const path = join(home, 'cordis.patch.yml')
+  const yaml = [
+    '# a5sf search-live fixture (README §4): pin the DEPLOYMENT file-sandbox',
+    '# fallback root to this World\'s workspace. The base bundle sets',
+    '# `workspaceRoot: !!js process.cwd()` (the pristine host tree) and the',
+    '# confined realm resolves sandboxPolicy WITHOUT a session, so the fallback',
+    '# — not the session cwd — fences every Team read/write.',
+    '- id: sandbox-policy',
+    '  config:',
+    '    mode: "workspace-write"',
+    `    workspaceRoot: ${JSON.stringify(root)}`,
+    '',
+  ].join('\n')
+  return { path, yaml, mode: 'workspace-write', workspaceRoot: root }
+}
+
+function attachmentsProviderComposition() {
+  const files = [
+    join(HOST_TREE, 'packages', 'bundle', 'base', 'cordis.patch.yml'),
+    join(HOST_TREE, 'packages', 'bundle', 'web-app', 'cordis.patch.yml'),
+  ]
+  const evidence = []
+  for (const file of files) {
+    if (!existsSync(file)) continue
+    readFileSync(file, 'utf8').split('\n').forEach((line, index) => {
+      if (/attachment-local|dsh-attachment-local/u.test(line)) evidence.push({ file, line: index + 1, text: line.trim() })
+    })
+  }
+  const mounted = evidence.some((entry) => /id:\s*attachment-local/u.test(entry.text))
+    && evidence.some((entry) => /@deepseek-ai\/dsh-attachment-local/u.test(entry.text))
+  return { mounted, service: 'attachments', evidence }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// the scripted model
+// ─────────────────────────────────────────────────────────────────────────────
+
+function countAssistantToolUses(req, name) {
+  let n = 0
+  for (const message of messagesOf(req)) {
+    if (message?.role !== 'assistant' || !Array.isArray(message?.content)) continue
+    for (const block of message.content) {
+      if (block?.type === 'tool_use' && (name === undefined || block?.name === name)) n += 1
+    }
+  }
+  return n
+}
+function userTextOf(req) {
+  return messagesOf(req).filter((m) => m?.role === 'user')
+    .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? ''))).join('\n')
+}
+function lastToolResultText(req) {
+  const messages = messagesOf(req)
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const blocks = Array.isArray(messages[i]?.content) ? messages[i].content : []
+    const results = blocks.filter((b) => b?.type === 'tool_result')
+    if (results.length > 0) {
+      return results.map((b) => (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('')).join('\n')
+    }
+  }
+  return ''
+}
+
+/**
+ * The member's eight-step script, one call per turn:
+ *   grep in-lane -> grep outside ceiling -> grep outside restriction ->
+ *   grep invalid pattern -> glob in-lane -> glob outside ceiling -> grep FIFO.
+ * The FIFO call is LAST because it is the one that gets cancelled.
+ *
+ * The ANCHOR leader's script is the NEGATIVE CONTROL: before `team.create` it
+ * greps the outside file with nothing confining it. That is what makes row 2
+ * discriminating — the same search leaks when no Member realm exists.
+ */
+function makeDecide({ rowPaths, claims }) {
+  return function decide({ req }) {
+    const allText = messagesOf(req).map(textOf).join('\n')
+    const lastUser = lastUserTextOfStatic(req)
+    const userText = userTextOf(req)
+    if (allText.includes('Generate the session title')) return { kind: 'text', content: 'a5sf search session' }
+
+    // ── MEMBER LANE ────────────────────────────────────────────────────────
+    if (userText.includes(`${MEMBER_ENVELOPE}${TOK_D1}`)) {
+      const greps = countAssistantToolUses(req, 'grep')
+      const globs = countAssistantToolUses(req, 'glob')
+      if (greps < 1) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepIn, name: 'grep', arguments: { pattern: claims.needle, path: rowPaths.inLaneDir } }] }
+      }
+      if (greps < 2) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideCeiling, name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
+      }
+      if (greps < 3) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideRestriction, name: 'grep', arguments: { pattern: claims.restrictedPattern, path: rowPaths.restrictedFile } }] }
+      }
+      if (greps < 4) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepInvalid, name: 'grep', arguments: { pattern: 'A5SF_(', path: rowPaths.invalidDir } }] }
+      }
+      if (globs < 1) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globIn, name: 'glob', arguments: { pattern: 'needle.txt', path: rowPaths.globDir } }] }
+      }
+      if (globs < 2) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globOutside, name: 'glob', arguments: { pattern: 'secret.txt', path: rowPaths.outsideGlobDir } }] }
+      }
+      if (greps < 5) {
+        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepFifo, name: 'grep', arguments: { pattern: claims.fifoPattern, path: rowPaths.fifo } }] }
+      }
+      return { kind: 'text', content: `${DONE_D1} ${lastToolResultText(req).slice(0, 160)}` }
+    }
+
+    // THE UNCONFINED CONTROL, on the anchor leader, before any Member exists.
+    // Checked BEFORE the leader branch: the anchor persona mentions the lane name,
+    // so a loose `allText.includes('A5SF_SEARCH')` predicate would send the anchor
+    // into `team_delegate` and turn the control into a second, unconfined team.
+    if (lastUser.includes(MK_DISC)) {
+      const greps = countAssistantToolUses(req, 'grep')
+      if (greps < 1) {
+        return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-control', name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
+      }
+      return { kind: 'text', content: 'A5SF_SEARCH_DISC_DONE' }
+    }
+    const isLeader = lastUser.includes(MK_L1) || allText.includes(MK_L1) || allText.includes('[team-work-settled')
+    if (isLeader) {
+      const teamCalls = ['team_delegate', 'team_archive_member', 'team_follow_up']
+        .map((n) => countAssistantToolUses(req, n)).reduce((a, b) => a + b, 0)
+      if (teamCalls === 0) {
+        return {
+          kind: 'tool-call',
+          toolCalls: [{ id: 'call-a5sfsrch-delegate', name: 'team_delegate', arguments: {
+            rootSessionId: ACCEPTANCE_ROOT,
+            requestToken: `${TOK_D1}-delegate`,
+            delegationTemplateId: 'worker',
+            label: 'a5sfsrch-worker',
+            prompt: 'A5SF_SEARCH_WORK: run the eight-call search script from the evidence, one call at a time, then report.',
+            async: false,
+          } }],
+        }
+      }
+      return { kind: 'text', content: DONE_L1 }
+    }
+    return { kind: 'text', content: 'A5SF_SEARCH_LIVE_NOOP' }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// run helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function assertCaseListMatchesContract() {
+  const driver = [...CASES].sort()
+  const contract = [...SEARCH_CASES].sort()
+  if (driver.length !== contract.length || driver.some((id, index) => id !== contract[index])) {
+    throw new Error(`the driver's case list has drifted from the search contract (driver=${JSON.stringify(driver)} contract=${JSON.stringify(contract)})`)
+  }
+}
+
+function parseJsonl(path) {
+  if (!existsSync(path)) return []
+  return readFileSync(path, 'utf8').split('\n').filter((l) => l.trim() !== '').map((line) => {
+    try {
+      return JSON.parse(line)
+    } catch {
+      return { unparseable: line.slice(0, 200) }
+    }
+  })
+}
+function readLedgerRows(path) {
+  return parseJsonl(path).filter((row) => row !== null && row !== undefined)
+}
+function readJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+const RUN_ARCHIVE_FILES = [
+  'run.log', 'run-record.json', 'oracle-samples.json', 'guard-facts.json', 'consultations.jsonl',
+  'search-counter.jsonl', 'lane-report.json', 'teardown.json', 'ledger-rows.json',
+  'boot-console.log', 'grant.json', 'negative-control.json',
+]
+
+function archivePreviousRun() {
+  const present = RUN_ARCHIVE_FILES.filter((name) => existsSync(join(HERE, name)))
+  if (present.length === 0) return null
+  const stamp = new Date().toISOString().replace(/[:.]/gu, '-')
+  const dir = join(HERE, 'runs', stamp)
+  mkdirSync(dir, { recursive: true })
+  for (const name of present) {
+    try {
+      renameSync(join(HERE, name), join(dir, name))
+    } catch {
+      /* keep going: one locked file must not stop the run */
+    }
+  }
+  log(`previous run evidence archived: runs/${stamp} (${present.join(', ')})`)
+  return `runs/${stamp}`
+}
+
+function runBindings(head, grant) {
+  return {
+    teamSha: head,
+    hostSha: TEST_USE_BASELINE_SHA,
+    hostTree: HOST_TREE,
+    line: LINE,
+    sink: 'world-home a5sf-consult.jsonl (copy: consultations.jsonl)',
+    grantId: grant.grantId,
+    allocationItem: grant.allocationItem,
+    providerComposition: `test row ${relative(REPO_ROOT, EVIDENCE_ROW)} (no product provider exists at this base)`,
+    laneAlgebra: 'packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)',
+    providerCounter: 'installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through',
+    cancelTrigger: 'the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:"user"})); no test route composes a cancel',
+    negativeControl: 'the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous',
+  }
+}
+
+/** Copy the sink at the STOP time, before any post-stop probe. */
+function writeConsultCopy(sourcePath) {
+  const dest = join(HERE, 'consultations.jsonl')
+  if (existsSync(sourcePath)) {
+    writeFileSync(dest, readFileSync(sourcePath))
+    return { copied: true, sha256: sha256(dest), bytes: readFileSync(dest).length }
+  }
+  writeFileSync(dest, '')
+  return { copied: false, sha256: null, bytes: 0 }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// --plan
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function planOnly() {
+  log(`PLAN MODE — no gate, no ledger row, no spawn. repo=${REPO_ROOT} hostTree=${HOST_TREE}`)
+  assertCaseListMatchesContract()
+  const wiring = assertDriverRootWiring()
+  log(`root identity (plan): ${JSON.stringify(wiring)}`)
+  const head = resolveHeadCommit(REPO_ROOT)
+  log(`HEAD=${String(head)} pinnedHost=${TEST_USE_BASELINE_SHA}`)
+  for (const [label, path] of [
+    ['host tool-fs', HOST_TOOL_FS],
+    ['host tool-fs-search', HOST_TOOL_FS_SEARCH],
+    ['evidence row', EVIDENCE_ROW],
+    ['dist install', join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'team-services', 'src', 'install.js')],
+    ['dist subprocess', join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'team-services', 'src', 'subprocess.js')],
+  ]) {
+    log(`${label}: ${path} exists=${existsSync(path)}${existsSync(path) ? ` sha256=${sha256(path).slice(0, 16)}` : ''}`)
+  }
+  const attachments = attachmentsProviderComposition()
+  log(`attachments provider composition: mounted=${String(attachments.mounted)}`)
+  if (!attachments.mounted) throw new Error('BLOCKER: the pinned World composition does not mount @deepseek-ai/dsh-attachment-local, so the native tool-fs module cannot shadow read_image')
+  const anchor = assertBlueprintText(BP_ANCHOR_YAML, BP_ANCHOR_ID, 1, 'anchor.yaml')
+  const main = assertBlueprintText(mainBlueprintYaml(['u6fs_probe', 'grep']), BP_MAIN_ID, 1, 'main.yaml')
+  log(`blueprint ingest: anchor=${JSON.stringify(anchor)} main=${JSON.stringify(main)}`)
+  // The emitted patch, over a throwaway home (no World, no ledger row).
+  const dry = rowsFor({ home: join(HERE, '.rowcheck'), workspaceDir: HERE })
+  const identity = rowIdentityCheck(dry.rows)
+  log(`row identity check: ${JSON.stringify(identity).slice(0, 700)}`)
+  if (identity.ok !== true) throw new Error(`row composition refused: ${identity.reason}: ${identity.detail}`)
+  const patch = emitPatchLayer([
+    'a5sf search-live boot: confined member realm (fs + subprocess) + production Team row',
+    'with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.',
+  ], dry.rows)
+  log(`patch layer bytes=${patch.length}; rows=${dry.rows.map((r) => r.id).join(',')}`)
+  log('---- patch layer ----\n' + patch + '\n---- end patch ----')
+  const provider = await import(pathToFileURL(EVIDENCE_ROW).href)
+  log(`provider row: name=${provider.name} apply=${typeof provider.apply} inject=${JSON.stringify(provider.inject)}`)
+  if (typeof provider.apply !== 'function') throw new Error('the evidence provider row exports no apply()')
+  const lane = await import(pathToFileURL(join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-search-live.mjs')).href)
+  log(`oracle: cases=${lane.SEARCH_CASES.length} first=${lane.SEARCH_CASES[0]}`)
+  // The EMITTED dist must carry BL-16/BL-17 (an interface name is erased by
+  // tsc, so the check is on the emitted FUNCTIONS, not the type).
+  const installJs = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'team-services', 'src', 'install.js'), 'utf8')
+  const subprocessJs = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'team-services', 'src', 'subprocess.js'), 'utf8')
+  const distFace = {
+    mountsConfinedSubprocess: installJs.includes('createConfinedSubprocessClass'),
+    statesFacesTotal: installJs.includes('faces'),
+    typedRefusalConstant: subprocessJs.includes('SUBPROCESS_GUARD_METHOD'),
+    staticProgramAllowList: subprocessJs.includes('CONFINED_SUBPROCESS_STATIC_PROGRAMS'),
+  }
+  log(`dist confined-subprocess face: ${JSON.stringify(distFace)}`)
+  if (distFace.mountsConfinedSubprocess !== true || distFace.staticProgramAllowList !== true) {
+    throw new Error(`the emitted dist does NOT carry the BL-16 confined subprocess face (${JSON.stringify(distFace)}); run pnpm run build before spending a boot`)
+  }
+  // The run-record literal is exercised host-free so a broken string cannot
+  // cost a start (the 2026-11-04 `homePin` lesson).
+  log(`runBindings probe: ${JSON.stringify(runBindings(head === null ? 'plan-probe' : String(head), { grantId: 'plan-probe', allocationItem: 'P2-04 grep (BL-16)' })).slice(0, 500)}`)
+  log('PLAN OK')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// boot
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function boot() {
+  log(`repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA} startedAt=${startedAt}`)
+  assertCaseListMatchesContract()
+  const wiring = assertDriverRootWiring()
+  log(`root identity: ${JSON.stringify(wiring)}`)
+  const head = resolveHeadCommit(REPO_ROOT)
+  if (head === null) throw new Error('git rev-parse HEAD failed: the grant cannot be bound')
+  log(`HEAD=${head}`)
+  if (!existsSync(HOST_TOOL_FS_SEARCH)) throw new Error(`the host search module is missing: ${HOST_TOOL_FS_SEARCH}`)
+
+  // Composition precondition: never spend a start on a row-identity defect.
+  const dry = rowsFor({ home: join(HERE, '.rowcheck'), workspaceDir: HERE })
+  const identity = rowIdentityCheck(dry.rows)
+  log(`pre-boot row identity check: ${JSON.stringify(identity).slice(0, 800)}`)
+  if (identity.ok !== true) throw new Error(`row composition refused before any ledger row: ${identity.reason}: ${identity.detail}`)
+
+  // ── the per-run grant, bound to the EXACT HEAD this run executes on ──────
+  const archivedPreviousRun = archivePreviousRun()
+  const ledgerRowsSoFar = readLedgerRows(LEDGER_PATH)
+  const priorRows = ledgerRowsSoFar.length
+  const priorBoots = ledgerRowsSoFar.filter((row) => String(row?.phase ?? '').startsWith('a5sf-search-boot')).length
+  const bootSequence = priorBoots + 1
+  const DEDICATED_STARTS = 1
+  if (bootSequence > DEDICATED_STARTS) {
+    const refusal = new Error(`BUDGET_NOT_GRANTED reason=DEDICATED_ALLOCATION_EXHAUSTED: this driver's allocation is ${DEDICATED_STARTS} start and the ledger already holds ${priorBoots} boot row(s); the pool item "P2-04 grep (BL-16)" holds 3 starts, but the other 2 need an explicit coordinator ruling, not a retry`)
+    refusal.code = 'BUDGET_NOT_GRANTED'
+    refusal.reason = 'DEDICATED_ALLOCATION_EXHAUSTED'
+    refusal.detail = `dedicated starts=${DEDICATED_STARTS} ledger boot rows=${priorBoots}`
+    throw refusal
+  }
+  log(`boot sequence: ${String(bootSequence)} of ${String(DEDICATED_STARTS)} dedicated P2-04 start(s) (ledger boot rows=${String(priorBoots)})`)
+  const grant = {
+    grantId: `grant-a5sf-search-${head.slice(0, 12)}-b${String(bootSequence)}`,
+    maxStarts: priorRows + 2,
+    grantedBy: 'user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item "P2-04 grep (BL-16 native write/search)" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver\'s to spend.',
+    allocationItem: 'P2-04 grep (BL-16)',
+    boundCommit: head,
+    note: `maxStarts = ${String(priorRows)} prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = ${String(priorRows + 2)}; the BL-14 gate counts shared-ledger rows, not spawns`,
+    bootSequence,
+    dedicatedStarts: DEDICATED_STARTS,
+  }
+  writeFileSync(GRANT_PATH, JSON.stringify(grant, null, 2) + '\n')
+  log(`grant materialised: ${GRANT_PATH} maxStarts=${grant.maxStarts} boundCommit=${grant.boundCommit} item=${grant.allocationItem}`)
+
+  const runId = `a5sf-search-${new Date().toISOString().replace(/[:.]/gu, '-')}`
+  const record = createRunRecord({
+    runId,
+    suite: 'a5sf-search',
+    selectedCases: CASES,
+    bindings: runBindings(head, grant),
+    ledgerPath: LEDGER_PATH,
+  })
+  const harness = createA5sfHarness({
+    repoRoot: REPO_ROOT,
+    evidenceRoot: HERE,
+    suite: 'a5sf-search',
+    line: LINE,
+    runRecord: record,
+    maxHostStarts: grant.maxStarts,
+    hostTree: HOST_TREE,
+  })
+  const factory = harness.factory
+  log(`candidate asserted: ${JSON.stringify(harness.assertCandidate())}`)
+
+  const lease = await preRegisterReadBudget({
+    grantPath: GRANT_PATH,
+    headCommit: head,
+    runRecord: record,
+    requiredBoots: 1,
+  })
+  log(`gate lease: grant=${lease.grant.grantId} intentRows=${lease.intentRows().length} rowsBeforeIntent=${lease.rowsBefore} rowsAfterIntent=${lease.rowsAfterIntent} remaining=${lease.position.remaining}`)
+
+  const add = (id, verdict, detail = {}) => {
+    record.addCase(id, verdict, detail)
+    log(`case ${id}: ${verdict} ${JSON.stringify(detail).slice(0, 600)}`)
+  }
+
+  let world = null
+  let bootInfo = null
+  let teardown = null
+  let failure = null
+  let hostReached = false
+  let abortStage = 'pre-boot'
+  const oracleSamples = {}
+  const negativeControl = { sample: null, verdict: null }
+
+  try {
+    world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
+    const { rows, config, paths } = rowsFor({ home: world.home, workspaceDir: world.workspaceDir })
+    // THE HANDOFF. `emitPatchLayer` only BUILDS the text; the World composes the
+    // profile it boots from `world.u6Fs.rows`, so a row set that is emitted but
+    // never pushed boots a BARE World. That is what the one attempt did on
+    // 2026-11-04T15:36Z: the composed profile carried only the base bundle, so
+    // `/__p6t6/health` never existed and the run aborted at post-boot with
+    // FAIL:6/6 `DRIVER_ABORTED_AT_post-boot` — a DRIVER defect, not a product
+    // finding, and the driver's own net now refuses this class (dry-run check
+    // "the composed rows are GIVEN to the World" + its mutation control).
+    world.u6Fs.rows.push(...rows)
+    const claims = {
+      needle: `A5SF_SEARCH_NEEDLE_${world.id}`,
+      outsideClaim: `A5SF_SEARCH_OUTSIDE_SECRET_${world.id}`,
+      outsideSecond: `A5SF_SEARCH_OUTSIDE_SECOND_${world.id}`,
+      outsidePattern: 'A5SF_SEARCH_OUTSIDE',
+      restrictedClaim: `A5SF_SEARCH_RESTRICTION_ONLY_${world.id}`,
+      restrictedPattern: 'A5SF_SEARCH_RESTRICTION',
+      fifoPattern: 'A5SF_SEARCH_FIFO',
+    }
+    const sinkPath = join(world.home, 'a5sf-consult.jsonl')
+    const counterPath = join(world.home, COUNTER_NAME)
+    const laneReportPath = join(world.home, LANE_REPORT_NAME)
+    const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
+
+    const evidence = {
+      worldId: world.id,
+      homePatch: { path: homePin.path, mode: homePin.mode, workspaceRoot: homePin.workspaceRoot },
+      fixtures: {
+        workspace: paths.workspace,
+        inLaneDir: paths.inLaneDir,
+        inLaneFile: paths.inLaneFile,
+        restrictedFile: paths.restrictedFile,
+        outsideDir: paths.outsideDir,
+        outsideFile: paths.outsideFile,
+        outsideGlobDir: paths.outsideGlobDir,
+        invalidDir: paths.invalidDir,
+        globDir: paths.globDir,
+        fifo: paths.fifo,
+        ceiling: { read: paths.workspace, write: paths.workspace },
+        restrictionReadAllow: paths.restrictionReadAllow,
+        effectiveRead: paths.restrictionReadAllow,
+      },
+      claims,
+      sinkPath,
+      counterPath,
+      laneReportPath,
+    }
+    writeFileSync(join(HERE, 'fixtures.json'), JSON.stringify(evidence, null, 2) + '\n')
+
+    mkdirSync(config.blueprintDir, { recursive: true })
+    writeFileSync(join(config.blueprintDir, 'anchor.yaml'), BP_ANCHOR_YAML)
+    writeFileSync(join(config.blueprintDir, 'main.yaml'), mainBlueprintYaml([]))
+    writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2))
+    assertBlueprintText(BP_ANCHOR_YAML, BP_ANCHOR_ID, 1, 'anchor.yaml')
+
+    // ── the fixtures ────────────────────────────────────────────────────────
+    for (const dir of [paths.inLaneDir, paths.invalidDir, paths.globDir, paths.outsideDir, paths.outsideGlobDir]) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(paths.inLaneFile, `${claims.needle}\nplain second line\n`)
+    writeFileSync(join(paths.invalidDir, 'other.txt'), 'no needle here\n')
+    writeFileSync(join(paths.globDir, 'needle.txt'), `${claims.needle}\n`)
+    writeFileSync(paths.restrictedFile, `${claims.restrictedClaim}\n`)
+    writeFileSync(paths.outsideFile, `${claims.outsideClaim}\n${claims.outsideSecond}\n`)
+    writeFileSync(paths.outsideGlobFile, `${claims.outsideClaim}\n`)
+    // THE CANCELLATION WINDOW: ripgrep blocks on a FIFO named as an EXPLICIT
+    // operand (measured in BL-16 §6.3; a directory traversal skips it). That is
+    // what keeps the process alive long enough to be cancelled.
+    try {
+      execFileSync('mkfifo', [paths.fifo], { stdio: 'ignore' })
+    } catch (error) {
+      throw new Error(`cannot create the FIFO cancellation window (${paths.fifo}): ${String(error?.message ?? error)} — without it row 4 has no measurable window and the boot must not be spent`)
+    }
+    log(`fixtures: in=${paths.inLaneFile} restricted=${paths.restrictedFile} outside=${paths.outsideFile} fifo=${paths.fifo}`)
+    log(`rows: ${rows.map((r) => r.id).join(',')}`)
+    log(`team row a5sfEvidencePath=${String(config.a5sfEvidencePath)} modules=${JSON.stringify(config.a5sfNativeToolModules)}`)
+
+    writeFileSync(homePin.path, homePin.yaml)
+    const homePinRead = readFileSync(homePin.path, 'utf8')
+    if (homePinRead !== homePin.yaml) throw new Error(`the home patch did not persist verbatim: ${homePin.path}`)
+    log(`home patch written: ${homePin.path} sha256=${sha256(homePin.path).slice(0, 16)}`)
+
+    await world.startMock({ decide: makeDecide({ rowPaths: paths, claims }) })
+    log(`mock started on ${String(world.mock?.port)}`)
+
+    // ── THE BOOT (the only one) ─────────────────────────────────────────────
+    bootInfo = await lease.boot(() => harness.boot({ world, phase: 'a5sf-search-boot1', bootTimeoutMs: 240_000 }))
+    hostReached = true
+    abortStage = 'post-boot'
+    log(`BOOTED port=${bootInfo.port} (lease bootsSpent=${lease.bootsSpent()}) log=${bootInfo.logPath}`)
+    record.record.boots = [{ phase: 'a5sf-search-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
+
+    const origin = `http://127.0.0.1:${bootInfo.port}`
+    const hostAlive = () => world.instance?.child !== null && world.instance?.child !== undefined && world.instance?.child.exitCode === null
+    const cookie = await authenticate(origin, world.token)
+    log('authenticated (token never recorded)')
+
+    const waitFor = async (predicate, timeoutMs, everyMs = 250) => {
+      const t0 = Date.now()
+      for (;;) {
+        let hit = false
+        try {
+          hit = (await predicate()) === true
+        } catch {
+          hit = false
+        }
+        if (hit) return true
+        if (Date.now() - t0 > timeoutMs) return false
+        await new Promise((r) => setTimeout(r, everyMs))
+      }
+    }
+    const healthOk = await waitFor(async () => {
+      const st = await fetchJson(`${origin}/__p6t6/health`, undefined, 20_000)
+      return st.status === 200 && st.body?.ok === true
+    }, 120_000)
+    log(`p6t6 health=${String(healthOk)} hostAlive=${String(hostAlive())}`)
+    if (!healthOk) throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
+
+    // ── THE NEGATIVE CONTROL, before any Member exists ──────────────────────
+    abortStage = 'negative-control'
+    const discPrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sfsrch')
+    log(`discovery prompt status=${String(discPrompt.status)}`)
+    const controlDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_DISC_DONE')), 180_000)
+    await new Promise((r) => setTimeout(r, 800))
+    const controlRequests = world.mock?.requests ?? []
+    const controlCall = controlRequests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
+      .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.outsideDir) ?? null
+    const controlResult = controlCall === null ? null : toolResultFor(controlRequests, controlCall.id)
+    const counterAtControl = parseJsonl(counterPath)
+    const controlSample = {
+      result: controlResult,
+      forbidden: [claims.outsideClaim, claims.outsideSecond],
+      guardFactsBeforeRealm: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1'),
+      baseSpawns: counterAtControl.filter((row) => row?.leg === 'base-spawn'),
+      confinedSpawns: counterAtControl.filter((row) => row?.leg === 'confined-spawn'),
+      controlDone,
+    }
+    const counterPrefixEnd = parseJsonl(counterPath).length
+    const control = judgeNegativeControl(controlSample)
+    negativeControl.sample = controlSample
+    negativeControl.verdict = control
+    log(`NEGATIVE CONTROL: verdict=${control.verdict} reason=${control.reason} failed=${JSON.stringify(control.failed)} detail=${JSON.stringify(control.detail).slice(0, 700)}`)
+    writeFileSync(join(HERE, 'negative-control.json'), JSON.stringify({ sample: controlSample, verdict: control }, null, 2) + '\n')
+
+    // ── team.create + state ─────────────────────────────────────────────────
+    abortStage = 'team.create'
+    const discoveryRequest = controlRequests[controlRequests.length - 1] ?? null
+    const surface = discoveryRequest === null ? [] : [...new Set(surfaceNamesOf(discoveryRequest))].sort()
+    const denyList = surface.filter((n) => !String(n).startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
+    log(`model-visible surface (${String(surface.length)}): ${surface.join(',')}`)
+    log(`builtinToolDeny base list: ${denyList.join(',')}`)
+    if (!surface.includes('grep')) {
+      throw new Error(`the model-visible surface has no \`grep\`: ${surface.join(',')} — the preset did not expose the search module, so no row can be measured (a composition failure, not a row result)`)
+    }
+    const mainText = mainBlueprintYaml(denyList)
+    assertBlueprintText(mainText, BP_MAIN_ID, 1, 'main.yaml')
+    writeFileSync(join(config.blueprintDir, 'main.yaml'), mainText)
+    log('main blueprint written and validated by the host facade')
+
+    const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
+      rootSessionId: ACCEPTANCE_ROOT,
+      blueprintId: BP_MAIN_ID,
+      initialWork: { prompt: MK_L1 },
+    }, 'a5sfsrch')
+    const createOk = created.status === 200 && created.body?.result?.ok === true
+    log(`team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
+    if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 300)}`)
+
+    abortStage = 'state-query'
+    const stateOk = await waitFor(async () => {
+      const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
+      return st.status === 200 && st.body?.rootSessionId === ACCEPTANCE_ROOT && st.body?.teamSession !== null
+    }, 90_000)
+    log(`p6t6 state (rootSessionId=${ACCEPTANCE_ROOT}, teamSession!=null)=${String(stateOk)}`)
+    if (!stateOk) throw new Error(`the state query does not report the acceptance Team at its creation root (${ACCEPTANCE_ROOT}) — refusing to evaluate any row against a foreign team`)
+
+    // ── drive: one synchronous delegate; the member's script runs one call/turn ──
+    abortStage = 'drive'
+    const replySeen = (content) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith(content))
+    const memberVisible = await waitFor(async () => {
+      const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 20_000)
+      return Array.isArray(st.body?.members) && st.body.members.some((m) => String(m?.templateId) === 'worker' && String(m?.childSessionId ?? '') !== '')
+    }, 120_000)
+    const stateFresh = await fetchJson(`${origin}/__p6t6/state`, undefined, 20_000)
+    const member = (Array.isArray(stateFresh.body?.members) ? stateFresh.body.members : []).find((m) => String(m?.templateId) === 'worker') ?? null
+    const memberSession = String(member?.childSessionId ?? '')
+    log(`member visible=${String(memberVisible)} instanceId=${String(member?.instanceId ?? '')} childSessionId=${memberSession === '' ? '<none>' : '<set>'}`)
+    if (member === null || memberSession === '') throw new Error('no Member session appeared: the delegate never produced a worker, so no row can be measured')
+
+    // The FIFO call must be in flight before the cancel is dispatched. Poll the
+    // confined-provider record for the exact operand, then cancel through the
+    // SHIPPED client route.
+    const fifoInFlight = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
+    log(`fifo call admitted (confined spawn observed)=${String(fifoInFlight)}`)
+    await new Promise((r) => setTimeout(r, 600))
+    let cancelCall = null
+    if (fifoInFlight) {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        cancelCall = await apiSessionCancel(origin, cookie, memberSession, 'a5sfsrch')
+        log(`cancel attempt ${String(attempt)}: status=${String(cancelCall.status)} body=${redact(JSON.stringify(cancelCall.body ?? null)).slice(0, 300)}`)
+        if (cancelCall.status === 200) break
+        await new Promise((r) => setTimeout(r, 500))
+      }
+    }
+    const fifoExited = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-exit' && (row?.argv ?? []).some((a) => String(a).endsWith('/blocking.fifo'))), 60_000)
+    log(`fifo call terminated=${String(fifoExited)}`)
+    const chainOk = await waitFor(() => replySeen(DONE_L1), 240_000)
+    log(`leader chain closed (${DONE_L1})=${String(chainOk)}`)
+    await new Promise((r) => setTimeout(r, 1500))
+
+    // ── evidence collection: results, facts, and the counter ────────────────
+    abortStage = 'evidence-collection'
+    const requests = world.mock?.requests ?? []
+    const callsById = new Map()
+    for (const r of requests) {
+      for (const m of messagesOf(r)) {
+        if (m?.role === 'assistant' && Array.isArray(m.content)) {
+          for (const b of m.content) {
+            if (b?.type === 'tool_use' && !callsById.has(b.id)) {
+              callsById.set(b.id, { callId: b.id, seq: r.seq, name: b.name, args: b.input ?? b.arguments ?? null })
+            }
+          }
+        }
+      }
+    }
+    const factsAll = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1')
+    // Only rows produced AFTER the unconfined control: the control's own
+    // base-service spawn targets the same outside operand, and including it
+    // would make row 2's "no inherited process" clause count the control.
+    const recordsAll = parseJsonl(counterPath).slice(counterPrefixEnd)
+    const laneReport = readJson(laneReportPath)
+    writeFileSync(join(HERE, FACTS_NAME), JSON.stringify(factsAll, null, 2) + '\n')
+    writeFileSync(join(HERE, 'search-counter.jsonl'), recordsAll.map((r) => JSON.stringify(r)).join('\n') + (recordsAll.length === 0 ? '' : '\n'))
+    log(`collected: facts=${String(factsAll.length)} counterRows=${String(recordsAll.length)} laneReport=${laneReport === null ? 'MISSING' : 'present'}`)
+    for (const [leg, count] of [['confined-spawn', recordsAll.filter((r) => r?.leg === 'confined-spawn').length], ['confined-exit', recordsAll.filter((r) => r?.leg === 'confined-exit').length], ['base-spawn', recordsAll.filter((r) => r?.leg === 'base-spawn').length]]) {
+      log(`counter ${leg}=${String(count)}`)
+    }
+    log(`guard facts:`)
+    for (const fact of factsAll) {
+      log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)}`)
+    }
+
+    // ── rows 1, 2, 3, 5 ─────────────────────────────────────────────────────
+    const resultOf = (callId) => toolResultFor(requests, callId)
+    const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')
+    // EXACT locator match: every call has its OWN operand (see rowPathsOf), so a
+    // basename fallback could only cross-match two rows' evidence.
+    const recordsFor = (operand) => recordsAll.filter((row) => (row?.argv ?? []).some((a) => normPath(a) === normPath(operand)))
+    const factsFor = (operand) => factsAll.filter((f) => normPath(f?.locator) === normPath(operand))
+
+    const row1Sample = {
+      result: resultOf(CALL_IDS.grepIn),
+      facts: factsFor(paths.inLaneDir),
+      records: recordsFor(paths.inLaneDir),
+      declaredRoot: paths.inLaneDir,
+      needle: claims.needle,
+      fileName: 'needle.txt',
+    }
+    oracleSamples[SEARCH_CASE_IDS.row1] = { sample: row1Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row1, row1Sample) }
+
+    const row2Sample = {
+      result: resultOf(CALL_IDS.grepOutsideCeiling),
+      facts: factsFor(paths.outsideDir),
+      records: recordsFor(paths.outsideDir),
+      declaredRoot: paths.outsideDir,
+      forbidden: [claims.outsideClaim, claims.outsideSecond],
+    }
+    oracleSamples[SEARCH_CASE_IDS.row2] = { sample: row2Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row2, row2Sample) }
+
+    const row3Sample = {
+      result: resultOf(CALL_IDS.grepOutsideRestriction),
+      facts: factsFor(paths.restrictedFile),
+      records: recordsFor(paths.restrictedFile),
+      declaredRoot: paths.restrictedFile,
+      forbidden: [claims.restrictedClaim],
+      laneReport,
+    }
+    oracleSamples[SEARCH_CASE_IDS.row3] = { sample: row3Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row3, row3Sample) }
+
+    const row5Sample = {
+      result: resultOf(CALL_IDS.grepInvalid),
+      facts: factsFor(paths.invalidDir),
+      records: recordsFor(paths.invalidDir),
+      declaredRoot: paths.invalidDir,
+      pattern: 'A5SF_(',
+    }
+    oracleSamples[SEARCH_CASE_IDS.row5] = { sample: row5Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row5, row5Sample) }
+
+    // ── row 4 (the cancelled search) ────────────────────────────────────────
+    const row4Sample = {
+      result: resultOf(CALL_IDS.grepFifo),
+      facts: factsFor(paths.fifo),
+      records: recordsFor(paths.fifo),
+      declaredRoot: paths.fifo,
+      needle: claims.needle,
+      interrupt: cancelCall === null ? null : { status: cancelCall.status, ok: cancelCall.status === 200 && cancelCall.body?.ok === true },
+      transcriptAfterCall: '',
+    }
+    oracleSamples[SEARCH_CASE_IDS.row4] = { sample: row4Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row4, row4Sample) }
+
+    // ── M-07: the SAME face for `glob` (not one of the six rows; reported
+    //    alongside them so M-07 is never promoted on grep evidence alone) ──
+    const globInSample = {
+      result: resultOf(CALL_IDS.globIn),
+      facts: factsFor(paths.globDir),
+      records: recordsFor(paths.globDir),
+      declaredRoot: paths.globDir,
+      needle: 'needle.txt',
+      fileName: 'needle.txt',
+    }
+    const globOutSample = {
+      result: resultOf(CALL_IDS.globOutside),
+      facts: factsFor(paths.outsideGlobDir),
+      records: recordsFor(paths.outsideGlobDir),
+      declaredRoot: paths.outsideGlobDir,
+      forbidden: [claims.outsideClaim, claims.outsideSecond],
+    }
+    const globIn = judgeSearchRow(SEARCH_CASE_IDS.row1, globInSample)
+    const globOut = judgeSearchRow(SEARCH_CASE_IDS.row2, globOutSample)
+    writeFileSync(join(HERE, 'glob-face.json'), JSON.stringify({ inLane: { sample: globInSample, ...globIn }, outside: { sample: globOutSample, ...globOut } }, null, 2) + '\n')
+    log(`M-07 glob: in-lane=${globIn.verdict}(${globIn.reason}) outside-ceiling=${globOut.verdict}(${globOut.reason})`)
+
+    // ── row 6: stop the Member, then probe for a callable shadow ────────────
+    abortStage = 'row6'
+    const stateMid = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
+    const membersMid = Array.isArray(stateMid.body?.members) ? stateMid.body.members : []
+    const workerMid = membersMid.find((m) => String(m.templateId) === 'worker') ?? member
+    const targetInstance = String(workerMid?.instanceId ?? '')
+    const archiveDispatchedAt = new Date().toISOString()
+    const archiveCall = targetInstance === '' ? null : await fetchJson(`${origin}/__p6t6/tool`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({
+        name: 'team_archive_member',
+        args: { rootSessionId: ACCEPTANCE_ROOT, requestToken: 'a5sfsrch-archive', targetInstanceId: targetInstance },
+        as: ACCEPTANCE_ROOT,
+        callId: 'a5sfsrch-archive',
+      }),
+    }, 60_000)
+    const stopInstant = new Date().toISOString()
+    log(`archive via product tool route: status=${String(archiveCall?.status)} dispatchedAt=${archiveDispatchedAt} stopInstant=${stopInstant} body=${redact(JSON.stringify(archiveCall?.body ?? null)).slice(0, 500)}`)
+    // THE STOP-TIME SINK, captured as an ARRAY before any post-stop probe.
+    const factsAtStop = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1')
+    const consultCopy = writeConsultCopy(sinkPath)
+    const stateAfterArchive = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
+    const membersAfter = Array.isArray(stateAfterArchive.body?.members) ? stateAfterArchive.body.members : []
+    const observations = Array.isArray(stateAfterArchive.body?.observations) ? stateAfterArchive.body.observations : []
+    const counterAtStop = parseJsonl(counterPath)
+
+    const postStopDispatch = await fetchJson(`${origin}/__p6t6/tool`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({ name: 'grep', args: { pattern: claims.needle, path: paths.inLaneDir }, as: memberSession, callId: 'a5sfsrch-post-stop-grep' }),
+    }, 60_000)
+    const postStopDispatch2 = await fetchJson(`${origin}/__p6t6/tool`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({ name: 'glob', args: { pattern: 'needle.txt', path: paths.globDir }, as: memberSession, callId: 'a5sfsrch-post-stop-glob' }),
+    }, 60_000)
+    const factsAtEnd = parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1')
+    const probeFacts = factsAtEnd.slice(factsAtStop.length)
+    const counterAtEnd = parseJsonl(counterPath)
+    const postStopSpawns = counterAtEnd.slice(counterAtStop.length)
+    log(`row6: postStopGrep=${String(postStopDispatch?.status)} postStopGlob=${String(postStopDispatch2?.status)} factsAtStop=${String(factsAtStop.length)} probeFacts=${String(probeFacts.length)} postStopCounterRows=${String(postStopSpawns.length)}`)
+
+    // ── teardown ───────────────────────────────────────────────────────────
+    abortStage = 'teardown'
+    try {
+      teardown = await world.teardown()
+    } catch (error) {
+      log(`world.teardown threw: ${redact(String(error?.message ?? error))}`)
+    }
+    const hostPid = world.instance?.child?.pid ?? null
+    const portStillListening = bootInfo === null ? null : await tcpConnectProbe(bootInfo.port, 1500)
+    const homeExistsAfterTeardown = existsSync(world.home)
+    const orphanPids = findOrphanProcesses({ home: world.home, workspace: paths.workspace })
+    log(`process seam: hostPid=${String(hostPid)} portStillListening=${String(portStillListening)} homeExists=${String(homeExistsAfterTeardown)} orphanPids=${JSON.stringify(orphanPids)} hostAlive=${String(hostAlive())}`)
+
+    const managedIdentity = { sessionId: memberSession, realmLabel: `member:${targetInstance}` }
+    const row6Sample = {
+      member,
+      archive: archiveCall === null ? null : { status: archiveCall.status, body: archiveCall.body },
+      membersAfter,
+      postStopDispatches: [postStopDispatch, postStopDispatch2].filter((r) => r !== null),
+      facts: factsAtStop,
+      probeFacts,
+      stopInstant,
+      observations,
+      managed: managedIdentity,
+      duringManagedDisposal: true,
+      managedRealmCount: membersAfter.filter((m) => String(m.templateId) === 'worker').length || 1,
+      hostAlive: hostAlive(),
+      portStillListening,
+      homeDeleted: homeExistsAfterTeardown === false,
+      orphanPids,
+      confinedSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'confined-spawn'),
+      baseSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'base-spawn'),
+    }
+    oracleSamples[SEARCH_CASE_IDS.row6] = { sample: { ...row6Sample, observations: observations.length, membersAfter: membersAfter.length }, ...judgeSearchRow(SEARCH_CASE_IDS.row6, row6Sample) }
+
+    const teardownEvidence = {
+      archive: archiveCall === null ? null : { status: archiveCall.status, body: archiveCall.body },
+      membersAfterArchive: membersAfter.map((m) => ({ instanceId: m.instanceId, templateId: m.templateId, lifecycle: m.lifecycle })),
+      observations,
+      disposeFaultsAtArchive: classifyDisposeFaults({ observations, managed: managedIdentity, duringManagedDisposal: true, managedRealmCount: 1 }),
+      postStopDispatches: [postStopDispatch, postStopDispatch2].map((r) => (r === null ? null : { status: r.status, body: r.body })),
+      probeFacts,
+      consultCopy,
+      processSeam: {
+        hostPid,
+        hostChildExitCode: world.instance?.child?.exitCode ?? null,
+        portStillListening,
+        homeExistsAfterTeardown,
+        orphanPids,
+        worldTeardown: teardown ?? null,
+      },
+    }
+    writeFileSync(join(HERE, 'teardown.json'), JSON.stringify(teardownEvidence, null, 2) + '\n')
+    writeFileSync(join(HERE, 'ledger-rows.json'), JSON.stringify({
+      ledgerPath: LEDGER_PATH,
+      rowCount: readLedgerRows(LEDGER_PATH).length,
+      rows: readLedgerRows(LEDGER_PATH),
+    }, null, 2) + '\n')
+
+    // ── the verdicts ───────────────────────────────────────────────────────
+    for (const id of CASES) {
+      const judged = oracleSamples[id]
+      if (judged === undefined) {
+        add(id, 'NOT_REACHED', { reason: 'NO_SAMPLE' })
+        continue
+      }
+      add(id, toRunVerdict(judged.verdict), {
+        reason: judged.reason,
+        failed: judged.failed,
+        detail: judged.detail,
+      })
+    }
+    // The negative control is NOT a Member row: it is reported, never folded in.
+    record.record.negativeControl = {
+      verdict: negativeControl.verdict?.verdict ?? null,
+      reason: negativeControl.verdict?.reason ?? null,
+      failed: negativeControl.verdict?.failed ?? [],
+      detail: negativeControl.verdict?.detail ?? null,
+    }
+    record.record.globFace = { inLane: globIn.verdict, outsideCeiling: globOut.verdict }
+    record.record.fixtures = evidence.fixtures
+    record.record.claims = claims
+    record.record.sink = { path: sinkPath, facts: factsAll.length, copy: consultCopy }
+    record.record.boots = [{ phase: 'a5sf-search-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
+    record.record.archive = { previousRun: archivedPreviousRun }
+  } catch (error) {
+    failure = error
+    log(`FAILURE at stage ${abortStage}: ${redact(String(error?.message ?? error))}`)
+    if (hostReached) {
+      // A live regression must never be laundered into NOT_REACHED.
+      for (const id of CASES) {
+        if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}`, error: redact(String(error?.message ?? error)).slice(0, 300) })
+      }
+    } else {
+      throw error
+    }
+  } finally {
+    if (world !== null && teardown === null) {
+      try {
+        teardown = await world.teardown()
+      } catch {
+        /* already failing */
+      }
+    }
+    try {
+      writeFileSync(join(HERE, 'oracle-samples.json'), JSON.stringify({
+        schema: 'a5sf-search-live/oracle-samples/1',
+        note: 'the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.',
+        roots: ROOTS,
+        cases: oracleSamples,
+        negativeControl,
+      }, null, 2) + '\n')
+    } catch {
+      /* best-effort */
+    }
+    const finalized = record.finalize()
+    writeFileSync(join(HERE, 'run-record.json'), JSON.stringify(finalized, null, 2) + '\n')
+    log(formatSummary(finalized))
+    log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(overallVerdict(finalized.cases))} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
+  }
+
+  // An abort must reconcile itself: the intent row is spent even when no start is.
+  if (failure !== null && !hostReached) {
+    try {
+      const rows = readLedgerRows(LEDGER_PATH)
+      const mine = rows.filter((row) => String(row.runId ?? '') === runId)
+      const hasIntent = mine.some((row) => row.kind === 'budget-intent')
+      const hasBoot = mine.some((row) => row.kind !== 'budget-intent' && String(row.phase ?? '').startsWith('a5sf-search-boot'))
+      const hasAbort = mine.some((row) => row.kind === 'budget-abort')
+      if (hasIntent && !hasBoot && !hasAbort) {
+        appendFileSync(LEDGER_PATH, JSON.stringify({
+          at: new Date().toISOString(),
+          runId,
+          suite: 'a5sf-search',
+          kind: 'budget-abort',
+          phase: 'a5sf-search-abort-prehost',
+          reason: redact(String(failure.message ?? failure)).slice(0, 400),
+          stage: abortStage,
+          grantId: grant.grantId,
+          boundCommit: grant.boundCommit,
+          note: 'aborted BEFORE the Host was reached: the intent row was spent, no start was',
+        }) + '\n')
+        log('ledger reconciled: budget-abort row appended (intent spent, no start)')
+      }
+    } catch (error) {
+      log(`ledger reconciliation FAILED (the ledger keeps the dangling intent): ${redact(String(error?.message ?? error))}`)
+    }
+  }
+  if (failure !== null) process.exitCode = 1
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// small helpers that reference the world only through arguments
+// ─────────────────────────────────────────────────────────────────────────────
+
+function toolResultFor(requests, callId) {
+  for (const req of requests) {
+    for (const m of messagesOf(req)) {
+      for (const b of Array.isArray(m?.content) ? m.content : []) {
+        const id = b?.type === 'tool_result' ? (b?.tool_use_id ?? b?.call_use_id ?? null) : (m?.role === 'tool' ? m?.tool_call_id : null)
+        if (id !== callId) continue
+        const text = b?.type === 'tool_result'
+          ? (Array.isArray(b.content) ? b.content.map((c) => c?.text ?? '').join('') : typeof b.content === 'string' ? b.content : '')
+          : String(m?.content ?? '')
+        const isError = b?.type === 'tool_result' ? b?.is_error === true : m?.is_error === true
+        return { source: 'model', isError: isError === true || /^error/iu.test(text), text }
+      }
+    }
+  }
+  return null
+}
+
+/** Processes that still carry the World's home or workspace in their argv. */
+function findOrphanProcesses({ home, workspace }) {
+  let out = ''
+  try {
+    out = execFileSync('ps', ['-eo', 'pid=,args='], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  } catch {
+    return []
+  }
+  const pins = [home, workspace].filter((p) => typeof p === 'string' && p !== '')
+  const orphans = []
+  for (const line of out.split('\n')) {
+    const match = /^\s*(\d+)\s+(.*)$/u.exec(line)
+    if (match === null) continue
+    const pid = Number(match[1])
+    const args = match[2]
+    if (pid === process.pid) continue
+    if (pins.some((pin) => args.includes(pin))) orphans.push({ pid, args: args.slice(0, 300) })
+  }
+  return orphans
+}
+
+if (PLAN_ONLY) {
+  await planOnly()
+} else {
+  rmSync(RUN_LOG, { force: true })
+  await boot()
+}

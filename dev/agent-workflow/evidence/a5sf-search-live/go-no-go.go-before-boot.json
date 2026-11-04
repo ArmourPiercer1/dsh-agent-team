@@ -1,0 +1,130 @@
+{
+  "schema": "a5sf-search-live/go-no-go/1",
+  "branch": "task/a5sf-search-live-20261104",
+  "evidenceHeadAtDryRun": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+  "productTreeDigest": "5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4",
+  "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pool": {
+    "item": "P2-04 grep (BL-16)",
+    "boots": 3,
+    "consumed": 0,
+    "remaining": 3
+  },
+  "ledger": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "rows": 0,
+    "intents": 0,
+    "bootRows": 0,
+    "aborts": 0,
+    "unparseable": 0,
+    "orphanBootRuns": [],
+    "orphanAbortRuns": [],
+    "plannedMismatch": [],
+    "bootsInPool": 3,
+    "remaining": 3
+  },
+  "go": true,
+  "checks": [
+    {
+      "id": "dry-run evidence exists and is green",
+      "ok": true,
+      "detail": {
+        "checks": 43,
+        "failed": 0
+      }
+    },
+    {
+      "id": "negative controls exist and are green",
+      "ok": true,
+      "detail": {
+        "controls": 8,
+        "failed": 0
+      }
+    },
+    {
+      "id": "the PRODUCT tree matches the one the dry run measured",
+      "ok": true,
+      "detail": {
+        "committed": "5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4",
+        "now": "5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4"
+      }
+    },
+    {
+      "id": "the product tree has no uncommitted modifications",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "branch is this lane's branch",
+      "ok": true,
+      "detail": "task/a5sf-search-live-20261104"
+    },
+    {
+      "id": "ledger: every row parses and each boot row has its intent row",
+      "ok": true,
+      "detail": {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+        "rows": 0,
+        "intents": 0,
+        "bootRows": 0,
+        "aborts": 0,
+        "unparseable": 0,
+        "orphanBootRuns": [],
+        "orphanAbortRuns": [],
+        "plannedMismatch": [],
+        "bootsInPool": 3,
+        "remaining": 3
+      }
+    },
+    {
+      "id": "ledger: an abort row names an existing intent (an abort without an intent is a defect)",
+      "ok": true,
+      "detail": {
+        "abortRuns": []
+      }
+    },
+    {
+      "id": "ledger: each intent's plannedStarts equals its boot rows, net of declared aborts",
+      "ok": true,
+      "detail": {
+        "intents": 0,
+        "mismatch": []
+      }
+    },
+    {
+      "id": "budget: at least ONE P2-04 start is still available",
+      "ok": true,
+      "detail": "boots=3 spent=0 remaining=3"
+    },
+    {
+      "id": "boot pool allocates the three P2-04 starts (the ruling)",
+      "ok": true,
+      "detail": {
+        "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
+        "item": "P2-04 grep (BL-16)",
+        "boots": 3
+      }
+    },
+    {
+      "id": "the ONE-ATTEMPT rule: this lane has spent NO start yet",
+      "ok": true,
+      "detail": "no boot row: the single attempt is unspent"
+    },
+    {
+      "id": "pinned host tree is at the pinned commit and clean",
+      "ok": true,
+      "detail": {
+        "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelain": ""
+      }
+    }
+  ],
+  "next": "node dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs  (ONE Host, ONE start, port family 3180)",
+  "structurallyUnverifiableWithoutBoot": [
+    "that the LIVE PRESET supplies a confined `subprocess` face to the Member realm: it does not at this base; the boot composes it in the evidence provider row (see README §3)",
+    "that a Member tool call actually reaches that face — the ONE boot measures this, and nothing host-free can",
+    "that row 4's cancellation window is wide enough on THIS host: the FIFO-blocking premise is re-measured below, the end-to-end timing is not measurable without a Host",
+    "that the OS kernel denies a process the compiled profile should confine (P1-07 owns that leg)"
+  ]
+}

@@ -1,0 +1,372 @@
+{
+  "schema": "a5sf-search-live/dry-run/1",
+  "at": "2026-11-04T15:40:47.226Z",
+  "repoRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "head": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+  "checks": [
+    {
+      "id": "oracle: the six-row three-way suite is green",
+      "ok": true,
+      "detail": {
+        "pass": "45",
+        "fail": "0",
+        "status": 0
+      }
+    },
+    {
+      "id": "driver: no second root literal",
+      "ok": true,
+      "detail": "neither root literal appears; both come from P2_01_ACCEPTANCE_ROOTS"
+    },
+    {
+      "id": "driver: imports the shared root identity + the shared oracle",
+      "ok": true,
+      "detail": "root identity, six-row dispatch, verdict mapping and the control all come from the shared modules"
+    },
+    {
+      "id": "driver: the case list IS the contract list",
+      "ok": true,
+      "detail": "a drifted/renamed id throws before the grant, not after a spent start"
+    },
+    {
+      "id": "driver: create precedes the state assertion on the SAME root",
+      "ok": true,
+      "detail": "team.create@45715 < state(rootSessionId===ACCEPTANCE_ROOT)@47485"
+    },
+    {
+      "id": "driver: no row-verdict input is character-clipped",
+      "ok": true,
+      "detail": "no `result*.text.slice(0, N)` on any verdict path"
+    },
+    {
+      "id": "driver: the full guard-fact stream is persisted",
+      "ok": true,
+      "detail": "guard-facts.json + search-counter.jsonl are the raw channels, not a summary"
+    },
+    {
+      "id": "driver: declares expectedTools for BOTH native modules",
+      "ok": true,
+      "detail": "the attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping the preset search"
+    },
+    {
+      "id": "driver: an abort after the Host is reached is a FAIL, never NOT_REACHED",
+      "ok": true,
+      "detail": "a live regression must never be laundered into NOT_REACHED"
+    },
+    {
+      "id": "driver: exactly ONE start is authorised",
+      "ok": true,
+      "detail": "the task budget is one boot; the pool item holds 3, the other 2 need a new ruling"
+    },
+    {
+      "id": "driver: the cancellation trigger is the SHIPPED client route",
+      "ok": true,
+      "detail": "/api/session/cancel -> agent.cancel({kind:\"user\"}); no test route composes a cancel"
+    },
+    {
+      "id": "driver: the FIFO window is created or the boot refuses",
+      "ok": true,
+      "detail": "a row-4 window that cannot be created refuses the boot instead of measuring nothing"
+    },
+    {
+      "id": "driver: the composed rows are GIVEN to the World (not only emitted)",
+      "ok": true,
+      "detail": "the rows must reach `world.u6Fs.rows` BEFORE the spawn; an emitted-but-unpushed row set boots a bare World and burns the start"
+    },
+    {
+      "id": "driver: the boot-mode run-record bindings are exercised host-free",
+      "ok": true,
+      "detail": "a broken binding literal must fail in --plan, not after a start is spent"
+    },
+    {
+      "id": "oracle: every judge is three-way and names its clauses",
+      "ok": true,
+      "detail": "each judge has a reachability branch, a named-clause check set, and a REFUTED path"
+    },
+    {
+      "id": "oracle: row 1 records the realm instead of assuming the binding realm",
+      "ok": true,
+      "detail": "BL-17 makes a binding-realm subprocess face a refusal; the judge RECORDS `member`/`null` (README §3)"
+    },
+    {
+      "id": "oracle: row 3 states the preset limit in the VERDICT, not only the README",
+      "ok": true,
+      "detail": "a reader of the machine verdict sees that the restriction was composed by the fixture"
+    },
+    {
+      "id": "oracle: row 4 accepts an undelivered settlement ONLY with a killed child",
+      "ok": true,
+      "detail": "no silent green: absence of a result counts only with positive termination evidence"
+    },
+    {
+      "id": "oracle: row 5 is discriminated by the PROCESS exit code, not the prose",
+      "ok": true,
+      "detail": "a module that swallowed rg exit 2 into \"No matches found\" differs on this clause"
+    },
+    {
+      "id": "oracle: row 6 is temporal, and judges the probe delta separately",
+      "ok": true,
+      "detail": "the boot-2 lesson: a count delta cannot express \"nothing after the stop\""
+    },
+    {
+      "id": "driver --plan is green",
+      "ok": true,
+      "detail": "PLAN OK"
+    },
+    {
+      "id": "boot path: no undefined identifiers / use-before-define in the driver, row, oracle",
+      "ok": true,
+      "detail": "exit=0 no undefined/use-before-define errors across 6 boot-path files"
+    },
+    {
+      "id": "boot path: a use-before-define is refused (the homePin shape)",
+      "ok": true,
+      "detail": "the use-before-define probe is REFUSED, so the rule is load-bearing"
+    },
+    {
+      "id": "lane: the in-lane operand is allowed by ceiling, restriction AND the intersection",
+      "ok": true,
+      "detail": "allow"
+    },
+    {
+      "id": "lane: the outside-ceiling operand is denied by the ceiling and by the intersection",
+      "ok": true,
+      "detail": {
+        "ceiling": "deny",
+        "effective": "deny"
+      }
+    },
+    {
+      "id": "lane: the inside-ceiling / outside-restriction operand is denied ONLY because of the restriction",
+      "ok": true,
+      "detail": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      }
+    },
+    {
+      "id": "lane: the intersection NEVER widens (no allow the ceiling denies)",
+      "ok": true,
+      "detail": "the upper-bound law EffectiveIo ⊆ Ceiling is checked on the three operands"
+    },
+    {
+      "id": "product seam: staticProgramList",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: guardMethod",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: programAttribution",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: writeLaneRefusal",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: admissionOrder",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: memberRealmDefault",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: installIsolatesSubprocess",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: installStatesFaces",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: mountRefusesUnconfined",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "product seam: realmRowForwardsOptionalFace",
+      "ok": true,
+      "detail": "present in THIS tree"
+    },
+    {
+      "id": "pinned search module declares the `subprocess` injection",
+      "ok": true,
+      "detail": "the module consumes the confined face; a `subprocess`-free module would not exercise it"
+    },
+    {
+      "id": "pinned search module builds argv with `--json` and a `--` separator",
+      "ok": true,
+      "detail": "the operand-after-`--` shape is what `readIntentsOf` reads (BL-16 B2/B3)"
+    },
+    {
+      "id": "row 4 premise: ripgrep BLOCKS on an explicit FIFO operand (the cancellation window exists)",
+      "ok": true,
+      "detail": {
+        "rgPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "fifoCreated": true,
+        "launched": true,
+        "signal": "SIGTERM",
+        "status": null,
+        "error": "ETIMEDOUT",
+        "why": "the packaged rg blocks on an explicit FIFO operand (the row-4 window exists)"
+      }
+    },
+    {
+      "id": "dist: the worktree `packages/` tree is identical to origin/master",
+      "ok": true,
+      "detail": "(no diff)"
+    },
+    {
+      "id": "dist: every artifact the rows depend on is NEWER than the last source commit",
+      "ok": true,
+      "detail": {
+        "lastSourceCommit": "2026-11-04T14:30:30.000Z",
+        "artifacts": [
+          {
+            "path": "packages/runtime/dist/packages/runtime/team-services/src/subprocess.js",
+            "mtime": "2026-11-04T15:09:38.209Z",
+            "newerThanLastSourceCommit": true
+          },
+          {
+            "path": "packages/runtime/dist/packages/runtime/team-services/src/install.js",
+            "mtime": "2026-11-04T15:09:38.209Z",
+            "newerThanLastSourceCommit": true
+          },
+          {
+            "path": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+            "mtime": "2026-11-04T15:09:38.192Z",
+            "newerThanLastSourceCommit": true
+          },
+          {
+            "path": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js",
+            "mtime": "2026-11-04T15:09:38.156Z",
+            "newerThanLastSourceCommit": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "agent-bindings.mjs is untouched vs origin/master",
+      "ok": true,
+      "detail": "df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b == df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b"
+    },
+    {
+      "id": "the product tree has no uncommitted modification",
+      "ok": true,
+      "detail": "(clean)"
+    }
+  ],
+  "runs": {
+    "oracle": {
+      "status": 0,
+      "ms": 116
+    },
+    "plan": {
+      "status": 0,
+      "ms": 101,
+      "patchBytes": "6419"
+    },
+    "planStdout": "[2026-11-04T15:40:47.395Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\n[2026-11-04T15:40:47.396Z] root identity (plan): {\"ok\":true,\"root\":\"session-a5sf-acceptance-team\",\"bootRoot\":\"session-a5sf-acceptance-root\",\"rootsCoincide\":false,\"productionRowRootChecked\":true,\"directiveRootChecked\":true,\"toolRouteRootIsLabel\":true}\n[2026-11-04T15:40:47.399Z] HEAD=a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9 pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84\n[2026-11-04T15:40:47.399Z] host tool-fs: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js exists=true sha256=66742231de99695b\n[2026-11-04T15:40:47.399Z] host tool-fs-search: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js exists=true sha256=7210e7aa23902105\n[2026-11-04T15:40:47.400Z] evidence row: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs exists=true sha256=4271fac20e0384ec\n[2026-11-04T15:40:47.400Z] dist install: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/dist/packages/runtime/team-services/src/install.js exists=true sha256=2dc52395d8e1fd1f\n[2026-11-04T15:40:47.400Z] dist subprocess: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/dist/packages/runtime/team-services/src/subprocess.js exists=true sha256=f185d4c4d0ac60c8\n[2026-11-04T15:40:47.400Z] attachments provider composition: mounted=true\n[2026-11-04T15:40:47.439Z] blueprint ingest: anchor={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"} main={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"}\n[2026-11-04T15:40:47.440Z] row identity check: {\"ok\":true,\"rows\":[{\"rowId\":\"a5sf-search-realm\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs\",\"packageName\":\"dsh-agent-team\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/package.json\",\"hasClientHalf\":true},{\"rowId\":\"dsh-agent-team\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/dist/packages/runtime/src/plugin/host.js\",\"packageName\":\"@dsh-agent-team/runtime\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/package.json\",\"h\n[2026-11-04T15:40:47.441Z] patch layer bytes=6419; rows=a5sf-search-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-search-base\n[2026-11-04T15:40:47.441Z] ---- patch layer ----\n# a5sf search-live boot: confined member realm (fs + subprocess) + production Team row\n# with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.\n- insert:\n    - id: \"a5sf-search-realm\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs\"\n      config:\n        allowRoot: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live\"\n        restrictionReadAllow:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane/inside\"\n        bindingIdentity: \"dsh.search/grep\"\n        laneReportPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/lane-report.json\"\n        laneProbePaths:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane/inside/needle.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane/outside-restriction.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/ceiling-outside/secret.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/ceiling-outside-glob/secret.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane/blocking.fifo\"\n        counterPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/search-counter.jsonl\"\n        scratchRoot: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/search-scratch\"\n    - id: \"dsh-agent-team\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/dist/packages/runtime/src/plugin/host.js\"\n      config:\n        rootSessionId: \"session-a5sf-acceptance-root\"\n        bootPhase: \"create\"\n        blueprintSource: \"---\\nschemaVersion: 3\\nblueprintId: team.a5sf.search.anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the a5sf search-live anchor team. A5SF_SEARCH_DISC is the discovery marker.\\\"\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are the a5sf search anchor worker.\\\"\\nmemberEnvelopes: []\\nrequirements: []\\npermissionMutationEnvelope:\\n  rules: []\\nteamHardEnvelope:\\n  rules: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"\n        blueprintDir: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/blueprints\"\n        rootPresetId: \"a5sf-search-base\"\n        memberPresetId: \"a5sf-search-base\"\n        seedMembers: []\n        generation: 1\n        staticModel:\n          provider: \"deepseek-official\"\n          model: \"a5sf-search-model\"\n        deniedSelection: null\n        mcpServers: []\n        mcpServer: null\n        environmentFacts:\n          - domain: \"tool\"\n            subject: \"web\"\n            available: true\n            generation: 1\n          - domain: \"skill\"\n            subject: \"base\"\n            available: true\n            generation: 1\n          - domain: \"persona\"\n            subject: \"standard\"\n            available: true\n            generation: 1\n        externalPolicyFacts:\n          hard: {}\n          capabilityExists: {}\n        glueUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs\"\n        seamUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/runtime/root-binding/harness/seam.mjs\"\n        a5sfEvidencePath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/.rowcheck/a5sf-consult.jsonl\"\n        a5sfNativeToolModules:\n          - \"file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js\"\n          - \"file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js\"\n        a5sfExpectedTools:\n          file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:\n            - \"read\"\n            - \"write\"\n            - \"edit\"\n            - \"read_image\"\n          file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js:\n            - \"grep\"\n            - \"glob\"\n    - id: \"p6t6-team-tools\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/packages/tools/harness/plugin.mjs\"\n    - id: \"preset-a5sf-search-base\"\n      name: \"@deepseek-ai/dsh-agent-preset\"\n      config:\n        id: \"a5sf-search-base\"\n        name: \"a5sf search base\"\n        description: \"a5sf search-live boot preset (a5sfsrch) = smoke + tool-fs-search\"\n        order: 900\n        plugins:\n          - id: \"persona\"\n            name: \"@deepseek-ai/dsh-persona\"\n            config:\n              prefix: \"You are a coding agent powered by the {{model}} model.\"\n              suffix: \"Your working directory is {{cwd}}.\"\n          - id: \"tool-fs\"\n            name: \"@deepseek-ai/dsh-tool-fs\"\n          - id: \"persistent-shell\"\n            name: \"cordis:group\"\n            group: true\n            isolate:\n              terminals: true\n            config:\n              - id: \"pty\"\n                name: \"@deepseek-ai/dsh-terminal\"\n              - id: \"terminal-bash\"\n                name: \"@deepseek-ai/dsh-terminal-bash\"\n                config:\n                  timeoutMs: 300000\n              - id: \"persistent-bash\"\n                name: \"@deepseek-ai/dsh-tool-bash-persistent\"\n                config:\n                  timeoutMs: 300000\n          - id: \"tool-fs-search\"\n            name: \"@deepseek-ai/dsh-tool-fs-search\"\n            config:\n              sampleOverCapGlobResults: false\n---- end patch ----\n[2026-11-04T15:40:47.443Z] provider row: name=a5sf-search-realm-provider apply=function inject=[]\n[2026-11-04T15:40:47.443Z] oracle: cases=6 first=live:search-row1-grep-in-lane-allowed\n[2026-11-04T15:40:47.444Z] dist confined-subprocess face: {\"mountsConfinedSubprocess\":true,\"statesFacesTotal\":true,\"typedRefusalConstant\":true,\"staticProgramAllowList\":true}\n[2026-11-04T15:40:47.444Z] runBindings probe: {\"teamSha\":\"a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9\",\"hostSha\":\"639ed015397290b3745d163aafe02ffee4aa3f84\",\"hostTree\":\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\",\"line\":\"a5sfsrch\",\"sink\":\"world-home a5sf-consult.jsonl (copy: consultations.jsonl)\",\"grantId\":\"plan-probe\",\"allocationItem\":\"P2-04 grep (BL-16)\",\"providerComposition\":\"test row dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs (no product provider exists at this base)\",\"la\n[2026-11-04T15:40:47.444Z] PLAN OK\n"
+  },
+  "productTreeDigest": "5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4",
+  "structurallyUnverifiable": [
+    "that the LIVE PRESET supplies a confined `subprocess` face to the Member realm: it does not at this base; the boot composes it in the evidence provider row (see README §3)",
+    "that a Member tool call actually reaches that face — the ONE boot measures this, and nothing host-free can",
+    "that row 4's cancellation window is wide enough on THIS host: the FIFO-blocking premise is re-measured below, the end-to-end timing is not measurable without a Host",
+    "that the OS kernel denies a process the compiled profile should confine (P1-07 owns that leg)"
+  ],
+  "laneAlgebra": {
+    "ceiling": {
+      "in": "allow",
+      "denyInside": "allow",
+      "outside": "deny"
+    },
+    "restriction": {
+      "in": "allow",
+      "denyInside": "deny"
+    },
+    "effective": {
+      "in": "allow",
+      "denyInside": "deny",
+      "outside": "deny"
+    },
+    "effectiveLane": {
+      "mode": "restricted",
+      "allow": [
+        "/tmp/a5sf-search-lane-bzoJjC/workspace/lane/inside"
+      ],
+      "ask": [],
+      "deny": []
+    }
+  },
+  "productSeam": {
+    "staticProgramList": true,
+    "guardMethod": true,
+    "programAttribution": true,
+    "writeLaneRefusal": true,
+    "admissionOrder": true,
+    "memberRealmDefault": true,
+    "installIsolatesSubprocess": true,
+    "installStatesFaces": true,
+    "mountRefusesUnconfined": true,
+    "realmRowForwardsOptionalFace": true
+  },
+  "fifoPremise": {
+    "ok": true,
+    "detail": {
+      "rgPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+      "fifoCreated": true,
+      "launched": true,
+      "signal": "SIGTERM",
+      "status": null,
+      "error": "ETIMEDOUT",
+      "why": "the packaged rg blocks on an explicit FIFO operand (the row-4 window exists)"
+    }
+  },
+  "distProvenance": {
+    "packagesIdenticalToOriginMaster": true,
+    "lastSourceCommit": "2026-11-04T14:30:30.000Z",
+    "artifacts": [
+      {
+        "path": "packages/runtime/dist/packages/runtime/team-services/src/subprocess.js",
+        "mtime": "2026-11-04T15:09:38.209Z",
+        "newerThanLastSourceCommit": true
+      },
+      {
+        "path": "packages/runtime/dist/packages/runtime/team-services/src/install.js",
+        "mtime": "2026-11-04T15:09:38.209Z",
+        "newerThanLastSourceCommit": true
+      },
+      {
+        "path": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+        "mtime": "2026-11-04T15:09:38.192Z",
+        "newerThanLastSourceCommit": true
+      },
+      {
+        "path": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js",
+        "mtime": "2026-11-04T15:09:38.156Z",
+        "newerThanLastSourceCommit": true
+      }
+    ]
+  },
+  "agentBindings": {
+    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "sha256Head": "df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b",
+    "sha256OriginMaster": "df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b",
+    "untouched": true
+  },
+  "goNoGo": true
+}

@@ -1,0 +1,12 @@
+PASS dry-run evidence exists and is green: {"checks":44,"failed":0}
+PASS negative controls exist and are green: {"controls":9,"failed":0}
+PASS the PRODUCT tree matches the one the dry run measured: {"committed":"5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4","now":"5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4"}
+PASS the product tree has no uncommitted modifications: (clean)
+PASS branch is this lane's branch: task/a5sf-search-live-20261104
+PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl","rows":2,"intents":1,"bootRows":1,"aborts":0,"unparseable":0,"orphanBootRuns":[],"orphanAbortRuns":[],"plannedMismatch":[],"bootsInPool":3,"remaining":2}
+PASS ledger: an abort row names an existing intent (an abort without an intent is a defect): {"abortRuns":[]}
+PASS ledger: each intent's plannedStarts equals its boot rows, net of declared aborts: {"intents":1,"mismatch":[]}
+PASS budget: at least ONE P2-04 start is still available: boots=3 spent=1 remaining=2
+PASS boot pool allocates the three P2-04 starts (the ruling): {"poolFile":"dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json","item":"P2-04 grep (BL-16)","boots":3}
+REFUSE the ONE-ATTEMPT rule: this lane has spent NO start yet: the lane already holds 1 boot row(s): a retry needs a NEW coordinator ruling, not this script
+PASS pinned host tree is at the pinned commit and clean: {"hostHead":"639ed015397290b3745d163aafe02ffee4aa3f84","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","porcelain":""}
