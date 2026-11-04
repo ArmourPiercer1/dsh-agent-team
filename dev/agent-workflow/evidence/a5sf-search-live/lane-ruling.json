@@ -3,7 +3,7 @@
   "lane": "task/a5sf-search-live-20261104",
   "allocationItem": "P2-04 grep (BL-16)",
   "poolAllocated": 3,
-  "authorisedStarts": 3,
+  "authorisedStarts": 6,
   "rulings": [
     {
       "starts": 1,
@@ -35,8 +35,22 @@
         "judge honestly; promote nothing unmeasured; row 3 stays UNSUPPORTED for preset-expression",
         "if it aborts before any row: stop, report, no fourth request"
       ]
+    },
+    {
+      "starts": 3,
+      "by": "owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374",
+      "at": "2026-11-05T00:00:00Z",
+      "reason": "NEW BUDGET: the owner allocated 3 more P2-04 starts (pool 3 spent + 3 fresh = 6). Resume on a fresh branch off current master; the old branch is merged. No product code is needed \u2014 the driver only had to be run correctly. The two instrument defects (original.apply(this, spec); nohup launch) are fixed on master.",
+      "conditions": [
+        "go-no-go must say GO against the CURRENT master, not the merged branch's head",
+        "probe-leader-grep.json FIRST: before team.create, grep from the anchor leader and capture the tool result",
+        "reach member-install and, if it passes, judge the six rows; promote only what a judged row supports",
+        "if a stage aborts, name it (member-install / delegate-dispatch / cancellation-window) with the typed error and the stage probe; post-boot is not acceptable",
+        "one start at a time: fresh GO before each, ledger reconciliation after each; a further start needs a named change since the previous attempt, never 'try again'",
+        "if all 3 are spent without a judged row, stop and report; go-no-go must refuse a 7th without a new ruling"
+      ]
     }
   ],
-  "note": "The driver and go-no-go both read this file: a start is allowed only while the shared ledger's boot rows for this lane are fewer than `authorisedStarts`. A third boot requires a NEW ruling appended here \u2014 editing `authorisedStarts` upward without a ruling entry is a self-authorisation and is called out in the README.",
-  "remainingAfterThisLane": 0
+  "note": "2026-11-05: 3 of 6 spent; 3 fresh on branch task/a5sf-search-live2-20261105 off master 61503f15d. Superseded file copies live in the merged evidence home at that commit.",
+  "remainingAfterThisLane": null
 }

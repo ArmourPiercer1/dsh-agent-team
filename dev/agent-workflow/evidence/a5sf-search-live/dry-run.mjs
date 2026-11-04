@@ -209,13 +209,15 @@ check('driver: the leader grep probe runs BEFORE team.create and persists its ch
   'a base-spawn failure must reach the artifact with its Node cause, and the counter/sink must survive teardown')
 {
   const ruling = JSON.parse(readFileSync(join(HERE, 'lane-ruling.json'), 'utf8'))
-  check('ruling: every authorised start is a NAMED ruling, and the pool is spent after this lane',
-    ruling.authorisedStarts === 3
-      && ruling.rulings.length === 3
-      && ruling.rulings.reduce((n, r) => n + r.starts, 0) === 3
-      && ruling.rulings[2].by.includes('last P2-04 start')
-      && ruling.remainingAfterThisLane === 0,
-    'three starts, three named authorisations (task instruction, retry, last start); no fourth')
+  const pool = JSON.parse(readFileSync(join(REPO_ROOT, 'dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json'), 'utf8'))
+  const p204 = (pool?.allocation ?? []).find((item) => String(item?.item ?? '').startsWith('P2-04')) ?? null
+  const poolBoots = Number(p204?.boots ?? 0)
+  check('ruling: every authorised start is a NAMED ruling, and the pool allocates exactly that many',
+    ruling.authorisedStarts === poolBoots
+      && ruling.rulings.length >= 3
+      && ruling.rulings.reduce((n, r) => n + r.starts, 0) === ruling.authorisedStarts
+      && ruling.rulings.every((r) => String(r.by ?? '').length > 0 && String(r.reason ?? '').length > 0),
+    'authorisedStarts must equal the pool item and the named rulings; a start without a named ruling is a self-authorisation')
 }
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
