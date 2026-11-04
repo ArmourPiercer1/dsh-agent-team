@@ -1,0 +1,29 @@
+{
+  "schema": "a5sf-bl16-grep-arms/1",
+  "launcherSha256": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+  "baseline": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js",
+  "arms": [
+    "PROBE",
+    "GREP-PRE (unconfined control, before the confined face)",
+    "GREP-IN (in-lane, confined)",
+    "GREP-OUT (out-of-lane, refused before any process)",
+    "GREP-EXIT1 (no match is not an error)",
+    "GREP-EXIT2 (invalid pattern is a failure)",
+    "GLOB-IN (in-lane)",
+    "GLOB-OUT (out-of-lane, refused)",
+    "KERNEL (unnamed read refused by the OS profile)",
+    "GREP-NO-PATH (cwd outside lane)"
+  ],
+  "results": [
+    "PROBE: content-read=enforced write=enforced launcherSha=1264ea584e3438d6 rg=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+    "GREP-PRE (unconfined control, before the confined face): executed=yes outsideBytes=LEAKED facts=0",
+    "GREP-IN (in-lane, confined): result=\"Found 1 match\" spawns=1 facts=[member/null/member-bl16-probe/spawn/allow/ALLOW//tmp/a5sf-bl16-arms/w-TUbBoB/inside]",
+    "GREP-OUT (out-of-lane, refused before any process): spawns=0->0 result=\"Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)\" facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//tmp/a5sf-bl16-arms/w-TUbBoB/outside]",
+    "GREP-EXIT1 (no match is not an error): result=\"No matches found\"",
+    "GREP-EXIT2 (invalid pattern is a failure): result=\"Error: grep pattern rejected by ripgrep: rg: regex parse error:\\n    (?:(\"",
+    "GLOB-IN (in-lane): result=\"/tmp/a5sf-bl16-arms/w-TUbBoB/inside/quiet.txt\\n/tmp/a5sf-bl16\" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW//tmp/a5sf-bl16-arms/w-TUbBoB/inside]",
+    "GLOB-OUT (out-of-lane, refused): spawns=0->0 facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//tmp/a5sf-bl16-arms/w-TUbBoB/outside]",
+    "KERNEL (unnamed read refused by the OS profile): stdout=\"cat: /tmp/a5sf-bl16-arms/w-TUbBoB/outside/secret.txt: Permission denied\\\\nRC=1\\\\nINSIDE-NEEDLE\\\\n\"",
+    "GREP-NO-PATH (cwd outside lane): spawns=0->0 isError=true text=\"Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)\" facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//tmp/a5sf-bl16-arms/w-TUbBoB/outside]"
+  ]
+}
