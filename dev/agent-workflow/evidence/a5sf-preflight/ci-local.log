@@ -1,7 +1,7 @@
 $ node scripts/ci-local.mjs --base origin/master
 
 ▶ docs:probe
-docs:probe base=origin/master head=2b4cd8d0a changed=27 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
+docs:probe base=origin/master head=e30a35917 changed=32 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
 LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
 LIMIT no C1/C2/C3 substitution and no security negative control here
 LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
@@ -39,38 +39,46 @@ packages/tools typecheck: Done
 packages/runtime typecheck: Done
 packages/client typecheck$ tsc -p tsconfig.json
 packages/client typecheck: Done
-✔ pnpm typecheck (13.4s)
+✔ pnpm typecheck (14.8s)
 
 ▶ node --test (selected)
-✔ A1 the driver root constant is ONE value across every observation seam (0.909211ms)
-✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (0.360893ms)
-✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.409725ms)
-✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.15349ms)
-✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.141708ms)
-✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.255835ms)
-✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.213835ms)
-✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (0.119426ms)
-✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (0.59189ms)
-✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (0.753396ms)
-✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.204487ms)
-✔ C3 the row-level reason codes distinguish the two NOT_REACHED shapes #575 conflated (0.171926ms)
-✔ C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim) (0.097344ms)
-✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.727577ms)
-✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.079861ms)
-✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.124496ms)
-✔ C8 each verdict carries a closed reason code (auditable without prose) (0.232581ms)
-ℹ tests 17
+✔ A1 the driver root constant is ONE value across every observation seam (0.810925ms)
+✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (0.403203ms)
+✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.433551ms)
+✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.085662ms)
+✔ A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED (0.273117ms)
+✔ A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED (0.131469ms)
+✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.31123ms)
+✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.340324ms)
+✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.249272ms)
+✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (0.240195ms)
+✔ B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result) (0.917918ms)
+✔ B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored) (0.142509ms)
+✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (0.657395ms)
+✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (0.850861ms)
+✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.130447ms)
+✔ C3 the row-level reason codes distinguish "never asked" from "asked and contradicted" (0.16417ms)
+✔ C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim) (0.107153ms)
+✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.128874ms)
+✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.113655ms)
+✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.080282ms)
+✔ C8 each verdict carries a closed reason code (auditable without prose) (0.130147ms)
+✔ C9 row 2 replay: the HEALTHY stream (read-B deny + later write-B allow at the same locator) is PASS (0.065454ms)
+✔ C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED (0.073099ms)
+✔ C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED (0.036179ms)
+ℹ tests 24
 ℹ suites 0
-ℹ pass 17
+ℹ pass 24
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 64.756474
+ℹ duration_ms 71.789187
 ✔ node --test (selected) (0.1s)
 
-DSH-CI-LOCAL verdict=undetermined steps=5 failed=0 coverage=undetermined files=1 wall=14.2s
+DSH-CI-LOCAL verdict=undetermined steps=5 failed=0 coverage=undetermined files=1 wall=15.5s
 ci-local: the selected checks passed, but this change's test blast radius is unnamed:
+  - tests/world-factory/fixtures/a5sf-575-teardown-observations.json
   - tests/world-factory/lib/a5sf-acceptance-preflight.mjs
 ci-local: that is exit 2 on purpose. Push and let L1/L2 cover it.
 [ELIFECYCLE] Command failed with exit code 2.

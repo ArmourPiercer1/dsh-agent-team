@@ -375,11 +375,12 @@ Shared contract (tracked, not in this directory):
 
 ### Why `ci:local` is exit 2 (deliberate, not a failure)
 
-All five steps it ran passed (`failed=0`). It returns 2 because the change adds ONE
-path it refuses to guess a blast radius for:
+All five steps it ran passed (`failed=0`). It returns 2 because the change adds TWO
+paths it refuses to guess a blast radius for:
 
 ```
 tests/world-factory/lib/a5sf-acceptance-preflight.mjs
+tests/world-factory/fixtures/a5sf-575-teardown-observations.json
 ```
 
 That is the tool's designed answer for a **new shared test library**
