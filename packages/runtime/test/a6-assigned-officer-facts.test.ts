@@ -14,6 +14,7 @@
 import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService, CurrentLegTransferRecord } from '../control/index.js'
+import { createAlpha6AuthorityGenerationReader } from '../alpha6/authority-generation.js'
 import { createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
 import type {
   Alpha6ControlPorts,
@@ -573,6 +574,24 @@ describe('A6 assigned-Officer facts provider (composition-owned)', () => {
     } finally {
       await destroyP6T1World(world)
     }
+  })
+})
+
+describe('A6 authority generation reader', () => {
+  it('answers 0 only for the legal no-port/no-row world and throws on a non-generation', async () => {
+    expect(await createAlpha6AuthorityGenerationReader(undefined)({
+      teamSessionId: P6T4_ROOT,
+      memberInstanceId: OFFICER,
+    })).toBe(0)
+    expect(await createAlpha6AuthorityGenerationReader({
+      latest: async () => undefined,
+    })({ teamSessionId: P6T4_ROOT, memberInstanceId: OFFICER })).toBe(0)
+    expect(await createAlpha6AuthorityGenerationReader({
+      latest: async () => ({ metadata: { generation: 7 } }),
+    })({ teamSessionId: P6T4_ROOT, memberInstanceId: OFFICER })).toBe(7)
+    await expect(createAlpha6AuthorityGenerationReader({
+      latest: async () => ({ metadata: { generation: 'not-a-generation' } }),
+    })({ teamSessionId: P6T4_ROOT, memberInstanceId: OFFICER })).rejects.toThrow(/never read as generation 0/)
   })
 })
 
