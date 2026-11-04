@@ -1,4 +1,2 @@
-dev/agent-workflow/evidence/a5sf-preflight/go-no-go.log:3: trailing whitespace.
-+PASS the product tree has no uncommitted modifications: 
-dev/agent-workflow/evidence/a5sf-preflight/law-and-p4t6.log:13: new blank line at EOF.
-dev/agent-workflow/evidence/a5sf-preflight/vitest-a5sf.log:20: new blank line at EOF.
+dev/agent-workflow/evidence/a5sf-preflight/git-diff-check.log:2: trailing whitespace.
+++PASS the product tree has no uncommitted modifications: 
