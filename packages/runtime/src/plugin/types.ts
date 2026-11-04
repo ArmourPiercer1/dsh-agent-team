@@ -1101,6 +1101,20 @@ export interface TeamAgentBindings {
     readonly rootSessionId: string
     readonly text: string
   }) => Promise<void>
+  /**
+   * Alpha.6 review-wake delivery: write ONE attributed review wake into the
+   * TARGET session's native Host inbox (the Officer's child session), through
+   * the same live-agent seam the PR7 E2E exercises. NON-AUTHORITY: the durable
+   * control row remains the authority; the wake is a hint. OPTIONAL at the
+   * type level, but an explicitly Alpha.6 root REFUSES to boot without it —
+   * never a silent Leader fallback.
+   */
+  readonly deliverReviewWake?: (input: {
+    readonly rootSessionId: string
+    readonly targetSessionId: string
+    readonly wakeId: string
+    readonly text: string
+  }) => Promise<void>
   /** The P8-S4B request boundary (re-apply the durable truth). */
   readonly prepareAgentForRequest: (sessionId: string) => Promise<void>
   /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */
