@@ -400,9 +400,9 @@ this rule).
 
 | Gate | Command | Verdict |
 | --- | --- | --- |
-| typecheck (all packages) | `pnpm -r run typecheck` | **exit 0** — 9/10 projects typechecked (`legacy` has no script); `packages/runtime` Done |
+| typecheck (all packages) | `pnpm -r run typecheck` | **exit 0** — every workspace project with a typecheck script ran and finished (`packages/runtime` Done) |
 | typecheck (the touched program) | `node_modules/.bin/tsc -p packages/runtime/tsconfig.json --noEmit` | **clean**, no output |
-| lint (touched files) | `eslint` on all 8 touched paths + the evidence script | **clean** (a `prefer-const` and two `no-explicit-any` were fixed, not suppressed) |
+| lint (touched files) | `eslint` on the 4 touched TS paths + the evidence script | **0 errors**; the evidence script is eslint-ignored (one warning, not an error); earlier `prefer-const`/`no-explicit-any` were fixed, not suppressed |
 | lint (repo-wide, NOT a gate) | `pnpm lint` | **red: 129 errors / 32 warnings, ALL in files this branch does not touch** (`action-router/effects.ts`, `control/service.ts`, `src/plugin/host.ts`, …). Pre-existing debt; disclosed, not attributed to this lane |
 | new unit suite | `vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts` | **16/16 pass** |
 | new realm suite | `vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts` | **6/6 pass** |
