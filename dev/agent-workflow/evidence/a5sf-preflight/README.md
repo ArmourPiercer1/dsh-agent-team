@@ -9,8 +9,9 @@ This directory certifies the *driver* and the *assembly* before the first of the
 three newly granted P2-01 boots is spent. It does not claim any row is PASS on
 live data — that is what the boot is for.
 
-- base: `origin/master` @ `93b007cd2` (fetched, verified; `#579` merged forward into
-  this branch — never rebased)
+- base: `origin/master` @ `37311eaaa` (fetched, verified; `#579`, the boot-pool
+  amendment `#582` and the E8 admission freeze `#580` merged forward into this
+  branch — never rebased)
 - branch: `task/a5sf-preflight-20261103` (worktree `.worktrees/a5sf-preflight`)
 - head: the commit that introduces this directory (`git log -1 --format=%H -- dev/agent-workflow/evidence/a5sf-preflight`).
   `dry-run.json.head` / `.productTreeClean` record the tree the committed run executed
@@ -28,7 +29,7 @@ live data — that is what the boot is for.
 One command re-verifies everything in this directory:
 
 ```bash
-node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs   # exit 0, 26/26 checks, goNoGo=true
+node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs   # exit 0, 28/28 checks, goNoGo=true
 node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs  # the boot authorisation (§6)
 ```
 
@@ -113,7 +114,14 @@ three row-5 laundering arms (`C10`), the row-6 archive refusal (`C11`), the
 real #575 stream (`B5`), the decorated-fault grammar (`B6`), the production
 row / directive root assertions (`A5`/`A6`), and the **name-keyed vs blanket
 invalidation** discrimination (`C12`: an `A5SF_MEMBER_REALM_INVALIDATED`-only
-refusal is REFUTED with `BLANKET_INVALIDATION_ONLY`).
+refusal is REFUTED with `BLANKET_INVALIDATION_ONLY`). The precedence itself
+is pinned host-free: `dry-run.mjs` reads `mount.ts` and requires the covered-name
+branch (`expectedDefinitions.has(name)` → `refusalOf(name, record)`, the
+name-keyed code) to precede the blanket `realmFreezeRefusalOf(record)` in
+`admitCoveredTool` — post-#580 offsets covered branch +572 → refusalOf +639 →
+realmFreeze +936. So row 5 CAN distinguish "the right shadow was condemned" from
+"everything was refused because the realm died", in the oracle and in the
+product.
 
 | row | PASS requires (state assertion) | REFUTED (the product answered wrongly) | NOT_REACHED (never asked) | #575 defect this repair kills |
 | --- | --- | --- | --- | --- |
@@ -184,7 +192,7 @@ absent provider is a preflight blocker, not something to work around.**
 
 ## 5. Dry-run output (what was actually executed)
 
-`dry-run.log` (committed) — **26/26 checks PASS, `goNoGo=true`**, ~1 s, no Host:
+`dry-run.log` (committed) — **28/28 checks PASS, `goNoGo=true`**, ~1 s, no Host:
 
 1. static: no root literal / imports the contract / all seven judges used /
    `team.create` precedes the same-root state assertion / no clipped result /
@@ -213,8 +221,8 @@ absent provider is a preflight blocker, not something to work around.**
 **Negative controls** (`negative-controls.log`, kept as evidence): re-introducing
 the two #575 defects into the driver — the `CREATE_ROOT` literal and
 `.slice(0, 320)` on `rowValues.a` — makes `dry-run.mjs` exit **1** with exactly
-those two checks FAIL (`checks=26 failed=2 goNoGo=false`); restoring the driver
-returns it to 26/26. The oracle's own negative controls are `A4` (the #575 split
+those two checks FAIL (`checks=28 failed=2 goNoGo=false`); restoring the driver
+returns it to 28/28. The oracle's own negative controls are `A4` (the #575 split
 literals must throw `ACCEPTANCE_ROOT_MISMATCH`), `A5`/`A6` (production row /
 directive root), `C9` (the healthy row-2 replay is PASS), `C10` (three row-5
 laundering arms are REFUTED), `C11` (archive refusal is REFUTED) and the `C*`
@@ -326,9 +334,9 @@ have their own grant/ledger discipline).
 | `a5sf-realm-provider-row.mjs` | the six-row `teamA5sfRealm` provider + late-tool route; a **byte-identical copy** of the #575 row (sha256 `b691ce23…e46b`), which supplies members AND bindings (`bindings: [{toolBindingIdentity: 'dsh.fs/read', tools: ['read'], members: [...]}]`) |
 | `go-no-go.mjs` / `go-no-go.json` / `go-no-go.log` | §6, the boot-authorisation gate (refuses on a stale product tree, a spent ledger, an unamended pool) |
 | `probe-mount-compat.mjs` / `mount-compat.json` / `mount-compat.log` | §4, 4-arm move measurement |
-| `dry-run.mjs` / `dry-run.log` / `dry-run.json` | §5, the one-command preflight (**26 checks**, `productTreeDigest`) |
+| `dry-run.mjs` / `dry-run.log` / `dry-run.json` | §5, the one-command preflight (**28 checks**, `productTreeDigest`) |
 | `plan.log` / `plan.json` | World plan: composition, patch layer, blueprints, lane algebra, teardown |
-| `negative-controls.log` | the two #575 defects re-introduced → 2 FAILs, restored → 26/26 |
+| `negative-controls.log` | the two #575 defects re-introduced → 2 FAILs, restored → 28/28 |
 | `README.md` | this gate |
 
 Shared contract (tracked, not in this directory):
@@ -359,9 +367,9 @@ Shared contract (tracked, not in this directory):
 
 | gate | result | raw |
 | --- | --- | --- |
-| `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | **26/26 PASS, exit 0, `goNoGo=true`** | `dry-run.log` / `dry-run.json` |
+| `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | **28/28 PASS, exit 0, `goNoGo=true`** | `dry-run.log` / `dry-run.json` |
 | `node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs` | refuses only the un-amended pool / stale tree — see §6; GO on the boot head after the amendment | `go-no-go.json` / `go-no-go.log` |
-| all ten a5sf node suites (`node --test tests/world-factory/a5sf-*.test.mjs`) | **147/147** (25+30+12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
+| all ten a5sf node suites (`node --test tests/world-factory/a5sf-*.test.mjs`) | **152/152** (25+35+12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
 | `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | law suites + p4t6 (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`, `p4t6-session-event-scan`), p4t6 last | **54/54, 4 files** | `law-and-p4t6.log` |
 | `pnpm typecheck` (9 projects) | pass | `typecheck.log` |
