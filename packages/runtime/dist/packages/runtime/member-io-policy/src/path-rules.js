@@ -194,6 +194,65 @@ export function intersectPathRuleSets(member, tool) {
     });
 }
 /**
+ * Normalize ONE authored (or already-projected) v4 lane into a frozen
+ * `PathRuleSet`: `mode: 'all'` iff the lane says so, and the three locator
+ * lists keep only string entries in authored order. There is ONE normalizer on
+ * purpose — the compiler and the product-declaration reconciliation read lanes
+ * through this function, so one authored lane can never acquire two meanings.
+ */
+export function toPathRuleSet(lane) {
+    const record = typeof lane === 'object' && lane !== null && !Array.isArray(lane)
+        ? lane
+        : Object.freeze({});
+    const list = (key) => Object.freeze(Array.isArray(record[key]) ? record[key].filter((item) => typeof item === 'string') : []);
+    return Object.freeze({
+        mode: record['mode'] === 'all' ? 'all' : 'restricted',
+        allow: list('allow'),
+        ask: list('ask'),
+        deny: list('deny'),
+    });
+}
+/**
+ * Is `inner` a NARROWING of `outer` — i.e. does `inner` permit no location that
+ * `outer` does not permit? Pure authored-string containment over the same
+ * `coversLocator` relation the matcher uses (subtree-aware, `..` never folded),
+ * fail-closed in the same precedence order as `matchLocator`:
+ *
+ *  - every `allow` locator of `inner` that `inner` itself does not deny must be
+ *    (a) covered by an `allow` locator of `outer` (or by `outer.mode === 'all'`)
+ *    and (b) NOT denied by `outer` — an outer deny would make `inner` wider
+ *    exactly there;
+ *  - an `inner` `all` lane permits everything outside its own deny list, so
+ *    `outer` must also be `all` AND must deny nothing `inner` permits
+ *    (`all` ⊄ `restricted`: a finite allow list is never the complement of a
+ *    deny list);
+ *  - `inner.deny` only narrows, so it needs no check; `ask` is never a
+ *    permission (`matchLocator` never promotes it), and the intersection drops
+ *    an ask that either side denies, so it needs no check either.
+ *
+ * This predicate only ANSWERS a question: it never rewrites, intersects or
+ * widens a lane.
+ */
+export function laneWithinLane(inner, outer) {
+    for (const locator of inner.allow) {
+        if (laneCoversDeny(inner, locator))
+            continue; // inner already denies it
+        if (laneCoversDeny(outer, locator))
+            return false;
+        if (outer.mode !== 'all' && !outer.allow.some((allowed) => coversLocator(allowed, locator)))
+            return false;
+    }
+    if (inner.mode === 'all') {
+        if (outer.mode !== 'all')
+            return false;
+        for (const locator of outer.deny) {
+            if (!laneCoversDeny(inner, locator))
+                return false;
+        }
+    }
+    return true;
+}
+/**
  * Is `locator` inside a compiled rule set? The matcher P1-03 will extend with
  * Provider-resolved identity; this is the authored-string answer used by the
  * compiler's own tests and by denial diagnostics.

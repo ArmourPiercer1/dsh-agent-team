@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPRODASM",
+  "paths": [
+    "packages/runtime/team-services/src/product-assembly.ts"
+  ],
+  "expectedDelta": {
+    "from": 1432,
+    "to": 1433
+  },
+  "reason": "a5sf PRODUCT ASSEMBLY (branch task/a5sf-product-assembly-20261105): the product-visible member-policy declaration module — closed declaration shape + parser, the synthetic-v4 scaffolding handed to the ONE `parseBlueprintV4`, the `compiledFor` provider over `compileMemberPolicy`/`projectToolIoRestriction`/`compileEffectiveIo`, and the typed refusals (SUBPROCESS_UNCONFINED_REALM / NETWORK_UNCONFINED_REALM / REALM_DECLARATION_INVALID). It closes the external-review gap that the confined Member realm existed only inside the acceptance profile. The product row wiring rides the already-counted `a5sf-realm-row.mjs`, the type surfaces ride already-counted `types.ts` files, and the new world-factory suite lives under `tests/` (outside the packages/** scan). dist mirrors and dev evidence are generated/outside the scan. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this branch with the new module on disk and no booking: `scanner counts 1433, ledger derives 983 + 449 = 1432` — exactly this one path. Evidence: dev/agent-workflow/evidence/a5sf-product-assembly/README.md §gates."
+}

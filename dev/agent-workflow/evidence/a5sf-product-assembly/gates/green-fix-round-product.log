@@ -1,0 +1,22 @@
+# GREEN (fix round; 7d1eafc6a + uncommitted fix)
+$ node --test tests/world-factory/a5sf-product-assembly.test.mjs
+✔ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (22.743158ms)
+✔ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (13.867264ms)
+✔ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (7.712811ms)
+✔ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (1.182679ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (3.111642ms)
+✔ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.473605ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (4.99129ms)
+✔ PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads (3.826684ms)
+✔ PA9 the declaration is reconciled with config.blueprintSource (B2): narrowing mounts, widening refuses typed, other team/absent skips (15.77771ms)
+✔ PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted (2.567761ms)
+✔ PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings (2.206116ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 339.398113
+rc=0

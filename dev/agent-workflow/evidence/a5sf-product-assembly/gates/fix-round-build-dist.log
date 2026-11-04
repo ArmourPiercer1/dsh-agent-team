@@ -1,0 +1,17 @@
+$ pnpm run build
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+rc=0
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: packages/runtime/src/plugin/live/a5sf-realm-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs (byte-identical)
+place-dist-glue: done (101 placement(s))
+rc=0
+
+$ node scripts/build-client-composition.mjs packages/client packages/client/composition-shim
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/packages/client/composition-shim/client-bundle.js (1308108 B)
+build-client-composition: wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/packages/client/composition-shim/package.json
+rc=0

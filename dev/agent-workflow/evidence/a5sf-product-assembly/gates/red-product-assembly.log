@@ -1,0 +1,84 @@
+✖ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (5.351362ms)
+✖ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (7.152331ms)
+✖ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (2.02315ms)
+✖ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (0.880878ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (34.7569ms)
+✖ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.312782ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (22.230406ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 2
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 553.15444
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:242:1
+✖ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (5.351362ms)
+  TypeError: Cannot read properties of undefined (reading 'evidencePath')
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/tests/world-factory/a5sf-product-assembly.test.mjs:248:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:279:1
+✖ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (7.152331ms)
+  AssertionError [ERR_ASSERTION]: declared template ⇒ realm
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/tests/world-factory/a5sf-product-assembly.test.mjs:298:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:345:1
+✖ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (2.02315ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+
+  undefined
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/tests/world-factory/a5sf-product-assembly.test.mjs:375:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:407:1
+✖ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (0.880878ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: binding-scoped subprocess face (search live round UNSUPPORTED) must refuse at row assembly
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/tests/world-factory/a5sf-product-assembly.test.mjs:468:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:550:1
+✖ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.312782ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-product-assembly/tests/world-factory/a5sf-product-assembly.test.mjs:557:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
