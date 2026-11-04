@@ -28,6 +28,13 @@
  *      the intersection acts on and that the dry run's premise check can see it.
  *   7. row 4 window: the packaged `rg` on a REGULAR file does not block — proving
  *      the FIFO premise check is not green for any invocation.
+ *   8-11. THE PARTIAL-RUN LAW (2026-11-05), one control per direction: an
+ *      incomplete sample forced to PASS, a complete sample stripped of its
+ *      judged status, wrong bytes forced to PASS, and the aborted run's overall
+ *      downgraded to the case fold. Each must turn the oracle suite RED.
+ *  12. row 4 placement: the FIFO moved one directory OUTSIDE the restriction
+ *      (exactly the attempt-6 operand) — the dry run's LANE-ALGEBRA check must go
+ *      red, because a text match on the placement cannot decide it.
  *
  * Run: node dev/agent-workflow/evidence/a5sf-search-live/negative-controls.mjs
  *
@@ -58,7 +65,7 @@ const sha = (path) => createHash('sha256').update(readFileSync(path)).digest('he
  *  evidence of the GREEN run, so they are snapshotted here and restored after
  *  the controls — otherwise the last control's red output would become the
  *  evidence the go/no-go gate reads (measured: it did). */
-const PRESERVED = ['dry-run.json', 'dry-run.log', 'plan.log'].map((name) => {
+const PRESERVED = ['dry-run.json', 'dry-run.log', 'plan.log', 'plan-rows.json', 'plan-paths.json'].map((name) => {
   const path = join(HERE, name)
   return { path, bytes: existsSync(path) ? readFileSync(path) : null }
 })
@@ -172,6 +179,52 @@ withMutation({
   args: [DRY],
   wantsRed: true,
   checkId: 'the composed rows are GIVEN to the World',
+})
+
+// ── 8-11. THE PARTIAL-RUN LAW, falsified in each direction ─────────────────
+// Each control breaks ONE of the three pinned laws and requires the suite or the
+// dry run to go RED. Without them "judge what was measured" would be a comment.
+withMutation({
+  id: 'partial run: an INCOMPLETE sample after an abort must NOT become PASS',
+  file: LIB,
+  from: "      id: caseId,\n      verdict: 'NOT_REACHED',",
+  to: "      id: caseId,\n      verdict: 'PASS',",
+  args: ['--test', TEST],
+  wantsRed: true,
+})
+withMutation({
+  id: 'partial run: a COMPLETE sample after an abort must KEEP its judged status',
+  file: LIB,
+  from: '      : CASE_STATUS.JUDGED,',
+  to: '      : CASE_STATUS.DRIVER_ABORTED,',
+  args: ['--test', TEST],
+  wantsRed: true,
+})
+withMutation({
+  id: 'partial run: a COMPLETE sample with the WRONG bytes must NOT become PASS',
+  file: LIB,
+  from: '    verdict: toRunVerdict(judged.verdict),',
+  to: "    verdict: 'PASS',",
+  args: ['--test', TEST],
+  wantsRed: true,
+})
+withMutation({
+  id: 'partial run: the RUN must stay FAIL on an abort even when its cases passed',
+  file: LIB,
+  from: "    overall: abortedAt === null ? folded : 'FAIL',",
+  to: '    overall: folded,',
+  args: ['--test', TEST],
+  wantsRed: true,
+})
+// ── 12. the attempt-6 FIFO placement must be caught by the LANE ALGEBRA ────
+withMutation({
+  id: 'row 4: a FIFO one directory OUTSIDE the restriction must be RED (attempt 6 placement)',
+  file: DRIVER,
+  from: "    fifo: join(inLane, 'blocking.fifo'),",
+  to: "    fifo: join(inLane, '..', 'blocking.fifo'),",
+  args: [DRY],
+  wantsRed: true,
+  checkId: 'the cancellation FIFO is ADMITTED by the effective read lane',
 })
 
 // ── 6. the restriction is load-bearing in the PRODUCT algebra ──────────────

@@ -1,0 +1,190 @@
+{
+  "schema": "a5sf-search-live/oracle-samples/1",
+  "note": "the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.",
+  "roots": {
+    "bootRoot": "session-a5sf-acceptance-root",
+    "teamRoot": "session-a5sf-acceptance-team",
+    "createRoot": "session-a5sf-acceptance-team",
+    "stateQueryRoot": "session-a5sf-acceptance-team",
+    "toolRouteRoot": "session-a5sf-acceptance-team",
+    "toolRouteRootIsLabel": true,
+    "archiveRoot": "session-a5sf-acceptance-team",
+    "oracleRoot": "session-a5sf-acceptance-team",
+    "directiveRoot": "session-a5sf-acceptance-team"
+  },
+  "cases": {},
+  "negativeControl": {
+    "sample": {
+      "result": {
+        "source": "model",
+        "isError": false,
+        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T18-58-10Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T18-58-10Z"
+      },
+      "forbidden": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T18-58-10Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T18-58-10Z"
+      ],
+      "guardFactsBeforeRealm": [],
+      "baseSpawns": [
+        {
+          "at": "2026-11-04T18:58:30.541Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "rev-parse",
+            "--show-toplevel",
+            "--absolute-git-dir",
+            "--git-path",
+            "objects"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:58:30.578Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:58:30.630Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:58:30.665Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--json",
+            "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-58-10Z",
+            "--",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/inside"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:58:30.711Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:58:30.760Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T19:00:31.243Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T19:00:31.293Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T19:00:31.326Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--json",
+            "--regexp=A5SF_SEARCH_OUTSIDE",
+            "--",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/ceiling-outside"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T19:00:31.370Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T19:00:31.438Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        }
+      ],
+      "confinedSpawns": [],
+      "controlDone": false
+    },
+    "verdict": {
+      "verdict": "PROVEN",
+      "reason": "UNCONFINED_CONTROL_LEAKS",
+      "failed": [],
+      "checks": {
+        "controlSucceeded": true,
+        "controlLeaked": true,
+        "unconfinedRanOnTheInheritedService": true,
+        "noConfinedProcess": true,
+        "noGuardFactBeforeRealm": true
+      },
+      "detail": {
+        "result": {
+          "isError": false,
+          "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T18-58-10Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T18-58-10Z"
+        },
+        "leakedTokens": [
+          "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T18-58-10Z",
+          "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T18-58-10Z"
+        ],
+        "baseSpawns": 11,
+        "confinedSpawns": 0,
+        "guardFactsBeforeRealm": 0,
+        "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+      }
+    }
+  }
+}

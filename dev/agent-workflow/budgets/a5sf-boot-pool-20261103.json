@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-boot-pool/1",
   "grantId": "a5sf-boot-pool-20261103-user-20",
-  "grantedBy": "user ruling 2026-11-03 (chat): \"我现在预先批准20次boot预算。请自行分配。\" — pre-approval, no per-run ask required inside the allocation",
+  "grantedBy": "user ruling 2026-11-03 (chat): \"\u6211\u73b0\u5728\u9884\u5148\u6279\u51c620\u6b21boot\u9884\u7b97\u3002\u8bf7\u81ea\u884c\u5206\u914d\u3002\" \u2014 pre-approval, no per-run ask required inside the allocation",
   "grantedAt": "2026-11-03T15:00Z",
   "bootsGranted": 20,
   "ledgerRowArithmetic": "the BL-14 gate counts SHARED-LEDGER ROWS, not spawns: 1 pre-registration (intent) row per lease, so 20 boots need maxStarts = 21. Each per-run grant file therefore carries maxStarts = boots_allocated_for_that_run + 1 and is materialised at RUN TIME against the exact HEAD (boundCommit), because the gate refuses GRANT_FOREIGN_COMMIT when HEAD has moved.",
@@ -24,8 +24,24 @@
     },
     {
       "item": "P2-04 grep (BL-16)",
-      "boots": 3,
-      "why": "the second representative tool family"
+      "boots": 10,
+      "why": "one attempt per named handoff: the first spent on a handoff defect, the retry on the coverage gate, the last on the lane's own launch method. RE-GRANTED 2026-11-05 (3 starts: reach member-install, judge the rows) and re-granted AGAIN 2026-11-05 (4 starts: the correction round judges every sample at completion, so rows 1/2/3/5 settle before the cancellation window; row 1 is a two-way test with stderr captured).",
+      "regranted": [
+        {
+          "at": "2026-11-05",
+          "boots": 3,
+          "by": "owner (relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
+          "priorBoots": 3,
+          "priorSpent": 3
+        },
+        {
+          "at": "2026-11-05",
+          "boots": 4,
+          "by": "owner (relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
+          "priorBoots": 6,
+          "priorSpent": 6
+        }
+      ]
     },
     {
       "item": "P3 native-origin inventory (BL-21)",
@@ -54,7 +70,7 @@
     {
       "amendmentId": "a5sf-boot-pool-20261103-user-23",
       "recordedAt": "2026-11-04T01:20Z",
-      "grantedBy": "user ruling 2026-11-04 (chat): \"针对P2-01，我同意再增加三次额度，而不是复审意见中的一次。\"",
+      "grantedBy": "user ruling 2026-11-04 (chat): \"\u9488\u5bf9P2-01\uff0c\u6211\u540c\u610f\u518d\u589e\u52a0\u4e09\u6b21\u989d\u5ea6\uff0c\u800c\u4e0d\u662f\u590d\u5ba1\u610f\u89c1\u4e2d\u7684\u4e00\u6b21\u3002\"",
       "delta": "P2-01 live read 3 -> 6 (one dedicated run per attempt, plus preflight re-run headroom)",
       "constraint": "the three extra starts are a DEDICATED P2-01 allocation, recorded here rather than moved from another item; a zero-boot preflight must pass before the first of them is spent",
       "poolAfter": 23

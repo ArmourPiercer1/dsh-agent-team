@@ -1,0 +1,249 @@
+{
+  "schema": "a5sf-search-live/team-call-artifact/1",
+  "at": "2026-11-04T20:22:31.131Z",
+  "stage": "member-install",
+  "memberSeen": {
+    "visible": true,
+    "instanceId": "inst-14xcgx11i3lu",
+    "childSessionId": "<set>"
+  },
+  "teamCalls": [
+    {
+      "name": "team_delegate",
+      "id": "call-a5sfsrch-delegate",
+      "input": {
+        "rootSessionId": "session-a5sf-acceptance-team",
+        "requestToken": "a5sfsrch-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sfsrch-worker",
+        "prompt": "A5SF_SEARCH_WORK: run the eight-call search script from the evidence, one call at a time, then report.",
+        "async": false
+      },
+      "result": {
+        "source": "model",
+        "isError": false,
+        "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-acceptance-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14xcgx11i3lu\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-47be99afeb8b0aac5c2a00478d3f8141\",\"operationId\":\"op-1b9gif61u6gwev0bgl3do0ln\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sfsrch-d1-delegate\",\"status\":\"failed\",\"error\":{\"code\":\"WORK_TURN_ABORTED\",\"message\":\"the member turn was aborted before completion\"}}},\"requestToken\":\"a5sfsrch-d1-delegate\"}"
+      }
+    }
+  ],
+  "rawState": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "session-a5sf-acceptance-team",
+    "teamSession": {
+      "rootSessionId": "session-a5sf-acceptance-team",
+      "blueprintId": "team.a5sf.search.main",
+      "revision": "1",
+      "contentHash": "sha256:b87c47d6388b467b14f98f3620d20b09352fecf97cc58b007ec315221c2231f6",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "createdAt": "2026-11-04T20:22:29.996Z",
+      "generation": 9
+    },
+    "members": [
+      {
+        "instanceId": "inst-14xcgx11i3lu",
+        "templateId": "worker",
+        "label": "a5sfsrch-worker",
+        "childSessionId": "session-team-child-47be99afeb8b0aac5c2a00478d3f8141",
+        "lifecycle": "SETTLED",
+        "activityVersion": 3
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": [],
+      "abandonments": []
+    },
+    "activity": [
+      {
+        "globalSequence": 4,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-14xcgx11i3lu",
+        "subject": "work-unit",
+        "sequence": 1,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "a5sfsrch-d1-delegate",
+        "requestToken": "a5sfsrch-d1-delegate"
+      },
+      {
+        "globalSequence": 5,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-14xcgx11i3lu",
+        "subject": "work-unit",
+        "sequence": 2,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "a5sfsrch-d1-delegate",
+        "requestToken": "a5sfsrch-d1-delegate"
+      }
+    ],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "session-a5sf-acceptance-root": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-a5sf-acceptance-team": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-team-child-47be99afeb8b0aac5c2a00478d3f8141": {
+          "instanceId": "inst-14xcgx11i3lu",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-search-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        }
+      }
+    },
+    "observations": [
+      "a5p1-guard: dispatcher-preparing agent=session-a5sf-acceptance-team to=PREPARING",
+      "a5p1-guard: guard-installed agent=session-a5sf-acceptance-team scope=session-a5sf-acceptance-team",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/pre-execute armed=1 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/post-execute armed=2 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/result armed=3 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/execute armed=4 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools.guard armed=5 required=5",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-acceptance-team verified=0 surface=8",
+      "a5p1-guard: published-surface-unverified agent=session-a5sf-acceptance-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+      "a5p1-guard: surface-inherited agent=session-a5sf-acceptance-team verified=0",
+      "a5p1-guard: dispatcher-active agent=session-a5sf-acceptance-team to=ACTIVE",
+      "a5p1-guard: agent-published agent=session-a5sf-acceptance-team surface=8 masked=4 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-a5sf-acceptance-team",
+      "alpha2-artifact-grant: shell-result-observer installed",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfsrch-delegate inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-acceptance-team callId=call-a5sfsrch-delegate inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfsrch-delegate inFlight=0"
+    ]
+  },
+  "mockRequests": 16,
+  "memberTurnSeen": true,
+  "note": "tool_result text is the product-side answer to the call; a refusal carries its typed error, an acceptance with no Member means the worker never started"
+}

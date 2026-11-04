@@ -1,16 +1,24 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status: all 3 pooled `P2-04` starts are SPENT, and 0 of 6 rows are judged. No
-grade is promoted: `M-06`/`M-07` keep `ENFORCE-PARTIAL`, `V@B=no`, and their
-`tested` value. The third start was destroyed by the lane's own launch method
-(`nohup … &` inside a foreground call, killed at the first tool turn) — not by the
-product, and not by driver logic. §3b records it as such.**
+**Status (2026-11-05, second re-grant): FOUR OF SIX ROWS ARE JUDGED PASS.** The owner
+granted 4 further boots (pool 10, 9 spent, 1 unspent). Rows **2, 3, 5 and 4 PASS** live;
+row **1 REFUTED with bytes** (`rg` reads the repo's ancestor `.git`, is refused by the
+ceiling and exits 2); row **6 FAIL** on a real question (an archived member's tool route
+still executes and spawns). `M-06` stays `ENFORCE-PARTIAL` — now with four measured
+clauses and one refuted clause — and `M-07`'s two glob arms are PROVEN live for the first
+time. Nothing is promoted in the matrix: that file is the owner's.
 
 | attempt | when | port | got to | died at |
 |---|---|---|---|---|
 | 1 | 15:36:59–15:39:18Z | 3183 | Host booted, authenticated, health never answered | **composition** — the driver emitted the four World rows but never gave them to the World |
 | 2 | 15:56:53–16:00:00Z | 3182 | composition verified, health 200 in 3 s, surface 24 tools, negative control ran | **team-create** — the product's permission coverage gate refused `grep`/`glob` on the leader |
 | 3 | 17:04:45–17:05:05Z | 3183 | composition verified, health 200 in 0.3 s, **the control's `rg` launched** | **killed** — the driver's own process group, 230 ms after the discovery turn |
+| 4 | 18:51:35–18:55:58Z | 3184 | probe artifact + control + `team.create` ok | **member-install** — the search module was mounted with an empty config |
+| 5 | 18:58:10–19:05:32Z | 3184 | control **PROVEN** (leak), `team.create` ok, delegate answer captured | **member-install** — `SERVICE_MOUNT_FAILED … $.sampleOverCapGlobResults missing` |
+| 6 | 19:07:58–19:17:21Z | 3184 | **member realm installed**, 3 confined spawns, 7 guard facts | **cancellation-window** — the FIFO operand was outside the read lane, refused at admission |
+| 7 | 20:01:20–20:07:01Z | 3182 | **rows 2/3/5 judged PASS**; row 1 REFUTED with stderr | completed — row 4 refused by arithmetic, row 6 a finding |
+| 8 | 20:10:19–20:15:30Z | 3182 | the cancel was accepted **4 ms** after the FIFO spawned | completed — row 4's three clauses were mis-reads |
+| 9 | 20:17:23–20:22:33Z | 3182 | **row 4 PASS** (`CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT`) | completed — 4 PASS / 2 FAIL |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
 - branch: `task/a5sf-search-live-20261104`; draft PR #588
@@ -23,10 +31,10 @@ product, and not by driver logic. §3b records it as such.**
 
 | | |
 |---|---|
-| **Proven host-free (0 boots)** | 45 `node:test` arms on the six judges (`tests/world-factory/a5sf-search-live.test.mjs`), 47 dry-run checks (`dry-run.mjs`), 9 mutation controls (`negative-controls.mjs`), plus the `--plan` handoff identity. All green at the commit this file lands on. |
-| **Proven live (3 boots)** | The World **composition** carries the rows it is given (attempts 2 and 3: all six `presentRowIds`, `missingRowIds=[]`), the p6t6 health route answers in 0.3–3 s, the anchor preset exposes a **24-tool surface including `grep` and `glob`**, and — attempt 3 — the evidence row's base spawn **launched the packaged `rg`** on the control's operand inside a real World with **no `base-spawn-failed` row** (F1 closed in the World's own composition). |
-| **NOT proven: the six rows** | 0/6 judged. Attempt 2 recorded `6/6 FAIL, reason=DRIVER_ABORTED_AT_team-create` — the fail-closed encoding, not a product verdict. No Member, no realm install, no confined `rg` process, no fact. Attempt 3 reached the control's spawn and was killed before its result was read. |
-| **NOT proven: the negative control** | Attempt 2 **ran it and it REFUTED** because the evidence row's own wrapper had called `spawn(undefined)` (F1, withdrawn — see §4). Attempt 3 **launched** the control's `rg` correctly but was killed before the tool result was recorded, so the leak is still unjudged. |
+| **Proven host-free (0 boots)** | 52 `node:test` arms on the six judges + the partial-run contract (`tests/world-factory/a5sf-search-live.test.mjs`), 59 dry-run checks (`dry-run.mjs`), 14 mutation controls (`negative-controls.mjs`), the `--plan` handoff identity, and the offline re-judgement of attempt 6 (`rejudge-attempt6.mjs`). All green at the commit this file lands on. |
+| **Proven live (6 boots)** | The World **composition** carries the rows it is given (attempts 2 and 3: all six `presentRowIds`, `missingRowIds=[]`), the p6t6 health route answers in 0.3–3 s, the anchor preset exposes a **24-tool surface including `grep` and `glob`**, the evidence row's base spawn launches the packaged `rg` (attempt 3), the anchor's **unconfined control leaks both out-of-lane tokens** (attempt 5, PROVEN), and — attempt 6 — the **Member realm installs and serves three confined `rg` processes** plus seven guard facts (§3c). |
+| **Measured but not judged: the six rows** | 0/6 judged. Attempt 6 observed the guard facts, spawns and exits for rows 1/2/3/5, then aborted in `cancellation-window`; the result *bytes* were never persisted, so no row has a complete sample (`rejudge-attempt6.json`). The old record's `6/6 FAIL` was a driver-level bulk assignment, not six refutations (§3d); the correct case status is `NOT_REACHED` + `driver-aborted`, and the run is `FAIL` + `partial`. |
+| **NOT proven: the negative control** | ~~refuted~~ — **PROVEN** in attempt 5 (§3c): one base spawn, both out-of-lane secrets in the result, zero confined spawns. |
 | **Grade that follows** | `grep`/`glob`: `ENFORCE-PARTIAL`, `V@B=no`, `tested` unchanged. The host-free half of BL-16 (`evidence/a5sf-bl16-grep/`) still stands on its own evidence. |
 
 ## 2. Attempt 1: a driver defect, and the net that now guards it
@@ -125,6 +133,275 @@ fact realm, row 3's binding restriction, cancellation. No abort row is claimed: 
 boot really happened, so the intent's `1 = 1 − 0` stands and the start is honestly
 counted as spent.
 
+## 3c. The 2026-11-05 round: three fresh starts, the Member reached, the window missed
+
+The owner granted three more starts on a fresh branch off master. The round is the
+first one in which the **Member** half of the vertical actually ran.
+
+| start | what it added | why it stopped |
+|---|---|---|
+| 4 | the leader grep probe (18:53Z) and a `team.create` that passed the coverage gate | `MEMBER_INSTALL_NO_WORKER`; the delegate answer was not captured yet |
+| 5 | the **negative control PROVEN** and the delegate answer captured | `team_delegate` → `TEAM_RUNTIME_DURABLE_WRITE_FAILED`: `SERVICE_MOUNT_FAILED: native tool module re-mount failed: invalid config: $.sampleOverCapGlobResults missing required value` |
+| 6 | member realm installed, `member turn dispatched=true`, 3 `confined-spawn` + 3 `confined-exit`, 7 guard facts | `CANCELLATION_WINDOW_NO_CONFINED_SPAWN` after 240 s |
+
+### The leader grep artifact (start 4, `probe-leader-grep.json`)
+
+```
+success=true   baseSpawn=1   base-spawn-failed=0   factsBeforeRealm=0
+toolResult: { isError:false,
+  text: "Found 2 matches …/workspace/lane/inside/glob/needle.txt
+         Line 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z" }
+```
+
+This is the artifact the previous round never produced, and it settles F1 for good:
+the same composition, the same row, one base spawn, a real `rg` match, no failure row.
+
+### The negative control (start 5)
+
+```
+verdict=PROVEN  reason=UNCONFINED_CONTROL_LEAKS
+leakedTokens=[A5SF_SEARCH_OUTSIDE_SECRET_…, A5SF_SEARCH_OUTSIDE_SECOND_…]
+baseSpawns=11  confinedSpawns=0  guardFactsBeforeRealm=0
+```
+
+The anchor leader's *unconfined* search returns both out-of-lane secrets. That is the
+baseline that makes row 2 discriminating; attempt 2's `REFUTED` was the F1 instrument.
+
+### The Member, live (start 6)
+
+Seven facts, in order, all from `realm: "member"` / `memberIdentity:
+inst-14xcgx11i3lu` / `toolBindingIdentity: null`:
+
+| # | decision | decidedBy | locator (relative to the World home) |
+|---|---|---|---|
+| 1 | **allow** | `ALLOW` | `workspace/lane/inside` |
+| 2 | **deny** | `IO_READ_DENIED` | `ceiling-outside` |
+| 3 | **deny** | `IO_READ_DENIED` | `workspace/lane/outside-restriction.txt` |
+| 4 | allow | `ALLOW` | `workspace/lane/inside/invalid` |
+| 5 | allow | `ALLOW` | `workspace/lane/inside/glob` |
+| 6 | deny | `IO_READ_DENIED` | `ceiling-outside-glob` |
+| 7 | deny | `IO_READ_DENIED` | `workspace/lane/blocking.fifo` |
+
+The confined face served three spawns and three exits (in-lane `grep`, invalid-pattern
+`grep`, `glob`), and the two out-of-lane operands were refused **before** any process:
+`confined-spawn` stayed at 3, so the denies cost no process and no bytes. This is the
+first live evidence of rows 1, 2, 3 and 5's *guard* behaviour in the Member realm.
+
+**Why no row is judged:** the seven facts happened inside 400 ms, so the driver's
+cancellation stage — which waits for the FIFO grep to be *admitted* — found fact 7 was
+a denial instead. The FIFO was at `lane/blocking.fifo`, i.e. inside the ceiling but
+**outside** the tool restriction (`lane/inside`), so the guard correctly refused it.
+The window needs an ADMITTED search that then blocks. The fixture now places the FIFO
+inside the effective lane (`lane/inside/blocking.fifo`).
+
+The run's own lane report names the cause, which is why this is a measurement and not
+a hypothesis (`stage-diagnosis.json`, `probe.laneReport.probePaths[4]`):
+
+```
+locator …/workspace/lane/blocking.fifo
+  ceilingRead: allow        ← inside the ceiling
+  restrictionRead: deny     ← outside lane/inside
+  effectiveRead: deny       ← so the guard refuses it at admission
+```
+
+**What attempt 6 got wrong about its own record** (corrected in §3d): the driver
+judged nothing and then wrote all six rows as `FAIL / DRIVER_ABORTED_AT_cancellation-window`.
+The run *is* a FAIL, but the rows were not refuted — they were never observed. The
+record now distinguishes the two.
+
+### The three instrument defects this round found and fixed
+
+1. **The probe poisoned the control.** The control counted greps by name; the probe
+   (now first) had already left one in the transcript, so the control answered without
+   issuing its grep and was recorded `NOT_REACHED`. Both now key on their own operand
+   via `tool_result.tool_use_id`.
+2. **Tool-use counting does not work in this harness.** The follow-up request does not
+   echo the assistant `tool_use` block, so every counter stayed 0, every turn re-issued
+   its call and burned its full 120 s settle timeout (two `rg` spawns 121 s apart). The
+   mock now sequences on `resultIdsOf(req)` — the `tool_result` ids.
+3. **The module was mounted with an empty config.** `tool-fs-search`'s `Config`
+   requires `sampleOverCapGlobResults`; a bare string entry mounts with `{}` and the
+   realm install is refused. The row now passes `{ sampleOverCapGlobResults: false }`
+   (deterministic head for an over-cap page).
+
+## 3d. The 2026-11-05 correction round: judge what was measured (no boot)
+
+Attempt 6's driver measured seven facts and then discarded them. Not by crashing —
+by **deciding**. This round fixes that, and it fixes it without spending a start
+(pool 6/6, no Host booted; everything below is host-free).
+
+### The single line that threw the observations away
+
+The success path judged rows **only in the final verdict loop**, after the
+cancellation window:
+
+```js
+// old run-boot.mjs, end of boot(): the first and only judging site
+if (oracleSamples[id] === undefined) add(id, 'NOT_REACHED', { reason: 'NO_SAMPLE' })
+```
+
+and the abort path then fail-closed every row that had no sample —
+
+```js
+// old abort path
+for (const id of CASES) {
+  if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}` })
+}
+```
+
+Because `oracleSamples` was populated *downstream* of `cancellation-window`, the
+abort found it empty and turned six rows into `FAIL`. The guard against laundering a
+missing observation into a pass ("a live regression must never be NOT_REACHED") was
+implemented as a bulk `FAIL`, which is the opposite error: it asserted a refutation
+that had never been observed. Four rows had live facts at that moment; the driver
+dropped them on the floor.
+
+### The law that replaces it
+
+| about | rule |
+|---|---|
+| a **case** | judged only from a COMPLETE sample, by that row's own judge; an incomplete sample is `NOT_REACHED` |
+| a **case after an abort** | a complete sample keeps its real verdict (a PASS is a *case* PASS); an incomplete one is `NOT_REACHED` with `status: driver-aborted` |
+| the **run** | an abort after the Host was reached is `FAIL`, `partial: true`, with the aborting stage recorded — a case PASS can never lift it |
+| the record | names `judgedCases` and `neverObserved` separately, so no reader can mistake "not looked at" for "looked at and refuted" |
+
+Machine-checkable statuses (`CASE_STATUS` in `tests/world-factory/lib/a5sf-search-live.mjs`):
+`judged` / `not-reached` / `driver-aborted`. `sampleCompleteness(caseId, sample)` names
+the missing channel per row (`result`, `laneReport`, `laneReportProbe`, `confinedSpawn`,
+`interrupt`, `memberChildSessionId`, …), and `judgeCase` is the only judging entry.
+
+**Three pinned cases** (`a5sf-search-live.test.mjs`, 52 arms) — and each one has a
+mutation control that turns it RED (`negative-controls.mjs` 8–11):
+
+| sample, after an abort | case verdict | must never be |
+|---|---|---|
+| complete, correct bytes | `PASS`, `status=judged` | — |
+| incomplete (`result` null) | `NOT_REACHED`, `status=driver-aborted` | `PASS` |
+| complete, wrong bytes | `FAIL`, `status=judged` | `PASS` |
+
+and the run fold: `PASS` + `NOT_REACHED` cases under an abort ⇒ `overall: FAIL`,
+`partial: true`. On a completed run the same pair folds to `NOT_REACHED` — the run
+verdict is the worst case, the abort is the only thing that makes it `FAIL`.
+
+### The driver now judges as it goes
+
+Judging happens at **every point where a sample becomes complete**, not once at the
+end: after the member turn is dispatched (`delegate-dispatch`), after each row's
+evidence arrives (`evidence-collection`), after teardown (`teardown`), and again on
+the abort path (`abort:<stage>`). `judgeSettledRows()` skips incomplete samples rather
+than freezing their incompleteness, so a later flush can still judge them. The abort
+path re-judges from the channels that exist, records `markAborted({stage, detail,
+error})`, and writes the same `oracle-samples.json` (now with `partial`, `abortedAt`
+and each sample's `missing` list) so the next failure is re-judgeable offline.
+
+The **third channel** is now persisted: `mock-requests.json` carries the model-visible
+transcript, i.e. the tool-result bytes every row judge compares against. Attempt 6's
+sink and counter were copied out; its results were not, and that single omission is
+why the run below cannot be re-judged.
+
+### Offline re-judgement of attempt 6 (`rejudge-attempt6.mjs` → `rejudge-attempt6.json`)
+
+| row | archived | re-judged | status | on disk | named gap |
+|---|---|---|---|---|---|
+| 1 in-lane grep | FAIL | **NOT_REACHED** | driver-aborted | 1 fact, 1 spawn, exit **2** | `result` |
+| 2 ceiling deny | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, 1 spawn, 0 exits | `result` |
+| 3 restriction deny | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, lane report | `result` |
+| 4 cancel on FIFO | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, **0 spawns** | `confinedSpawn`, `interrupt` |
+| 5 invalid pattern | FAIL | **NOT_REACHED** | driver-aborted | 1 fact, 1 spawn, exit 2 | `result` |
+| 6 teardown | FAIL | **NOT_REACHED** | driver-aborted | nothing | `sample` |
+
+`judgeable offline: 0 of 6`. The archived record's six `FAIL`s are all withdrawn as
+*case* verdicts — it claimed six refutations and made zero observations. The **run**
+stays FAIL, because the driver aborted after reaching the Host.
+
+**The one row with a refutation signal is row 1**, and it is reported as a risk, not a
+verdict: its in-lane `grep` exited **2**, and the pinned module maps any exit ∉ {0,1}
+to `SearchError(SEARCH_FAILED)` (`tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js:201`),
+i.e. `isError: true`, which would fail row 1's `resultNotError` clause. The same
+binary, cwd and tree produced exit 0 for the `--no-ignore` glob and exit 2 for the
+invalid pattern (correct), so the discriminating difference for row 1 is the missing
+`--no-ignore`: ripgrep then discovers ignore/git metadata in the **ancestors** of the
+search root (`lane/`, `workspace/`, the World home), and the restriction admits only
+`lane/inside`. `stderr` was never persisted, so the cause cannot be named from what
+survived — that is the named gap, and the smallest next measurement in this lane.
+
+### Row 4's window, and the gate that would have caught the placement
+
+The FIFO moved to `lane/inside/blocking.fifo`, and the dry run now decides its
+placement with the **product algebra**, not a regex: it reads `plan-paths.json`
+(written by `--plan`, so the paths the boot will actually compose), builds
+ceiling/restriction/effective from the product `path-rules`, and requires
+`matchLocator(effective, fifo) === 'allow'`. The same inputs must return `deny` for
+the attempt-6 operand (`<ceiling>/lane/blocking.fifo`), so the check cannot be green
+for "any FIFO anywhere". A mutation control rewrites the placement to
+`join(inLane, '..', 'blocking.fifo')` and requires the dry run RED.
+
+## 3d. The second re-grant: four rows judged, and what the two failures are
+
+Four boots were granted on 2026-11-05 (pool 10). Three were spent; the fourth is
+unspent. The verdicts below are from run 9 (`2026-11-04T20-17-23Z`), the only run in
+which all six rows reached a judge with a complete sample.
+
+| row | verdict | reason | evidence |
+|---|---|---|---|
+| 1 | **FAIL (refuted)** | `ROW1_CLAUSE_FAILED` (`resultNotError`, `matchReturned`, `fileNamed`) | `confined-exit code=2`, `stderr="rg: …/.git: Permission denied (os error 13)"` |
+| 2 | **PASS** | `OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS` | one `deny` fact `IO_READ_DENIED`, `confined-spawn` unchanged |
+| 3 | **PASS** | `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION` | `allow` for the ceiling, `deny` for the restriction, effective `deny` |
+| 4 | **PASS** | `CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT` | interrupt `result.ok=true, accepted=true`; child `code=143` (SIGTERM) 4 ms later; no result delivered |
+| 5 | **PASS** | `INVALID_PATTERN_SURFACED_AS_TOOL_ERROR` | tool error, never "no matches" |
+| 6 | **FAIL (finding)** | `ROW6_CLAUSE_FAILED` (`noSuccessAfterStop`, `noCallableShadow`, `noProcessAfterStop`, …) | `postStopGrep=200`, `postStopGlob=200`, a `confined-spawn` 55 ms after `stopInstant` |
+
+### Row 1 is refuted by the repository, not by the ceiling
+
+```
+row 1 confined-exit code=2 signal= stderrBytes=115
+stderr="rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)
+"
+tool text: "Error: grep search failed (exit 2): rg: …/.git: Permission denied (os error 13)"
+```
+
+`rg` discovers VCS state by walking the **ancestors** of its search root. The World's
+workspace lives inside this repository, so it finds the worktree's `.git`, the ceiling
+refuses it (correctly — it is out of lane), and `rg` exits 2; the pinned module maps
+exit ∉ {0,1} to `SearchError`. The row therefore fails for a reason that is neither the
+ceiling nor the guard: **a confined `grep` cannot run inside a git work tree.** Two
+remedies are possible and both are policy decisions, not driver fixes: give the module
+`--no-ignore`/`--no-ignore-vcs` (argv is the shipped allow-list's to decide), or place
+the World's workspace outside any repository. The second would make the row measure a
+different environment, so it is disclosed rather than taken.
+
+### Row 6: an archived member is still callable
+
+`hostDead=true portReleased=true homeDeleted=true noOrphanProcess=true` — the teardown
+itself is clean. What fails is the **window between archiving and the Host's death**:
+`team_archive_member` returns `lifecycle-changed SETTLED→ARCHIVED`, and the tool route
+still executes (`postStopGrep=200`, `postStopGlob=200`) and even spawns a new confined
+process 55 ms after the stop instant. So `archive` does not revoke the member's tool
+surface. Whether it should (row 6's reading) or whether the surface is only revoked when
+the child session closes (the product's apparent reading) is a contract question for the
+owner; it is not something a re-run answers, which is why the fourth boot was not spent.
+
+### Row 4 needed the interrupt to be issued INSIDE `team.create`
+
+Run 7 failed row 4 with a child exit 143 that came from the module's own 30 s tool
+timeout: `team.create` waits for the leader's first turn, that turn is the synchronous
+delegate, and the delegate waits for the member's turn — the blocking FIFO grep. The
+driver therefore had no control during the only window in which the search was in
+flight. Run 8 fixed that (`createPromise` + a concurrent watcher that reads the FIFO's
+`confined-spawn` and the worker's `childSessionId`, then calls the shipped cancel route):
+the interrupt was accepted **4 ms** after the spawn. Three clauses still failed, and all
+three were mis-reads of the product's own evidence:
+
+1. `interruptAcknowledged` read `body.ok`; the route answers `{result:{ok:true,
+   value:{accepted:true}}}`, so an accepted cancel was recorded `ok:false`.
+2. `childTerminatedBySignal` demanded a non-empty `signal`; the launcher reports a
+   signal-killed payload as `code = 128 + signum` with an empty signal string —
+   `provider.ts`'s documented convention, and the record said `143`.
+3. `settlementIsCancelled` falls back to the termination evidence when no result is
+   delivered, so it inherited (2).
+
+Run 9, with those three reads corrected, judged row 4 **PASS**.
+
 ## 4. The two live findings
 
 ### F1 — WITHDRAWN: it was the lane's own instrumentation, not a product finding
@@ -193,25 +470,49 @@ preset alone cannot produce a confined search on any agent.
 
 ## 5. Row 3, and the realm
 
-Row 3 (a binding restriction narrower than the ceiling) stays **`UNSUPPORTED` for
-preset-expression**. A binding realm has no `subprocess` face today (BL-17 refuses
-the module with `SUBPROCESS_UNCONFINED_REALM`), so the two-axis restriction is
-composed from lane inputs with the **product** algebra
-(`intersectPathRuleSets`/`matchLocator` from `dist`) and `judgeRow3` records
-`presetExpressesBindingRestriction:false` + `presetLimit`. The lane report in
-attempt 2 shows the composition it would have used (ceiling = the workspace,
-restriction = the in-lane subtree, effective = the intersection). The live fact
-would be `realm='member'`, `toolBindingIdentity=null`; that stays a recorded gap,
-never an asserted pass.
+**Row 3 is now `SUPPORTED` as a genuine restriction-lane refusal, and remains
+`UNSUPPORTED` only for *preset-expression*.** Those are two different claims and the
+earlier note ran them together.
+
+What attempt 6 measured (`stage-diagnosis.json` → `probe.laneReport.probePaths[1]`),
+for the exact restricted file:
+
+```
+locator …/workspace/lane/outside-restriction.txt
+  ceilingRead: allow        ← the workspace ceiling ADMITS it
+  restrictionRead: deny     ← only the narrower tool restriction denies it
+  effectiveRead: deny
+```
+
+`rejudge-attempt6.mjs` re-runs the **product** algebra (`intersectPathRuleSets` /
+`matchLocator` from `dist`) over the report's *recorded* allow lists and reproduces
+the same triple (`recomputedMatchesRecord: true`); widening the restriction to the
+ceiling flips the effective answer to `allow`. So the deny is **not** ceiling-derived:
+it is the two-axis restriction doing the work. The earlier `UNSUPPORTED` note was
+over-pessimistic, and an over-pessimistic record is its own inaccuracy — the
+correction is recorded in `rejudge-attempt6.json#corrections`.
+
+What stays `UNSUPPORTED` is only this: a **binding realm** has no `subprocess` face
+today (BL-17 refuses the module with `SUBPROCESS_UNCONFINED_REALM`), so the
+restriction is *composed by the evidence fixture* with the product algebra rather
+than expressed by the preset. `judgeRow3` records
+`presetExpressesBindingRestriction: false` + `presetLimit` in the verdict, so no
+reader can mistake the fixture's composition for a preset capability. The live fact
+is `realm='member'`, `toolBindingIdentity=null`. The matrix/backlog note should read:
+*row 3 deny = restriction-lane (measured); preset-expression of a binding restriction
+= unsupported (unchanged)*.
 
 ## 6. The budget, honestly
 
-`lane-ruling.json` holds three named rulings (the original task; the coordinator's
-retry after the handoff defect; the coordinator's last-start ruling after F1 was
-diagnosed). `run-ledger.jsonl` holds 3 intents and 3 boot rows; the invariant
-`bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` three times). Pool
-item `P2-04 grep (BL-16)`: **3 allocated, 3 spent, 0 remaining**. `go-no-go.mjs`
-now prints:
+`lane-ruling.json` holds four named rulings: the original task, the retry, the
+"last start" ruling, and the owner's **3-start re-grant** of 2026-11-05 (pool 3 spent +
+3 fresh = 6). `run-ledger.jsonl` holds 6 intents and 6 boot rows; the invariant
+`bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` six times). Pool item
+`P2-04 grep (BL-16)`: **10 allocated, 9 spent, 1 remaining** (`go-no-go` prints GO — the
+pool is not exhausted, but the lane stops here on purpose: the two remaining failures are
+findings a re-run cannot change). 5 ruling entries: the original task, the retry, the
+"last start" ruling, the owner's 3-start re-grant, and the owner's 4-start re-grant of
+2026-11-05. `go-no-go.mjs` now prints:
 
 ```
 PASS budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason):
@@ -224,11 +525,15 @@ REFUSE the same check after the third boot  →  NO-GO  (spent=3, remaining=0)
 
 ### The cost line the retry ruling asked for
 
-**This vertical has spent 3 of 3 starts and judged 0 of 6 rows.** The first was lost
-to a defect in the handoff the gate could not see, the second proved the composition
-and then hit a real composition gap (F2) plus a defect in the lane's own instrument
-(F1, withdrawn), and the third was destroyed by how the driver was launched. Three
-starts, zero judged rows, and every loss is attributable — which is the only thing
+**This vertical has spent 9 of 10 starts and judged 4 of 6 rows PASS** (rows 2, 3, 5, 4),
+with row 1 refuted by a byte-level cause and row 6 open on a contract question. The
+first three starts: a handoff the gate could not see, a composition gap (F2) plus the
+lane's own instrument (F1, withdrawn), and a launch method that killed its own run. The
+next three bought the leader probe, the PROVEN control, the member realm install and
+seven live guard facts, then stopped on a FIFO one directory outside the lane. The last
+three bought the judging itself: rows 2/3/5 at dispatch, row 4 after the interrupt was
+moved inside `team.create`, and the two findings above. Every loss is attributable, and
+each start moved the failure forward by exactly one handoff — which is the only thing
 that makes the spend defensible.
 
 The composed-profile gap was invisible to a green `--plan`. The reusable lesson for every later live lane (P3-00
@@ -252,7 +557,7 @@ records what the world looked like. Two starts bought two named handoffs, not tw
 ## 7. Gates, verbatim (current)
 
 ```
-DRY RUN GREEN — 49 checks, head=165059eea4ab70eed728a8c48957692932f10aea digest=614b28b1…
+DRY RUN GREEN — 53 checks, head=e17f0cec… digest=cfb61761…
 NEGATIVE CONTROLS GREEN — 9 controls, every guarded check went RED on the broken property and the bytes were restored
 ```
 
@@ -275,8 +580,11 @@ PASS handoff: the driver CALLS the handoff before harness.boot( (independent sou
 |---|---|
 | `run-boot.mjs` | the driver (`--plan` host-free; boot mode is the one shot). `handOverRows`, the ruling-based budget, the stage taxonomy, the composed-profile probe. |
 | `a5sf-search-realm-provider-row.mjs` | the evidence row: composes ceiling ∩ restriction with the product algebra, `compiledFor()` returns the confined `subprocess` face, counts installs/spawns at the prototype boundary, writes the lane report. |
-| `dry-run.mjs` | 47 host-free checks: driver, row, product seam, premises, dist provenance, handoff, budget 0. |
-| `negative-controls.mjs` | 9 mutation controls (break the property, require RED, restore bytes, verify sha256, restore the committed dry-run artifacts the mutated runs overwrite). |
+| `dry-run.mjs` | 59 host-free checks: driver, row, product seam, premises, dist provenance, handoff, budget 0, the partial-run cases, and the FIFO's placement decided by the product algebra. |
+| `negative-controls.mjs` | 14 mutation controls (break the property, require RED, restore bytes, verify sha256, restore the committed dry-run artifacts the mutated runs overwrite), including one per partial-run law and one for the attempt-6 FIFO placement. |
+| `rejudge-attempt6.mjs` / `.json` | offline re-judgement of the 2026-11-04T19:17Z run from the harvested channels only: per-row verdict, `missing` channels, named gaps, the row-1 refutation risk, and the row-3 attribution cross-check. No Host. |
+| `mock-requests.json` | the mock transcript (tool-result bytes) persisted OUTSIDE the World home; written at dispatch, at each settled row and on the abort path. Absent for attempt 6 — that absence is why it cannot be re-judged. |
+| `plan-paths.json` | the paths `--plan` composed (ceiling/restriction allow lists, in-lane dir/file, the restricted and outside operands, the FIFO); the FIFO placement check reads it. |
 | `go-no-go.mjs` | the boot authorisation gate (dry run, controls, handoff identity, digest, clean tree, branch, ledger invariant, pool, ruling, pinned host). |
 | `lane-ruling.json` | the two authorised starts, each with `by` + `reason`; the driver and the gate both read it. |
 | `plan-rows.json` | the handoff proof: `emittedRowIds` vs `worldRowIds`, ordered identity, health-probe row. |
@@ -293,19 +601,27 @@ is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 
 ## 9. What is NOT proven (complete list)
 
-1. **All six live rows** — unmeasured.
-2. **The negative control** — ran and REFUTED because of F1; it is vacuous until the
-   base spawn can launch `rg`.
+1. **All six live rows** — unmeasured. The Member half is *reached*: the guard facts,
+   the confined spawns and the denies for rows 1/2/3/5 were observed live on
+   2026-11-04T19:13Z (§3c); what is missing is the *complete sample* for any row, so no
+   row can be judged (§3d). Row 1 additionally carries a measured refutation signal
+   (its in-lane `grep` exited 2) that must not be read as a pass.
+2. ~~The negative control~~ — **PROVEN** on 2026-11-05 (§3c): the unconfined search
+   leaks both out-of-lane tokens.
 3. ~~F1's exact cause~~ — **resolved and withdrawn** (`165059eea`): the lane's own
    wrapper called `spawn(undefined)`.
 4. **The leader-deny fix (F2)** — verified host-free against the real gate, not yet
    observed live.
-4b. **The leader grep probe (last-start condition 2)** — implemented and gated, but
-   never executed: the kill came during the control turn, one turn earlier.
-5. **The fact realm for search** — would be `member` with `toolBindingIdentity:null`.
-6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED`.
-7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`,
-   but the end-to-end timing is unmeasured.
+4b. **The leader grep probe (last-start condition 2)** — implemented and gated; it has
+   not run since the kill came during the control turn of attempt 3 (attempt 6 ran it
+   green: `probe-leader-grep.json`).
+5. **The fact realm for search** — observed: `member` with `toolBindingIdentity:null`
+   (all seven attempt-6 facts).
+6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED` (the *deny itself*
+   is now supported as restriction-lane: §5).
+7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`, and
+   the operand is now inside the effective lane; the end-to-end timing is still
+   unmeasured.
 8. **`>cap` clipping, streaming mid-read cancel, atomic replace/version conflict** —
    out of scope, untouched. **M-07 `glob`** — equally unmeasured.
 
@@ -458,6 +774,32 @@ each one is backed by a specific loss here.
    home before teardown**, because the home is deleted and that is what swallowed
    F1's cause twice.
 
-Two smaller ones, already enforced: a fail-closed verdict (`DRIVER_ABORTED_AT_*`) is
-`FAIL`, never `NOT_REACHED`, once a Host was reached; and an instrument records and
-rethrows, it never decides.
+5. **The mock model must sequence on TOOL RESULTS, not on echoed tool_use blocks.**
+   This harness does not echo the assistant `tool_use`; a counter over it never
+   advances, so every turn re-issues its call and burns the whole settle timeout.
+   `resultIdsOf(req)` over `tool_result.tool_use_id` is the reliable key.
+6. **A native module's `Config` is a contract.** `tool-fs-search` requires
+   `sampleOverCapGlobResults` with no default; mounting it as a bare string entry
+   refuses the realm install with `SERVICE_MOUNT_FAILED`. Read the module's `Config`
+   schema before mounting it, and give the deployment choice explicitly.
+7. **A cancellation fixture must be ADMITTED before it can block.** A FIFO inside the
+   ceiling but outside the tool restriction is refused at admission (`IO_READ_DENIED`)
+   and the window never opens; the blocking operand has to sit inside the effective
+   read lane. This is now checked by the product algebra over `plan-paths.json`, and
+   the check is pinned by a mutation that restores the attempt-6 placement (§3d).
+8. **An abort must judge what it measured, and only that.** The rule that must
+   survive is "never launder a missing observation into a pass". The over-correction
+   that must not is "discard the observations you made": attempt 6 measured seven
+   facts, then fail-closed six rows to `FAIL`, asserting refutations it had never
+   observed (§3d). A run verdict and a case verdict are different claims; an aborted
+   run is `FAIL` + `partial`, its judged cases keep their own verdicts, and every
+   unobserved case is `NOT_REACHED` with a named missing channel.
+9. **Persist the bytes, not just the decisions.** The sink (facts) and the counter
+   (spawns/exits) survived attempt 6; the mock transcript (the tool results) did not,
+   and without it no row is judgeable. `mock-requests.json` is written outside the
+   World home at dispatch, at each settled row and on the abort path — the same lesson
+   as rule 4's counter, one channel further out.
+
+Two smaller ones, already enforced: an instrument records and rethrows, it never
+decides; and a driver that reports a *run* verdict must never do so by bulk-assigning
+*case* verdicts it did not measure.

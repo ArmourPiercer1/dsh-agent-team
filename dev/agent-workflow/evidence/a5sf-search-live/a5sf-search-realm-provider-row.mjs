@@ -244,6 +244,8 @@ function spawnReach(program, cwd) {
 /** Wrap P1-07's raw provider so the confined face's SPAWN and EXIT are visible
  *  as records. The handle's `exited` promise is the OS outcome (code/signal);
  *  the module consumes the same handle unchanged. */
+const STDERR_CAPTURE_BYTES = 8192
+
 function countedProvider(inner, ledgerPath, realmTag) {
   const record = recorder(ledgerPath)
   return {
@@ -251,13 +253,30 @@ function countedProvider(inner, ledgerPath, realmTag) {
       const argv = Array.isArray(request?.argv) ? request.argv.map((a) => String(a)) : []
       record({ leg: 'confined-spawn', realm: realmTag, argv, cwd: String(request?.cwd ?? '') })
       const spawned = await inner.spawnStreaming(request, streaming)
+      // STDERR MUST OUTLIVE THE SPAWN. Row 1's risk is an in-lane grep exiting 2,
+      // and the pinned module maps exit not in {0,1} to SearchError, which hides the
+      // payload's own complaint. `stderr` is a Readable on the handle; a `data`
+      // listener is a broadcast, so the module's own consumption is untouched. The
+      // bytes go into the exit row, and the counter is copied OUT of the World home
+      // before teardown — so the reason survives the world it was measured in.
+      const stderrChunks = []
+      let stderrBytes = 0
+      const handleStderr = spawned?.value?.stderr ?? null
+      if (handleStderr !== null && typeof handleStderr?.on === 'function') {
+        handleStderr.on('data', (chunk) => {
+          if (stderrBytes >= STDERR_CAPTURE_BYTES) return
+          const buf = Buffer.from(chunk)
+          stderrChunks.push(buf)
+          stderrBytes += buf.length
+        })
+      }
       if (spawned !== null && spawned !== undefined && spawned.ok === true && spawned.value !== null && spawned.value !== undefined) {
         const exited = spawned.value.exited
         if (exited !== null && exited !== undefined && typeof exited.then === 'function') {
           exited.then((outcome) => {
-            record({ leg: 'confined-exit', realm: realmTag, argv, code: outcome?.code ?? null, signal: outcome?.signal ?? null })
+            record({ leg: 'confined-exit', realm: realmTag, argv, code: outcome?.code ?? null, signal: outcome?.signal ?? null, stderr: Buffer.concat(stderrChunks).toString('utf8').slice(0, STDERR_CAPTURE_BYTES), stderrBytes })
           }).catch(() => {
-            record({ leg: 'confined-exit', realm: realmTag, argv, code: null, signal: 'exit-unavailable' })
+            record({ leg: 'confined-exit', realm: realmTag, argv, code: null, signal: 'exit-unavailable', stderr: Buffer.concat(stderrChunks).toString('utf8').slice(0, STDERR_CAPTURE_BYTES), stderrBytes })
           })
         }
       } else {

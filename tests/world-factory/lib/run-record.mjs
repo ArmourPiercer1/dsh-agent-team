@@ -12,6 +12,14 @@
  * selected case is non-PASS. `overall` is the worst verdict by severity; the
  * line format and exit code both derive from it. SKIP/REFUSED/ENV_BLOCK are
  * disclosures, never colours (plan §3: SKIP/REFUSED/ENV_BLOCK/UNKNOWN 不是 PASS).
+ *
+ * THE PARTIAL-RUN RULE (2026-11-05): a run that ABORTS is `FAIL` at the RUN
+ * level even when every case it managed to observe passed, and the record says
+ * `partial: true` + the abort stage. This is the other half of "never launder a
+ * missing observation into a pass": the fail-closed duty moves from the CASE
+ * verdict (which may legitimately be PASS/NOT_REACHED on what was measured) to
+ * the RUN verdict (which may never be). `markAborted()` is the one place a
+ * caller declares that, so no runner can hand-compute a softer overall.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -105,6 +113,9 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
     hostStarts: { ledgerPath: ledgerPath ?? null, thisRunCount: 0, thisRunEntries: [] },
   }
   let finalized = null
+  /** Set by `markAborted()`; a non-null value makes `finalize()` refuse to
+   *  compute anything softer than FAIL for `overall`. */
+  let abort = null
 
   const logHostStart = (entry) => {
     const e = { at: new Date().toISOString(), runId, suite, ...entry }
@@ -134,6 +145,25 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
       return cases.get(id)
     },
     /**
+     * Declare that this run ABORTED. The run-level verdict becomes FAIL even if
+     * every observed case passed, and the record carries `partial: true`, the
+     * stage that aborted and the abort detail. Cases already judged keep their
+     * verdicts: judging what was measured is not the same as passing the run.
+     *
+     * @param {{stage: string, detail?: string|null, error?: string|null}} where
+     */
+    markAborted({ stage, detail = null, error = null } = {}) {
+      if (typeof stage !== 'string' || stage.trim() === '') throw new Error('markAborted requires a non-empty stage')
+      abort = Object.freeze({ stage, detail, error })
+      record.partial = true
+      record.abortedAt = stage
+      record.abort = abort
+      return abort
+    },
+    isAborted() {
+      return abort !== null
+    },
+    /**
      * Fold: every selected case must have a verdict; a selected case without
      * one is recorded FAIL (a case that never reported is not a pass).
      */
@@ -142,7 +172,15 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
         if (!cases.has(id)) cases.set(id, { id, verdict: 'FAIL', at: new Date().toISOString(), detail: { reason: 'selected case produced no verdict (fail-closed)' } })
       }
       record.cases = [...cases.values()]
-      record.overall = overallVerdict(record.cases)
+      // The abort override: an aborted run is FAIL, no matter how its cases read.
+      record.overall = abort === null ? overallVerdict(record.cases) : 'FAIL'
+      record.partial = abort !== null
+      if (abort !== null) {
+        record.abortedAt = abort.stage
+        record.abort = abort
+        record.judgedCases = record.cases.filter((entry) => entry.status === 'judged').map((entry) => entry.id)
+        record.neverObserved = record.cases.filter((entry) => entry.verdict === 'NOT_REACHED').map((entry) => entry.id)
+      }
       record.finishedAt = new Date().toISOString()
       finalized = record
       return record
@@ -170,7 +208,11 @@ export function formatSummary(record) {
   // `overall`, and it never turns anything into a PASS.
   const native = r.bindings?.nativeConfinementBackend
   const marker = native === 'unusable' || native === 'unknown' ? ` nativeBackend=${native}` : ''
-  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}`
+  // A partial run says so on the summary line: `overall=PASS` is already
+  // impossible for it, and a reader must not have to open the JSON to learn that
+  // the grade covers only the cases the run reached.
+  const partial = r.partial === true ? ` partial=true abortedAt=${String(r.abortedAt ?? r.abort?.stage ?? 'unknown')}` : ''
+  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}${partial}`
 }
 
 /**
