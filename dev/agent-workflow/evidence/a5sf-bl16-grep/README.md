@@ -527,8 +527,9 @@ $ node scripts/check-artifacts-committed.mjs
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1924 glue=101
 
 $ node scripts/check-artifacts-at-head.mjs
-DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=<HEAD> verdict=ok compared=1924
-[check-artifacts-at-head] <HEAD> carries its own build: the committed surface IS a fresh build of itself (1924 compared file(s)).
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1924 glue=101
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1924 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1924 compared file(s)).
 ```
 
 The newly produced files (never committed before on this branch) are
