@@ -225,7 +225,7 @@ import {
   collectAlpha6DelegableLegs,
   createAlpha6RootControlNotifier,
 } from '../../alpha6/notifier.js'
-import { createFileWakeIntentStore } from '../../alpha6/wake-intent-store.js'
+import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js'
 import {
   claimLatch,
   createLatchCoordinator,
@@ -2476,9 +2476,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' },
     )
   }
-  const alpha6WakeIntent =
+  const alpha6WakeIntents =
     alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath === 'string'
-      ? createFileWakeIntentStore({ filePath: config.alpha6WakeIntentPath })
+      ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
       : undefined
   const alpha6WakeCoordinators = new Map<string, LatchCoordinator>()
   const alpha6WakeBySession = new Map<string, LatchCoordinator>()
@@ -2504,11 +2504,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             alpha6WakeCoordinators.set(mapKey, coordinator)
           }
           alpha6WakeBySession.set(input.targetSessionId, coordinator)
+          const intent = alpha6WakeIntents?.forKey(key)
           const result = await dispatchLatch({
             plan: { wakes: [wake], humanLegIds: [], held: [] },
             rootSessionId: rootSid,
             coordinators: [coordinator],
-            ...(alpha6WakeIntent === undefined ? {} : { intent: alpha6WakeIntent }),
+            ...(intent === undefined ? {} : { intent }),
             deliver: async (delivery, targetSessionId) => {
               if (live.deliverReviewWake === undefined) {
                 throw new Error('Alpha.6 wake seam disappeared after boot')
@@ -2564,8 +2565,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             fresh.length === 0
               ? ({ kind: 'no-ready-work' } as const)
               : ({ kind: 'ready', fingerprint: latchFingerprint(freshWake) } as const)
+          const intent = alpha6WakeIntents?.forKey(coordinator.state.key)
           const result = await releaseLatch(coordinator, work, {
-            ...(alpha6WakeIntent === undefined ? {} : { intent: alpha6WakeIntent }),
+            ...(intent === undefined ? {} : { intent }),
             deliver: async (delivery) => {
               if (live.deliverReviewWake === undefined) {
                 throw new Error('Alpha.6 wake seam disappeared after boot')
@@ -2587,24 +2589,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : undefined
   const alpha6RecoverWakeLatches =
     alpha6Wiring.mode === 'alpha6' &&
-    alpha6WakeIntent !== undefined &&
+    alpha6WakeIntents !== undefined &&
     live.reviewWakeInbox !== undefined
       ? async (): Promise<void> => {
-          const intent = await alpha6WakeIntent.read()
-          if (intent === null) return
-          const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId)
-          const targetSessionId = member?.childSessionId
-          if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) return
-          const coordinator = createLatchCoordinator(intent.key)
-          const recovered = await recoverLatch(
-            coordinator,
-            alpha6WakeIntent,
-            live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
-          )
-          if (!recovered.adopted) return
-          const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
-          alpha6WakeCoordinators.set(mapKey, coordinator)
-          alpha6WakeBySession.set(targetSessionId, coordinator)
+          // ONE row per latch: adopt each independently; a row whose native
+          // Inbox message is gone is discarded by the recovery protocol.
+          for (const intent of await alpha6WakeIntents.list()) {
+            const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId)
+            const targetSessionId = member?.childSessionId
+            if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) continue
+            const coordinator = createLatchCoordinator(intent.key)
+            const recovered = await recoverLatch(
+              coordinator,
+              alpha6WakeIntents.forKey(intent.key),
+              live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
+            )
+            if (!recovered.adopted) continue
+            const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
+            alpha6WakeCoordinators.set(mapKey, coordinator)
+            alpha6WakeBySession.set(targetSessionId, coordinator)
+          }
         }
       : undefined
   const alpha6RequestNotification =

@@ -225,9 +225,10 @@ export interface TeamPluginConfig {
    */
   readonly alpha6ReviewRouting?: boolean
   /**
-   * Alpha.6 (opt-in only) — the durable single-row wake-intent file used by
-   * the crash-recovery protocol. Required for full recovery; when absent the
-   * latch still works in-process but a restart cannot reconcile a queued wake.
+   * Alpha.6 (opt-in only) — the durable DIRECTORY holding one wake-intent
+   * row per latch (two reviewers never overwrite each other). Required for
+   * full recovery; when absent the latch still works in-process but a restart
+   * cannot reconcile a queued wake.
    */
   readonly alpha6WakeIntentPath?: string
   /** The durable TeamSession `generation` (positive integer). */

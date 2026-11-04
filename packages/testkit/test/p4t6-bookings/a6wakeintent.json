@@ -3,12 +3,13 @@
   "lane": "A6WAKEINTENT",
   "paths": [
     "packages/runtime/alpha6/wake-intent-store.ts",
+    "packages/runtime/alpha6/wake-intent-directory.ts",
     "packages/runtime/test/a6-wake-intent-store.test.ts"
   ],
   "expectedDelta": {
     "from": 1440,
-    "to": 1442
+    "to": 1443
   },
   "reason": "Alpha.6 wake-intent file store: five tests pin the durable port (missing row, queued write, accepted mark, wakeId-scoped clear, malformed row). No v5 fixture; zero denylist vocabulary.",
-  "tieNote": "MEASURED on this candidate tree: the unbooked p4t6 run reads 1442 and the ledger derives 1440 (module + spec)."
+  "tieNote": "MEASURED on this candidate tree: the unbooked p4t6 run reads 1443 and the ledger derives 1440 (store + directory + spec)."
 }

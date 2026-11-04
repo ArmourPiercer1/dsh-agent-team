@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createFileWakeIntentStore } from '../alpha6/wake-intent-store.js'
+import { createFileWakeIntentDirectory } from '../alpha6/wake-intent-directory.js'
 import { recoverReviewWake } from '../alpha6/wake-intent.js'
 import { createReviewWakeCoordinator } from '../review-wake/index.js'
 
@@ -104,5 +105,38 @@ describe('A6 file intent store + recovery', () => {
     const adopted = await recoverReviewWake(coordinator, store, { has: () => false })
     expect(adopted.adopted).toBe(false)
     await expect(store.read()).resolves.toBeNull()
+  })
+})
+
+describe('A6 sharded wake-intent directory', () => {
+  let dir: string
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'a6-wake-shards-'))
+  })
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true })
+  })
+
+  it('keeps two latches independent and enumerates both rows', async () => {
+    const directory = createFileWakeIntentDirectory(dir)
+    const second = { ...KEY, reviewerInstanceId: 'inst-second' }
+    await directory.forKey(KEY).persistQueued({ key: KEY, wakeId: 'wake-a', workFingerprint: 'fp-a' })
+    await directory.forKey(second).persistQueued({
+      key: second,
+      wakeId: 'wake-b',
+      workFingerprint: 'fp-b',
+    })
+    const rows = await directory.list()
+    expect(rows.map((row) => row.wakeId).sort()).toEqual(['wake-a', 'wake-b'])
+    await directory.forKey(KEY).clear('wake-a')
+    expect(await directory.forKey(KEY).read()).toBeNull()
+    expect((await directory.forKey(second).read())?.wakeId).toBe('wake-b')
+  })
+
+  it('returns no rows for a directory that does not exist yet', async () => {
+    const directory = createFileWakeIntentDirectory(join(dir, 'missing'))
+    await expect(directory.list()).resolves.toEqual([])
   })
 })
