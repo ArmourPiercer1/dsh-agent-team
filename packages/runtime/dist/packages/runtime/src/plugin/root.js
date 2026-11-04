@@ -1797,7 +1797,7 @@ export function createTeamProductionRoot(params) {
             if (coordinator === undefined || coordinator.state.status !== 'running')
                 return;
             const releasedWakeId = coordinator.state.wakeId;
-            try {
+            const readAndRelease = async () => {
                 // The FRESH authoritative read answering the post-turn rescan: the
                 // same facts port and the same reviewer resolution as the notifier.
                 const current = controlRef.current;
@@ -1844,25 +1844,39 @@ export function createTeamProductionRoot(params) {
                 if (result.failures.length > 0) {
                     throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
                 }
-            }
-            catch (error) {
-                // A pre-read failure must not leave the single-flight latch
-                // `running` forever (later plans only poll, and no turn can end
-                // again). Release it and drop the consumed message's intent row so
-                // boot recovery does not adopt a wake whose turn already ended.
-                if (releasedWakeId !== null && alpha6WakeIntents !== undefined) {
-                    try {
-                        await alpha6WakeIntents.forKey(coordinator.state.key).clear(releasedWakeId);
-                    }
-                    catch { /* the release below is still the liveness fix */ }
+            };
+            // One retry is deliberate: the failing step is usually the FRESH
+            // control read, and a transient fault must not discard the post-turn
+            // rescan (turn-end clears `dirty`, so nothing else would re-read).
+            let lastError;
+            for (let attempt = 0; attempt < 2; attempt += 1) {
+                try {
+                    await readAndRelease();
+                    return;
                 }
-                coordinator.dispatch({ type: 'turn-end' });
-                params.onNotificationFailure?.({
-                    requestId: releasedWakeId ?? 'alpha6-review-wake',
-                    kind: 'review-wake-turn-end',
-                    error,
-                });
+                catch (error) {
+                    lastError = error;
+                    if (coordinator.state.status !== 'running')
+                        break;
+                }
             }
+            // The retry also failed. The single-flight latch must not stay
+            // `running` (later plans only poll and no turn can end again), so
+            // release it and drop the consumed message's intent row so boot
+            // recovery does not adopt a wake whose turn already ended.
+            if (coordinator.state.status === 'running')
+                coordinator.dispatch({ type: 'turn-end' });
+            if (releasedWakeId !== null && alpha6WakeIntents !== undefined) {
+                try {
+                    await alpha6WakeIntents.forKey(coordinator.state.key).clear(releasedWakeId);
+                }
+                catch { /* the release above is still the liveness fix */ }
+            }
+            params.onNotificationFailure?.({
+                requestId: releasedWakeId ?? 'alpha6-review-wake',
+                kind: 'review-wake-turn-end',
+                error: lastError,
+            });
         }
         : undefined;
     const alpha6RecoverWakeLatches = alpha6Wiring.mode === 'alpha6' &&
@@ -1872,6 +1886,41 @@ export function createTeamProductionRoot(params) {
             // ONE row per latch: adopt each independently; a row whose native
             // Inbox message is gone is discarded by the recovery protocol.
             for (const intent of await alpha6WakeIntents.list()) {
+                // A shared intent path may carry another Team's rows. Never adopt
+                // or clear them from this root.
+                if (intent.key.rootSessionId !== rootSid)
+                    continue;
+                if (intent.key.sessionGeneration !== config.generation) {
+                    // A generation bump invalidates the old latch identity. Withdraw
+                    // its native message (when the member is still bound) and clear
+                    // the row; keep it if the Inbox cannot confirm the withdrawal.
+                    const staleMember = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                    const staleSessionId = staleMember?.childSessionId;
+                    let removable = true;
+                    if (typeof staleSessionId === 'string' && staleSessionId.length > 0) {
+                        try {
+                            const removed = await live.reviewWakeInbox?.(staleSessionId)?.remove?.(intent.wakeId);
+                            if (removed === false)
+                                removable = false;
+                        }
+                        catch {
+                            removable = false;
+                        }
+                    }
+                    if (removable) {
+                        try {
+                            await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                        }
+                        catch (error) {
+                            params.onNotificationFailure?.({
+                                requestId: intent.wakeId,
+                                kind: 'review-wake-stale-generation',
+                                error,
+                            });
+                        }
+                    }
+                    continue;
+                }
                 const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
                 const targetSessionId = member?.childSessionId;
                 if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
@@ -1891,8 +1940,20 @@ export function createTeamProductionRoot(params) {
                     continue;
                 }
                 const coordinator = createLatchCoordinator(intent.key);
+                const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
+                // Register BEFORE the first await: recovery now runs after
+                // readiness, so a concurrent readiness-gated request could
+                // otherwise build a second coordinator for the same latch and
+                // deliver a duplicate. The map entry is removed again if this row
+                // is not adopted.
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+                alpha6WakeBySession.set(targetSessionId, coordinator);
                 const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
                 if (!recovered.adopted) {
+                    if (alpha6WakeCoordinators.get(mapKey) === coordinator)
+                        alpha6WakeCoordinators.delete(mapKey);
+                    if (alpha6WakeBySession.get(targetSessionId) === coordinator)
+                        alpha6WakeBySession.delete(targetSessionId);
                     // Windows (b)/(d): the native message is gone (claimed and
                     // consumed by a crashed turn, or never delivered). Nothing in
                     // production re-plans it, so rebuild the wake from the durable
@@ -1918,9 +1979,6 @@ export function createTeamProductionRoot(params) {
                     }
                     continue;
                 }
-                const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
-                alpha6WakeCoordinators.set(mapKey, coordinator);
-                alpha6WakeBySession.set(targetSessionId, coordinator);
             }
         }
         : undefined;

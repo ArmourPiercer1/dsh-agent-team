@@ -428,13 +428,26 @@ export async function dispatchReviewWakes(
       // A transport can throw AFTER the native Inbox accepted the message.
       // Treating that as "never delivered" would clear the intent and release
       // the latch, and the next deterministic scan would deliver a duplicate.
-      let landed = false
+      let landed: boolean | null = false
       if (deps.inbox !== undefined) {
         try {
           landed = await deps.inbox.has(effect.wakeId)
         } catch {
-          landed = false
+          landed = null
         }
+      }
+      if (landed === null) {
+        // Unreadable Inbox: absence is unproven. Keep the queued row and retry
+        // on the next plan instead of clearing and duplicating.
+        inFlightWakeIds.delete(effect.wakeId)
+        failures.push({
+          sessionId: wake.reviewerInstanceId,
+          scope: 'delivery',
+          message: 'the native Inbox was unreadable after the delivery failed',
+          wakeId: effect.wakeId,
+        })
+        deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
+        continue
       }
       if (landed) {
         try { await deps.intent?.markAccepted(effect.wakeId) } catch { /* Inbox is truth */ }
@@ -707,6 +720,7 @@ export async function releaseReviewWake(
         'review-wake: release emitted a deliver-wake effect but no delivery port was supplied',
       )
     }
+    inFlightWakeIds.add(effect.wakeId)
     try {
       await options.intent?.persistQueued({
         key: effect.key,
@@ -715,21 +729,34 @@ export async function releaseReviewWake(
       })
       await options.deliver(effect)
     } catch (error) {
-      let landed = false
+      let landed: boolean | null = false
       if (options.inbox !== undefined) {
         try {
           landed = await options.inbox.has(effect.wakeId)
         } catch {
-          landed = false
+          landed = null
         }
+      }
+      if (landed === null) {
+        // The Inbox is unreadable, so absence is unproven. Keep the queued row
+        // and let a later plan retry; releasing here would duplicate.
+        inFlightWakeIds.delete(effect.wakeId)
+        failures.push({
+          scope: 'delivery',
+          message: 'the native Inbox was unreadable after the release delivery failed',
+          wakeId: effect.wakeId,
+        })
+        continue
       }
       if (landed) {
         try { await options.intent?.markAccepted(effect.wakeId) } catch { /* Inbox is truth */ }
+        inFlightWakeIds.delete(effect.wakeId)
         delivered.push(effect.wakeId)
         continue
       }
       // The message never reached the Inbox: clearing the intent and moving
       // the latch to delivery-failed is safe (nothing was delivered).
+      inFlightWakeIds.delete(effect.wakeId)
       await clearIntent(options.intent, effect.wakeId)
       const failed = coordinator.dispatch({
         type: 'delivery-failed',
@@ -757,6 +784,7 @@ export async function releaseReviewWake(
       // and duplicate the wake. Leave the queued row for Inbox-truthful
       // recovery adoption (window c) and count the delivery as done.
     }
+    inFlightWakeIds.delete(effect.wakeId)
     delivered.push(effect.wakeId)
   }
 

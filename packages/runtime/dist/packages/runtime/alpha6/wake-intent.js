@@ -71,7 +71,19 @@ export async function recoverReviewWake(coordinator, store, inbox) {
             }),
         };
     }
-    const exists = await inbox.has(intent.wakeId);
+    let exists;
+    try {
+        exists = await inbox.has(intent.wakeId);
+    }
+    catch {
+        // Unreadable is not absent. Leave the row for a later boot; do not adopt a
+        // message we could not confirm, and do not clear durable evidence.
+        return {
+            adopted: false,
+            wakeId: null,
+            transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+        };
+    }
     if (!exists) {
         // Window (b): the intent is not a delivered wake. Discard it; only an
         // actual Inbox message may be adopted.

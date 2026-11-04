@@ -175,6 +175,7 @@ class FakeInbox implements ReviewWakeInboxPort {
   readonly messages = new Map<string, string>()
 
   has(wakeId: string): boolean {
+    if (this.unreadable) throw new Error('native Inbox unreadable')
     return this.messages.has(wakeId)
   }
 
@@ -190,6 +191,8 @@ class FakeInbox implements ReviewWakeInboxPort {
   claim(wakeId: string): boolean {
     return this.messages.delete(wakeId)
   }
+
+  unreadable = false
 }
 
 interface Harness {
@@ -461,6 +464,92 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(store.events.indexOf(`persist:${String(released.wakeId)}`)).toBeGreaterThanOrEqual(0)
     expect(store.events.indexOf(`persist:${String(released.wakeId)}`))
       .toBeLessThan(store.events.indexOf(`clear:${String(first.delivered[0]?.wakeId)}`))
+  })
+
+  it('release and dispatch never duplicate when a delivery is still in flight', async () => {
+    const first = planFor('req-r1')
+    const second = planFor('req-r2')
+    const secondIdentity = identityFor(second)
+    const coordinator = coordinatorFor(first)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    await dispatchReviewWakes({
+      plan: first,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    expect(claimReviewWake(coordinator).outcome).toBe('applied')
+    expect(inbox.claim(identityFor(first).wakeId)).toBe(true)
+
+    let signalStarted: () => void = () => {}
+    const started = new Promise<void>((resolve) => { signalStarted = resolve })
+    let releaseGate: () => void = () => {}
+    const gate = new Promise<void>((resolve) => { releaseGate = resolve })
+    const deliver = async (delivery: { wakeId: string }): Promise<void> => {
+      if (delivery.wakeId === secondIdentity.wakeId) {
+        signalStarted()
+        await gate
+      }
+      inbox.accept(delivery.wakeId)
+    }
+
+    const releasing = releaseReviewWake(
+      coordinator,
+      { kind: 'ready', fingerprint: planFingerprint(second.wakes[0]!) },
+      { deliver, intent: store, inbox },
+    )
+    await started
+    const concurrent = await dispatchReviewWakes({
+      plan: second,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver,
+    })
+    expect(concurrent.delivered).toHaveLength(0)
+    releaseGate()
+    await releasing
+    expect(inbox.messages.size).toBe(1)
+    expect(inbox.messages.has(secondIdentity.wakeId)).toBe(true)
+  })
+
+  it('an unreadable Inbox is not evidence of absence', async () => {
+    const plan = planFor('req-unreadable')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+    await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+
+    inbox.unreadable = true
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(inbox.messages.size).toBe(1)
+    expect(coordinator.state.status).toBe('queued')
   })
 
   it('a queued wake whose native message disappeared is released and re-delivered once', async () => {

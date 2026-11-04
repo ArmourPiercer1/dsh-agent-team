@@ -19,6 +19,13 @@ describe('A6-PR4 review wake delivery seam', () => {
     expect(renderReviewWake(effect)).toBe(text)
   })
 
+  it('keeps the full wakeId in the token so Inbox identity never truncates', () => {
+    const longId = `wake-${'x'.repeat(220)}`
+    const text = renderReviewWake({ ...effect, wakeId: longId })
+    expect(text).toContain(`wakeId=${longId}]`)
+    expect(text).not.toContain('…')
+  })
+
   it('forwards exactly the key, wakeId and rendered text to the port', async () => {
     const seen: unknown[] = []
     const deliver = createReviewWakeDelivery(async (input) => { seen.push(input) })
