@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/negative-controls/1",
-  "at": "2026-11-04T20:17:07.437Z",
+  "at": "2026-11-04T23:16:34.518Z",
   "controls": [
     {
       "id": "oracle: row 2 must REFUTE a refusal that still created a process",
@@ -54,7 +54,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T20:16:57.070Z] CHECK FAIL the product tree has no uncommitted modification: M tests/world-factory/lib/a5sf-search-live.mjs | DRY RUN RED — 2 of 61 failed: driver: declares expectedTools for BOTH native modules, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T23:16:24.106Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 61 failed: driver: declares expectedTools for BOTH native modules, product seam: admissionOrder, dist: every artifact the rows depend on is NEWER than the last source commit"
       }
     },
     {
@@ -65,7 +65,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T20:17:00.407Z] CHECK FAIL the product tree has no uncommitted modification: M tests/world-factory/lib/a5sf-search-live.mjs | DRY RUN RED — 2 of 61 failed: driver: the cancellation trigger is the SHIPPED client route, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T23:16:27.380Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 61 failed: driver: the cancellation trigger is the SHIPPED client route, product seam: admissionOrder, dist: every artifact the rows depend on is NEWER than the last source commit"
       }
     },
     {
@@ -76,7 +76,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T20:17:03.591Z] CHECK FAIL the product tree has no uncommitted modification: M tests/world-factory/lib/a5sf-search-live.mjs | DRY RUN RED — 4 of 61 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T23:16:30.566Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 5 of 61 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle, product seam: admissionOrder, dist: every artifact the rows depend on is NEWER than the last so"
       }
     },
     {
@@ -131,7 +131,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T20:17:07.411Z] CHECK FAIL the product tree has no uncommitted modification: M tests/world-factory/lib/a5sf-search-live.mjs | DRY RUN RED — 2 of 61 failed: driver: the cancellation FIFO is ADMITTED by the effective read lane, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T23:16:34.491Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 61 failed: driver: the cancellation FIFO is ADMITTED by the effective read lane, product seam: admissionOrder, dist: every artifact the rows depend on is NEWER than the last source commit"
       }
     },
     {

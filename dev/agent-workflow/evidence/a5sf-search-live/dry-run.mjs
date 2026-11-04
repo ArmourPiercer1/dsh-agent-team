@@ -456,7 +456,12 @@ const seat = {
     const admission = subprocessSrc.indexOf('export function createConfinedSubprocessClass')
     if (admission === -1) return false
     const body = subprocessSrc.slice(admission)
-    const order = ['programAttributionRefusal(spec)', 'readIntentsOf(spec)', 'programWriteLaneRefusal(spec.argv[0]', 'for (const intent of intents) await guard(']
+    // The guard call is now `await guard(SUBPROCESS_GUARD_METHOD, intent, annotations)`
+    // inside the intent loop (#593 discloses the lane-safe argv rewrite on the allow
+    // fact). The ORDER is what this check exists for — attribution, intent derivation,
+    // write-lane refusal, then the guard — so the anchor moved with the product, not
+    // the property.
+    const order = ['programAttributionRefusal(spec)', 'readIntentsOf(spec)', 'programWriteLaneRefusal(spec.argv[0]', 'await guard(SUBPROCESS_GUARD_METHOD, intent, annotations)']
       .map((token) => body.indexOf(token))
     return order.every((index) => index !== -1) && order.every((index, i) => i === 0 || index > order[i - 1])
   })(),

@@ -1565,7 +1565,7 @@ async function boot() {
     }
     log(`guard facts:`)
     for (const fact of factsAll) {
-      log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)}`)
+      log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)} annotations=${JSON.stringify(fact.annotations ?? null)}`)
     }
 
     // Row 1 is a two-way test: an in-lane grep that exits 2 is a REAL refuted row
@@ -1667,7 +1667,11 @@ async function boot() {
     const probeFacts = factsAtEnd.slice(factsAtStop.length)
     const counterAtEnd = parseJsonl(counterPath)
     const postStopSpawns = counterAtEnd.slice(counterAtStop.length)
-    log(`row6: postStopGrep=${String(postStopDispatch?.status)} postStopGlob=${String(postStopDispatch2?.status)} factsAtStop=${String(factsAtStop.length)} probeFacts=${String(probeFacts.length)} postStopCounterRows=${String(postStopSpawns.length)}`)
+    // ROW 6 IS NOW THE ARCHIVE BOUNDARY, not world.teardown(): the product must refuse
+    // to cold-resume an ARCHIVED member with a typed code, zero guard facts and zero
+    // spawns. Log the WIRE STATUS and the TYPED CODE, not just the verdict.
+    const postStopCode = (reply) => String(reply?.body?.error?.info?.code ?? reply?.body?.code ?? reply?.body?.error?.code ?? '<none>')
+    log(`row6: postStopGrep=${String(postStopDispatch?.status)} code=${postStopCode(postStopDispatch)} postStopGlob=${String(postStopDispatch2?.status)} code=${postStopCode(postStopDispatch2)} factsAtStop=${String(factsAtStop.length)} probeFacts=${String(probeFacts.length)} postStopCounterRows=${String(postStopSpawns.length)}`)
 
     // ── teardown ───────────────────────────────────────────────────────────
     abortStage = 'teardown'
