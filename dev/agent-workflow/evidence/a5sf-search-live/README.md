@@ -232,3 +232,97 @@ error object, not the message — by adding a host-side log sink for the tool re
 leader-deny fix (F2) is already in the tree, so `team.create` should reach the
 member-install stage and the stage probe would then tell us whether the realm, the
 dispatch, or the cancellation window breaks next.
+
+## 11. F1 closed (host-free): the cause was our own counter, and F2's deny is verified
+
+**F1 is found, reproduced and fixed without a Host start.** `f1-cause.mjs` drives the
+real pinned `@deepseek-ai/dsh-tool-fs-search` module through the product tool seam
+over the real pinned `subprocess-local` service and the real packaged `rg`
+(`f1-cause.json`, `f1-cause.log`; RED run `f1-cause.red.log`).
+
+**The cause.** `a5sf-search-realm-provider-row.mjs` wrapped the base spawn with
+
+```js
+return original.apply(this, spec)        // ← the whole of F1
+```
+
+`Function.prototype.apply` takes an **array-like argument list**. `spec` is an
+object without a `length`, so the pinned service was called as `spawn(undefined)`,
+`validateSubprocessSpec` read `spec.graceMs` (`subprocess-local/src/spawn.ts:165`)
+and threw a **synchronous** `TypeError`. `search-core.ts`'s launch catch turns every
+synchronous throw into its one text — `grep could not start its search command
+(ripgrep launch failed)` — so the World reported a ripgrep launch failure for a
+ripgrep that was present, executable and never started. The **same** wrapper broke
+the `git rev-parse` spawn of `workspace-changes` (warned, never surfaced), which is
+why the World ledger carries exactly two `base-spawn` rows and zero successful
+unconfined searches: both rows are failures, not a successful git call plus a failed
+rg call. The message was never about confinement, the spec shape, the session cwd or
+the packaged binary — the negative control was broken by the instrument that was
+supposed to observe it, and the leak it was supposed to prove could not happen.
+
+Captured cause fields (mutation arm, verbatim):
+
+```
+name   TypeError
+message Cannot read properties of undefined (reading 'graceMs')
+at     validateSubprocessSpec (…/subprocess-local/lib/runner-launch-*.js)
+surface Error: grep could not start its search command (ripgrep launch failed)
+```
+
+**The fix, at the right layer.** One line in the evidence row: `original.call(this,
+spec)`. The pinned tree is untouched (`CORE PATCH BUDGET = 0`), and no product code
+changed. The row now also records a `base-spawn-failed` row (cause fields + whether
+`argv[0]` / the cwd existed) before rethrowing, so a launch failure can never again
+be recorded as a successful spawn.
+
+**Arms** (all in-process, no port, no `DSH_HOME`, no `tests/homes`):
+
+| arm | what it measures | state |
+| --- | --- | --- |
+| `F1-SYNC-MATRIX` | which `spawn()` failures are synchronous (the message's whole cause surface) | measured |
+| `F1-SPEC-REPLAY` | the World's recorded spec (`negative-control.json` verbatim) exits 0 and matches here | PASS |
+| `F1-MUTATION` | the pre-fix `apply(this, spec)` reproduces F1's exact text + the TypeError (mutation control) | PASS |
+| `F1-ROW-SPAWN` | **regression arm**: through the fixed row the same grep returns an `rg` match | RED before / GREEN after (`f1-cause.red.log`) |
+| `F1-CAPTURE` | a synchronous launch failure now leaves an attributable `base-spawn-failed` row | PASS |
+
+The arm that would have caught F1 without a boot is `F1-ROW-SPAWN` itself: it asserts
+a real base spawn of the packaged `rg` **through the evidence row**, which is exactly
+the composition the World ran. (`F1-CAPTURE` is the forward-looking half: had it
+existed, the World's ledger would have carried the TypeError and the F1 row would
+never have been misread as a product finding.) Note the boundary: a *synchronous*
+launch failure is captured; an asynchronous one settles through `handle.done` and
+surfaces as the module's distinct "provider failure" text.
+
+**F2 verified host-free** (`f2-deny-unit.mjs`, `f2-deny.json`), against the REAL
+`evaluatePermissionCoverage` gate and the World's **own recorded final surface**
+(24 tools, from `run.log`):
+
+1. with the leader deny computed exactly as the driver computes it
+   (`[glob, grep, u5_canary, u6fs_probe]`), the gate returns `ok: true` on the 20
+   remaining tools — `read/read_image/write/edit/bash` are managed vocabulary, the 15
+   `team_*` names are managed Team tools;
+2. **mutation control**: re-admitting `grep`/`glob` makes the gate refuse with exactly
+   `glob (known-sensitive-unmanaged), grep (known-sensitive-unmanaged)`, and the
+   reproduced typed detail continues the World's recorded refusal prefix character
+   for character (the driver persisted that text truncated to 300 chars, so the
+   comparison is on the surviving prefix);
+3. the deny is **leader-only**: the Member preset still expects `['grep', 'glob']`
+   from the search module, and the executed proof that a Member realm exposes and
+   confines them is the BL-16 arm suite (`bl16-grep-arms.log`), unchanged and green.
+
+**Gates this round** (all host-free): `f1-cause.mjs` 5/5, `f2-deny-unit.mjs` 4/4,
+`dry-run.mjs` 47/47, `negative-controls.mjs` 9/9, world-factory `node --test`
+(see `wf-suite.log`), `pnpm -r run typecheck` and
+`tsc -p packages/runtime/tsconfig.json --noEmit` clean (the branch changes no `.ts`
+source: the delta vs `origin/master` is evidence `.mjs`/`.json`/`.md` only),
+`git diff --check origin/master...HEAD` rc=0.
+
+**What is left for a judged row.** F1 no longer blocks the negative control: a boot
+should now record a *successful* unconfined base spawn and the out-of-lane leak, and
+`team.create` should clear the coverage gate (F2) and reach the member-install stage.
+The next thing to test is therefore the **member-install / realm-dispatch stage** —
+whether the Member's confined `grep` is served by the confined face (one
+`confined-spawn` row, one deny fact for the out-of-lane operand, no secret bytes) —
+followed by the cancellation window on the FIFO. The one instrumentation to add
+before the next start is nothing new: `base-spawn-failed` now covers the F1 class, and
+the ledger's `confined-spawn` rows already discriminate the confined face.

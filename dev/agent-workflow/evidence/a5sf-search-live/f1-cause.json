@@ -1,0 +1,147 @@
+{
+  "schema": "a5sf-f1-cause/1",
+  "generatedAt": "2026-11-04T16:53:57.837Z",
+  "cause": {
+    "kind": "instrumentation-bug",
+    "layer": "evidence harness row",
+    "file": "dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs",
+    "line": "return original.apply(this, spec)  // Function.prototype.apply takes an array-like argument list",
+    "effect": "the wrapped base spawn was invoked as spawn(undefined); validateSubprocessSpec threw a synchronous TypeError; search-core.ts turned every synchronous throw into \"grep could not start its search command (ripgrep launch failed)\"",
+    "swallowed": {
+      "name": "TypeError",
+      "code": null,
+      "message": "Cannot read properties of undefined (reading 'graceMs')",
+      "at": "at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28)"
+    },
+    "surface": "Error: grep could not start its search command (ripgrep launch failed)",
+    "world": {
+      "at": "2026-11-04T15:56:59.136Z",
+      "program": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "programExists": true,
+      "cwdExists": true
+    },
+    "notTheCause": [
+      "the spec shape (argv/cwd/stdio/graceMs/signal) — F1-SPEC-REPLAY launches it unchanged",
+      "the packaged ripgrep binary — present and executable before and after the run",
+      "the session cwd — present; and a bad cwd would be reported as ENOENT on argv[0] anyway",
+      "confinement / the confined face — the failing arm is the unconfined base service",
+      "the pinned tree — the module behaves exactly as documented for a synchronous spawn throw"
+    ]
+  },
+  "causeSurface": [
+    {
+      "case": "program-missing",
+      "sync": false,
+      "note": "returned a handle; the failure settles asynchronously"
+    },
+    {
+      "case": "program-is-directory",
+      "sync": false,
+      "note": "returned a handle; the failure settles asynchronously"
+    },
+    {
+      "case": "cwd-missing",
+      "sync": false,
+      "note": "returned a handle; the failure settles asynchronously"
+    },
+    {
+      "case": "cwd-is-file",
+      "sync": true,
+      "name": "Error",
+      "code": "ENOTDIR",
+      "errno": -20,
+      "syscall": "spawn",
+      "path": null,
+      "message": "spawn ENOTDIR",
+      "at": "at ChildProcess.spawn (node:internal/child_process:458:11)"
+    },
+    {
+      "case": "cwd-unreadable",
+      "sync": false,
+      "note": "returned a handle; the failure settles asynchronously"
+    },
+    {
+      "case": "spec-undefined",
+      "sync": true,
+      "name": "TypeError",
+      "code": null,
+      "errno": null,
+      "syscall": null,
+      "path": null,
+      "message": "Cannot read properties of undefined (reading 'graceMs')",
+      "at": "at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28)"
+    }
+  ],
+  "arms": [
+    {
+      "arm": "F1-SYNC-MATRIX",
+      "ok": true,
+      "detail": [
+        {
+          "case": "program-missing",
+          "sync": false,
+          "note": "returned a handle; the failure settles asynchronously"
+        },
+        {
+          "case": "program-is-directory",
+          "sync": false,
+          "note": "returned a handle; the failure settles asynchronously"
+        },
+        {
+          "case": "cwd-missing",
+          "sync": false,
+          "note": "returned a handle; the failure settles asynchronously"
+        },
+        {
+          "case": "cwd-is-file",
+          "sync": true,
+          "name": "Error",
+          "code": "ENOTDIR",
+          "errno": -20,
+          "syscall": "spawn",
+          "path": null,
+          "message": "spawn ENOTDIR",
+          "at": "at ChildProcess.spawn (node:internal/child_process:458:11)"
+        },
+        {
+          "case": "cwd-unreadable",
+          "sync": false,
+          "note": "returned a handle; the failure settles asynchronously"
+        },
+        {
+          "case": "spec-undefined",
+          "sync": true,
+          "name": "TypeError",
+          "code": null,
+          "errno": null,
+          "syscall": null,
+          "path": null,
+          "message": "Cannot read properties of undefined (reading 'graceMs')",
+          "at": "at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28)"
+        }
+      ]
+    },
+    {
+      "arm": "F1-SPEC-REPLAY",
+      "ok": true,
+      "detail": "exit=0 match found — the World's recorded spec launches the packaged rg"
+    },
+    {
+      "arm": "F1-MUTATION",
+      "ok": true,
+      "detail": "apply(this, spec) → spawn(undefined) → TypeError: Cannot read properties of undefined (reading 'graceMs') @ at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28) → F1's exact text"
+    },
+    {
+      "arm": "F1-ROW-SPAWN",
+      "ok": true,
+      "detail": "one base-spawn row + an rg match through the fixed row (2 ledger row(s), 0 failures)"
+    },
+    {
+      "arm": "F1-CAPTURE",
+      "ok": true,
+      "detail": "base-spawn-failed row captured: cause=ENOTDIR programExists=true cwdIsDirectory=false"
+    }
+  ],
+  "verdict": "PASS"
+}

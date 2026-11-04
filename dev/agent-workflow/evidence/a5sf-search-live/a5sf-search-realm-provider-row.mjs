@@ -39,8 +39,9 @@
  *
  * @module dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row
  */
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { accessSync, appendFileSync, constants, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -137,7 +138,7 @@ function installFsCounter(fsCtx, ledgerPath) {
  * one. `spawnStreaming` is deliberately not wrapped: the search module calls
  * `spawn`, and wrapping the parent arm would blur the discrimination.
  */
-function installBaseSubprocessCounter(subCtx, ledgerPath) {
+export function installBaseSubprocessCounter(subCtx, ledgerPath) {
   const base = subCtx.get('subprocess')
   if (base === undefined || base === null) return
   const ctor = Object.getPrototypeOf(base)?.constructor
@@ -153,12 +154,91 @@ function installBaseSubprocessCounter(subCtx, ledgerPath) {
     value: function instrumentedBaseSpawn(spec) {
       let argv = []
       try { argv = Array.isArray(spec?.argv) ? spec.argv.map((a) => String(a)) : [] } catch { argv = [] }
-      record({ leg: 'base-spawn', argv, cwd: String(spec?.cwd ?? ''), instance: this === base })
-      return original.apply(this, spec)
+      const cwd = String(spec?.cwd ?? '')
+      record({ leg: 'base-spawn', argv, cwd, instance: this === base })
+      try {
+        // F1 (2026-11-04T15:56Z, evidence/README.md §4) WAS this line's shape:
+        // `original.apply(this, spec)` — `apply` takes an ARRAY-LIKE argument
+        // list, so a spec OBJECT becomes ZERO arguments and the pinned service
+        // received `spawn(undefined)`. It threw synchronously (the spec
+        // validator reads `spec.graceMs`, spawn.ts:165), the search module
+        // wrapped that into its one-line "ripgrep launch failed" text, and BOTH
+        // unconfined arms of the negative control were broken by the
+        // instrumentation that was supposed to observe them.
+        return original.call(this, spec)
+      } catch (error) {
+        // F1 (2026-11-04T15:56Z, evidence/README.md §4): the booted World's base
+        // spawn failed SYNCHRONOUSLY and threw its cause away. The search module
+        // collapses every launch-time failure into one model-facing line, and
+        // the host log died with the World home, so F1's cause was
+        // unrecoverable. This is the smallest fix at the only layer that sees
+        // both: record the failure's Node fields AND the reachability of the
+        // two objects a spawn can fail on (argv[0] and cwd — Node names argv[0]
+        // for a bad cwd too). Record, then rethrow unchanged: instrumentation
+        // still decides nothing.
+        record({
+          leg: 'base-spawn-failed',
+          argv,
+          cwd,
+          instance: this === base,
+          cause: describeSpawnError(error),
+          reach: spawnReach(argv[0], cwd),
+        })
+        throw error
+      }
     },
   })
   Object.defineProperty(proto, SUB_COUNTER_MARK, { configurable: true, writable: true, value: true })
   record({ leg: 'base-subprocess-counter-installed', baseCtor: ctor.name, note: 'test composition instrumentation; records only the inherited service arm' })
+}
+
+/**
+ * The Node fields one synchronous `spawn` throw carries. `code` alone is
+ * ambiguous (`ENOENT` is "program missing" OR "cwd missing"), so `syscall` and
+ * `path` are recorded verbatim instead of reconstructed.
+ * @param error - the value thrown by `spawn`.
+ * @returns the recorded cause projection (every field a string or null).
+ */
+function describeSpawnError(error) {
+  const value = typeof error === 'object' && error !== null ? error : {}
+  const text = (name) => (typeof value[name] === 'string' ? value[name] : null)
+  return {
+    name: typeof value.name === 'string' ? value.name : typeof error,
+    code: text('code'),
+    errno: typeof value.errno === 'number' ? value.errno : null,
+    syscall: text('syscall'),
+    path: text('path'),
+    message: typeof value.message === 'string' ? value.message : String(error),
+  }
+}
+
+/**
+ * Probe (never create) the state of the objects a spawn can fail on, so a
+ * captured code can be attributed: program present + cwd absent is a WORKDIR
+ * failure, not a missing ripgrep.
+ * @param program - the spec's argv[0].
+ * @param cwd - the spec's cwd.
+ * @returns reachability rows for the program, the workdir and `os.tmpdir()`.
+ */
+function spawnReach(program, cwd) {
+  const executable = (path) => {
+    try {
+      accessSync(path, constants.X_OK)
+      return true
+    } catch {
+      return false
+    }
+  }
+  const file = (target) => {
+    const path = String(target ?? '')
+    try {
+      const info = statSync(path)
+      return { path, exists: true, directory: info.isDirectory(), file: info.isFile(), executable: executable(path) }
+    } catch {
+      return { path, exists: false, directory: false, file: false, executable: false }
+    }
+  }
+  return { program: file(program), cwd: file(cwd), tmpdir: file(tmpdir()) }
 }
 
 /** Wrap P1-07's raw provider so the confined face's SPAWN and EXIT are visible

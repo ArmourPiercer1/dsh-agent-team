@@ -1,0 +1,18 @@
+F1-SYNC-MATRIX: program-missing: sync=false
+F1-SYNC-MATRIX: program-is-directory: sync=false
+F1-SYNC-MATRIX: cwd-missing: sync=false
+F1-SYNC-MATRIX: cwd-is-file: sync=true code=ENOTDIR spawn ENOTDIR
+F1-SYNC-MATRIX: cwd-unreadable: sync=false
+F1-SYNC-MATRIX: spec-undefined: sync=true code=null Cannot read properties of undefined (reading 'graceMs')
+F1-SPEC-REPLAY: exit=0 match found — the World's recorded spec launches the packaged rg
+F1-MUTATION: apply(this, spec) → spawn(undefined) → TypeError: Cannot read properties of undefined (reading 'graceMs') @ at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28) → F1's exact text
+F1-ROW-SPAWN: FAILED the unconfined base search must succeed, got "Error: grep could not start its search command (ripgrep launch failed)"
+
+true !== false
+
+F1-CAPTURE: FAILED the captured cause has no code: {"at":"2026-11-04T16:44:42.169Z","leg":"base-spawn-failed","argv":["/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg","--no-config","--json","--regexp=F1_INSIDE_NEEDLE","--","/tmp/a5sf-f1-cause-E0i6IB/inside"],"cwd":"/tmp/a5sf-f1-cause-E0i6IB/workdir-is-a-file","instance":false,"cause":{"name":"TypeError","code":null,"errno":null,"syscall":null,"path":null,"message":"Cannot read properties of undefined (reading 'graceMs')"},"reach":{"program":{"path":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg","exists":true,"directory":false,"file":true,"executable":true},"cwd":{"path":"/tmp/a5sf-f1-cause-E0i6IB/workdir-is-a-file","exists":true,"directory":false,"file":true,"executable":false},"tmpdir":{"path":"/tmp","exists":true,"directory":true,"file":false,"executable":true}}}
+
+'object' !== 'string'
+
+
+VERDICT: FAIL (3/5 arms)

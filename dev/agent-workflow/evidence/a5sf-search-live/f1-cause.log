@@ -1,0 +1,12 @@
+F1-SYNC-MATRIX: program-missing: sync=false
+F1-SYNC-MATRIX: program-is-directory: sync=false
+F1-SYNC-MATRIX: cwd-missing: sync=false
+F1-SYNC-MATRIX: cwd-is-file: sync=true code=ENOTDIR spawn ENOTDIR
+F1-SYNC-MATRIX: cwd-unreadable: sync=false
+F1-SYNC-MATRIX: spec-undefined: sync=true code=null Cannot read properties of undefined (reading 'graceMs')
+F1-SPEC-REPLAY: exit=0 match found — the World's recorded spec launches the packaged rg
+F1-MUTATION: apply(this, spec) → spawn(undefined) → TypeError: Cannot read properties of undefined (reading 'graceMs') @ at validateSubprocessSpec (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/subprocess/subprocess-local/lib/runner-launch-B2zsQ1Dz.js:765:28) → F1's exact text
+F1-ROW-SPAWN: one base-spawn row + an rg match through the fixed row (2 ledger row(s), 0 failures)
+F1-CAPTURE: base-spawn-failed row captured: cause=ENOTDIR programExists=true cwdIsDirectory=false
+
+VERDICT: PASS (5/5 arms)
