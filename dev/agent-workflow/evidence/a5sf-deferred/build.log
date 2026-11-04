@@ -8,9 +8,9 @@ packages/domain build: Done
 packages/runtime build$ tsc -p tsconfig.build.json
 packages/legacy build: Done
 packages/storage build$ tsc -p tsconfig.build.json
-packages/storage build: Done
-packages/testkit build$ tsc -p tsconfig.build.json
 packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
 packages/tools build$ tsc -p tsconfig.build.json
 packages/remote build: Done
 packages/testkit build: Done

@@ -6,10 +6,10 @@ stdout | packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B �
 [dsh-agent-team] a5-admission: event=production-admission-note
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5g6-unit-realm templateId=a5g6-tpl
 
- ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 736ms
-     ✓ the four definitions all carry a render that returns an array of typed text blocks  732ms
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 747ms
+     ✓ the four definitions all carry a render that returns an array of typed text blocks  744ms
 
  Test Files  1 passed (1)
       Tests  5 passed (5)
-   Start at  07:32:21
-   Duration  2.36s (transform 1.81s, setup 0ms, import 1.54s, tests 736ms, environment 0ms)
+   Start at  08:22:34
+   Duration  2.39s (transform 1.85s, setup 0ms, import 1.56s, tests 747ms, environment 0ms)

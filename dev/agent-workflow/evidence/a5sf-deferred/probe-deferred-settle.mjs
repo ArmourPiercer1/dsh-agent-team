@@ -228,6 +228,38 @@ export function apply(ctx) {
 }
 `)}`
 
+/**
+ * The LATE-REGISTRATION shape (review C1/C2): `apply` returns ACTIVE with no
+ * registration, then a 30 ms timer — from the SAME already-active fiber —
+ * registers a name that is on the PRESET surface but not forwarded by this
+ * attach (`x_preset_only`). The name set therefore does not change, so the
+ * surface gate alone cannot see it; before this round the registration was
+ * live, routed and UNRECORDED, and after a later invalidation the preset body
+ * served it (the `a5sf-s1` §3.2 time escape).
+ *
+ * The `try/catch` is the ownership PROBE (`mountMemberA5sfRealm` applies the
+ * module once with a disposed-forever router to observe names): the probe's
+ * timer may fire after its fiber is gone, where `ctx.tools` is unresolvable —
+ * it must no-op, never crash the probe.
+ */
+const LATE_REGISTRATION_URL = `data:text/javascript,${encodeURIComponent(`
+export const name = 'late-registration'
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+  setTimeout(() => {
+    try {
+      ctx.tools.register({
+        name: 'x_preset_only',
+        description: 'registered by an already-ACTIVE fiber after the settle window',
+        parameters: { type: 'object', properties: {}, additionalProperties: false },
+        output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: String(value) }] },
+        async execute() { return 'late\\n' },
+      })
+    } catch {}
+  }, 30)
+}
+`)}`
+
 function compiledProvider({ inside, withBinding }) {
   return () => ({
     compiledFor: () => ({
@@ -265,6 +297,21 @@ function compiledProvider({ inside, withBinding }) {
 
 function surfaceNames(root, scope) {
   return [...root.get('tools').schemas(scope)].map((schema) => schema?.name ?? schema).sort()
+}
+
+/** Dispatch exactly like the suites do (the pre-execute admission stage). */
+async function dispatchTool(root, scope, name, args = {}) {
+  const settled = await root.get('tools').execute({
+    signal: new AbortController().signal,
+    callId: `call-probe-${name}`,
+    agent: scope,
+    name,
+    arguments: args,
+  })
+  const text = Array.isArray(settled.content)
+    ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
+    : ''
+  return { isError: settled.isError === true, text, info: settled.error?.info }
 }
 
 /**
@@ -363,6 +410,7 @@ function summarize(armResult) {
     fiberCount: Array.isArray(armResult.fibers) ? armResult.fibers.length : 0,
     nativeInvalidation: armResult.nativeInvalidation ?? null,
     postDispose: armResult.postDispose ?? null,
+    postLate: armResult.postLate ?? null,
     error: armResult.error ?? null,
     verificationError: armResult.verificationError ?? null,
   }
@@ -459,6 +507,63 @@ try {
     'typed SERVICE_MOUNT_FAILED': (r) => r.error?.code === 'SERVICE_MOUNT_FAILED' || `got ${JSON.stringify(r.error ?? null)}`,
     'reason says it did not settle': (r) => /did not settle/.test(r.error?.detail ?? '') || `detail: ${r.error?.detail ?? ''}`,
     'bounded (did not hang)': (r) => r.elapsedMs < 5000 || `elapsed ${String(r.elapsedMs)}ms`,
+    'surface restored': (r) => JSON.stringify(r.surfaceAtEnd) === JSON.stringify(r.presetSurface),
+  }))
+
+  // ── A7: a registration from an ALREADY-ACTIVE fiber AFTER the settle window
+  //        is folded into the managed set and INVALIDATES (the measured
+  //        `a5sf-s1` §3.2 escape; review C1/C2).
+  const a7 = await arm('A7-late-registration-invalidates', {
+    attachments: true,
+    presetNames: ['read', 'read_image', 'write', 'edit', 'x_preset_only'],
+    nativeModules: [LATE_REGISTRATION_URL],
+  }, async ({ realm, root, agentKey, out }) => {
+    // Let the 30 ms timer land, then the invalidation teardown.
+    for (let i = 0; i < 80 && (realm.nativeInvalidation ?? null) === null; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    }
+    const record = realm.nativeInvalidation ?? null
+    out.postLate = {
+      reason: record?.reason ?? null,
+      lateRegistrations: record?.lateRegistrations ?? null,
+      uncovered: record?.uncovered ?? null,
+      definitionAfter: root.get('tools').get('x_preset_only', agentKey) === out.presetDefinitions.get('x_preset_only')
+        ? 'preset' : 'routed',
+      dispatch: await dispatchTool(root, agentKey, 'x_preset_only'),
+    }
+    // PRE-FIX CONTROL (measured, not asserted as the current contract): if the
+    // late registration left NO record, force the teardown a later invalidation
+    // would perform (an external holder disposing every shadow fiber) and
+    // re-dispatch the name. This records the consequence the fold closes: the
+    // name resolves to the PRESET definition and admission does not deny it, so
+    // the preset body executes.
+    if (record === null) {
+      for (const fiber of out.fibers ?? []) await fiber?.dispose?.()
+      for (let i = 0; i < 80 && (realm.nativeInvalidation ?? null) === null; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 5))
+      }
+      out.postLate.forcedAfterTeardown = {
+        definitionAfter: root.get('tools').get('x_preset_only', agentKey) === out.presetDefinitions.get('x_preset_only')
+          ? 'preset' : 'routed',
+        dispatch: await dispatchTool(root, agentKey, 'x_preset_only'),
+      }
+    }
+  })
+  result.arms.push(assertArm(a7, {
+    mounted: (r) => r.mounted === true || `attach refused: ${JSON.stringify(r.error ?? null)}`,
+    'late registration INVALIDATES (not accepted silently)': (r) => (r.nativeInvalidation ?? null) !== null
+      || 'the post-settle registration left no record (pre-fix behaviour: ACCEPT; live; unrecorded; invalidation null)',
+    'the record FOLDS IN the late name': (r) => JSON.stringify(r.nativeInvalidation?.lateRegistrations ?? []) === JSON.stringify(['x_preset_only'])
+      || `lateRegistrations=${JSON.stringify(r.nativeInvalidation?.lateRegistrations ?? null)}`,
+    'the reason says it landed after the mount settled': (r) => /after the mount settled/.test(r.nativeInvalidation?.reason ?? '')
+      || `reason: ${r.nativeInvalidation?.reason ?? ''}`,
+    'the preset definition is visible again after teardown': (r) => r.postLate?.definitionAfter === 'preset'
+      || `definitionAfter=${String(r.postLate?.definitionAfter)}`,
+    'admission DENIES the late name (the deny covers it)': (r) => r.postLate?.dispatch?.isError === true
+      && r.postLate?.dispatch?.info?.code === 'A5SF_NATIVE_SHADOW_INVALIDATED'
+      || `dispatch=${JSON.stringify(r.postLate?.dispatch ?? null)}`,
+    'the preset body never ran': (r) => r.postLate?.dispatch?.text?.includes('late') !== true
+      || `text: ${String(r.postLate?.dispatch?.text)}`,
     'surface restored': (r) => JSON.stringify(r.surfaceAtEnd) === JSON.stringify(r.presetSurface),
   }))
 

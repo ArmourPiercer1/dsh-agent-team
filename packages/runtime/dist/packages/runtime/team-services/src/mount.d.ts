@@ -159,6 +159,15 @@ export interface NativeToolInvalidation {
     readonly surfaceAdded: readonly string[];
     /** Tool names that DISAPPEARED from the Member surface after the mount settled. */
     readonly surfaceRemoved: readonly string[];
+    /**
+     * Managed tool names that were registered by a still-ACTIVE router fiber AFTER
+     * the bounded settle window (a late `setTimeout`/IO callback), i.e. after the
+     * attach had already accepted and accounted its shadow. They are folded into
+     * the managed set first, so the admission deny covers them, and then the realm
+     * invalidates: a post-settle registration is a surface this attach did not
+     * verify, and accepting it silently was the `a5sf-s1` §3.2 time escape.
+     */
+    readonly lateRegistrations: readonly string[];
     readonly observedAt: string;
 }
 /**

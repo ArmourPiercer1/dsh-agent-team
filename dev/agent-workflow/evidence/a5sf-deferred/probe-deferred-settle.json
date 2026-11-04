@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-deferred/probe-deferred-settle/1",
-  "at": "2026-11-03T23:32:49.099Z",
+  "at": "2026-11-04T00:22:47.990Z",
   "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-deferred/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
   "arms": [
     {
@@ -40,6 +40,7 @@
         "fiberCount": 1,
         "nativeInvalidation": null,
         "postDispose": null,
+        "postLate": null,
         "error": null,
         "verificationError": null
       }
@@ -53,7 +54,7 @@
         "attachmentsService": false,
         "withBinding": false,
         "mounted": true,
-        "elapsedMs": 27,
+        "elapsedMs": 26,
         "presetSurface": [
           "edit",
           "read",
@@ -77,6 +78,7 @@
         "fiberCount": 1,
         "nativeInvalidation": null,
         "postDispose": null,
+        "postLate": null,
         "error": null,
         "verificationError": null
       }
@@ -107,6 +109,7 @@
         "fiberCount": 0,
         "nativeInvalidation": null,
         "postDispose": null,
+        "postLate": null,
         "error": {
           "name": "TeamServiceInstallError",
           "code": "SERVICE_MOUNT_FAILED",
@@ -125,7 +128,7 @@
         "attachmentsService": true,
         "withBinding": false,
         "mounted": false,
-        "elapsedMs": 5,
+        "elapsedMs": 4,
         "presetSurface": [
           "edit",
           "read",
@@ -140,6 +143,7 @@
         "fiberCount": 0,
         "nativeInvalidation": null,
         "postDispose": null,
+        "postLate": null,
         "error": {
           "name": "TeamServiceInstallError",
           "code": "SERVICE_MOUNT_FAILED",
@@ -158,7 +162,7 @@
         "attachmentsService": true,
         "withBinding": false,
         "mounted": false,
-        "elapsedMs": 51,
+        "elapsedMs": 49,
         "presetSurface": [
           "edit",
           "read",
@@ -173,12 +177,84 @@
         "fiberCount": 0,
         "nativeInvalidation": null,
         "postDispose": null,
+        "postLate": null,
         "error": {
           "name": "TeamServiceInstallError",
           "code": "SERVICE_MOUNT_FAILED",
           "detail": "native tool module null started a DEFERRED registration that did not settle within 20 macrotasks (deferred registration state 1, waiting on [attachments,tools,systemPrompt]); refusing the mount instead of hanging on it or accepting a shadow it cannot verify",
           "message": "SERVICE_MOUNT_FAILED: native tool module null started a DEFERRED registration that did not settle within 20 macrotasks (deferred registration state 1, waiting on [attachments,tools,systemPrompt]); refusing the mount instead of hanging on it or accepting a shadow it cannot verify"
         },
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "A7-late-registration-invalidates",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "A7-late-registration-invalidates",
+        "attachmentsService": true,
+        "withBinding": false,
+        "mounted": true,
+        "elapsedMs": 38,
+        "presetSurface": [
+          "edit",
+          "read",
+          "read_image",
+          "write",
+          "x_preset_only"
+        ],
+        "surfaceAfterMount": [
+          "edit",
+          "read",
+          "read_image",
+          "write",
+          "x_preset_only"
+        ],
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "read_image",
+          "write",
+          "x_preset_only"
+        ],
+        "definitionIdentities": {
+          "edit": "routed",
+          "read": "routed",
+          "read_image": "routed",
+          "write": "routed",
+          "x_preset_only": "preset"
+        },
+        "fiberCount": 2,
+        "nativeInvalidation": {
+          "schema": "a5sf-native-invalidation/1",
+          "reason": "a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify",
+          "uncovered": [],
+          "surfaceAdded": [],
+          "surfaceRemoved": [],
+          "lateRegistrations": [
+            "x_preset_only"
+          ],
+          "observedAt": "2026-11-04T00:22:48.164Z"
+        },
+        "postDispose": null,
+        "postLate": {
+          "reason": "a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify",
+          "lateRegistrations": [
+            "x_preset_only"
+          ],
+          "uncovered": [],
+          "definitionAfter": "preset",
+          "dispatch": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"x_preset_only\" is REFUSED — Member \"member-probe-a\" (team \"team-deferred-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "error": null,
         "verificationError": null
       }
     },
@@ -225,7 +301,8 @@
           ],
           "surfaceAdded": [],
           "surfaceRemoved": [],
-          "observedAt": "2026-11-03T23:32:49.252Z"
+          "lateRegistrations": [],
+          "observedAt": "2026-11-04T00:22:48.177Z"
         },
         "postDispose": {
           "readStillRouted": false,
@@ -243,9 +320,11 @@
             ],
             "surfaceAdded": [],
             "surfaceRemoved": [],
-            "observedAt": "2026-11-03T23:32:49.252Z"
+            "lateRegistrations": [],
+            "observedAt": "2026-11-04T00:22:48.177Z"
           }
         },
+        "postLate": null,
         "error": null,
         "verificationError": null
       }

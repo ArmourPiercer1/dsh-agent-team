@@ -182,13 +182,32 @@ function owningContextOf(receiver, fallback) {
 function routedModuleContext(routerCtx) {
     return routerCtx.extend({
         inject(names, callback) {
-            const requested = Array.isArray(names) ? names : Object.keys((names ?? {}));
-            const merged = [...new Set([...requested, ...ROUTED_SERVICE_NAMES])];
-            const plugin = { inject: merged, apply: callback };
+            const plugin = { inject: mergeRoutedInject(names), apply: callback };
             const owner = this;
             return owner.plugin(plugin, undefined);
         },
     });
+}
+/**
+ * Merge the router's two services into a deferred child's declaration WITHOUT
+ * changing its SHAPE: an array stays a deduplicated array, and an OBJECT (a
+ * name → per-service intercept config map, Cordis `Inject`) stays an object
+ * with every declared config preserved. Added services get `null`, the same
+ * default `Inject.resolve` assigns to an omitted config (`inject[name] ?? null`),
+ * so a per-service intercept config the module declared is never flattened
+ * away — dropping it would silently change the child's dependency semantics.
+ */
+function mergeRoutedInject(names) {
+    if (Array.isArray(names))
+        return [...new Set([...names, ...ROUTED_SERVICE_NAMES])];
+    const declared = (names ?? {});
+    const merged = {};
+    for (const key of Object.keys(declared))
+        merged[key] = declared[key];
+    for (const name of ROUTED_SERVICE_NAMES)
+        if (!(name in merged))
+            merged[name] = null;
+    return merged;
 }
 /** Is this descendant fiber still in a transient (not yet settled) state? */
 function isTransientFiber(fiber) {
@@ -397,6 +416,14 @@ export async function mountA5sfRealm(input) {
     /** name -> the exact definition this attach registered (the coverage signal). */
     const expectedDefinitions = new Map();
     /**
+     * Every registering fiber's LIVE partition, in mount order. The sets are the
+     * router's own accounting objects and keep growing while the fiber lives, so
+     * continuous verification can see a registration that lands AFTER the bounded
+     * settle window (the `a5sf-s1` §3.2 late-timer escape) instead of missing it
+     * because the receipt was snapshotted at attach time.
+     */
+    const managedPartitions = [];
+    /**
      * P0: name -> the realm that owned its (now disposed) shadow, so a refusal
      * can NAME the realm and the Member instead of being an anonymous error.
      */
@@ -444,21 +471,24 @@ export async function mountA5sfRealm(input) {
      * realm refuses further native mounts, so a caller cannot re-create a partial
      * shadow over the same managed names.
      */
-    const invalidateNativeShadow = (uncovered, surfaceAdded = [], surfaceRemoved = []) => {
+    const invalidateNativeShadow = (uncovered, surfaceAdded = [], surfaceRemoved = [], lateRegistrations = []) => {
         if (disposed || invalidation !== null)
             return;
         const lostShadow = uncovered.length > 0;
         const changedSurface = surfaceAdded.length > 0 || surfaceRemoved.length > 0;
         const record = Object.freeze({
             schema: 'a5sf-native-invalidation/1',
-            reason: lostShadow && changedSurface
-                ? 'the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled'
-                : lostShadow
-                    ? 'a managed native tool is no longer shadowed by this attach after the mount settled'
-                    : 'the Member tool surface changed after the native mount settled',
+            reason: lateRegistrations.length > 0
+                ? 'a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify'
+                : lostShadow && changedSurface
+                    ? 'the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled'
+                    : lostShadow
+                        ? 'a managed native tool is no longer shadowed by this attach after the mount settled'
+                        : 'the Member tool surface changed after the native mount settled',
             uncovered: Object.freeze([...new Set(uncovered)]),
             surfaceAdded: Object.freeze([...new Set(surfaceAdded)]),
             surfaceRemoved: Object.freeze([...new Set(surfaceRemoved)]),
+            lateRegistrations: Object.freeze([...new Set(lateRegistrations)]),
             observedAt: new Date().toISOString(),
         });
         // ORDER IS LOAD-BEARING (P0, 2026-11-03): the record is set FIRST, so the
@@ -513,6 +543,26 @@ export async function mountA5sfRealm(input) {
         if (tools === undefined || tools === null)
             return;
         try {
+            // LATE REGISTRATION (review C1/C2, 2026-11-03): a fiber that was already
+            // ACTIVE at settle time can register LATER (a timer/IO callback). The
+            // router forwarded it, so it is live and confined, but it was never part
+            // of the accepted receipt. FOLD IT IN FIRST (so the admission deny covers
+            // it once the shadow is torn down), then invalidate: a post-settle
+            // registration is outside what this attach verified, and silently
+            // accepting it was the measured `a5sf-s1` §3.2 escape.
+            const lateRegistrations = [];
+            for (const entry of managedPartitions) {
+                for (const name of entry.partition.forwarded) {
+                    if (expectedDefinitions.has(name))
+                        continue;
+                    const definition = entry.partition.forwardedDefinitions.get(name);
+                    if (definition === undefined)
+                        continue;
+                    expectedDefinitions.set(name, definition);
+                    managedRealmOf.set(name, { realm: entry.realm, toolBindingIdentity: entry.label });
+                    lateRegistrations.push(name);
+                }
+            }
             const uncovered = [];
             if (typeof tools.get === 'function') {
                 for (const [name, definition] of expectedDefinitions) {
@@ -542,8 +592,8 @@ export async function mountA5sfRealm(input) {
                     if (!now.has(name))
                         surfaceRemoved.push(name);
             }
-            if (uncovered.length > 0 || surfaceAdded.length > 0 || surfaceRemoved.length > 0) {
-                invalidateNativeShadow(uncovered, surfaceAdded, surfaceRemoved);
+            if (lateRegistrations.length > 0 || uncovered.length > 0 || surfaceAdded.length > 0 || surfaceRemoved.length > 0) {
+                invalidateNativeShadow(uncovered, surfaceAdded, surfaceRemoved, lateRegistrations);
             }
         }
         catch {
@@ -699,6 +749,7 @@ export async function mountA5sfRealm(input) {
                 }
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
+                managedPartitions.length = 0;
             }
             expectedSurfaceNames = undefined;
             await disposeNative();
@@ -772,17 +823,14 @@ export async function mountA5sfRealm(input) {
                 created.length = 0;
                 // A refused attach leaves NO managed names behind: the coverage maps
                 // describe what THIS attach shadows, so a rollback clears them with it.
+                // The LIVE partitions describe disposed fibers after the rollback, so
+                // they are cleared too or a later attach's verification would mistake
+                // their stale names for a late registration.
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
+                managedPartitions.length = 0;
             };
-            /**
-             * Every registering fiber's live partition, in mount order. The coverage
-             * judgment below runs ONCE, after all mounts settled: a name one fiber
-             * DROPS is normally forwarded by a sibling fiber of this SAME call (a
-             * binding-owned name by its binding mount, a ceiling-owned name by the
-             * ceiling mount), so per-fiber coverage would be the wrong question.
-             */
-            const routedPartitions = [];
+            const routedPartitions = managedPartitions;
             for (const [index, mount] of modules.entries()) {
                 const binding = observeOnly || mount.toolBindingIdentity === undefined
                     ? undefined
@@ -911,6 +959,7 @@ export async function mountA5sfRealm(input) {
                 if (!observeOnly) {
                     routedPartitions.push({
                         partition,
+                        realm: binding === undefined ? 'ceiling' : 'binding',
                         label: mount.toolBindingIdentity ?? null,
                     });
                 }

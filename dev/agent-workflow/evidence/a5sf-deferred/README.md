@@ -58,7 +58,17 @@ seam):
      (the cross-mount coverage judgment, run once after all mounts) → **REFUSE**, typed, reason
      **names the name(s)**, then roll back. This is #561's protection, reframed: the refusal is
      about the *resulting definition* being uncovered, not about the child being deferred.
-4. **Rollback on refusal.** Every fiber the mount created is disposed; a child that never
+4. **Fold a post-settle registration into the managed set, then invalidate.** A fiber that
+   was already ACTIVE at settle can still register later (a 30 ms timer). The router
+   forwards that registration (it is live and confined), but it was not part of the
+   accepted receipt. Continuous verification now reads the routers' LIVE partitions: a
+   forwarded name missing from the managed set is folded in FIRST (so the
+   `tools/pre-execute` deny covers it) and the realm invalidates with
+   `lateRegistrations: [name]` and reason "registered after the mount settled". This is
+   the review's C1/C2 finding: before this round the name was live, routed and
+   **unrecorded**, and after any later invalidation the preset definition served the
+   Member with no deny (measured below).
+5. **Rollback on refusal.** Every fiber the mount created is disposed; a child that never
    settles keeps its own `inertia` pending upstream, so the refusal uses
    `disposeFiberBounded()` (bounded wait) instead of an unbounded `await fiber.dispose()` that
    would make the refusal itself hang. The preset surface comes back; no half shadow survives.
@@ -108,7 +118,9 @@ be reached at all: `A5-accepted-shadow-invalidates: FAIL — mounted: attach ref
 
 ## 4. GREEN — measured on this branch
 
-### 4.1 The probe: 6/6 (`green-probe.log`, `probe-deferred-settle.{json,log}`)
+### 4.1 The probe: 7/7 (`green-probe.log`, `probe-deferred-settle.{json,log}`)
+
+One recorded run; the PASS lines are stable, the millisecond figures vary by a few ms between runs.
 
 ```
 A1-accept-routed-read: mounted=true elapsedMs=10 surface=["edit","read","read_image","write"]
@@ -126,8 +138,29 @@ A4-unsettled-deferred-refused: mounted=false elapsedMs=51
 A4-unsettled-deferred-refused: PASS
 A5-accepted-shadow-invalidates: mounted=true elapsedMs=6 surface=["edit","read","read_image","write"]
 A5-accepted-shadow-invalidates: PASS
-RESULT arms=6 PASS:6 FAIL:0
+A7-late-registration-invalidates: mounted=true elapsedMs=39 surface=["edit","read","read_image","write","x_preset_only"]
+A7-late-registration-invalidates: PASS
+RESULT arms=7 PASS:7 FAIL:0
 ```
+
+A7 is the C1/C2 arm: the module returns ACTIVE with no registration, then registers
+`x_preset_only` (a PRESET-surface name this attach does not forward) from a 30 ms timer.
+Fixed code records `lateRegistrations:["x_preset_only"]`,
+`reason:"a managed native tool registered after the mount settled …"`, restores the preset
+definition, and the dispatch is denied with `A5SF_NATIVE_SHADOW_INVALIDATED`, the preset body
+never running. The archived PRE-FIX measurement (`red-arm-a7.json/.log`, base-shaped mount at
+`143f3a899`) is exactly the reviewer's shape:
+
+```
+A7-late-registration-invalidates: FAIL — the record FOLDS IN the late name: lateRegistrations=null;
+  the preset definition is visible again after teardown: definitionAfter=routed;
+  admission DENIES the late name: dispatch={"isError":false,"text":"late\n"};
+  the preset body never ran: text: late\n
+postLate.forcedAfterTeardown = {"definitionAfter":"preset","dispatch":{"isError":false,"text":"ok\n"}}
+```
+
+i.e. after the later teardown the late name resolved to the preset definition and the PRESET
+body executed (`"ok\n"`) with no typed deny — the escape the fold closes.
 
 A1 asserts the routed `read` and the **deferred** `read_image` are both the routed definitions
 (`!==` the preset ones), the surface name set is unchanged, and the routed read is confined.
@@ -160,7 +193,7 @@ realm (no fact from the preset path).
 
 | gate | result | raw |
 | --- | --- | --- |
-| all a5sf node suites (9 files) | **105/105 pass** (assembly 13/13, tool-axis 17/17, route-c 8/8, p2-seam 14/14, p2-wiring 9/9, f1-ctx 9/9, read-gate 13/13, harness 10/10, evidence 12/12) | `all-a5sf-node-suites.log` |
+| all a5sf node suites (9 files) | **106/106 pass** (assembly 14/14 incl. the C3 late-registration arm, tool-axis 17/17, route-c 8/8, p2-seam 14/14, p2-wiring 9/9, f1-ctx 9/9, read-gate 13/13, harness 10/10, evidence 12/12) | `all-a5sf-node-suites.log` |
 | `npx vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | laws (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`) | **34/34** | `laws.log` |
 | `pnpm typecheck` | pass | `typecheck.log` |
@@ -198,10 +231,10 @@ Exact equality, no tolerance; nothing under `packages/**` was added.
 ## 6. `pnpm ci:local --base origin/master` — verbatim
 
 The full transcript was 1.2 MiB (over the evidence bound); `ci-local.log` keeps the verdict
-block and the failing test verbatim, and the isolation run at the SAME tree.
+block, the failing test and the isolation run verbatim.
 
 ```
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=238.3s
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=3 wall=233.1s
 
 Test Files  1 failed | 482 passed (483)
      Tests  1 failed | 5992 passed (5993)        # a5g6-install-face-render GLUE-6 LEG B
@@ -210,42 +243,64 @@ Test Files  1 failed | 482 passed (483)
 Error: Test timed out in 5000ms.
 ```
 
-**It is the pre-existing ci-local load/timeout flake that `a5sf-assembly` documented at the
-same 483-file tree, not this diff**: the file alone at THIS tree passes 5/5 in 2.36 s
-(`ci-local-red-isolation.log`). The file is untouched by this branch (`git diff --stat
-origin/master..HEAD` lists only `mount.ts` + `a5sf-tool-axis.test.mjs`); its 5 s default
-timeout is eaten by the single `threads` pool importing 483 files. `coverage=determined`
-(never the exit-2 case). The selected `node --test` leg ran TA1–TA14 **17/17 pass** inside
-this same ci:local run.
+**This run saw ONE red, not two:** the `a5g6-install-face-render` 5 s timeout, while
+`alpha5-glob-backend-adversarial` passed inside the same 483-file pool. The one red is the
+pre-existing full-pool load/timeout flake `a5sf-assembly` documented at the same tree: the file
+alone at THIS tree passes **5/5 in 2.39 s** (`ci-local-red-isolation.log`) and is untouched by
+this diff (the diff is `mount.ts` + the two world-factory suites). `coverage=determined` (never
+the exit-2 case). The selected `node --test` leg ran TA1–TA14 **17/17 pass** inside this same
+ci:local run.
 
 ## 7. Biggest risk for the reviewer
 
-**The bound is a timing judgement.** `DEFERRED_SETTLE_ROUNDS = 20` macrotask rounds is not a
-semantic promise: a module that registers its tools from a timer/IO callback slower than that
-is now REFUSED (fail closed) instead of uploading an unverifiable shadow — which is the safe
-direction, but it means "satisfiable deferred registration" is defined as "settles within 20
-macrotasks on this machine". The pinned `dsh-tool-fs` settles in **one** macrotask
-(`elapsedMs=10–50` for the whole attach in the probe), so the margin is ~20×; CI machines with
-pathological scheduling could still trip it, and the refusal message names the macrotask bound
-so a future lane can raise or replace the bound without changing the judgment. Two smaller
-risks: (a) the identity check for a deferred definition is `tools.get(name, scope) ===
-forwardedDefinitions.get(name)` — a module that re-registers the same name twice would make the
-last definition the live one while `forwardedDefinitions` holds the first, which the
-`tools/change` re-verification turns into a typed invalidation rather than a silent pass;
-(b) the deferred name appears in **both** the ceiling's `observed` and its `forwarded` set
-(after the settle re-read), so `expectedDefinitions`/`managedRealmOf` can be written twice for
-the same name — idempotent for identical definitions, but a reviewer should confirm no
-duplicate-accounting arm regresses (assembly 13/13 and TA9 cover the partition union).
+**The bound is a timing judgement, and the post-settle rule is the one that changed.** A fiber
+still TRANSIENT after `DEFERRED_SETTLE_ROUNDS = 20` macrotasks is refused (fail closed). A fiber
+that was already ACTIVE and registers LATER is now caught by the fold in §2.4, not by the
+bound: the name is folded into the managed set and the realm invalidates, so the admission deny
+covers it (A7 + assembly C3). The reviewer's measurement of the pinned row-shaped mount is
+**4.2 ms with `attachments` present (~1–2 rounds against the 20-round bound, ~10–20× margin)
+and 48 ms with it absent** because the benign PENDING child still counts as transient until a
+round observes it; this probe's A1/A6 arms measure 10 ms / 27 ms end-to-end (attach + settle +
+verification). The refusal message names the bound, so a future lane can raise or replace it
+without changing the judgment.
+
+Smaller, stated honestly:
+
+- **(C3, corrected)** the identity check is NOT a duplicate-registration guard: the registry
+  REFUSES a duplicate (`already registered in this scope`) — inside a deferred child that makes
+  the child FAILED (mount refused), and late it throws so no second definition goes live. The
+  identity check guards the different class `a5sf-s1` §3.1 describes: a managed name whose
+  live definition is no longer the object this attach registered (external disposal, hot
+  replace, preset restoration).
+- **(C4)** `routedModuleContext` preserves the SHAPE of a deferred child's declaration:
+  array-form stays a deduplicated array; object-form (`name → per-service inject config`) stays
+  an object with every declared config preserved, added services getting `null` (Cordis's own
+  omitted-config default). Dropping the object form would have silently discarded per-service
+  intercept configs; it is now `mergeRoutedInject` and is stated here because no runtime arm
+  can observe an intercept config through the public tool seam.
+- A deferred name appears in both the ceiling's `observed` and (after settle) `forwarded` set,
+  so `expectedDefinitions`/`managedRealmOf` can be written twice for the same name — idempotent
+  for identical definitions; TA9 and the assembly partition arm cover the union.
+- The seam only sees registrations that go through ITS routers. A plugin that captures an outer
+  `tools` service and registers in the agent scope directly is outside this seam; the
+  name-set gate still catches a NEW name, but a PRESET-surface name could be replaced without
+  this attach noticing. That is the pre-existing scope of the seam (it owns the routed native
+  modules, not the whole agent tool plane), not a new escape.
 
 ## 8. Files changed
 
-- `packages/runtime/team-services/src/mount.ts` — `routedModuleContext`, `isTransientFiber`,
-  `settleDeferredRegistrationWindow`, `disposeFiberBounded`, `DEFERRED_SETTLE_ROUNDS`,
-  `ROUTED_SERVICE_NAMES`; the old "registers asynchronously … refusing" block replaced by
-  settle→inspect with typed FAILED/UNSETTLED refusals and the post-loop cross-mount UNCOVERED
-  check; doc comments updated. (dist mirrors regenerated by `pnpm build` + `place-dist-glue`.)
+- `packages/runtime/team-services/src/mount.ts` — `routedModuleContext` (+ `mergeRoutedInject`,
+  object-form inject preserved), `isTransientFiber`, `settleDeferredRegistrationWindow`,
+  `disposeFiberBounded`, `managedPartitions` (live router accounting for the post-settle fold),
+  `NativeToolInvalidation.lateRegistrations`, `DEFERRED_SETTLE_ROUNDS`, `ROUTED_SERVICE_NAMES`;
+  the old "registers asynchronously … refusing" block replaced by settle→inspect with typed
+  FAILED/UNSETTLED refusals and the post-loop cross-mount UNCOVERED check; doc comments updated.
+  (dist mirrors regenerated by `pnpm build` + `place-dist-glue`.)
 - `tests/world-factory/a5sf-tool-axis.test.mjs` — TA11 rewritten to ACCEPT, TA12/13/14 added,
   header contract updated.
+- `tests/world-factory/a5sf-assembly.test.mjs` — new C3 arm (`writeLateModule` fixture): a
+  post-settle registration by an already-ACTIVE fiber is folded in, recorded with
+  `lateRegistrations`, and denied at admission.
 - `dev/agent-workflow/evidence/a5sf-deferred/` — this README, probe (five arms + the
   absent-optional control), archived RED baseline, GREEN logs, gate logs.
 

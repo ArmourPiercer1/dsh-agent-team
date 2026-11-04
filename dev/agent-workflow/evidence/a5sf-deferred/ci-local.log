@@ -1,45 +1,15 @@
-# pnpm ci:local --base origin/master — condensed transcript (full 1.2 MiB transcript discarded; this is the verdict block + the one failing test, verbatim)
+# pnpm ci:local --base origin/master — condensed transcript (full 1.2M transcript kept out of evidence; verdict block, the failing test and the isolation run are verbatim)
 
- Test Files  1 failed | 482 passed (483)
-      Tests  1 failed | 5992 passed (5993)
-   Start at  07:28:07
-   Duration  223.67s (transform 67.68s, setup 0ms, import 363.07s, tests 567.98s, environment 80ms)
-
-✘ vitest (selected) (224.3s)
-
-▶ node --test (selected)
-✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (10.010112ms)
-✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (82.69709ms)
-✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (76.651894ms)
-✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (4.043475ms)
-✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.984764ms)
-✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (4.140699ms)
-✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.182759ms)
-✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (76.412921ms)
-✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (77.771815ms)
-✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (32.493143ms)
-✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (76.840552ms)
-✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (31.358818ms)
-✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (74.745365ms)
-✔ TA11 DEFERRED ACCEPT: a module registering read_image from ctx.inject([attachments]) mounts, and BOTH the synchronous and the deferred definitions are the routed ones (15.113803ms)
-✔ TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and the surface is restored (5.622043ms)
-✔ TA13 DEFERRED UNSETTLED: a deferred child that never resolves is REFUSED within the bound (no hang, no accept) (48.144625ms)
-✔ TA14 DEFERRED UNCOVERED: a deferred name no fiber of the mount forwards is REFUSED and the reason NAMES it (#561 protection kept) (5.050031ms)
-ℹ tests 17
-ℹ suites 0
-ℹ pass 17
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 906.442418
-✔ node --test (selected) (1.0s)
-
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=238.3s
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=3 wall=233.1s
 [ELIFECYCLE] Command failed with exit code 1.
 EXIT=1
 
---- the failing test, verbatim ---
+
+
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
+   Start at  08:18:47
+
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
@@ -54,15 +24,9 @@ If this is a long-running test, pass a timeout value as the last argument or con
     148|     // U7-F: the process family's second row mounts at its fixed native
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
-
- Test Files  1 failed | 482 passed (483)
-      Tests  1 failed | 5992 passed (5993)
-   Start at  07:28:07
-
 --- isolation at the SAME tree ---
 
  Test Files  1 passed (1)
       Tests  5 passed (5)
-   Start at  07:32:21
-   Duration  2.36s (transform 1.81s, setup 0ms, import 1.54s, tests 736ms, environment 0ms)
+   Start at  08:22:34
+   Duration  2.39s (transform 1.85s, setup 0ms, import 1.56s, tests 747ms, environment 0ms)
