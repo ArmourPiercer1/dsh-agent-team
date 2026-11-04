@@ -1,0 +1,173 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-rg-ancestors
+
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > reads the operands after `--`, resolving relative ones against cwd 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > falls back to cwd when the argv names no operand (the walk root IS cwd) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > never mistakes a pattern or a --flag=value for a path 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > B1: refuses the pattern/ignore-file flags that read an undeclared path 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > B2: requires --no-config BEFORE the first `--` (a lane file named --no-config is an operand) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 read-intent extraction (pure) > admits exactly the shipped grep and glob argv shapes (allow-list, not a deny-list) 0ms
+ × packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > ADDS --no-ignore-parent/--no-ignore-vcs when an ancestor is outside the lane 4ms
+   → expected [] to deeply equal [ '--no-ignore-parent', …(1) ]
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > KEEPS the shipped argv when the lane includes the worktree root (ordinary .gitignore semantics) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > KEEPS the shipped argv when `--no-ignore` already disables the ancestor walk (the glob shape) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > KEEPS the shipped argv for a FILE operand (rg does no parent discovery for a file) 0ms
+ × packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > an explicit `deny: [<root>/.git]` still forces the flags (the VCS root is not readable) 0ms
+   → expected [] to deeply equal [ '--no-ignore-parent', …(1) ]
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > a `mode: all` lane needs no flags (every ancestor is already in lane) 0ms
+ × packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure 151ms
+   → expected { exitCode: 2, signal: null } to deeply equal { exitCode: +0, signal: null }
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one 163ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R2: an out-of-lane grep is refused BEFORE the provider is called, with one typed fact and no secret 7ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (i-MUTATION) remove the two flags at the provider boundary: the same arm goes RED with the live stderr 131ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (ii) `.git` is still refused at ADMISSION as a search root (one deny fact, zero processes) 110ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R3: an in-lane search with no match is NOT an error — exit code 1 survives the handle adaptation 137ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (ii-KERNEL) the kernel still denies a direct `.git` read (raw provider, admission bypassed) 127ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr 135ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (iii) a lane that INCLUDES the worktree root keeps ordinary .gitignore semantics 135ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > G1/G2: glob rides the SAME confined face — in-lane lists, out-of-lane is refused with a fact 142ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (iii-MUTATION) forcing the flags onto that lane makes the ignored file appear 134ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly 138ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (iv) an invalid pattern still surfaces the REAL rg stderr and exit 2 130ms
+ × packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded) 241ms
+   → the routed grep must not fail on a worktree search; tool text: Error: grep search failed (exit 2): rg: /tmp/a5sf-bl16-realm/w-9QlIY5/repo-wt/.git: Permission denied (os error 13): expected true to be false // Object.is equality
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (v) the flags change neither the fact count nor the process count 134ms
+ × packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > admits an in-lane search root and hands it to the confined provider 4ms
+   → expected [ '/usr/bin/rg', '--no-config', …(4) ] to deeply equal [ '/usr/bin/rg', '--no-config', …(6) ]
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a target outside the ceiling BEFORE any process exists 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a target that is INSIDE the ceiling but OUTSIDE the tool restriction 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > B3: REFUSES a program whose realpath is inside the Member write lane (a shell script named rg) 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > ADMITS the shipped rg path, which is outside the Member write lane 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a `..` operand that escapes the lane through cwd resolution 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES when the argv names no operand and the cwd (the walk root) is out of lane 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a lane the OS profile cannot express instead of spawning unconfined 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a request for an stdio shape it cannot honour (spill file, control pipe) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > REFUSES a terminal spawn (no terminal face on this provider) 0ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 exit-code and cancellation fidelity > preserves exit 1 (no matches) and exit 2 (invalid pattern) — no fabricated 0 2ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 exit-code and cancellation fidelity > REJECTS a completion it cannot record instead of inventing a success 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 exit-code and cancellation fidelity > reports a signal death as a signal, not as an exit code 1ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 exit-code and cancellation fidelity > terminates the child on caller cancellation 3ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 real OS leg (Landlock launcher, host-free) > refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly 141ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim 245ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change) 252ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional) 299ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-bl16-grep-realm.test.ts > BL-16 realm wiring — the routed grep/glob resolve the CONFINED subprocess > R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)
+AssertionError: the routed grep must not fail on a worktree search; tool text: Error: grep search failed (exit 2): rg: /tmp/a5sf-bl16-realm/w-9QlIY5/repo-wt/.git: Permission denied (os error 13): expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5sf-bl16-grep-realm.test.ts:594:113
+    592|       const before = w.spawns.count
+    593|       const outcome = await call(w, 'grep', { pattern: 'WT-NEEDLE', pa…
+    594|       expect(outcome.isError, `the routed grep must not fail on a work…
+       |                                                                                                                 ^
+    595|       expect(outcome.text).toContain('WT-NEEDLE')
+    596|       expect(w.spawns.count).toBe(before + 1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > ADDS --no-ignore-parent/--no-ignore-vcs when an ancestor is outside the lane
+AssertionError: expected [] to deeply equal [ '--no-ignore-parent', …(1) ]
+
+- Expected
++ Received
+
+- [
+-   "--no-ignore-parent",
+-   "--no-ignore-vcs",
+- ]
++ []
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:342:33
+    340|       lane([worktreeInside]),
+    341|     )
+    342|     expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FL…
+       |                                 ^
+    343|     expect(decision.annotatedRoots).toEqual([worktreeInside])
+    344|     expect(decision.argv).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 lane-safe search argv (pure: no process) > an explicit `deny: [<root>/.git]` still forces the flags (the VCS root is not readable)
+AssertionError: expected [] to deeply equal [ '--no-ignore-parent', …(1) ]
+
+- Expected
++ Received
+
+- [
+-   "--no-ignore-parent",
+-   "--no-ignore-vcs",
+- ]
++ []
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:381:33
+    379|       lane([worktree], [join(worktree, '.git')]),
+    380|     )
+    381|     expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FL…
+       |                                 ^
+    382|   })
+    383|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 live row-1 repair (real launcher, real packaged rg, host-free) > (i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure
+AssertionError: expected { exitCode: 2, signal: null } to deeply equal { exitCode: +0, signal: null }
+
+- Expected
++ Received
+
+  {
+-   "exitCode": 0,
++   "exitCode": 2,
+    "signal": null,
+  }
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:473:25
+    471|     const result = await runRealGrep(face, worktreeInside)
+    472|     expect(result.doneError).toBeNull()
+    473|     expect(result.exit).toEqual({ exitCode: 0, signal: null })
+       |                         ^
+    474|     expect(result.stderr).toBe('')
+    475|     expect(result.stdout).toContain('WT-NEEDLE')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > admits an in-lane search root and hands it to the confined provider
+AssertionError: expected [ '/usr/bin/rg', '--no-config', …(4) ] to deeply equal [ '/usr/bin/rg', '--no-config', …(6) ]
+
+- Expected
++ Received
+
+  [
+    "/usr/bin/rg",
+    "--no-config",
+-   "--no-ignore-parent",
+-   "--no-ignore-vcs",
+    "--json",
+    "--regexp=NEEDLE",
+    "--",
+    "/tmp/a5sf-bl16-zCsYcm/inside",
+  ]
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:626:40
+    624|     // include, so ancestor/VCS discovery would leave the lane. The fa…
+    625|     // its two flags (the DECLARED argv is unchanged) and says so on t…
+    626|     expect(provider.requests[0]?.argv).toEqual([
+       |                                        ^
+    627|       '/usr/bin/rg', '--no-config', ...SEARCH_IGNORE_DISCOVERY_FLAGS, …
+    628|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 40 passed (45)
+   Start at  04:38:50
+   Duration  2.26s (transform 572ms, setup 0ms, import 674ms, tests 3.06s, environment 0ms)

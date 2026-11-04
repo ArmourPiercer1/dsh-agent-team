@@ -28,8 +28,19 @@
  *   R5  KERNEL LAYER: with a target the admission NAMES as in-lane, a read the
  *       argv never names is refused by the OS profile (this is the layer the
  *       admission cannot provide; asserted by the absence of the secret).
+ *   R6  LIVE ROW 1 (2026-11-05): an in-lane `grep` inside a REAL git-worktree
+ *       layout returns the match through the REAL tool. The confined rg used to
+ *       walk above the search root, try to read the lane-denied `.git` FILE and
+ *       exit 2. The face now adds `--no-ignore-parent --no-ignore-vcs` and the
+ *       ONE allow fact carries the disclosure.
+ *   R6m MUTATION: stripping those flags at the provider boundary reproduces
+ *       the live tool error verbatim (`…/.git: Permission denied`, exit 2).
+ *   R7  A lane that INCLUDES the worktree root keeps ordinary `.gitignore`
+ *       semantics (no flags, no disclosure; the ignored file stays hidden).
+ *   R7m MUTATION: forcing the flags onto that lane makes the ignored file
+ *       appear — the reason the change is conditional, not global.
  *
- * HOST REQUIREMENT: R1–R5 need the Landlock launcher's `content-read` leg
+ * HOST REQUIREMENT: R1–R7 need the Landlock launcher's `content-read` leg
  * ENFORCED. When the host cannot enforce it the arms are SKIPPED, never
  * reported green (the `a5sf-os-runner.test.ts` precedent).
  *
@@ -53,8 +64,13 @@ import type { TrustedMemberIdentity } from '../member-io-policy/src/types.js'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
 import { compileExecutionProfile } from '../team-sandbox/src/profile.js'
 import { readGuardConsultFile } from '../team-services/src/guard-observability.js'
-import { confinedSpawnAllowPaths } from '../team-services/src/subprocess.js'
+import {
+  SEARCH_IGNORE_DISCOVERY_FLAGS,
+  SEARCH_IGNORE_DISCOVERY_NOTES,
+  confinedSpawnAllowPaths,
+} from '../team-services/src/subprocess.js'
 import type { ConfinedProcessProvider, ConfinedStreamProcess } from '../team-services/src/subprocess.js'
+import type { SpawnRequest } from '../sandbox-provider/provider.js'
 
 const REPO = realpathSync(join(__dirname, '../../..'))
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -188,6 +204,9 @@ const worlds: string[] = []
 let world = ''
 let inside = ''
 let outside = ''
+/** A git-worktree-shaped temp tree (`.git` FILE) used by R6/R7. */
+let worktree = ''
+let worktreeInside = ''
 let row: RowModule
 
 beforeAll(async () => {
@@ -202,6 +221,20 @@ beforeAll(async () => {
   mkdirSync(outside, { recursive: true })
   writeFileSync(join(inside, 'needle.txt'), 'INSIDE-NEEDLE\n', 'utf8')
   writeFileSync(join(inside, 'quiet.txt'), 'nothing to see here\n', 'utf8')
+
+  // The live row-1 shape: a worktree whose `.git` FILE is an ancestor of the
+  // search root. R6's lane admits only the search root, so the confined rg
+  // cannot read `.git`; R7's lane includes the worktree root.
+  const gitdir = join(world, 'main-gitdir', '.git', 'worktrees', 'wt1')
+  mkdirSync(gitdir, { recursive: true })
+  worktree = join(world, 'repo-wt')
+  worktreeInside = join(worktree, 'lane', 'inside')
+  mkdirSync(worktreeInside, { recursive: true })
+  writeFileSync(join(worktree, '.git'), `gitdir: ${gitdir}\n`, 'utf8')
+  writeFileSync(join(worktree, '.gitignore'), 'ignored.md\n', 'utf8')
+  writeFileSync(join(worktreeInside, 'needle.txt'), 'WT-NEEDLE\n', 'utf8')
+  writeFileSync(join(worktreeInside, 'ignored.md'), 'WT-NEEDLE ignored-but-present\n', 'utf8')
+
   writeFileSync(join(outside, 'secret.txt'), 'OUTSIDE-SECRET-MUST-NOT-LEAK\n', 'utf8')
   row = await import(pathToFileURL(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href) as unknown as RowModule
 })
@@ -217,21 +250,29 @@ interface WorldHandles {
   readonly realm: { dispose(): Promise<void> }
   readonly sinkPath: string
   readonly spawns: { count: number }
+  readonly requests: SpawnRequest[]
 }
 
-/** A counting shim over the REAL OS provider (the negative control's counter). */
-function countingProvider(inner: ConfinedProcessProvider): { provider: ConfinedProcessProvider; spawns: { count: number } } {
+/** A counting shim over the REAL OS provider (the negative control's counter),
+ *  recording the exact argv it was asked to run. */
+function countingProvider(inner: ConfinedProcessProvider): { provider: ConfinedProcessProvider; spawns: { count: number }; requests: SpawnRequest[] } {
   const spawns = { count: 0 }
+  const requests: SpawnRequest[] = []
   const provider: ConfinedProcessProvider = {
     async spawnStreaming(request, streaming) {
       spawns.count += 1
+      requests.push(request)
       return inner.spawnStreaming(request, streaming)
     },
   }
-  return { provider, spawns }
+  return { provider, spawns, requests }
 }
 
-async function worldWith(effective: EffectiveIoPolicy, realmId: string): Promise<WorldHandles> {
+async function worldWith(
+  effective: EffectiveIoPolicy,
+  realmId: string,
+  mutateArgv?: (argv: string[]) => string[],
+): Promise<WorldHandles> {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
@@ -253,6 +294,16 @@ async function worldWith(effective: EffectiveIoPolicy, realmId: string): Promise
     assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
   }) as unknown as ConfinedProcessProvider
   const counted = countingProvider(osProvider)
+  // MUTATION INSTRUMENTATION ONLY (R6/R6m/R7m): edit the argv at the provider
+  // boundary. It decides nothing about the lane; the shipped face already made
+  // its choice before this wrapper exists.
+  const provider: ConfinedProcessProvider = mutateArgv === undefined
+    ? counted.provider
+    : {
+        async spawnStreaming(request, streaming) {
+          return counted.provider.spawnStreaming({ ...request, argv: mutateArgv([...request.argv]) }, streaming)
+        },
+      }
 
   const realm = await row.mountMemberA5sfRealm({
     root: agent.ctx,
@@ -263,7 +314,7 @@ async function worldWith(effective: EffectiveIoPolicy, realmId: string): Promise
         providerClass: BaseFs,
         subprocess: {
           effective,
-          provider: counted.provider,
+          provider,
           realmId,
           memberScope: IDENTITY.memberInstanceId,
           bindingId: 'dsh.search/grep',
@@ -277,7 +328,7 @@ async function worldWith(effective: EffectiveIoPolicy, realmId: string): Promise
       templateId: IDENTITY.templateId,
     },
   })
-  return { root, agentKey, agentCtx: agent.ctx, realm, sinkPath, spawns: counted.spawns }
+  return { root, agentKey, agentCtx: agent.ctx, realm, sinkPath, spawns: counted.spawns, requests: counted.requests }
 }
 
 async function attach(w: WorldHandles): Promise<unknown[]> {
@@ -313,12 +364,26 @@ interface FactLike {
   decision?: string
   decidedBy?: string
   locator?: string
+  annotations?: readonly string[]
 }
 
 /** Read the sink through the PRODUCT reader (schema-checked), not a JSON.parse. */
 async function factsOf(path: string): Promise<FactLike[]> {
   if (!existsSync(path)) return []
   return (await readGuardConsultFile(path)) as unknown as FactLike[]
+}
+
+/** Is this host's Landlock `content-read` leg enforced? R6m/R7m need it. */
+async function kernelEnforced(realmId: string): Promise<boolean> {
+  const provider = createConfinedProcessProvider({
+    realmId: `probe-${realmId}`,
+    trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+    scratchRoot: join(world, `scratch-probe-${realmId}`),
+    assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
+  }) as unknown as { probe(): Promise<{ ok: boolean; value?: { dimension: string; level: string }[] }> }
+  const probe = await provider.probe()
+  return probe.ok === true
+    && probe.value?.some((entry) => entry.dimension === 'content-read' && entry.level === 'enforced') === true
 }
 
 // ---------------------------------------------------------------------------
@@ -400,13 +465,16 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
     }
   }, 30_000)
 
-  it('R4: an invalid pattern is a failure (rg exit 2), never a clean "no matches"', async () => {
+  it('R4: an invalid pattern is a failure (rg exit 2) carrying the REAL rg stderr', async () => {
     const w = await worldWith(effectiveOf(lane([inside]), lane([inside]), lane([inside])), 'realm-bl16-r4')
     try {
       await attach(w)
       const outcome = await call(w, 'grep', { pattern: '([unclosed', path: inside })
       expect(outcome.isError).toBe(true)
       expect(outcome.text.toLowerCase()).not.toContain('no matches')
+      // The face did not swallow rg's own diagnostic while making the
+      // invocation lane-safe: the module prefixes the real stderr.
+      expect(outcome.text).toContain('regex parse error')
     } finally {
       await w.realm.dispose()
     }
@@ -510,6 +578,104 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
     // the secret is still on the host: the refusal is the launcher's, not a
     // deletion, and the harness never held the bytes.
     expect(readFileSync(join(outside, 'secret.txt'), 'utf8')).toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
+  }, 60_000)
+
+  it('R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)', async (ctx) => {
+    if (!await kernelEnforced('r6')) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const effective = effectiveOf(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside]))
+    const w = await worldWith(effective, 'realm-bl16-r6')
+    try {
+      await attach(w)
+      const before = w.spawns.count
+      const outcome = await call(w, 'grep', { pattern: 'WT-NEEDLE', path: worktreeInside })
+      expect(outcome.isError, `the routed grep must not fail on a worktree search; tool text: ${outcome.text}`).toBe(false)
+      expect(outcome.text).toContain('WT-NEEDLE')
+      expect(w.spawns.count).toBe(before + 1)
+      const request = w.requests.at(-1)
+      expect(request?.argv).toContain('--no-ignore-parent')
+      expect(request?.argv).toContain('--no-ignore-vcs')
+      const facts = await factsOf(w.sinkPath)
+      expect(facts).toHaveLength(1)
+      expect(facts[0]).toMatchObject({
+        realm: 'member',
+        method: 'spawn',
+        locator: worktreeInside,
+        decision: 'allow',
+        decidedBy: 'ALLOW',
+      })
+      // The tool result is not the only place the operator can learn what
+      // happened: the SAME allow fact says the discovery was disabled.
+      expect(facts[0]?.annotations).toEqual(SEARCH_IGNORE_DISCOVERY_NOTES)
+    } finally {
+      await w.realm.dispose()
+    }
+  }, 60_000)
+
+  it('R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim', async (ctx) => {
+    if (!await kernelEnforced('r6m')) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const effective = effectiveOf(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside]))
+    const w = await worldWith(effective, 'realm-bl16-r6m', (argv) => argv.filter(
+      (token) => token !== '--no-ignore-parent' && token !== '--no-ignore-vcs',
+    ))
+    try {
+      await attach(w)
+      const outcome = await call(w, 'grep', { pattern: 'WT-NEEDLE', path: worktreeInside })
+      expect(outcome.isError).toBe(true)
+      expect(outcome.text).toContain(`${worktree}/.git: Permission denied (os error 13)`)
+      expect(outcome.text).toContain('exit 2')
+    } finally {
+      await w.realm.dispose()
+    }
+  }, 60_000)
+
+  it('R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)', async (ctx) => {
+    if (!await kernelEnforced('r7')) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const effective = effectiveOf(lane([worktree]), lane([worktree]), lane([worktree]))
+    const w = await worldWith(effective, 'realm-bl16-r7')
+    try {
+      await attach(w)
+      const outcome = await call(w, 'grep', { pattern: 'WT-NEEDLE', path: worktreeInside })
+      expect(outcome.isError).toBe(false)
+      expect(outcome.text).toContain('WT-NEEDLE')
+      expect(outcome.text).not.toContain('ignored-but-present')
+      const request = w.requests.at(-1)
+      expect(request?.argv).not.toContain('--no-ignore-vcs')
+      expect(request?.argv).not.toContain('--no-ignore-parent')
+      const facts = await factsOf(w.sinkPath)
+      expect(facts).toHaveLength(1)
+      expect(facts[0]?.annotations).toBeUndefined()
+    } finally {
+      await w.realm.dispose()
+    }
+  }, 60_000)
+
+  it('R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)', async (ctx) => {
+    if (!await kernelEnforced('r7m')) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const effective = effectiveOf(lane([worktree]), lane([worktree]), lane([worktree]))
+    const w = await worldWith(effective, 'realm-bl16-r7m', (argv) => {
+      const at = argv.indexOf('--')
+      return [...argv.slice(0, at), ...SEARCH_IGNORE_DISCOVERY_FLAGS, ...argv.slice(at)]
+    })
+    try {
+      await attach(w)
+      const outcome = await call(w, 'grep', { pattern: 'WT-NEEDLE', path: worktreeInside })
+      expect(outcome.isError).toBe(false)
+      expect(outcome.text).toContain('ignored-but-present')
+    } finally {
+      await w.realm.dispose()
+    }
   }, 60_000)
 })
 
