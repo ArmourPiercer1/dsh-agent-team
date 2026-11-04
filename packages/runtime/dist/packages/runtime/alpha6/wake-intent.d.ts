@@ -63,7 +63,7 @@ export interface ReviewWakeIntentStore {
  */
 export interface ReviewWakeInboxPort {
     has(wakeId: string): boolean | Promise<boolean>;
-    remove?(wakeId: string): void | Promise<void>;
+    remove?(wakeId: string): void | boolean | Promise<void | boolean>;
 }
 /** One recovery outcome. `transition` is the reducer's answer (never effects). */
 export interface ReviewWakeRecoverResult {

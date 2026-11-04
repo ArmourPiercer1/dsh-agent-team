@@ -1874,8 +1874,22 @@ export function createTeamProductionRoot(params) {
             for (const intent of await alpha6WakeIntents.list()) {
                 const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
                 const targetSessionId = member?.childSessionId;
-                if (typeof targetSessionId !== 'string' || targetSessionId.length === 0)
+                if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
+                    // No child session means no native Inbox can ever hold this
+                    // latch. Clearing the stale row is the only terminal answer;
+                    // leaving it would be re-read (and skipped) on every boot.
+                    try {
+                        await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                    }
+                    catch (error) {
+                        params.onNotificationFailure?.({
+                            requestId: intent.wakeId,
+                            kind: 'review-wake-orphan-intent',
+                            error,
+                        });
+                    }
                     continue;
+                }
                 const coordinator = createLatchCoordinator(intent.key);
                 const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
                 if (!recovered.adopted) {

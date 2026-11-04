@@ -684,7 +684,10 @@ export async function releaseReviewWake(
         if (options.inbox?.remove === undefined) {
           throw new Error('review-wake: withdraw-wake requires an Inbox remove port')
         }
-        await options.inbox.remove(effect.wakeId)
+        const removed = await options.inbox.remove(effect.wakeId)
+        if (removed === false) {
+          throw new Error('review-wake: the native Inbox refused the withdraw')
+        }
         await options.intent?.clear(effect.wakeId)
         withdrawn.push(effect.wakeId)
       } catch (error) {
