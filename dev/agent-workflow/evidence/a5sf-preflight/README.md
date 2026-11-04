@@ -413,3 +413,63 @@ The p4t6 scanner total is **not re-booked** by this lane: the change adds only
 so `tests/paths.mjs`'s `A5SF` booking and the measured tie are unchanged. The p4t6
 suite was measured **last**, after every other suite and after the evidence was on
 disk (`law-and-p4t6.log`).
+
+## 11. THE FIRST LIVE SIX-ROW RUN — 2026-11-04T07:28Z (head `1ee898c33`, port 3183, 1 start)
+
+**Overall FAIL: 4 PASS / 3 FAIL.** The three FAILs are **contract/oracle defects, not enforcement
+gaps** — and the run's most important result is that the Member **activated at all**, which is what
+#576/#578/#580 were for. Every earlier attempt died before this point.
+
+### The four PROVEN rows (live, real Host, real pinned `dsh-tool-fs`)
+
+| row | verdict | reason code | what it rests on |
+|---|---|---|---|
+| composition precondition | **PROVEN** | `MEMBER_ACTIVATED_ONE_READ` | one read schema on the Member surface, prompt matches discovery, `tool:read` unchanged |
+| row 1 read A (inside both) | **PROVEN** | `READ_A_ALLOWED_AND_CONFINED` | bytes returned **and** binding-realm allow fact **and** the confined provider served it |
+| row 3 read C (ceiling denies) | **PROVEN** | `REFUSED_WITHOUT_WIDENING` | ceiling deny / restriction allow / effective deny from the lane report; no widened allow |
+| row 5 post-invalidation | **PROVEN** | `SHADOW_INVALIDATED_AND_ADMISSION_REFUSED` | typed `A5SF_NATIVE_SHADOW_INVALIDATED` (**name-keyed, not the blanket freeze**), no bytes, no guard fact, no provider call, refused in-lane too |
+
+Row 5 is the P0 invariant measured on a live Host for the first time: an invalidated managed shadow
+was condemned **by name**, and the forbidden bytes never arrived.
+
+### The three FAILs, with the raw facts
+
+The complete live sink was five facts:
+`stat allow` + `readText allow` on `a.txt`; `stat deny` on `b.txt`; `stat deny` on `c.txt`;
+`writeText allow` on `b.txt` (ceiling realm).
+
+1. **row 2 — `exactlyOneReadFactForB: false`.** Every other clause passed (refused, typed lane
+   refusal, no claim leak, exactly one binding deny, no provider read). The defect is the oracle's
+   method assumption: the live denial is recorded at **`stat`**, because the read tool stats the
+   target first and never reaches `readText`. The /B1/ fix filtered on `readText`, so it counted
+   zero. One read-path fact exists; the oracle looked for the wrong method name.
+2. **row 4 — `notError: false`, `diskMatches: false`.** The write to `b.txt` was **refused**, and
+   correctly so: `b.txt` is inside the ceiling but outside the restriction read allowance, and the
+   product requires read permission to write (`IO_WRITE_REQUIRES_READ`, measured host-free in
+   #579). The row asserts an allowance the product correctly denies, so the **row design** is
+   wrong, not the enforcement. It should become two rows: write to a readable in-lane file
+   (allowed, `writeText` fact on the ceiling only, disk matches) and write to `b.txt`
+   (REFUSED with `IO_WRITE_REQUIRES_READ`, disk unchanged).
+3. **row 6 — `noFactAfterStop: false`.** `sinkDelta=2`, but **no fact carries an `observedAt`
+   after the archive**: the newest fact is `07:28:27.080` and the archive happened at
+   `07:28:28.916`. The two counted facts are the last two **pre-stop** facts (sequences 4–5) that
+   landed between the baseline read and the after-read — the sink is append-only and is read at two
+   instants, so a count delta cannot express "nothing after the stop". Meanwhile
+   `noSuccessAfterStop`, `noForbiddenBytesAfterStop`, `noManagedDisposeFault` and
+   `noUnattributedRealmFault` were all true. The row must assert **no fact with an `observedAt`
+   after the stop instant**, not a count delta.
+
+### What this run therefore established
+
+- The live Member assembly works end to end: activate → routed native surface → two-axis guard →
+  provider, with a guard fact per consultation on the right realm.
+- The **read** half of the contract is proven live: in-lane reads are confined, ceiling-denied reads
+  are refused, and a post-invalidation read is refused by name with no bytes and no provider call.
+- The remaining three rows fail on **how the driver asks the question**, not on what the product
+  does. That is the honest reading, and it is why the two remaining dedicated starts are worth
+  spending only after the oracle and row-4 design are corrected.
+
+### Budget
+
+`bootsSpent=1` of the three dedicated P2-01 starts; ledger rows = intent + boot1. The pool reserve
+was not touched. Port released, home deleted, no orphan Host.
