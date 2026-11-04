@@ -278,23 +278,31 @@ above is exactly why binding them as-is would be a false claim.
 
 ## 6. Gates
 
+All run on this tree; raw transcripts in this directory.
+
 | gate | result | raw |
 | --- | --- | --- |
 | `node dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.mjs` | **11/11 PASS, exit 0** | `fs-arms.log` |
-| all a5sf node suites | see `all-a5sf-node-suites.log` | `all-a5sf-node-suites.log` |
-| `npx vitest run a5sf` | see `vitest-a5sf.log` | `vitest-a5sf.log` |
-| law suites + p4t6 | see `law-and-p4t6.log` | `law-and-p4t6.log` |
-| p4t6 tie, **measured last** | must stay **1428** | `p4t6-measured-tie.log` |
-| `pnpm typecheck` | see `typecheck.log` | `typecheck.log` |
-| `pnpm build` | see `build.log` | `build.log` |
-| `node scripts/place-dist-glue.mjs` | see `place-dist-glue.log` | `place-dist-glue.log` |
-| `check-artifacts-committed` / `check-artifacts-at-head` | see logs | `check-artifacts-committed.log`, `check-artifacts-at-head.log` |
-| `eb3-evidence-guard --new-since origin/master` | see log | `eb3-evidence-guard.log` |
-| `eb3-ci-required` | see log | `eb3-ci-required.log` |
-| `ci-pr-gate --only …` | see log | `ci-pr-gate.log` |
-| negative controls | see log | `eb3-negative-controls.log` |
-| `pnpm ci:local --base origin/master` | see log | `ci-local.log` |
-| `git diff --check origin/master..HEAD` | see log | `git-diff-check.log` |
+| all a5sf node suites (8 files) | **92/92** (12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
+| `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
+| law suites + p4t6 (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`, `p4t6-session-event-scan`) | **54/54** (12+13+9+20) | `law-and-p4t6.log` |
+| p4t6 tie, **measured last** | **1428** (`filesScanned=1428`, ledger `expected=1428`, `violations=[]`) | `p4t6-measured-tie.log` |
+| `pnpm typecheck` (9 projects) | pass | `typecheck.log` |
+| `pnpm build` | pass | `build.log` |
+| `node scripts/place-dist-glue.mjs` | 101 placements, byte-identical; **no dist diff** | `place-dist-glue.log` |
+| `node scripts/check-artifacts-committed.mjs` | pass (1916 compared, 101 glue) | `check-artifacts-committed.log` |
+| `node scripts/check-artifacts-at-head.mjs` | pass (1916 compared, drift 0) | `check-artifacts-at-head.log` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, `added=10 findings=0` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-ci-required.mjs` | pass, `workflows=9 findings=0` | `eb3-ci-required.log` |
+| `node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities` | pass (4/4 legs) | `ci-pr-gate.log` |
+| `node scripts/eb3-ci-negative-controls.mjs` | **26/26 controls** behaved as required | `eb3-negative-controls.log` |
+| `pnpm ci:local --base origin/master` | **pass**, steps=4 failed=0 coverage=determined wall=12.6s | `ci-local.log` |
+| `git diff --check origin/master..HEAD` | clean (exit 0) | `git-diff-check.log` |
+
+The p4t6 tie was measured after every file in this directory was on disk and before the
+evidence commit; this lane adds only `dev/**` + `docs/**` paths, so the scanner total is
+unchanged at **1428** and no booking was needed (the `A5SF` booking stays
+`{"from":1396,"to":1428}`, 32 paths).
 
 ## 7. Reproduce
 
