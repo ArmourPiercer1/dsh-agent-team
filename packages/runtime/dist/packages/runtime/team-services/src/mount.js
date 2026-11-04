@@ -41,9 +41,28 @@ import { installMemberIoProviders, installToolBindingRealm, } from './install.js
 import { TeamServiceInstallError } from './types.js';
 /**
  * P0 (2026-11-03): the stable machine-readable code carried by the admission
- * refusal's `error.info.code` while a realm's native shadow is invalidated.
+ * refusal's `error.info.code` while a realm's native shadow is invalidated AND
+ * the dispatched tool name is one this attach covered.
+ *
+ * NAME-KEYED PRECEDENCE (E8, 2026-11-03): when the name is in the managed set
+ * this SPECIFIC code wins over {@link A5SF_MEMBER_REALM_INVALIDATED}; it names
+ * the tool, the Member and the realm that lost its shadow. The blanket code is
+ * for every OTHER invocation while the realm is frozen.
  */
 export const A5SF_NATIVE_SHADOW_INVALIDATED = 'A5SF_NATIVE_SHADOW_INVALIDATED';
+/**
+ * E8 (2026-11-03): the stable machine-readable code carried by the admission
+ * refusal when a Member's managed realm is INVALIDATED and the dispatched tool
+ * name is NOT one this attach covered (including names the attach never saw).
+ *
+ * WHY A SEPARATE CODE: an invalidated realm refuses EVERY new tool invocation —
+ * the boundary has failed, so nothing further executes until a full verified
+ * re-assembly. That is a different fact from "this particular managed shadow is
+ * gone" ({@link A5SF_NATIVE_SHADOW_INVALIDATED}), and a caller must be able to
+ * tell them apart. The generic code says: the Member's realm is invalidated,
+ * ALL calls are refused until re-assembly.
+ */
+export const A5SF_MEMBER_REALM_INVALIDATED = 'A5SF_MEMBER_REALM_INVALIDATED';
 /** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
 export const NATIVE_REGISTRATION_ROUTING = 'a5sfRegistrationRouting';
 /** The tool name a ToolBinding identity addresses: the last `/` segment of `<owner>/<tool>`. */
@@ -416,6 +435,12 @@ export async function mountA5sfRealm(input) {
     /** name -> the exact definition this attach registered (the coverage signal). */
     const expectedDefinitions = new Map();
     /**
+     * E8 (2026-11-03): the LAST successful attach's record. Null before an attach,
+     * after the caller's own refusal and after dispose. `emptyFrontierAcknowledged`
+     * is a DECLARED HAZARD (see {@link NativeAttachRecord}), never a verification.
+     */
+    let attachRecord = null;
+    /**
      * Every registering fiber's LIVE partition, in mount order. The sets are the
      * router's own accounting objects and keep growing while the fiber lives, so
      * continuous verification can see a registration that lands AFTER the bounded
@@ -487,8 +512,37 @@ export async function mountA5sfRealm(input) {
         };
     };
     /**
-     * `tools/pre-execute` admission: DENY a covered name while the realm is
-     * invalid, otherwise delegate to the rest of the waterfall. Denying here is
+     * E8 (2026-11-03) — the BLANKET refusal for an invalidated realm.
+     *
+     * The user ruling this implements: while a Member's managed realm is
+     * invalidated, refuse EVERY new tool invocation at the existing admission
+     * point, not only the names in `expectedDefinitions`. The boundary has
+     * failed, so nothing further should execute; the deny lifts only on a full
+     * verified re-assembly, exactly like the name-keyed P0 deny.
+     *
+     * WHY THE NAME-KEYED CODE STILL EXISTS (precedence, pinned): when the name IS
+     * known to be a covered managed name, `refusalOf` answers with the SPECIFIC
+     * `A5SF_NATIVE_SHADOW_INVALIDATED` (it names the tool and the realm that lost
+     * its shadow). This blanket code answers every OTHER dispatch — including a
+     * name that landed in the boundary emission but had not been folded yet, and
+     * a name this attach never managed. Merged arms that assert the name-keyed
+     * code keep getting it.
+     */
+    const realmFreezeRefusalOf = (record) => {
+        const member = installation.members[0]?.identity;
+        return {
+            reason: `a5sf: the Member's managed realm is INVALIDATED — EVERY tool call is REFUSED. Member `
+                + `${JSON.stringify(member?.memberInstanceId ?? null)} (team ${JSON.stringify(member?.teamId ?? null)}, `
+                + `generation ${String(member?.instanceGeneration ?? null)}) has an INVALIDATED managed realm; `
+                + `reason: ${record.reason}; nothing further executes for this Member until a full re-assembly mounts a new `
+                + 'realm and a new native attach verifies a new shadow (all calls refused until re-assembly)',
+            info: Object.freeze({ name: 'A5sfMemberRealmInvalidatedError', code: A5SF_MEMBER_REALM_INVALIDATED }),
+        };
+    };
+    /**
+     * `tools/pre-execute` admission: while the realm is invalid, DENY every call
+     * (a known covered name gets its specific name-keyed refusal first); while the
+     * realm is healthy, delegate to the rest of the waterfall. Denying here is
      * what makes `NoStaleShadow` imply `NoUnconfinedExecution`: the preset
      * definition may be visible, but it never executes for this Member.
      */
@@ -504,6 +558,10 @@ export async function mountA5sfRealm(input) {
             if (typeof name === 'string' && expectedDefinitions.has(name)) {
                 return { kind: 'deny', ...refusalOf(name, record) };
             }
+            // E8: not a known covered name — the realm is still frozen. This is the
+            // measured intra-emission window (the name had not landed yet) and every
+            // other tool of the Member. Refuse; the realm is out of service.
+            return { kind: 'deny', ...realmFreezeRefusalOf(record) };
         }
         return typeof next === 'function' ? next() : undefined;
     };
@@ -759,6 +817,9 @@ export async function mountA5sfRealm(input) {
         get nativeInvalidation() {
             return invalidation;
         },
+        get nativeAttachRecord() {
+            return attachRecord;
+        },
         whenNativeVerificationSettled: async () => {
             await verificationSettled;
             // A bounded round may have settled BEFORE the change that invalidated the
@@ -795,6 +856,7 @@ export async function mountA5sfRealm(input) {
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
                 managedPartitions.length = 0;
+                attachRecord = null;
             }
             expectedSurfaceNames = undefined;
             await disposeNative();
@@ -851,6 +913,12 @@ export async function mountA5sfRealm(input) {
                 }
             }
             const created = [];
+            /**
+             * E8 (2026-11-03): one entry per REAL mount of THIS attach, so the
+             * acknowledged-empty frontier can be recorded after every refusal has
+             * passed. Observe-only probes register nothing and never reach here.
+             */
+            const attachEntries = [];
             const rollbackCreated = async () => {
                 for (const fiber of [...created].reverse()) {
                     try {
@@ -874,6 +942,7 @@ export async function mountA5sfRealm(input) {
                 expectedDefinitions.clear();
                 managedRealmOf.clear();
                 managedPartitions.length = 0;
+                attachRecord = null;
             };
             const routedPartitions = managedPartitions;
             for (const [index, mount] of modules.entries()) {
@@ -990,6 +1059,13 @@ export async function mountA5sfRealm(input) {
                 created.push(fiber);
                 if (!observeOnly) {
                     nativeFibers.push(fiber);
+                    attachEntries.push({
+                        moduleName: String(mount.module?.name ?? `#${String(index)}`),
+                        specifier: typeof mount.specifier === 'string' ? mount.specifier : null,
+                        allowEmpty: mount.allowEmpty === true,
+                        expectedTools: mount.expectedTools === undefined ? [] : [...mount.expectedTools],
+                        forwarded: partition.forwarded.size,
+                    });
                     for (const [name, definition] of partition.forwardedDefinitions)
                         expectedDefinitions.set(name, definition);
                     // P0: remember which realm owned each covered name so a refusal can
@@ -1071,6 +1147,23 @@ export async function mountA5sfRealm(input) {
                 await rollbackCreated();
                 throw error;
             }
+            // E8 (2026-11-03): publish the attach record. Only an entry that EXPLICITLY
+            // opted out of the empty-frontier refusal (`allowEmpty: true`) AND
+            // forwarded nothing is an acknowledgement; its declared `expectedTools`
+            // names travel with it as ACKNOWLEDGED (unshadowed, unverified) names, so
+            // the record can never be read as a verification.
+            const acknowledgedEntries = attachEntries.filter((entry) => entry.allowEmpty && entry.forwarded === 0);
+            attachRecord = Object.freeze({
+                schema: 'a5sf-native-attach/1',
+                emptyFrontierAcknowledged: acknowledgedEntries.length > 0,
+                emptyFrontierModules: Object.freeze([...new Set(acknowledgedEntries.map((entry) => entry.moduleName))]),
+                emptyFrontierSpecifiers: Object.freeze([
+                    ...new Set(acknowledgedEntries
+                        .map((entry) => entry.specifier)
+                        .filter((specifier) => specifier !== null)),
+                ]),
+                acknowledgedNames: Object.freeze([...new Set(acknowledgedEntries.flatMap((entry) => [...entry.expectedTools]))]),
+            });
             return Object.freeze([...created]);
         },
         dispose: async () => {

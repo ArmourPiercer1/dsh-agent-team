@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-e8-freeze/probe/1",
-  "at": "2026-11-04T05:14:29.607Z",
+  "at": "2026-11-04T05:18:55.459Z",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze/tests/deepseek-harness-test-use",
   "hostToolSubagent": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js",
   "hostToolSubagentVersion": "0.2.0-rc.2",
@@ -40,12 +40,12 @@
           ],
           "surfaceRemoved": [],
           "lateRegistrations": [],
-          "observedAt": "2026-11-04T05:14:29.623Z"
+          "observedAt": "2026-11-04T05:18:55.477Z"
         },
         "providerStartsAfterWindow": 0,
         "guardFactsAfterWindow": 0,
         "mounted": true,
-        "elapsedMs": 11,
+        "elapsedMs": 12,
         "presetSurface": [],
         "presetHasSubagent": false,
         "createdBeforeAttach": 2,
@@ -173,7 +173,7 @@
           ],
           "surfaceRemoved": [],
           "lateRegistrations": [],
-          "observedAt": "2026-11-04T05:14:29.634Z"
+          "observedAt": "2026-11-04T05:18:55.490Z"
         },
         "providerStartsAfterWindow": null,
         "guardFactsAfterWindow": null,
@@ -313,7 +313,7 @@
         "providerStartsAfterWindow": null,
         "guardFactsAfterWindow": null,
         "mounted": true,
-        "elapsedMs": 3,
+        "elapsedMs": 4,
         "presetSurface": [],
         "presetHasSubagent": false,
         "createdBeforeAttach": 1,
@@ -415,7 +415,7 @@
         "providerStartsAfterWindow": null,
         "guardFactsAfterWindow": null,
         "mounted": true,
-        "elapsedMs": 4,
+        "elapsedMs": 7,
         "presetSurface": [
           "subagent"
         ],
