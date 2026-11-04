@@ -142,6 +142,28 @@ export interface NativeToolModuleMount {
    * observation is for).
    */
   readonly observeOnly?: boolean
+  /**
+   * E8 (2026-11-03) — the composition's EXPECTED tool names for this module
+   * (the row's `expectedTools` declaration, forwarded verbatim). The seam does
+   * not enforce it (the row refuses an unshadowed declaration); it is carried
+   * here only so an ACKNOWLEDGED empty frontier can record the declared names
+   * (`NativeAttachRecord.acknowledgedNames`) instead of dropping them.
+   */
+  readonly expectedTools?: readonly string[]
+  /**
+   * E8 (2026-11-03) — the composition's EXPLICIT opt-out of the empty-frontier
+   * refusal (the row's `allowEmpty`, forwarded verbatim). When such an entry
+   * forwards NOTHING, the attach records `emptyFrontierAcknowledged: true`:
+   * a DECLARED HAZARD, never a verification.
+   */
+  readonly allowEmpty?: boolean
+  /**
+   * E8 (2026-11-03) — the ROW-CONFIG specifier this mount came from
+   * (`a5sfNativeToolModules[].url`), forwarded verbatim so an accepted-empty
+   * frontier can be traced to the configuration entry. Optional: a direct seam
+   * caller may omit it.
+   */
+  readonly specifier?: string
 }
 
 /**
@@ -190,9 +212,66 @@ export interface NativeToolInvalidation {
 
 /**
  * P0 (2026-11-03): the stable machine-readable code carried by the admission
- * refusal's `error.info.code` while a realm's native shadow is invalidated.
+ * refusal's `error.info.code` while a realm's native shadow is invalidated AND
+ * the dispatched tool name is one this attach covered.
+ *
+ * NAME-KEYED PRECEDENCE (E8, 2026-11-03): when the name is in the managed set
+ * this SPECIFIC code wins over {@link A5SF_MEMBER_REALM_INVALIDATED}; it names
+ * the tool, the Member and the realm that lost its shadow. The blanket code is
+ * for every OTHER invocation while the realm is frozen.
  */
 export const A5SF_NATIVE_SHADOW_INVALIDATED = 'A5SF_NATIVE_SHADOW_INVALIDATED'
+
+/**
+ * E8 (2026-11-03): the stable machine-readable code carried by the admission
+ * refusal when a Member's managed realm is INVALIDATED and the dispatched tool
+ * name is NOT one this attach covered (including names the attach never saw).
+ *
+ * WHY A SEPARATE CODE: an invalidated realm refuses EVERY new tool invocation —
+ * the boundary has failed, so nothing further executes until a full verified
+ * re-assembly. That is a different fact from "this particular managed shadow is
+ * gone" ({@link A5SF_NATIVE_SHADOW_INVALIDATED}), and a caller must be able to
+ * tell them apart. The generic code says: the Member's realm is invalidated,
+ * ALL calls are refused until re-assembly.
+ */
+export const A5SF_MEMBER_REALM_INVALIDATED = 'A5SF_MEMBER_REALM_INVALIDATED'
+
+/**
+ * E8 (2026-11-03): the ATTACH RECORD of a successful managed native attach.
+ *
+ * `allowEmpty: true` must never read as "verified safe". When a composition
+ * accepts a module whose routed frontier is empty, the attach records that fact
+ * here explicitly — it is a DECLARED HAZARD, not a verification: the row cannot
+ * see what the preset plane serves for the name, so an acknowledged-empty entry
+ * is a statement by the composition, not evidence from the seam.
+ *
+ * The record is published on the mounted realm (`nativeAttachRecord`) by the
+ * successful `mountNativeToolModules` call and is `null` before any attach,
+ * after a caller refusal (`disposeNativeToolModules`) and after `dispose()`.
+ */
+export interface NativeAttachRecord {
+  readonly schema: 'a5sf-native-attach/1'
+  /** Some accepted module had `allowEmpty: true` AND forwarded nothing. */
+  readonly emptyFrontierAcknowledged: boolean
+  /** The module names whose empty frontier was acknowledged. */
+  readonly emptyFrontierModules: readonly string[]
+  /**
+   * The ROW-CONFIG specifiers (`a5sfNativeToolModules[].url`) of the
+   * acknowledged-empty entries. This is what an operator needs to trace the
+   * acceptance back to the configuration line; a boolean alone cannot be
+   * followed. Empty when the caller did not supply a specifier (a direct seam
+   * call, not the product row).
+   */
+  readonly emptyFrontierSpecifiers: readonly string[]
+  /**
+   * The names the acknowledged-empty entries DECLARED through `expectedTools`.
+   * They are recorded as ACKNOWLEDGED (unshadowed, unverified), never as
+   * verified coverage. Empty when the acknowledged entries declared nothing —
+   * which is the ordinary case, because a declared name that no fiber shadows
+   * is refused unless the same entry also carries `allowEmpty: true`.
+   */
+  readonly acknowledgedNames: readonly string[]
+}
 
 /** The realm that owned a covered tool's (now disposed) shadow. */
 interface ManagedRealm {
@@ -572,6 +651,15 @@ export interface MountedA5sfRealm {
    */
   readonly nativeInvalidation: NativeToolInvalidation | null
   /**
+   * E8 (2026-11-03) — the record of the LAST successful managed attach.
+   *
+   * `null` before any attach, after a caller refusal
+   * (`disposeNativeToolModules`) and after `dispose()`. It exists so an
+   * acknowledged empty frontier (`allowEmpty: true`) is an EXPLICIT fact on the
+   * assembly record instead of a silence that reads like a verification.
+   */
+  readonly nativeAttachRecord: NativeAttachRecord | null
+  /**
    * Resolves once the bounded post-settle re-verification rounds have run (or
    * an invalidation fired and its teardown settled). Diagnostics/tests only.
    */
@@ -696,6 +784,12 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
   /** name -> the exact definition this attach registered (the coverage signal). */
   const expectedDefinitions = new Map<string, unknown>()
   /**
+   * E8 (2026-11-03): the LAST successful attach's record. Null before an attach,
+   * after the caller's own refusal and after dispose. `emptyFrontierAcknowledged`
+   * is a DECLARED HAZARD (see {@link NativeAttachRecord}), never a verification.
+   */
+  let attachRecord: NativeAttachRecord | null = null
+  /**
    * Every registering fiber's LIVE partition, in mount order. The sets are the
    * router's own accounting objects and keep growing while the fiber lives, so
    * continuous verification can see a registration that lands AFTER the bounded
@@ -771,8 +865,40 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
   }
 
   /**
-   * `tools/pre-execute` admission: DENY a covered name while the realm is
-   * invalid, otherwise delegate to the rest of the waterfall. Denying here is
+   * E8 (2026-11-03) — the BLANKET refusal for an invalidated realm.
+   *
+   * The user ruling this implements: while a Member's managed realm is
+   * invalidated, refuse EVERY new tool invocation at the existing admission
+   * point, not only the names in `expectedDefinitions`. The boundary has
+   * failed, so nothing further should execute; the deny lifts only on a full
+   * verified re-assembly, exactly like the name-keyed P0 deny.
+   *
+   * WHY THE NAME-KEYED CODE STILL EXISTS (precedence, pinned): when the name IS
+   * known to be a covered managed name, `refusalOf` answers with the SPECIFIC
+   * `A5SF_NATIVE_SHADOW_INVALIDATED` (it names the tool and the realm that lost
+   * its shadow). This blanket code answers every OTHER dispatch — including a
+   * name that landed in the boundary emission but had not been folded yet, and
+   * a name this attach never managed. Merged arms that assert the name-keyed
+   * code keep getting it.
+   */
+  const realmFreezeRefusalOf = (
+    record: NativeToolInvalidation,
+  ): { readonly reason: string; readonly info: { readonly name: string; readonly code: string } } => {
+    const member = installation.members[0]?.identity
+    return {
+      reason: `a5sf: the Member's managed realm is INVALIDATED — EVERY tool call is REFUSED. Member `
+        + `${JSON.stringify(member?.memberInstanceId ?? null)} (team ${JSON.stringify(member?.teamId ?? null)}, `
+        + `generation ${String(member?.instanceGeneration ?? null)}) has an INVALIDATED managed realm; `
+        + `reason: ${record.reason}; nothing further executes for this Member until a full re-assembly mounts a new `
+        + 'realm and a new native attach verifies a new shadow (all calls refused until re-assembly)',
+      info: Object.freeze({ name: 'A5sfMemberRealmInvalidatedError', code: A5SF_MEMBER_REALM_INVALIDATED }),
+    }
+  }
+
+  /**
+   * `tools/pre-execute` admission: while the realm is invalid, DENY every call
+   * (a known covered name gets its specific name-keyed refusal first); while the
+   * realm is healthy, delegate to the rest of the waterfall. Denying here is
    * what makes `NoStaleShadow` imply `NoUnconfinedExecution`: the preset
    * definition may be visible, but it never executes for this Member.
    */
@@ -788,6 +914,10 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       if (typeof name === 'string' && expectedDefinitions.has(name)) {
         return { kind: 'deny', ...refusalOf(name, record) }
       }
+      // E8: not a known covered name — the realm is still frozen. This is the
+      // measured intra-emission window (the name had not landed yet) and every
+      // other tool of the Member. Refuse; the realm is out of service.
+      return { kind: 'deny', ...realmFreezeRefusalOf(record) }
     }
     return typeof next === 'function' ? (next as () => unknown)() : undefined
   }
@@ -1043,6 +1173,9 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     get nativeInvalidation(): NativeToolInvalidation | null {
       return invalidation
     },
+    get nativeAttachRecord(): NativeAttachRecord | null {
+      return attachRecord
+    },
     whenNativeVerificationSettled: async (): Promise<void> => {
       await verificationSettled
       // A bounded round may have settled BEFORE the change that invalidated the
@@ -1076,6 +1209,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         expectedDefinitions.clear()
         managedRealmOf.clear()
         managedPartitions.length = 0
+        attachRecord = null
       }
       expectedSurfaceNames = undefined
       await disposeNative()
@@ -1159,6 +1293,18 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         }
       }
       const created: Fiber[] = []
+      /**
+       * E8 (2026-11-03): one entry per REAL mount of THIS attach, so the
+       * acknowledged-empty frontier can be recorded after every refusal has
+       * passed. Observe-only probes register nothing and never reach here.
+       */
+      const attachEntries: {
+        readonly moduleName: string
+        readonly specifier: string | null
+        readonly allowEmpty: boolean
+        readonly expectedTools: readonly string[]
+        readonly forwarded: number
+      }[] = []
       const rollbackCreated = async (): Promise<void> => {
         for (const fiber of [...created].reverse()) {
           try {
@@ -1180,6 +1326,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         expectedDefinitions.clear()
         managedRealmOf.clear()
         managedPartitions.length = 0
+        attachRecord = null
       }
       const routedPartitions = managedPartitions
       for (const [index, mount] of modules.entries()) {
@@ -1311,6 +1458,13 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         created.push(fiber)
         if (!observeOnly) {
           nativeFibers.push(fiber)
+          attachEntries.push({
+            moduleName: String((mount.module as { name?: unknown } | null)?.name ?? `#${String(index)}`),
+            specifier: typeof mount.specifier === 'string' ? mount.specifier : null,
+            allowEmpty: mount.allowEmpty === true,
+            expectedTools: mount.expectedTools === undefined ? [] : [...mount.expectedTools],
+            forwarded: partition.forwarded.size,
+          })
           for (const [name, definition] of partition.forwardedDefinitions) expectedDefinitions.set(name, definition)
           // P0: remember which realm owned each covered name so a refusal can
           // name it (binding identity or ceiling).
@@ -1391,6 +1545,23 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         await rollbackCreated()
         throw error
       }
+      // E8 (2026-11-03): publish the attach record. Only an entry that EXPLICITLY
+      // opted out of the empty-frontier refusal (`allowEmpty: true`) AND
+      // forwarded nothing is an acknowledgement; its declared `expectedTools`
+      // names travel with it as ACKNOWLEDGED (unshadowed, unverified) names, so
+      // the record can never be read as a verification.
+      const acknowledgedEntries = attachEntries.filter((entry) => entry.allowEmpty && entry.forwarded === 0)
+      attachRecord = Object.freeze({
+        schema: 'a5sf-native-attach/1',
+        emptyFrontierAcknowledged: acknowledgedEntries.length > 0,
+        emptyFrontierModules: Object.freeze([...new Set(acknowledgedEntries.map((entry) => entry.moduleName))]),
+        emptyFrontierSpecifiers: Object.freeze([
+          ...new Set(acknowledgedEntries
+            .map((entry) => entry.specifier)
+            .filter((specifier): specifier is string => specifier !== null)),
+        ]),
+        acknowledgedNames: Object.freeze([...new Set(acknowledgedEntries.flatMap((entry) => [...entry.expectedTools]))]),
+      })
       return Object.freeze([...created])
     },
     dispose: async (): Promise<void> => {
