@@ -49,6 +49,25 @@ export const TEAM_SERVICE_INSTALL_CODES = [
    * inherited base service.
    */
   'SUBPROCESS_UNCONFINED_REALM',
+  /**
+   * PRODUCT ASSEMBLY (2026-11-05): a product declaration narrows the NETWORK
+   * axis (a ceiling/restriction `network: deny`, or a `delegated-remote`
+   * execution boundary) and this realm installs NO web face. Refused at
+   * composition time — a network narrowing with no enforcing provider would be
+   * a claim, not a ceiling — instead of silently mounting the fs half alone.
+   * Symmetric with the `subprocess` code above and in the SAME closed
+   * vocabulary, so callers compare a token, never a message.
+   */
+  'NETWORK_UNCONFINED_REALM',
+  /**
+   * PRODUCT ASSEMBLY (2026-11-05): the `a5sfMemberPolicies` declaration is
+   * malformed, ambiguous or outside the closed shape this assembler accepts
+   * (wrong schema, unknown/missing field, duplicate template, reserved id, a
+   * ceiling the shipped v4 validator refuses, ...). A declaration that cannot
+   * be read is refused before any Member is set up; it is never treated as
+   * "no declaration" (that would silently unmanage the Member).
+   */
+  'REALM_DECLARATION_INVALID',
 ] as const
 
 export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number]

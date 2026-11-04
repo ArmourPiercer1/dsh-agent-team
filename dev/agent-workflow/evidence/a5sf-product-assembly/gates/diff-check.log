@@ -1,0 +1,2 @@
+command: git diff --check origin/master...HEAD
+result: rc=0 (no whitespace errors, no conflict markers)
