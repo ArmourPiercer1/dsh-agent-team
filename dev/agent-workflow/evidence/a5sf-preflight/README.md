@@ -146,7 +146,7 @@ product.
 | 2 read B | `isError`, typed lane refusal, no claim/write-content leak, **≥1 read-path consultation exists**, **EVERY one of them is a deny**, **EVERY one is on the binding lane** (`realm:'binding'` + `toolBindingIdentity:'dsh.fs/read'`), **≥1 binding-lane read-path deny**, **no** provider read. The read PATH is the provider surface minus the product's closed write set (`writeText`, `editText`), so the count is not asserted and a future read method cannot slip past a name filter (§12.1) | any clause false (`ROW2_CLAUSE_FAILED`); the failed clause NAMES a decision, never a count | no call/result (`NO_READ_CALL_B` / `NO_READ_RESULT_B`) | #575 FAIL on a read that never happened; and the live FAIL on a `readText`-only filter that the product cannot emit (a refused read is recorded at `stat`) |
 | 3 read C | refused + typed, no leak, exactly one binding deny, no provider read, **and** the lane report shows ceiling `deny`, restriction `allow`, effective `deny`, with no widened allow entry | clause or no-widening false (`ROW3_CLAUSE_FAILED`) | no call/result, **or no lane report**, or no probe for C (`NO_LANE_REPORT_C`, `NO_LANE_PROBE_C`) | the no-widening claim had no channel; "pass" could be produced by an empty report |
 | 4a write in-lane | not error, disk equals the written content, a write allow fact exists, **every** write fact is on the ceiling realm (`realm:'member'`, `toolBindingIdentity:null` — which IS "no write fact on the read lane"), confined provider served. The target was READ first (a replace of an observed file, not a `createIfAbsent`) | any clause false (`ROW4A_CLAUSE_FAILED`) | no call/result (`NO_WRITE_CALL_4A` / `NO_WRITE_RESULT_4A`) | the old single row asked for an ALLOWANCE on B that the write⇒read coupling correctly refuses — it could never pass (§12.2) |
-| 4b write B ceiling-allowed, read not implied (`CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED`) | **clause 1 — two axes:** ≥1 write-ALLOW fact on the CEILING realm (`realm:'member'`, `toolBindingIdentity:null`) **and no write-allow fact on the binding/read realm**. **clause 2 — not blind delivery:** the observed outcome IS an error, the text is NOT an `A5SF_*`/lane refusal and NOT the typed read-coupling sentence, the disk still holds the planted content, and no planted byte came back to the model. The write reaching the confined provider is REPORTED (`providerWrote`), never checked | any clause false (`ROW4B_CLAUSE_FAILED`) — including a Team lane refusal (the ceiling did NOT admit the write), the read coupling (a different contract), an `A5SF_*` admission refusal, a changed disk, or returned planted bytes | no call/result (`NO_WRITE_CALL_4B` / `NO_WRITE_RESULT_4B`), or the target was not planted (`NO_PLANTED_B`: "unchanged" has no baseline) | the retired row demanded a refusal the algebra never produces (binding constrains READ only); the Host read-before-write policy is the observed refusal and is **not** a Team-lane property (§12.8.2) |
+| 4b write B ceiling-allowed, read not implied (`CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED`) | **clause 1 — two axes:** ≥1 write-ALLOW fact on the CEILING realm (`realm:'member'`, `toolBindingIdentity:null`) **and no write-allow fact on the binding/read realm**. **clause 2 — not blind delivery:** the observed outcome IS an error, the text is NOT an `A5SF_*`/lane refusal and NOT the typed read-coupling sentence, the disk still holds the planted content, and no planted byte came back to the model. The write reaching the confined provider is REPORTED (`providerWrote`), never checked | any clause false (`ROW4B_CLAUSE_FAILED`) — including a Team lane refusal (the ceiling did NOT admit the write), the read coupling (a different contract), an `A5SF_*` admission refusal, a changed disk, or returned planted bytes | no call/result (`NO_WRITE_CALL_4B` / `NO_WRITE_RESULT_4B`), or the target was not planted (`NO_PLANTED_B`: "unchanged" has no baseline) | the retired row demanded a refusal the algebra never produces (binding constrains READ only); the observed refusal is the NATIVE `write` tool's own read-before-write contract and is **not** a Team-lane property (§12.8.2, ruled 2026-11-04 in §12.8.3) |
 | 5 post-invalidation | Member child session present, late tool registered, invalidation line observed, post-read refused with `A5SF_NATIVE_SHADOW_INVALIDATED` **and** the typed name, **not** the blanket `A5SF_MEMBER_REALM_INVALIDATED` freeze, no forbidden bytes, sink delta 0, counter delta 0, in-lane read also refused with the name-keyed code | the trigger was rejected (`INVALIDATION_TRIGGER_FAILED`), the tool was accepted but not registered (`INVALIDATION_TOOL_NOT_REGISTERED`), the tool IS registered + trigger 200 yet **no invalidation line** (`INVALIDATION_NOT_RAISED` — NoStaleShadow), the refusal is blanket-only (`BLANKET_INVALIDATION_ONLY`: the realm died, not the named shadow), or the post-read served bytes / missed the typed refusal (`ROW5_CLAUSE_FAILED`) | no Member session (`NO_MEMBER_CHILD_SESSION_IN_STATE`), **no trigger dispatched** (`NO_INVALIDATION_TRIGGER`), no post-read (`NO_POST_INVALIDATION_READ`) | #575's only NOT_REACHED — correct there; now "asked and not raised" can never be laundered into it (review B2, `C10`) |
 | 6 teardown | archived lifecycle `ARCHIVED`, every post-stop dispatch explained (422 `NO_LIVE_AGENT` or a 200 refusal), **no** success after stop, **no** forbidden bytes, `classifyDisposeFaults` reports no managed/unattributed fault, **every STOP-TIME fact carries a parseable `observedAt` and NONE is LATER than the stop instant** (snapshot taken before any probe), **every fact the row's own post-stop probes appended is a refusal** (`probeFactsAreRefusals`), health 200, host alive | any clause false (`ROW6_CLAUSE_FAILED`), **or the archive was answered with a refusal** (`ARCHIVE_REFUSED`: non-200 or `ok:false` — review B2, `C11`) | no member (`NO_MEMBER_TO_STOP`), archive never dispatched (`NO_ARCHIVE_DISPATCH`), no post-stop dispatch (`NO_POST_STOP_DISPATCH`), **no stop instant recorded** (`NO_STOP_INSTANT`) | #575 printed FAIL with `archiveOk:false` and 27 false "faults"; boot 2 printed FAIL because it re-read the sink AFTER its own probes and counted the probe facts as product facts (§12.8.1). A missing scenario is NOT_REACHED, an answered refusal is REFUTED, a fault must be identity-attributable, a probe is the row's stimulus |
 
@@ -922,7 +922,8 @@ null`) for b.txt, `noReadLaneWriteAllow: true`, and a provider counter row
 (`write-call`, instance `fs-4`). So the guard **allowed** the write, bounded by
 the CEILING alone — which is what the current algebra promises: the binding
 restriction constrains the READ axis. The refusal the retired row saw was the
-Host's own read-before-write policy:
+**native `write` tool's own read-before-write contract** — the tool itself demands a
+prior read, so the answer is not a Team lane:
 
 ```
 Error: cannot modify "…/workspace/axis/b.txt": file has not been read — read the file, then retry
@@ -948,48 +949,54 @@ question's contradiction, not a product defect.
 | clause | live-derived expectation (boot 2) | what refutes it |
 | --- | --- | --- |
 | 1 ceiling allow | one `writeText`/allow fact, `realm:"member"`, `toolBindingIdentity:null`; `readLaneWriteAllowFacts: 0` | no ceiling allow (the guard denied the write); a write-allow on the binding realm |
-| 2 not blind | `isError: true`, Host policy text (`file has not been read`), `disk == planted`, no planted bytes in the result | a Team lane refusal, an `A5SF_*` refusal, the read-coupling sentence, a changed disk, returned planted bytes |
+| 2 not blind | `isError: true`, the native tool's read-before-write text (`file has not been read`), `disk == planted`, no planted bytes in the result | a Team lane refusal, an `A5SF_*` refusal, the read-coupling sentence, a changed disk, returned planted bytes |
 
 The provider counter is **reported** (`providerWrote: true` in the live run),
 never checked: the write really did reach the confined provider, and a row
 demanding "no provider write" would ask the product for something it does not
-promise on the write axis. **The Host read-before-write refusal is NOT a security
-property of the Team lanes** — it is the upstream tool policy answering a
-different question — and neither this README nor the row may describe it as one.
+promise on the write axis. **The read-before-write refusal is NOT a security property of
+the Team lanes** — it is the native `write` tool's own contract answering a
+different question (kept by the 2026-11-04 ruling, §12.8.3) — and neither this
+README nor the row may describe it as one.
 `C14` covers the PROVEN shape plus: the read-coupling refusal (the retired row's
 answer) → REFUTED, a lane refusal → REFUTED, an `A5SF_*` refusal → REFUTED, no
 ceiling allow → REFUTED, changed disk → REFUTED, returned planted bytes →
 REFUTED, laundered read-lane allow → REFUTED.
 
-### 12.8.3 Open semantic question — should `write` imply `read`? (awaiting a user ruling; NO code change)
+### 12.8.3 RULING (2026-11-04) — `write` does not imply `read`; the native tool's own contract is what keeps a blind overwrite from landing
 
-Today a Member can be told to overwrite a file whose bytes it can never inspect.
-The Team guard permits that by design of the current algebra: the binding
-restriction is a READ restriction, and a write is bounded by the ceiling alone.
-Boot 2 measured the consequence: the guard allowed the write to b.txt, the write
-reached the provider, and only the Host's own read-before-write policy stopped
-it. If that Host policy were absent (or the file had been read by someone else
-first), the bytes would land. The alternatives:
+**What was asked.** After boot 2 measured that the guard ALLOWS a write the binding
+lane cannot read (§12.8.2), this lane asked whether the Team policy layer should
+couple the two axes — i.e. intersect the write lane with the read lane, so that the
+b.txt write becomes a typed Team refusal (the shape `edit` already has). The question
+was recorded with two alternatives and **no code change**, pending a user ruling.
 
-1. **Leave the algebra as-is and disclose it** (current state). Two independent
-   axes, each with its own law; a write lane that is wider than the read lane is
-   the operator's choice when compiling the Member. The cost is that a Member can
-   be instructed to overwrite content it cannot inspect, and the only guard
-   against blind delivery is the Host's read-before-write policy — which is an
-   upstream tool policy, not a Team guarantee.
-2. **Add a write⇒read coupling at the policy layer**: a write whose target lies
-   outside the Member's read allowance is refused (by the Team lane, typed), i.e.
-   the write lane is intersected with the read lane. This matches what `edit`
-   already does, makes the two axes non-independent on the write side, and would
-   turn the b.txt write into a typed Team refusal — but it also removes the
-   ability to compile a write-only Member, and it is a product-algebra change
-   (new policy semantics + tests), not an oracle fix.
+**The ruling (owner, verbatim, 2026-11-04):**
 
-This lane changes **no algebra** and takes no position beyond the measured facts:
-the question is recorded, the row asserts only what the product promises today,
-and the choice is left to the user. If option 2 is chosen, row 4b's clause 1
-becomes "the guard refuses with the new typed code" and this subsection is the
-place to record the ruling.
+> 目前DSH的原生 write 应该是要求先 read 的。它是原生工具，我们应该保持这一点。后续我会着手处理只写不读权限下的 team 行为
+
+**What it settles.** The native `write` tool's requirement that a file be read before
+it is written (`Error: cannot modify "…": file has not been read — read the file, then
+retry`) is the **native tool's contract and is kept**. **No algebra change**: the Team
+policy layer keeps its current semantics — the binding restriction constrains the READ
+axis only, and a write is bounded by the ceiling alone. The consequence, stated once: a
+Member whose binding lane cannot read a file therefore cannot blind-overwrite it through
+the native `write` path, because the native tool itself requires the prior read; the
+composite outcome is safe, but **the enforcement that produces it belongs to the native
+tool, NOT to the Team lanes** — it is not a property of the lane algebra and this
+document must never present it as one.
+
+**What the owner will handle separately.** Team behaviour under write-only / read-denied
+permissions (a Member compiled with a write lane and no read lane) — tracked as `BL-38`
+in `docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md`: owner-owned, not
+implemented by this lane and not to be implemented here. If that work later changes the
+policy layer, row 4b's clause 1 changes with it and this subsection is where the next
+ruling lands.
+
+**What did not change.** No code, no test, no row semantics. Row 4b still asserts the
+measured shape — *the guard allows, the native tool refuses* — and the refusal is
+attributed to the **native tool's read-before-write contract**, never to the Team lanes
+and never to an unexplained "Host policy".
 
 ### 12.8.4 Controls and gates after this repair
 
@@ -1029,8 +1036,8 @@ controls (`NC1`, `NC2a`, `NC3a`, `NC3b`, `NC4`) still behave.
 **What this round is least certain about on the next live run** (a new boot was
 NOT spent here, by instruction): that the repaired driver's stop-time snapshot
 lands before any delayed product-side emission that would legitimately be
-post-stop; that the Host read-before-write policy (not a newly typed Team
-refusal) is still what refuses a write to an unread in-lane file; and that the
+post-stop; that the native `write` tool's read-before-write contract (not a newly
+typed Team refusal) is still what refuses a write to an unread in-lane file; and that the
 b.txt write still reaches the confined provider (the counter is reported, not
 asserted). None of those can be settled host-free.
 
@@ -1069,8 +1076,10 @@ deleted, `portStillListening=false`, no orphan.
 1. **`EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction`** on the read axis: in-lane served, ceiling-denied
    refused, restriction-denied refused, with the confined provider actually serving the allowed read.
 2. **The write axis is ceiling-bounded and does not leak into the read lane**, and a write the binding
-   lane cannot read is *allowed by the guard* — the read-before-write refusal belongs to the Host, not
-   to the Team lanes (§12.8.3 carries the open question of whether `write` should imply `read`).
+   lane cannot read is *allowed by the guard* — the refusal belongs to the **native `write` tool's own
+   read-before-write contract**, not to the Team lanes; that split was ruled on 2026-11-04 and is
+   recorded in §12.8.3 (no algebra change; the write-only/read-denied Team behaviour is `BL-38`,
+   owner-owned).
 3. **P0 invalidation**: an invalidated managed shadow is condemned **by name**
    (`A5SF_NATIVE_SHADOW_INVALIDATED`), no bytes, no guard fact, no provider call, and refused in-lane
    too — measured live, not host-free.

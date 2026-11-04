@@ -14,6 +14,14 @@
     "live:row6-teardown-no-usable-unconstrained-shadow"
   ],
   "bindings": {
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound at the post-run repair of this record: the driver emitted no authority block, and EB3-D grades a NEW record strictly. The generation is the one the boot actually ran under (the pointer has not moved since 0a5b58418), so this adds a missing binding and re-attributes nothing."
+    },
     "teamSha": "44babbfcff2026b04395f2219a1c4a77565ff7af",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use",
