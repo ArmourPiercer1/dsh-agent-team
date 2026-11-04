@@ -7475,3 +7475,45 @@ surface 是否中性均未实测；内核 allowance 含 `/etc`+`/proc`；预先�
 
 **下一节点（按外部意见重排）**：Search 的真实 Host 纵切（正向/越界拒读/取消/错误传播）→ 生产装配
 试用 → BL-39 后端加固 → TrustRegistry 成为装配权威 → 旧 Family 按 freeze→parity→switch→delete。
+
+## 2026-11-05T00:10Z — P2-04（Search live）三次 start 全花完，0 行判定；两次仪器缺陷 + 两个真发现（#588 合并 `b4941a971`）
+
+**结论先说**：产品侧两个已知阻塞（F1 base spawn、F2 leader 覆盖门）都已定位、修复并各有反证；但
+**没有一行被判定**，所以 `M-06`/`M-07` 保持 `ENFORCE-PARTIAL` / `V@B=no`，tested SHA 未动。P2-04 的
+3 个 start 全部花完，第 4 次按规则需要新的 owner 裁决（`go-no-go` 现在自己拒绝）。
+
+**三次损失的归因（全部是我方仪器，不是产品）**：
+
+1. **组合手递手缺失**：驱动把 World 的 row 渲染出来却未交给 World，于是组合出裸 World、`/__p6t6/health`
+   从不出现。`--plan` 绿是因为它检查"发出的文本"。现由"composed rows 必须按身份与顺序等于 named
+   rows"＋变异控制（改成 `void rows` 必须红）守住；go-no-go 现在自己独立读驱动源码确认 handoff 在
+   `harness.boot(` 之前被调用。第 2、3 次组合均六行全present、health 3s / 0.3s。
+2. **F1 = 我们自己的探针**：`a5sf-search-realm-provider-row.mjs` 用 `original.apply(this, spec)` 包装
+   base spawn，而 `apply` 接受的是 array-like；`spec` 是对象且无 `length`，于是 pinned 服务实际执行
+   `spawn(undefined)`，`validateSubprocessSpec` 读 `spec.graceMs` 抛同步 `TypeError`，模块把任何同步
+   启动异常折叠为"ripgrep launch failed"。**仪器弄坏了它要测的东西**——这也解释了"越界泄漏负控"被
+   否证：泄漏从未有机会发生。修在证据层（`original.call`），新增 `base-spawn-failed` 行（记录 Node
+   cause 并重抛，不吞），以及回归臂 `F1-ROW-SPAWN`：修复前逐字复现 World 报错、修复后真实命中，
+   **无需 boot** 即可捕获 F1。
+3. **第三次损失是运行方式**：用 `nohup … &` 起驱动，父调用返回时进程组被连带杀死，teardown 未执行。
+   收益是它在被杀前留下了 `attempt-3-counter.jsonl`：World 自己组合下 `rg --json --regexp=…` 真实
+   启动、零 `base-spawn-failed`——**F1 的修复在 World 内被证实**，不只 host-free。
+
+**F2（真发现，产品侧）**：`team.create` 返回 `TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED`，因为根会话
+暴露了两个未受管工具 `glob`/`grep`（`known-sensitive-unmanaged`）。原生 attach 只在 Member realm 上
+管理 search，leader 是无 realm 的根会话，故覆盖门正确地拒绝。leader 现 deny 这两个工具；用**真实**
+`evaluatePermissionCoverage` + World 自己记录的 24 工具面验证（4/4），变异控制重新放行即复现逐字
+拒绝（前缀连续，因为 World 文本被驱动截断在 300 字符）。
+
+**记录面**：`eb3-run-manifest --new-since` 拒绝两条 attempt 记录（新 record 必须绑定 live authority
+generation）；已回填并让驱动调用共享 helper `readAuthorityBinding`，不再手写。README §12 留下四条
+可复用规则＋两条约定（hand-free 门必须执行手递手；plan 产物按身份顺序比对组合行；boot 先读组合
+profile 再等 health；仪器本身以及**仪的运行方式**都要被测试；fail-closed 记 FAIL 绝不为 NOT_REACHED；
+仪器只记录并重抛）。
+
+**记录瑕疵（本轮自报）**：squash 合并沿用 PR 标题，标题停在"第一次 attempt"，未反映后来 F1/F2 的
+实质内容；内容与证据完整，但该行标题低估了它。历史不改，此处更正。
+
+**下一节点**：剩余未知是一条可命名链路 `member-install → 受限 face 供给 → delegate-dispatch → 受限
+consult`（及 FIFO 取消窗口）。下一次 start 需要新的 owner 分配；在获得分配前转做无需 boot 的
+P3-00 静态来源导出与生产装配（`teamA5sfRealm`）host-free 部分。
