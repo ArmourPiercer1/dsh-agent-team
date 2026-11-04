@@ -88,6 +88,10 @@ const report = {
   schema: 'a5sf-acceptance-preflight/go-no-go/1',
   head,
   branch,
+  // `head` is a RUNTIME fact printed to stdout, deliberately not persisted:
+  // a committed file cannot contain the hash of the commit that contains it.
+  // The binding identity is `productTreeDigest`, which is stable across
+  // evidence-only commits and is what item 2 compares.
   evidenceHeadAtDryRun: dryRun?.head ?? null,
   productTreeDigest: digestNow,
   pinnedHost: PIN,
