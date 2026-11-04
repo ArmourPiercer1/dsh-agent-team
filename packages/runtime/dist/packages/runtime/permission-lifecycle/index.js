@@ -12,7 +12,8 @@
  *     path, performing NO permission write of its own (the same instance
  *     returns from ARCHIVED keeping the CURRENT latest overlay; a genuine rule
  *     change at restore time is an ordinary PermissionMutation);
- *   - the EXECUTION GATE and read plane (`decision-lane.ts`): ADR §8 (RUNNING
+ *   - the EXECUTION GATE and read plane (`decision-lane.ts`): Architecture
+ *     §41.6/§30.2/§29.4 (RUNNING
  *     effective / ARCHIVED retained-but-disabled / DISPOSED historical /
  *     new instance no inheritance) in front of the MERGED two-stage plane
  *     (PR2 assembler + the frozen Alpha.2 resolver for the file class; the

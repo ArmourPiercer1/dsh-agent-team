@@ -58,7 +58,7 @@ export const SEARCH_CASE_IDS = Object.freeze({
   row3: 'live:search-row3-grep-outside-restriction-refused',
   row4: 'live:search-row4-cancelled-search-settles-cancelled',
   row5: 'live:search-row5-invalid-pattern-is-error',
-  row6: 'live:search-row6-teardown-no-callable-shadow',
+  row6: 'live:search-row6-archive-boundary-no-callable-shadow',
 })
 
 export const SEARCH_CASES = Object.freeze(Object.values(SEARCH_CASE_IDS))
@@ -455,7 +455,11 @@ export function judgeRow5(sample = {}) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// row 6 — teardown: no callable shadow, no orphan, port and home gone
+// row 6 — ARCHIVE BOUNDARY: no callable shadow, no orphan, port and home gone
+// (the temporal bound is the archive commit, while the Host is still alive;
+//  the teardown facts — hostDead/portReleased/homeDeleted — are measured after
+//  world.teardown(). The row's earlier name said "teardown", which mislabelled
+//  the boundary; renamed 2026-11-05, the clauses are unchanged.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

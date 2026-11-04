@@ -6,7 +6,7 @@
  * persistence-only port; PR2 the `EffectivePermissionAssembler`; PR3 the ONE
  * mutation authority (`GovernanceMutationService.mutatePermission`) with the
  * pure kernel. PR4 is the PR the PR1 port doc already names
- * (`permission-governance/port.ts`: "the lifecycle rules (ADR §5, §8) belong
+ * (`permission-governance/port.ts`: "the lifecycle rules (ADR §5; Architecture §41.6/§30.2/§29.4) belong
  * to the mutation service and to PR4"): it makes the durable authority
  *usable across the MemberInstance lifecycle WITHOUT owning any of it:
  *
@@ -24,8 +24,8 @@
  *   snapshot; nothing is ever removed, and no new MemberInstance ever reads
  *   another instance's overlay (the overlay identity is
  *   `(teamSessionId, memberInstanceId)` and the port reads per-identity).
- * - **Restore is a LIFECYCLE fact, not a permission write** (parent ruling,
- *   ADR §8): restore is the SAME MemberInstance returning from `ARCHIVED`;
+ * - **Restore is a LIFECYCLE fact, not a permission write** (parent ruling;
+ *   Architecture §41.6/§30.2/§29.4): restore is the SAME MemberInstance returning from `ARCHIVED`;
  *   it KEEPS the CURRENT latest overlay. No historical snapshot is replayed,
  *   no revoked grant is resurrected, and NO decorative rule write happens
  *   "so that it went through a mutation". If — and only if — the rules must
@@ -37,7 +37,9 @@
  *   which call the FROZEN Alpha.2 `resolveOperationPermission`. This lane
  *   implements NO precedence of its own.
  *
- * Execution gating follows ADR §8 verbatim:
+ * Execution gating follows the frozen Architecture verbatim (§41.6 the only
+ * edge out of ARCHIVED is Restore; §30.2 Restore must not resume the Agent;
+ * §29.4 ARCHIVED leaves the active work set; §29.5 DISPOSED is terminal):
  *
  *     RUNNING   — overlay effective
  *     ARCHIVED  — overlay retained; execution disabled
@@ -67,10 +69,10 @@ export const PERMISSION_LIFECYCLE_ERROR_CODES = Object.freeze({
     /** The addressed MemberInstance has no durable row in this TeamSession. */
     INSTANCE_UNKNOWN: 'PERMISSION_LIFECYCLE_INSTANCE_UNKNOWN',
     /** The addressed MemberInstance is DISPOSED: its overlay is historical
-     *  only (ADR §8), so a NEW mutation against it is meaningless and refused. */
+     *  only (Architecture §29.5), so a NEW mutation against it is meaningless and refused. */
     TARGET_TERMINAL: 'PERMISSION_LIFECYCLE_TARGET_TERMINAL',
     /** Execution refused: the instance is ARCHIVED (overlay retained,
-     *  execution disabled — ADR §8). */
+     *  execution disabled — Architecture §41.6/§30.2/§29.4). */
     EXECUTION_ARCHIVED: 'PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED',
     /** Execution refused: the instance is DISPOSED (terminal). */
     EXECUTION_TERMINAL: 'PERMISSION_LIFECYCLE_EXECUTION_TERMINAL',

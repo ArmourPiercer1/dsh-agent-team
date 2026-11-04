@@ -1,0 +1,10 @@
+
+M1-seam1-ensureLiveAgentOnce: RED-AS-REQUIRED
+  observed={"ARCHIVED":"failed","DISPOSED":"failed","SETTLED":"passed","RESTART":"passed"}
+  expected failed=["ARCHIVED","DISPOSED"] passed=["SETTLED","RESTART"]
+
+M2-seam2-boot-resume-loop: RED-AS-REQUIRED
+  observed={"ARCHIVED":"passed","DISPOSED":"passed","SETTLED":"passed","RESTART":"failed"}
+  expected failed=["RESTART"] passed=["ARCHIVED","DISPOSED","SETTLED"]
+
+mutation control PASS: removing either seam alone reproduces RED on exactly its legs

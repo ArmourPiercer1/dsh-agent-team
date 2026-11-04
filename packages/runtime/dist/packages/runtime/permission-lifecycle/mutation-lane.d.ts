@@ -17,7 +17,7 @@
  *   (`LIFECYCLE_ILLEGAL_STATE`) propagate verbatim.
  *
  * The lifecycle semantics it DOES own (plan PR4 "revoke creates snapshot; no
- * delete; no inheritance"; ADR §8):
+ * delete; no inheritance"; Architecture §29.4/§29.5/§41.6):
  *
  * 1. **grant/revoke produce a NEW snapshot** — because the authority appends
  *    a FULL snapshot per accepted mutation; this lane guarantees only that it
@@ -35,11 +35,11 @@
  *    that genuinely belongs to the restore is submitted as an ordinary
  *    PermissionMutation through the authority — its own mutation, its own
  *    snapshot, its own provenance.
- * 5. **a DISPOSED target is refused before the authority is called** — ADR §8
+ * 5. **a DISPOSED target is refused before the authority is called** — Architecture §29.5
  *    "DISPOSED: overlay historical only; never effective", so a new snapshot
  *    for a terminal instance could never be effective; writing one would be
  *    audit noise dressed as authority (zero write, typed refusal). An
- *    ARCHIVED target is NOT refused: ADR §8 keeps its overlay RETAINED, so
+ *    ARCHIVED target is NOT refused: Architecture §29.4/§30.2 keeps its overlay RETAINED, so
  *    revoking during ARCHIVED is meaningful — and it is exactly what the
  *    restore leg below pins as still revoked afterwards.
  *

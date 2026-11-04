@@ -504,7 +504,7 @@ test('SEARCH_CASE_IDS is the named contract the driver imports', () => {
   assert.match(SEARCH_CASE_IDS.row3, /outside-restriction-refused/u)
   assert.match(SEARCH_CASE_IDS.row4, /cancelled-search-settles-cancelled/u)
   assert.match(SEARCH_CASE_IDS.row5, /invalid-pattern-is-error/u)
-  assert.match(SEARCH_CASE_IDS.row6, /teardown-no-callable-shadow/u)
+  assert.match(SEARCH_CASE_IDS.row6, /archive-boundary-no-callable-shadow/u)
 })
 
 test('guardFacts ignores non-fact rows (the sink may carry other schemas)', () => {

@@ -1,0 +1,22 @@
+
+== a5sf-search-2026-11-04T20-10-19-766Z  (/home/armourpiercer/projects/dsh-agent-team/dev/agent-workflow/evidence/a5sf-search-live/row6-samples/2026-11-04T20-10-19Z)
+archived verdict: FAIL / ROW6_CLAUSE_FAILED failed=["everyDispatchExplained","noSuccessAfterStop","noCallableShadow","probeFactsAreRefusals","noProcessAfterStop"]
+replayed verdict: REFUTED / ROW6_CLAUSE_FAILED failed=["everyDispatchExplained","noSuccessAfterStop","noCallableShadow","probeFactsAreRefusals","noProcessAfterStop"]
+stopInstant=2026-11-04T20:15:29.800Z archive={"status":200,"ok":true,"effect":{"kind":"lifecycle-changed","instanceId":"inst-14xcgx11i3lu","from":"SETTLED","to":"ARCHIVED","sequence":8}}
+membersAfter=[{"instanceId":"inst-14xcgx11i3lu","templateId":"worker","lifecycle":"ARCHIVED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}]
+postStop=[{"index":0,"status":200,"ok":false,"code":"SEARCH_FAILED"},{"index":1,"status":200,"ok":true,"code":null}]
+served=[{"index":1,"method":"glob","status":200,"bodyOk":true,"value":{"root":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob","paths":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob/needle.txt"]},"errorCode":null,"dispatchedBy":"/__p6t6/tool -> live.executeTool(member.childSessionId)"}]
+probeFacts=[{"decision":"allow","decidedBy":"ALLOW","realm":"member","method":"spawn","observedAt":"2026-11-04T20:15:29.847Z"},{"decision":"allow","decidedBy":"ALLOW","realm":"member","method":"spawn","observedAt":"2026-11-04T20:15:29.896Z"}]
+clause={"everyDispatchExplained":"unexplained = postStopDispatches not in { 422, 500, 200-with-body.ok===false } -> [true,false]","noSuccessAfterStop":"successes = 200-with-body.ok===true -> index [1]","probeFactsAreRefusals":"probe facts must all be deny (or none) -> [\"allow\",\"allow\"]"}
+
+== a5sf-search-2026-11-04T20-17-23-486Z  (/home/armourpiercer/projects/dsh-agent-team/dev/agent-workflow/evidence/a5sf-search-live/row6-samples/2026-11-04T20-17-23Z)
+archived verdict: FAIL / ROW6_CLAUSE_FAILED failed=["everyDispatchExplained","noSuccessAfterStop","noCallableShadow","probeFactsAreRefusals","noProcessAfterStop"]
+replayed verdict: REFUTED / ROW6_CLAUSE_FAILED failed=["everyDispatchExplained","noSuccessAfterStop","noCallableShadow","probeFactsAreRefusals","noProcessAfterStop"]
+stopInstant=2026-11-04T20:22:33.292Z archive={"status":200,"ok":true,"effect":{"kind":"lifecycle-changed","instanceId":"inst-14xcgx11i3lu","from":"SETTLED","to":"ARCHIVED","sequence":8}}
+membersAfter=[{"instanceId":"inst-14xcgx11i3lu","templateId":"worker","lifecycle":"ARCHIVED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}]
+postStop=[{"index":0,"status":200,"ok":false,"code":"SEARCH_FAILED"},{"index":1,"status":200,"ok":true,"code":null}]
+served=[{"index":1,"method":"glob","status":200,"bodyOk":true,"value":{"root":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob","paths":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt"]},"errorCode":null,"dispatchedBy":"/__p6t6/tool -> live.executeTool(member.childSessionId)"}]
+probeFacts=[{"decision":"allow","decidedBy":"ALLOW","realm":"member","method":"spawn","observedAt":"2026-11-04T20:22:33.332Z"},{"decision":"allow","decidedBy":"ALLOW","realm":"member","method":"spawn","observedAt":"2026-11-04T20:22:33.371Z"}]
+clause={"everyDispatchExplained":"unexplained = postStopDispatches not in { 422, 500, 200-with-body.ok===false } -> [true,false]","noSuccessAfterStop":"successes = 200-with-body.ok===true -> index [1]","probeFactsAreRefusals":"probe facts must all be deny (or none) -> [\"allow\",\"allow\"]"}
+
+same failed-clause set across 2 run(s): true
