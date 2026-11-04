@@ -1,0 +1,33 @@
+{
+  "schema": "a5sf-search-live/leader-grep-probe/1",
+  "at": "2026-11-04T18:53:56.191Z",
+  "stage": "before team.create, no Member realm exists",
+  "promptStatus": 200,
+  "turnSettled": false,
+  "toolResult": {
+    "source": "model",
+    "isError": false,
+    "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z"
+  },
+  "success": true,
+  "counterRowsForOperand": [
+    {
+      "at": "2026-11-04T18:51:55.634Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z",
+        "--",
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    }
+  ],
+  "baseSpawnRows": 1,
+  "baseSpawnFailedRows": [],
+  "factsBeforeRealm": 0,
+  "note": "base-spawn-failed carries the Node cause (name/code/errno/syscall/path/message) and whether argv[0] and the cwd existed: a launch failure can never again be recorded as a successful spawn"
+}

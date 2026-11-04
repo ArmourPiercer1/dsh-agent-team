@@ -1,0 +1,131 @@
+{
+  "schema": "a5sf-search-live/oracle-samples/1",
+  "note": "the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.",
+  "roots": {
+    "bootRoot": "session-a5sf-acceptance-root",
+    "teamRoot": "session-a5sf-acceptance-team",
+    "createRoot": "session-a5sf-acceptance-team",
+    "stateQueryRoot": "session-a5sf-acceptance-team",
+    "toolRouteRoot": "session-a5sf-acceptance-team",
+    "toolRouteRootIsLabel": true,
+    "archiveRoot": "session-a5sf-acceptance-team",
+    "oracleRoot": "session-a5sf-acceptance-team",
+    "directiveRoot": "session-a5sf-acceptance-team"
+  },
+  "cases": {},
+  "negativeControl": {
+    "sample": {
+      "result": null,
+      "forbidden": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T18-51-35Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T18-51-35Z"
+      ],
+      "guardFactsBeforeRealm": [],
+      "baseSpawns": [
+        {
+          "at": "2026-11-04T18:51:55.509Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "rev-parse",
+            "--show-toplevel",
+            "--absolute-git-dir",
+            "--git-path",
+            "objects"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:51:55.550Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:51:55.604Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:51:55.634Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--json",
+            "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z",
+            "--",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:51:55.681Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:51:55.725Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:53:56.220Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "add",
+            "--all",
+            "--ignore-errors"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        },
+        {
+          "at": "2026-11-04T18:53:56.273Z",
+          "leg": "base-spawn",
+          "argv": [
+            "/usr/bin/git",
+            "write-tree"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+          "instance": false
+        }
+      ],
+      "confinedSpawns": [],
+      "controlDone": true
+    },
+    "verdict": {
+      "verdict": "NOT_REACHED",
+      "reason": "NO_UNCONFINED_CONTROL_CALL",
+      "failed": [],
+      "checks": {},
+      "detail": {}
+    }
+  }
+}

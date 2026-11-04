@@ -220,6 +220,12 @@ check('driver: the leader grep probe runs FIRST — before the control and befor
       && ruling.rulings.every((r) => String(r.by ?? '').length > 0 && String(r.reason ?? '').length > 0),
     'authorisedStarts must equal the pool item and the named rulings; a start without a named ruling is a self-authorisation')
 }
+check('driver: the control counts only ITS OWN operand and the member-install abort carries the delegate answer',
+  /rowPaths\.outsideDir/u.test(driverSource)
+  && /delegate-artifact\.json/u.test(driverSource)
+  && /teamCalls/u.test(driverSource)
+  && /MEMBER_INSTALL_NO_WORKER/u.test(driverSource),
+  'the probe turn runs first, so a name-only control count answers without its grep (NOT_REACHED at 18:53Z); and no-Member-appeared must carry what team_delegate answered')
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)

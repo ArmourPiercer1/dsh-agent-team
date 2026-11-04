@@ -637,7 +637,14 @@ function makeDecide({ rowPaths, claims }) {
     }
 
     if (lastUser.includes(MK_DISC)) {
-      const greps = countAssistantToolUses(req, 'grep')
+      // The probe turn runs FIRST and leaves an in-lane grep in the transcript, so
+      // a name-only count would answer the control without issuing its grep and the
+      // control was recorded NOT_REACHED (2026-11-04T18:53Z run). Count only the
+      // greps on the control's own operand.
+      const greps = messagesOf(req)
+        .filter((m) => m?.role === 'assistant' && Array.isArray(m?.content))
+        .flatMap((m) => m.content)
+        .filter((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === rowPaths.outsideDir).length
       if (greps < 1) {
         return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-control', name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
       }
@@ -1219,6 +1226,34 @@ async function boot() {
     const memberSession = String(member?.childSessionId ?? '')
     stageCtx.member = { visible: memberVisible, instanceId: String(member?.instanceId ?? ''), hasSession: memberSession !== '' }
     log(`member visible=${String(memberVisible)} instanceId=${String(member?.instanceId ?? '')} childSessionId=${memberSession === '' ? '<none>' : '<set>'}`)
+    // The attribution the abort needs: what the delegate call itself SAID. Until
+    // this artifact existed, "no Member appeared" could mean refused, accepted but
+    // the worker failed to start, or a turn the mock never drove.
+    const teamToolNames = ['team_delegate', 'team_create_member', 'team_list_members', 'team_inspect_config']
+    const teamCalls = []
+    for (const message of (world.mock?.requests ?? []).flatMap((r) => messagesOf(r))) {
+      if (message?.role !== 'assistant' || !Array.isArray(message?.content)) continue
+      for (const block of message.content) {
+        if (block?.type !== 'tool_use' || !teamToolNames.includes(String(block?.name))) continue
+        const result = toolResultFor(world.mock?.requests ?? [], block.id)
+        teamCalls.push({ name: block.name, id: block.id, input: block.input, result })
+      }
+    }
+    const delegateArtifact = {
+      schema: 'a5sf-search-live/team-call-artifact/1',
+      at: new Date().toISOString(),
+      stage: 'member-install',
+      memberSeen: { visible: memberVisible, instanceId: String(member?.instanceId ?? ''), childSessionId: memberSession === '' ? null : '<set>' },
+      teamCalls,
+      rawState: stateFresh.body ?? null,
+      mockRequests: (world.mock?.requests ?? []).length,
+      memberTurnSeen: (world.mock?.requests ?? []).some((r) => userTextOf(r).includes(`${MEMBER_ENVELOPE}${TOK_D1}`)),
+      note: 'tool_result text is the product-side answer to the call; a refusal carries its typed error, an acceptance with no Member means the worker never started',
+    }
+    writeFileSync(join(HERE, 'delegate-artifact.json'), JSON.stringify(delegateArtifact, null, 2) + '\n')
+    stageCtx.delegate = delegateArtifact
+    log(`team calls: ${JSON.stringify(teamCalls.map((c) => ({ name: c.name, isError: c.result?.isError, text: String(c.result?.text ?? '').slice(0, 220) }))).slice(0, 900)}`)
+    persistRunChannels('member-install abort')
     if (member === null || memberSession === '') {
       throw new Error(`MEMBER_INSTALL_NO_WORKER: the team reports no worker instance with a session after 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, team.create was ok). The delegate produced no Member, so no row can be measured`)
     }

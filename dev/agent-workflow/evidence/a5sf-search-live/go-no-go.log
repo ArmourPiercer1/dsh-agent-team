@@ -3,7 +3,7 @@ PASS negative controls exist and are green: {"controls":9,"failed":0}
 PASS handoff: the rows the World composes EQUAL the emitted rows, by identity and in order: {"emitted":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"identityHolds":true}
 PASS handoff: the p6t6 health-probe row and all four evidence rows are among them: {"healthProbeRowPresent":true,"allFourRowsPresent":true,"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"]}
 PASS handoff: the driver CALLS the handoff before harness.boot( (independent source read): {"handoffIndex":8758,"bootIndex":39416,"call":"handOverRows(world, rows)"}
-PASS handoff: the plan was produced on THIS commit and carries a non-empty patch: {"planHead":"698285677ed68454c69887de7b931840557cc20c","head":"698285677ed68454c69887de7b931840557cc20c","patchBytes":6436,"patchSha256":"b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"}
+PASS handoff: the plan was produced on THIS commit and carries a non-empty patch: {"planHead":"c189ff5e93b8d4590897459e65c196ed1c2bc158","head":"c189ff5e93b8d4590897459e65c196ed1c2bc158","patchBytes":6436,"patchSha256":"b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"}
 PASS the PRODUCT tree matches the one the dry run measured: {"committed":"cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9","now":"cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is this lane's branch: task/a5sf-search-live2-20261105
