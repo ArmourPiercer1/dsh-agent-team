@@ -5354,10 +5354,22 @@ export function createAgentBindings(deps) {
    * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
    */
   function reviewWakeInbox(targetSessionId) {
-    const pending = () => {
-      const handle = liveAgents.get(String(targetSessionId))
-      if (handle === undefined) return []
-      return [...handle.agent.inbox.nextTurn, ...handle.agent.inbox.nextStep]
+    const sid = String(targetSessionId)
+    const handle = async () => {
+      const existing = liveAgents.get(sid)
+      if (existing !== undefined) return existing
+      try {
+        // Boot recovery runs before the recipient handle exists; materialising
+        // its durable session is what makes the native Inbox readable at all.
+        return await ensureLiveAgent(sid)
+      } catch {
+        return undefined
+      }
+    }
+    const pending = async () => {
+      const live = await handle()
+      if (live === undefined) return []
+      return [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
     }
     const matches = (message, wakeId) => {
       const content = Array.isArray(message?.content) ? message.content : []
@@ -5366,15 +5378,15 @@ export function createAgentBindings(deps) {
       )
     }
     return {
-      has(wakeId) {
-        return pending().some((message) => matches(message, String(wakeId)))
+      async has(wakeId) {
+        return (await pending()).some((message) => matches(message, String(wakeId)))
       },
-      remove(wakeId) {
-        const handle = liveAgents.get(String(targetSessionId))
-        if (handle === undefined) return false
-        const message = pending().find((entry) => matches(entry, String(wakeId)))
+      async remove(wakeId) {
+        const live = await handle()
+        if (live === undefined) return false
+        const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
         if (message === undefined) return false
-        return handle.agent.inbox.remove(message.id)
+        return live.agent.inbox.remove(message.id)
       },
     }
   }

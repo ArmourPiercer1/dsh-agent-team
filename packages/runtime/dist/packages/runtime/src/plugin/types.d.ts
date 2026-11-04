@@ -1062,8 +1062,8 @@ export interface TeamAgentBindings {
      * wake message still exists.
      */
     readonly reviewWakeInbox?: (targetSessionId: string) => {
-        readonly has: (wakeId: string) => boolean;
-        readonly remove?: (wakeId: string) => void;
+        readonly has: (wakeId: string) => boolean | Promise<boolean>;
+        readonly remove?: (wakeId: string) => void | Promise<void>;
     };
     /** The P8-S4B request boundary (re-apply the durable truth). */
     readonly prepareAgentForRequest: (sessionId: string) => Promise<void>;

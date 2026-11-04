@@ -228,3 +228,46 @@ describe('A6 root notifier — coordinator seam', () => {
     ])
   })
 })
+
+describe('A6 root notifier — exclusion laws', () => {
+  const legs = ['1', '2'].map((n) => ({
+    ...request,
+    requestId: `req-a6-exclude-${n}`,
+    approvalCaseId: `case-a6-exclude-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('excludes a requiresHuman leg and a leg resolved to another reviewer', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async (query) =>
+        query.currentLegRequestId === 'req-a6-exclude-2'
+          ? { instanceId: 'inst-other-officer' }
+          : { instanceId: 'inst-officer' },
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async (query) => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: query.currentLegRequestId === 'req-a6-exclude-1',
+      }),
+    })
+    await notifier.notifyLeaderRequest({
+      ...request,
+      requestId: 'req-a6-seed',
+      approvalCaseId: 'case-a6-seed',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+    } as ControlRequestRecord)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    expect(deliver.mock.calls[0]![0].wakeId).toBe('review:req-a6-seed')
+  })
+})

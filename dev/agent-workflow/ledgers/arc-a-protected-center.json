@@ -229,9 +229,9 @@
     },
     {
       "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-      "sha256": "96303a1380bcfb49e52c12ce15cd71f927b3111f02c26399d895e84e51ad12fe",
+      "sha256": "4368865c155a9a4fc9de27f1a1ca39548f9bab23e95c3a2647c2f57500b55d69",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
-      "reason": "Named Alpha.6 center-interface addition: the native-Inbox has/remove probe over the live pending lists is the ONLY recovery observation the wake-intent protocol consumes; it adds no authority, no decision and no durable write. Booked on the root-wiring candidate before any merge."
+      "reason": "Named Alpha.6 center-interface addition: the native-Inbox has/remove probe is the ONLY recovery observation the wake-intent protocol consumes; it materialises the target session so a boot-time recovery reads the durable Inbox, and it adds no authority, no decision and no durable write."
     }
   ]
 }
