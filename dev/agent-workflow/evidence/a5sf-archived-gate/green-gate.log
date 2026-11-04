@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/dev/agent-workflow/evidence/a5sf-search-live
+
+ ✓ row6-red-arm.test.mjs (4 tests) 1737ms
+     ✓ ARCHIVED: ensureLiveAgent(childSessionId) refuses typed and resumes NOTHING  1723ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  06:04:59
+   Duration  2.09s (transform 1.51s, setup 0ms, import 268ms, tests 1.74s, environment 0ms)
+

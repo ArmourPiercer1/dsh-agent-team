@@ -1,7 +1,7 @@
 /**
  * The PR4 permission-lifecycle DECISION lane — the execution read plane.
  *
- * ADR §8 makes the lifecycle an EXECUTION question, not a storage question:
+ * The frozen Architecture (§41.6/§30.2/§29.4) makes the lifecycle an EXECUTION question, not a storage question:
  *
  *     RUNNING   — overlay effective
  *     ARCHIVED  — overlay retained; execution disabled
@@ -76,7 +76,7 @@ const EXEC_CLASS = SHELL_PERMISSION_TOOL_VALUES;
 /** The closed file class (the leaf vocabulary). */
 const FILE_CLASS = FILE_PERMISSION_TOOL_VALUES;
 /**
- * The ADR §8 execution gate as a pure function of the durable lifecycle
+ * The frozen-Architecture (§41.6/§30.2/§29.4) execution gate as a pure function of the durable lifecycle
  * state. Exported so a spec can pin all five states (and the unknown state)
  * directly, without a world.
  */
@@ -91,14 +91,14 @@ export function evaluatePermissionLifecycleGate(state) {
                 allowed: false,
                 state: 'ARCHIVED',
                 code: PERMISSION_LIFECYCLE_ERROR_CODES.EXECUTION_ARCHIVED,
-                reason: 'the MemberInstance is ARCHIVED: its overlay is RETAINED but execution is DISABLED (ADR §8) — no permission fact is consulted and nothing is rewritten',
+                reason: 'the MemberInstance is ARCHIVED: its overlay is RETAINED but execution is DISABLED (Architecture §41.6/§30.2/§29.4) — no permission fact is consulted and nothing is rewritten',
             };
         case 'DISPOSED':
             return {
                 allowed: false,
                 state: 'DISPOSED',
                 code: PERMISSION_LIFECYCLE_ERROR_CODES.EXECUTION_TERMINAL,
-                reason: 'the MemberInstance is DISPOSED: its overlay is HISTORICAL ONLY and never effective (ADR §8)',
+                reason: 'the MemberInstance is DISPOSED: its overlay is HISTORICAL ONLY and never effective (Architecture §29.5)',
             };
         default:
             return {
@@ -176,7 +176,7 @@ export function containmentFallback(verdict, effect) {
 export function createPermissionDecisionLane(deps) {
     const decide = async (request) => {
         const { teamSessionId, memberInstanceId, operation } = request;
-        // (1) the ADR §8 gate — before any permission fact is read.
+        // (1) the durable-lifecycle gate (Architecture §41.6/§30.2/§29.4) — before any permission fact is read.
         const state = await deps.members.readLifecycle(teamSessionId, memberInstanceId);
         const gate = evaluatePermissionLifecycleGate(state);
         if (gate.allowed === false) {
