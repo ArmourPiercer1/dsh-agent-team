@@ -2470,6 +2470,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             live.deliverReviewWake === undefined
               ? Promise.reject(new Error('Alpha.6 wake seam disappeared after boot'))
               : live.deliverReviewWake({ rootSessionId: rootSid, ...wake }),
+          // Read the durable pending set lazily (the service exists after this
+          // closure is built); the SAME trusted facts port filters every leg.
+          readRequests: async () => {
+            const current = controlRef.current
+            if (current === undefined) return []
+            return (await current.readControlState(rootSid)).requests
+          },
+          reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
         })
       : undefined
   const control = createControlService({

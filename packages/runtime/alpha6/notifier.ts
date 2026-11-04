@@ -10,6 +10,8 @@
  * @module @dsh-agent-team/runtime/alpha6/notifier
  */
 import type {
+  AssignedOfficerReviewFacts,
+  AssignedOfficerReviewFactsQuery,
   ControlRequestNotificationPort,
   ControlRequestRecord,
   ControlSubject,
@@ -117,6 +119,15 @@ export function createAlpha6RootControlNotifier(ports: {
     | undefined
     | Promise<{ readonly childSessionId?: string } | undefined>
   readonly deliver: WakeDeliveryPort
+  /**
+   * Optional trusted merge inputs. When BOTH are present, the notifier reads
+   * the durable pending legs, keeps only those the SAME facts port proves are
+   * delegable to the SAME reviewer, and delivers ONE wake for the group.
+   */
+  readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>
+  readonly reviewFacts?: (
+    query: AssignedOfficerReviewFactsQuery,
+  ) => Promise<AssignedOfficerReviewFacts | null>
 }): ControlRequestNotificationPort {
   return {
     async notifyLeaderRequest(request: ControlRequestRecord): Promise<void> {
@@ -143,11 +154,77 @@ export function createAlpha6RootControlNotifier(ports: {
           `Alpha.6 review wake refused: reviewer '${reviewer.instanceId}' has no live child session (no Leader fallback)`,
         )
       }
+
+      // MERGE: only legs this SAME facts port proves delegable to the SAME
+      // reviewer join the wake. A leg with no case identity, a refused fact,
+      // a fixed Leader/Human category or a different reviewer is left out.
+      const merged: ControlRequestRecord[] = [request]
+      if (ports.readRequests !== undefined && ports.reviewFacts !== undefined) {
+        let pending: readonly ControlRequestRecord[]
+        try {
+          pending = await ports.readRequests()
+        } catch {
+          pending = []
+        }
+        for (const candidate of pending) {
+          if (candidate.requestId === request.requestId) continue
+          if (candidate.status !== 'pending') continue
+          if (candidate.kind !== 'leader-approval') continue
+          if (candidate.approvalCaseId === undefined || candidate.legOrdinal === undefined) continue
+          if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined) continue
+          let facts: AssignedOfficerReviewFacts | null
+          try {
+            facts = await ports.reviewFacts({
+              rootSessionId: ports.rootSessionId,
+              approvalCaseId: candidate.approvalCaseId,
+              currentLegRequestId: candidate.requestId,
+              legOrdinal: candidate.legOrdinal,
+              kind: candidate.kind,
+              reviewAuthority: candidate.reviewAuthority,
+            })
+          } catch {
+            continue
+          }
+          if (facts === null || facts.requiresHuman || facts.fixedLeaderOrHumanCategory) continue
+          const candidateReviewer = await ports.resolveCurrentReviewer({
+            rootSessionId: ports.rootSessionId,
+            approvalCaseId: candidate.approvalCaseId,
+            currentLegRequestId: candidate.requestId,
+            legOrdinal: candidate.legOrdinal,
+          })
+          if (candidateReviewer?.instanceId !== reviewer.instanceId) continue
+          merged.push(candidate)
+        }
+      }
+      if (merged.length === 1) {
+        await ports.deliver({
+          targetSessionId,
+          wakeId: `review:${request.requestId}`,
+          text: renderOfficerReviewWake(request),
+        })
+        return
+      }
+      const ids = merged.map((entry) => entry.requestId).sort()
       await ports.deliver({
         targetSessionId,
-        wakeId: `review:${request.requestId}`,
-        text: renderOfficerReviewWake(request),
+        wakeId: `review:${ids.join(',')}`,
+        text: renderMergedOfficerReviewWake(merged),
       })
     },
   }
+}
+
+
+/** One wake for a group of delegable pending legs; every id stays visible. */
+export function renderMergedOfficerReviewWake(requests: readonly ControlRequestRecord[]): string {
+  const ids = requests.map((request) => request.requestId).sort()
+  return [
+    `[team-review-wake requests=${ids.length}]`,
+    'Team member operations are waiting for review.',
+    '',
+    ...ids.map((id) => `requestId: ${id}`),
+    '',
+    'Decide each with `team_resolve_control` using that EXACT requestId.',
+    'Inspect your pending work with `team_list_pending_control`.',
+  ].join('\n')
 }

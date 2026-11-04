@@ -9,7 +9,7 @@
  *
  * @module @dsh-agent-team/runtime/alpha6/notifier
  */
-import type { ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
+import type { AssignedOfficerReviewFacts, AssignedOfficerReviewFactsQuery, ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
 import type { Alpha6CompositionDecision } from './composition.js';
 export interface WakeDeliveryPort {
     (input: {
@@ -65,5 +65,14 @@ export declare function createAlpha6RootControlNotifier(ports: {
         readonly childSessionId?: string;
     } | undefined>;
     readonly deliver: WakeDeliveryPort;
+    /**
+     * Optional trusted merge inputs. When BOTH are present, the notifier reads
+     * the durable pending legs, keeps only those the SAME facts port proves are
+     * delegable to the SAME reviewer, and delivers ONE wake for the group.
+     */
+    readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>;
+    readonly reviewFacts?: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
 }): ControlRequestNotificationPort;
+/** One wake for a group of delegable pending legs; every id stays visible. */
+export declare function renderMergedOfficerReviewWake(requests: readonly ControlRequestRecord[]): string;
 //# sourceMappingURL=notifier.d.ts.map

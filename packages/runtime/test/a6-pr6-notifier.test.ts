@@ -119,3 +119,65 @@ describe('A6 root control notifier — trusted reviewer resolution', () => {
     expect(deliver).not.toHaveBeenCalled()
   })
 })
+
+describe('A6 root notifier — trusted merge', () => {
+  const legs = ['1', '2', '3'].map((n) => ({
+    ...request,
+    requestId: `req-a6-merge-${n}`,
+    approvalCaseId: `case-a6-merge-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('merges three delegable legs for one reviewer into ONE wake', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const resolve = vi.fn(async () => ({ instanceId: 'inst-officer' }))
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: resolve,
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async () => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    const wake = deliver.mock.calls[0]![0]
+    expect(wake.wakeId).toBe('review:req-a6-merge-1,req-a6-merge-2,req-a6-merge-3')
+    expect(wake.text).toContain('requests=3')
+  })
+
+  it('excludes a fixed Leader/Human leg from the merge', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async (query) => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: query.currentLegRequestId === 'req-a6-merge-2',
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    const wake = deliver.mock.calls[0]![0]
+    expect(wake.wakeId).toBe('review:req-a6-merge-1,req-a6-merge-3')
+  })
+})
