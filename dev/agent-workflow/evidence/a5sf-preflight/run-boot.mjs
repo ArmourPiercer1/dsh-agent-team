@@ -1870,6 +1870,37 @@ async function boot() {
     log(summary)
     log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(overallVerdict(finalized.cases))} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
   }
+  // AN ABORT MUST RECONCILE ITSELF. An attempt that dies before the Host is reached has already
+  // written its intent row, so leaving it unreconciled makes the ledger read like an unexplained
+  // spend and every later gate refuses (measured: the 08:11Z `homePin` abort). The abort row is
+  // appended only when the ledger actually holds an intent for this run and no boot row for it, so
+  // re-running the same driver cannot double-count.
+  if (failure !== null && !hostReached) {
+    try {
+      const rows = readLedgerRows(LEDGER_PATH)
+      const mine = rows.filter((row) => String(row.runId ?? '') === runId)
+      const hasIntent = mine.some((row) => row.kind === 'budget-intent')
+      const hasBoot = mine.some((row) => row.kind !== 'budget-intent' && String(row.phase ?? '').startsWith('a5sf-acceptance-boot'))
+      const hasAbort = mine.some((row) => row.kind === 'budget-abort')
+      if (hasIntent && !hasBoot && !hasAbort) {
+        appendFileSync(LEDGER_PATH, JSON.stringify({
+          at: new Date().toISOString(),
+          runId,
+          suite: 'a5sf-acceptance',
+          kind: 'budget-abort',
+          phase: 'a5sf-acceptance-abort-prehost',
+          reason: redact(String(failure.message ?? failure)).slice(0, 400),
+          stage: abortStage,
+          grantId: grant.grantId,
+          boundCommit: grant.boundCommit,
+          note: 'aborted BEFORE the Host was reached: the intent row was spent, no start was',
+        }) + '\n')
+        log('ledger reconciled: budget-abort row appended (intent spent, no start)')
+      }
+    } catch (error) {
+      log(`ledger reconciliation FAILED (the ledger keeps the dangling intent): ${redact(String(error?.message ?? error))}`)
+    }
+  }
   if (failure !== null) process.exitCode = 1
 }
 

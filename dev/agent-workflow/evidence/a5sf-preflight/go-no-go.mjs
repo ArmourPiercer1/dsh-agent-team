@@ -93,16 +93,27 @@ const ledgerRows = existsSync(ledgerPath)
   : []
 const unparseableRows = ledgerRows.filter((row) => row.unparseable !== undefined)
 const intents = ledgerRows.filter((row) => row.kind === 'budget-intent')
-const bootRows = ledgerRows.filter((row) => row.kind !== 'budget-intent' && row.phase !== undefined)
+// A boot row is a START. Abort rows are bookkeeping and must never be counted as spend.
+const bootRows = ledgerRows.filter((row) => row.kind !== 'budget-intent' && row.kind !== 'budget-abort' && row.phase !== undefined)
 const runsOf = (rows) => [...new Set(rows.map((row) => String(row.runId ?? '')))]
 const intentRuns = runsOf(intents)
 const bootRuns = runsOf(bootRows)
 const orphanBootRuns = bootRuns.filter((runId) => !intentRuns.includes(runId))
+// A run that aborted BEFORE reaching the Host leaves an intent row and no boot row, by design: the
+// pre-registration is the whole point of the gate. Such a run is reconciled by an explicit
+// `budget-abort` row (never by deleting the intent), so the invariant is
+//   bootRows === plannedStarts - aborts
+// and an abort row that names no intent is itself a defect.
+const abortRows = ledgerRows.filter((row) => row.kind === 'budget-abort')
+const abortsOf = (runId) => abortRows.filter((row) => String(row.runId ?? '') === runId).length
+const abortRuns = runsOf(abortRows)
+const orphanAbortRuns = abortRuns.filter((runId) => !intentRuns.includes(runId))
 const plannedMismatch = intentRuns.map((runId) => {
   const planned = intents.filter((row) => String(row.runId ?? '') === runId)
   const spent = bootRows.filter((row) => String(row.runId ?? '') === runId).length
+  const aborted = abortsOf(runId)
   const declared = planned.reduce((sum, row) => sum + Number(row.plannedStarts ?? 0), 0)
-  return { runId, plannedStarts: declared, bootRows: spent, ok: declared === spent }
+  return { runId, plannedStarts: declared, aborted, bootRows: spent, ok: declared - aborted === spent }
 }).filter((entry) => entry.ok !== true)
 const bootsSpent = bootRows.length
 const remaining = Number(p201?.boots ?? 0) - bootsSpent
@@ -114,12 +125,15 @@ report_ledger = {
   unparseable: unparseableRows.length,
   orphanBootRuns,
   plannedMismatch,
+  aborts: abortRows.length,
+  orphanAbortRuns,
   bootsInPool: Number(p201?.boots ?? 0),
   remaining,
 }
 check('ledger: every row parses and each boot row has its intent row', unparseableRows.length === 0 && orphanBootRuns.length === 0,
   report_ledger)
-check('ledger: each intent\'s plannedStarts equals the boot rows charged to it', plannedMismatch.length === 0,
+check('ledger: an abort row names an existing intent (an abort without an intent is a defect)', orphanAbortRuns.length === 0, { abortRuns })
+check('ledger: each intent\'s plannedStarts equals the boot rows charged to it, net of declared aborts', plannedMismatch.length === 0,
   { intents: intentRuns.length, mismatch: plannedMismatch })
 check('budget: at least ONE start of the P2-01 pool is still available', remaining >= 1,
   `boots=${String(p201?.boots ?? null)} spent=${String(bootsSpent)} remaining=${String(remaining)}`)

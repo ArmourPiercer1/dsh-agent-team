@@ -13,23 +13,18 @@
   },
   "ledger": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
-    "rows": 5,
+    "rows": 6,
     "intents": 3,
     "bootRows": 2,
     "unparseable": 0,
     "orphanBootRuns": [],
-    "plannedMismatch": [
-      {
-        "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
-        "plannedStarts": 1,
-        "bootRows": 0,
-        "ok": false
-      }
-    ],
+    "plannedMismatch": [],
+    "aborts": 1,
+    "orphanAbortRuns": [],
     "bootsInPool": 6,
     "remaining": 4
   },
-  "go": false,
+  "go": true,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
@@ -62,36 +57,33 @@
       "ok": true,
       "detail": {
         "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
-        "rows": 5,
+        "rows": 6,
         "intents": 3,
         "bootRows": 2,
         "unparseable": 0,
         "orphanBootRuns": [],
-        "plannedMismatch": [
-          {
-            "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
-            "plannedStarts": 1,
-            "bootRows": 0,
-            "ok": false
-          }
-        ],
+        "plannedMismatch": [],
+        "aborts": 1,
+        "orphanAbortRuns": [],
         "bootsInPool": 6,
         "remaining": 4
       }
     },
     {
-      "id": "ledger: each intent's plannedStarts equals the boot rows charged to it",
-      "ok": false,
+      "id": "ledger: an abort row names an existing intent (an abort without an intent is a defect)",
+      "ok": true,
+      "detail": {
+        "abortRuns": [
+          "a5sf-acceptance-2026-11-04T08-11-28-364Z"
+        ]
+      }
+    },
+    {
+      "id": "ledger: each intent's plannedStarts equals the boot rows charged to it, net of declared aborts",
+      "ok": true,
       "detail": {
         "intents": 3,
-        "mismatch": [
-          {
-            "runId": "a5sf-acceptance-2026-11-04T08-11-28-364Z",
-            "plannedStarts": 1,
-            "bootRows": 0,
-            "ok": false
-          }
-        ]
+        "mismatch": []
       }
     },
     {
