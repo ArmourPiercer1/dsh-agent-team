@@ -1,8 +1,8 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+  "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
   "suite": "a5sf-search",
-  "startedAt": "2026-11-04T15:36:59.674Z",
+  "startedAt": "2026-11-04T15:56:53.720Z",
   "selectedCases": [
     "live:search-row1-grep-in-lane-allowed",
     "live:search-row2-grep-outside-ceiling-refused",
@@ -12,12 +12,12 @@
     "live:search-row6-teardown-no-callable-shadow"
   ],
   "bindings": {
-    "teamSha": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+    "teamSha": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
     "line": "a5sfsrch",
     "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
-    "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
+    "grantId": "grant-a5sf-search-098f445f51ee-b2",
     "allocationItem": "P2-04 grep (BL-16)",
     "providerComposition": "test row dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs (no product provider exists at this base)",
     "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
@@ -29,44 +29,56 @@
     {
       "id": "live:search-row1-grep-in-lane-allowed",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.021Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     },
     {
       "id": "live:search-row2-grep-outside-ceiling-refused",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.021Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     },
     {
       "id": "live:search-row3-grep-outside-restriction-refused",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     },
     {
       "id": "live:search-row4-cancelled-search-settles-cancelled",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     },
     {
       "id": "live:search-row5-invalid-pattern-is-error",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     },
     {
       "id": "live:search-row6-teardown-no-callable-shadow",
       "verdict": "FAIL",
-      "at": "2026-11-04T15:39:18.951Z",
-      "reason": "DRIVER_ABORTED_AT_post-boot",
-      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
     }
   ],
   "hostStarts": {
@@ -74,22 +86,22 @@
     "thisRunCount": 2,
     "thisRunEntries": [
       {
-        "at": "2026-11-04T15:36:59.705Z",
-        "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+        "at": "2026-11-04T15:56:53.767Z",
+        "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
         "suite": "a5sf-read",
         "kind": "budget-intent",
         "phase": "a5sf-read-intent",
-        "world": "intent:grant-a5sf-search-a2c56fb8457a-b1",
-        "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
-        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-04 grep (BL-16 native write/search)\" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver's to spend.",
-        "boundCommit": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+        "world": "intent:grant-a5sf-search-098f445f51ee-b2",
+        "grantId": "grant-a5sf-search-098f445f51ee-b2",
+        "grantedBy": "1 start(s) by direct task instruction (coordinator): the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation || 1 start(s) by coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope.",
+        "boundCommit": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
         "plannedStarts": 1
       },
       {
-        "at": "2026-11-04T15:37:06.134Z",
-        "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+        "at": "2026-11-04T15:56:55.361Z",
+        "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
         "suite": "a5sf-search",
-        "world": "u5a5sfsrch-20261104T15-36-59Z",
+        "world": "u5a5sfsrch-20261104T15-56-53Z",
         "phase": "a5sf-search-boot1"
       }
     ]
@@ -97,11 +109,11 @@
   "boots": [
     {
       "phase": "a5sf-search-boot1",
-      "world": "u5a5sfsrch-20261104T15-36-59Z",
-      "port": 3183,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T15-36-59Z/instance-port3183.log"
+      "world": "u5a5sfsrch-20261104T15-56-53Z",
+      "port": 3182,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T15-56-53Z/instance-port3182.log"
     }
   ],
   "overall": "FAIL",
-  "finishedAt": "2026-11-04T15:39:19.042Z"
+  "finishedAt": "2026-11-04T16:00:00.115Z"
 }

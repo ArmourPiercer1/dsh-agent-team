@@ -1,0 +1,72 @@
+{
+  "sample": {
+    "result": {
+      "source": "model",
+      "isError": true,
+      "text": "Error: grep could not start its search command (ripgrep launch failed)"
+    },
+    "forbidden": [
+      "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T15-56-53Z",
+      "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T15-56-53Z"
+    ],
+    "guardFactsBeforeRealm": [],
+    "baseSpawns": [
+      {
+        "at": "2026-11-04T15:56:59.087Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "--show-toplevel",
+          "--absolute-git-dir",
+          "--git-path",
+          "objects"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-04T15:56:59.136Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+          "--no-config",
+          "--json",
+          "--regexp=A5SF_SEARCH_OUTSIDE",
+          "--",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/ceiling-outside"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      }
+    ],
+    "confinedSpawns": [],
+    "controlDone": false
+  },
+  "verdict": {
+    "verdict": "REFUTED",
+    "reason": "NEGATIVE_CONTROL_CLAUSE_FAILED",
+    "failed": [
+      "controlSucceeded",
+      "controlLeaked"
+    ],
+    "checks": {
+      "controlSucceeded": false,
+      "controlLeaked": false,
+      "unconfinedRanOnTheInheritedService": true,
+      "noConfinedProcess": true,
+      "noGuardFactBeforeRealm": true
+    },
+    "detail": {
+      "result": {
+        "isError": true,
+        "text": "Error: grep could not start its search command (ripgrep launch failed)"
+      },
+      "leakedTokens": [],
+      "baseSpawns": 2,
+      "confinedSpawns": 0,
+      "guardFactsBeforeRealm": 0,
+      "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+    }
+  }
+}

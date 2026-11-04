@@ -1,0 +1,29 @@
+{
+  "schema": "a5sf-search-live/lane-ruling/1",
+  "lane": "task/a5sf-search-live-20261104",
+  "allocationItem": "P2-04 grep (BL-16)",
+  "poolAllocated": 3,
+  "authorisedStarts": 2,
+  "rulings": [
+    {
+      "starts": 1,
+      "by": "direct task instruction (coordinator)",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation"
+    },
+    {
+      "starts": 1,
+      "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope.",
+      "conditions": [
+        "go-no-go itself must evaluate the rows-given-to-the-World handoff, not only the dry run",
+        "the pre-boot assertion is content-bearing: the rows the World composes equal the emitted rows by identity, in order, with the health probe row present (a length check would have passed last time)",
+        "stage attribution must distinguish composition vs member-install vs delegate-dispatch, so an abort teaches WHICH handoff is broken",
+        "if this attempt aborts before any row is judged: stop and report; do NOT ask for a third start"
+      ]
+    }
+  ],
+  "note": "The driver and go-no-go both read this file: a start is allowed only while the shared ledger's boot rows for this lane are fewer than `authorisedStarts`. A third boot requires a NEW ruling appended here — editing `authorisedStarts` upward without a ruling entry is a self-authorisation and is called out in the README.",
+  "remainingAfterThisLane": 1
+}

@@ -167,8 +167,8 @@ withMutation({
 withMutation({
   id: 'driver: the dry run must notice rows that are emitted but NEVER given to the World',
   file: DRIVER,
-  from: '    world.u6Fs.rows.push(...rows)',
-  to: '    void rows',
+  from: 'handOverRows(world, rows)',
+  to: 'void rows',
   args: [DRY],
   wantsRed: true,
   checkId: 'the composed rows are GIVEN to the World',

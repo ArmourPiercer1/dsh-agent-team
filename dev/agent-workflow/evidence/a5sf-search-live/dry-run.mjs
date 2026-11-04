@@ -166,9 +166,11 @@ check('driver: declares expectedTools for BOTH native modules', /a5sfExpectedToo
 check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', /DRIVER_ABORTED_AT_/u.test(driverSource)
   && /if \(hostReached\) \{/u.test(driverSource),
   'a live regression must never be laundered into NOT_REACHED')
-check('driver: exactly ONE start is authorised', /const DEDICATED_STARTS = 1/u.test(driverSource)
-  && /DEDICATED_ALLOCATION_EXHAUSTED/u.test(driverSource),
-  'the task budget is one boot; the pool item holds 3, the other 2 need a new ruling')
+check('driver: the start budget is the RULING FILE, not a constant the driver may raise', /readRuling\(\)/u.test(driverSource)
+  && /bootSequence > ruling\.starts/u.test(driverSource)
+  && /DEDICATED_ALLOCATION_EXHAUSTED/u.test(driverSource)
+  && /lane-ruling\.json/u.test(driverSource),
+  'authorisedStarts sums named rulings; a start without a named ruling is a self-authorisation')
 check('driver: the cancellation trigger is the SHIPPED client route', /apiSessionCancel/u.test(driverSource)
   && !/interruptRoute/u.test(driverSource),
   '/api/session/cancel -> agent.cancel({kind:"user"}); no test route composes a cancel')
@@ -180,9 +182,26 @@ check('driver: the FIFO window is created or the boot refuses', /execFileSync\('
 // so the Host booted a BARE World and `/__p6t6/health` never existed. `--plan`
 // was green because it only checked the EMITTED text. This check is on the
 // handoff itself, and the negative control removes the line and requires RED.
-check('driver: the composed rows are GIVEN to the World (not only emitted)', /world\.u6Fs\.rows\.push\(\.\.\.rows\)/u.test(driverSource)
-  && driverSource.indexOf('world.u6Fs.rows.push(...rows)') < driverSource.indexOf('harness.boot('),
-  'the rows must reach `world.u6Fs.rows` BEFORE the spawn; an emitted-but-unpushed row set boots a bare World and burns the start')
+check('driver: the composed rows are GIVEN to the World (not only emitted)', /function handOverRows\(world, rows\)/u.test(driverSource)
+  && (driverSource.match(/^\s+handOverRows\(world, rows\)\s*$/gmu) ?? []).length === 1
+  && driverSource.indexOf('handOverRows(world, rows)') < driverSource.indexOf('harness.boot('),
+  'the rows must reach `world.u6Fs.rows` through ONE handoff function BEFORE the spawn; an emitted-but-unpushed row set boots a bare World and burns the start')
+// CONDITION 2 of the retry ruling: content-bearing, not length-bearing. The
+// artifacts below are produced by RUNNING the handoff against a probe in --plan.
+check('driver: --plan hands the rows over and writes the identity artifact', /handOverRows\(probeWorld, dry\.rows\)/u.test(driverSource)
+  && /PLAN_ROWS_PATH/u.test(driverSource)
+  && /identityHolds/u.test(driverSource),
+  'plan-rows.json must carry emittedRowIds and worldRowIds so the gate compares CONTENT, not a count')
+check('driver: the leader DENIES grep/glob (the coverage gate refuses them unmanaged on a root session)', /LEADER_MANAGED_TOOL_NAMES/u.test(driverSource)
+  && /!LEADER_MANAGED_TOOL_NAMES\.includes\(n\)/u.test(driverSource)
+  && /TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED|known-sensitive-unmanaged/u.test(driverSource),
+  'the retry refused team.create on exactly this; the Member still gets grep/glob through its realm')
+check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
+  ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
+  && /COMPOSITION_ROWS_MISSING/u.test(driverSource)
+  && /DELEGATE_DISPATCH_NEVER_REACHED_MEMBER/u.test(driverSource)
+  && /CANCELLATION_WINDOW_NO_CONFINED_SPAWN/u.test(driverSource),
+  'one generic post-boot abort wastes a start; the stage names say WHICH handoff broke')
 check('driver: the boot-mode run-record bindings are exercised host-free', /function runBindings\(/u.test(driverSource)
   && /bindings: runBindings\(head, grant\)/u.test(driverSource)
   && /runBindings\(head === null/u.test(driverSource),

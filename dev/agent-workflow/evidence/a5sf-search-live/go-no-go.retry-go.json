@@ -1,0 +1,221 @@
+{
+  "schema": "a5sf-search-live/go-no-go/1",
+  "branch": "task/a5sf-search-live-20261104",
+  "evidenceHeadAtDryRun": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+  "productTreeDigest": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7",
+  "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pool": {
+    "item": "P2-04 grep (BL-16)",
+    "boots": 3,
+    "consumed": 1,
+    "remaining": 2
+  },
+  "ruling": {
+    "authorisedStarts": 2,
+    "entries": 2,
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
+  },
+  "handoff": {
+    "emittedRowIds": [
+      "a5sf-search-realm",
+      "dsh-agent-team",
+      "p6t6-team-tools",
+      "preset-a5sf-search-base"
+    ],
+    "worldRowIds": [
+      "a5sf-search-realm",
+      "dsh-agent-team",
+      "p6t6-team-tools",
+      "preset-a5sf-search-base"
+    ],
+    "identityHolds": true,
+    "patchSha256": "078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a"
+  },
+  "ledger": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "rows": 2,
+    "intents": 1,
+    "bootRows": 1,
+    "aborts": 0,
+    "unparseable": 0,
+    "orphanBootRuns": [],
+    "orphanAbortRuns": [],
+    "plannedMismatch": [],
+    "bootsInPool": 3,
+    "remaining": 2
+  },
+  "go": true,
+  "checks": [
+    {
+      "id": "dry-run evidence exists and is green",
+      "ok": true,
+      "detail": {
+        "checks": 46,
+        "failed": 0
+      }
+    },
+    {
+      "id": "negative controls exist and are green",
+      "ok": true,
+      "detail": {
+        "controls": 9,
+        "failed": 0
+      }
+    },
+    {
+      "id": "handoff: the rows the World composes EQUAL the emitted rows, by identity and in order",
+      "ok": true,
+      "detail": {
+        "emitted": [
+          "a5sf-search-realm",
+          "dsh-agent-team",
+          "p6t6-team-tools",
+          "preset-a5sf-search-base"
+        ],
+        "world": [
+          "a5sf-search-realm",
+          "dsh-agent-team",
+          "p6t6-team-tools",
+          "preset-a5sf-search-base"
+        ],
+        "identityHolds": true
+      }
+    },
+    {
+      "id": "handoff: the p6t6 health-probe row and all four evidence rows are among them",
+      "ok": true,
+      "detail": {
+        "healthProbeRowPresent": true,
+        "allFourRowsPresent": true,
+        "world": [
+          "a5sf-search-realm",
+          "dsh-agent-team",
+          "p6t6-team-tools",
+          "preset-a5sf-search-base"
+        ]
+      }
+    },
+    {
+      "id": "handoff: the driver CALLS the handoff before harness.boot( (independent source read)",
+      "ok": true,
+      "detail": {
+        "handoffIndex": 7714,
+        "bootIndex": 36893,
+        "call": "handOverRows(world, rows)"
+      }
+    },
+    {
+      "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
+      "ok": true,
+      "detail": {
+        "planHead": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+        "head": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+        "patchBytes": 6419,
+        "patchSha256": "078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a"
+      }
+    },
+    {
+      "id": "the PRODUCT tree matches the one the dry run measured",
+      "ok": true,
+      "detail": {
+        "committed": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7",
+        "now": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7"
+      }
+    },
+    {
+      "id": "the product tree has no uncommitted modifications",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "branch is this lane's branch",
+      "ok": true,
+      "detail": "task/a5sf-search-live-20261104"
+    },
+    {
+      "id": "ledger: every row parses and each boot row has its intent row",
+      "ok": true,
+      "detail": {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+        "rows": 2,
+        "intents": 1,
+        "bootRows": 1,
+        "aborts": 0,
+        "unparseable": 0,
+        "orphanBootRuns": [],
+        "orphanAbortRuns": [],
+        "plannedMismatch": [],
+        "bootsInPool": 3,
+        "remaining": 2
+      }
+    },
+    {
+      "id": "ledger: an abort row names an existing intent (an abort without an intent is a defect)",
+      "ok": true,
+      "detail": {
+        "abortRuns": []
+      }
+    },
+    {
+      "id": "ledger: each intent's plannedStarts equals its boot rows, net of declared aborts",
+      "ok": true,
+      "detail": {
+        "intents": 1,
+        "mismatch": []
+      }
+    },
+    {
+      "id": "budget: at least ONE P2-04 start is still available",
+      "ok": true,
+      "detail": "boots=3 spent=1 remaining=2"
+    },
+    {
+      "id": "boot pool allocates the three P2-04 starts (the ruling)",
+      "ok": true,
+      "detail": {
+        "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
+        "item": "P2-04 grep (BL-16)",
+        "boots": 3
+      }
+    },
+    {
+      "id": "budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)",
+      "ok": true,
+      "detail": {
+        "authorisedStarts": 2,
+        "entries": 2,
+        "rulings": [
+          {
+            "starts": 1,
+            "by": "direct task instruction (coordinator)"
+          },
+          {
+            "starts": 1,
+            "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+          }
+        ]
+      }
+    },
+    {
+      "id": "budget: this start is authorised by the rulings and is NOT a third",
+      "ok": true,
+      "detail": "authorised=2 spent=1 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+    },
+    {
+      "id": "pinned host tree is at the pinned commit and clean",
+      "ok": true,
+      "detail": {
+        "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelain": ""
+      }
+    }
+  ],
+  "next": "node dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs  (ONE Host, ONE start, port family 3180)",
+  "structurallyUnverifiableWithoutBoot": [
+    "that the LIVE PRESET supplies a confined `subprocess` face to the Member realm: it does not at this base; the boot composes it in the evidence provider row (see README §3)",
+    "that a Member tool call actually reaches that face — the ONE boot measures this, and nothing host-free can",
+    "that row 4's cancellation window is wide enough on THIS host: the FIFO-blocking premise is re-measured below, the end-to-end timing is not measurable without a Host",
+    "that the OS kernel denies a process the compiled profile should confine (P1-07 owns that leg)"
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/negative-controls/1",
-  "at": "2026-11-04T15:41:00.768Z",
+  "at": "2026-11-04T16:04:14.256Z",
   "controls": [
     {
       "id": "oracle: row 2 must REFUTE a refusal that still created a process",
@@ -54,7 +54,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T15:40:54.176Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: declares expectedTools for BOTH native modules"
+        "tail": "[2026-11-04T16:04:07.856Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 47 failed: driver: declares expectedTools for BOTH native modules"
       }
     },
     {
@@ -65,7 +65,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T15:40:57.442Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: the cancellation trigger is the SHIPPED client route"
+        "tail": "[2026-11-04T16:04:11.116Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 47 failed: driver: the cancellation trigger is the SHIPPED client route"
       }
     },
     {
@@ -76,7 +76,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T15:41:00.740Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 44 failed: driver: the composed rows are GIVEN to the World (not only emitted)"
+        "tail": "[2026-11-04T16:04:14.234Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 47 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle"
       }
     },
     {

@@ -1,12 +1,17 @@
-PASS dry-run evidence exists and is green: {"checks":44,"failed":0}
+PASS dry-run evidence exists and is green: {"checks":47,"failed":0}
 PASS negative controls exist and are green: {"controls":9,"failed":0}
-PASS the PRODUCT tree matches the one the dry run measured: {"committed":"5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4","now":"5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4"}
+PASS handoff: the rows the World composes EQUAL the emitted rows, by identity and in order: {"emitted":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"identityHolds":true}
+PASS handoff: the p6t6 health-probe row and all four evidence rows are among them: {"healthProbeRowPresent":true,"allFourRowsPresent":true,"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"]}
+PASS handoff: the driver CALLS the handoff before harness.boot( (independent source read): {"handoffIndex":8625,"bootIndex":37804,"call":"handOverRows(world, rows)"}
+PASS handoff: the plan was produced on THIS commit and carries a non-empty patch: {"planHead":"098f445f51eed45ff599f6d1067b3ce3203e9cb9","head":"098f445f51eed45ff599f6d1067b3ce3203e9cb9","patchBytes":6419,"patchSha256":"078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a"}
+PASS the PRODUCT tree matches the one the dry run measured: {"committed":"24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7","now":"24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is this lane's branch: task/a5sf-search-live-20261104
-PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl","rows":2,"intents":1,"bootRows":1,"aborts":0,"unparseable":0,"orphanBootRuns":[],"orphanAbortRuns":[],"plannedMismatch":[],"bootsInPool":3,"remaining":2}
+PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl","rows":4,"intents":2,"bootRows":2,"aborts":0,"unparseable":0,"orphanBootRuns":[],"orphanAbortRuns":[],"plannedMismatch":[],"bootsInPool":3,"remaining":1}
 PASS ledger: an abort row names an existing intent (an abort without an intent is a defect): {"abortRuns":[]}
-PASS ledger: each intent's plannedStarts equals its boot rows, net of declared aborts: {"intents":1,"mismatch":[]}
-PASS budget: at least ONE P2-04 start is still available: boots=3 spent=1 remaining=2
+PASS ledger: each intent's plannedStarts equals its boot rows, net of declared aborts: {"intents":2,"mismatch":[]}
+PASS budget: at least ONE P2-04 start is still available: boots=3 spent=2 remaining=1
 PASS boot pool allocates the three P2-04 starts (the ruling): {"poolFile":"dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json","item":"P2-04 grep (BL-16)","boots":3}
-REFUSE the ONE-ATTEMPT rule: this lane has spent NO start yet: the lane already holds 1 boot row(s): a retry needs a NEW coordinator ruling, not this script
+PASS budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason): {"authorisedStarts":2,"entries":2,"rulings":[{"starts":1,"by":"direct task instruction (coordinator)"},{"starts":1,"by":"coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"}]}
+REFUSE budget: this start is authorised by the rulings and is NOT a third: authorised=2 spent=2 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts
 PASS pinned host tree is at the pinned commit and clean: {"hostHead":"639ed015397290b3745d163aafe02ffee4aa3f84","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","porcelain":""}

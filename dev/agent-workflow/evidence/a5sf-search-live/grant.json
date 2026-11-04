@@ -1,10 +1,11 @@
 {
-  "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
-  "maxStarts": 2,
-  "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-04 grep (BL-16 native write/search)\" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver's to spend.",
+  "grantId": "grant-a5sf-search-098f445f51ee-b2",
+  "maxStarts": 4,
+  "grantedBy": "1 start(s) by direct task instruction (coordinator): the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation || 1 start(s) by coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope.",
   "allocationItem": "P2-04 grep (BL-16)",
-  "boundCommit": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
-  "note": "maxStarts = 0 prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = 2; the BL-14 gate counts shared-ledger rows, not spawns",
-  "bootSequence": 1,
-  "dedicatedStarts": 1
+  "boundCommit": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+  "note": "maxStarts = 2 prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = 4; the BL-14 gate counts shared-ledger rows, not spawns",
+  "bootSequence": 2,
+  "authorisedStarts": 2,
+  "rulingPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
 }

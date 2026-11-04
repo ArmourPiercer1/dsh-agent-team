@@ -1,292 +1,234 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status: the lane's ONE Host boot was spent on 2026-11-04T15:36–15:39Z and it
-measured NOTHING. The cause is a DRIVER defect (a row set that was emitted but never
-handed to the World), not a product finding. No row is PASS, no row is a product
-verdict at all. `M-06`/`M-07` keep their grade and `V@B=no` unchanged — the matrix
-was deliberately not touched, because promoting on this run would be a lie.**
-`go-no-go.json` (current) refuses a retry: the ONE-ATTEMPT rule is spent and a
-second boot needs the coordinator's explicit ruling. 2 of the pool's 3 `P2-04`
-starts remain; this lane was allowed exactly 1.
+**Status: 2 of the lane's 3 pooled `P2-04` starts are SPENT, and 0 of 6 rows are
+judged. Both attempts died for reasons that are now named. No grade is promoted:
+`M-06`/`M-07` keep `ENFORCE-PARTIAL`, `V@B=no`, and their `tested` value.**
+
+| attempt | when | port | got to | died at |
+|---|---|---|---|---|
+| 1 | 15:36:59–15:39:18Z | 3183 | Host booted, authenticated, health never answered | **composition** — the driver emitted the four World rows but never gave them to the World |
+| 2 | 15:56:53–16:00:00Z | 3182 | composition verified, health 200 in 3 s, surface 24 tools, negative control ran | **team-create** — the product's permission coverage gate refused `grep`/`glob` on the leader |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
-- branch: `task/a5sf-search-live-20261104` (worktree `.worktrees/a5sf-search-live`)
-- pinned host: `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84`
-  (0.2.0-rc.2), porcelain empty at the gate
-- CORE PATCH BUDGET = 0: nothing outside this branch's own files was modified; the
-  product tree is byte-identical to `origin/master` (asserted by `dry-run.mjs`)
+- branch: `task/a5sf-search-live-20261104`; draft PR #588
+- pinned host: `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty at each gate
+- CORE PATCH BUDGET = 0; `packages/` byte-identical to `origin/master` (asserted host-free)
+- budget: `lane-ruling.json` authorises 2 starts, both with a named ruling; the driver and
+  `go-no-go.mjs` both refuse a third, and `go-no-go.mjs` currently prints `NO-GO`
 
----
-
-## 1. What this run proves, and what it does not
+## 1. What is proven, and what is not
 
 | | |
 |---|---|
-| **Proven host-free (0 boots)** | 98 assertions across three nets, all green: **45** `node:test` arms on the six judges (`tests/world-factory/a5sf-search-live.test.mjs`), **44** dry-run checks over the driver/row/product seam (`dry-run.mjs`), **9** mutation controls that each break the property a check guards and require that check to go RED (`negative-controls.mjs`). `--plan` additionally proves the four World rows are EMITTED — and the attempt is why the handoff, not the emission, is what the dry run now checks. |
-| **NOT proven: the six live rows** | 0/6 measured. No Member was created, no realm was installed, no `rg` process ran, no fact was written to any sink. `run-record.json` records `overall=FAIL`, `6/6 FAIL` with `reason=DRIVER_ABORTED_AT_post-boot` — the **fail-closed** encoding: a Host was reached, so the abort may not be laundered into `NOT_REACHED`, and nothing may be read as a product verdict. |
-| **NOT proven: the product composition surface the review named** | whether the live preset supplies a confined `subprocess` face to a Member realm. It does not (§5) — that is a reading of the product seams, not a measurement. |
-| **Grade that follows** | `grep`/`glob` stay **`ENFORCE-PARTIAL`, `V@B=no`, `tested` unchanged**. The host-free half of BL-16 (merged at #583/#584) still stands on its own evidence (`evidence/a5sf-bl16-grep/`). This lane adds **no** live claim. |
+| **Proven host-free (0 boots)** | 45 `node:test` arms on the six judges (`tests/world-factory/a5sf-search-live.test.mjs`), 47 dry-run checks (`dry-run.mjs`), 9 mutation controls (`negative-controls.mjs`), plus the `--plan` handoff identity. All green at the commit this file lands on. |
+| **Proven live (2 boots)** | The World **composition** now carries the rows it is given (attempt 2: `presentRowIds=[u5-canary, u6-fs-probe-host, a5sf-search-realm, dsh-agent-team, p6t6-team-tools, preset-a5sf-search-base]`, `missingRowIds=[]`), the p6t6 health route answers in 3 s, and the anchor preset exposes a **24-tool surface including `grep` and `glob`**. |
+| **NOT proven: the six rows** | 0/6 judged. Attempt 2 recorded `6/6 FAIL, reason=DRIVER_ABORTED_AT_team-create` — the fail-closed encoding, not a product verdict. No Member, no realm install, no `rg` process, no fact. |
+| **NOT proven: the negative control** | Attempt 2 **ran it and it REFUTED** (§4): the unconfined path could not launch ripgrep at all, so the control is vacuous until that is fixed. |
+| **Grade that follows** | `grep`/`glob`: `ENFORCE-PARTIAL`, `V@B=no`, `tested` unchanged. The host-free half of BL-16 (`evidence/a5sf-bl16-grep/`) still stands on its own evidence. |
 
-## 2. The one attempt, exactly
+## 2. Attempt 1: a driver defect, and the net that now guards it
 
-```
-15:36:59.674Z  boot sequence: 1 of 1 dedicated P2-04 start(s) (ledger boot rows=0)
-15:36:59.674Z  grant materialised: grant-a5sf-search-a2c56fb8457a-b1 maxStarts=2 boundCommit=a2c56fb8...
-15:36:59.704Z  candidate asserted: pin=639ed01539 host head=639ed01539 asserted=true
-15:36:59.705Z  gate lease: intentRows=1 rowsBeforeIntent=0 rowsAfterIntent=1 remaining=1
-15:36:59.751Z  rows: a5sf-search-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-search-base
-15:36:59.752Z  home patch written: .../cordis.patch.yml sha256=edc4227e6a4e5250
-15:37:06.133Z  mock started on 3493
-15:37:18.920Z  BOOTED port=3183 (lease bootsSpent=1) log=.../instance-port3183.log
-15:37:18.932Z  authenticated (token never recorded)
-15:39:18.951Z  p6t6 health=false hostAlive=true
-15:39:18.951Z  FAILURE at stage post-boot: the p6t6 harness route never answered: the World did not
-               reach a usable Host
-15:39:18.951Z  case live:search-row1..row6: FAIL {"reason":"DRIVER_ABORTED_AT_post-boot"}
-15:39:19.042Z  RUN-SUMMARY suite=a5sf-search overall=FAIL cases=6 FAIL:6 worlds=none
-```
+The Host booted and authenticated, then `p6t6 health=false hostAlive=true` after
+the 120 s poll. The profile it booted from (`attempt-1-composed-profile.patch.yml`)
+carried only the base rows. The driver had logged that it built the four rows and
+`emitPatchLayer` returned their text, but it never pushed them into the World:
+`harness.boot` composes `world.u6Fs.rows`, which was empty. `--plan` was green
+because it judged the **emitted text**, not the **handoff**.
 
-The Host **was** reached (`dsh web` printed its URL, `hostAlive=true`), but the
-`/__p6t6/health` probe never returned 200 within 120 s. The reason is in the
-profile the Host actually booted:
+Fixed, and the class is guarded in three ways (all required by the retry ruling):
 
-```
-attempt-1-composed-profile.patch.yml
-  - insert: [u5-canary, u6-fs-probe-host]      # the World's base rows
-  - config: session-log-deepseek disabled
-  - config: plugin-package-inventory-deepseek disabled
-```
+1. `handOverRows(world, rows)` is the single place the rows reach the World;
+2. `--plan` runs that same function against a probe and writes `plan-rows.json`
+   (`emittedRowIds` vs `worldRowIds`, ordered identity, health-probe row present);
+3. `go-no-go.mjs` evaluates the artifact **and** re-reads the source for the call
+   before `harness.boot(`, so a gate that cannot see the handoff cannot say GO.
 
-**None of the four rows the driver built are in it.** The driver logged that it
-built them (`rows: a5sf-search-realm,dsh-agent-team,p6t6-team-tools,preset-...`)
-and `emitPatchLayer` returned the text, but the driver never pushed the row array
-into the World it was about to boot:
+A mutation control rewrites the call to `void rows` and requires the dry run to go
+RED on exactly that check, then restores the bytes and verifies the sha256.
 
-```js
-const { rows, config, paths } = rowsFor({ ... })   // ← rows emitted…
-// …but `world.u6Fs.rows.push(...rows)` was missing
-world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
-```
-
-`harness.boot` composes the profile from `world.u6Fs.rows`, so it composed the
-bare World: no p6t6 route (hence the 404/hang), no Team row, no preset
-declaration, no evidence row. **Why `--plan` was green**: `--plan` checks the
-*emitted text* and the row identity; it never checked the handoff into the World.
-That is the defect class, and it is now guarded host-free:
-
-- `dry-run.mjs` check **"driver: the composed rows are GIVEN to the World (not
-  only emitted)"** — requires `world.u6Fs.rows.push(...rows)` and requires it
-  **before** `harness.boot(`;
-- `negative-controls.mjs` control **"the dry run must notice rows that are
-  emitted but NEVER given to the World"** — rewrites the line to `void rows`,
-  requires the dry run to go RED on exactly that check, restores the bytes and
-  verifies the sha256.
-
-Full diagnosis, artifacts and budget state: `attempt-1-defect.json`.
-Composition proof: `attempt-1-composed-profile.patch.yml`. Host console:
-`attempt-1-instance.log` (one line: the URL).
-
-### 2.1 The ledger after the attempt (honest, no rewrite)
-
-`run-ledger.jsonl` = 1 `budget-intent` row (`plannedStarts: 1`) + 1 boot row.
-`bootRows(1) === plannedStarts(1) − aborts(0)` — the invariant holds, and the row
-is **not** an abort: a Host existed. Grant `grant-a5sf-search-a2c56fb8457a-b1`,
-`maxStarts=2` (0 prior rows + 1 intent + 1 boot), bound to `a2c56fb8…`.
-Pool item `P2-04 grep (BL-16)`: 3 allocated, **1 spent, 2 remaining** — the
-remaining 2 are not this lane's to spend.
-
-### 2.2 Cleanup (verified after the run)
-
-- port 3183: released (`/dev/tcp` refused) — never 3080, never its home
-- `tests/homes/u5a5sfsrch-20261104T15-36-59Z`: deleted
-- orphan processes carrying the world/home path: `ps` scan → none
-- previous evidence archived to `runs/2026-11-04T15-36-59-673Z/` by the driver's
-  own archive step (append-only)
-
-## 3. The six rows: what each one *would* measure, and that none was reached
-
-Each judge is three-way (`PROVEN` / `REFUTED` / `NOT_REACHED`) and **may not PASS
-on null inputs**. The clauses below are the ones the 45 oracle arms pin — they are
-the specification the live run would have had to satisfy.
-
-| # | Row / case id | Product-call-chain claim | Judge clauses |
-|---|---|---|---|
-| 1 | `live:search-row1-grep-in-lane-allowed` | a Member `grep` in the lane returns the match, and the sink carries **exactly one `allow` fact** on the **binding realm** (`method=spawn`, `decidedBy=ALLOW`, locator = the declared root) | match present, one process, exit 0, no base-service spawn, fact realm `member`, `toolBindingIdentity` recorded |
-| 2 | `live:search-row2-grep-outside-ceiling-refused` | an out-of-ceiling `grep` is refused **before any process**, with **exactly one `deny`** (`IO_READ_DENIED`), no out-of-lane bytes, no child process | error names the refusal, `spawns=0`, one deny fact at the outside operand, no secret/needle bytes in the result, no inherited base spawn |
-| 3 | `live:search-row3-grep-outside-restriction-refused` | inside the ceiling but outside the **binding restriction** → refused at admission, one deny fact | restriction denies the operand, effective lane stays `deny` (no widening), refusal before a process. **The acceptance preset cannot express this restriction** (§5.2) → the row is `UNSUPPORTED` for preset-expression while the composed face is still measured |
-| 4 | `live:search-row4-cancelled-search-settles-cancelled` | a cancelled search settles **cancelled** — not success, not a fabricated empty result | delivered ⇒ error naming the abort; undelivered ⇒ only with `childTerminatedBySignal`; `noSuccessResult`, `noFabricatedEmptyResult`, `noHang` |
-| 5 | `live:search-row5-invalid-pattern-is-error` | an invalid pattern is a **tool error**, never "no matches" | `processExitedTwo` (rg exit 2), error result, no "No matches found" |
-| 6 | `live:search-row6-teardown-no-callable-shadow` | after Member stop no callable shadow remains; the sink carries no fact after the stop instant; disposal faults are classified | `noFactAfterStop` by **timestamp** (never a delta), post-stop dispatches refused, `classifyDisposeFaults` grammar |
-
-`glob` (`M-07`) rides rows 1/2 as a pair (`glob-face.json` in a run that reached
-them): in-lane list + one allow fact; out-of-lane refusal + one deny fact.
-
-## 4. The negative control (must not be vacuous)
-
-Before any Member exists, the **anchor leader** (no a5sf realm) greps the same
-out-of-lane file through the same preset. It must **succeed and leak**; otherwise
-row 2 proves nothing about confinement, only that the path does not exist. The
-control is judged (`judgeNegativeControl`) and written to `negative-control.json`
-in a run that reaches it. In this attempt the anchor was never prompted (the abort
-preceded it), so the control is **unmeasured** too — and it is now a *precondition*
-of the run, not an afterthought: the member branch is checked **after** the anchor
-branch, so the anchor cannot be mistaken for the leader and turned into a second
-team.
-
-## 5. What the live preset does and does not supply (the review's named gap)
-
-### 5.1 The preset supplies the *plugin*, not the *confinement*
-
-`@deepseek-ai/dsh-tool-fs-search` declares `inject: ["tools","systemPrompt",
-"subprocess"]` and calls `ctx.subprocess.spawn`. The acceptance preset
-(`a5sf-search-base`) mounts that plugin and grants `expectedTools`. **It supplies
-no confined `subprocess` service.** The confined face in this lane comes from the
-**evidence row** (`a5sf-search-realm-provider-row.mjs`), whose `compiledFor()`
-returns `subprocess: {effective, provider, realmId, bindingId, memberScope}` and
-whose provider is `createConfinedProcessProvider(...)`. The product row
-(`a5sf-realm-row.mjs`) only **forwards** that face when present:
-`faces = Object.freeze({fs:'confined', subprocess: subprocess ?? null})`.
-
-Therefore: **a World composed from the preset alone cannot give a Member a
-confined search face.** `mountNativeToolModules` refuses a `subprocess`-consuming
-module on a realm whose `subprocess` face is `null` with `SUBPROCESS_UNCONFINED_REALM`
-(BL-17). This is a **composition-surface gap**, not a per-call bug: the shipped
-product has no provider that constructs a confined subprocess face for a Member.
-It is exactly the gap the external review named, and it is now stated in the
-product's own terms rather than as a test-harness trick.
-
-### 5.2 The binding restriction is not expressible by the preset (row 3)
-
-A **binding** realm has an `fs` face only; there is no binding-scoped `subprocess`
-face today (BL-17 §6.3(5) — `faces.subprocess` is `null` on binding realms, so the
-native search module is refused there). The two-axis restriction for row 3 is
-therefore authored in the **evidence row** as two lane inputs —
-`MemberCeiling = restricted[allowRoot]` and `ToolRestriction = restricted[
-restrictionReadAllow]` — and intersected with the **product algebra**
-(`intersectPathRuleSets` / `matchLocator` from `member-io-policy/src/path-rules.ts`,
-imported from `dist`, not re-implemented). The row is graded `UNSUPPORTED` for
-**preset-expression** of the restriction, while the composed effective face is
-measured. `judgeRow3` records
-`presetExpressesBindingRestriction:false` + `presetLimit` so the gap cannot be
-silently re-read as support.
-
-`lane: the restriction INPUT flips the row-3 effective answer` is a control that
-proves the row-3 premise is sensitive to the very input it claims to measure:
-widening the restriction to the ceiling flips the effective decision from `deny`
-to `allow`.
-
-### 5.3 Where the live fact would land
-
-`realm: 'member'`, `toolBindingIdentity: null` (defaults at
-`subprocess.ts:763`), because the confined face is the Member-scope one. A
-binding-realm fact is not producible today for search. That is why row 1 records
-`factRealm` **and** `toolBindingIdentity` in its evidence rather than asserting the
-binding realm: the assertion would be false, and asserting it falsely is the
-failure mode this lane exists to prevent.
-
-## 6. The gates, verbatim
-
-Host-free, at `HEAD=a2c56fb8…`, `digest=5b2a5b7b…` (product tree; evidence dir
-excluded):
+## 3. Attempt 2: composition verified, then the coverage gate
 
 ```
-DRY RUN GREEN — 44 checks, head=a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9 digest=5b2a5b7bfa0f20fc41d90ee28238ae515d4a71e2f1a0b87f54fd228957eeb8e4
+15:56:53.720Z  boot sequence: 2 of 2 authorised P2-04 start(s) (ledger boot rows=1; rulings:
+               1x direct task instruction | 1x coordinator ruling, session-76eeddd5…)
+15:56:53.720Z  grant materialised: grant-a5sf-search-098f445f51ee-b2 boundCommit=098f445f51ee…
+15:56:55.361Z  mock started on 3491
+15:56:58.699Z  composed profile: presentRowIds=[u5-canary,u6-fs-probe-host,a5sf-search-realm,
+               dsh-agent-team,p6t6-team-tools,preset-a5sf-search-base] missingRowIds=[]
+15:56:58.700Z  BOOTED port=3182
+15:56:59.067Z  p6t6 health=true hostAlive=true
+15:56:59.088Z  discovery prompt status=200
+15:59:59.925Z  NEGATIVE CONTROL: verdict=REFUTED reason=NEGATIVE_CONTROL_CLAUSE_FAILED
+               failed=["controlSucceeded","controlLeaked"]
+15:59:59.926Z  model-visible surface (24): bash,edit,glob,grep,read,read_image,team_*…,write
+16:00:00.021Z  team.create status=200 ok=false
+               TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED: starting the root (leader) agent for
+               'session-a5sf-acceptance-team' failed: permission coverage gate failed for
+               instance 'inst-leader': 2 unmanaged tool(s) on the final model-facing surface:
+               glob (known-sensitive-unmanaged), grep (known-sens…)
+16:00:00.021Z  FAILURE at stage team-create (team.create must accept the main blueprint …)
+16:00:00.115Z  RUN-SUMMARY overall=FAIL cases=6 FAIL:6 worlds=none
+```
+
+`stage-diagnosis.json` records the stage probe: `rows` (the four ids),
+`composedProfile` (all present), `counter` (`base-spawn=2`, `confined-spawn=0`,
+`install-*=0`), `laneReport` (present: the evidence row applied and computed the
+two-axis lane), `member: null`, `mockRequests`, `memberTurnSeen: false`.
+
+## 4. The two live findings
+
+### F1 — the unconfined base `subprocess` cannot launch the packaged `rg` in a World
+
+Negative control result, verbatim:
+
+```
+{"result":{"isError":true,"text":"Error: grep could not start its search command (ripgrep launch failed)"},
+ "leakedTokens":[],"baseSpawns":2,"confinedSpawns":0,"guardFactsBeforeRealm":0}
+```
+
+The message is the search module's synchronous-catch text, i.e.
+`ctx.subprocess.spawn({argv:[await resolveRgPath(), …]})` threw before returning a
+handle. Host-free eliminations, all run at this commit:
+
+- **not module resolution**: `import('@vscode/ripgrep')` resolves and returns the
+  binary from the host-tree module path *and* from the pnpm package path;
+- **not the Linux scope launch**: `probeLinuxScope()` is false here (`systemd-run
+  --user --scope … → status 1, "Failed to connect to user scope bus via local
+  transport: No data available"`), so `subprocess-local` selects the plain
+  `spawnSubprocess` fallback, not `launchLinuxScope`.
+
+So the throw is inside `validateSubprocessSpec` or `spawnSubprocess`, and the cause
+object is not recoverable from this attempt: the module wraps it in a `SearchError`,
+the harness printed only the message, and the World home (which would carry the
+plugin's own log) is deleted by teardown. **This is not isolated** — it is recorded
+as the top item for the next start.
+
+**Why it matters:** the confined class delegates to the same base spawn. If the base
+cannot launch `rg`, the Member's `grep` cannot either, so BL-16's live half is
+blocked on this independently of any confinement question — and the negative control
+that makes row 2 discriminating cannot run until it is fixed.
+
+### F2 — the acceptance preset exposes `grep`/`glob` to the leader, where they are unmanaged
+
+The native attach that makes `grep`/`glob` "managed" runs on a **Member** realm.
+The leader is the root session and has no realm, so the same tools are
+`known-sensitive-unmanaged` on its surface and the product's permission coverage
+gate refuses `team.create`. That gate is behaving correctly; the composition is
+wrong. The driver now denies `grep`/`glob` on the leader (`LEADER_MANAGED_TOOL_NAMES`)
+while the Member still receives them through its realm. **Unvalidated**: it needs a
+start, and none is authorised.
+
+This is also the composition-surface answer the external review asked for, now
+measured rather than read: the preset supplies the *plugin*, the evidence row
+supplies the confined `subprocess` face, and the leader gets neither — so the
+preset alone cannot produce a confined search on any agent.
+
+## 5. Row 3, and the realm
+
+Row 3 (a binding restriction narrower than the ceiling) stays **`UNSUPPORTED` for
+preset-expression**. A binding realm has no `subprocess` face today (BL-17 refuses
+the module with `SUBPROCESS_UNCONFINED_REALM`), so the two-axis restriction is
+composed from lane inputs with the **product** algebra
+(`intersectPathRuleSets`/`matchLocator` from `dist`) and `judgeRow3` records
+`presetExpressesBindingRestriction:false` + `presetLimit`. The lane report in
+attempt 2 shows the composition it would have used (ceiling = the workspace,
+restriction = the in-lane subtree, effective = the intersection). The live fact
+would be `realm='member'`, `toolBindingIdentity=null`; that stays a recorded gap,
+never an asserted pass.
+
+## 6. The budget, honestly
+
+`lane-ruling.json` holds two named rulings (1 start: the original task; 1 start: the
+coordinator's retry after the instrument defect). `run-ledger.jsonl` holds 2 intents
+and 2 boot rows; the invariant `bootRows === plannedStarts − aborts` holds per run
+(`1 = 1 − 0` twice). Pool item `P2-04 grep (BL-16)`: 3 allocated, **2 spent, 1
+remaining — not this lane's**. `go-no-go.mjs` now prints:
+
+```
+PASS budget: this start is authorised by the rulings and is NOT a third:
+     authorised=2 spent=2 — a further start needs a NEW ruling entry appended to
+     lane-ruling.json, not an edit to authorisedStarts
+REFUSE the same check when a third is asked  →  NO-GO
+```
+
+### The cost line the retry ruling asked for
+
+**This vertical has spent 2 of 3 starts, and the composed-profile gap was invisible
+to a green `--plan`.** The reusable lesson for every later live lane (P3-00
+inventory will hit the same handoff): *a host-free gate must run the handoff, not
+just render it* — emit-and-pray passes every text-level check. Concretely: the plan
+artifact must compare the rows the runtime will actually compose against the rows
+the patch text names, by identity and in order; and the boot must read the composed
+profile before it waits on health.
+
+Attempt 2's second lesson: **stage attribution earns its keep.** The generic
+`post-boot` of attempt 1 became, in attempt 2, `composition` → verified in 3 s,
+`team-create` → refused with the product's own error code, plus a probe that
+records what the world looked like. Two starts bought two named handoffs, not two
+"it didn't work".
+
+## 7. Gates, verbatim (current)
+
+```
+DRY RUN GREEN — 47 checks, head=098f445f51eed45ff599f6d1067b3ce3203e9cb9 digest=24d3edfb…
 NEGATIVE CONTROLS GREEN — 9 controls, every guarded check went RED on the broken property and the bytes were restored
 ```
 
-`go-no-go.mjs` **before** the boot (archived as `go-no-go.go-before-boot.{json,log}`):
+`go-no-go.go-before-boot.json` (archived, attempt 1) and
+`go-no-go.retry-go.json` (archived, attempt 2) are the two `GO` authorisations.
+`go-no-go.json` (current) is the post-spend refusal. Both `GO`s are quoted in
+`go-no-go.retry-go.log` / `go-no-go.go-before-boot.log`, including:
 
 ```
-PASS dry-run evidence exists and is green: {"checks":43,"failed":0}
-PASS negative controls exist and are green: {"controls":8,"failed":0}
-PASS the PRODUCT tree matches the one the dry run measured
-PASS the product tree has no uncommitted modifications: (clean)
-PASS branch is this lane's branch: task/a5sf-search-live-20261104
-PASS ledger: every row parses and each boot row has its intent row
-PASS ledger: an abort row names an existing intent
-PASS ledger: each intent's plannedStarts equals its boot rows, net of declared aborts
-PASS budget: at least ONE P2-04 start is still available: boots=3 spent=0 remaining=3
-PASS boot pool allocates the three P2-04 starts (the ruling)
-PASS the ONE-ATTEMPT rule: this lane has spent NO start yet
-PASS pinned host tree is at the pinned commit and clean: {"hostHead":"639ed01539…","pin":"639ed01539…","porcelain":""}
-GO — head=a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9 digest=5b2a5b7b…
+PASS handoff: the rows the World composes EQUAL the emitted rows, by identity and in order:
+     {"emitted":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],
+      "world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],
+      "identityHolds":true}
+PASS handoff: the driver CALLS the handoff before harness.boot( (independent source read)
 ```
 
-(That GO block was captured when the dry run had 43 checks and the controls 8;
-the handoff defect found by the attempt added one check and one control — the
-numbers in §6 are current, the GO text is quoted as it was. Re-running the gate
-now is *by design* a refusal, below.)
-
-`go-no-go.mjs` **after** the boot (`go-no-go.{json,log}`, current):
-
-```
-PASS budget: at least ONE P2-04 start is still available: boots=3 spent=1 remaining=2
-REFUSE the ONE-ATTEMPT rule: this lane has spent NO start yet: the lane already holds 1 boot row(s): a retry needs a NEW coordinator ruling, not this script
-NO-GO — 1 refusal(s); fix them before spending the lane's single boot
-```
-
-That refusal is the budget working, not a red net: the network is green, the
-start is gone.
-
-Also recorded by `dry-run.mjs`: the worktree's `packages/` tree is identical to
-`origin/master`, and every emitted artifact the rows depend on
-(`team-services/src/subprocess.js`, `install.js`, `a5sf-realm-row.mjs`,
-`member-io-policy/src/path-rules.js`) is **newer** than the last commit that
-touched its source — so the boot would have measured the current product, not
-yesterday's. Product-seam reads asserted at the same time: the `rg`-only static
-allow-list, the admission order (`programAttributionRefusal` →
-``readIntentsOf`` → ``programWriteLaneRefusal`` → per-intent
-`await guard('spawn')` → provider call), `realm: options.realm ?? 'member'`, the
-realm row forwarding an **optional** face, and the BL-17 typed refusal.
-
-## 7. Files
+## 8. Files
 
 | file | what it is |
 |---|---|
-| `run-boot.mjs` | the driver (`--plan` host-free; boot mode is the one shot). Fixed handoff + the archive/ledger/grant/teardown machinery. |
-| `a5sf-search-realm-provider-row.mjs` | the evidence row: composes ceiling ∩ restriction with the product algebra, `compiledFor()` returns the confined `subprocess` face, counts installs/spawns at the prototype boundary. |
-| `dry-run.mjs` | 44 host-free checks over driver, row, product seam, premises, dist provenance, budget 0. |
-| `negative-controls.mjs` | 9 mutation controls: break the property, require the check RED, restore bytes, verify sha256 (incl. restoring the committed dry-run artifacts the mutated runs overwrite). |
-| `go-no-go.mjs` | the boot authorisation gate (dry run, controls, digest, clean tree, branch, ledger invariant, pool, one-attempt, pinned host). |
-| `attempt-1-defect.json` | the spent attempt: defect, proof, ledger, cleanup, budget. |
-| `attempt-1-composed-profile.patch.yml` | the profile the Host actually booted: the proving artifact that the four rows were absent. |
-| `attempt-1-instance.log` | the Host console: the URL and nothing else. |
-| `run.log`, `run-record.json`, `run-ledger.jsonl`, `grant.json` | the append-only run log, the 6/6 FAIL record, the budget ledger, the grant. |
-| `oracle-samples.json` | the samples handed to the judges (empty fact/process sets in this attempt). |
-| `negative-controls.{json,log}`, `dry-run.{json,log}`, `plan.log`, `go-no-go*.{json,log}` | machine-readable gate output for review. |
+| `run-boot.mjs` | the driver (`--plan` host-free; boot mode is the one shot). `handOverRows`, the ruling-based budget, the stage taxonomy, the composed-profile probe. |
+| `a5sf-search-realm-provider-row.mjs` | the evidence row: composes ceiling ∩ restriction with the product algebra, `compiledFor()` returns the confined `subprocess` face, counts installs/spawns at the prototype boundary, writes the lane report. |
+| `dry-run.mjs` | 47 host-free checks: driver, row, product seam, premises, dist provenance, handoff, budget 0. |
+| `negative-controls.mjs` | 9 mutation controls (break the property, require RED, restore bytes, verify sha256, restore the committed dry-run artifacts the mutated runs overwrite). |
+| `go-no-go.mjs` | the boot authorisation gate (dry run, controls, handoff identity, digest, clean tree, branch, ledger invariant, pool, ruling, pinned host). |
+| `lane-ruling.json` | the two authorised starts, each with `by` + `reason`; the driver and the gate both read it. |
+| `plan-rows.json` | the handoff proof: `emittedRowIds` vs `worldRowIds`, ordered identity, health-probe row. |
+| `attempt-1-defect.json`, `attempt-1-composed-profile.patch.yml`, `attempt-1-instance.log` | the spent first attempt: defect, proof, host console. |
+| `stage-diagnosis.json` | the attempt-2 stage probe (stage, rows, composed profile, counter legs, lane report, member state). |
+| `run.log`, `run-record.json`, `run-ledger.jsonl`, `grant.json`, `negative-control.json` | append-only run log, the 6/6 FAIL record, the budget ledger, the grant, the control result. |
 | `logs/…`, `runs/…` | per-world console/profile and the previous-run archive. |
 
 Re-run host-free: `node dev/agent-workflow/evidence/a5sf-search-live/dry-run.mjs &&
-node dev/agent-workflow/evidence/a5sf-search-live/negative-controls.mjs`. The boot
-mode is gated: `go-no-go.mjs` must print `GO`, and only a new ruling can make it
-do that for this lane.
+node dev/agent-workflow/evidence/a5sf-search-live/negative-controls.mjs`. Boot mode
+is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 
-## 8. What is NOT proven (complete list)
+## 9. What is NOT proven (complete list)
 
-1. **All six live rows** — unmeasured; no live claim, no grade change.
-2. **The negative control** — unmeasured (the abort preceded it).
-3. **The fact realm for search** — would be `member` with
-   `toolBindingIdentity:null`; a binding-realm fact is not producible today
-   (§5.1/§5.3). Recorded as a gap, not asserted as a pass.
-4. **Preset-expression of the two-axis restriction** — `UNSUPPORTED` (§5.2).
-5. **Cancellation semantics** — the FIFO window is proven to exist for the
-   *packaged* `rg` (a regular file exits 1, the FIFO blocks), but whether the
-   shipped `/api/session/cancel` lands after spawn and before exit, and whether
-   the abort settles as an observable cancelled result or as an absent result
-   with only child-signal evidence, is exactly what row 4 would have measured.
-6. **`>cap` result clipping, streaming mid-read cancellation, atomic
-   replace/version conflict** — not in scope here and untouched.
-7. **Anything about `glob` beyond the judge parity with `grep`** — M-07's live
-   half is equally unmeasured.
+1. **All six live rows** — unmeasured.
+2. **The negative control** — ran and REFUTED because of F1; it is vacuous until the
+   base spawn can launch `rg`.
+3. **F1's exact cause** — narrowed to `validateSubprocessSpec`/`spawnSubprocess`,
+   not isolated.
+4. **The leader-deny fix (F2)** — applied, unvalidated.
+5. **The fact realm for search** — would be `member` with `toolBindingIdentity:null`.
+6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED`.
+7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`,
+   but the end-to-end timing is unmeasured.
+8. **`>cap` clipping, streaming mid-read cancel, atomic replace/version conflict** —
+   out of scope, untouched. **M-07 `glob`** — equally unmeasured.
 
-## 9. The one thing I am least sure about
+## 10. The one handoff I would test next
 
-Whether an authorised retry of this exact driver would get all the way to six
-judged rows. The composition steps it would exercise for the first time are the
-ones that never ran: the evidence row's `apply` (which creates the confined
-provider and writes the lane report), the Team row's Member realm install with a
-`subprocess`-consuming native module, and the leader's delegate prompt reaching
-the member. Every one of those is a place where a *second* driver defect of the
-same class (mechanism wired host-free, handoff not) could still be hiding — the
-`--plan` and dry-run nets check the emitted text and the seam, and this attempt
-proved that "emitted" is not the same as "given to the World".
+If another start existed, I would not touch the blueprint or the rows: I would boot
+the same composition and, **before** `team.create`, call `grep` from the anchor
+leader again and capture the `SearchError.cause` on the host side — the plugin's own
+error object, not the message — by adding a host-side log sink for the tool result
+(the cause is what F1 needs, and it costs no new mechanism). In parallel, the
+leader-deny fix (F2) is already in the tree, so `team.create` should reach the
+member-install stage and the stage probe would then tell us whether the realm, the
+dispatch, or the cancellation window breaks next.

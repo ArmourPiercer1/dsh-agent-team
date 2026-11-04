@@ -46,7 +46,8 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import {
-  appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync,
+  appendFileSync,
+  readdirSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -123,6 +124,21 @@ const BINDING_IDENTITY = 'dsh.search/grep'
  *  neutral. */
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'grep', 'glob']
 const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
+/**
+ * Tools that stay on the LEADER's surface without a permission rule.
+ *
+ * The retry (2026-11-04T15:56Z) proved why this list must NOT include the
+ * search tools: `team.create` refused the leader with
+ * `TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED ... permission coverage gate
+ * failed for instance 'inst-leader': 2 unmanaged tool(s) on the final
+ * model-facing surface: glob (known-sensitive-unmanaged), grep (known-sensitive-
+ * unmanaged)`. The native attach that "manages" grep/glob runs on a MEMBER
+ * realm; the leader (root session) has no realm, so the same tools are
+ * unmanaged there and the product's coverage gate refuses them — correctly.
+ * The leader delegates, so it denies them; the Member gets them through its
+ * realm. Verified host-free only: this needs the next authorised start.
+ */
+const LEADER_MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 
 const CASES = Object.freeze([...SEARCH_CASES])
 
@@ -137,6 +153,112 @@ const CALL_IDS = Object.freeze({
 })
 
 const PLAN_ONLY = process.argv.includes('--plan')
+const RULING_PATH = join(dirname(fileURLToPath(import.meta.url)), 'lane-ruling.json')
+const PLAN_ROWS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'plan-rows.json')
+
+/**
+ * The handoff, in ONE place so `--plan` and `boot()` cannot diverge.
+ *
+ * `emitPatchLayer` only BUILDS the patch text; the World composes the profile
+ * it boots from `world.u6Fs.rows`. A row set that is emitted but never pushed
+ * boots a BARE World. That is exactly what the lane's first attempt did
+ * (2026-11-04T15:36Z): the Host started, the composed profile carried only the
+ * base bundle, `/__p6t6/health` never existed, and six rows were lost to one
+ * missing statement. `--plan` now runs this function against a probe object and
+ * `go-no-go.mjs` compares the ids it returns with the ids in the emitted patch.
+ *
+ * @param {{u6Fs: {rows: object[]}}} world - the World (or a probe with the same shape).
+ * @param {object[]} rows - the rows `rowsFor()` built.
+ */
+function handOverRows(world, rows) {
+  world.u6Fs.rows.push(...rows)
+}
+
+/**
+ * Wait for the profile the Host actually composed and report which handed row
+ * ids it contains.
+ *
+ * The harness writes `composed-profile-<sha>.patch.yml` into the World's log
+ * directory. Reading it is the only way to see the handoff from the host side;
+ * `presentRowIds`/`missingRowIds` are what turn "the route never answered" into
+ * "the rows never arrived".
+ *
+ * @param {{logDir: string}} world - the World (for `logDir`).
+ * @param {string[]} expectedRowIds - the ids `handOverRows` gave the World.
+ * @param {number} timeoutMs - how long to wait for the profile to appear.
+ * @returns {Promise<{path: string|null, presentRowIds: string[], missingRowIds: string[]}>}
+ */
+async function waitForComposedProfile(world, expectedRowIds, timeoutMs) {
+  const t0 = Date.now()
+  for (;;) {
+    let path = null
+    try {
+      const candidates = readdirSync(world.logDir).filter((name) => name.startsWith('composed-profile-') && name.endsWith('.patch.yml'))
+      if (candidates.length > 0) {
+        candidates.sort()
+        path = join(world.logDir, candidates[candidates.length - 1])
+      }
+    } catch {
+      path = null
+    }
+    if (path !== null) {
+      const text = readFileSync(path, 'utf8')
+      // Top-level insert items are indented four spaces in this dialect.
+      const present = [...text.matchAll(/^ {4}- id:\s*"?([a-z0-9][a-z0-9._-]*)"?\s*$/gmu)].map((m) => m[1])
+      const ids = [...new Set([...present, ...expectedRowIds.filter((id) => present.includes(id))])]
+      const missing = expectedRowIds.filter((id) => !ids.includes(id))
+      return { path, presentRowIds: ids, missingRowIds: missing }
+    }
+    if (Date.now() - t0 > timeoutMs) return { path: null, presentRowIds: [], missingRowIds: expectedRowIds }
+    await new Promise((r) => setTimeout(r, 250))
+  }
+}
+
+/** Read the lane's ruling file: how many starts are authorised, and by whom. */
+function readRuling() {
+  const ruling = JSON.parse(readFileSync(RULING_PATH, 'utf8'))
+  const starts = Number(ruling.authorisedStarts)
+  if (!Number.isFinite(starts) || starts < 1) throw new Error(`lane-ruling.json has no usable authorisedStarts: ${String(ruling.authorisedStarts)}`)
+  if (!Array.isArray(ruling.rulings) || ruling.rulings.reduce((sum, row) => sum + Number(row?.starts ?? 0), 0) !== starts) {
+    throw new Error('lane-ruling.json: the ruling entries do not sum to authorisedStarts — a start must name who granted it')
+  }
+  for (const row of ruling.rulings) {
+    if (String(row?.by ?? '') === '' || String(row?.reason ?? '') === '') throw new Error('lane-ruling.json: every ruling needs `by` and `reason`')
+  }
+  return { starts, rulings: ruling.rulings, note: String(ruling.note ?? '') }
+}
+
+/**
+ * The ordered ids of the TOP-LEVEL items in an emitted patch layer.
+ *
+ * Nested config objects also carry `id` fields (a preset declares its plugin
+ * rows), so a flat `id:` scan over-collects. `emitPatchLayer` indents each
+ * top-level item by four spaces, so an item starts at `^    - ` and its own
+ * `id:` is on that line (or at six spaces inside the item).
+ *
+ * @param {string} patch - the `emitPatchLayer` output.
+ * @returns {string[]} the row ids, in emission order.
+ */
+function emittedRowIdsOf(patch) {
+  const items = []
+  let current = null
+  for (const line of patch.split('\n')) {
+    if (/^ {4}- /u.test(line)) {
+      current = [line]
+      items.push(current)
+    } else if (current !== null) {
+      current.push(line)
+    }
+  }
+  const ids = []
+  for (const block of items) {
+    const first = block[0].match(/^ {4}- id:\s*"?([a-z0-9][a-z0-9._-]*)"?\s*$/u)
+    const nested = first === null ? block.join('\n').match(/^ {6}id:\s*"?([a-z0-9][a-z0-9._-]*)"?\s*$/mu) : null
+    const id = first?.[1] ?? nested?.[1] ?? null
+    if (id !== null) ids.push(id)
+  }
+  return ids
+}
 const startedAt = new Date().toISOString()
 
 function log(line) {
@@ -643,6 +765,34 @@ async function planOnly() {
     'a5sf search-live boot: confined member realm (fs + subprocess) + production Team row',
     'with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.',
   ], dry.rows)
+  // CONTENT-BEARING HANDOFF PROOF, host-free: run the SAME function boot() runs
+  // against a probe, and compare the ids it hands over with the ids the patch
+  // text carries. A length check would have passed the 2026-11-04 attempt.
+  const probeWorld = { u6Fs: { rows: [] } }
+  handOverRows(probeWorld, dry.rows)
+  const emittedRowIds = emittedRowIdsOf(patch)
+  const worldRowIds = probeWorld.u6Fs.rows.map((row) => row.id)
+  const planRows = {
+    schema: 'a5sf-search-live/plan-rows/1',
+    at: new Date().toISOString(),
+    head,
+    patchBytes: patch.length,
+    patchSha256: createHash('sha256').update(patch).digest('hex'),
+    emittedRowIds,
+    worldRowIds,
+    identityHolds: emittedRowIds.length === worldRowIds.length && emittedRowIds.every((id, index) => id === worldRowIds[index]),
+    healthProbeRowPresent: worldRowIds.includes('p6t6-team-tools'),
+    allFourRowsPresent: ['a5sf-search-realm', 'dsh-agent-team', 'p6t6-team-tools', 'preset-a5sf-search-base'].every((id) => worldRowIds.includes(id)),
+    handoff: {
+      usesHandOverRows: /handOverRows\(world, rows\)/u.test(readFileSync(fileURLToPath(import.meta.url), 'utf8')),
+      beforeBoot: readFileSync(fileURLToPath(import.meta.url), 'utf8').indexOf('handOverRows(world, rows)') < readFileSync(fileURLToPath(import.meta.url), 'utf8').indexOf('harness.boot('),
+    },
+  }
+  writeFileSync(PLAN_ROWS_PATH, JSON.stringify(planRows, null, 2) + '\n')
+  log(`plan rows: ${JSON.stringify({ emittedRowIds, worldRowIds, identityHolds: planRows.identityHolds, healthProbeRowPresent: planRows.healthProbeRowPresent, allFourRowsPresent: planRows.allFourRowsPresent, handoff: planRows.handoff })}`)
+  if (planRows.identityHolds !== true) throw new Error(`the emitted rows and the rows handed to the World DIFFER: emitted=${JSON.stringify(emittedRowIds)} world=${JSON.stringify(worldRowIds)} — this is the 2026-11-04 defect`)
+  if (planRows.healthProbeRowPresent !== true || planRows.allFourRowsPresent !== true) throw new Error(`the World would not compose the health probe and the four evidence rows: ${JSON.stringify(worldRowIds)}`)
+  if (planRows.handoff.usesHandOverRows !== true || planRows.handoff.beforeBoot !== true) throw new Error('the handoff is not a `handOverRows(world, rows)` call before `harness.boot(`')
   log(`patch layer bytes=${patch.length}; rows=${dry.rows.map((r) => r.id).join(',')}`)
   log('---- patch layer ----\n' + patch + '\n---- end patch ----')
   const provider = await import(pathToFileURL(EVIDENCE_ROW).href)
@@ -696,24 +846,28 @@ async function boot() {
   const priorRows = ledgerRowsSoFar.length
   const priorBoots = ledgerRowsSoFar.filter((row) => String(row?.phase ?? '').startsWith('a5sf-search-boot')).length
   const bootSequence = priorBoots + 1
-  const DEDICATED_STARTS = 1
-  if (bootSequence > DEDICATED_STARTS) {
-    const refusal = new Error(`BUDGET_NOT_GRANTED reason=DEDICATED_ALLOCATION_EXHAUSTED: this driver's allocation is ${DEDICATED_STARTS} start and the ledger already holds ${priorBoots} boot row(s); the pool item "P2-04 grep (BL-16)" holds 3 starts, but the other 2 need an explicit coordinator ruling, not a retry`)
+  // THE BUDGET IS THE RULING FILE, not a constant this driver may raise itself.
+  // `authorisedStarts` sums named rulings; a start without a named ruling is a
+  // self-authorisation and is refused here, before any ledger row exists.
+  const ruling = readRuling()
+  if (bootSequence > ruling.starts) {
+    const refusal = new Error(`BUDGET_NOT_GRANTED reason=DEDICATED_ALLOCATION_EXHAUSTED: lane-ruling.json authorises ${String(ruling.starts)} start(s) (${ruling.rulings.map((row) => String(row.by)).join('; ')}) and the shared ledger already holds ${String(priorBoots)} boot row(s); a further start needs a NEW ruling entry, not a retry`)
     refusal.code = 'BUDGET_NOT_GRANTED'
     refusal.reason = 'DEDICATED_ALLOCATION_EXHAUSTED'
-    refusal.detail = `dedicated starts=${DEDICATED_STARTS} ledger boot rows=${priorBoots}`
+    refusal.detail = `authorised starts=${ruling.starts} ledger boot rows=${priorBoots}`
     throw refusal
   }
-  log(`boot sequence: ${String(bootSequence)} of ${String(DEDICATED_STARTS)} dedicated P2-04 start(s) (ledger boot rows=${String(priorBoots)})`)
+  log(`boot sequence: ${String(bootSequence)} of ${String(ruling.starts)} authorised P2-04 start(s) (ledger boot rows=${String(priorBoots)}; rulings: ${ruling.rulings.map((row) => `${String(row.starts)}x ${String(row.by)}`).join(' | ')})`)
   const grant = {
     grantId: `grant-a5sf-search-${head.slice(0, 12)}-b${String(bootSequence)}`,
     maxStarts: priorRows + 2,
-    grantedBy: 'user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item "P2-04 grep (BL-16 native write/search)" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver\'s to spend.',
+    grantedBy: ruling.rulings.map((row) => `${String(row.starts)} start(s) by ${String(row.by)}: ${String(row.reason)}`).join(' || '),
     allocationItem: 'P2-04 grep (BL-16)',
     boundCommit: head,
     note: `maxStarts = ${String(priorRows)} prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = ${String(priorRows + 2)}; the BL-14 gate counts shared-ledger rows, not spawns`,
     bootSequence,
-    dedicatedStarts: DEDICATED_STARTS,
+    authorisedStarts: ruling.starts,
+    rulingPath: RULING_PATH,
   }
   writeFileSync(GRANT_PATH, JSON.stringify(grant, null, 2) + '\n')
   log(`grant materialised: ${GRANT_PATH} maxStarts=${grant.maxStarts} boundCommit=${grant.boundCommit} item=${grant.allocationItem}`)
@@ -757,6 +911,9 @@ async function boot() {
   let failure = null
   let hostReached = false
   let abortStage = 'pre-boot'
+  let abortStageDetail = 'fixtures / rows / grant / policy before any Host exists'
+  /** What the catch can still inspect: set as soon as each path exists. */
+  const stageCtx = { rows: null, paths: null, counterPath: null, laneReportPath: null, sinkPath: null, composedProfile: null, member: null }
   const oracleSamples = {}
   const negativeControl = { sample: null, verdict: null }
 
@@ -765,13 +922,14 @@ async function boot() {
     const { rows, config, paths } = rowsFor({ home: world.home, workspaceDir: world.workspaceDir })
     // THE HANDOFF. `emitPatchLayer` only BUILDS the text; the World composes the
     // profile it boots from `world.u6Fs.rows`, so a row set that is emitted but
-    // never pushed boots a BARE World. That is what the one attempt did on
+    // never pushed boots a BARE World. That is what the first attempt did on
     // 2026-11-04T15:36Z: the composed profile carried only the base bundle, so
-    // `/__p6t6/health` never existed and the run aborted at post-boot with
-    // FAIL:6/6 `DRIVER_ABORTED_AT_post-boot` — a DRIVER defect, not a product
-    // finding, and the driver's own net now refuses this class (dry-run check
-    // "the composed rows are GIVEN to the World" + its mutation control).
-    world.u6Fs.rows.push(...rows)
+    // `/__p6t6/health` never existed and the run aborted with FAIL:6/6 — a
+    // DRIVER defect, not a product finding. `handOverRows` is the one place this
+    // happens, `--plan` runs it against a probe and writes `plan-rows.json`, and
+    // `go-no-go.mjs` compares that identity (content, not length) before any
+    // start is spent.
+    handOverRows(world, rows)
     const claims = {
       needle: `A5SF_SEARCH_NEEDLE_${world.id}`,
       outsideClaim: `A5SF_SEARCH_OUTSIDE_SECRET_${world.id}`,
@@ -782,8 +940,13 @@ async function boot() {
       fifoPattern: 'A5SF_SEARCH_FIFO',
     }
     const sinkPath = join(world.home, 'a5sf-consult.jsonl')
+    stageCtx.rows = rows
+    stageCtx.paths = paths
+    stageCtx.sinkPath = sinkPath
     const counterPath = join(world.home, COUNTER_NAME)
     const laneReportPath = join(world.home, LANE_REPORT_NAME)
+    stageCtx.counterPath = counterPath
+    stageCtx.laneReportPath = laneReportPath
     const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
 
     const evidence = {
@@ -850,7 +1013,24 @@ async function boot() {
     // ── THE BOOT (the only one) ─────────────────────────────────────────────
     bootInfo = await lease.boot(() => harness.boot({ world, phase: 'a5sf-search-boot1', bootTimeoutMs: 240_000 }))
     hostReached = true
-    abortStage = 'post-boot'
+    // STAGE 1 of the taxonomy: COMPOSITION. The Host has started; the first
+    // question is whether the profile it composed carries the rows it was given.
+    // This is checked BEFORE the health poll so a handoff failure reports itself
+    // in seconds and with the missing ids, not as a 120 s "the route never
+    // answered" (the 2026-11-04 attempt's only symptom).
+    abortStage = 'composition'
+    const expectedRowIds = rows.map((row) => row.id)
+    const composedProfile = await waitForComposedProfile(world, expectedRowIds, 30_000)
+    stageCtx.composedProfile = composedProfile
+    log(`composed profile: ${JSON.stringify({ path: composedProfile.path, presentRowIds: composedProfile.presentRowIds, missingRowIds: composedProfile.missingRowIds })}`)
+    // ABSENCE of the profile file is NOT evidence that the rows are missing: it
+    // may be a naming/path change. Only a profile that EXISTS and lacks a handed
+    // row is a composition failure; otherwise the health probe decides.
+    if (composedProfile.path === null) {
+      log('composed profile: NOT FOUND under the world log dir within 30s — the health probe decides (a path change is not evidence of a missing row)')
+    } else if (composedProfile.missingRowIds.length > 0) {
+      throw new Error(`COMPOSITION_ROWS_MISSING: the profile the Host composed is missing ${JSON.stringify(composedProfile.missingRowIds)} of the rows it was handed (${JSON.stringify(expectedRowIds)}); present=${JSON.stringify(composedProfile.presentRowIds)} at ${String(composedProfile.path)} — this is the composition handoff, not the product`)
+    }
     log(`BOOTED port=${bootInfo.port} (lease bootsSpent=${lease.bootsSpent()}) log=${bootInfo.logPath}`)
     record.record.boots = [{ phase: 'a5sf-search-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
 
@@ -882,6 +1062,7 @@ async function boot() {
 
     // ── THE NEGATIVE CONTROL, before any Member exists ──────────────────────
     abortStage = 'negative-control'
+    abortStageDetail = 'the anchor leader (no Member realm) must grep the out-of-lane file and LEAK; a refusal here means the control is vacuous'
     const discPrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sfsrch')
     log(`discovery prompt status=${String(discPrompt.status)}`)
     const controlDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_DISC_DONE')), 180_000)
@@ -907,10 +1088,13 @@ async function boot() {
     writeFileSync(join(HERE, 'negative-control.json'), JSON.stringify({ sample: controlSample, verdict: control }, null, 2) + '\n')
 
     // ── team.create + state ─────────────────────────────────────────────────
-    abortStage = 'team.create'
+    abortStage = 'surface'
+    abortStageDetail = 'the discovery turn must expose `grep` on the model-visible surface of the anchor preset'
     const discoveryRequest = controlRequests[controlRequests.length - 1] ?? null
     const surface = discoveryRequest === null ? [] : [...new Set(surfaceNamesOf(discoveryRequest))].sort()
-    const denyList = surface.filter((n) => !String(n).startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
+    // `grep`/`glob` are deliberately NOT in the exemption: on the leader they are
+    // unmanaged and the coverage gate refuses them (see LEADER_MANAGED_TOOL_NAMES).
+    const denyList = surface.filter((n) => !String(n).startsWith('team_') && !LEADER_MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
     log(`model-visible surface (${String(surface.length)}): ${surface.join(',')}`)
     log(`builtinToolDeny base list: ${denyList.join(',')}`)
     if (!surface.includes('grep')) {
@@ -921,6 +1105,8 @@ async function boot() {
     writeFileSync(join(config.blueprintDir, 'main.yaml'), mainText)
     log('main blueprint written and validated by the host facade')
 
+    abortStage = 'team-create'
+    abortStageDetail = 'team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed'
     const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
       rootSessionId: ACCEPTANCE_ROOT,
       blueprintId: BP_MAIN_ID,
@@ -930,7 +1116,8 @@ async function boot() {
     log(`team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
     if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 300)}`)
 
-    abortStage = 'state-query'
+    abortStage = 'team-state'
+    abortStageDetail = 'the p6t6 state route must report the acceptance Team at its creation root'
     const stateOk = await waitFor(async () => {
       const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
       return st.status === 200 && st.body?.rootSessionId === ACCEPTANCE_ROOT && st.body?.teamSession !== null
@@ -939,7 +1126,13 @@ async function boot() {
     if (!stateOk) throw new Error(`the state query does not report the acceptance Team at its creation root (${ACCEPTANCE_ROOT}) — refusing to evaluate any row against a foreign team`)
 
     // ── drive: one synchronous delegate; the member's script runs one call/turn ──
-    abortStage = 'drive'
+    // STAGE 2 of the taxonomy: MEMBER INSTALL. The team exists; did a worker
+    // instance appear with a session, and did the evidence row's realm get
+    // installed on it? The lane report is written by the row's `apply`, so its
+    // presence is what separates "the provider row never applied" (composition)
+    // from "the member never started" (member install).
+    abortStage = 'member-install'
+    abortStageDetail = 'a worker instance with a child session must appear; its realm install is evidenced by the lane report'
     const replySeen = (content) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith(content))
     const memberVisible = await waitFor(async () => {
       const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 20_000)
@@ -948,14 +1141,39 @@ async function boot() {
     const stateFresh = await fetchJson(`${origin}/__p6t6/state`, undefined, 20_000)
     const member = (Array.isArray(stateFresh.body?.members) ? stateFresh.body.members : []).find((m) => String(m?.templateId) === 'worker') ?? null
     const memberSession = String(member?.childSessionId ?? '')
+    stageCtx.member = { visible: memberVisible, instanceId: String(member?.instanceId ?? ''), hasSession: memberSession !== '' }
     log(`member visible=${String(memberVisible)} instanceId=${String(member?.instanceId ?? '')} childSessionId=${memberSession === '' ? '<none>' : '<set>'}`)
-    if (member === null || memberSession === '') throw new Error('no Member session appeared: the delegate never produced a worker, so no row can be measured')
+    if (member === null || memberSession === '') {
+      throw new Error(`MEMBER_INSTALL_NO_WORKER: the team reports no worker instance with a session after 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, team.create was ok). The delegate produced no Member, so no row can be measured`)
+    }
+    // STAGE 3: DELEGATE DISPATCH. A worker exists; did the leader's delegate
+    // actually reach it? A member turn is a mock request whose transcript carries
+    // the team-work envelope — if none arrives, the handoff that is broken is the
+    // leader -> member dispatch, NOT the realm install.
+    abortStage = 'delegate-dispatch'
+    abortStageDetail = 'the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)'
+    const memberTurnSeen = () => (world.mock?.requests ?? []).some((r) => messagesOf(r).some((m) => String(m?.role) === 'user' && JSON.stringify(m?.content ?? '').includes(MEMBER_ENVELOPE)))
+    const dispatched = await waitFor(memberTurnSeen, 120_000)
+    log(`member turn dispatched=${String(dispatched)} laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}`)
+    if (!dispatched) {
+      throw new Error(`DELEGATE_DISPATCH_NEVER_REACHED_MEMBER: a worker instance exists (${String(member?.instanceId ?? '')}) but no request ever carried the team-work envelope within 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}). The broken handoff is leader -> member dispatch`)
+    }
 
     // The FIFO call must be in flight before the cancel is dispatched. Poll the
     // confined-provider record for the exact operand, then cancel through the
     // SHIPPED client route.
+    // STAGE 4: CANCELLATION WINDOW. The member runs; did its `grep` reach the
+    // confined face at all? If no confined spawn ever appears, the search never
+    // crossed the realm boundary — that is an install/composition handoff, and
+    // the lane report tells which.
+    abortStage = 'cancellation-window'
+    abortStageDetail = 'the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched'
     const fifoInFlight = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
     log(`fifo call admitted (confined spawn observed)=${String(fifoInFlight)}`)
+    if (!fifoInFlight) {
+      const rows = parseJsonl(counterPath)
+      throw new Error(`CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, confined-spawn=${String(rows.filter((row) => row?.leg === 'confined-spawn').length)}, base-spawn=${String(rows.filter((row) => row?.leg === 'base-spawn').length)}, installFs=${String(rows.filter((row) => row?.leg === 'install-fs').length)}). The search never reached the confined face`)
+    }
     await new Promise((r) => setTimeout(r, 600))
     let cancelCall = null
     if (fifoInFlight) {
@@ -1214,11 +1432,41 @@ async function boot() {
     record.record.archive = { previousRun: archivedPreviousRun }
   } catch (error) {
     failure = error
-    log(`FAILURE at stage ${abortStage}: ${redact(String(error?.message ?? error))}`)
+    log(`FAILURE at stage ${abortStage} (${abortStageDetail}): ${redact(String(error?.message ?? error))}`)
+    // THE STAGE PROBE: what the abort can still see. This is what converts a
+    // spent start into information — which handoff was broken, and what the
+    // world looked like at that moment.
+    const probe = (() => {
+      const out = { stage: abortStage, stageDetail: abortStageDetail, hostReached, rows: stageCtx.rows === null ? null : stageCtx.rows.map((row) => row.id), composedProfile: stageCtx.composedProfile }
+      try {
+        if (stageCtx.counterPath !== null) {
+          const counterRows = parseJsonl(stageCtx.counterPath)
+          out.counter = Object.fromEntries(['install-fs', 'install-subprocess', 'base-spawn', 'confined-spawn', 'confined-exit', 'confined-spawn-failed'].map((leg) => [leg, counterRows.filter((row) => row?.leg === leg).length]))
+        }
+      } catch { out.counter = 'unreadable' }
+      try {
+        if (stageCtx.laneReportPath !== null) out.laneReport = existsSync(stageCtx.laneReportPath) ? readJson(stageCtx.laneReportPath) : null
+      } catch { out.laneReport = 'unreadable' }
+      try {
+        if (stageCtx.sinkPath !== null) out.sinkFacts = parseJsonl(stageCtx.sinkPath).filter((fact) => fact?.schema === 'a5sf-guard-consult/1').length
+      } catch { out.sinkFacts = 'unreadable' }
+      out.member = stageCtx.member
+      try {
+        const requests = world?.mock?.requests ?? []
+        out.mockRequests = requests.length
+        out.memberTurnSeen = requests.some((r) => messagesOf(r).some((m) => String(m?.role) === 'user' && JSON.stringify(m?.content ?? '').includes(MEMBER_ENVELOPE)))
+        out.toolUseNames = [...new Set(requests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : [])).filter((b) => b?.type === 'tool_use').map((b) => String(b.name)))].sort()
+      } catch { /* ignore */ }
+      return out
+    })()
+    try {
+      writeFileSync(join(HERE, 'stage-diagnosis.json'), JSON.stringify({ schema: 'a5sf-search-live/stage-diagnosis/1', at: new Date().toISOString(), error: redact(String(error?.message ?? error)), probe }, null, 2) + '\n')
+    } catch { /* best-effort */ }
+    log(`stage probe: ${JSON.stringify(probe).slice(0, 900)}`)
     if (hostReached) {
       // A live regression must never be laundered into NOT_REACHED.
       for (const id of CASES) {
-        if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}`, error: redact(String(error?.message ?? error)).slice(0, 300) })
+        if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}`, stage: abortStage, stageDetail: abortStageDetail, error: redact(String(error?.message ?? error)).slice(0, 300) })
       }
     } else {
       throw error

@@ -22,9 +22,16 @@
  *   - the pool item "P2-04 grep (BL-16)" has no start left, or does not allocate
  *     the 3 starts the ruling granted;
  *   - the pinned host tree is not at the pinned commit or is dirty;
- *   - the ONE-ATTEMPT rule is already spent: if the ledger holds a boot row for
- *     THIS lane, this script refuses, because the task allows a single attempt
- *     and a retry needs a new coordinator ruling.
+ *   - `lane-ruling.json` does not authorise another start. The ruling file is the
+ *     budget: entries are named, they must sum to `authorisedStarts`, and a start
+ *     is allowed only while the ledger holds fewer boot rows than that. A third
+ *     boot needs a NEW entry, not an edit to the number.
+ *   - the HANDOFF does not hold: the rows `--plan` handed to a probe World are
+ *     not identical, in order, to the rows in the emitted patch; the health probe
+ *     row is absent; or the driver's `handOverRows(world, rows)` call is missing
+ *     or sits after `harness.boot(`. This is the check the 2026-11-04 attempt
+ *     needed: `--plan` was green because it only judged text, so a gate that
+ *     cannot see the handoff must not be able to say GO.
  *
  * The raw HEAD is deliberately NOT compared: a committed dry run is written
  * before the commit that carries it, so it is always one commit behind. The
@@ -41,6 +48,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
+const DRIVER = join(HERE, 'run-boot.mjs')
 const REPO_ROOT = join(HERE, '..', '..', '..', '..')
 const HOST_TREE = existsSync(join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'fs', 'tool-fs-search', 'lib', 'index.js'))
   ? join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
@@ -63,12 +71,21 @@ function git(args, cwd = REPO_ROOT) {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' })
   return { status: r.status, stdout: String(r.stdout ?? '').trim(), stderr: String(r.stderr ?? '').trim() }
 }
+/** The sum of named ruling entries, or null when the file is unusable. */
+function ruleRowsSum(value) {
+  if (value === null || !Array.isArray(value.rulings)) return null
+  const sum = value.rulings.reduce((total, row) => total + Number(row?.starts ?? 0), 0)
+  return Number.isFinite(sum) ? sum : null
+}
+
 function productTreeDigest() {
   const r = git(['ls-tree', '-r', 'HEAD', '--', 'packages', 'scripts', 'tests', 'docs/plans', 'docs/contracts', 'dev/engineering', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'])
   return createHash('sha256').update(r.stdout).digest('hex')
 }
 
 const dryRun = existsSync(join(HERE, 'dry-run.json')) ? JSON.parse(readFileSync(join(HERE, 'dry-run.json'), 'utf8')) : null
+const planRows = existsSync(join(HERE, 'plan-rows.json')) ? JSON.parse(readFileSync(join(HERE, 'plan-rows.json'), 'utf8')) : null
+const ruling = existsSync(join(HERE, 'lane-ruling.json')) ? JSON.parse(readFileSync(join(HERE, 'lane-ruling.json'), 'utf8')) : null
 const controls = existsSync(join(HERE, 'negative-controls.json')) ? JSON.parse(readFileSync(join(HERE, 'negative-controls.json'), 'utf8')) : null
 const head = git(['rev-parse', 'HEAD']).stdout
 const branch = git(['rev-parse', '--abbrev-ref', 'HEAD']).stdout
@@ -85,6 +102,27 @@ check('dry-run evidence exists and is green', dryRun !== null && dryRun.goNoGo =
   dryRun === null ? 'dry-run.json missing' : { checks: dryRun.checks?.length ?? null, failed: (dryRun.checks ?? []).filter((entry) => entry.ok !== true).length })
 check('negative controls exist and are green', controls !== null && controls.allControlsPassed === true,
   controls === null ? 'negative-controls.json missing' : { controls: controls.controls?.length ?? null, failed: (controls.controls ?? []).filter((entry) => entry.ok !== true).length })
+// ── CONDITION 1+2 (coordinator ruling, retry): the HANDOFF is this gate's
+// business, content-bearing. The dry run checks the driver source; this gate
+// checks the artifact `--plan` produced by RUNNING the same handoff function
+// against a probe, and independently re-reads the source. A length check would
+// have passed the 2026-11-04 attempt; an ordered id identity would not.
+const driverSourceForHandoff = existsSync(DRIVER) ? readFileSync(DRIVER, 'utf8') : ''
+const handoffCall = 'handOverRows(world, rows)'
+const handoffIndex = driverSourceForHandoff.indexOf(handoffCall)
+const bootIndex = driverSourceForHandoff.indexOf('harness.boot(')
+const sameIds = planRows !== null && Array.isArray(planRows.emittedRowIds) && Array.isArray(planRows.worldRowIds)
+  && planRows.emittedRowIds.length === planRows.worldRowIds.length
+  && planRows.emittedRowIds.length > 0
+  && planRows.emittedRowIds.every((id, index) => id === planRows.worldRowIds[index])
+check('handoff: the rows the World composes EQUAL the emitted rows, by identity and in order', planRows !== null && planRows.identityHolds === true && sameIds,
+  planRows === null ? 'plan-rows.json missing: run --plan' : { emitted: planRows.emittedRowIds, world: planRows.worldRowIds, identityHolds: planRows.identityHolds })
+check('handoff: the p6t6 health-probe row and all four evidence rows are among them', planRows !== null && planRows.healthProbeRowPresent === true && planRows.allFourRowsPresent === true,
+  planRows === null ? 'plan-rows.json missing' : { healthProbeRowPresent: planRows.healthProbeRowPresent, allFourRowsPresent: planRows.allFourRowsPresent, world: planRows.worldRowIds })
+check('handoff: the driver CALLS the handoff before harness.boot( (independent source read)', handoffIndex !== -1 && bootIndex !== -1 && handoffIndex < bootIndex,
+  { handoffIndex, bootIndex, call: handoffCall })
+check('handoff: the plan was produced on THIS commit and carries a non-empty patch', planRows !== null && planRows.head === head && Number(planRows.patchBytes) > 0 && String(planRows.patchSha256 ?? '').length === 64,
+  planRows === null ? 'plan-rows.json missing' : { planHead: planRows.head, head, patchBytes: planRows.patchBytes, patchSha256: planRows.patchSha256 })
 check('the PRODUCT tree matches the one the dry run measured', dryRun !== null && dryRun.productTreeDigest === digestNow,
   { committed: dryRun?.productTreeDigest ?? null, now: digestNow })
 check('the product tree has no uncommitted modifications', productStatus === '', productStatus)
@@ -141,8 +179,14 @@ check('boot pool allocates the three P2-04 starts (the ruling)', Number(p204?.bo
   item: p204?.item ?? null,
   boots: p204?.boots ?? null,
 })
-check('the ONE-ATTEMPT rule: this lane has spent NO start yet', bootsSpent === 0,
-  bootsSpent === 0 ? 'no boot row: the single attempt is unspent' : `the lane already holds ${String(bootsSpent)} boot row(s): a retry needs a NEW coordinator ruling, not this script`)
+const rulingStarts = ruling === null ? null : Number(ruling.authorisedStarts)
+const rulingSum = ruleRowsSum(ruling)
+check('budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)',
+  ruling !== null && Number.isFinite(rulingStarts) && rulingStarts >= 1 && rulingSum === rulingStarts
+  && Array.isArray(ruling.rulings) && ruling.rulings.length > 0 && ruling.rulings.every((row) => String(row?.by ?? '') !== '' && String(row?.reason ?? '') !== ''),
+  ruling === null ? 'lane-ruling.json missing' : { authorisedStarts: rulingStarts, entries: rulingSum, rulings: (ruling.rulings ?? []).map((row) => ({ starts: row.starts, by: row.by })) })
+check('budget: this start is authorised by the rulings and is NOT a third', rulingStarts !== null && bootsSpent < rulingStarts && bootsSpent + 1 <= rulingStarts,
+  `authorised=${String(rulingStarts)} spent=${String(bootsSpent)} — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts`)
 check('pinned host tree is at the pinned commit and clean', hostHead !== null && hostHead === PIN && hostStatus === '', { hostHead, pin: PIN, porcelain: hostStatus })
 
 const report = {
@@ -152,6 +196,8 @@ const report = {
   productTreeDigest: digestNow,
   pinnedHost: PIN,
   pool: { item: p204?.item ?? null, boots: p204?.boots ?? null, consumed: bootsSpent, remaining },
+  ruling: ruling === null ? null : { authorisedStarts: rulingStarts, entries: rulingSum, path: join(HERE, 'lane-ruling.json') },
+  handoff: planRows === null ? null : { emittedRowIds: planRows.emittedRowIds, worldRowIds: planRows.worldRowIds, identityHolds: planRows.identityHolds, patchSha256: planRows.patchSha256 },
   ledger,
   go: results.every((entry) => entry.ok === true),
   checks: results,
