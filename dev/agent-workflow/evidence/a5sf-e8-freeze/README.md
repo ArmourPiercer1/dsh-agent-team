@@ -324,42 +324,41 @@ themselves it is not a weakening:
 | `node scripts/eb3-ci-required.mjs` | pass, workflows=9 | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | **26/26 controls behaved as required** | `eb3-negative-controls.log` |
 | `git diff --check origin/master..HEAD` | clean | `diff-check.log` |
-| `pnpm ci:local --base origin/master` | **RED on 2 full-pool load flakes**, both pass 3/3 isolated — see §10 | `ci-local.log`, `ci-local-red-isolation.log` |
+| `pnpm ci:local --base origin/master` | **RED on the full-pool load flake** (`a5g6` 5 s timeout; both flake files pass 3/3 isolated) — see §10 | `ci-local.log`, `ci-local-red-isolation.log` |
 | **p4t6 tie, MEASURED LAST** | **1428** (`filesScanned=1428`, ledger `expected=1428`, `violations=[]`) — see §11 | `p4t6-measured-tie.log` |
 
-## 10. `pnpm ci:local --base origin/master` — verbatim, one RED run (two load flakes)
+## 10. `pnpm ci:local --base origin/master` — verbatim, RED on the known load flake
+
+The re-run at this head (`2d0a824ae` + the regenerated evidence):
 
 ```
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=246.5s
- Test Files  2 failed | 481 passed (483)
-      Tests  2 failed | 5991 passed (5993)
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=244.7s
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
 ```
 
-The full transcript was 1,214,830 bytes (over the 1 MiB evidence bound), so
-`ci-local.log` keeps the invocation/steps head, **both failing test blocks**, the selected
-a5sf `node --test` block and the verdict verbatim (`[TRANSCRIPT TRIMMED FOR THE EVIDENCE
-BOUND]` banner at the top of the file). The two reds:
+One red, `packages/runtime/test/a5g6-install-face-render.test.ts` GLUE-6 LEG B, "the four
+definitions all carry a render…": `Error: Test timed out in 5000ms.` — the pre-existing
+full-pool load/timeout flake other lanes have booked at this tree (same file, same 5 s
+timeout, e.g. `a5sf-deferred` §6). The same run's pool contained an 181.8 s real-provider
+arm, which is the load that moves it. An earlier full run on the same tree (before the
+review-#1 commit) saw this file **plus** `packages/runtime/test/a5-cancel-glob.test.ts`
+C4 (cancel race settled `after-settle` vs expected `walk-aborted`); the flake identity
+moves between runs, so both names are listed.
 
-1. `packages/runtime/test/a5g6-install-face-render.test.ts` — GLUE-6 LEG B, "the four
-   definitions all carry a render…": `Error: Test timed out in 5000ms.` This is the
-   pre-existing full-pool load/timeout flake other lanes have booked at this tree
-   (same file, same 5 s timeout, e.g. `a5sf-deferred` §6).
-2. `packages/runtime/test/a5-cancel-glob.test.ts` — C4, "EVERY boundary this row asks
-   answers with the typed refusal": the cancel race settled on `after-settle` where the
-   arm expected `walk-aborted` (a timing race under the 483-file parallel pool).
-
-Neither file imports any a5sf module (`grep -n "a5sf"` over both: no match), and neither
-is touched by this lane. **Isolation proof** (`ci-local-red-isolation.log`): each file
-ALONE on this same tree, three consecutive runs each:
+Neither file imports any a5sf module (`grep -n "a5sf"` over both: no match) and neither
+is touched by this lane. **Isolation proof at this head**
+(`ci-local-red-isolation.log`): each file ALONE, three consecutive runs each:
 
 ```
 a5-cancel-glob.test.ts          26/26 pass   (run 1, 2, 3)
 a5g6-install-face-render.test.ts  5/5  pass   (run 1, 2, 3)
 ```
 
-So the flake identity here is **two files**, both load/timing; the selection moves between
-lanes, which is why both names and the isolation runs are recorded rather than a re-run's
-verdict alone.
+The full 1,221,675-byte transcript is over the 1 MiB evidence bound, so `ci-local.log`
+keeps the invocation/steps head, the failing test block, the selected a5sf `node --test`
+block and the verdict verbatim (`[TRANSCRIPT TRIMMED FOR THE EVIDENCE BOUND]` banner at
+the top of the file).
 
 ## 11. p4t6 tie — MEASURED LAST on this tree
 
