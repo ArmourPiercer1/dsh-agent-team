@@ -2533,12 +2533,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     const prior = alpha6WakeLocks.get(mapKey) ?? Promise.resolve()
     let release: () => void = () => {}
     const gate = new Promise<void>((resolve) => { release = resolve })
-    alpha6WakeLocks.set(mapKey, prior.then(() => gate))
+    const tail = prior.then(() => gate)
+    alpha6WakeLocks.set(mapKey, tail)
     await prior
     try {
       return await fn()
     } finally {
       release()
+      // Prune an idle latch key: if no later waiter replaced the tail, the map
+      // must not retain one settled promise per latch for the process lifetime.
+      if (alpha6WakeLocks.get(mapKey) === tail) alpha6WakeLocks.delete(mapKey)
     }
   }
   const alpha6DispatchWake =
@@ -2788,6 +2792,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             // durable ledger in THIS boot; dispatch re-converges with any
             // concurrent notification through the same map + in-flight guard.
             // A sticky Stop outranks re-waking.
+            let rebuiltWork = false
             if (!alpha6WakeCoordinators.has(mapKey) && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
               const current = controlRef.current
               const requests = (await current.readControlState(rootSid)).requests
@@ -2805,7 +2810,25 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
                   targetSessionId,
                   currentLegIds: fresh.map((entry) => entry.requestId),
                 })
+                rebuiltWork = true
               }
+            }
+            if (!rebuiltWork) {
+              // No fresh work and no live coordinator: drop the stale absent
+              // row, but only after the Inbox positively confirms the message
+              // is gone. Unreadable keeps it for the next boot; a concurrent
+              // dispatch that delivered meanwhile is seen as a registered
+              // coordinator and keeps its fresh row.
+              await withAlpha6WakeLock(mapKey, async () => {
+                if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId)) return
+                const inbox = live.reviewWakeInbox?.(targetSessionId)
+                if (inbox === undefined) return
+                try {
+                  if ((await inbox.has(intent.wakeId)) === false) {
+                    await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId)
+                  }
+                } catch { /* unreadable Inbox: keep the row */ }
+              })
             }
           }
         }
