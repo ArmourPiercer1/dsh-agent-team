@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-acceptance-preflight/mount-compat/1",
-  "at": "2026-11-04T08:19:14.487Z",
+  "at": "2026-11-04T08:32:16.340Z",
   "head": null,
   "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
   "hostAttachmentLocal": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/attachment/attachment-local/lib/index.js",

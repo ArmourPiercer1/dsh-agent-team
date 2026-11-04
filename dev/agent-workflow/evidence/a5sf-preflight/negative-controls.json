@@ -1,9 +1,9 @@
 {
   "schema": "a5sf-acceptance-preflight/negative-controls/1",
-  "at": "2026-11-04T08:19:14.196Z",
+  "at": "2026-11-04T08:32:16.067Z",
   "library": "tests/world-factory/lib/a5sf-acceptance-preflight.mjs",
-  "librarySha256Before": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
-  "librarySha256After": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+  "librarySha256Before": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+  "librarySha256After": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
   "libraryPristineAfter": true,
   "suiteAfter": {
     "status": 0,
@@ -35,7 +35,7 @@
         "C9"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
@@ -60,13 +60,36 @@
         "C14"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC2b-row4b-accepts-a-team-lane-refusal",
+      "fix": "boot-2 correction (4b clause 2: the outcome must NOT be a Team-lane refusal)",
+      "why": "a guard refusal means the ceiling did NOT admit the write — the opposite of the two-axis claim — so crediting it as \"not the lane voice\" would launder a wrong answer into the row",
+      "mutation": {
+        "find": "    notTeamLaneRefusal: LANE_REFUSAL.test(text) !== true && /A5SF_[A-Z0-9_]+/.test(text) !== true,",
+        "replace": "    notTeamLaneRefusal: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 28,
+      "suiteFail": 1,
+      "failingTests": [
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+      ],
+      "expectFailing": [
+        "C14"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
     {
       "id": "NC2c-row4b-accepts-a-laundered-read-lane-allow",
-      "fix": "correction 2 (4b: the refusal must not be laundered into the read lane)",
+      "fix": "correction 2 (4b clause 1: no write-allow on the read lane)",
       "why": "a write-allow on the binding (read) realm is the one channel crossing 4b must refuse",
       "mutation": {
         "find": "    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,",
@@ -83,32 +106,30 @@
         "C14"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
     {
-      "id": "NC2b-row4b-accepts-any-refusal",
-      "fix": "correction 2 (4b: the refusal must BE the read coupling)",
-      "why": "the live row-4 text WAS an error (host sandbox denial under the old root); only the write⇐read sentence makes it the asked question",
+      "id": "NC2d-row4b-accepts-a-write-the-guard-denied",
+      "fix": "boot-2 correction (4b clause 1: the guard must have ALLOWED the write on the ceiling)",
+      "why": "without a ceiling-realm allow fact the guard denied the write, which is a different product behaviour and must refute",
       "mutation": {
-        "find": "    typedReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text),",
-        "replace": "    typedReadCouplingRefusal: true,"
+        "find": "    ceilingWriteAllowed: ceilingWriteAllowFacts.length >= 1,",
+        "replace": "    ceilingWriteAllowed: true,"
       },
       "suiteStatus": 1,
-      "suitePass": 27,
-      "suiteFail": 2,
+      "suitePass": 28,
+      "suiteFail": 1,
       "failingTests": [
-        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
         "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
-        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
         "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
       ],
       "expectFailing": [
         "C14"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
@@ -125,15 +146,15 @@
       "suiteFail": 2,
       "failingTests": [
         "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
-        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
         "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
-        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
       ],
       "expectFailing": [
         "C15"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
@@ -149,14 +170,64 @@
       "suitePass": 28,
       "suiteFail": 1,
       "failingTests": [
-        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
-        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
       ],
       "expectFailing": [
         "C15"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC3c-row6-judges-the-probe-delta-as-product-facts",
+      "fix": "boot-2 correction (the bound runs over the STOP-TIME sink, not the post-probe sink)",
+      "why": "this is EXACTLY the boot-2 defect: the row's own post-stop probes append real facts, and feeding them to the bound refutes a clean teardown",
+      "mutation": {
+        "find": "  const dated = stopTimeFacts.map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? '')) }))",
+        "replace": "  const dated = [...stopTimeFacts, ...probeTimeFacts].map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? '')) }))"
+      },
+      "suiteStatus": 1,
+      "suitePass": 26,
+      "suiteFail": 3,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line",
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line",
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
+      ],
+      "expectFailing": [
+        "C15"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC3d-row6-accepts-a-served-probe",
+      "fix": "boot-2 correction (a fact the probes appended must be a refusal)",
+      "why": "a stopped Member that is still SERVED (an allow fact from a probe) must refute; without this clause the probe delta is never judged",
+      "mutation": {
+        "find": "    probeFactsAreRefusals: probeTimeFacts.length === 0 || probeTimeFacts.every((fact) => fact?.decision === 'deny'),",
+        "replace": "    probeFactsAreRefusals: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 28,
+      "suiteFail": 1,
+      "failingTests": [
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+        "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
+      ],
+      "expectFailing": [
+        "C15"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     },
@@ -179,7 +250,7 @@
         "C16"
       ],
       "expectedTestFailed": true,
-      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
       "restoredVerbatim": true,
       "behaved": true
     }

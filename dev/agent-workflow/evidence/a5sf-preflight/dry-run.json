@@ -1,8 +1,8 @@
 {
   "schema": "a5sf-acceptance-preflight/dry-run/1",
-  "at": "2026-11-04T08:19:12.662Z",
+  "at": "2026-11-04T08:32:14.168Z",
   "repoRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight",
-  "head": "0dec8f2d6144a2ccdf40f097ec30ee4ea8086473",
+  "head": "ee59d497d05232ab01bd93dec9b1b3b6f4e46643",
   "checks": [
     {
       "id": "driver: no second root literal",
@@ -20,14 +20,14 @@
       "detail": "all eight decisions call into a5sf-acceptance-preflight.mjs"
     },
     {
-      "id": "driver: row 4 is SPLIT, and the retired single-row id/judge is gone",
+      "id": "driver: row 4 is SPLIT (4a the write the product allows, 4b the ceiling-allowed / read-not-implied write)",
       "ok": true,
-      "detail": "the write the product allows (4a) and the write it refuses (4b) are two questions, two ids and two dispatches"
+      "detail": "4a and 4b are two questions, two ids and two dispatches; the retired single-row id/judge is absent"
     },
     {
       "id": "driver: create precedes the state assertion on the SAME root",
       "ok": true,
-      "detail": "team.create@60057 < state(rootSessionId===ACCEPTANCE_ROOT)@61005"
+      "detail": "team.create@60580 < state(rootSessionId===ACCEPTANCE_ROOT)@61528"
     },
     {
       "id": "driver: no row-verdict result is character-clipped",
@@ -110,7 +110,7 @@
       "detail": "fs.ts WRITE_METHODS=[\"writeText\",\"editText\"] lib WRITE_PATH_METHODS=[\"writeText\",\"editText\"] (a third product write method would make the oracle mis-scope facts)"
     },
     {
-      "id": "lib: the row-4b refusal prose IS the product's IO_WRITE_REQUIRES_READ sentence",
+      "id": "lib: the product read-coupling sentence is DEFINED so row 4b can refuse to credit it",
       "ok": true,
       "detail": "must read '${hostPath}' before rewriting it, but the Member read axis does not cover it; write does not imply read"
     },
@@ -120,9 +120,24 @@
       "detail": "the \"outside the read rule set\" arm is the one row 4b asks for; the \"read axis refused it\" arm is a different answer"
     },
     {
+      "id": "lib: row 4b asserts the CEILING-allowed / read-not-implied answer, not a Team refusal",
+      "ok": true,
+      "detail": "boot 2 measured writeText/allow on realm \"member\" and the Host read-before-write refusal; the row must not demand the Team read coupling (a different answer) nor describe the Host policy as a Team-lane property"
+    },
+    {
+      "id": "contract: the row-4b id names the measured claim",
+      "ok": true,
+      "detail": "live:row4b-write-b-ceiling-allowed-read-not-implied"
+    },
+    {
+      "id": "lib: row 6 judges the STOP-TIME sink and the probe delta separately",
+      "ok": true,
+      "detail": "boot 2 counted the facts its own post-stop probes appended as \"facts after the stop\"; the bound now runs over the stop-time snapshot and the probe delta must be refusals"
+    },
+    {
       "id": "contract: eight cases, and row 4 is two of them",
       "ok": true,
-      "detail": "live:composition-precondition-read-surface | live:row1-read-a-inside-both-allowed | live:row2-read-b-binding-deny-on-read-path | live:row3-read-c-refused-no-widening | live:row4a-write-in-lane-readable-allowed-ceiling-only | live:row4b-write-b-refused-read-not-implied | live:row5-post-invalidation-refused-shadow-invalidated | live:row6-teardown-no-usable-unconstrained-shadow"
+      "detail": "live:composition-precondition-read-surface | live:row1-read-a-inside-both-allowed | live:row2-read-b-binding-deny-on-read-path | live:row3-read-c-refused-no-widening | live:row4a-write-in-lane-readable-allowed-ceiling-only | live:row4b-write-b-ceiling-allowed-read-not-implied | live:row5-post-invalidation-refused-shadow-invalidated | live:row6-teardown-no-usable-unconstrained-shadow"
     },
     {
       "id": "contract: the renamed/retired ids are gone from the contract",
@@ -130,14 +145,29 @@
       "detail": "the old id NAMED an assertion the oracle no longer makes, so it could not stay"
     },
     {
-      "id": "row6: the REAL live stream carries NO fact after the stop instant",
+      "id": "row6: the CURRENT run stop-time sink carries NO fact after its stop instant",
       "ok": true,
-      "detail": "facts=5 stop=2026-11-04T07:28:28.916Z newest=2026-11-04T07:28:27.080Z afterStop=0"
+      "detail": "facts=8 stop=2026-11-04T08:19:27.285Z newest=2026-11-04T08:19:25.470Z afterStop=0"
     },
     {
       "id": "row6: injecting ONE later observedAt makes the same bound fail (the control)",
       "ok": true,
       "detail": "afterStop=1 (the assertion is load-bearing, not vacuous)"
+    },
+    {
+      "id": "row6: the FROZEN boot-2 stream splits cleanly at its stop instant",
+      "ok": true,
+      "detail": "{\"path\":\"tests/world-factory/fixtures/a5sf-boot2-row6-sample.json\",\"stopInstant\":\"2026-11-04T08:19:27.285Z\",\"factsAtStop\":8,\"probeFacts\":2,\"everyStopFactBefore\":true,\"everyProbeFactAfter\":true,\"probeFactsAreDenials\":true,\"splitVerdict\":\"PROVEN\",\"unsplitVerdict\":\"REFUTED\",\"injectedVerdict\":\"REFUTED\"}"
+    },
+    {
+      "id": "row6: over that REAL stream, the split PROVES and the unsplit (boot-2) input REFUTES",
+      "ok": true,
+      "detail": "{\"split\":\"PROVEN\",\"unsplit\":\"REFUTED\",\"unsplitFactsAfterStop\":2}"
+    },
+    {
+      "id": "row6: one fact 1 s after the stop REFUTES the split input (the refuting twin)",
+      "ok": true,
+      "detail": "[\"noFactAfterStop\"]"
     },
     {
       "id": "oracle: row 6 no longer checks a fact COUNT",
@@ -157,12 +187,12 @@
     {
       "id": "negative controls: every correction, when re-broken, makes the oracle suite FAIL",
       "ok": true,
-      "detail": "controls=7 behaved=7"
+      "detail": "controls=10 behaved=10"
     },
     {
       "id": "negative controls: the oracle library is left byte-identical (no mutation survives)",
       "ok": true,
-      "detail": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da -> 7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da"
+      "detail": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52 -> 873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52"
     },
     {
       "id": "negative controls: the suite is green again after the last restore",
@@ -172,6 +202,11 @@
         "pass": 29,
         "fail": 0
       }
+    },
+    {
+      "id": "plan: the plan run itself succeeded before any plan.json check reads it",
+      "ok": true,
+      "detail": "status=0 stderr="
     },
     {
       "id": "plan: root wiring",
@@ -221,7 +256,7 @@
       "ok": true,
       "detail": {
         "bytes": 6163,
-        "sha256": "7b268f4cb71f84c6d92161945c514dfd1a0829bf00ff49d9f557f89c5120b734"
+        "sha256": "5e2704cc61f47300269b18a64b52f81bea863058b60cdad7fa857ef120f51c0f"
       }
     },
     {
@@ -264,9 +299,9 @@
       "id": "plan: world torn down",
       "ok": true,
       "detail": {
-        "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z",
+        "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z",
         "teardown": {
-          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z",
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z",
           "releasedPorts": []
         }
       }
@@ -274,7 +309,7 @@
     {
       "id": "preflight: the committed LIVE transcript is preserved byte-for-byte",
       "ok": true,
-      "detail": "run.log bytes=17807 sha256=241df91f94f004e7aa520165d1109e60a74ba6fe9d5477dd86bfeb04adbb9b07 plan.log bytes=12159"
+      "detail": "run.log bytes=20133 sha256=4115e8a23efeaaf42404411baab45b2d38634d90aa27b434a8005a77aa874bb2 plan.log bytes=12159"
     },
     {
       "id": "pin: the replacement RESTATES every key the base row sets",
@@ -289,12 +324,12 @@
     {
       "id": "pin: the home-level layer is inside the World home and is NOT the profile patch",
       "ok": true,
-      "detail": "{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/cordis.patch.yml\",\"mode\":\"workspace-write\",\"workspaceRoot\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace\",\"insideWorldHome\":true,\"isNotTheProfilePatch\":null,\"pathIsNotUnderProfiles\":true,\"sha256\":\"ef3ef4d2a7310f1339f31e82afa6287f1951e64d758c36610e2c470196d68b67\"}"
+      "detail": "{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/cordis.patch.yml\",\"mode\":\"workspace-write\",\"workspaceRoot\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace\",\"insideWorldHome\":true,\"isNotTheProfilePatch\":null,\"pathIsNotUnderProfiles\":true,\"sha256\":\"82d5588fc4b58fca806ae2afbf471e5763d407734cec7293f36a3d682690020a\"}"
     },
     {
       "id": "pin: the pinned root is the World workspace the write rows write into",
       "ok": true,
-      "detail": "pinned=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace"
+      "detail": "pinned=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace"
     },
     {
       "id": "plan: the plan World plus every LIVE transcript directory is kept",
@@ -302,13 +337,15 @@
       "detail": {
         "kept": [
           "u5a5sfacc-20261104T07-28-10Z",
-          "u5a5sfacc-20261104T08-19-14Z"
+          "u5a5sfacc-20261104T08-19-18Z",
+          "u5a5sfacc-20261104T08-32-16Z"
         ],
         "pruned": [
-          "u5a5sfacc-20261104T08-17-50Z"
+          "u5a5sfacc-20261104T08-31-42Z"
         ],
         "liveTranscriptsPreserved": [
-          "u5a5sfacc-20261104T07-28-10Z"
+          "u5a5sfacc-20261104T07-28-10Z",
+          "u5a5sfacc-20261104T08-19-18Z"
         ]
       }
     },
@@ -418,8 +455,8 @@
       ],
       "status": 0,
       "signal": null,
-      "ms": 115,
-      "stdout": "✔ A1 the driver root constant is ONE value across every observation seam (0.911256ms)\n✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (0.309917ms)\n✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.525906ms)\n✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.205128ms)\n✔ A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED (0.225427ms)\n✔ A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED (0.081294ms)\n✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.33798ms)\n✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.376192ms)\n✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.294298ms)\n✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (0.195139ms)\n✔ B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result) (0.301009ms)\n✔ B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored) (0.225156ms)\n✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (0.837616ms)\n✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (1.275604ms)\n✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.157337ms)\n✔ C3 the row-level reason codes distinguish \"never asked\" from \"asked and contradicted\" (0.197995ms)\n✔ C4 row 2 refuses a \"pass\" produced by a missing sink channel (facts are part of the claim) (0.157959ms)\n✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.171334ms)\n✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.099899ms)\n✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.0954ms)\n✔ C8 each verdict carries a closed reason code (auditable without prose) (0.224285ms)\n✔ C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN (0.133252ms)\n✔ C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED (0.13712ms)\n✔ C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED (0.066155ms)\n✔ C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm freeze (0.150956ms)\n✔ C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure (0.260252ms)\n✔ C14 rows 4a/4b: the split is two questions, and neither loosens the other (0.372326ms)\n✔ C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt (0.358538ms)\n✔ C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation (0.133092ms)\nℹ tests 29\nℹ suites 0\nℹ pass 29\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 70.699315\n",
+      "ms": 120,
+      "stdout": "✔ A1 the driver root constant is ONE value across every observation seam (0.875337ms)\n✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (0.302262ms)\n✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.449641ms)\n✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.172406ms)\n✔ A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED (0.704764ms)\n✔ A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED (0.119165ms)\n✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.289959ms)\n✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.415636ms)\n✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.247789ms)\n✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (0.222301ms)\n✔ B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result) (0.206541ms)\n✔ B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored) (0.148191ms)\n✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (0.729661ms)\n✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (1.04574ms)\n✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.087937ms)\n✔ C3 the row-level reason codes distinguish \"never asked\" from \"asked and contradicted\" (0.08982ms)\n✔ C4 row 2 refuses a \"pass\" produced by a missing sink channel (facts are part of the claim) (0.189448ms)\n✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.17961ms)\n✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.043322ms)\n✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.039675ms)\n✔ C8 each verdict carries a closed reason code (auditable without prose) (0.268297ms)\n✔ C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN (0.1741ms)\n✔ C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED (0.160103ms)\n✔ C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED (0.070554ms)\n✔ C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm freeze (0.157268ms)\n✔ C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure (0.281012ms)\n✔ C14 rows 4a/4b: the split is two questions, and neither loosens the other (0.379167ms)\n✔ C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin (0.46515ms)\n✔ C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation (0.086083ms)\nℹ tests 29\nℹ suites 0\nℹ pass 29\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 73.621937\n",
       "stderr": ""
     },
     "negativeControls": {
@@ -429,8 +466,8 @@
       ],
       "status": 0,
       "signal": null,
-      "ms": 978,
-      "stdout": "[2026-11-04T08:19:13.260Z] backup written: dev/agent-workflow/evidence/a5sf-preflight/.negative-controls-lib.bak sha256=7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da\n[2026-11-04T08:19:13.261Z] control NC1-row2-readtext-only-filter: applied (the live B stream has NO readText fact (the deny is at `stat`), so this filter silently counts zero and refutes a correct refusal)\n[2026-11-04T08:19:13.382Z] control NC1-row2-readtext-only-filter: suite status=1 pass=26 fail=3 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN\",\"C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN\",\"C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure\"] expected=[\"C9\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.383Z] control NC2a-row4a-accepts-any-write-fact: applied (a write-allow laundered onto the read lane would be credited as a clean 4a as soon as ANY write fact exists)\n[2026-11-04T08:19:13.501Z] control NC2a-row4a-accepts-any-write-fact: suite status=1 pass=27 fail=2 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.501Z] control NC2c-row4b-accepts-a-laundered-read-lane-allow: applied (a write-allow on the binding (read) realm is the one channel crossing 4b must refuse)\n[2026-11-04T08:19:13.614Z] control NC2c-row4b-accepts-a-laundered-read-lane-allow: suite status=1 pass=28 fail=1 failing=[\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.614Z] control NC2b-row4b-accepts-any-refusal: applied (the live row-4 text WAS an error (host sandbox denial under the old root); only the write⇐read sentence makes it the asked question)\n[2026-11-04T08:19:13.731Z] control NC2b-row4b-accepts-any-refusal: suite status=1 pass=27 fail=2 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.731Z] control NC3a-row6-drops-the-temporal-clause: applied (with the clause always true, one injected fact with a later observedAt still PROVES)\n[2026-11-04T08:19:13.849Z] control NC3a-row6-drops-the-temporal-clause: suite status=1 pass=27 fail=2 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.849Z] control NC3b-row6-accepts-an-undated-fact: applied (a fact that cannot be shown to precede the stop must refute, not slip past the bound)\n[2026-11-04T08:19:13.966Z] control NC3b-row6-accepts-an-undated-fact: suite status=1 pass=28 fail=1 failing=[\"C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt\",\"C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:13.968Z] control NC4-write-partition-loses-editText: applied (editText would be miscounted as a read-path consultation (and the partition would silently drift from fs.ts))\n[2026-11-04T08:19:14.084Z] control NC4-write-partition-loses-editText: suite status=1 pass=28 fail=1 failing=[\"C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation\",\"C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation\"] expected=[\"C16\"] restored=true -> AS EXPECTED\n[2026-11-04T08:19:14.196Z] after all controls: suite status=0 pass=29 fail=0 libSha256=7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da pristine=true\n[2026-11-04T08:19:14.197Z] wrote negative-controls.json; controls=7 allControlsBehaved=true\n",
+      "ms": 1322,
+      "stdout": "[2026-11-04T08:32:14.787Z] backup written: dev/agent-workflow/evidence/a5sf-preflight/.negative-controls-lib.bak sha256=873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52\n[2026-11-04T08:32:14.788Z] control NC1-row2-readtext-only-filter: applied (the live B stream has NO readText fact (the deny is at `stat`), so this filter silently counts zero and refutes a correct refusal)\n[2026-11-04T08:32:14.911Z] control NC1-row2-readtext-only-filter: suite status=1 pass=26 fail=3 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN\",\"C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN\",\"C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure\"] expected=[\"C9\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:14.911Z] control NC2a-row4a-accepts-any-write-fact: applied (a write-allow laundered onto the read lane would be credited as a clean 4a as soon as ANY write fact exists)\n[2026-11-04T08:32:15.027Z] control NC2a-row4a-accepts-any-write-fact: suite status=1 pass=27 fail=2 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.028Z] control NC2b-row4b-accepts-a-team-lane-refusal: applied (a guard refusal means the ceiling did NOT admit the write — the opposite of the two-axis claim — so crediting it as \"not the lane voice\" would launder a wrong answer into the row)\n[2026-11-04T08:32:15.151Z] control NC2b-row4b-accepts-a-team-lane-refusal: suite status=1 pass=28 fail=1 failing=[\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.152Z] control NC2c-row4b-accepts-a-laundered-read-lane-allow: applied (a write-allow on the binding (read) realm is the one channel crossing 4b must refuse)\n[2026-11-04T08:32:15.273Z] control NC2c-row4b-accepts-a-laundered-read-lane-allow: suite status=1 pass=28 fail=1 failing=[\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.273Z] control NC2d-row4b-accepts-a-write-the-guard-denied: applied (without a ceiling-realm allow fact the guard denied the write, which is a different product behaviour and must refute)\n[2026-11-04T08:32:15.392Z] control NC2d-row4b-accepts-a-write-the-guard-denied: suite status=1 pass=28 fail=1 failing=[\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\",\"C14 rows 4a/4b: the split is two questions, and neither loosens the other\"] expected=[\"C14\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.393Z] control NC3a-row6-drops-the-temporal-clause: applied (with the clause always true, one injected fact with a later observedAt still PROVES)\n[2026-11-04T08:32:15.504Z] control NC3a-row6-drops-the-temporal-clause: suite status=1 pass=27 fail=2 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.505Z] control NC3b-row6-accepts-an-undated-fact: applied (a fact that cannot be shown to precede the stop must refute, not slip past the bound)\n[2026-11-04T08:32:15.615Z] control NC3b-row6-accepts-an-undated-fact: suite status=1 pass=28 fail=1 failing=[\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.615Z] control NC3c-row6-judges-the-probe-delta-as-product-facts: applied (this is EXACTLY the boot-2 defect: the row's own post-stop probes append real facts, and feeding them to the bound refutes a clean teardown)\n[2026-11-04T08:32:15.725Z] control NC3c-row6-judges-the-probe-delta-as-product-facts: suite status=1 pass=26 fail=3 failing=[\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\",\"C1 every case PROVES on the passing sample and REFUTES on the contradicted sample\",\"C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.726Z] control NC3d-row6-accepts-a-served-probe: applied (a stopped Member that is still SERVED (an allow fact from a probe) must refute; without this clause the probe delta is never judged)\n[2026-11-04T08:32:15.837Z] control NC3d-row6-accepts-a-served-probe: suite status=1 pass=28 fail=1 failing=[\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\",\"C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin\"] expected=[\"C15\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:15.838Z] control NC4-write-partition-loses-editText: applied (editText would be miscounted as a read-path consultation (and the partition would silently drift from fs.ts))\n[2026-11-04T08:32:15.955Z] control NC4-write-partition-loses-editText: suite status=1 pass=28 fail=1 failing=[\"C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation\",\"C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation\"] expected=[\"C16\"] restored=true -> AS EXPECTED\n[2026-11-04T08:32:16.067Z] after all controls: suite status=0 pass=29 fail=0 libSha256=873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52 pristine=true\n[2026-11-04T08:32:16.067Z] wrote negative-controls.json; controls=10 allControlsBehaved=true\n",
       "stderr": ""
     },
     "plan": {
@@ -441,8 +478,8 @@
       ],
       "status": 0,
       "signal": null,
-      "ms": 143,
-      "stdout": "[2026-11-04T08:19:14.254Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use\n[2026-11-04T08:19:14.255Z] root identity (plan): {\"ok\":true,\"root\":\"session-a5sf-acceptance-team\",\"bootRoot\":\"session-a5sf-acceptance-root\",\"rootsCoincide\":false,\"productionRowRootChecked\":true,\"directiveRootChecked\":true,\"toolRouteRootIsLabel\":true}\n[2026-11-04T08:19:14.258Z] HEAD=0dec8f2d6144a2ccdf40f097ec30ee4ea8086473 pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84\n[2026-11-04T08:19:14.259Z] host tool-fs module: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js exists=true\n[2026-11-04T08:19:14.259Z] host tools lib: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js exists=true\n[2026-11-04T08:19:14.259Z] attachments provider composition: mounted=true evidence=[{\"file\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml\",\"line\":138,\"text\":\"- id: attachment-local\"},{\"file\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml\",\"line\":139,\"text\":\"name: '@deepseek-ai/dsh-attachment-local'\"}]\n[2026-11-04T08:19:14.299Z] blueprint ingest: anchor={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"} main={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"}\n[2026-11-04T08:19:14.337Z] patch layer bytes=6163; rows=a5sf-acceptance-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-acceptance-base\n[2026-11-04T08:19:14.337Z] ---- patch layer ----\n# a5sf six-row acceptance boot: two-axis realm provider row + production Team row\n# with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.\n- insert:\n    - id: \"a5sf-acceptance-realm\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs\"\n      config:\n        allowRoot: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace\"\n        restrictionReadAllow:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside\"\n        bindingIdentity: \"dsh.fs/read\"\n        laneReportPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/lane-report.json\"\n        laneProbePaths:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow/a.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/b.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside/c.txt\"\n        counterPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/a5sf-provider-counter.jsonl\"\n        lateToolRoute: \"/__a5sf/late-tool\"\n        lateToolName: \"x_acceptance_late_unrelated\"\n        lateToolReportPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/late-tool-report.json\"\n        hostToolsModule: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js\"\n    - id: \"dsh-agent-team\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js\"\n      config:\n        rootSessionId: \"session-a5sf-acceptance-root\"\n        bootPhase: \"create\"\n        blueprintSource: \"---\\nschemaVersion: 3\\nblueprintId: team.a5sf.acceptance.anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the a5sf six-row acceptance team. A5SF_ACC_DISC is the discovery marker.\\\"\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are the a5sf acceptance worker.\\\"\\nmemberEnvelopes: []\\nrequirements: []\\npermissionMutationEnvelope:\\n  rules: []\\nteamHardEnvelope:\\n  rules: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"\n        blueprintDir: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/blueprints\"\n        rootPresetId: \"a5sf-acceptance-base\"\n        memberPresetId: \"a5sf-acceptance-base\"\n        seedMembers: []\n        generation: 1\n        staticModel:\n          provider: \"deepseek-official\"\n          model: \"a5sf-acceptance-model\"\n        deniedSelection: null\n        mcpServers: []\n        mcpServer: null\n        environmentFacts:\n          - domain: \"tool\"\n            subject: \"web\"\n            available: true\n            generation: 1\n          - domain: \"skill\"\n            subject: \"base\"\n            available: true\n            generation: 1\n          - domain: \"persona\"\n            subject: \"standard\"\n            available: true\n            generation: 1\n        externalPolicyFacts:\n          hard: {}\n          capabilityExists: {}\n        glueUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs\"\n        seamUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/root-binding/harness/seam.mjs\"\n        a5sfEvidencePath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/a5sf-consult.jsonl\"\n        a5sfNativeToolModules:\n          - \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js\"\n        a5sfExpectedTools:\n          file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:\n            - \"read\"\n            - \"write\"\n            - \"edit\"\n            - \"read_image\"\n    - id: \"p6t6-team-tools\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs\"\n    - id: \"preset-a5sf-acceptance-base\"\n      name: \"@deepseek-ai/dsh-agent-preset\"\n      config:\n        id: \"a5sf-acceptance-base\"\n        name: \"a5sf acceptance base\"\n        description: \"a5sf six-row acceptance boot preset (a5sfacc) = smoke + tool-fs-search\"\n        order: 900\n        plugins:\n          - id: \"persona\"\n            name: \"@deepseek-ai/dsh-persona\"\n            config:\n              prefix: \"You are a coding agent powered by the {{model}} model.\"\n              suffix: \"Your working directory is {{cwd}}.\"\n          - id: \"tool-fs\"\n            name: \"@deepseek-ai/dsh-tool-fs\"\n          - id: \"persistent-shell\"\n            name: \"cordis:group\"\n            group: true\n            isolate:\n              terminals: true\n            config:\n              - id: \"pty\"\n                name: \"@deepseek-ai/dsh-terminal\"\n              - id: \"terminal-bash\"\n                name: \"@deepseek-ai/dsh-terminal-bash\"\n                config:\n                  timeoutMs: 300000\n              - id: \"persistent-bash\"\n                name: \"@deepseek-ai/dsh-tool-bash-persistent\"\n                config:\n                  timeoutMs: 300000\n          - id: \"tool-fs-search\"\n            name: \"@deepseek-ai/dsh-tool-fs-search\"\n            config:\n              sampleOverCapGlobResults: false\n---- end patch ----\n[2026-11-04T08:19:14.339Z] provider row module: name=a5sf-acceptance-realm-provider apply=function inject=[]\n[2026-11-04T08:19:14.339Z] row paths: {\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace\",\"a\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow/a.txt\"},\"b\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/b.txt\"},\"w4a\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow/w4a.txt\"},\"c\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside/c.txt\"},\"restrictionReadAllow\":[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside\"]}\n[2026-11-04T08:19:14.339Z] pre-boot row identity check: {\"ok\":true,\"rows\":[{\"rowId\":\"a5sf-acceptance-realm\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs\",\"packageName\":\"dsh-agent-team\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/package.json\",\"hasClientHalf\":true},{\"rowId\":\"dsh-agent-team\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js\",\"packageName\":\"@dsh-agent-team/runtime\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json\",\"hasClientHalf\":false},{\"rowId\":\"p6t6-team-tools\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs\",\"packageName\":\"@dsh-agent-team/tools\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/package.json\",\"hasClientHalf\":false}]}\n[2026-11-04T08:19:14.339Z] home patch layer: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/cordis.patch.yml mode=workspace-write workspaceRoot=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace\n[2026-11-04T08:19:14.340Z] lane algebra: ceiling=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace\"] restriction=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside\"] effective=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow\"]\n[2026-11-04T08:19:14.340Z] lane dispositions: [{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/allow/a.txt\",\"ceiling\":\"allow\",\"restriction\":\"allow\",\"effective\":\"allow\"},{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace/axis/b.txt\",\"ceiling\":\"allow\",\"restriction\":\"deny\",\"effective\":\"deny\"},{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/restriction-outside/c.txt\",\"ceiling\":\"deny\",\"restriction\":\"allow\",\"effective\":\"deny\"}]\n[2026-11-04T08:19:14.340Z] plan world torn down: homeDeleted=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z releasedPorts=[]\n",
+      "ms": 136,
+      "stdout": "[2026-11-04T08:32:16.119Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use\n[2026-11-04T08:32:16.119Z] root identity (plan): {\"ok\":true,\"root\":\"session-a5sf-acceptance-team\",\"bootRoot\":\"session-a5sf-acceptance-root\",\"rootsCoincide\":false,\"productionRowRootChecked\":true,\"directiveRootChecked\":true,\"toolRouteRootIsLabel\":true}\n[2026-11-04T08:32:16.123Z] HEAD=ee59d497d05232ab01bd93dec9b1b3b6f4e46643 pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84\n[2026-11-04T08:32:16.123Z] host tool-fs module: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js exists=true\n[2026-11-04T08:32:16.123Z] host tools lib: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js exists=true\n[2026-11-04T08:32:16.123Z] attachments provider composition: mounted=true evidence=[{\"file\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml\",\"line\":138,\"text\":\"- id: attachment-local\"},{\"file\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml\",\"line\":139,\"text\":\"name: '@deepseek-ai/dsh-attachment-local'\"}]\n[2026-11-04T08:32:16.166Z] blueprint ingest: anchor={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"} main={\"ok\":true,\"via\":\"parseBlueprint(dist domain facade = the host own import)\"}\n[2026-11-04T08:32:16.199Z] patch layer bytes=6163; rows=a5sf-acceptance-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-acceptance-base\n[2026-11-04T08:32:16.199Z] ---- patch layer ----\n# a5sf six-row acceptance boot: two-axis realm provider row + production Team row\n# with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.\n- insert:\n    - id: \"a5sf-acceptance-realm\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs\"\n      config:\n        allowRoot: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace\"\n        restrictionReadAllow:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside\"\n        bindingIdentity: \"dsh.fs/read\"\n        laneReportPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/lane-report.json\"\n        laneProbePaths:\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow/a.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/b.txt\"\n          - \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside/c.txt\"\n        counterPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/a5sf-provider-counter.jsonl\"\n        lateToolRoute: \"/__a5sf/late-tool\"\n        lateToolName: \"x_acceptance_late_unrelated\"\n        lateToolReportPath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/late-tool-report.json\"\n        hostToolsModule: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js\"\n    - id: \"dsh-agent-team\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js\"\n      config:\n        rootSessionId: \"session-a5sf-acceptance-root\"\n        bootPhase: \"create\"\n        blueprintSource: \"---\\nschemaVersion: 3\\nblueprintId: team.a5sf.acceptance.anchor\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the a5sf six-row acceptance team. A5SF_ACC_DISC is the discovery marker.\\\"\\nmembers:\\n  - templateId: worker\\n    persona: \\\"You are the a5sf acceptance worker.\\\"\\nmemberEnvelopes: []\\nrequirements: []\\npermissionMutationEnvelope:\\n  rules: []\\nteamHardEnvelope:\\n  rules: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"\n        blueprintDir: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/blueprints\"\n        rootPresetId: \"a5sf-acceptance-base\"\n        memberPresetId: \"a5sf-acceptance-base\"\n        seedMembers: []\n        generation: 1\n        staticModel:\n          provider: \"deepseek-official\"\n          model: \"a5sf-acceptance-model\"\n        deniedSelection: null\n        mcpServers: []\n        mcpServer: null\n        environmentFacts:\n          - domain: \"tool\"\n            subject: \"web\"\n            available: true\n            generation: 1\n          - domain: \"skill\"\n            subject: \"base\"\n            available: true\n            generation: 1\n          - domain: \"persona\"\n            subject: \"standard\"\n            available: true\n            generation: 1\n        externalPolicyFacts:\n          hard: {}\n          capabilityExists: {}\n        glueUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs\"\n        seamUrl: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/root-binding/harness/seam.mjs\"\n        a5sfEvidencePath: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/a5sf-consult.jsonl\"\n        a5sfNativeToolModules:\n          - \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js\"\n        a5sfExpectedTools:\n          file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:\n            - \"read\"\n            - \"write\"\n            - \"edit\"\n            - \"read_image\"\n    - id: \"p6t6-team-tools\"\n      name: \"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs\"\n    - id: \"preset-a5sf-acceptance-base\"\n      name: \"@deepseek-ai/dsh-agent-preset\"\n      config:\n        id: \"a5sf-acceptance-base\"\n        name: \"a5sf acceptance base\"\n        description: \"a5sf six-row acceptance boot preset (a5sfacc) = smoke + tool-fs-search\"\n        order: 900\n        plugins:\n          - id: \"persona\"\n            name: \"@deepseek-ai/dsh-persona\"\n            config:\n              prefix: \"You are a coding agent powered by the {{model}} model.\"\n              suffix: \"Your working directory is {{cwd}}.\"\n          - id: \"tool-fs\"\n            name: \"@deepseek-ai/dsh-tool-fs\"\n          - id: \"persistent-shell\"\n            name: \"cordis:group\"\n            group: true\n            isolate:\n              terminals: true\n            config:\n              - id: \"pty\"\n                name: \"@deepseek-ai/dsh-terminal\"\n              - id: \"terminal-bash\"\n                name: \"@deepseek-ai/dsh-terminal-bash\"\n                config:\n                  timeoutMs: 300000\n              - id: \"persistent-bash\"\n                name: \"@deepseek-ai/dsh-tool-bash-persistent\"\n                config:\n                  timeoutMs: 300000\n          - id: \"tool-fs-search\"\n            name: \"@deepseek-ai/dsh-tool-fs-search\"\n            config:\n              sampleOverCapGlobResults: false\n---- end patch ----\n[2026-11-04T08:32:16.201Z] provider row module: name=a5sf-acceptance-realm-provider apply=function inject=[]\n[2026-11-04T08:32:16.201Z] row paths: {\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace\",\"a\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow/a.txt\"},\"b\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/b.txt\"},\"w4a\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow/w4a.txt\"},\"c\":{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside/c.txt\"},\"restrictionReadAllow\":[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside\"]}\n[2026-11-04T08:32:16.201Z] pre-boot row identity check: {\"ok\":true,\"rows\":[{\"rowId\":\"a5sf-acceptance-realm\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs\",\"packageName\":\"dsh-agent-team\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/package.json\",\"hasClientHalf\":true},{\"rowId\":\"dsh-agent-team\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js\",\"packageName\":\"@dsh-agent-team/runtime\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json\",\"hasClientHalf\":false},{\"rowId\":\"p6t6-team-tools\",\"modulePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs\",\"packageName\":\"@dsh-agent-team/tools\",\"packagePath\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/package.json\",\"hasClientHalf\":false}]}\n[2026-11-04T08:32:16.201Z] home patch layer: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/cordis.patch.yml mode=workspace-write workspaceRoot=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace\n[2026-11-04T08:32:16.202Z] lane algebra: ceiling=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace\"] restriction=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside\"] effective=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow\"]\n[2026-11-04T08:32:16.202Z] lane dispositions: [{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/allow/a.txt\",\"ceiling\":\"allow\",\"restriction\":\"allow\",\"effective\":\"allow\"},{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace/axis/b.txt\",\"ceiling\":\"allow\",\"restriction\":\"deny\",\"effective\":\"deny\"},{\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/restriction-outside/c.txt\",\"ceiling\":\"deny\",\"restriction\":\"allow\",\"effective\":\"deny\"}]\n[2026-11-04T08:32:16.202Z] plan world torn down: homeDeleted=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z releasedPorts=[]\n",
       "stderr": ""
     },
     "mountProbe": {
@@ -452,8 +489,8 @@
       ],
       "status": 0,
       "signal": null,
-      "ms": 367,
-      "stdout": "[2026-11-04T08:19:14.469Z] runtime peers resolved from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json\n[2026-11-04T08:19:14.501Z] real attachment-local mounted from file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/attachment/attachment-local/lib/index.js\n[2026-11-04T08:19:14.546Z] A-real-attachment-store: attachments=real mounted=true forwarded=[\"edit\",\"read\",\"read_image\",\"write\"] surface=[\"edit\",\"read\",\"read_image\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:19:14.555Z] B-stub-attachments: attachments=stub mounted=true forwarded=[\"edit\",\"read\",\"read_image\",\"write\"] surface=[\"edit\",\"read\",\"read_image\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:19:14.630Z] C-no-attachments-declared: attachments=none mounted=false code=A5SF_EXPECTED_TOOLS_UNSHADOWED message=agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRES\n[2026-11-04T08:19:14.703Z] D-no-attachments-undeclared: attachments=none mounted=true forwarded=[\"edit\",\"read\",\"write\"] surface=[\"edit\",\"read\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:19:14.703Z] wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/mount-compat.json; mountedWithAttachments=true identityHeld=true\n",
+      "ms": 351,
+      "stdout": "[2026-11-04T08:32:16.321Z] runtime peers resolved from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json\n[2026-11-04T08:32:16.353Z] real attachment-local mounted from file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/attachment/attachment-local/lib/index.js\n[2026-11-04T08:32:16.396Z] A-real-attachment-store: attachments=real mounted=true forwarded=[\"edit\",\"read\",\"read_image\",\"write\"] surface=[\"edit\",\"read\",\"read_image\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:32:16.404Z] B-stub-attachments: attachments=stub mounted=true forwarded=[\"edit\",\"read\",\"read_image\",\"write\"] surface=[\"edit\",\"read\",\"read_image\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:32:16.476Z] C-no-attachments-declared: attachments=none mounted=false code=A5SF_EXPECTED_TOOLS_UNSHADOWED message=agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRES\n[2026-11-04T08:32:16.548Z] D-no-attachments-undeclared: attachments=none mounted=true forwarded=[\"edit\",\"read\",\"write\"] surface=[\"edit\",\"read\",\"write\"] declaredAllForwarded=true\n[2026-11-04T08:32:16.549Z] wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/mount-compat.json; mountedWithAttachments=true identityHeld=true\n",
       "stderr": ""
     }
   },
@@ -495,6 +532,17 @@
         ]
       },
       {
+        "id": "NC2b-row4b-accepts-a-team-lane-refusal",
+        "behaved": true,
+        "failingTests": [
+          "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+          "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+        ],
+        "expectFailing": [
+          "C14"
+        ]
+      },
+      {
         "id": "NC2c-row4b-accepts-a-laundered-read-lane-allow",
         "behaved": true,
         "failingTests": [
@@ -506,12 +554,10 @@
         ]
       },
       {
-        "id": "NC2b-row4b-accepts-any-refusal",
+        "id": "NC2d-row4b-accepts-a-write-the-guard-denied",
         "behaved": true,
         "failingTests": [
-          "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
           "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
-          "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
           "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
         ],
         "expectFailing": [
@@ -523,9 +569,9 @@
         "behaved": true,
         "failingTests": [
           "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
-          "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
           "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
-          "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
         ],
         "expectFailing": [
           "C15"
@@ -535,8 +581,34 @@
         "id": "NC3b-row6-accepts-an-undated-fact",
         "behaved": true,
         "failingTests": [
-          "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
-          "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
+        ],
+        "expectFailing": [
+          "C15"
+        ]
+      },
+      {
+        "id": "NC3c-row6-judges-the-probe-delta-as-product-facts",
+        "behaved": true,
+        "failingTests": [
+          "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+          "C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line",
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+          "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+          "C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line",
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
+        ],
+        "expectFailing": [
+          "C15"
+        ]
+      },
+      {
+        "id": "NC3d-row6-accepts-a-served-probe",
+        "behaved": true,
+        "failingTests": [
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin",
+          "C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin"
         ],
         "expectFailing": [
           "C15"
@@ -555,15 +627,15 @@
       }
     ],
     "libraryPristineAfter": true,
-    "librarySha256Before": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
-    "librarySha256After": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da"
+    "librarySha256Before": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+    "librarySha256After": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52"
   },
   "liveStream": {
     "path": "dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl",
-    "facts": 5,
-    "stopInstantFromRunLog": "2026-11-04T07:28:28.916Z",
+    "facts": 8,
+    "stopInstantFromRunLog": "2026-11-04T08:19:27.285Z",
     "factsAfterStop": 0,
-    "newestObservedAt": "2026-11-04T07:28:27.080Z",
+    "newestObservedAt": "2026-11-04T08:19:25.470Z",
     "injectedReplay": 1
   },
   "sandboxPin": {
@@ -578,13 +650,13 @@
     ],
     "baseWorkspaceRootExpression": "!!js process.cwd()",
     "pin": {
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/cordis.patch.yml",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/cordis.patch.yml",
       "mode": "workspace-write",
-      "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-14Z/workspace",
+      "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-32-16Z/workspace",
       "insideWorldHome": true,
       "isNotTheProfilePatch": null,
       "pathIsNotUnderProfiles": true,
-      "sha256": "ef3ef4d2a7310f1339f31e82afa6287f1951e64d758c36610e2c470196d68b67"
+      "sha256": "82d5588fc4b58fca806ae2afbf471e5763d407734cec7293f36a3d682690020a"
     }
   },
   "caseIds": [
@@ -593,7 +665,7 @@
     "live:row2-read-b-binding-deny-on-read-path",
     "live:row3-read-c-refused-no-widening",
     "live:row4a-write-in-lane-readable-allowed-ceiling-only",
-    "live:row4b-write-b-refused-read-not-implied",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied",
     "live:row5-post-invalidation-refused-shadow-invalidated",
     "live:row6-teardown-no-usable-unconstrained-shadow"
   ],
@@ -612,35 +684,49 @@
     "matched": true,
     "sentence": "must read '${hostPath}' before rewriting it, but the Member read axis does not cover it; write does not imply read"
   },
-  "oracleLibSha256Before": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+  "row6Stream": {
+    "path": "tests/world-factory/fixtures/a5sf-boot2-row6-sample.json",
+    "stopInstant": "2026-11-04T08:19:27.285Z",
+    "factsAtStop": 8,
+    "probeFacts": 2,
+    "everyStopFactBefore": true,
+    "everyProbeFactAfter": true,
+    "probeFactsAreDenials": true,
+    "splitVerdict": "PROVEN",
+    "unsplitVerdict": "REFUTED",
+    "injectedVerdict": "REFUTED"
+  },
+  "oracleLibSha256Before": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
   "oracleLibPath": "tests/world-factory/lib/a5sf-acceptance-preflight.mjs",
   "oracleTests": {
     "pass": 29,
     "fail": 0
   },
   "preserved": {
-    "runLogBytes": 17807,
-    "runLogSha256": "241df91f94f004e7aa520165d1109e60a74ba6fe9d5477dd86bfeb04adbb9b07",
-    "consultationsSha256": "052dbe4822e810d91b33f48a69d056cd3047db23e6fdf28feb59388268fbb940",
+    "runLogBytes": 20133,
+    "runLogSha256": "4115e8a23efeaaf42404411baab45b2d38634d90aa27b434a8005a77aa874bb2",
+    "consultationsSha256": "aa6a7c96a41953d8780f3e4cb91e540a12886bddb7dba452d416140e654da9e8",
     "runLogRestoredVerbatim": true,
     "planLogBytes": 12159
   },
   "logs": {
     "kept": [
       "u5a5sfacc-20261104T07-28-10Z",
-      "u5a5sfacc-20261104T08-19-14Z"
+      "u5a5sfacc-20261104T08-19-18Z",
+      "u5a5sfacc-20261104T08-32-16Z"
     ],
     "pruned": [
-      "u5a5sfacc-20261104T08-17-50Z"
+      "u5a5sfacc-20261104T08-31-42Z"
     ],
     "liveTranscriptsPreserved": [
-      "u5a5sfacc-20261104T07-28-10Z"
+      "u5a5sfacc-20261104T07-28-10Z",
+      "u5a5sfacc-20261104T08-19-18Z"
     ]
   },
   "base": "37311eaaae07b3d2a20d28c7ebdaab6933bb9a85",
   "productStatusPorcelain": "",
   "productTreeClean": true,
-  "productTreeDigest": "6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65",
+  "productTreeDigest": "35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "goNoGo": true
 }

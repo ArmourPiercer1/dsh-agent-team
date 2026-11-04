@@ -6,3 +6,9 @@ clean (exit 0)
 # trailing space at run.log:33, an artifact of a 320-char counter slice in the
 # driver log. It was stripped in the correction commit and the driver now
 # strips trailing whitespace, so this file records the post-fix state.
+
+# boot-2 repair round (2026-11-04T08:32Z, head ee59d497d)
+# git diff --check origin/master..HEAD
+clean (exit 0)
+# git diff --check (working tree; generated logs normalised to one final newline)
+clean (exit 0)

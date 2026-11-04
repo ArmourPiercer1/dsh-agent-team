@@ -992,6 +992,15 @@ place to record the ruling.
 
 ### 12.8.4 Controls and gates after this repair
 
+**One gate hole found and closed while repairing this round.** `dry-run.mjs`
+checked `plan.json`'s contents but not the `--plan` run's exit status, so a
+failed plan run left the PREVIOUS `plan.json` in place and every plan check
+passed against it. It bit this round exactly once: the driver's own `CASES` list
+still carried the old row-4b id after the lib rename, `--plan` exited 1 on
+`assertCaseListMatchesContract`, and the plan checks were green anyway. The plan
+run's exit status is now the FIRST plan check; `--plan` is green again after the
+driver list was updated.
+
 | gate | result | raw |
 | --- | --- | --- |
 | `dry-run.mjs` | **57/57 PASS, exit 0, `goNoGo=true`** (was 48/48) | `dry-run.log` / `dry-run.json` |
