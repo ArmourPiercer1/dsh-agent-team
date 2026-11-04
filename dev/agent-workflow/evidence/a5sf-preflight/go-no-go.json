@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
-  "head": "836d88a15520290ca2626bba8baa6f92a9b8f407",
+  "head": "df786c423d63970ede7c0bf764c0147f1f9b97d4",
   "branch": "task/a5sf-preflight-20261103",
   "evidenceHeadAtDryRun": "9465c99250b6ab741db04dfc1f8389704154ac89",
   "productTreeDigest": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc",
