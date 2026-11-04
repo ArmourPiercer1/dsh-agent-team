@@ -128,6 +128,17 @@ check('oracle: row 5/6 cannot launder an answered refusal into NOT_REACHED', ['I
   'review B2: asked-and-contradicted is REFUTED; only a never-dispatched step is NOT_REACHED')
 check('oracle: row 5 requires the NAME-KEYED code, not the blanket realm freeze', libSource.includes("REALM_INVALIDATED_CODE = 'A5SF_MEMBER_REALM_INVALIDATED'") && libSource.includes('BLANKET_INVALIDATION_ONLY') && libSource.includes('notBlanketFreeze'),
   'E8/#580: a blanket A5SF_MEMBER_REALM_INVALIDATED-only refusal is REFUTED (pinned by C12)')
+// PRECEDENCE IN THE PRODUCT, read host-free: the covered-name branch must be
+// taken BEFORE the blanket realm-freeze refusal in the same admission hook.
+const mountSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'mount.ts'), 'utf8')
+const admission = mountSource.slice(mountSource.indexOf('const admitCoveredTool'))
+const coveredBranch = admission.indexOf('expectedDefinitions.has(name)')
+const nameKeyedReturn = admission.indexOf('refusalOf(name, record)')
+const blanketReturn = admission.indexOf('realmFreezeRefusalOf(record)')
+check('product: a COVERED name gets the name-keyed refusal before the blanket freeze', mountSource.includes("A5SF_MEMBER_REALM_INVALIDATED = 'A5SF_MEMBER_REALM_INVALIDATED'") && coveredBranch !== -1 && nameKeyedReturn !== -1 && blanketReturn !== -1 && nameKeyedReturn < blanketReturn,
+  blanketReturn === -1
+    ? 'the blanket E8 code is not in mount.ts yet'
+    : 'mount.ts admitCoveredTool: covered branch +' + coveredBranch + ' -> refusalOf(name, record) +' + nameKeyedReturn + ' precedes realmFreezeRefusalOf(record) +' + blanketReturn)
 check('oracle: root identity includes the production row + directive values', libSource.includes('productionRowRoot') && libSource.includes('directiveRoot !== first'),
   'review B3: the two product-side values are asserted, not just the constants')
 check('oracle: the #575 stream is a real committed fixture', existsSync(join(REPO_ROOT, 'tests', 'world-factory', 'fixtures', 'a5sf-575-teardown-observations.json')),

@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-acceptance-preflight/mount-compat/1",
-  "at": "2026-11-04T06:20:37.492Z",
+  "at": "2026-11-04T07:09:20.264Z",
   "head": null,
   "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
   "hostAttachmentLocal": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/attachment/attachment-local/lib/index.js",
@@ -196,7 +196,7 @@
         "code": "A5SF_EXPECTED_TOOLS_UNSHADOWED",
         "detail": "",
         "message": "agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)",
-        "stackHead": "A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)\n    at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:623:11)\n    at async arm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:274:20)\n    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:323:20"
+        "stackHead": "A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-fs expected [\"read\",\"write\",\"edit\",\"read_image\"] but the attach forwarded [\"write\",\"edit\",\"read\"]); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)\n    at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:628:11)\n    at async arm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:274:20)\n    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/probe-mount-compat.mjs:323:20"
       }
     },
     {
