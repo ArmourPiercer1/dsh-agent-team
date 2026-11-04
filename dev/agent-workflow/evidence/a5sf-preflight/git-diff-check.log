@@ -1,1 +1,2 @@
 # git diff --check origin/master..HEAD
+clean (exit 0)
