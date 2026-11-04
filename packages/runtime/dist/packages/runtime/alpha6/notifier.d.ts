@@ -29,12 +29,41 @@ export declare function renderOfficerReviewWake(request: ControlRequestRecord): 
  * - `legacy` decision → the legacy notifier is invoked unchanged.
  * - `alpha6` decision → exactly one wake to the resolved Officer session and
  *   NO Leader notification.
- * - Any other decision (a refusal) → legacy; the safe fallback.
+ * - A `refused` decision → throw; never the Leader fallback.
  */
 export declare function createComposedControlNotifier(ports: {
     readonly decision: Alpha6CompositionDecision;
     readonly legacy: ControlRequestNotificationPort;
     readonly wake: WakeDeliveryPort;
     readonly recipientSessionId: string;
+}): ControlRequestNotificationPort;
+/** Resolve the CURRENT reviewer for one durable request (the trusted facts port). */
+export interface Alpha6NotifierReviewerPort {
+    (query: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }): Promise<{
+        readonly instanceId: string;
+    } | null>;
+}
+/**
+ * The root-level Alpha.6 notification path: a control request is resolved
+ * through the SAME trusted facts port the decision path uses, then delivered
+ * to that reviewer's live child session. There is NO Leader fallback:
+ * unresolvable reviewer, missing case identity or a delivery failure throws
+ * (the service's notification is fire-and-forget/liveness, so throwing cannot
+ * change the durable outcome, but it must be visible).
+ */
+export declare function createAlpha6RootControlNotifier(ports: {
+    readonly rootSessionId: string;
+    readonly resolveCurrentReviewer: Alpha6NotifierReviewerPort;
+    readonly memberSession: (instanceId: string) => {
+        readonly childSessionId?: string;
+    } | undefined | Promise<{
+        readonly childSessionId?: string;
+    } | undefined>;
+    readonly deliver: WakeDeliveryPort;
 }): ControlRequestNotificationPort;
 //# sourceMappingURL=notifier.d.ts.map

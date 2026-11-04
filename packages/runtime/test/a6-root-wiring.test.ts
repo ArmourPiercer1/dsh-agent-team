@@ -201,11 +201,12 @@ describe('A6 root wiring — production entry opt-in', () => {
       environmentFacts: [],
       externalPolicyFacts: { hard: {}, capabilityExists: {} },
     }
-    const boot = (blueprintSource: string): unknown => {
+    const boot = (blueprintSource: string, withWake = true): unknown => {
       const config = { ...baseConfig, blueprintSource, alpha6ReviewRouting: true }
       const teamToolsRef = { current: undefined }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
       const live: any = createStubBindings({ config, teamToolsRef, domain })
+      if (withWake) live.deliverReviewWake = async (): Promise<void> => undefined
       return createTeamProductionRoot({
         config,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
@@ -223,6 +224,9 @@ describe('A6 root wiring — production entry opt-in', () => {
 
     expect(boot(v5Source('7'))).toBeDefined()
     expect(() => boot(V4_SOURCE)).toThrow(/blueprint-not-v5/)
+    // The opt-in requires a REAL wake seam; absence refuses rather than
+    // silently notifying nobody or falling back to the Leader.
+    expect(() => boot(v5Source('8'), false)).toThrow(/live wake seam|deliverReviewWake/)
     destroyDir(base)
   })
 })

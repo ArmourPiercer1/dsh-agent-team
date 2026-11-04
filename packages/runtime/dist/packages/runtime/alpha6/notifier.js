@@ -36,17 +36,56 @@ export function renderOfficerReviewWake(request) {
  * - `legacy` decision → the legacy notifier is invoked unchanged.
  * - `alpha6` decision → exactly one wake to the resolved Officer session and
  *   NO Leader notification.
- * - Any other decision (a refusal) → legacy; the safe fallback.
+ * - A `refused` decision → throw; never the Leader fallback.
  */
 export function createComposedControlNotifier(ports) {
     return {
         async notifyLeaderRequest(request) {
+            if (ports.decision.mode === 'refused') {
+                throw new Error(`Alpha.6 review routing is enabled but refused (${ports.decision.refused}); no Leader fallback`);
+            }
             if (ports.decision.mode !== 'alpha6') {
                 await ports.legacy.notifyLeaderRequest(request);
                 return;
             }
             await ports.wake({
                 targetSessionId: ports.recipientSessionId,
+                wakeId: `review:${request.requestId}`,
+                text: renderOfficerReviewWake(request),
+            });
+        },
+    };
+}
+/**
+ * The root-level Alpha.6 notification path: a control request is resolved
+ * through the SAME trusted facts port the decision path uses, then delivered
+ * to that reviewer's live child session. There is NO Leader fallback:
+ * unresolvable reviewer, missing case identity or a delivery failure throws
+ * (the service's notification is fire-and-forget/liveness, so throwing cannot
+ * change the durable outcome, but it must be visible).
+ */
+export function createAlpha6RootControlNotifier(ports) {
+    return {
+        async notifyLeaderRequest(request) {
+            if (request.approvalCaseId === undefined || request.legOrdinal === undefined) {
+                throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity`);
+            }
+            const reviewer = await ports.resolveCurrentReviewer({
+                rootSessionId: ports.rootSessionId,
+                approvalCaseId: request.approvalCaseId,
+                currentLegRequestId: request.requestId,
+                legOrdinal: request.legOrdinal,
+            });
+            if (reviewer === null) {
+                throw new Error(`Alpha.6 review wake refused: no trusted current reviewer for request '${request.requestId}' (no Leader fallback)`);
+            }
+            const member = await ports.memberSession(reviewer.instanceId);
+            const targetSessionId = member?.childSessionId;
+            if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
+                throw new Error(`Alpha.6 review wake refused: reviewer '${reviewer.instanceId}' has no live child session (no Leader fallback)`);
+            }
+            await ports.deliver({
+                targetSessionId,
                 wakeId: `review:${request.requestId}`,
                 text: renderOfficerReviewWake(request),
             });

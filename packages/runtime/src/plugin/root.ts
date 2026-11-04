@@ -221,6 +221,7 @@ import {
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js'
+import { createAlpha6RootControlNotifier } from '../../alpha6/notifier.js'
 import type { PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -2449,6 +2450,28 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       { rootSessionId: rootSid, reason: 'alpha6-review-routing-refused', refused: alpha6Wiring.refused },
     )
   }
+  // Alpha.6 needs a REAL wake seam. An opted-in Team without it would either
+  // notify nobody or fall back to the Leader — both are wrong; refuse to boot.
+  if (alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake === undefined) {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      'alpha6ReviewRouting is enabled but this Host exposes no live wake seam; ' +
+        'the Team refuses to boot rather than silently notify the Leader',
+      { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' },
+    )
+  }
+  const alpha6RequestNotification =
+    alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
+      ? createAlpha6RootControlNotifier({
+          rootSessionId: rootSid,
+          resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+          memberSession: async (instanceId) => repos.memberInstances.get(rootSid, instanceId),
+          deliver: (wake) =>
+            live.deliverReviewWake === undefined
+              ? Promise.reject(new Error('Alpha.6 wake seam disappeared after boot'))
+              : live.deliverReviewWake({ rootSessionId: rootSid, ...wake }),
+        })
+      : undefined
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
@@ -2457,13 +2480,15 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
     // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
     ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
-    ...(live.deliverRootControlNotification !== undefined
-      ? {
-          requestNotification: createLeaderControlNotifier({
-            deliver: live.deliverRootControlNotification,
-          }),
-        }
-      : {}),
+    ...(alpha6RequestNotification !== undefined
+      ? { requestNotification: alpha6RequestNotification }
+      : live.deliverRootControlNotification !== undefined
+        ? {
+            requestNotification: createLeaderControlNotifier({
+              deliver: live.deliverRootControlNotification,
+            }),
+          }
+        : {}),
     // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
     // process has an authority-ceiling reader at all. Without it the guard
     // cannot confirm a v3 operation approval and refuses with
