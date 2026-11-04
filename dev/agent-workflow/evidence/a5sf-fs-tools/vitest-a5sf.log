@@ -1,19 +1,19 @@
 
  RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-tools
 
- ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
  ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 7ms
- ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 8ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
  ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 24ms
  ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 17ms
- ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 72ms
- ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 84ms
- ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 399ms
- ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 145ms
- ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 564ms
- ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 89ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 71ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 69ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 364ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 120ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 526ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 84ms
 
  Test Files  11 passed (11)
       Tests  166 passed (166)
-   Start at  12:07:20
-   Duration  1.50s (transform 2.72s, setup 0ms, import 3.50s, tests 1.41s, environment 1ms)
+   Start at  12:39:29
+   Duration  1.43s (transform 2.52s, setup 0ms, import 3.33s, tests 1.29s, environment 1ms)

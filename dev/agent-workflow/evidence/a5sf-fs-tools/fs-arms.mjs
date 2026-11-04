@@ -279,7 +279,7 @@ try {
   // A brand-new file has nothing to read, so a write lane that covers it is
   // enough even though the read lane does not (measured on `write`, the sibling
   // that shares the same guard rule; `edit` cannot create a file).
-  await arm('EDIT-3c (read-before-write is existence-conditioned)', async () => {
+  await arm('EDIT-3c (read-before-write is existence-conditioned; measured via the write sibling)', async () => {
     const fx = tree('e3c'); const sink = sinkOf('e3c')
     const fresh = join(fx.dir, 'created.txt')
     const existing = join(fx.dir, 'existing.txt'); writeFileSync(existing, 'epsilon\n')
@@ -347,6 +347,40 @@ try {
   })
 
   // === PART B — `grep` / `glob` (M-06 / M-07) ================================
+
+  // --- SEARCH-0: PRE-ATTACH preset control — the hole pre-exists the attach --
+  // The SAME out-of-lane search, through the PRESET definition only (no attach
+  // call at all). It executes and emits zero fs facts, which is what makes the
+  // post-attach SEARCH-3 result "the same pre-existing hole", not a regression
+  // introduced by adopting the module through the routed mount.
+  await arm('SEARCH-0 (pre-attach preset control: same hole, 0 facts)', async () => {
+    const fx = tree('s0'); const sink = sinkOf('s0')
+    writeFileSync(join(fx.inside, 'needle.txt'), 'INSIDE-NEEDLE\n')
+    writeFileSync(join(fx.outside, 'secret.txt'), 'OUTSIDE-SECRET\n')
+    const ceiling = ceilingOf({ read: [fx.inside], write: [fx.inside] })
+    const w = await worldWith({ ceiling, sinkPath: sink, preset: [{ module: search, config: SEARCH_CONFIG }], withSubprocess: true })
+    try {
+      const presetGrep = w.root.get('tools').get('grep', w.agentKey)
+      const presetGlob = w.root.get('tools').get('glob', w.agentKey)
+      assert.notEqual(presetGrep, undefined, 'the preset plane did not register grep')
+      // NO attach call: this is the host-preset plane, before any routed shadow.
+      const grep = await call(w, 'grep', { pattern: 'OUTSIDE-SECRET', path: fx.outside })
+      const glob = await call(w, 'glob', { pattern: '**/*.txt', path: fx.outside })
+      const facts = factsOf(sink)
+      assert.equal(ceiling.read.allow.includes(fx.outside), false)
+      assert.equal(grep.isError, false, `the preset grep was refused: ${grep.text}`)
+      assert.match(grep.text, /OUTSIDE-SECRET/, 'the preset grep returned no outside content')
+      assert.equal(glob.isError, false, `the preset glob was refused: ${glob.text}`)
+      assert.match(glob.text, /secret\.txt/)
+      assert.equal(facts.length, 0, `the preset plane wrote guard facts: ${JSON.stringify(facts)}`)
+      // The definitions are the PRESET ones: no routed shadow exists yet.
+      assert.equal(w.root.get('tools').get('grep', w.agentKey), presetGrep)
+      assert.equal(w.root.get('tools').get('glob', w.agentKey), presetGlob)
+      return `attachCalled=false readAllow=${JSON.stringify(ceiling.read.allow)} searched=${JSON.stringify(fx.outside)}`
+        + ` grep=${grep.isError ? 'ERROR' : 'EXECUTED'} glob=${glob.isError ? 'ERROR' : 'EXECUTED'} guardFacts=${facts.length}`
+        + ` definitions=preset grepText=${JSON.stringify(grep.text.slice(0, 96).replace(/\n/g, '\\n'))}`
+    } finally { await w.realm.dispose() }
+  })
 
   // --- SEARCH-1: the module mounts and forwards both tools ------------------
   await arm('SEARCH-1 (mount + forwarding + identity)', async () => {

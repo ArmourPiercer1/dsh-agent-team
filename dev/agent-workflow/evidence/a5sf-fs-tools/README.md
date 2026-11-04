@@ -32,6 +32,11 @@ assumed: the module mounts and its definitions are routed/identity-shadowed, but
 through `ctx.subprocess.spawn` (argv-vector ripgrep), **not** through the guarded `fs`
 service — so an out-of-lane search **executes and returns the outside content with zero guard
 facts**. No OS-level denial was observed and no string filter was allowed to stand in.
+**The hole is pre-existing:** the pre-attach preset control (`SEARCH-0`) runs the same
+out-of-lane search through the host-preset definition with **no attach at all** and gets the
+same result (executes, outside content, zero fs facts) — so the routed adoption changes
+nothing about it and does not introduce it; it is an inventory entry, not a regression from
+this route.
 
 ---
 
@@ -42,8 +47,14 @@ Each arm builds a fresh Cordis world: `SystemPrompt` + `ToolRuntime` + a real
 `writeText`/`editText` actually mutate the file and whose `editText` enforces the tool-level
 unique-match. The **preset plane** mounts the real pinned module on a `standing` scope; the
 Member realm is mounted on the agent scope through `mountMemberA5sfRealm`; the shadow is
-attached through `attachA5sfNativeToolModules` **after** the realm, exactly as the production
-glue does. The `fs` guard is the real `packages/runtime/team-services/src/fs.ts`
+attached through `attachA5sfNativeToolModules` **after** the realm. **Scope caveat (what these
+measurements grade): the NATIVE ROUTE only.** The probe world deliberately does **not** mount
+the Team's governed tool plane — no `config.teamToolPlane`, and none of
+`packages/tools/families/fs.mjs` or `search.mjs` that the production glue places through
+`agent-bindings.mjs` (plane assembly around `:2989`, placement around `:3088`). In a configured
+Team Member the native preset may be shadowed by governed (or shut) rows, so these arms grade
+the native routed lane — the lane `a5sfNativeToolModules` creates — and say nothing about what
+a production Team plane exposes on top of it. The `fs` guard is the real `packages/runtime/team-services/src/fs.ts`
 `createMemberFsGuard`/`createConfinedFileSystemClass` pair — the probe does not implement any
 policy logic itself.
 
@@ -116,7 +127,7 @@ EDIT-3b (write lane no, read lane yes):
   disk="delta\n"
   facts=[member/null/member-fs-tools-probe/editText/deny/IO_WRITE_DENIED]
 
-EDIT-3c (read-before-write is existence-conditioned):
+EDIT-3c (read-before-write is existence-conditioned; measured via the write sibling):
   createInWriteLane=ok existingEdit=denied(IO_WRITE_REQUIRES_READ)
   facts=[member/null/member-fs-tools-probe/writeText/allow/ALLOW,
          member/null/member-fs-tools-probe/editText/deny/IO_WRITE_REQUIRES_READ]
@@ -185,8 +196,12 @@ acceptance (`a5sf-acceptance/README.md`) has never run, and `V@B` stays `no`.
 
 Residual risks kept in ⑦: live rows not run; only the ceiling lane was exercised for `edit`
 (no `dsh.fs/edit` binding lane exists in this composition — a binding for `edit` would move it
-to a binding realm and is a different measurement); TRUSTED_ONLY in-realm JS; content is not a
-lane dimension (3d).
+to a binding realm and is a different measurement); **version-conflict / atomic-replace
+semantics are UNMEASURED** (the provider double applies a direct unique-match replacement; it
+does not exercise the live provider's expected-version guard or its atomic rename); the
+existence-conditioned boundary (3c) was measured through the `write` sibling, because `edit`
+cannot create a file; TRUSTED_ONLY in-realm JS; content is not a lane dimension (3d); and the
+whole row grades the native routed lane, not a configured production Team plane (see §2).
 
 ---
 
@@ -210,6 +225,11 @@ both). What it cannot do is **inherit the confined lane**: the realm's confined 
 ### Measurements
 
 ```
+SEARCH-0 (pre-attach preset control: same hole, 0 facts):
+  attachCalled=false readAllow=["/tmp/…/inside"] searched="/tmp/…/outside"
+  grep=EXECUTED glob=EXECUTED guardFacts=0 definitions=preset
+  grepText="Found 1 match\n\n/tmp/…/outside/secret.txt\nLine 1: OUTSIDE-SECRET"
+
 SEARCH-1 (mount + forwarding + identity):
   module=@deepseek-ai/dsh-tool-fs-search registration=synchronous
   inject=["tools","systemPrompt","subprocess"]
@@ -235,6 +255,12 @@ SEARCH-3 (out-of-lane grep: measured bypass):
   facts means the guard was never consulted: this is not a guard refusal that happened to be
   permissive, and it is not a string filter — the untrusted path is passed verbatim as an
   `rg` argv element and the process runs.
+- **It is not caused by adopting the module.** `SEARCH-0` measures the same call through the
+  **host-preset** definition before any attach (`attachCalled=false`, definitions are the
+  preset ones): it also executes, also returns `OUTSIDE-SECRET`, also emits zero fs facts.
+  The out-of-lane search hole therefore **exists at the host-preset plane before this route is
+  involved**; adopting `grep`/`glob` into the routed mount neither creates nor widens it, and
+  it is not a regression introduced here.
 
 ### Exact failing condition (the gate for both rows)
 
@@ -254,11 +280,18 @@ tree; the only observation is that the routed/native path executed an out-of-cei
 
 ### The one arm that would move each row
 
-For **M-06 (grep)**: mount an OS-confined `subprocess` Provider in the binding realm, then
+For **M-06 (grep)**: mount an OS-confined `subprocess` Provider so the **ceiling/Member**
+realm's search mount resolves it, then
 re-run `SEARCH-3` — the out-of-lane `grep` must fail with an OS `Permission denied` (or a typed
 provider refusal) **and** emit a guard fact attributed to the member/binding identity, with the
 outside content absent from the result. Also pin `exit 0/1`, no-match, bad-pattern and
 cancellation on that same confined provider.
+
+Note on the realm: `grep`/`glob` are forwarded on the **ceiling/Member** fiber —
+`nativeToolMountsOf` only binding-mounts a module that owns a `dsh.fs/*` binding tool, and the
+search module owns none. A search binding would have to be created first for a per-tool
+binding realm to exist; until then the confined `subprocess` must be visible to the ceiling
+mount (installed on the realm/agent context the module resolves through).
 
 For **M-07 (glob)**: the same single arm with `glob` — an out-of-lane `glob` must be refused by
 the confined provider (not merely return no paths), because "no results" is indistinguishable
@@ -291,7 +324,7 @@ All run on this tree; raw transcripts in this directory.
 
 | gate | result | raw |
 | --- | --- | --- |
-| `node dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.mjs` | **11/11 PASS, exit 0** | `fs-arms.log` |
+| `node dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.mjs` | **12/12 PASS, exit 0** | `fs-arms.log` |
 | all a5sf node suites (8 files) | **92/92** (12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
 | `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | law suites + p4t6 (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`, `p4t6-session-event-scan`) | **54/54** (12+13+9+20) | `law-and-p4t6.log` |
@@ -301,7 +334,7 @@ All run on this tree; raw transcripts in this directory.
 | `node scripts/place-dist-glue.mjs` | 101 placements, byte-identical; **no dist diff** | `place-dist-glue.log` |
 | `node scripts/check-artifacts-committed.mjs` | pass (1916 compared, 101 glue) | `check-artifacts-committed.log` |
 | `node scripts/check-artifacts-at-head.mjs` | pass (1916 compared, drift 0) | `check-artifacts-at-head.log` |
-| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, `added=10 findings=0` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, `added=18 findings=0` | `eb3-evidence-guard.log` |
 | `node scripts/eb3-ci-required.mjs` | pass, `workflows=9 findings=0` | `eb3-ci-required.log` |
 | `node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities` | pass (4/4 legs) | `ci-pr-gate.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | **26/26 controls** behaved as required | `eb3-negative-controls.log` |
@@ -317,7 +350,7 @@ unchanged at **1428** and no booking was needed (the `A5SF` booking stays
 
 ```bash
 cd .worktrees/a5sf-fs-tools
-node dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.mjs   # FS-TOOLS ARMS: PASS 11/11
+node dev/agent-workflow/evidence/a5sf-fs-tools/fs-arms.mjs   # FS-TOOLS ARMS: PASS 12/12
 ```
 
 Environment note: this worktree had no `node_modules` or pinned baseline checkout of its own;
@@ -331,7 +364,7 @@ the pnpm store stays outside the sandbox.
 
 | file | what |
 | --- | --- |
-| `fs-arms.mjs`, `fs-arms.log` | the 11 arms (7 for `edit`, 4 for `grep`/`glob`), through the product seam, real pinned modules |
+| `fs-arms.mjs`, `fs-arms.log` | the 12 arms (7 for `edit`, 5 for `grep`/`glob`, incl. the pre-attach SEARCH-0 control), through the product seam, real pinned modules |
 | `all-a5sf-node-suites.log` | the eight a5sf node suites |
 | `vitest-a5sf.log` | `npx vitest run a5sf` |
 | `law-and-p4t6.log`, `p4t6-measured-tie.log` | law suites + the p4t6 tie measured last |
