@@ -1073,7 +1073,18 @@ async function boot() {
         records: recordsFor(p.fifo),
         declaredRoot: p.fifo,
         needle: claimsNow.needle,
-        interrupt: stageCtx.cancelCall === null ? null : { status: stageCtx.cancelCall.status, ok: stageCtx.cancelCall.status === 200 && stageCtx.cancelCall.body?.ok === true },
+        // The acknowledgement lives at body.result.ok (+ value.accepted), because the
+        // shipped route answers an RPC envelope. Reading body.ok read `undefined`
+        // and row 4's interruptAcknowledged clause failed on a cancel the product
+        // had accepted (2026-11-04T20:15:27.439Z, body result.ok=true,
+        // value.accepted=true).
+        interrupt: stageCtx.cancelCall === null ? null : {
+          status: stageCtx.cancelCall.status,
+          ok: stageCtx.cancelCall.status === 200
+            && stageCtx.cancelCall.body?.result?.ok === true
+            && stageCtx.cancelCall.body?.result?.value?.accepted !== false,
+          accepted: stageCtx.cancelCall.body?.result?.value?.accepted ?? null,
+        },
         transcriptAfterCall: '',
       }
     }

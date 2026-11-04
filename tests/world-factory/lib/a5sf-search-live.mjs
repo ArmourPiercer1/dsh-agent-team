@@ -360,7 +360,16 @@ export function judgeRow4(sample = {}) {
   if (interrupt === null || interrupt === undefined) return notReached('NO_INTERRUPT_ROW4', { declaredRoot, spawns: spawns.length })
   const exit = exitRecords(records).find((row) => argvHas(row, declaredRoot)) ?? null
   const abortAcknowledged = interrupt.status === 200 && interrupt.ok === true
-  const childTerminated = exit !== null && (exit.signal !== null && exit.signal !== undefined && exit.signal !== '')
+  // The launcher reports a payload killed by a signal as `code = 128 + signum`
+  // with an EMPTY signal string (provider.ts, StreamingSpawnHandle.exited: "the
+  // constructed 128+signum convention for a payload killed by a signal"). So both
+  // the OS signal name (when the arm reports one) and the documented convention
+  // count as "the child was terminated", and nothing else does.
+  const SIGNAL_EXIT = new Map([[128 + 15, 'SIGTERM'], [128 + 9, 'SIGKILL'], [128 + 2, 'SIGINT']])
+  const exitCode = exit === null ? null : Number(exit.code)
+  const childTerminated = exit !== null
+    && (((exit.signal !== null && exit.signal !== undefined && exit.signal !== ''))
+      || (Number.isFinite(exitCode) && SIGNAL_EXIT.has(exitCode)))
   const delivered = result !== null && result !== undefined
   const settledAsError = delivered && result.isError === true
   const abortText = /(aborted|cancelled|canceled|SEARCH_ABORTED|tool call aborted)/iu

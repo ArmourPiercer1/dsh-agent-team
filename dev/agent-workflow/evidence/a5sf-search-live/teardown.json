@@ -136,9 +136,9 @@
       "body": {
         "ok": true,
         "value": {
-          "root": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob",
+          "root": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob",
           "paths": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob/needle.txt"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob/needle.txt"
           ]
         }
       }
@@ -152,11 +152,11 @@
       "toolBindingIdentity": null,
       "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-04T20:07:00.791Z"
+      "observedAt": "2026-11-04T20:15:29.847Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -165,16 +165,16 @@
       "toolBindingIdentity": null,
       "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T20:07:00.839Z"
+      "observedAt": "2026-11-04T20:15:29.896Z"
     }
   ],
   "consultCopy": {
     "copied": true,
-    "sha256": "54baa1234b1f05a9696bb537923d71b08604dcd5c835a097f49376f2523d38b5",
+    "sha256": "da1b811169850e09e907dc82dc97292bd1fda13ef22aec06d99da1610d1a00ce",
     "bytes": 3036
   },
   "processSeam": {
@@ -186,18 +186,18 @@
     "worldTeardown": {
       "host": {
         "wasRunning": true,
-        "pid": 75,
+        "pid": 76,
         "killed": true,
         "portFree": true
       },
-      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z",
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z",
       "releasedPorts": [
         3182,
         3491,
         3182
       ],
       "killedPids": [
-        75
+        76
       ],
       "notes": []
     }

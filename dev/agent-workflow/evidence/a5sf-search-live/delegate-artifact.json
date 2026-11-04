@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/team-call-artifact/1",
-  "at": "2026-11-04T20:06:58.561Z",
+  "at": "2026-11-04T20:15:27.630Z",
   "stage": "member-install",
   "memberSeen": {
     "visible": true,
@@ -22,7 +22,7 @@
       "result": {
         "source": "model",
         "isError": false,
-        "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-acceptance-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14xcgx11i3lu\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-47be99afeb8b0aac5c2a00478d3f8141\",\"operationId\":\"op-1b9gif61u6gwev0bgl3do0ln\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sfsrch-d1-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_SEARCH_D1_DONE Error: tool call timed out after 30000ms\"}},\"requestToken\":\"a5sfsrch-d1-delegate\"}"
+        "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-acceptance-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14xcgx11i3lu\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-47be99afeb8b0aac5c2a00478d3f8141\",\"operationId\":\"op-1b9gif61u6gwev0bgl3do0ln\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sfsrch-d1-delegate\",\"status\":\"failed\",\"error\":{\"code\":\"WORK_TURN_ABORTED\",\"message\":\"the member turn was aborted before completion\"}}},\"requestToken\":\"a5sfsrch-d1-delegate\"}"
       }
     }
   ],
@@ -36,7 +36,7 @@
       "revision": "1",
       "contentHash": "sha256:b87c47d6388b467b14f98f3620d20b09352fecf97cc58b007ec315221c2231f6",
       "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
-      "createdAt": "2026-11-04T20:06:27.432Z",
+      "createdAt": "2026-11-04T20:15:26.492Z",
       "generation": 9
     },
     "members": [
@@ -243,7 +243,7 @@
       "a5p1-guard: dispatcher-call-end agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfsrch-delegate inFlight=0"
     ]
   },
-  "mockRequests": 17,
+  "mockRequests": 16,
   "memberTurnSeen": true,
   "note": "tool_result text is the product-side answer to the call; a refusal carries its typed error, an acceptance with no Member means the worker never started"
 }
