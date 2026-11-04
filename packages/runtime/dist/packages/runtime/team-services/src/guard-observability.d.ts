@@ -69,6 +69,15 @@ export interface GuardConsultFact {
     /** 1-based per observed guard (per realm); file order is the cross-realm order. */
     readonly sequence: number;
     readonly observedAt: string;
+    /**
+     * OPTIONAL, additive: what the consulting face did to the request BEYOND the
+     * lane decision (BL-16: the confined `spawn` face records that it disabled
+     * rg's ancestor/VCS ignore discovery, and exactly which semantics that
+     * removed). The guard's decision is unchanged and the fact count is
+     * unchanged — this is the recorded answer to "why did my grep behave this
+     * way", not a second decision.
+     */
+    readonly annotations?: readonly string[];
 }
 /** What a caller may hand `install*`/`mount*` to observe consultations. */
 export type GuardConsultObserver = (fact: GuardConsultFact) => void | Promise<void>;

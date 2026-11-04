@@ -56,8 +56,17 @@ export type FsProviderConstructor = new (ctx: Context, config?: Record<string, u
  * factor of the invariant is not allowed to be decorative).
  */
 export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>;
-/** The per-call admission function the subclass calls before delegating. */
-export type FsGuard = (method: string, hostPath: string) => Promise<void>;
+/**
+ * The per-call admission function the subclass calls before delegating.
+ *
+ * `annotations` is an OPTIONAL, additive transport for a face that did
+ * something to the request BESIDES the lane decision (BL-16: the confined
+ * subprocess face disables rg's ancestor/VCS ignore discovery when the search
+ * root's ancestors are outside the lane). It is not a decision input: the
+ * guard still decides on `(method, hostPath)` alone, and the note is recorded
+ * on the SAME fact the decision produced, so the fact count never changes.
+ */
+export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[]) => Promise<void>;
 /**
  * Build the admission function for one Member. All checks are fail-closed:
  * a resolver failure, an unsupported destination, an uncovered target or a

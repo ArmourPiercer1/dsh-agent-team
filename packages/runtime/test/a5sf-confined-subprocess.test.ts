@@ -26,6 +26,7 @@
  */
 import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PassThrough } from 'node:stream'
@@ -35,9 +36,12 @@ import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../member-io-
 import { compileEffectiveIo } from '../member-io-policy/src/index.js'
 import { compileExecutionProfile } from '../team-sandbox/src/profile.js'
 import {
+  SEARCH_IGNORE_DISCOVERY_FLAGS,
+  SEARCH_IGNORE_DISCOVERY_NOTES,
   confinedSpawnAllowPaths,
   createConfinedSubprocessClass,
   createMemberSubprocessGuard,
+  laneSafeSearchArgv,
   programAttributionRefusal,
   readIntentsOf,
 } from '../team-services/src/subprocess.js'
@@ -174,6 +178,22 @@ const worlds: string[] = []
 let world = ''
 let inside = ''
 let outside = ''
+/**
+ * A temp tree that IS a git worktree on disk (`.git` is a FILE pointing at a
+ * gitdir — the layout `git worktree add` writes). `worktree/.git` is an
+ * ANCESTOR of `worktreeInside` and outside a lane that admits only the search
+ * root, which is the live row-1 shape.
+ */
+let worktree = ''
+let worktreeInside = ''
+let rgPath = ''
+
+function packagedRg(): string {
+  const entry = createRequire(import.meta.url).resolve('@deepseek-ai/dsh-tool-fs-search')
+  const resolved = createRequire(entry)('@vscode/ripgrep').rgPath as string
+  if (!existsSync(resolved)) throw new Error(`the packaged ripgrep is missing: ${resolved}`)
+  return resolved
+}
 
 beforeAll(async () => {
   world = await realpath(await mkdtemp(join(tmpdir(), 'a5sf-bl16-')))
@@ -184,16 +204,35 @@ beforeAll(async () => {
   await mkdir(outside, { recursive: true })
   await writeFile(join(inside, 'needle.txt'), 'INSIDE-NEEDLE\n', 'utf8')
   await writeFile(join(outside, 'secret.txt'), 'OUTSIDE-SECRET-MUST-NOT-LEAK\n', 'utf8')
+
+  const gitdir = join(world, 'main-gitdir', '.git', 'worktrees', 'wt1')
+  await mkdir(gitdir, { recursive: true })
+  worktree = join(world, 'repo-wt')
+  worktreeInside = join(worktree, 'lane', 'inside')
+  await mkdir(worktreeInside, { recursive: true })
+  await writeFile(join(worktree, '.git'), `gitdir: ${gitdir}\n`, 'utf8')
+  await writeFile(join(worktree, '.gitignore'), 'ignored.md\n', 'utf8')
+  await writeFile(join(worktreeInside, 'needle.txt'), 'WT-NEEDLE\n', 'utf8')
+  await writeFile(join(worktreeInside, 'ignored.md'), 'WT-NEEDLE ignored-but-present\n', 'utf8')
+  rgPath = packagedRg()
 })
 
 afterAll(async () => {
   for (const dir of worlds) await rm(dir, { recursive: true, force: true })
 })
 
+interface FactRow {
+  method: string
+  locator: string
+  decision: string
+  decidedBy: string
+  annotations?: readonly string[]
+}
+
 function confined(
   policy: EffectiveIoPolicy,
   provider: FakeProvider,
-  facts: { method: string; locator: string; decision: string; decidedBy: string }[] = [],
+  facts: FactRow[] = [],
 ) {
   const Base = BaseSubprocess as unknown as new (ctx: unknown, config?: unknown) => unknown
   const guard = createMemberSubprocessGuard(policy)
@@ -201,7 +240,13 @@ function confined(
     effective: policy,
     provider,
     onGuardConsult: (fact) => {
-      facts.push({ method: fact.method, locator: fact.locator, decision: fact.decision, decidedBy: fact.decidedBy })
+      facts.push({
+        method: fact.method,
+        locator: fact.locator,
+        decision: fact.decision,
+        decidedBy: fact.decidedBy,
+        ...(fact.annotations === undefined ? {} : { annotations: fact.annotations }),
+      })
     },
     guard,
   }) as unknown as {
@@ -280,6 +325,288 @@ describe('BL-16 read-intent extraction (pure)', () => {
   })
 })
 
+// ---------------------------------------------------------------------------
+// BL-16 live row 1 — a lane-scoped search must not depend on OUTSIDE data.
+// ---------------------------------------------------------------------------
+
+describe('BL-16 lane-safe search argv (pure: no process)', () => {
+  const grepArgv = (root: string): string[] => [
+    '/usr/bin/rg', '--no-config', '--json', '--regexp=NEEDLE', '--', root,
+  ]
+
+  it('ADDS --no-ignore-parent/--no-ignore-vcs when an ancestor is outside the lane', async () => {
+    const decision = await laneSafeSearchArgv(
+      { argv: grepArgv(worktreeInside), cwd: world },
+      lane([worktreeInside]),
+    )
+    expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FLAGS])
+    expect(decision.annotatedRoots).toEqual([worktreeInside])
+    expect(decision.argv).toEqual([
+      '/usr/bin/rg', '--no-config', ...SEARCH_IGNORE_DISCOVERY_FLAGS, '--json', '--regexp=NEEDLE', '--', worktreeInside,
+    ])
+    // Never after `--`: the operand list is untouched.
+    expect(decision.argv.indexOf('--')).toBe(decision.argv.length - 2)
+    expect(decision.annotations).toEqual(SEARCH_IGNORE_DISCOVERY_NOTES)
+    // The recorded answer says exactly which semantics were removed.
+    expect(decision.annotations.join(' ')).toContain('--no-ignore-vcs')
+    expect(decision.annotations.join(' ')).toContain('.gitignore')
+  })
+
+  it('KEEPS the shipped argv when the lane includes the worktree root (ordinary .gitignore semantics)', async () => {
+    const decision = await laneSafeSearchArgv({ argv: grepArgv(worktreeInside), cwd: world }, lane([worktree]))
+    expect(decision.addedFlags).toEqual([])
+    expect(decision.argv).toEqual(grepArgv(worktreeInside))
+    expect(decision.annotations).toEqual([])
+  })
+
+  it('KEEPS the shipped argv when `--no-ignore` already disables the ancestor walk (the glob shape)', async () => {
+    const argv = ['/usr/bin/rg', '--no-config', '--files', '--glob=*.txt', '--no-ignore', '--hidden', '--', worktreeInside]
+    const decision = await laneSafeSearchArgv({ argv, cwd: world }, lane([worktreeInside]))
+    expect(decision.addedFlags).toEqual([])
+    expect(decision.argv).toEqual(argv)
+  })
+
+  it('KEEPS the shipped argv for a FILE operand (rg does no parent discovery for a file)', async () => {
+    const file = join(worktreeInside, 'needle.txt')
+    const decision = await laneSafeSearchArgv({ argv: grepArgv(file), cwd: world }, lane([worktreeInside]))
+    expect(decision.addedFlags).toEqual([])
+    expect(decision.argv).toEqual(grepArgv(file))
+  })
+
+  it('an explicit `deny: [<root>/.git]` still forces the flags (the VCS root is not readable)', async () => {
+    const decision = await laneSafeSearchArgv(
+      { argv: grepArgv(worktreeInside), cwd: world },
+      lane([worktree], [join(worktree, '.git')]),
+    )
+    expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FLAGS])
+  })
+
+  it('a `mode: all` lane needs no flags (every ancestor is already in lane)', async () => {
+    const decision = await laneSafeSearchArgv(
+      { argv: grepArgv(worktreeInside), cwd: world },
+      { mode: 'all', allow: [], ask: [], deny: [] },
+    )
+    expect(decision.addedFlags).toEqual([])
+    expect(decision.argv).toEqual(grepArgv(worktreeInside))
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The same arms against the REAL Landlock launcher and the packaged rg.
+// ---------------------------------------------------------------------------
+
+interface RealFace {
+  readonly Confined: new (ctx: unknown) => { spawn(spec: unknown): HandleLike }
+  readonly counts: { spawns: number; argv: string[] }
+  readonly facts: FactRow[]
+}
+
+async function realFace(policy: EffectiveIoPolicy, mutateArgv?: (argv: string[]) => string[]): Promise<RealFace | null> {
+  const { createConfinedProcessProvider } = await import('../sandbox-provider/provider.js')
+  const osProvider = createConfinedProcessProvider({
+    realmId: 'realm-bl16-ancestors',
+    trustRoot: 'git:a5sf:bl16-ancestors',
+    scratchRoot: world,
+  })
+  const probe = await osProvider.probe()
+  const enforced = probe.ok
+    && probe.value.some((row) => row.dimension === 'content-read' && row.level === 'enforced')
+  if (!enforced) return null
+  const counts = { spawns: 0, argv: [] as string[] }
+  const counted: ConfinedProcessProvider = {
+    async spawnStreaming(request, streaming) {
+      counts.spawns += 1
+      const argv = mutateArgv === undefined ? [...request.argv] : mutateArgv([...request.argv])
+      counts.argv = argv
+      return osProvider.spawnStreaming({ ...request, argv }, streaming)
+    },
+  }
+  const facts: FactRow[] = []
+  const Confined = createConfinedSubprocessClass(BaseSubprocess as never, {
+    effective: policy,
+    provider: counted,
+    realmId: 'realm-bl16-ancestors',
+    onGuardConsult: (fact) => {
+      facts.push({
+        method: fact.method,
+        locator: fact.locator,
+        decision: fact.decision,
+        decidedBy: fact.decidedBy,
+        ...(fact.annotations === undefined ? {} : { annotations: fact.annotations }),
+      })
+    },
+  }) as unknown as new (ctx: unknown) => { spawn(spec: unknown): HandleLike }
+  return { Confined, counts, facts }
+}
+
+async function runRealGrep(face: RealFace, searchRoot: string, pattern = 'WT-NEEDLE') {
+  const handle = new face.Confined({}).spawn({
+    argv: [rgPath, '--no-config', '--json', `--regexp=${pattern}`, '--', searchRoot],
+    cwd: world,
+    stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 20 } },
+    graceMs: 10_000,
+  })
+  let exit: { exitCode: number | null; signal: string | null } | null = null
+  let doneError: string | null = null
+  try {
+    exit = await handle.done
+  } catch (error) {
+    doneError = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+  }
+  return {
+    exit,
+    doneError,
+    stdout: String(handle.collected.stdout?.readFrom(0).text ?? ''),
+    stderr: String(handle.collected.stderr?.readFrom(0).text ?? ''),
+  }
+}
+
+describe('BL-16 live row-1 repair (real launcher, real packaged rg, host-free)', () => {
+  it('(i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure', async (ctx) => {
+    const face = await realFace(effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside])))
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside)
+    expect(result.doneError).toBeNull()
+    expect(result.exit).toEqual({ exitCode: 0, signal: null })
+    expect(result.stderr).toBe('')
+    expect(result.stdout).toContain('WT-NEEDLE')
+    expect(face.counts.spawns).toBe(1)
+    expect(face.counts.argv).toContain('--no-ignore-vcs')
+    expect(face.counts.argv).toContain('--no-ignore-parent')
+    expect(face.facts).toHaveLength(1)
+    expect(face.facts[0]).toMatchObject({
+      method: 'spawn', locator: worktreeInside, decision: 'allow', decidedBy: 'ALLOW',
+      annotations: SEARCH_IGNORE_DISCOVERY_NOTES,
+    })
+  }, 60_000)
+
+  it('(i-MUTATION) remove the two flags at the provider boundary: the same arm goes RED with the live stderr', async (ctx) => {
+    const face = await realFace(
+      effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside])),
+      (argv) => argv.filter((token) => token !== '--no-ignore-parent' && token !== '--no-ignore-vcs'),
+    )
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside)
+    expect(result.exit?.exitCode).toBe(2)
+    expect(result.stderr).toContain(`${worktree}/.git: Permission denied (os error 13)`)
+    expect(result.stdout).toContain('WT-NEEDLE') // the answer existed; rg still failed
+  }, 60_000)
+
+  it('(ii) `.git` is still refused at ADMISSION as a search root (one deny fact, zero processes)', async (ctx) => {
+    const face = await realFace(effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside])))
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, join(worktree, '.git'))
+    expect(result.doneError).toMatch(/IO_READ_DENIED|outside/)
+    expect(face.counts.spawns).toBe(0)
+    expect(face.facts).toHaveLength(1)
+    expect(face.facts[0]).toMatchObject({ method: 'spawn', locator: join(worktree, '.git'), decision: 'deny', decidedBy: 'IO_READ_DENIED' })
+    expect(face.facts[0]?.annotations).toBeUndefined()
+  }, 60_000)
+
+  it('(ii-KERNEL) the kernel still denies a direct `.git` read (raw provider, admission bypassed)', async (ctx) => {
+    const { createConfinedProcessProvider } = await import('../sandbox-provider/provider.js')
+    const policy = effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside]))
+    const osProvider = createConfinedProcessProvider({ realmId: 'realm-bl16-anc-kernel', trustRoot: 'git:a5sf:bl16-anc', scratchRoot: world })
+    const probe = await osProvider.probe()
+    const enforced = probe.ok && probe.value.some((row) => row.dimension === 'content-read' && row.level === 'enforced')
+    if (!enforced) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const profile = compileExecutionProfile(policy)
+    expect(profile.ok).toBe(true)
+    if (!profile.ok) return
+    const spawned = await osProvider.spawnStreaming({
+      grantFingerprint: 'bl16-anc-kernel',
+      realmId: 'realm-bl16-anc-kernel',
+      bindingId: 'dsh.search/grep',
+      memberScope: IDENTITY.memberInstanceId,
+      argv: ['/bin/sh', '-c', `cat '${join(worktree, '.git')}' 2>&1; echo RC=$?`],
+      cwd: worktreeInside,
+      env: [],
+      allowPaths: confinedSpawnAllowPaths(profile.value.allowPaths, '/bin/sh'),
+      exitPassthrough: true,
+    }, { graceMs: 10_000 })
+    expect(spawned.ok).toBe(true)
+    if (!spawned.ok) return
+    const text = await drainConfined(spawned.value)
+    expect(text).toMatch(/Permission denied|EACCES/)
+    expect(text).not.toContain('gitdir:')
+    // The file is still there for the host: this is a kernel refusal, not a fixture.
+    expect(existsSync(join(worktree, '.git'))).toBe(true)
+  }, 60_000)
+
+  it('(iii) a lane that INCLUDES the worktree root keeps ordinary .gitignore semantics', async (ctx) => {
+    const face = await realFace(effective(lane([worktree]), lane([worktree]), lane([worktree])))
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside)
+    expect(result.doneError).toBeNull()
+    expect(result.exit).toEqual({ exitCode: 0, signal: null })
+    expect(result.stdout).toContain('WT-NEEDLE') // needle.txt
+    expect(result.stdout).not.toContain('ignored-but-present') // .gitignore still hides ignored.md
+    expect(face.counts.argv).not.toContain('--no-ignore-vcs')
+    expect(face.counts.argv).not.toContain('--no-ignore-parent')
+    expect(face.facts).toHaveLength(1)
+    expect(face.facts[0]?.annotations).toBeUndefined()
+  }, 60_000)
+
+  it('(iii-MUTATION) forcing the flags onto that lane makes the ignored file appear', async (ctx) => {
+    const face = await realFace(
+      effective(lane([worktree]), lane([worktree]), lane([worktree])),
+      (argv) => {
+        const at = argv.indexOf('--')
+        return [...argv.slice(0, at), ...SEARCH_IGNORE_DISCOVERY_FLAGS, ...argv.slice(at)]
+      },
+    )
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside)
+    expect(result.exit).toEqual({ exitCode: 0, signal: null })
+    expect(result.stdout).toContain('ignored-but-present')
+  }, 60_000)
+
+  it('(iv) an invalid pattern still surfaces the REAL rg stderr and exit 2', async (ctx) => {
+    const face = await realFace(effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside])))
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside, '([unclosed')
+    expect(result.exit?.exitCode).toBe(2)
+    expect(result.stderr).toContain('regex parse error')
+    expect(face.counts.spawns).toBe(1)
+  }, 60_000)
+
+  it('(v) the flags change neither the fact count nor the process count', async (ctx) => {
+    const face = await realFace(effective(lane([worktreeInside]), lane([worktreeInside]), lane([worktreeInside])))
+    if (face === null) {
+      ctx.skip('Landlock content-read is not enforced on this host')
+      return
+    }
+    const result = await runRealGrep(face, worktreeInside)
+    expect(result.doneError).toBeNull()
+    // exactly ONE allow fact and exactly ONE spawned process: the disclosure
+    // rides the existing decision, it does not add a second one.
+    expect(face.facts).toHaveLength(1)
+    expect(face.facts[0]?.decision).toBe('allow')
+    expect(face.counts.spawns).toBe(1)
+  }, 60_000)
+})
+
 describe('BL-16 admission (unit, no process)', () => {
   it('admits an in-lane search root and hands it to the confined provider', async () => {
     const policy = effective(lane([inside]), lane([inside]), lane([inside]))
@@ -293,7 +620,12 @@ describe('BL-16 admission (unit, no process)', () => {
 
     expect(provider.spawnCalls).toBe(1)
     expect(provider.requests[0]?.cwd).toBe(world)
-    expect(provider.requests[0]?.argv).toEqual(['/usr/bin/rg', '--no-config', '--json', '--regexp=NEEDLE', '--', inside])
+    // BL-16 live row 1: this temp root sits under a directory the lane does not
+    // include, so ancestor/VCS discovery would leave the lane. The face adds
+    // its two flags (the DECLARED argv is unchanged) and says so on the fact.
+    expect(provider.requests[0]?.argv).toEqual([
+      '/usr/bin/rg', '--no-config', ...SEARCH_IGNORE_DISCOVERY_FLAGS, '--json', '--regexp=NEEDLE', '--', inside,
+    ])
     // The OS profile carries the effective read lane; the runtime allowance is
     // ADDITIVE (executable + loader dirs) and never replaces the lane.
     const granted = (provider.requests[0]?.allowPaths ?? []).map((entry) => entry.path)
@@ -302,7 +634,7 @@ describe('BL-16 admission (unit, no process)', () => {
     expect(laneEntry?.accessBits.readFile).toBe(true)
     expect(laneEntry?.accessBits.readDir).toBe(true)
     expect(outcome).toEqual({ exitCode: 0, signal: null })
-    expect(facts).toEqual([{ method: 'spawn', locator: inside, decision: 'allow', decidedBy: 'ALLOW' }])
+    expect(facts).toEqual([{ method: 'spawn', locator: inside, decision: 'allow', decidedBy: 'ALLOW', annotations: SEARCH_IGNORE_DISCOVERY_NOTES }])
     expect(String(handle.collected.stdout?.readFrom(0).text)).toContain('"type":"match"')
   })
 

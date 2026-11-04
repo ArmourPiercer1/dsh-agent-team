@@ -83,6 +83,15 @@ export interface GuardConsultFact {
   /** 1-based per observed guard (per realm); file order is the cross-realm order. */
   readonly sequence: number
   readonly observedAt: string
+  /**
+   * OPTIONAL, additive: what the consulting face did to the request BEYOND the
+   * lane decision (BL-16: the confined `spawn` face records that it disabled
+   * rg's ancestor/VCS ignore discovery, and exactly which semantics that
+   * removed). The guard's decision is unchanged and the fact count is
+   * unchanged — this is the recorded answer to "why did my grep behave this
+   * way", not a second decision.
+   */
+  readonly annotations?: readonly string[]
 }
 
 /** What a caller may hand `install*`/`mount*` to observe consultations. */
@@ -152,12 +161,12 @@ export function observeGuard(
   context: GuardConsultContext,
 ): FsGuard {
   let sequence = 0
-  return async function observedGuard(method: string, hostPath: string): Promise<void> {
+  return async function observedGuard(method: string, hostPath: string, annotations?: readonly string[]): Promise<void> {
     let decision: GuardConsultDecision
     let decidedBy: string
     let denial: TeamIoDenial | null = null
     try {
-      await guard(method, hostPath)
+      await guard(method, hostPath, annotations)
       decision = 'allow'
       decidedBy = GUARD_ALLOW_DECIDED_BY
     } catch (error) {
@@ -180,6 +189,11 @@ export function observeGuard(
       decidedBy,
       sequence,
       observedAt: new Date().toISOString(),
+      // The key is absent (not `undefined`) when there is nothing to say, so an
+      // unannotated fact is byte-identical to the previous schema.
+      ...(annotations === undefined || annotations.length === 0
+        ? {}
+        : { annotations: Object.freeze([...annotations]) }),
     })
 
     try {
@@ -281,6 +295,16 @@ function assertFact(value: unknown, path: string, line: number): GuardConsultFac
   }
   if (!Number.isInteger(record.sequence) || (record.sequence as number) < 1) {
     throw invalid(`'sequence' must be a positive integer`)
+  }
+  // Additive optional field: when present it must be a non-empty array of
+  // non-empty strings. Its ABSENCE is the previous schema, so old sinks read
+  // unchanged.
+  if (record.annotations !== undefined) {
+    const annotations = record.annotations
+    if (!Array.isArray(annotations) || annotations.length === 0
+      || annotations.some((note) => typeof note !== 'string' || note.trim() === '')) {
+      throw invalid('\'annotations\' must be a non-empty array of non-empty strings when present')
+    }
   }
   return value as GuardConsultFact
 }
