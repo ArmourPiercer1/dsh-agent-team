@@ -1,0 +1,42 @@
+{
+  "schema": "a5sf-search-live/row6-sample-source/1",
+  "note": "verbatim copies of the archived evidence of one run; the driver archives the PREVIOUS run into runs/<stamp> at the START of the next run, so the directory stamp and the runId inside differ",
+  "runId": "a5sf-search-2026-11-04T20-17-23-486Z",
+  "files": {
+    "consultations.jsonl": {
+      "sha256": "37b3a371994ed3973331a705b18335ac3eb39671776cef7d4de78683a743721b",
+      "bytes": 3036,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/consultations.jsonl"
+    },
+    "grant.json": {
+      "sha256": "820ee12f4ae8d9853424df71fb62b7456a4af2507130de3ca69f3dcb292bbb78",
+      "bytes": 3074,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/grant.json"
+    },
+    "guard-facts.json": {
+      "sha256": "99d7d1bdd5f40a34c25017a50127903e4b3aabe87eaade15f60411aa01b1e436",
+      "bytes": 3543,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/guard-facts.json"
+    },
+    "oracle-samples.json": {
+      "sha256": "548a01fc879b154e2836a618fe11c03e913f38c1903e5cb7d0aea384ebb8c6b5",
+      "bytes": 41911,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/oracle-samples.json"
+    },
+    "run-record.json": {
+      "sha256": "962748227f91c9665757d4be7fd0accf8822a6543e60fa6a0ce9b57758db1bde",
+      "bytes": 15690,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-record.json"
+    },
+    "search-counter.jsonl": {
+      "sha256": "aea40ff948f285ce629a9a9588c99bfb2c8aa610ee9cd0bb1a47717caaca84d3",
+      "bytes": 7229,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/search-counter.jsonl"
+    },
+    "teardown.json": {
+      "sha256": "43f2192ebe252e32f3af37ac7f23cb49002a4c61abf9ffeba82d8879e6be6827",
+      "bytes": 13672,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/teardown.json"
+    }
+  }
+}

@@ -1,0 +1,515 @@
+{
+  "schema": "a5sf-search-live/row6-diagnosis/1",
+  "date": "2026-11-05",
+  "lane": "a5sf-search-live (BL-16 / P2-03 native grep), row 6",
+  "determination": {
+    "answer": "a",
+    "label": "product contract gap",
+    "confidence": "high",
+    "oneSentence": "After team_archive_member commits ARCHIVED the durable Member session is still cold-resumed into a live tool-bearing Agent by ensureLiveAgent and unconditionally by the boot resume loop, because neither seam reads MemberInstance.lifecycle; archive only drops process-local residency.",
+    "notB": "the row accepts 422 / 500 / 200-ok:false / zero guard facts, and the product typed refusal (PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED|_TERMINAL) satisfies every failed clause unchanged (a refusal at the ensureLiveAgent seam would be 422 -> everyDispatchExplained true, zero facts, zero spawns)",
+    "notC": "the failing call is served by the product public live.executeTool->ensureLiveAgent seam, and the boot resume loop reproduces the resurrection on a plain restart with no test route in play; the archive/member/tool effects in the run are real, none were forged"
+  },
+  "runs": [
+    {
+      "runId": "a5sf-search-2026-11-04T20-10-19-766Z",
+      "stopInstant": "2026-11-04T20:15:29.800Z",
+      "verdict": "FAIL",
+      "reason": "ROW6_CLAUSE_FAILED",
+      "failed": [
+        "everyDispatchExplained",
+        "noSuccessAfterStop",
+        "noCallableShadow",
+        "probeFactsAreRefusals",
+        "noProcessAfterStop"
+      ],
+      "checks": {
+        "archivedLifecycle": true,
+        "noActiveMemberLeft": true,
+        "everyDispatchExplained": false,
+        "noSuccessAfterStop": false,
+        "noCallableShadow": false,
+        "noManagedDisposeFault": true,
+        "noUnattributedRealmFault": true,
+        "factsAreTimestamped": true,
+        "noFactAfterStop": true,
+        "probeFactsAreRefusals": false,
+        "noProcessAfterStop": false,
+        "hostDead": true,
+        "portReleased": true,
+        "homeDeleted": true,
+        "noOrphanProcess": true
+      },
+      "archive": {
+        "status": 200,
+        "ok": true,
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-14xcgx11i3lu",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        }
+      },
+      "membersAfter": [
+        {
+          "instanceId": "inst-14xcgx11i3lu",
+          "templateId": "worker",
+          "lifecycle": "ARCHIVED"
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "lifecycle": "undefined"
+        }
+      ],
+      "postStop": [
+        {
+          "index": 0,
+          "status": 200,
+          "ok": false,
+          "code": "SEARCH_FAILED"
+        },
+        {
+          "index": 1,
+          "status": 200,
+          "ok": true,
+          "code": null
+        }
+      ],
+      "servedDispatches": [
+        {
+          "index": 1,
+          "tool": "glob",
+          "status": 200,
+          "ok": true,
+          "value": {
+            "root": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob",
+            "paths": [
+              "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob/needle.txt"
+            ]
+          },
+          "dispatchedAfterStopInstant": true
+        }
+      ],
+      "probeFacts": [
+        {
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside",
+          "method": "spawn",
+          "observedAt": "2026-11-04T20:15:29.847Z",
+          "sequence": 1
+        },
+        {
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob",
+          "method": "spawn",
+          "observedAt": "2026-11-04T20:15:29.896Z",
+          "sequence": 2
+        }
+      ],
+      "processAfterTeardown": {
+        "portStillListening": false,
+        "homeExistsAfterTeardown": false,
+        "orphanPids": [],
+        "hostKilled": true
+      },
+      "confinedSpawnsAfterStop": 2,
+      "baseSpawnsAfterStop": 0,
+      "sampleFiles": {
+        "consultations.jsonl": "da1b811169850e09e907dc82dc97292bd1fda13ef22aec06d99da1610d1a00ce",
+        "grant.json": "83aaef4ceca00129cf8fbdb80672f87af90f97e35f1a988228cdf3cfa5591457",
+        "guard-facts.json": "7df04bda039966f377fe8c046d9a597527f0de60b8fc3e02d32f791d5508631f",
+        "oracle-samples.json": "813e2cdc448a69d1e559233072c0b6ae3c68bf12eda8e315d42b92255281eb63",
+        "run-record.json": "09dbdc2721053eaa032820db07b273c7c7c5ca32402077b176286f58f7731bd7",
+        "search-counter.jsonl": "21a7945da9b05520d0385c98fa1ba3d56c28e94abb6f52aa6cd78eac9d923b7a",
+        "teardown.json": "428dcaa04de3cc9a551edb1898167cf7d6c178a027d4759892dc55afe6fae43a"
+      },
+      "memberSessionId": "session-team-child-47be99afeb8b0aac5c2a00478d3f8141"
+    },
+    {
+      "runId": "a5sf-search-2026-11-04T20-17-23-486Z",
+      "stopInstant": "2026-11-04T20:22:33.292Z",
+      "verdict": "FAIL",
+      "reason": "ROW6_CLAUSE_FAILED",
+      "failed": [
+        "everyDispatchExplained",
+        "noSuccessAfterStop",
+        "noCallableShadow",
+        "probeFactsAreRefusals",
+        "noProcessAfterStop"
+      ],
+      "checks": {
+        "archivedLifecycle": true,
+        "noActiveMemberLeft": true,
+        "everyDispatchExplained": false,
+        "noSuccessAfterStop": false,
+        "noCallableShadow": false,
+        "noManagedDisposeFault": true,
+        "noUnattributedRealmFault": true,
+        "factsAreTimestamped": true,
+        "noFactAfterStop": true,
+        "probeFactsAreRefusals": false,
+        "noProcessAfterStop": false,
+        "hostDead": true,
+        "portReleased": true,
+        "homeDeleted": true,
+        "noOrphanProcess": true
+      },
+      "archive": {
+        "status": 200,
+        "ok": true,
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-14xcgx11i3lu",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        }
+      },
+      "membersAfter": [
+        {
+          "instanceId": "inst-14xcgx11i3lu",
+          "templateId": "worker",
+          "lifecycle": "ARCHIVED"
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "lifecycle": "undefined"
+        }
+      ],
+      "postStop": [
+        {
+          "index": 0,
+          "status": 200,
+          "ok": false,
+          "code": "SEARCH_FAILED"
+        },
+        {
+          "index": 1,
+          "status": 200,
+          "ok": true,
+          "code": null
+        }
+      ],
+      "servedDispatches": [
+        {
+          "index": 1,
+          "tool": "glob",
+          "status": 200,
+          "ok": true,
+          "value": {
+            "root": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
+            "paths": [
+              "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt"
+            ]
+          },
+          "dispatchedAfterStopInstant": true
+        }
+      ],
+      "probeFacts": [
+        {
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside",
+          "method": "spawn",
+          "observedAt": "2026-11-04T20:22:33.332Z",
+          "sequence": 1
+        },
+        {
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
+          "method": "spawn",
+          "observedAt": "2026-11-04T20:22:33.371Z",
+          "sequence": 2
+        }
+      ],
+      "processAfterTeardown": {
+        "portStillListening": false,
+        "homeExistsAfterTeardown": false,
+        "orphanPids": [],
+        "hostKilled": true
+      },
+      "confinedSpawnsAfterStop": 2,
+      "baseSpawnsAfterStop": 0,
+      "sampleFiles": {
+        "consultations.jsonl": "37b3a371994ed3973331a705b18335ac3eb39671776cef7d4de78683a743721b",
+        "grant.json": "820ee12f4ae8d9853424df71fb62b7456a4af2507130de3ca69f3dcb292bbb78",
+        "guard-facts.json": "99d7d1bdd5f40a34c25017a50127903e4b3aabe87eaade15f60411aa01b1e436",
+        "oracle-samples.json": "548a01fc879b154e2836a618fe11c03e913f38c1903e5cb7d0aea384ebb8c6b5",
+        "run-record.json": "962748227f91c9665757d4be7fd0accf8822a6543e60fa6a0ce9b57758db1bde",
+        "search-counter.jsonl": "aea40ff948f285ce629a9a9588c99bfb2c8aa610ee9cd0bb1a47717caaca84d3",
+        "teardown.json": "43f2192ebe252e32f3af37ac7f23cb49002a4c61abf9ffeba82d8879e6be6827"
+      },
+      "memberSessionId": "session-team-child-47be99afeb8b0aac5c2a00478d3f8141"
+    }
+  ],
+  "reproduction": {
+    "kind": "host-free rejudge of archived evidence with the shipped judgeRow6",
+    "script": "dev/agent-workflow/evidence/a5sf-search-live/row6-replay.mjs",
+    "log": "dev/agent-workflow/evidence/a5sf-search-live/row6-replay.log",
+    "imports": "tests/world-factory/lib/a5sf-search-live.mjs (unmodified row-6 code)",
+    "replayVerdicts": [
+      {
+        "runId": "a5sf-search-2026-11-04T20-10-19-766Z",
+        "verdict": "REFUTED",
+        "reason": "ROW6_CLAUSE_FAILED",
+        "failed": [
+          "everyDispatchExplained",
+          "noSuccessAfterStop",
+          "noCallableShadow",
+          "probeFactsAreRefusals",
+          "noProcessAfterStop"
+        ]
+      },
+      {
+        "runId": "a5sf-search-2026-11-04T20-17-23-486Z",
+        "verdict": "REFUTED",
+        "reason": "ROW6_CLAUSE_FAILED",
+        "failed": [
+          "everyDispatchExplained",
+          "noSuccessAfterStop",
+          "noCallableShadow",
+          "probeFactsAreRefusals",
+          "noProcessAfterStop"
+        ]
+      }
+    ],
+    "failedClauseSetIdentical": true,
+    "faithfulness": "oracle-samples stores membersAfter/observations as counts; replay joins teardown.json arrays; counter deltas survive only as counts in run-record and the judge reads length only",
+    "names": {
+      "failingClause": "everyDispatchExplained (and its derivatives noSuccessAfterStop / noCallableShadow / probeFactsAreRefusals / noProcessAfterStop)",
+      "checkLines": "tests/world-factory/lib/a5sf-search-live.mjs:513-530",
+      "servingDispatch": "postStopDispatches[1] — glob, HTTP 200 {ok:true}, after archive returned"
+    }
+  },
+  "staticProof": [
+    {
+      "claim": "archive quiesce runs all five steps unconditionally and step 5 releases residency",
+      "file": "packages/runtime/lifecycle/quiesce.ts",
+      "lines": "79-153 (dropResidency call at 143)"
+    },
+    {
+      "claim": "the archive service quiesces then commits; a successful archive therefore dropped the handle",
+      "file": "packages/runtime/lifecycle/index.ts",
+      "lines": "150-153"
+    },
+    {
+      "claim": "residency port synchronously deletes liveAgents[child] and fire-and-forgets dispose",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "5844-5862 (delete at 5852)"
+    },
+    {
+      "claim": "the p6t6 tool route calls the product live.executeTool(as, ...)",
+      "file": "packages/tools/harness/plugin.mjs",
+      "lines": "345-414 (executeTool at 377; unknown codes -> 500)"
+    },
+    {
+      "claim": "executeTool maps ANY ensureLiveAgent failure to NO_LIVE_AGENT, which the route maps to 422",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "5973-5981"
+    },
+    {
+      "claim": "ensureLiveAgentOnce checks closing and durable existence but never reads the member lifecycle before resumeTeamAgent",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "4386-4418"
+    },
+    {
+      "claim": "the boot resume phase re-binds every member row with no lifecycle filter",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "4945-4980 (resume at 4968)"
+    },
+    {
+      "claim": "the permission-lifecycle pre-execute adapter is installed only when capabilities.permissions is declared; the search worker template declares none",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "2276, 3495-3503; dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs:299-310"
+    },
+    {
+      "claim": "the realm mount / policy compile is IO confinement only (no lifecycle input); the guard returned allow for the archived member",
+      "file": "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+      "lines": "no lifecycle read; probe facts in runs[0].probeFacts"
+    },
+    {
+      "claim": "the product already reads the durable row where residency is known to be volatile (PTC escalation isAdmissible)",
+      "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "lines": "3221 (comment), isAdmissible durable read"
+    }
+  ],
+  "contract": {
+    "afterArchive": [
+      {
+        "clause": "durable ARCHIVED only after quiesce; residency released",
+        "status": "observed"
+      },
+      {
+        "clause": "out of the active work set; no new Team work until restore (TEAM_RUNTIME_WORK_STATE_REJECTED, invariant 53)",
+        "status": "enforced",
+        "evidence": "packages/runtime/admission/gate.ts:132-147; packages/runtime/admission/errors.ts:100; packages/tools/src/tools.ts:1199"
+      },
+      {
+        "clause": "no execution as that Member at any resurrection seam, typed refusal before resume / guard / spawn",
+        "status": "NOT enforced for an ungoverned Member (this diagnosis)",
+        "typedError": [
+          "PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED",
+          "PERMISSION_LIFECYCLE_EXECUTION_TERMINAL"
+        ],
+        "evidence": "packages/runtime/permission-lifecycle/types.ts:87-92"
+      },
+      {
+        "clause": "restore is the only door: ARCHIVED -> SETTLED with no Agent resume; a later follow-up may cold resume",
+        "status": "implemented (architecture §30.2/§41.6)"
+      }
+    ],
+    "afterTeardown": {
+      "hostAlive": false,
+      "portStillListening": false,
+      "homeDeleted": true,
+      "orphanPids": [],
+      "note": "once the Host is dead no dispatch target exists; the discriminating measurement is the archive boundary, not teardown"
+    },
+    "textExists": [
+      "docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md §29.4 (ARCHIVED: exits active work set, retains child Session/transcript/restore)",
+      "... §30.1 Archive: close admission -> cancel -> drain -> wait -> release resident Agent handle -> commit ARCHIVED; forbidden: write ARCHIVED then stop Agent",
+      "... §30.2 Restore: ARCHIVED -> SETTLED; Restore must not create/resume live Agent residency merely for restore",
+      "... §41.6: the only edge out of ARCHIVED is Restore; cold resume follows a new follow-up in SETTLED",
+      "packages/tools/src/tools.ts:1199 team_archive_member description (no new Team work until explicitly restored)"
+    ],
+    "textAbsent": [
+      "no plan/ADR sentence states the enforcement rule at the dispatch/residency seam (\"while the durable row is ARCHIVED, no seam may cold-resume it\")",
+      "no text states the scope: whether the law binds every Member or only permission-governed Members",
+      "the permission-lifecycle code comments cite \"ADR §8\"; no repo ADR has an §8 stating this (Alpha.4 ADR §8 = Live containment and frozen matcher identity; Alpha.5 tool-IO ADR §8 = Superseding Alpha.5 V2 decisions, item 7 = grant vs lifetime; Alpha.5 sandbox-first ADR §8 = D8 接入与验收) — the citation is dangling"
+    ],
+    "ownerDecision": {
+      "question": "Does the durable lifecycle bind every Member at every resurrection seam, or is \"archived never executes\" only a property of permission governance (and therefore of members that declare capabilities.permissions)?",
+      "optionA": {
+        "label": "lifecycle is a dispatch/residency law (recommended)",
+        "consequence": "gate both resumeTeamAgent call sites on the durable row; typed ARCHIVED/TERMINAL refusal; row 6 passes unchanged; archived members are inert on restart too"
+      },
+      "optionB": {
+        "label": "permission-plane-only law",
+        "consequence": "an ungoverned archived Member stays resumable/callable through direct seams and is re-bound on restart; row 6 must be deliberately re-scoped (drive the gated work path) or the worker must declare capabilities.permissions"
+      }
+    }
+  },
+  "recommendation": {
+    "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "productPatchCommitted": false,
+    "sharedGate": "memberResumeRefusal(sessionId, teamRoot): read domain.repositories.memberInstances.list(teamRoot), refuse ARCHIVED/DISPOSED with the permission-lifecycle codes, null otherwise",
+    "callSites": [
+      "ensureLiveAgentOnce, after teamRootOfSession/undefined check (4386-4389), before the resume closure",
+      "boot resume loop, after seen.add(child) (4964), before resumeTeamAgent; skip ensureMaterialized"
+    ],
+    "row6Effect": "executeTool re-labels the throw NO_LIVE_AGENT -> route 422; zero guard facts, zero spawns, no success; all five clauses flip with no check edit",
+    "unchanged": [
+      "CREATED/RUNNING/SETTLED resume",
+      "leader/root path (teamRoot === sid)",
+      "team_archive_member itself",
+      "restore -> SETTLED -> follow-up -> cold resume"
+    ],
+    "optionalPolish": "rethrow the two lifecycle codes unchanged in executeTool and map them to 422 in plugin.mjs so the wire keeps the typed code",
+    "testsToPromote": [
+      "row6-red-arm.test.mjs (4 legs) as a product vitest test (needs a p4t6 census booking)",
+      "packages/runtime/test/team-session-durability.test.ts + t12a-live-bridge.mjs",
+      "a5sf-search-live row 6 re-run"
+    ]
+  },
+  "redArm": {
+    "script": "dev/agent-workflow/evidence/a5sf-search-live/row6-red-arm.test.mjs",
+    "config": "dev/agent-workflow/evidence/a5sf-search-live/row6-vitest.config.mjs",
+    "drives": "the REAL packages/runtime/src/plugin/live/agent-bindings.mjs source through tests/world-factory t12a createLiveWorld",
+    "today": {
+      "result": "3 failed | 1 passed (4)",
+      "log": "dev/agent-workflow/evidence/a5sf-search-live/row6-red-arm.red.log",
+      "failures": [
+        "ARCHIVED: cold-resumed instead of refused (resumes=[child])",
+        "DISPOSED: cold-resumed instead of refused (resumes=[child])",
+        "RESTART: boot resume re-bound the archived member"
+      ],
+      "control": "SETTLED: resumes (passes)"
+    },
+    "greenSketch": {
+      "result": "4 passed (4)",
+      "log": "dev/agent-workflow/evidence/a5sf-search-live/row6-red-arm.green-sketch.log",
+      "sketch": "~35 lines at both seams",
+      "reverted": true
+    }
+  },
+  "boundaries": [
+    "row 1 fails separately: rg resolves the git root by reading .worktrees/a5sf-search-live2/.git, denied by the Landlock read lane -> exit 2; glob passes because its governed argv carries --no-ignore (packages/tools/search-family/src/glob-backend.mjs:1345-1347)",
+    "row 4 failed in the first run and passed in the second (interrupt moved inside team.create); not re-diagnosed",
+    "search-counter.jsonl in the archive is a pre-archive snapshot; post-stop rows survive only as counts in run-record",
+    "oracle sample membersAfter/observations are counts; the replay joins teardown.json",
+    "the runs/<stamp> directory names the NEXT run start, not the runId inside"
+  ],
+  "artifacts": {
+    "row6-diagnosis.md": {
+      "sha256": "a48d6bbddc1652156e0b879cca55054d435228a1fe8826387da0b8d30b3aa2c6",
+      "bytes": 25479
+    },
+    "row6-replay.mjs": {
+      "sha256": "550f8035c2d9443eecc23d5d47f639bcf938efcbe77990bda8e414b9b58b1229",
+      "bytes": 6935
+    },
+    "row6-replay.log": {
+      "sha256": "3529b6844679c8cc779a927aaa9bff623dcfb6cf41990125f704c8db9715fab6",
+      "bytes": 4018
+    },
+    "row6-red-arm.test.mjs": {
+      "sha256": "57051bc500684f8396724365c72ca879c609865016c7728ca4a4cbd0d0edde31",
+      "bytes": 4939
+    },
+    "row6-vitest.config.mjs": {
+      "sha256": "8251d3ae605fe22fe61a169dfbc543b310ecfdbd1e54ad8ed200b7ec533eaabd",
+      "bytes": 689
+    },
+    "row6-red-arm.red.log": {
+      "sha256": "dcdb01345964cf6fee873be5fd6b2800d60ca9f35d2d79ef363a9bc754622199",
+      "bytes": 3517
+    },
+    "row6-red-arm.green-sketch.log": {
+      "sha256": "e9e390d48149a34be8048788e4fa62cdbb60795975f8458c09f5273aab911468",
+      "bytes": 409
+    },
+    "row6-samples/2026-11-04T20-10-19Z": {
+      "consultations.jsonl": "da1b811169850e09e907dc82dc97292bd1fda13ef22aec06d99da1610d1a00ce",
+      "grant.json": "83aaef4ceca00129cf8fbdb80672f87af90f97e35f1a988228cdf3cfa5591457",
+      "guard-facts.json": "7df04bda039966f377fe8c046d9a597527f0de60b8fc3e02d32f791d5508631f",
+      "oracle-samples.json": "813e2cdc448a69d1e559233072c0b6ae3c68bf12eda8e315d42b92255281eb63",
+      "run-record.json": "09dbdc2721053eaa032820db07b273c7c7c5ca32402077b176286f58f7731bd7",
+      "search-counter.jsonl": "21a7945da9b05520d0385c98fa1ba3d56c28e94abb6f52aa6cd78eac9d923b7a",
+      "teardown.json": "428dcaa04de3cc9a551edb1898167cf7d6c178a027d4759892dc55afe6fae43a"
+    },
+    "row6-samples/2026-11-04T20-17-23Z": {
+      "consultations.jsonl": "37b3a371994ed3973331a705b18335ac3eb39671776cef7d4de78683a743721b",
+      "grant.json": "820ee12f4ae8d9853424df71fb62b7456a4af2507130de3ca69f3dcb292bbb78",
+      "guard-facts.json": "99d7d1bdd5f40a34c25017a50127903e4b3aabe87eaade15f60411aa01b1e436",
+      "oracle-samples.json": "548a01fc879b154e2836a618fe11c03e913f38c1903e5cb7d0aea384ebb8c6b5",
+      "run-record.json": "962748227f91c9665757d4be7fd0accf8822a6543e60fa6a0ce9b57758db1bde",
+      "search-counter.jsonl": "aea40ff948f285ce629a9a9588c99bfb2c8aa610ee9cd0bb1a47717caaca84d3",
+      "teardown.json": "43f2192ebe252e32f3af37ac7f23cb49002a4c61abf9ffeba82d8879e6be6827"
+    }
+  },
+  "gates": {
+    "node --test tests/world-factory/a5sf-*.test.mjs (this branch, master base c63f4d347)": "212 pass / 0 fail",
+    "node --test tests/world-factory/a5sf-*.test.mjs (lane worktree task/a5sf-search-live2-20261105, +7 tests)": "219 pass / 0 fail",
+    "git diff --check": "rc=0",
+    "typecheck": "not applicable: no .ts/.mts file added or modified",
+    "census": "not applicable: no scannable packages/** file added (all new files are under dev/, outside the scan universe)"
+  }
+}
