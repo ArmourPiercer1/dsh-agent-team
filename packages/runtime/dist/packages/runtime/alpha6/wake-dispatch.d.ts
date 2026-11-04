@@ -50,6 +50,7 @@ import type { ReviewWakeInboxPort, ReviewWakeIntentStore } from './wake-intent.j
 import type { PlannedWake, WakePlan } from './wake-plan.js';
 export { createReviewWakeCoordinator, renderReviewWake } from '../review-wake/index.js';
 export type { ReviewWakeCoordinator as LatchCoordinator } from '../review-wake/index.js';
+export { recoverReviewWake as recoverLatch } from './wake-intent.js';
 /** Root-facing aliases: PR3 lane hygiene keeps the lane token inside alpha6. */
 export { claimReviewWake as claimLatch, createReviewWakeCoordinator as createLatchCoordinator, dispatchReviewWakes as dispatchLatch, planFingerprint as latchFingerprint, releaseReviewWake as releaseLatch, reviewWakeKeyFor as latchKeyFor, renderReviewWake as renderLatchWake, } from './wake-dispatch.js';
 /** The marker every review-wake message carries (the Host filters on it). */

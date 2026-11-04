@@ -232,6 +232,7 @@ import {
   dispatchLatch,
   latchFingerprint,
   latchKeyFor,
+  recoverLatch,
   releaseLatch,
   renderLatchWake,
 } from '../../alpha6/wake-dispatch.js'
@@ -2584,6 +2585,28 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }
         }
       : undefined
+  const alpha6RecoverWakeLatches =
+    alpha6Wiring.mode === 'alpha6' &&
+    alpha6WakeIntent !== undefined &&
+    live.reviewWakeInbox !== undefined
+      ? async (): Promise<void> => {
+          const intent = await alpha6WakeIntent.read()
+          if (intent === null) return
+          const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId)
+          const targetSessionId = member?.childSessionId
+          if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) return
+          const coordinator = createLatchCoordinator(intent.key)
+          const recovered = await recoverLatch(
+            coordinator,
+            alpha6WakeIntent,
+            live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
+          )
+          if (!recovered.adopted) return
+          const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
+          alpha6WakeCoordinators.set(mapKey, coordinator)
+          alpha6WakeBySession.set(targetSessionId, coordinator)
+        }
+      : undefined
   const alpha6RequestNotification =
     alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
       ? createAlpha6RootControlNotifier({
@@ -4570,6 +4593,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     control,
     ...(alpha6ReviewWakeTurnStart === undefined ? {} : { alpha6TurnLatchStart: alpha6ReviewWakeTurnStart }),
     ...(alpha6ReviewWakeTurnEnd === undefined ? {} : { alpha6TurnLatchEnd: alpha6ReviewWakeTurnEnd }),
+    ...(alpha6RecoverWakeLatches === undefined
+      ? {}
+      : { alpha6RecoverWakeLatches }),
     activity,
     fork,
     handoff,

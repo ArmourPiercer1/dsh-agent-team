@@ -5346,6 +5346,39 @@ export function createAgentBindings(deps) {
    * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
    * @returns {Promise<void>}
    */
+  /**
+   * Alpha.6 — the native-Inbox truth for ONE recipient session. `has` reads
+   * the LIVE pending lists only (never materializes an agent), matching the
+   * wakeId inside the rendered text; `remove` withdraws that exact message.
+   * @param {string} targetSessionId
+   * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
+   */
+  function reviewWakeInbox(targetSessionId) {
+    const pending = () => {
+      const handle = liveAgents.get(String(targetSessionId))
+      if (handle === undefined) return []
+      return [...handle.agent.inbox.nextTurn, ...handle.agent.inbox.nextStep]
+    }
+    const matches = (message, wakeId) => {
+      const content = Array.isArray(message?.content) ? message.content : []
+      return content.some(
+        (part) => part?.type === 'text' && typeof part.text === 'string' && part.text.includes(wakeId),
+      )
+    }
+    return {
+      has(wakeId) {
+        return pending().some((message) => matches(message, String(wakeId)))
+      },
+      remove(wakeId) {
+        const handle = liveAgents.get(String(targetSessionId))
+        if (handle === undefined) return false
+        const message = pending().find((entry) => matches(entry, String(wakeId)))
+        if (message === undefined) return false
+        return handle.agent.inbox.remove(message.id)
+      },
+    }
+  }
+
   async function deliverReviewWake(input) {
     const rootSessionId = String(input?.rootSessionId ?? '')
     const targetSessionId = String(input?.targetSessionId ?? '')
@@ -6121,6 +6154,7 @@ export function createAgentBindings(deps) {
     // resolves the recipient session; idle -> followup, busy -> steer, and a
     // rejection releases the coordinator's queued latch.
     deliverReviewWake,
+    reviewWakeInbox,
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,

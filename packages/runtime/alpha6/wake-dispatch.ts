@@ -67,6 +67,7 @@ import type { PlannedWake, WakePlan } from './wake-plan.js'
 // PR3 lane hygiene: root/host code imports the lane ONLY through alpha6.
 export { createReviewWakeCoordinator, renderReviewWake } from '../review-wake/index.js'
 export type { ReviewWakeCoordinator as LatchCoordinator } from '../review-wake/index.js'
+export { recoverReviewWake as recoverLatch } from './wake-intent.js'
 
 /** Root-facing aliases: PR3 lane hygiene keeps the lane token inside alpha6. */
 export {

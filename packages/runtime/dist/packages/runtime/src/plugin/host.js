@@ -2340,6 +2340,9 @@ export async function apply(ctx, config) {
         // route from it, never the world from it).
         try {
             await builtRoot.boot();
+            // Alpha.6 (opt-in only): adopt a persisted queued latch ONLY when the
+            // native Inbox still holds its message (boot-time crash recovery).
+            await builtRoot.alpha6RecoverWakeLatches?.();
             // pre-alpha3 PR4 (round 4): WARM the authority documents at this async
             // boundary — AFTER the boot effect (the durable TeamSession row exists
             // from here on; the only entry that could reach `mutatePermission`

@@ -107,7 +107,7 @@ import { createControlService, createLeaderControlNotifier } from '../../control
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js';
 import { collectAlpha6DelegableLegs, createAlpha6RootControlNotifier, } from '../../alpha6/notifier.js';
 import { createFileWakeIntentStore } from '../../alpha6/wake-intent-store.js';
-import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
+import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, recoverLatch, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs';
@@ -1809,6 +1809,26 @@ export function createTeamProductionRoot(params) {
             if (result.failures.length > 0) {
                 throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
             }
+        }
+        : undefined;
+    const alpha6RecoverWakeLatches = alpha6Wiring.mode === 'alpha6' &&
+        alpha6WakeIntent !== undefined &&
+        live.reviewWakeInbox !== undefined
+        ? async () => {
+            const intent = await alpha6WakeIntent.read();
+            if (intent === null)
+                return;
+            const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+            const targetSessionId = member?.childSessionId;
+            if (typeof targetSessionId !== 'string' || targetSessionId.length === 0)
+                return;
+            const coordinator = createLatchCoordinator(intent.key);
+            const recovered = await recoverLatch(coordinator, alpha6WakeIntent, live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
+            if (!recovered.adopted)
+                return;
+            const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
+            alpha6WakeCoordinators.set(mapKey, coordinator);
+            alpha6WakeBySession.set(targetSessionId, coordinator);
         }
         : undefined;
     const alpha6RequestNotification = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
@@ -3608,6 +3628,9 @@ export function createTeamProductionRoot(params) {
         control,
         ...(alpha6ReviewWakeTurnStart === undefined ? {} : { alpha6TurnLatchStart: alpha6ReviewWakeTurnStart }),
         ...(alpha6ReviewWakeTurnEnd === undefined ? {} : { alpha6TurnLatchEnd: alpha6ReviewWakeTurnEnd }),
+        ...(alpha6RecoverWakeLatches === undefined
+            ? {}
+            : { alpha6RecoverWakeLatches }),
         activity,
         fork,
         handoff,

@@ -8,6 +8,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createFileWakeIntentStore } from '../alpha6/wake-intent-store.js'
+import { recoverReviewWake } from '../alpha6/wake-intent.js'
+import { createReviewWakeCoordinator } from '../review-wake/index.js'
 
 const KEY = {
   rootSessionId: 'session-root-wake-intent',
@@ -69,5 +71,38 @@ describe('A6 file wake-intent store', () => {
     expect(parsed.status).toBe('queued')
     await writeFile(file, '{"nope":true}\n', 'utf8')
     await expect(store.read()).rejects.toThrow(/malformed/)
+  })
+})
+
+describe('A6 file intent store + recovery', () => {
+  let dir: string
+  let file: string
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'a6-wake-recover-'))
+    file = join(dir, 'intent.json')
+  })
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true })
+  })
+
+  it('adopts a queued row ONLY while the native Inbox still holds it', async () => {
+    const store = createFileWakeIntentStore({ filePath: file })
+    await store.persistQueued({ key: KEY, wakeId: 'wake-live', workFingerprint: 'fp-1' })
+    const coordinator = createReviewWakeCoordinator(KEY)
+    const adopted = await recoverReviewWake(coordinator, store, { has: () => true })
+    expect(adopted.adopted).toBe(true)
+    expect(coordinator.state.status).toBe('queued')
+    expect((await store.read())?.status).toBe('accepted')
+  })
+
+  it('discards a queued row whose Inbox message is gone', async () => {
+    const store = createFileWakeIntentStore({ filePath: file })
+    await store.persistQueued({ key: KEY, wakeId: 'wake-gone', workFingerprint: 'fp-1' })
+    const coordinator = createReviewWakeCoordinator(KEY)
+    const adopted = await recoverReviewWake(coordinator, store, { has: () => false })
+    expect(adopted.adopted).toBe(false)
+    await expect(store.read()).resolves.toBeNull()
   })
 })

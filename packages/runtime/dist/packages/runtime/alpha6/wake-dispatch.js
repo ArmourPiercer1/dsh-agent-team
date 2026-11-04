@@ -48,6 +48,7 @@
 import { createReviewWakeDelivery } from '../review-wake/index.js';
 // PR3 lane hygiene: root/host code imports the lane ONLY through alpha6.
 export { createReviewWakeCoordinator, renderReviewWake } from '../review-wake/index.js';
+export { recoverReviewWake as recoverLatch } from './wake-intent.js';
 /** Root-facing aliases: PR3 lane hygiene keeps the lane token inside alpha6. */
 export { claimReviewWake as claimLatch, createReviewWakeCoordinator as createLatchCoordinator, dispatchReviewWakes as dispatchLatch, planFingerprint as latchFingerprint, releaseReviewWake as releaseLatch, reviewWakeKeyFor as latchKeyFor, renderReviewWake as renderLatchWake, } from './wake-dispatch.js';
 /** The marker every review-wake message carries (the Host filters on it). */

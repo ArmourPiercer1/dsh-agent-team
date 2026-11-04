@@ -841,6 +841,12 @@ export interface TeamProductionRoot {
    */
   readonly alpha6TurnLatchStart?: (targetSessionId: string) => void
   readonly alpha6TurnLatchEnd?: (targetSessionId: string) => Promise<void>
+  /**
+   * Alpha.6 — boot-time adoption of a persisted queued latch. It adopts ONLY
+   * when the native Inbox still holds the wake message; otherwise the stale
+   * row is discarded and a later plan may deliver again.
+   */
+  readonly alpha6RecoverWakeLatches?: () => Promise<void>
   /** A26 — the activity ledger (guarded progress writes + durable reads). */
   readonly activity: ActivityLedger
   /** A27 — the fork reconciliation (sidecar recognition + child team). */
@@ -1150,6 +1156,15 @@ export interface TeamAgentBindings {
     readonly wakeId: string
     readonly text: string
   }) => Promise<void>
+  /**
+   * Alpha.6 — the native-Inbox probe for one recipient session (live pending
+   * messages only). Recovery uses it to adopt a queued intent ONLY when the
+   * wake message still exists.
+   */
+  readonly reviewWakeInbox?: (targetSessionId: string) => {
+    readonly has: (wakeId: string) => boolean
+    readonly remove?: (wakeId: string) => void
+  }
   /** The P8-S4B request boundary (re-apply the durable truth). */
   readonly prepareAgentForRequest: (sessionId: string) => Promise<void>
   /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */
