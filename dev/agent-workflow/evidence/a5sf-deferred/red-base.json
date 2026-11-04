@@ -1,0 +1,170 @@
+{
+  "schema": "a5sf-deferred/probe-deferred-settle/1",
+  "at": "2026-11-03T23:19:55.173Z",
+  "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
+  "arms": [
+    {
+      "arm": "A1-accept-routed-read",
+      "verdict": "FAIL",
+      "failures": [
+        "mounted: attach refused: {\"name\":\"TeamServiceInstallError\",\"code\":\"SERVICE_MOUNT_FAILED\",\"detail\":\"native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path\",\"message\":\"SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path\"}",
+        "surface unchanged: preset=[\"edit\",\"read\",\"read_image\",\"write\"] after=undefined",
+        "one read on the surface: false"
+      ],
+      "observed": {
+        "label": "A1-accept-routed-read",
+        "attachmentsService": true,
+        "withBinding": false,
+        "presetSurface": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ],
+        "presetDefinitions": {},
+        "mounted": false,
+        "error": {
+          "name": "TeamServiceInstallError",
+          "code": "SERVICE_MOUNT_FAILED",
+          "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+          "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+        },
+        "elapsedMs": 9,
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    },
+    {
+      "arm": "A2-uncovered-deferred-refused",
+      "verdict": "FAIL",
+      "failures": [
+        "reason NAMES the uncovered name: detail did not name the uncovered name: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+      ],
+      "observed": {
+        "label": "A2-uncovered-deferred-refused",
+        "attachmentsService": true,
+        "withBinding": true,
+        "presetSurface": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ],
+        "presetDefinitions": {},
+        "mounted": false,
+        "error": {
+          "name": "TeamServiceInstallError",
+          "code": "SERVICE_MOUNT_FAILED",
+          "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+          "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+        },
+        "elapsedMs": 9,
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    },
+    {
+      "arm": "A3-failed-deferred-refused",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "A3-failed-deferred-refused",
+        "attachmentsService": true,
+        "withBinding": false,
+        "presetSurface": [
+          "edit",
+          "read",
+          "write"
+        ],
+        "presetDefinitions": {},
+        "mounted": false,
+        "error": {
+          "name": "TeamServiceInstallError",
+          "code": "SERVICE_MOUNT_FAILED",
+          "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+          "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+        },
+        "elapsedMs": 4,
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "write"
+        ]
+      }
+    },
+    {
+      "arm": "A4-unsettled-deferred-refused",
+      "verdict": "FAIL",
+      "failures": [
+        "reason says it did not settle: detail: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+      ],
+      "observed": {
+        "label": "A4-unsettled-deferred-refused",
+        "attachmentsService": true,
+        "withBinding": false,
+        "presetSurface": [
+          "edit",
+          "read",
+          "write"
+        ],
+        "presetDefinitions": {},
+        "mounted": false,
+        "error": {
+          "name": "TeamServiceInstallError",
+          "code": "SERVICE_MOUNT_FAILED",
+          "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+          "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+        },
+        "elapsedMs": 6,
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "write"
+        ]
+      }
+    },
+    {
+      "arm": "A5-accepted-shadow-invalidates",
+      "verdict": "FAIL",
+      "failures": [
+        "mounted: attach refused: {\"name\":\"TeamServiceInstallError\",\"code\":\"SERVICE_MOUNT_FAILED\",\"detail\":\"native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path\",\"message\":\"SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path\"}",
+        "shadow invalidated after external disposal: false",
+        "invalidation names the lost shadow: false"
+      ],
+      "observed": {
+        "label": "A5-accepted-shadow-invalidates",
+        "attachmentsService": true,
+        "withBinding": false,
+        "presetSurface": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ],
+        "presetDefinitions": {},
+        "mounted": false,
+        "error": {
+          "name": "TeamServiceInstallError",
+          "code": "SERVICE_MOUNT_FAILED",
+          "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+          "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path"
+        },
+        "elapsedMs": 2,
+        "surfaceAtEnd": [
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    }
+  ]
+}

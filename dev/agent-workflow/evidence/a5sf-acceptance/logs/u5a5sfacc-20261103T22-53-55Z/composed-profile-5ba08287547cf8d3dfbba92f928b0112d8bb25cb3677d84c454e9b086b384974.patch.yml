@@ -1,0 +1,109 @@
+# U6-fs World: canary + probe rows + the production Team row, p6t6
+# observer and preset declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "u6-fs-probe-host"
+      name: "./u6-fs-probe-host.mjs"
+    - id: "a5sf-acceptance-realm"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/dev/agent-workflow/evidence/a5sf-acceptance/a5sf-realm-provider-row.mjs"
+      config:
+        allowRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/workspace"
+        restrictionReadAllow:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/workspace/axis/allow"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/restriction-outside"
+        bindingIdentity: "dsh.fs/read"
+        laneReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/lane-report.json"
+        laneProbePaths:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/workspace/axis/allow/a.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/workspace/axis/b.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/restriction-outside/c.txt"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/a5sf-provider-counter.jsonl"
+        lateToolRoute: "/__a5sf/late-tool"
+        lateToolName: "x_acceptance_late_unrelated"
+        lateToolReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/late-tool-report.json"
+        hostToolsModule: "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js"
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-a5sf-acceptance-root"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5sf.acceptance.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf six-row acceptance team. A5SF_ACC_DISC is the discovery marker.\"\nmembers:\n  - templateId: worker\n    persona: \"You are the a5sf acceptance worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/blueprints"
+        rootPresetId: "a5sf-acceptance-base"
+        memberPresetId: "a5sf-acceptance-base"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "a5sf-acceptance-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/runtime/root-binding/harness/seam.mjs"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/tests/homes/u5a5sfacc-20261103T22-53-55Z/a5sf-consult.jsonl"
+        a5sfNativeToolModules:
+          - "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js"
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-acceptance-base"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-acceptance-base"
+        name: "a5sf acceptance base"
+        description: "a5sf six-row acceptance boot preset (a5sfacc) = smoke + tool-fs-search"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false

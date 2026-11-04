@@ -1,0 +1,16 @@
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.090104ms)
+✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (17.843953ms)
+✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (3.898832ms)
+✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (4.535535ms)
+✔ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (7.625386ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (1.842718ms)
+✔ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (2.391018ms)
+✔ N8 duplicate scope namespaces: the attach takes the canonical runtime Agent when scopeOf is blind; both paths empty still refuses (2.685523ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 447.468305

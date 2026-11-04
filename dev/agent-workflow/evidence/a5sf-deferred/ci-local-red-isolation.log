@@ -1,0 +1,15 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-deferred
+
+stdout | packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5g6-unit-realm templateId=a5g6-tpl
+
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 747ms
+     ✓ the four definitions all carry a render that returns an array of typed text blocks  744ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  08:22:34
+   Duration  2.39s (transform 1.85s, setup 0ms, import 1.56s, tests 747ms, environment 0ms)

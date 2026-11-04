@@ -1,0 +1,43 @@
+{
+  "schema": "a5sf-acceptance/mount-refusal-probe/1",
+  "at": "2026-11-03T23:03:44.708Z",
+  "hostToolFs": "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
+  "arms": [
+    {
+      "label": "B-with-attachments",
+      "attachmentsService": true,
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "moduleName": "tool-fs",
+      "mounted": false,
+      "error": {
+        "name": "TeamServiceInstallError",
+        "code": "SERVICE_MOUNT_FAILED",
+        "detail": "native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+        "message": "SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path",
+        "stackHead": "TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred registration failed, waiting on [attachments]); refusing the mount instead of leaving those tools on the unshadowed preset path\n    at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/runtime/team-services/src/mount.ts:1079:17)\n    at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:404:18)\n    at async arm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/dev/agent-workflow/evidence/a5sf-acceptance/probe-mount-refusal.mjs:227:5)\n    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-acceptance/dev/agent-workflow/evidence/a5sf-acceptance/probe-mount-refusal.mjs:279:20"
+      }
+    },
+    {
+      "label": "A-without-attachments",
+      "attachmentsService": false,
+      "moduleInject": [
+        "tools",
+        "fs",
+        "systemPrompt"
+      ],
+      "moduleName": "tool-fs",
+      "mounted": true,
+      "surfaceAfterMount": []
+    },
+    {
+      "label": "C-direct-plugin-mount",
+      "attachmentsService": true,
+      "mounted": true,
+      "surface": []
+    }
+  ]
+}

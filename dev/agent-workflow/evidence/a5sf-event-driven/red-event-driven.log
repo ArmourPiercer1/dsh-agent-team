@@ -1,0 +1,25 @@
+[2026-11-04T02:59:46.377Z] runtime peers resolved from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/packages/runtime/package.json
+[2026-11-04T02:59:46.511Z] E1-absent-provider-same-config-REFUSED: mounted=true elapsedMs=7 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.511Z] E1-absent-provider-same-config-REFUSED: FAIL — the CONFIGURED module with an empty frontier is REFUSED: false; the refusal is TYPED: error=null; the refusal names the escape hatch: message=undefined
+[2026-11-04T02:59:46.518Z] E1b-absent-provider-same-config-allowEmpty: mounted=true elapsedMs=5 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.518Z] E1b-absent-provider-same-config-allowEmpty: PASS
+[2026-11-04T02:59:46.528Z] E2-absent-managed-provider-preset-serves-name-REFUSED: mounted=true elapsedMs=6 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.528Z] E2-absent-managed-provider-preset-serves-name-REFUSED: FAIL — the ATK4 composition is REFUSED at assembly: false; the refusal is TYPED: error=null
+[2026-11-04T02:59:46.534Z] E2b-absent-managed-provider-allowEmpty-canary: mounted=true elapsedMs=5 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.534Z] E2b-absent-managed-provider-allowEmpty-canary: PASS
+[2026-11-04T02:59:46.547Z] E3a-provider-after-settle-managed-only: mounted=true elapsedMs=11 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.547Z] E3a-provider-after-settle-managed-only: PASS
+[2026-11-04T02:59:46.559Z] E3b-provider-after-settle-product-order: mounted=true elapsedMs=10 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.559Z] E3b-provider-after-settle-product-order: PASS
+[2026-11-04T02:59:46.566Z] E4-provider-present-before-mount: mounted=true elapsedMs=6 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":["subagent"],"observed":["subagent"],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.566Z] E4-provider-present-before-mount: PASS
+[2026-11-04T02:59:46.574Z] E5-provider-removed-after-covered-mount: mounted=true elapsedMs=6 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":["subagent"],"observed":["subagent"],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.574Z] E5-provider-removed-after-covered-mount: PASS
+[2026-11-04T02:59:46.578Z] E6-expected-tools-declared-divergent: mounted=false elapsedMs=2 {"name":"A5sfNativeAssemblyError","code":"A5SF_EXPECTED_TOOLS_UNSHADOWED","detail":"","message":"agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-subagent expected [\"subagent\"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)","stack":"A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-subagent expected [\"subagent\"] but the attach forwarded []); a declared managed name that no route
+[2026-11-04T02:59:46.579Z] E6-expected-tools-declared-divergent: PASS
+[2026-11-04T02:59:46.585Z] E7a-undecidable-world-A-nothing-serves: mounted=true elapsedMs=5 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.585Z] E7a-undecidable-world-A-nothing-serves: PASS
+[2026-11-04T02:59:46.591Z] E7b-undecidable-world-B-preset-serves: mounted=true elapsedMs=5 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.591Z] E7b-undecidable-world-B-preset-serves: PASS
+[2026-11-04T02:59:46.597Z] E8-same-emission-dispatch-window: mounted=true elapsedMs=5 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:59:46.597Z] E8-same-emission-dispatch-window: PASS

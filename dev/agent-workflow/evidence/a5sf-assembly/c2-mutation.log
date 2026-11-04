@@ -1,0 +1,28 @@
+✖ C2 the ownership probes are disposed before the real mounts (live-effect count) (27.074807ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 316.755717
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-assembly.test.mjs:756:1
+✖ C2 the ownership probes are disposed before the real mounts (live-effect count) (27.074807ms)
+  AssertionError [ERR_ASSERTION]: exactly one live apply: the real mount; the probe fiber is disposed
+
+  2 !== 1
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:767:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,9 @@
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+packages/runtime/test/a3p5-glue-permission-receipt.test.ts
+packages/runtime/test/a5-cancel-glob.test.ts
+packages/runtime/test/a5-globoff-key.test.ts
+packages/runtime/test/a5-m1-bash-c1.test.ts
+packages/runtime/test/a5g6-install-face-render.test.ts
+packages/runtime/test/a5rbn-runtime-base-narrow.test.ts
+packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts
+packages/runtime/test/alpha5-glob-backend.test.ts

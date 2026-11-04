@@ -1,0 +1,94 @@
+GREEN — route C review-round-2 fix
+branch task/a5sf-native-route-c-20261103; zero Host boots, zero ports, no DSH_HOME, test-use untouched
+
+===== $ node --test tests/world-factory/a5sf-native-route-c.test.mjs
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.249586ms)
+✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (19.803391ms)
+✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (4.227764ms)
+✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (4.709405ms)
+✔ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (8.120212ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (2.163095ms)
+✔ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (2.619369ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-evidence.test.mjs
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-harness.test.mjs
+ℹ tests 10
+ℹ pass 10
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-p2-seam.test.mjs
+ℹ tests 14
+ℹ pass 14
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-p2-wiring.test.mjs
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-read-gate.test.mjs
+ℹ tests 13
+ℹ pass 13
+ℹ fail 0
+
+===== $ npx vitest run a5sf
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+
+===== $ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+
+===== $ npx vitest run <the three ARC-A / PR6 / A4P3 law suites>
+# Pre-booking transcript: 31/34, the three failures being the unbooked ARC-A digest
+# drift of agent-bindings.mjs (fd5d4126...). The coordinator then booked the override
+# at commit d08c9e8d; the post-booking run is appended at the end of this log.
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 31 passed (34)
+
+===== $ npx tsc -p packages/runtime/tsconfig.json (typecheck)
+typecheck exit=0
+
+===== $ npx tsc -p packages/runtime/tsconfig.build.json (build)
+build exit=0
+
+===== $ node scripts/place-dist-glue.mjs
+place-dist-glue: packages/runtime/src/plugin/live/a5sf-realm-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs (byte-identical)
+place-dist-glue: done (101 placement(s))
+
+===== $ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
+[check-artifacts-committed] OK: 1916 files — working tree equals the git INDEX for both install surfaces (incl. 101 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+
+===== $ node scripts/check-artifacts-at-head.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1916 compared file(s)).
+
+===== $ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+
+===== $ node scripts/eb3-ci-negative-controls.mjs
+
+24/24 control(s) behaved as required
+
+===== mutation receipts (M-b teardown order, M-c one-ceiling refusal)
+see mutation.log — both mutations RED, mount.ts restored byte-identically (sha256 re-checked)
+
+===== post-booking re-run of the three law suites (coordinator booking d08c9e8d)
+# The only change between the run above and this one is the ARC-A ledger entry for
+# agent-bindings.mjs's fd5d4126... digest. No code moved.
+ Test Files  3 passed (3)
+      Tests  34 passed (34)

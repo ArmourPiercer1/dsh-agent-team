@@ -1,0 +1,22 @@
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (12.512799ms)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (15.040424ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (12.217771ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (4.412474ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.313011ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.233451ms)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.042795ms)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (11.329529ms)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (9.595937ms)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (8.469464ms)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (8.113369ms)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (8.464586ms)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (6.192684ms)
+✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (8.597336ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.591828

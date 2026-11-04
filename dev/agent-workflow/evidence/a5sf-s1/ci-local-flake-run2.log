@@ -1,0 +1,32 @@
+# DERIVED SUMMARY (raw capture over the evidence guard's 1 MiB bound is not committed).
+# Verbatim verdict/aggregate lines plus the failing lines of this run:
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TIMEOUT dest=http://127.0.0.1:3491
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_DESTINATION_NON_PUBLIC dest=https://mixed.example
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://rebind2.example
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_SEARCH_DESTINATION_DENIED provider=u7f-c1-port-provider
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-23 no roster wired: steer/interrupt FAIL CLOSED (membership unprovable = membership not held), zero port
+ ❯ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests | 1 failed) 5013ms
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=CALLER_NOT_LIVE: caller is not the exact live root
+[dsh-agent-team] u7f-present: governed-present port-failed detail=no open turn on this mount
+stdout | packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts > a5w-bindseam-subtree-seam-c1 — the glue injects the plane subtree containment seam > P2: the subtree rule participates in the verdict by the law — root itself and paths under it are covered, paths outside are not
+2026-11-03T15:38:03.195Z PASS B2a search NEG (absolute out-of-root): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root
+2026-11-03T15:38:03.716Z PASS C2b glob NEG (absolute out-of-root path): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target is outside the governed root
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — center enforcement of the controlLeg contract > E3 deny leg = APPROVAL_DENIED, zero spawn (center obeys the verdict, mints nothing)
+stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — center enforcement of the controlLeg contract > E3 deny leg = APPROVAL_DENIED, zero spawn (center obeys the verdict, mints nothing)
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
+    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ ❯ packages/runtime/test/alpha5-glob-backend.test.ts (53 tests | 1 failed) 57374ms
+     ✓ X5 STATIC AUDIT: exactly one channel write, after the verdict, and stderr never reaches it 17ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  370ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+ FAIL  packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict > X3 the timeout arm settles cancelled and spills nothing
+ Test Files  2 failed | 481 passed (483)
+      Tests  2 failed | 5991 passed (5993)
+   Duration  219.74s (transform 69.33s, setup 0ms, import 352.56s, tests 521.59s, environment 92ms)
+✘ vitest (selected) (220.4s)
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=233.9s
+[ELIFECYCLE] Command failed with exit code 1.

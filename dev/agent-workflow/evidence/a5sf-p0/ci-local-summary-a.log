@@ -1,0 +1,27 @@
+# DERIVED SUMMARY (run A) of pnpm ci:local at the C1 code head.
+# Run-specific: the full raw capture was 1,216,423 B > the 1 MiB evidence bound, so it is NOT committed.
+# Selected steps, failing identities, counts and verdict below are copied verbatim from that run.
+
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (9.976167ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.389547ms)
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (36.076049ms)
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (21.154678ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (37.786826ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (41.103587ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (13.326099ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (12.628977ms)
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (42.957595ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (7.02995ms)
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback (10.931584ms)
+✔ node --test (selected) (0.6s)
+
+## failing identity (whole-tree timeout flake)
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+
+## representative timeout evidence
+Error: Test timed out in 5000ms.
+
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=undetermined files=2 wall=250.9s

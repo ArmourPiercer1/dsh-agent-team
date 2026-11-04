@@ -178,6 +178,51 @@ export interface TeamPluginConfig {
      */
     readonly a5sfEvidencePath?: string;
     /**
+     * ROUTE C (this round, optional): the NATIVE tool modules to re-mount INSIDE
+     * each Member's isolated `fs` scope, so the model-visible native
+     * `read`/`write`/`edit` rows (registered by the Agent preset under its own
+     * ANCESTOR scope, resolving the BASE provider) are SHADOWED for this agent by
+     * a registration whose body resolves the confined provider.
+     *
+     * Each entry is a module specifier string the HOST can import (`file:` URL,
+     * absolute path, or a bare specifier resolvable from the plugin), or
+     * `{ url, config? }` to forward the same plugin config the preset used
+     * (config parity is the row composition's responsibility). The row
+     * composition names the module, exactly as it names `a5sfRealmProvider`: the
+     * glue never guesses a host install path.
+     *
+     * ABSENT/EMPTY = the pre-route-C mount byte-for-byte. PRESENT = the mount is
+     * SURFACE-NEUTRAL or it is refused: the agent's model-visible tool set is
+     * compared before/after, and a name that appears (a denied tool re-enabled)
+     * or disappears disposes the realm and raises. A re-mount is only legal for
+     * exactly one Member ceiling per agent scope (see `mountA5sfRealm`).
+     */
+    readonly a5sfNativeToolModules?: readonly (string | {
+        readonly url: string;
+        readonly config?: Record<string, unknown>;
+        /**
+         * OPT-IN (2026-11-03 review): the tools this entry is expected to SHADOW.
+         * Declares, never authorizes: the attach is refused with
+         * `A5SF_EXPECTED_TOOLS_UNSHADOWED` unless every declared name is forwarded
+         * by the settle boundary. Absent = pre-declaration behaviour.
+         */
+        readonly expectedTools?: readonly string[];
+        /**
+         * OPT-OUT of the empty-frontier refusal: accepts that a CONFIGURED module
+         * (`config` present) may forward nothing. See the README: the empty
+         * frontier is exactly the state in which the preset plane's definition
+         * serves the name unguarded, so pass this only when the composition knows
+         * the two planes agree.
+         */
+        readonly allowEmpty?: boolean;
+    })[];
+    /**
+     * The same declaration for STRING entries: `{ "<module specifier>": [...] }`.
+     * Same semantics as `a5sfNativeToolModules[].expectedTools`; a specifier that
+     * no entry names is a configuration fault.
+     */
+    readonly a5sfExpectedTools?: Readonly<Record<string, readonly string[]>>;
+    /**
      * The MCP server of the world (null port = not mounted). LEGACY 0|1
      * form — multi-mcp C7: still accepted during this alpha; the canonical
      * 0..N input is `mcpServers` (below), and new documents and tests use

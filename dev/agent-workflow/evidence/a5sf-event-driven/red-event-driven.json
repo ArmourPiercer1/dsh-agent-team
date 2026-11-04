@@ -1,0 +1,1068 @@
+{
+  "schema": "a5sf-event-driven/probe/1",
+  "at": "2026-11-04T02:59:46.495Z",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use",
+  "hostToolSubagent": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js",
+  "hostToolSubagentVersion": "0.2.0-rc.2",
+  "arms": [
+    {
+      "arm": "E1-absent-provider-same-config-REFUSED",
+      "kind": "contract",
+      "verdict": "FAIL",
+      "failures": [
+        "the CONFIGURED module with an empty frontier is REFUSED: false",
+        "the refusal is TYPED: error=null",
+        "the refusal names the escape hatch: message=undefined"
+      ],
+      "observed": {
+        "label": "E1-absent-provider-same-config-REFUSED",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": null,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 7,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "preFix": {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "info": {
+              "name": "ToolNotFoundError",
+              "code": "UNKNOWN_TOOL"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E1b-absent-provider-same-config-allowEmpty",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E1b-absent-provider-same-config-allowEmpty",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "beforeProvider": {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "info": {
+              "name": "ToolNotFoundError",
+              "code": "UNKNOWN_TOOL"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E2-absent-managed-provider-preset-serves-name-REFUSED",
+      "kind": "contract",
+      "verdict": "FAIL",
+      "failures": [
+        "the ATK4 composition is REFUSED at assembly: false",
+        "the refusal is TYPED: error=null"
+      ],
+      "observed": {
+        "label": "E2-absent-managed-provider-preset-serves-name-REFUSED",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": null,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "preset"
+        },
+        "subagentDefinition": "preset",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "preFix": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E2b-absent-managed-provider-allowEmpty-canary",
+      "kind": "hazard-canary",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E2b-absent-managed-provider-allowEmpty-canary",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "preset"
+        },
+        "subagentDefinition": "preset",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "withPresetName": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E3a-provider-after-settle-managed-only",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E3a-provider-after-settle-managed-only",
+        "presetMode": "real",
+        "presetProvider": "preset-absent",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": "in-process",
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 11,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": [
+            "subagent"
+          ]
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": {
+          "threw": false,
+          "code": null,
+          "message": null
+        },
+        "providerStillRegistered": true,
+        "fiberStatesAtEvent": [
+          2
+        ],
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": [],
+        "definitionAfterEvent": "absent",
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "afterDeny": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"subagent\" is REFUSED — Member \"member-probe-e\" (team \"team-event-driven-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E3b-provider-after-settle-product-order",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E3b-provider-after-settle-product-order",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": "in-process",
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 10,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "the Member tool surface changed after the native mount settled",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": []
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": {
+          "threw": false,
+          "code": null,
+          "message": null
+        },
+        "providerStillRegistered": true,
+        "fiberStatesAtEvent": [
+          2
+        ],
+        "fiberStatesAfterSettle": [
+          4
+        ],
+        "fiberStatesAfterDispatch": [
+          4
+        ],
+        "surfaceAfterEvent": [
+          "subagent"
+        ],
+        "definitionAfterEvent": "preset-plane",
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "afterDeny": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"subagent\" is REFUSED — Member \"member-probe-e\" (team \"team-event-driven-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: the Member tool surface changed after the native mount settled; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E4-provider-present-before-mount",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E4-provider-present-before-mount",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": null,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "routed"
+        },
+        "subagentDefinition": "routed",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [
+              "subagent"
+            ],
+            "observed": [
+              "subagent"
+            ],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "covered": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E5-provider-removed-after-covered-mount",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E5-provider-removed-after-covered-mount",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": "in-process",
+        "expectedTools": null,
+        "allowEmpty": null,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "routed"
+        },
+        "subagentDefinition": "routed",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [
+              "subagent"
+            ],
+            "observed": [
+              "subagent"
+            ],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled",
+          "uncovered": [
+            "subagent"
+          ],
+          "surfaceAdded": [],
+          "surfaceRemoved": [
+            "subagent"
+          ],
+          "lateRegistrations": []
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": {
+          "reason": "the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled",
+          "uncovered": [
+            "subagent"
+          ],
+          "surfaceAdded": [],
+          "lateRegistrations": []
+        },
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "afterRemoval": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"subagent\" is REFUSED — Member \"member-probe-e\" (team \"team-event-driven-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E6-expected-tools-declared-divergent",
+      "kind": "hazard-boundary",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E6-expected-tools-declared-divergent",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": [
+          "subagent"
+        ],
+        "allowEmpty": null,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"},\"expectedTools\":[\"subagent\"]}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": false,
+        "elapsedMs": 2,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": null,
+        "guardFacts": null,
+        "providerStarts": null,
+        "error": {
+          "name": "A5sfNativeAssemblyError",
+          "code": "A5SF_EXPECTED_TOOLS_UNSHADOWED",
+          "detail": "",
+          "message": "agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-subagent expected [\"subagent\"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)",
+          "stack": "A5sfNativeAssemblyError: agent-bindings: the configured a5sfNativeToolModules declared expectedTools that the settled attach did not shadow (tool-subagent expected [\"subagent\"] but the attach forwarded []); a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero guard facts — refusing the attach (fail closed)\n    at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:520:11)\n    at async arm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/dev/agent-workflow/evidence/a5sf-event-driven/probe-event-driven.mjs:423:18)\n    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/dev/agent-workflow/evidence/a5sf-event-driven/probe-event-driven.mjs:863:14"
+        },
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E7a-undecidable-world-A-nothing-serves",
+      "kind": "measurement",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E7a-undecidable-world-A-nothing-serves",
+        "presetMode": "real",
+        "presetProvider": "ghost",
+        "managedProvider": "ghost",
+        "providersAtBoot": [],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "probe": {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "info": {
+              "name": "ToolNotFoundError",
+              "code": "UNKNOWN_TOOL"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E7b-undecidable-world-B-preset-serves",
+      "kind": "measurement",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E7b-undecidable-world-B-preset-serves",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": null,
+        "windowDispatchIssued": false,
+        "windowDispatchResult": null,
+        "invalidationAfterWindow": null,
+        "providerStartsAfterWindow": null,
+        "guardFactsAfterWindow": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "preset"
+        },
+        "subagentDefinition": "preset",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "probe": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E8-same-emission-dispatch-window",
+      "kind": "measurement",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E8-same-emission-dispatch-window",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": "in-process",
+        "removeAfter": null,
+        "expectedTools": null,
+        "allowEmpty": true,
+        "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"in-process\",\"toolName\":\"subagent\"}}]",
+        "spyMounted": true,
+        "windowDispatchIssued": true,
+        "windowDispatchResult": {
+          "isError": false,
+          "text": "BASE-PROVIDER-RAN:in-process",
+          "info": null
+        },
+        "invalidationAfterWindow": {
+          "schema": "a5sf-native-invalidation/1",
+          "reason": "the Member tool surface changed after the native mount settled",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": [],
+          "observedAt": "2026-11-04T02:59:46.596Z"
+        },
+        "providerStartsAfterWindow": 1,
+        "guardFactsAfterWindow": 0,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 2,
+        "attachCreatedFibers": [
+          {
+            "uid": "11",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "12",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "the Member tool surface changed after the native mount settled",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": []
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": {
+          "threw": false,
+          "code": null,
+          "message": null
+        },
+        "providerStillRegistered": true,
+        "fiberStatesAtEvent": [
+          2
+        ],
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": null,
+        "guardFacts": null,
+        "providerStarts": null,
+        "error": null,
+        "verificationError": null
+      }
+    }
+  ],
+  "undecidability": {
+    "identicalRowInput": true,
+    "rowConfigJson": "[{\"url\":\"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js\",\"config\":{\"provider\":\"ghost\",\"toolName\":\"subagent\"}}]",
+    "worldA": {
+      "providerStarts": 0,
+      "text": "Error: unknown tool \"subagent\""
+    },
+    "worldB": {
+      "providerStarts": 1,
+      "text": "BASE-PROVIDER-RAN:in-process"
+    },
+    "differsOnlyIn": "the preset plane module config (not an input of a5sfRealmConfigOf)"
+  }
+}

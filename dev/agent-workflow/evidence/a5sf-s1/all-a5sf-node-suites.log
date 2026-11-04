@@ -1,0 +1,161 @@
+=== node --test tests/world-factory/a5sf-evidence.test.mjs
+✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate (169.98489ms)
+✔ A2 approval link broken: a durable row for another member is CHAIN_BROKEN(link=approval) (13.628341ms)
+✔ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (12.724841ms)
+✔ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (13.005882ms)
+✔ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (12.410094ms)
+✔ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (115.783296ms)
+✔ A7 an unexplained allow stays BROKEN when the approval row is missing (11.104422ms)
+✔ A8 recorder refuses to mint or poison evidence (fail closed, typed codes) (11.590813ms)
+✔ A9 passivity fence (literal-token scan): the recorder source never spells a compiler/algebra/guard/approval call (0.44895ms)
+✔ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (431.176425ms)
+✔ A11 every identity branch is load-bearing: one row mutation each, one named verdict each (15.610384ms)
+✔ A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated (229.56252ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1463.20867
+=== node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+✔ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (6.464468ms)
+✔ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (9.51833ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (3.63401ms)
+✔ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (4.370153ms)
+✔ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (2.228304ms)
+✔ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (2.469822ms)
+✔ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.029419ms)
+✔ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (0.904392ms)
+✔ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (3.147127ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 193.814664
+=== node --test tests/world-factory/a5sf-harness.test.mjs
+✔ budget lease: no run record ⇒ typed BUDGET_LEASE_REQUIRED, nothing constructed (0.9559ms)
+✔ budget lease: a record with NO shared ledger path is refused — no ledger, no boot (0.853896ms)
+✔ budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched (0.895345ms)
+✔ budget lease: a permitted boot appends to the SAME shared ledger BEFORE startHost, then boots (0.408062ms)
+✔ fixed candidate: the pin is READ from tests/paths.mjs, never copied into the harness (0.498553ms)
+✔ policy identity: the installed ceiling IS the P1 MemberPolicy, and its guard is the shipped P1 guard (178.881081ms)
+✔ policy identity: the Alpha.4 authority is required, never synthesised by the harness (0.342658ms)
+✔ unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow (0.44351ms)
+✔ oracle adapter: a planted effect is detected and an unplanted tag is absent (sensitivity, both arms) (1.006796ms)
+✔ diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary (5.054059ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 254.740948
+=== node --test tests/world-factory/a5sf-native-route-c.test.mjs
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.341861ms)
+✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (20.693625ms)
+✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (5.360118ms)
+✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (6.018223ms)
+✔ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (12.781607ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (2.152756ms)
+✔ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (4.25771ms)
+✔ N8 duplicate scope namespaces: the attach takes the canonical runtime Agent when scopeOf is blind; both paths empty still refuses (2.844056ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 470.718467
+=== node --test tests/world-factory/a5sf-p2-seam.test.mjs
+✔ A1 default path: no observer ⇒ identical shape and identical allow/deny behaviour (12.366351ms)
+✔ A2 observer: exactly one fact per consultation, in call order, carrying the guard’s own decision (4.8757ms)
+✔ A2b Member-ceiling realm reports realm=member with no tool binding (2.552718ms)
+✔ A2c observer records the ask lane for IO_POLICY_UNSUPPORTED (1.660318ms)
+✔ A2d a non-TeamIoDenial fault is rethrown unchanged and NOT recorded (0.319355ms)
+✔ A3 file sink: append-only valid JSONL, and the reader returns exactly those facts (3.517169ms)
+✔ A4 negative control: a mount with zero consultations writes nothing (1.741728ms)
+✔ A5 sink failure (allow): the call is refused and the Provider is never asked (2.106437ms)
+✔ A5b sink failure (deny): the refusal is preserved on the error, never converted to an allow (1.564102ms)
+✔ A6 mountA5sfRealm: mounts ceiling + bindings over the real installers and disposes idempotently (1.865722ms)
+✔ A6b mountA5sfRealm rolls the whole realm back when a later binding refuses (1.203157ms)
+✔ A6c mountA5sfRealm releases a PREVIOUSLY mounted binding when a later binding refuses (1.779829ms)
+✔ A7 harness mountRealm() is a caller of the ONE entry point and carries the observer (4.398778ms)
+✔ A8 cross-process: a CHILD process mounts the realm and THIS process reads its consultations (251.382638ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 544.952633
+=== node --test tests/world-factory/a5sf-p2-wiring.test.mjs
+✔ W1 call-site helper mounts the realm, writes one fact per consultation, and dispose unmounts (12.447675ms)
+✔ W2 default path does nothing: no config ⇒ no provider call, no mount, no file (0.8345ms)
+✔ W2b config without a provider does nothing; a provider answering undefined mounts nothing (1.331531ms)
+✔ W3 sink write failure fails closed: the consulted call is refused and the Provider is never asked (2.712305ms)
+✔ W4 config reader: absent ⇒ undefined; blank/non-string ⇒ loud; valid ⇒ frozen block (0.299487ms)
+✔ W5 malformed provider answers throw: non-object, missing compiledFor, empty members, non-array bindings (2.236263ms)
+✔ W6 the glue call site is guarded, keeps a SAFE row disposer, and imports the helper (1.137423ms)
+✔ W7 no unexpected file: the unconfigured helper writes nothing under a scanned evidence tree, and carries no path literal (0.932496ms)
+✔ W8 row disposer: synchronous entry, settlement awaitable, rejection reported (never unhandled) (0.397964ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 167.918146
+=== node --test tests/world-factory/a5sf-read-gate.test.mjs
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.719876ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (0.97709ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.255894ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.994302ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.359641ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.426357ms)
+✔ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.626986ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.234143ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.032083ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.376633ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (515.445993ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.386575ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.215819ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 591.45313
+=== node --test tests/world-factory/a5sf-tool-axis.test.mjs
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (12.831131ms)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (16.872552ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (13.61655ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (5.138206ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.402752ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.019898ms)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.058544ms)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (11.223076ms)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (11.007118ms)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (8.385656ms)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (9.063869ms)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (8.433086ms)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (7.390541ms)
+✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (8.884229ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 393.016939
