@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFBL16",
+  "paths": [
+    "packages/runtime/team-services/src/subprocess.ts",
+    "packages/runtime/test/a5sf-confined-subprocess.test.ts",
+    "packages/runtime/test/a5sf-bl16-grep-realm.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1428,
+    "to": 1431
+  },
+  "reason": "a5sf BL-16 (branch task/a5sf-bl16-grep-20261104): the confined Member subprocess face the native search module needs (it injects `subprocess`, not `fs`), its unit suite, and the product-seam realm suite that drives the real pinned `@deepseek-ai/dsh-tool-fs-search` through mountMemberA5sfRealm + attachA5sfNativeToolModules. The rebuilt dist mirror (subprocess.js/.d.ts, team-sandbox profile.js/.d.ts) is generated output and is not scannable. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this branch with the files on disk and no booking: `scanner counts 1431, ledger derives 983 + 445 = 1428` — exactly these three paths (evidence: dev/agent-workflow/evidence/a5sf-bl16-grep/README.md §7)."
+}
