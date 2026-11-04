@@ -202,6 +202,24 @@
    "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
    "pr": "PR #571 (integration: A6 control chain)",
    "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "f03a6a87a22e91833b7fb1090b59a032afb6916c278a12cdf24e9cd6254d8b8d",
+   "pr": "PR #571 (integration: A6 non-locking control reader)",
+   "reason": "Alpha.6 PR5 composition wiring: adds the read-only NON-LOCKING readControlState root method and extracts the shared projectControlState() snapshot helper that listControlState also uses, so the locking and non-locking read routes cannot drift. No durable schema change, no mutation/authority path change; the locking route's behavior and projections are byte-identical."
+  },
+  {
+   "path": "packages/runtime/control/types.ts",
+   "sha256": "b7aa3572a3b1e466ec3d2f7ce2e2156132eb47d45e3b9f4ad0fd31ab89c8ec2f",
+   "pr": "PR #571 (integration: A6 non-locking control reader)",
+   "reason": "Alpha.6 PR5 composition wiring: declares ControlStateSnapshot (the shared projection shape of BOTH read routes) and adds ControlService.readControlState, explicitly documented as a non-locking, read-only snapshot with no authority. listControlState's return type narrows to the same named shape (structurally identical); no durable schema change."
+  },
+  {
+   "path": "packages/runtime/control/index.ts",
+   "sha256": "01d91fbcf1a4e789d3a6439cd664badc0f7e96b991cc3c1d4e20da76c4358988",
+   "pr": "PR #571 (integration: A6 non-locking control reader)",
+   "reason": "Alpha.6 PR5 composition wiring: re-exports the ControlStateSnapshot type so external compositions can name the read-only snapshot shape. Public-surface export only; no runtime behavior change."
   }
  ]
 }

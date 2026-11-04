@@ -196,6 +196,7 @@ export type {
   TransferCurrentLegInput,
   ControlService,
   ControlServiceOptions,
+  ControlStateSnapshot,
   ControlSubject,
   ControlSubjectKind,
   ControlWaitSignal,

@@ -14,9 +14,11 @@
 import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService, CurrentLegTransferRecord } from '../control/index.js'
-import { createAssignedOfficerFactsPort } from '../alpha6/assigned-officer-facts.js'
+import { createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
 import type {
+  Alpha6ControlPorts,
   AssignedOfficerFactsPort,
+  AssignedOfficerMemberLookup,
   AssignedOfficerParsedRouting,
 } from '../alpha6/assigned-officer-facts.js'
 import { parseAlpha6Routing } from '../alpha6/composition.js'
@@ -160,9 +162,9 @@ const BASE_ROUTING: AssignedOfficerParsedRouting = (() => {
 })()
 
 /**
- * Mirror the durable control rows the provider reads. A real composition reads
- * its own durable ledger here; a test cannot call `listControlState` from
- * inside the service's lock (the chain is not re-entrant), so it captures the
+ * Mirror the durable control rows the provider reads. A real composition now
+ * reads them through the NON-LOCKING `readControlState` (see the A6 reader
+ * legs below); this mirror remains for the port-shape legs, which capture the
  * same rows between calls.
  */
 class ControlRowMirror {
@@ -568,6 +570,126 @@ describe('A6 assigned-Officer facts provider (composition-owned)', () => {
         decision: 'allow',
         assignedOfficer: true,
       })).rejects.toThrow(/produced no facts/)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+})
+
+describe('A6 control reader (non-locking) and its composed control ports', () => {
+  function memberLookup(world: P6T1World): AssignedOfficerMemberLookup {
+    const repository = world.domain.repositories.memberInstances
+    return {
+      get: (root, instanceId) => repository.get(root, instanceId),
+      list: (root) => repository.list(root),
+    }
+  }
+
+  /**
+   * The REAL composition: both trusted ports wired to the non-locking
+   * `readControlState`, over a durable P6-T4 world. The service instance is
+   * captured by the reader closure, exactly as a production composition wires
+   * its own service.
+   */
+  function composedService(world: P6T1World): { service: ControlService; ports: Alpha6ControlPorts } {
+    let service!: ControlService
+    const ports = createAlpha6ControlPorts({
+      rootSessionId: P6T4_ROOT,
+      routing: BASE_ROUTING,
+      control: {
+        readControlState: (rootSessionId) => service.readControlState(rootSessionId),
+      },
+      members: memberLookup(world),
+      authorityGeneration: GENERATION,
+      fixedLeaderOrHumanCategory: () => false,
+    })
+    service = createControlService({
+      teamDomain: world.domain,
+      blueprintCatalog: world.catalog,
+      externalPolicyFacts: world.ports.externalPolicyFacts,
+      now: () => P6T4_NOW,
+      ...ports,
+    })
+    return { service, ports }
+  }
+
+  it('readControlState reports leg AND transfer rows with listControlState parity, without taking the lock', async () => {
+    const world = await makeWorld('a6-reader-snapshot')
+    try {
+      const { service } = composedService(world)
+
+      const leg = await makeLeg(service, 'corr-a6-reader-snapshot')
+      await service.transferCurrentLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        cause: 'officer-handoff',
+      })
+
+      const snapshot = await service.readControlState(P6T4_ROOT)
+      expect(snapshot.requests.some((row) => row.requestId === leg.requestId)).toBe(true)
+      expect(snapshot.transfers).toEqual([
+        expect.objectContaining({ currentLegRequestId: leg.requestId, target: 'leader' }),
+      ])
+      // ONE projection behind both routes: the non-locking answer is byte-for-
+      // byte the locking answer for the same durable state.
+      expect(snapshot).toEqual(await service.listControlState(P6T4_ROOT))
+
+      // Same root/TeamSession validation, same typed refusal.
+      await expect(service.readControlState('session-a6-reader-missing')).rejects.toThrow(/no TeamSession record/)
+      await expect(service.listControlState('session-a6-reader-missing')).rejects.toThrow(/no TeamSession record/)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('createAlpha6ControlPorts resolves a real assigned-Officer allow from INSIDE the running control operation (no deadlock)', async () => {
+    const world = await makeWorld('a6-reader-ports')
+    try {
+      // The facts port is wired to `readControlState` (the non-locking route).
+      // `resolveControl` below evaluates it while holding the per-team lock, so
+      // a locking read would deadlock instead of answering.
+      const { service, ports } = composedService(world)
+      expect(Object.keys(ports).sort()).toEqual([
+        'currentReviewerForTransfer',
+        'reviewCallFactsForAssignedOfficer',
+      ])
+
+      const leg = await makeLeg(service, 'corr-a6-reader-ports')
+      expect(await ports.currentReviewerForTransfer(queryOf(leg))).toEqual({ instanceId: OFFICER })
+
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({ source: 'blueprint-officer', entry: 'allow' })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('the composed ports refuse a transferred leg through the same snapshot (no former-Officer authority)', async () => {
+    const world = await makeWorld('a6-reader-ports-transfer')
+    try {
+      const { service, ports } = composedService(world)
+
+      const leg = await makeLeg(service, 'corr-a6-reader-ports-transfer')
+      await service.transferCurrentLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        cause: 'officer-handoff',
+      })
+
+      expect(await ports.currentReviewerForTransfer(queryOf(leg))).toBeNull()
+      expect(await ports.reviewCallFactsForAssignedOfficer(queryOf(leg))).toBeNull()
+      // The transfer row is exactly what the snapshot reports.
+      const snapshot = await service.readControlState(P6T4_ROOT)
+      expect(snapshot.transfers.some((row) => row.currentLegRequestId === leg.requestId)).toBe(true)
     } finally {
       await destroyP6T1World(world)
     }

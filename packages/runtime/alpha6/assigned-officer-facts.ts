@@ -62,6 +62,7 @@ import type {
   AssignedOfficerReviewFactsQuery,
   ControlCallerRef,
   ControlRequestKind,
+  ControlStateSnapshot,
   ControlSubject,
 } from '../control/types.js'
 import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
@@ -389,4 +390,93 @@ export function createAssignedOfficerFactsPort(
   }
 
   return Object.assign(reviewCallFacts, { resolveCurrentReviewer })
+}
+
+/**
+ * A6-PR5 (integration: A6 non-locking control reader) — the minimal durable
+ * control reader `createAlpha6ControlPorts` consumes: EXACTLY
+ * `ControlService.readControlState`, the non-locking snapshot route. Naming
+ * the shape (rather than the whole service) keeps the helper from depending
+ * on the mutation surface it must never call, and lets the composition pass
+ * the live service instance without handing the facts provider authority.
+ */
+export interface Alpha6ControlStateReader {
+  readonly readControlState: (rootSessionId: string) => Promise<ControlStateSnapshot>
+}
+
+/**
+ * The composition inputs for {@link createAlpha6ControlPorts}. Deliberately
+ * free of request text, model flags, or any caller-supplied capability claim:
+ * the durable ledger rows and the frozen routing are the only inputs.
+ */
+export interface Alpha6ControlPortsInput extends Omit<AssignedOfficerFactsInput, 'leg' | 'transfer'> {
+  /** The live control service (or any narrower reader exposing the same). */
+  readonly control: Alpha6ControlStateReader
+}
+
+/**
+ * The TWO trusted control-service ports, produced together so they cannot
+ * drift: exactly `ControlServiceOptions.currentReviewerForTransfer` and
+ * `ControlServiceOptions.reviewCallFactsForAssignedOfficer`.
+ */
+export interface Alpha6ControlPorts {
+  readonly currentReviewerForTransfer: (
+    query: AssignedOfficerReviewerQuery,
+  ) => Promise<{ readonly instanceId: string } | null>
+  readonly reviewCallFactsForAssignedOfficer: (
+    query: AssignedOfficerReviewFactsQuery,
+  ) => Promise<AssignedOfficerReviewFacts | null>
+}
+
+/**
+ * A6-PR5 (integration: A6 non-locking control reader) — compose the two
+ * trusted control ports over the NON-LOCKING durable read.
+ *
+ * The control service evaluates these ports WHILE it holds the per-team lock,
+ * and that lock chain is not re-entrant. Wiring them to `listControlState`
+ * would deadlock the very operation that needs them, so this helper builds
+ * both lookups on `readControlState` (same validation, same projections, no
+ * lock) and hands them to the existing `createAssignedOfficerFactsPort`.
+ *
+ * There is ONE reviewer resolution and ONE policy answer behind both ports
+ * (the facts provider's shared gate), and neither takes request text or a
+ * model flag — only the durable rows `readControlState` reports.
+ */
+export function createAlpha6ControlPorts(input: Alpha6ControlPortsInput): Alpha6ControlPorts {
+  const root = input.rootSessionId
+
+  async function snapshot(): Promise<ControlStateSnapshot | null> {
+    try {
+      return await input.control.readControlState(root)
+    } catch {
+      return null
+    }
+  }
+
+  const leg: AssignedOfficerLegLookup = async (query) => {
+    const state = await snapshot()
+    if (state === null) return null
+    return state.requests.find((row) => row.requestId === query.currentLegRequestId) ?? null
+  }
+
+  const transfer: AssignedOfficerTransferLookup = async (query) => {
+    const state = await snapshot()
+    if (state === null) return null
+    return state.transfers.find((row) => row.currentLegRequestId === query.currentLegRequestId) ?? null
+  }
+
+  const facts: AssignedOfficerFactsPort = createAssignedOfficerFactsPort({
+    rootSessionId: root,
+    routing: input.routing,
+    members: input.members,
+    leg,
+    transfer,
+    ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
+    fixedLeaderOrHumanCategory: input.fixedLeaderOrHumanCategory,
+  })
+
+  return {
+    currentReviewerForTransfer: facts.resolveCurrentReviewer,
+    reviewCallFactsForAssignedOfficer: facts,
+  }
 }
