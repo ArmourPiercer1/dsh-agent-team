@@ -49,8 +49,8 @@
 
 | ID | 工作包 | 状态 | 入口 / 证据 |
 |---|---|---|---|
-| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | PARTIAL（gate + dry harness；G2 未取得） | PR #546；`tests/world-factory/suites/150-a5sf-read.mjs` + `evidence/a5sf-p2-read/`；预算预登记门 + 真实 compiler/guard/chain/diag 的 host-free dry；**live 未跑**：`installToolBindingRealm` 无生产挂载点、guard 咨询不可观测（`install.ts:293`），需 seam + mount + 跨进程传输 + 用户 boot 预算裁决 |
-| BL-15 | P2-02 原生 `write`（原子替换/版本校验；禁写字节不变；写不自动获读） | READY | 同上 |
+| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | **live G2 已取得**（大文件窗口/流式仍 PARTIAL） | PR #581（`a5sf-preflight`）；`evidence/a5sf-preflight/README.md` §13：真实 Host 上 8/8 PASS——row1 内读被 confined provider 服务、row2 restriction 拒绝、row3 ceiling 拒绝，读路径咨询全落 binding realm；禁读真实拒绝与 in-lane 拒绝均为实测。**未覆盖**：>10MiB 中间窗口、流式、双 Member 同时并发（同轮两 Member 未做） |
+| BL-15 | P2-02 原生 `write`（原子替换/版本校验；禁写字节不变；写不自动获读） | PARTIAL（写轴 live 已证，原子/版本未验） | PR #581；row4a 在 lane 内写成功且 write fact 全在 ceiling realm；row4b 证明 guard **允许**写一个 binding lane 读不到的文件（binding restriction 只约束 read 轴），拦截者是宿主 read-before-write 策略而非 Team lane。**待裁决**：`write` 是否应蕴含 `read`（README §12.8.3）。**未验**：原子替换、版本校验、禁写字节不变（本轮只验拒绝路径不改盘） |
 | BL-16 | P2-03 原生 `grep`（OS `rg` 真实拒绝、exit 0/1、取消、结果裁剪） | READY | `a5sf-grep.mjs` |
 | BL-17 | P2-04 原生持久 `bash`（同 PTY 多命令、只写不读、`chmod`/新建文件负控、禁网、旧代 PTY 拒用） | READY | `a5sf-bash.mjs` |
 | BL-18 | P2-05 原生 `web_fetch`（本地 mock provider、network=deny 前置拒绝、普通 DSH fetch 不受影响） | READY | `a5sf-web.mjs` |
