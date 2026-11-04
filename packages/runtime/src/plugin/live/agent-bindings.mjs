@@ -2776,11 +2776,32 @@ export function createAgentBindings(deps) {
             return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
           }
           const a5IsLeaderPlane = sessionId === String(teamRoot)
+          // Alpha.6 (opt-in, v5 only): the PA leg becomes an approval CASE
+          // leg, so the executing Member's identity/generation and the bound
+          // Blueprint identity are frozen on the durable row. Absent the
+          // opt-in (or on v4) the exact legacy requestControl path is used.
+          const a6BoundBlueprint = getBoundBlueprint(String(teamRoot))
+          const a6PaCase = config?.alpha6ReviewRouting === true
+            && Number(a6BoundBlueprint?.schemaVersion) === 5
           const a5Leg = createPaControlLeg({
             controlService: a5ControlService,
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            ...(a6PaCase
+              ? {
+                  a6: true,
+                  ...(boundTemplate?.templateId === undefined
+                    ? {}
+                    : { operationOwnerTemplateId: String(boundTemplate.templateId) }),
+                  ...(a6BoundBlueprint?.contentHash === undefined
+                    ? {}
+                    : { blueprintContentHash: String(a6BoundBlueprint.contentHash) }),
+                  ...(a6BoundBlueprint?.revision === undefined
+                    ? {}
+                    : { blueprintRevision: String(a6BoundBlueprint.revision) }),
+                }
+              : {}),
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)

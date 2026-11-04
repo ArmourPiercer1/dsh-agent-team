@@ -229,9 +229,9 @@
     },
     {
       "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-      "sha256": "4368865c155a9a4fc9de27f1a1ca39548f9bab23e95c3a2647c2f57500b55d69",
+      "sha256": "b013c35117574afcddabc5eb6a47d26237e80ad50de253a52f6c16ad011cc723",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
-      "reason": "Named Alpha.6 center-interface addition: the native-Inbox has/remove probe is the ONLY recovery observation the wake-intent protocol consumes; it materialises the target session so a boot-time recovery reads the durable Inbox, and it adds no authority, no decision and no durable write."
+      "reason": "Named Alpha.6 center-interface addition: the live Inbox probe (materialises the target session for durable recovery) and the opt-in v5 PA case-leg selection (freezes the trusted owner template and bound Blueprint identity; v4/default stays on the legacy requestControl path). No new authority, decision or durable write."
     }
   ]
 }
