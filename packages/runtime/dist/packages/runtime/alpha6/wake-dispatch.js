@@ -583,7 +583,13 @@ export async function reconcileReviewWakes(deps) {
         const withdrawals = reconciled.effects.filter((effect) => effect.kind === 'withdraw-wake');
         for (const effect of withdrawals) {
             try {
-                await deps.inbox?.remove?.(effect.wakeId);
+                if (deps.inbox?.remove === undefined) {
+                    throw new Error('review-wake: withdraw-wake requires an Inbox remove port');
+                }
+                const removed = await deps.inbox.remove(effect.wakeId);
+                if (removed === false) {
+                    throw new Error('review-wake: the native Inbox refused the withdraw');
+                }
                 await deps.intent?.clear(effect.wakeId);
                 wakeIds.push(effect.wakeId);
             }

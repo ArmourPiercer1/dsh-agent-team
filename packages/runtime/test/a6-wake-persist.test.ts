@@ -185,6 +185,11 @@ class FakeInbox implements ReviewWakeInboxPort {
   accept(wakeId: string): void {
     this.messages.set(wakeId, `[team-review-wake wakeId=${wakeId}]`)
   }
+
+  /** The real Host claim splices the message out before `inbox/claimed`. */
+  claim(wakeId: string): boolean {
+    return this.messages.delete(wakeId)
+  }
 }
 
 interface Harness {
@@ -324,7 +329,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(coordinator.state.status).toBe('queued')
   })
 
-  it('window (d): claimed/running then crash — recovery adopts queued and never re-delivers', async () => {
+  it('window (d): a claimed turn that crashed has no Inbox message — recovery discards and re-delivers once', async () => {
     const plan = planFor('req-d1', 'req-d2', 'req-d3')
     const identity = identityFor(plan)
     const store = new FakeIntentStore()
@@ -345,13 +350,15 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(claimReviewWake(beforeCrash).outcome).toBe('applied')
     expect(beforeCrash.state.status).toBe('running')
     expect(port.calls).toEqual([identity.wakeId])
+    // The real Host claim consumes the message before a turn can run.
+    expect(inbox.claim(identity.wakeId)).toBe(true)
 
-    // Crash: the running latch is lost, only the durable intent + real Inbox
-    // survive.
+    // Crash: the running latch is lost, and there is no message left to
+    // adopt. Recovery discards the stale intent; boot re-plan re-delivers.
     const afterCrash = coordinatorFor(plan)
-    expect((await recoverReviewWake(afterCrash, store, inbox)).adopted).toBe(true)
-    expect(afterCrash.state.status).toBe('queued')
-    expect(afterCrash.state.wakeId).toBe(identity.wakeId)
+    expect((await recoverReviewWake(afterCrash, store, inbox)).adopted).toBe(false)
+    expect(afterCrash.state.status).toBe('idle')
+    expect(store.size).toBe(0)
 
     const replay = await dispatchReviewWakes({
       plan,
@@ -362,8 +369,8 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
       inbox,
       deliver: port.deliver,
     })
-    expect(replay.delivered).toHaveLength(0)
-    expect(port.calls).toHaveLength(1)
+    expect(replay.delivered).toHaveLength(1)
+    expect(port.calls).toHaveLength(2)
     expect(inbox.messages.size).toBe(1)
   })
 
@@ -620,6 +627,37 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(store.size).toBe(0)
     // No extra wake was delivered by the reconcile.
     expect(port.calls).toHaveLength(1)
+  })
+
+  it('a refused Inbox remove keeps the intent instead of clearing a still-claimable message', async () => {
+    const plan = planFor('req-refuse')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+    await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    inbox.remove = () => false
+
+    const revoked = await dispatchReviewWakes({
+      plan: EMPTY_PLAN,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+
+    expect(store.size).toBe(1)
+    expect(inbox.messages.size).toBe(1)
   })
 
   it('reconcileReviewWakes is exposed as the no-ready-work revocation for absent latches', async () => {
