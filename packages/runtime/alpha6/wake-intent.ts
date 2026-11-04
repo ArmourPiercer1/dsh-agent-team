@@ -85,6 +85,10 @@ export interface ReviewWakeRecoverResult {
   /** True only when the latch is now `queued` for an existing Inbox message. */
   readonly adopted: boolean
   readonly wakeId: string | null
+  /** Why recovery ended this way. The caller MUST NOT re-plan on `unreadable`,
+   *  `busy`, `refused` or `stopped`: a live/concurrent latch or a durable row
+   *  may still exist. Only `absent`/`mismatch` may be rebuilt at boot. */
+  readonly reason: 'adopted' | 'absent' | 'mismatch' | 'unreadable' | 'stopped' | 'refused' | 'busy'
   readonly transition: ReviewWakeTransition
 }
 
@@ -117,11 +121,23 @@ export async function recoverReviewWake(
   store: ReviewWakeIntentStore,
   inbox: ReviewWakeInboxPort,
 ): Promise<ReviewWakeRecoverResult> {
+  const initialStatus = coordinator.state.status
+  const initialWakeId = coordinator.state.wakeId
+  const changed = (): boolean =>
+    coordinator.state.status !== initialStatus || coordinator.state.wakeId !== initialWakeId
+  const busy = (): ReviewWakeRecoverResult => ({
+    adopted: false,
+    wakeId: null,
+    reason: 'busy',
+    transition: { outcome: 'refused', code: 'invalid-transition', state: coordinator.state },
+  })
   const intent = await store.read()
   if (intent === null) {
+    if (changed()) return busy()
     return {
       adopted: false,
       wakeId: null,
+      reason: 'absent',
       transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
     }
   }
@@ -129,9 +145,11 @@ export async function recoverReviewWake(
   if (!sameKey(intent.key, coordinator.state.key)) {
     // A row from another latch identity is never adopted by this one. It is
     // left for its own latch; the reducer refuses the mismatched fact.
+    if (changed()) return busy()
     return {
       adopted: false,
       wakeId: null,
+      reason: 'mismatch',
       transition: coordinator.dispatch({
         type: 'recover',
         persistedWake: persistedFact(intent),
@@ -148,20 +166,25 @@ export async function recoverReviewWake(
     return {
       adopted: false,
       wakeId: null,
-      transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+      reason: 'unreadable',
+      transition: { outcome: 'refused', code: 'invalid-transition', state: coordinator.state },
     }
   }
   if (!exists) {
+    if (changed()) return busy()
     // Window (b): the intent is not a delivered wake. Discard it; only an
     // actual Inbox message may be adopted.
+    if (changed()) return busy()
     await store.clear(intent.wakeId)
     return {
       adopted: false,
       wakeId: null,
+      reason: 'absent',
       transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
     }
   }
 
+  if (changed()) return busy()
   const transition = coordinator.dispatch({
     type: 'recover',
     persistedWake: persistedFact(intent),
@@ -172,11 +195,11 @@ export async function recoverReviewWake(
     // native Inbox instead of adopting it.
     await inbox.remove?.(intent.wakeId)
     await store.clear(intent.wakeId)
-    return { adopted: false, wakeId: null, transition }
+    return { adopted: false, wakeId: null, reason: 'stopped', transition }
   }
 
   if (transition.outcome === 'refused') {
-    return { adopted: false, wakeId: null, transition }
+    return { adopted: false, wakeId: null, reason: 'refused', transition }
   }
 
   if (intent.status !== 'accepted') {
@@ -190,6 +213,7 @@ export async function recoverReviewWake(
       coordinator.state.status === 'queued' &&
       coordinator.state.wakeId === intent.wakeId,
     wakeId: intent.wakeId,
+    reason: 'adopted',
     transition,
   }
 }

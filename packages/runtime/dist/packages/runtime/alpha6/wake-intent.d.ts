@@ -70,6 +70,10 @@ export interface ReviewWakeRecoverResult {
     /** True only when the latch is now `queued` for an existing Inbox message. */
     readonly adopted: boolean;
     readonly wakeId: string | null;
+    /** Why recovery ended this way. The caller MUST NOT re-plan on `unreadable`,
+     *  `busy`, `refused` or `stopped`: a live/concurrent latch or a durable row
+     *  may still exist. Only `absent`/`mismatch` may be rebuilt at boot. */
+    readonly reason: 'adopted' | 'absent' | 'mismatch' | 'unreadable' | 'stopped' | 'refused' | 'busy';
     readonly transition: ReviewWakeTransition;
 }
 /**

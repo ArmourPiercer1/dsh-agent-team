@@ -377,6 +377,61 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(inbox.messages.size).toBe(1)
   })
 
+  it('recovery keeps the row and never adopts when the Inbox is unreadable', async () => {
+    const plan = planFor('req-unreadable-recover')
+    const identity = identityFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const coordinator = coordinatorFor(plan)
+    await store.persistQueued({
+      key: identity.key,
+      wakeId: identity.wakeId,
+      workFingerprint: identity.fingerprint,
+    })
+    inbox.accept(identity.wakeId)
+    inbox.unreadable = true
+
+    const recovered = await recoverReviewWake(coordinator, store, inbox)
+    expect(recovered.adopted).toBe(false)
+    expect(recovered.reason).toBe('unreadable')
+    expect(store.size).toBe(1)
+    expect(coordinator.state.status).toBe('idle')
+  })
+
+  it('recovery never clobbers a coordinator a concurrent dispatch moved', async () => {
+    const plan = planFor('req-recover-race')
+    const identity = identityFor(plan)
+    const store = new FakeIntentStore()
+    const coordinator = coordinatorFor(plan)
+    await store.persistQueued({
+      key: identity.key,
+      wakeId: identity.wakeId,
+      workFingerprint: identity.fingerprint,
+    })
+
+    let signalStarted: () => void = () => {}
+    const started = new Promise<void>((resolve) => { signalStarted = resolve })
+    let releaseProbe: () => void = () => {}
+    const probe = new Promise<void>((resolve) => { releaseProbe = resolve })
+    const recovering = recoverReviewWake(coordinator, store, {
+      has: async () => { signalStarted(); await probe; return true },
+    })
+    await started
+    const concurrent = coordinator.dispatch({
+      type: 'scan-result',
+      work: { kind: 'ready', fingerprint: identity.fingerprint },
+    })
+    expect(concurrent.outcome).toBe('applied')
+    expect(coordinator.state.status).toBe('queued')
+    releaseProbe()
+
+    const recovered = await recovering
+    expect(recovered.reason).toBe('busy')
+    expect(coordinator.state.status).toBe('queued')
+    expect(coordinator.state.wakeId).toBe(identity.wakeId)
+    expect(store.size).toBe(1)
+  })
+
   it('recover does not adopt a queued intent absent from the Inbox', async () => {
     const plan = planFor('req-absent')
     const identity = identityFor(plan)

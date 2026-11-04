@@ -5411,7 +5411,12 @@ export function createAgentBindings(deps) {
       },
       async remove(wakeId) {
         const live = await handle()
-        if (live === undefined) return false
+        if (live === undefined) {
+          // Same contract as `has`: unreadable is not evidence the message is
+          // gone. Keep the intent instead of reporting a refusal that the
+          // caller would mistake for an absent message.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
         const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
         if (message === undefined) return false
         return live.agent.inbox.remove(message.id)

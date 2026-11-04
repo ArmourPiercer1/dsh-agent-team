@@ -2686,11 +2686,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               const staleSessionId = staleMember?.childSessionId
               let removable = true
               if (typeof staleSessionId === 'string' && staleSessionId.length > 0) {
-                try {
-                  const removed = await live.reviewWakeInbox?.(staleSessionId)?.remove?.(intent.wakeId)
-                  if (removed === false) removable = false
-                } catch {
+                const inbox = live.reviewWakeInbox?.(staleSessionId)
+                if (inbox?.remove === undefined) {
                   removable = false
+                } else {
+                  try {
+                    const removed = await inbox.remove(intent.wakeId)
+                    if (removed === false) {
+                      // The message was not withdrawn. Clear only when the
+                      // Inbox positively says it is already absent; an
+                      // unreadable probe keeps the row for a later boot.
+                      removable = (await inbox.has(intent.wakeId)) === false
+                    }
+                  } catch {
+                    removable = false
+                  }
                 }
               }
               if (removable) {
@@ -2723,8 +2733,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               }
               continue
             }
-            const coordinator = createLatchCoordinator(intent.key)
             const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
+            // A concurrent readiness-gated dispatch may already own this
+            // latch. Its coordinator is authoritative; never recover over it.
+            if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId)) continue
+            const coordinator = createLatchCoordinator(intent.key)
             // Register BEFORE the first await: recovery now runs after
             // readiness, so a concurrent readiness-gated request could
             // otherwise build a second coordinator for the same latch and
@@ -2737,7 +2750,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               alpha6WakeIntents.forKey(intent.key),
               live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
             )
-            if (!recovered.adopted) {
+            // Only a row the protocol actually discarded may be rebuilt. An
+            // unreadable Inbox, a concurrent state change, a refusal or a
+            // sticky Stop must keep the registered coordinator and row.
+            if (recovered.reason === 'absent' || recovered.reason === 'mismatch') {
               if (alpha6WakeCoordinators.get(mapKey) === coordinator) alpha6WakeCoordinators.delete(mapKey)
               if (alpha6WakeBySession.get(targetSessionId) === coordinator) alpha6WakeBySession.delete(targetSessionId)
               // Windows (b)/(d): the native message is gone (claimed and

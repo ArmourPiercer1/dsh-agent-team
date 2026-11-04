@@ -51,20 +51,35 @@ function sameKey(a, b) {
  * Inbox row is withdrawn when the port offers `remove`.
  */
 export async function recoverReviewWake(coordinator, store, inbox) {
+    const initialStatus = coordinator.state.status;
+    const initialWakeId = coordinator.state.wakeId;
+    const changed = () => coordinator.state.status !== initialStatus || coordinator.state.wakeId !== initialWakeId;
+    const busy = () => ({
+        adopted: false,
+        wakeId: null,
+        reason: 'busy',
+        transition: { outcome: 'refused', code: 'invalid-transition', state: coordinator.state },
+    });
     const intent = await store.read();
     if (intent === null) {
+        if (changed())
+            return busy();
         return {
             adopted: false,
             wakeId: null,
+            reason: 'absent',
             transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
         };
     }
     if (!sameKey(intent.key, coordinator.state.key)) {
         // A row from another latch identity is never adopted by this one. It is
         // left for its own latch; the reducer refuses the mismatched fact.
+        if (changed())
+            return busy();
         return {
             adopted: false,
             wakeId: null,
+            reason: 'mismatch',
             transition: coordinator.dispatch({
                 type: 'recover',
                 persistedWake: persistedFact(intent),
@@ -81,19 +96,27 @@ export async function recoverReviewWake(coordinator, store, inbox) {
         return {
             adopted: false,
             wakeId: null,
-            transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+            reason: 'unreadable',
+            transition: { outcome: 'refused', code: 'invalid-transition', state: coordinator.state },
         };
     }
     if (!exists) {
+        if (changed())
+            return busy();
         // Window (b): the intent is not a delivered wake. Discard it; only an
         // actual Inbox message may be adopted.
+        if (changed())
+            return busy();
         await store.clear(intent.wakeId);
         return {
             adopted: false,
             wakeId: null,
+            reason: 'absent',
             transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
         };
     }
+    if (changed())
+        return busy();
     const transition = coordinator.dispatch({
         type: 'recover',
         persistedWake: persistedFact(intent),
@@ -103,10 +126,10 @@ export async function recoverReviewWake(coordinator, store, inbox) {
         // native Inbox instead of adopting it.
         await inbox.remove?.(intent.wakeId);
         await store.clear(intent.wakeId);
-        return { adopted: false, wakeId: null, transition };
+        return { adopted: false, wakeId: null, reason: 'stopped', transition };
     }
     if (transition.outcome === 'refused') {
-        return { adopted: false, wakeId: null, transition };
+        return { adopted: false, wakeId: null, reason: 'refused', transition };
     }
     if (intent.status !== 'accepted') {
         // Window (c): the Inbox accepted the message but the local mark was lost.
@@ -117,6 +140,7 @@ export async function recoverReviewWake(coordinator, store, inbox) {
         adopted: coordinator.state.status === 'queued' &&
             coordinator.state.wakeId === intent.wakeId,
         wakeId: intent.wakeId,
+        reason: 'adopted',
         transition,
     };
 }
