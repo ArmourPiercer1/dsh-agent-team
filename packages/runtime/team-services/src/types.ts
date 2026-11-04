@@ -20,6 +20,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js'
 import type { FsProviderSurface } from './fs.js'
+import type { ConfinedSubprocessSurface } from './install.js'
 
 /** Closed per-call denial vocabulary of an installed Provider. */
 export const TEAM_IO_DENIAL_CODES = [
@@ -41,6 +42,13 @@ export const TEAM_SERVICE_INSTALL_CODES = [
   'PROVIDER_INCOMPATIBLE',
   'SERVICE_ALREADY_INSTALLED',
   'SERVICE_MOUNT_FAILED',
+  /**
+   * BL-17 (2026-11-04): a module that CONSUMES `subprocess` was about to be
+   * mounted on a realm that owns no confined `subprocess` face. Refused at
+   * composition time, before any tool exists — never resolved against the
+   * inherited base service.
+   */
+  'SUBPROCESS_UNCONFINED_REALM',
 ] as const
 
 export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number]
@@ -86,6 +94,25 @@ export class TeamServiceInstallError extends Error {
 }
 
 /**
+ * BL-17 (2026-11-04) — the confined SERVICE FACES a realm ACTUALLY owns.
+ *
+ * REQUIRED on every installed realm, and stated as a total answer rather than
+ * an optional field: `subprocess: null` is an EXPLICIT "this realm confines no
+ * process", while "the realm did not say" is not expressible. The mount seam
+ * (`mountNativeToolModules`) refuses a `subprocess`-consuming module on a
+ * realm whose answer is `null`, instead of letting it resolve the inherited
+ * base service. A future binding-scoped process lane becomes supported by
+ * installing the face on that realm and reporting it here — not by widening
+ * the mount seam.
+ */
+export interface RealmServiceFaces {
+  /** Every installed realm shadows `fs` with a confined Provider. */
+  readonly fs: 'confined'
+  /** The confined process face mounted on this realm's isolated scope, or null. */
+  readonly subprocess: ConfinedSubprocessSurface | null
+}
+
+/**
  * One Member's installed realm: the isolated Context that carries the
  * confined Provider, the Provider itself, and the audit receipt of WHICH
  * policy revision the Provider serves. `dispose` removes the Provider from the
@@ -104,6 +131,12 @@ export interface MemberServiceInstallation {
   }>
   readonly ctx: Context
   readonly fs: FsProviderSurface
+  /**
+   * BL-16/BL-17: which confined faces this realm owns. `subprocess` is the
+   * confined process face when the realm supplier declared one, `null`
+   * otherwise (the base service is never reached through a managed mount).
+   */
+  readonly faces: RealmServiceFaces
   readonly dispose: () => Promise<void>
 }
 

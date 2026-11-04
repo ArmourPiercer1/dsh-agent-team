@@ -235,6 +235,18 @@ describe('a5p4 lane purity and dormancy', () => {
       kind: 'types-only',
     },
     {
+      // Alpha.5 sandbox-first BL-16 (P2-03): the Member realm's confined
+      // `subprocess` face consumes the provider's PUBLIC-FACE TYPES and
+      // receives the provider INSTANCE from the composition (the realm never
+      // builds a launcher: that pin belongs to the caller). Booked as a
+      // reviewed types-only edge — the process is created by the injected
+      // provider, and the guard/decision layer above it is not this lane's.
+      file: 'runtime/team-services/src/subprocess.ts',
+      lane: 'bl-16 — Member realm confined subprocess face (types-only; provider instance injected)',
+      edge: "import type { AllowPathEntry, PayloadExitRecord, ProviderResult, SpawnRequest, StreamingOptions } from '../../sandbox-provider/index.js'",
+      kind: 'types-only',
+    },
+    {
       // U7-F (the governed pwsh shell-class row): the pwsh confined backend
       // builds its provider for the SAME Landlock law as the bash row —
       // a true mount (public-face import, own factory call site); the

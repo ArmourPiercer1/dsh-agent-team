@@ -19,11 +19,12 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderSurface } from './fs.js';
+import type { ConfinedSubprocessSurface } from './install.js';
 /** Closed per-call denial vocabulary of an installed Provider. */
 export declare const TEAM_IO_DENIAL_CODES: readonly ["IO_READ_DENIED", "IO_WRITE_DENIED", "IO_WRITE_REQUIRES_READ", "IO_POLICY_UNSUPPORTED"];
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number];
 /** Closed install-time refusal vocabulary. */
-export declare const TEAM_SERVICE_INSTALL_CODES: readonly ["MEMBER_POLICY_UNAVAILABLE", "MEMBER_POLICY_STALE", "MEMBER_IDENTITY_INVALID", "MEMBER_DUPLICATE", "PROVIDER_UNAVAILABLE", "PROVIDER_INCOMPATIBLE", "SERVICE_ALREADY_INSTALLED", "SERVICE_MOUNT_FAILED"];
+export declare const TEAM_SERVICE_INSTALL_CODES: readonly ["MEMBER_POLICY_UNAVAILABLE", "MEMBER_POLICY_STALE", "MEMBER_IDENTITY_INVALID", "MEMBER_DUPLICATE", "PROVIDER_UNAVAILABLE", "PROVIDER_INCOMPATIBLE", "SERVICE_ALREADY_INSTALLED", "SERVICE_MOUNT_FAILED", "SUBPROCESS_UNCONFINED_REALM"];
 export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number];
 /**
  * The per-call denial raised by an installed Provider method. Carries the
@@ -49,6 +50,24 @@ export declare class TeamServiceInstallError extends Error {
     constructor(code: TeamServiceInstallCode, detail: string, reveal?: string);
 }
 /**
+ * BL-17 (2026-11-04) — the confined SERVICE FACES a realm ACTUALLY owns.
+ *
+ * REQUIRED on every installed realm, and stated as a total answer rather than
+ * an optional field: `subprocess: null` is an EXPLICIT "this realm confines no
+ * process", while "the realm did not say" is not expressible. The mount seam
+ * (`mountNativeToolModules`) refuses a `subprocess`-consuming module on a
+ * realm whose answer is `null`, instead of letting it resolve the inherited
+ * base service. A future binding-scoped process lane becomes supported by
+ * installing the face on that realm and reporting it here — not by widening
+ * the mount seam.
+ */
+export interface RealmServiceFaces {
+    /** Every installed realm shadows `fs` with a confined Provider. */
+    readonly fs: 'confined';
+    /** The confined process face mounted on this realm's isolated scope, or null. */
+    readonly subprocess: ConfinedSubprocessSurface | null;
+}
+/**
  * One Member's installed realm: the isolated Context that carries the
  * confined Provider, the Provider itself, and the audit receipt of WHICH
  * policy revision the Provider serves. `dispose` removes the Provider from the
@@ -67,6 +86,12 @@ export interface MemberServiceInstallation {
     }>;
     readonly ctx: Context;
     readonly fs: FsProviderSurface;
+    /**
+     * BL-16/BL-17: which confined faces this realm owns. `subprocess` is the
+     * confined process face when the realm supplier declared one, `null`
+     * otherwise (the base service is never reached through a managed mount).
+     */
+    readonly faces: RealmServiceFaces;
     readonly dispose: () => Promise<void>;
 }
 export interface MemberIoInstallation {

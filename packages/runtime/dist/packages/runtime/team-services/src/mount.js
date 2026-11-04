@@ -63,6 +63,41 @@ export const A5SF_NATIVE_SHADOW_INVALIDATED = 'A5SF_NATIVE_SHADOW_INVALIDATED';
  * ALL calls are refused until re-assembly.
  */
 export const A5SF_MEMBER_REALM_INVALIDATED = 'A5SF_MEMBER_REALM_INVALIDATED';
+/**
+ * BL-17 (2026-11-04) — the refusal code for a `subprocess`-consuming native
+ * module targeted at a realm that owns NO confined `subprocess` face.
+ *
+ * WHY IT EXISTS (the external review of Alpha.5): the confined process face is
+ * mounted on the MEMBER realm only (`installMemberIoProviders`). The binding
+ * realm installs a confined `fs` and NO `subprocess`; a binding-targeted module
+ * that injects `subprocess` would therefore resolve the INHERITED, unconfined
+ * base service with zero guard facts. That is the class of failure where a
+ * proof obtained on one realm is silently wrong on another, so it is refused
+ * HERE, at composition time, before any tool definition exists — never
+ * documented as a known limitation.
+ *
+ * The string is the `TeamServiceInstallError.code` (the closed install
+ * vocabulary's `SUBPROCESS_UNCONFINED_REALM`); the exported name is the token a
+ * caller and a test compare against, so the refusal is typed rather than read
+ * out of a message.
+ */
+export const A5SF_SUBPROCESS_UNCONFINED_REALM = 'SUBPROCESS_UNCONFINED_REALM';
+/**
+ * BL-17 (2026-11-04): the service names a plugin module DECLARES it injects.
+ *
+ * Reads the PUBLIC Cordis plugin metadata (`Plugin.inject`, array or object
+ * form — `registry.d.ts` `Inject`) off the SAME object `ctx.plugin` receives.
+ * It evaluates no policy and resolves no service: a declaration is metadata,
+ * which is exactly why the refusal can fire before any mount.
+ */
+function declaredInjectionsOf(plugin) {
+    const declaration = plugin?.inject;
+    if (Array.isArray(declaration))
+        return declaration.filter((name) => typeof name === 'string');
+    if (declaration !== null && typeof declaration === 'object')
+        return Object.keys(declaration);
+    return [];
+}
 /** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
 export const NATIVE_REGISTRATION_ROUTING = 'a5sfRegistrationRouting';
 /** The tool name a ToolBinding identity addresses: the last `/` segment of `<owner>/<tool>`. */
@@ -344,6 +379,7 @@ export async function mountA5sfRealm(input) {
         members: input.members,
         ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
         ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
+        ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
     });
     // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
     // Member's isolated scope by the CALLER, through this realm's
@@ -912,6 +948,40 @@ export async function mountA5sfRealm(input) {
                     throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool re-mount names binding '${mount.toolBindingIdentity}' but this realm mounted no such ToolBinding realm`);
                 }
             }
+            // BL-17 (2026-11-04) — THE INTERSECTION INVARIANT AT THE REALM BOUNDARY.
+            //
+            // A module that consumes `subprocess` may only be mounted on a realm that
+            // OWNS a confined `subprocess` face. The faces come from the installed
+            // realm itself (`RealmServiceFaces`, a required answer), never from
+            // `target.get('subprocess')`: that lookup returns the INHERITED base
+            // service when this realm mounted no shadow, which is precisely the
+            // silent widening this refusal replaces. Fires before any fiber/tool is
+            // created, so the base service is never even resolved.
+            const realmLabelOf = (binding) => binding === undefined
+                ? `the Member ceiling realm '${installation.members[0]?.identity.memberInstanceId ?? '<unknown>'}'`
+                : `the binding realm '${binding.toolBindingIdentity}'`;
+            const moduleLabelOf = (mount) => {
+                const name = mount.module?.name;
+                const label = typeof name === 'string' && name.trim() !== '' ? name : '<unnamed native module>';
+                return mount.specifier === undefined ? label : `${label} (${mount.specifier})`;
+            };
+            const targetsUnconfinedProcessRealm = (mount) => {
+                if (!declaredInjectionsOf(mount.module).includes('subprocess'))
+                    return false;
+                const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity);
+                const faces = binding === undefined ? installation.members[0]?.faces : binding.faces;
+                return faces === undefined || faces.subprocess === null;
+            };
+            for (const mount of modules) {
+                if (!targetsUnconfinedProcessRealm(mount))
+                    continue;
+                const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity);
+                throw new TeamServiceInstallError(A5SF_SUBPROCESS_UNCONFINED_REALM, `native tool module '${moduleLabelOf(mount)}' injects \`subprocess\`, but ${realmLabelOf(binding)} mounts no confined subprocess face;`
+                    + ' refusing at composition time instead of letting the module resolve the inherited, unconfined base subprocess service.'
+                    + ' A realm that must host a process consumer has to install a confined subprocess face on its own isolated scope'
+                    + ' (the binding realm installs `fs` only today) — a confined Provider that covers one realm is never presented as a'
+                    + ' general Member×Tool provider');
+            }
             const created = [];
             /**
              * E8 (2026-11-03): one entry per REAL mount of THIS attach, so the
@@ -951,6 +1021,10 @@ export async function mountA5sfRealm(input) {
                     : bindingRealmOf(mount.toolBindingIdentity);
                 const target = binding?.ctx ?? memberTarget;
                 const ownedToolName = binding === undefined ? undefined : toolNameOfBindingIdentity(binding.toolBindingIdentity);
+                // BL-17: the target realm's OWN answer; never a `ctx.get('subprocess')`
+                // lookup (which would answer the inherited base service).
+                const targetFaces = binding === undefined ? installation.members[0]?.faces : binding.faces;
+                const targetHasConfinedSubprocess = targetFaces !== undefined && targetFaces.subprocess !== null;
                 // The REAL services: the router delegates everything except the two
                 // registration calls, so the tool bodies see the live registry.
                 const realTools = target.get('tools');
@@ -1024,6 +1098,20 @@ export async function mountA5sfRealm(input) {
                     const descendants = windowFibers
                         .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null);
                     const settled = await settleDeferredRegistrationWindow(descendants, target);
+                    // BL-17 (2026-11-04): the PRE-MOUNT check reads the module's declared
+                    // `inject`. A module that instead defers `ctx.inject(['subprocess'], …)`
+                    // declares it only on the CHILD fiber, so the same refusal is applied
+                    // here — still during composition, before this call returns and before
+                    // any tool body can run.
+                    if (!targetHasConfinedSubprocess) {
+                        const deferredProcess = descendants.filter((created) => 'subprocess' in created.inject);
+                        if (deferredProcess.length > 0) {
+                            throw new TeamServiceInstallError(A5SF_SUBPROCESS_UNCONFINED_REALM, `native tool module '${moduleLabelOf(mount)}' deferred a \`subprocess\` injection`
+                                + ` (${deferredProcess.map((created) => `[${Object.keys(created.inject).join(',')}]`).join(', ')}),`
+                                + ` but ${realmLabelOf(binding)} mounts no confined subprocess face; refusing at composition time`
+                                + ' instead of letting the child resolve the inherited, unconfined base subprocess service');
+                        }
+                    }
                     if (!observeOnly) {
                         // PUBLIC state only: `Fiber.state` is the documented surface, and a
                         // fiber at FAILED says the registration threw without this seam
@@ -1050,9 +1138,12 @@ export async function mountA5sfRealm(input) {
                     if (fiber !== undefined)
                         await disposeFiberBounded(fiber);
                     await rollbackCreated();
-                    throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', error instanceof TeamServiceInstallError
-                        ? error.detail
-                        : `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`);
+                    // A TYPED refusal thrown by this seam (e.g. the BL-17 unconfined-realm
+                    // refusal below) keeps its own code: re-wrapping it as a generic mount
+                    // failure would make the one machine-readable fact unreadable.
+                    if (error instanceof TeamServiceInstallError)
+                        throw error;
+                    throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`);
                 }
                 if (typeof detachWindow === 'function')
                     detachWindow();

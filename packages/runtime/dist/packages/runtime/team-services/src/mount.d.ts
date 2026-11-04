@@ -42,6 +42,7 @@ import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdent
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
 import { type MemberServiceSpec, type ToolBindingRealm } from './install.js';
+import type { ConfinedSubprocessRealmSpec } from './install.js';
 import type { MemberIoInstallation } from './types.js';
 /** One Member to mount: identity + the ceiling compiled for that generation. */
 export interface A5sfRealmMember {
@@ -217,6 +218,25 @@ export declare const A5SF_NATIVE_SHADOW_INVALIDATED = "A5SF_NATIVE_SHADOW_INVALI
  */
 export declare const A5SF_MEMBER_REALM_INVALIDATED = "A5SF_MEMBER_REALM_INVALIDATED";
 /**
+ * BL-17 (2026-11-04) — the refusal code for a `subprocess`-consuming native
+ * module targeted at a realm that owns NO confined `subprocess` face.
+ *
+ * WHY IT EXISTS (the external review of Alpha.5): the confined process face is
+ * mounted on the MEMBER realm only (`installMemberIoProviders`). The binding
+ * realm installs a confined `fs` and NO `subprocess`; a binding-targeted module
+ * that injects `subprocess` would therefore resolve the INHERITED, unconfined
+ * base service with zero guard facts. That is the class of failure where a
+ * proof obtained on one realm is silently wrong on another, so it is refused
+ * HERE, at composition time, before any tool definition exists — never
+ * documented as a known limitation.
+ *
+ * The string is the `TeamServiceInstallError.code` (the closed install
+ * vocabulary's `SUBPROCESS_UNCONFINED_REALM`); the exported name is the token a
+ * caller and a test compare against, so the refusal is typed rather than read
+ * out of a message.
+ */
+export declare const A5SF_SUBPROCESS_UNCONFINED_REALM = "SUBPROCESS_UNCONFINED_REALM";
+/**
  * E8 (2026-11-03): the ATTACH RECORD of a successful managed native attach.
  *
  * `allowEmpty: true` must never read as "verified safe". When a composition
@@ -288,6 +308,13 @@ export interface MountA5sfRealmInput {
     readonly providerClass?: FsProviderConstructor;
     /** Observe every guard consultation in every realm this call mounts. */
     readonly onGuardConsult?: GuardConsultObserver;
+    /**
+     * BL-16: the confined `subprocess` face for this Member's isolated scope.
+     * Omitted = none is mounted (default-preserving). Mounted on the SAME scope
+     * the native route re-mounts into, so a `grep`/`glob` definition resolving
+     * `ctx.subprocess` gets the confined provider.
+     */
+    readonly subprocess?: ConfinedSubprocessRealmSpec;
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

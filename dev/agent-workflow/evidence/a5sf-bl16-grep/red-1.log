@@ -1,0 +1,24 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts [ packages/runtime/test/a5sf-confined-subprocess.test.ts ]
+Error: Cannot find module '../team-services/src/subprocess.js' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/test/a5sf-confined-subprocess.test.ts
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:35:1
+     33| import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../…
+     34| import { compileEffectiveIo } from '../member-io-policy/src/index.js'
+     35| import {
+       | ^
+     36|   createConfinedSubprocessClass,
+     37|   createMemberSubprocessGuard,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  18:15:19
+   Duration  375ms (transform 227ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
