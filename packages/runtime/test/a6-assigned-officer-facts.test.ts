@@ -15,6 +15,7 @@ import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService, CurrentLegTransferRecord } from '../control/index.js'
 import { createAlpha6AuthorityGenerationReader } from '../alpha6/authority-generation.js'
+import { createAlpha6RootComposition } from '../alpha6/root-composition.js'
 import { createAlpha6CategoryLookup, createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
 import type {
   Alpha6ControlPorts,
@@ -584,6 +585,52 @@ describe('A6 fixed-category classifier', () => {
     expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('leader-approval'), routing: BASE_ROUTING.routing })).toBe(false)
     expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('user-approval'), routing: BASE_ROUTING.routing })).toBe(true)
     expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('envelope-mutation'), routing: BASE_ROUTING.routing })).toBe(true)
+  })
+})
+
+describe('A6 root composition (offline, no root mutation)', () => {
+  it('parses once, refuses non-v5, and assembles both ports for the unique live Officer', async () => {
+    const world = await makeWorld(`a6-root-composition-${Math.random().toString(36).slice(2)}`)
+    {
+      const members = world.domain.repositories.memberInstances.list(P6T4_ROOT)
+      let service!: ControlService
+      const composition = createAlpha6RootComposition({
+        enabled: true,
+        blueprintSource: v5Source('7'),
+        rootSessionId: P6T4_ROOT,
+        leaderTemplateId: BASE_ROUTING.blueprint.leader.templateId,
+        members,
+        control: { readControlState: (root) => service.readControlState(root) },
+        permissionOverlay: {
+          latest: async ({ memberInstanceId }) => memberInstanceId === OFFICER ? { metadata: { generation: GENERATION } } : undefined,
+        },
+      })
+      expect(composition.mode).toBe('alpha6')
+      if (composition.mode !== 'alpha6') throw new Error('expected alpha6')
+      expect(composition.officerInstanceId).toBe(OFFICER)
+      service = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        ...composition.ports,
+      })
+      expect((await service.readControlState(P6T4_ROOT)).requests).toEqual([])
+    }
+  })
+
+  it('keeps disabled legacy and refuses an invalid v5 source without inventing a fallback', () => {
+    const leaderTemplateId = BASE_ROUTING.blueprint.leader.templateId
+    const base = {
+      rootSessionId: P6T4_ROOT,
+      leaderTemplateId,
+      members: [],
+      control: { readControlState: async () => ({ requests: [], transfers: [] }) },
+    }
+    expect(createAlpha6RootComposition({ ...base, enabled: false, blueprintSource: v5Source('7') }))
+      .toEqual({ mode: 'legacy', reason: 'disabled' })
+    expect(createAlpha6RootComposition({ ...base, enabled: true, blueprintSource: 'not a blueprint' }))
+      .toEqual({ mode: 'refused', refused: 'blueprint-not-v5' })
   })
 })
 
