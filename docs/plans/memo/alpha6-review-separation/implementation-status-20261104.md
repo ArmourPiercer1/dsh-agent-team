@@ -107,3 +107,29 @@ router, the control facts overlay and the dispatcher; a second parser is a bug.
    leg, cancel and recover a turn.
 3. Re-run full gate and attach real Host evidence.
 4. Only then ask for production enablement under separate approval.
+
+## 6. Update after the review-authorized integration round
+
+The external review authorized isolated integration and real-Host E2E while
+keeping master merge, production enablement and release closed. Two P0
+authorization-facts findings were fixed on the integration branch before
+porting the candidates:
+
+- `authorityGeneration` now reads the OPERATION OWNER (the leg subject written
+  by `pa-control-bridge`, or the legacy `targetInstanceId`), never the
+  Officer; `0` is the legal initial generation, absence is `undefined`.
+- `operationOwnerInstanceId` in both the facts provider and `ReviewCallFacts`
+  now derives from the trusted subject, never Requester-first.
+
+New regression coverage: Leader-proxy requester with a Worker owner and
+different generations (3 vs 7), legal g0, two instances of the same template,
+and a non-instance subject refusal.
+
+Candidates ported onto integration head `8c7a2d740` (not merged, not enabled):
+
+- PR #584 — v5 activation, single commit `2a1e0bc7b`.
+- PR #585 — opt-in root facts ports, single commit `d1325dbad`, stacked on #584.
+- Combined stack: local full gate 9/9 at `d1325dbad`.
+
+Still not done: root notifier/wake chain (Router → Coordinator → persistent
+wake → native Inbox), PA multi-leg production wiring, and real-Host E2E.
