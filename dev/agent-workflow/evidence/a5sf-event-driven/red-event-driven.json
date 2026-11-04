@@ -1,0 +1,599 @@
+{
+  "schema": "a5sf-event-driven/probe/1",
+  "at": "2026-11-04T02:13:10.816Z",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use",
+  "hostToolSubagent": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/tests/deepseek-harness-test-use/packages/subagent/tool-subagent/lib/index.js",
+  "hostToolSubagentVersion": "0.2.0-rc.2",
+  "arms": [
+    {
+      "arm": "E1-absent-provider-same-config",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E1-absent-provider-same-config",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "beforeProvider": {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "info": {
+              "name": "ToolNotFoundError",
+              "code": "UNKNOWN_TOOL"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E2-absent-managed-provider-preset-serves-name",
+      "kind": "hazard-canary",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E2-absent-managed-provider-preset-serves-name",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "preset"
+        },
+        "subagentDefinition": "preset",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "withPresetName": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E3a-provider-after-settle-managed-only",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E3a-provider-after-settle-managed-only",
+        "presetMode": "real",
+        "presetProvider": "preset-absent",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": "in-process",
+        "removeAfter": null,
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": [
+            "subagent"
+          ]
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": {
+          "threw": false,
+          "code": null,
+          "message": null
+        },
+        "providerStillRegistered": true,
+        "fiberStatesAtEvent": [
+          5
+        ],
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": [],
+        "definitionAfterEvent": "absent",
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "afterDeny": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"subagent\" is REFUSED — Member \"member-probe-e\" (team \"team-event-driven-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E3b-provider-after-settle-product-order",
+      "kind": "contract",
+      "verdict": "FAIL",
+      "failures": [
+        "the provider registration did NOT throw (RED: INACTIVE_EFFECT): providerRegistration={\"threw\":true,\"name\":\"Error\",\"code\":\"INACTIVE_EFFECT\",\"message\":\"cannot create effect on inactive context\"}",
+        "the provider stays registered: false",
+        "the preset plane's definition is visible again after the teardown: definitionAfterEvent=absent",
+        "the admission deny COVERS the name (folded after the boundary record): dispatch={\"isError\":true,\"text\":\"Error: unknown tool \\\"subagent\\\"\",\"info\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}"
+      ],
+      "observed": {
+        "label": "E3b-provider-after-settle-product-order",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [],
+        "providerAfter": "in-process",
+        "removeAfter": null,
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [],
+        "presetHasSubagent": false,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [],
+        "definitionIdentities": {},
+        "subagentDefinition": "absent",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "the Member tool surface changed after the native mount settled",
+          "uncovered": [],
+          "surfaceAdded": [
+            "subagent"
+          ],
+          "surfaceRemoved": [],
+          "lateRegistrations": []
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": {
+          "threw": true,
+          "name": "Error",
+          "code": "INACTIVE_EFFECT",
+          "message": "cannot create effect on inactive context"
+        },
+        "providerStillRegistered": false,
+        "fiberStatesAtEvent": [
+          5
+        ],
+        "fiberStatesAfterSettle": [
+          4
+        ],
+        "fiberStatesAfterDispatch": [
+          4
+        ],
+        "surfaceAfterEvent": [],
+        "definitionAfterEvent": "absent",
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "afterDeny": {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "info": {
+              "name": "ToolNotFoundError",
+              "code": "UNKNOWN_TOOL"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E4-provider-present-before-mount",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E4-provider-present-before-mount",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 5,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "routed"
+        },
+        "subagentDefinition": "routed",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [
+              "subagent"
+            ],
+            "observed": [
+              "subagent"
+            ],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "covered": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 1,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E5-provider-removed-after-covered-mount",
+      "kind": "contract",
+      "verdict": "PASS",
+      "failures": [],
+      "observed": {
+        "label": "E5-provider-removed-after-covered-mount",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "in-process",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": "in-process",
+        "expectedTools": null,
+        "mounted": true,
+        "elapsedMs": 6,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "routed"
+        },
+        "subagentDefinition": "routed",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [
+              "subagent"
+            ],
+            "observed": [
+              "subagent"
+            ],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": {
+          "reason": "the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled",
+          "uncovered": [
+            "subagent"
+          ],
+          "surfaceAdded": [],
+          "surfaceRemoved": [
+            "subagent"
+          ],
+          "lateRegistrations": []
+        },
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": {
+          "reason": "the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled",
+          "uncovered": [
+            "subagent"
+          ],
+          "surfaceAdded": [],
+          "lateRegistrations": []
+        },
+        "surfaceAtEnd": [],
+        "dispatches": {
+          "afterRemoval": {
+            "isError": true,
+            "text": "Error: a5sf: managed native tool \"subagent\" is REFUSED — Member \"member-probe-e\" (team \"team-event-driven-probe\", generation 1) / ceiling realm has an INVALIDATED native shadow; reason: the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled; the preset definition is visible but may not serve this Member until a full re-assembly verifies a new shadow",
+            "info": {
+              "name": "A5sfNativeShadowInvalidatedError",
+              "code": "A5SF_NATIVE_SHADOW_INVALIDATED"
+            }
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    },
+    {
+      "arm": "E6-expected-tools-declared-divergent",
+      "kind": "hazard-boundary",
+      "verdict": "FAIL",
+      "failures": [
+        "the attach is REFUSED (not silently accepted with zero shadow): mounted=true routings=[{\"realm\":\"ceiling\",\"forwarded\":[],\"observed\":[],\"dropped\":[],\"forwardedSections\":[]}]",
+        "the refusal is TYPED and names the declaration: error=null",
+        "the refusal NAMES the missing tool: message="
+      ],
+      "observed": {
+        "label": "E6-expected-tools-declared-divergent",
+        "presetMode": "real",
+        "presetProvider": "in-process",
+        "managedProvider": "ghost",
+        "providersAtBoot": [
+          "in-process"
+        ],
+        "providerAfter": null,
+        "removeAfter": null,
+        "expectedTools": [
+          "subagent"
+        ],
+        "mounted": true,
+        "elapsedMs": 4,
+        "presetSurface": [
+          "subagent"
+        ],
+        "presetHasSubagent": true,
+        "createdBeforeAttach": 1,
+        "attachCreatedFibers": [
+          {
+            "uid": "10",
+            "name": "a5sf-tool-registration-router",
+            "state": 0
+          },
+          {
+            "uid": "11",
+            "name": "tool-subagent",
+            "state": 0
+          }
+        ],
+        "surfaceAfterAttach": [
+          "subagent"
+        ],
+        "definitionIdentities": {
+          "subagent": "preset"
+        },
+        "subagentDefinition": "preset",
+        "routings": [
+          {
+            "realm": "ceiling",
+            "forwarded": [],
+            "observed": [],
+            "dropped": [],
+            "forwardedSections": []
+          }
+        ],
+        "invalidation": null,
+        "invalidationAfterAttach": null,
+        "providerRegistration": null,
+        "providerStillRegistered": null,
+        "fiberStatesAtEvent": null,
+        "fiberStatesAfterSettle": null,
+        "fiberStatesAfterDispatch": null,
+        "surfaceAfterEvent": null,
+        "definitionAfterEvent": null,
+        "invalidationAfterProviderRemoved": null,
+        "surfaceAtEnd": [
+          "subagent"
+        ],
+        "dispatches": {
+          "afterRefusal": {
+            "isError": false,
+            "text": "BASE-PROVIDER-RAN:in-process",
+            "info": null
+          }
+        },
+        "guardFacts": 0,
+        "providerStarts": 0,
+        "error": null,
+        "verificationError": null
+      }
+    }
+  ]
+}

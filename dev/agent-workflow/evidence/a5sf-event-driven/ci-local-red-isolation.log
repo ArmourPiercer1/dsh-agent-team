@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven
+
+a5p4 law(4) live named provider mounts on this tree: runtime/team-sandbox/src/profile.ts , runtime/team-sandbox/src/runner.ts , runtime/team-sandbox/src/subprocess.ts , tools/process-family/src/bash-contribution.mjs , tools/process-family/src/confined-shell-executor.mjs , tools/process-family/src/pwsh-confined.mjs , tools/search-family/src/glob-backend.mjs , tools/search-family/src/search-backend.mjs , tools/search-family/src/search-contribution.mjs
+ ✓ packages/runtime/test/a5p4-lane-hygiene.test.ts (8 tests) 668ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  629ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  10:12:11
+   Duration  1.14s (transform 222ms, setup 0ms, import 381ms, tests 668ms, environment 0ms)
+
+EXIT=0

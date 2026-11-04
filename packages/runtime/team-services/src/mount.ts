@@ -717,6 +717,39 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
    */
   let expectedSurfaceNames: Set<string> | undefined
 
+  /**
+   * Fold every registration the attach's LIVE partitions forwarded but the
+   * accepted receipt (or the invalidation boundary record) did not record into
+   * the MANAGED set, and return the names that were added.
+   *
+   * WHY THIS EXISTS (event-driven registration shape, 2026-11-03): the pinned
+   * `dsh-tool-subagent` registers ONLY from `subagent/provider-added`. When the
+   * provider appears after the attach settled, the PRESET plane's listener
+   * registers first and its new name trips the surface gate, which sets the
+   * invalidation record and DETACHES continuous verification; the MANAGED
+   * module's listener for the SAME synchronous emission then registers through
+   * the still-live router (the teardown is deferred one microtask, see
+   * `invalidateNativeShadow`), so that name is live and confined but was never
+   * in the accepted receipt. Denying only the names the receipt knew would let
+   * the name fall back to the preset definition once the router is torn down —
+   * the measured P0 class. Folding at ADMISSION time keeps the deny's coverage
+   * current for exactly the call that would otherwise escape.
+   */
+  const foldForwardedRegistrations = (): string[] => {
+    const folded: string[] = []
+    for (const entry of managedPartitions) {
+      for (const name of entry.partition.forwarded) {
+        if (expectedDefinitions.has(name)) continue
+        const definition = entry.partition.forwardedDefinitions.get(name)
+        if (definition === undefined) continue
+        expectedDefinitions.set(name, definition)
+        managedRealmOf.set(name, { realm: entry.realm, toolBindingIdentity: entry.label })
+        folded.push(name)
+      }
+    }
+    return folded
+  }
+
   /** The typed refusal for one managed name while the realm is invalid. */
   const refusalOf = (
     name: string,
@@ -746,8 +779,15 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
   const admitCoveredTool = (exec: unknown, next: unknown): unknown => {
     const record = invalidation
     const name = (exec as { name?: unknown } | null)?.name
-    if (record !== null && typeof name === 'string' && expectedDefinitions.has(name)) {
-      return { kind: 'deny', ...refusalOf(name, record) }
+    if (record !== null) {
+      // A registration from the SAME synchronous event emission that triggered
+      // the record can land after it (see `foldForwardedRegistrations`). Fold on
+      // the admission path, which is the one place every dispatch passes
+      // through, so the deny covers a name the boundary record never saw.
+      foldForwardedRegistrations()
+      if (typeof name === 'string' && expectedDefinitions.has(name)) {
+        return { kind: 'deny', ...refusalOf(name, record) }
+      }
     }
     return typeof next === 'function' ? (next as () => unknown)() : undefined
   }
@@ -808,7 +848,23 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       + `uncovered=${JSON.stringify(record.uncovered)}; managed tools are now REFUSED at admission, `
       + 'disposing every router fiber to restore the preset surface',
     )
-    invalidationTeardown = disposeNative()
+    // DEFER THE TEARDOWN ONE MICROTASK (event-driven registration shape,
+    // 2026-11-03). An invalidation can be triggered by a `tools/change` that
+    // fires INSIDE another fiber's synchronous event emission. Measured with the
+    // pinned `dsh-tool-subagent`: the PRESET plane registers its tool from
+    // `subagent/provider-added` first, the surface gate invalidates, and the
+    // router is torn down while the MANAGED module's listener for the SAME event
+    // has not run yet; that registration then throws Cordis `INACTIVE_EFFECT`
+    // ("cannot create effect on inactive context") out of the provider
+    // registration, which rolls the provider back and drops the name. The record
+    // is still set synchronously FIRST (the admission deny is armed before any
+    // teardown: the P0 order is unchanged); only the DISPOSAL waits for the
+    // current synchronous turn to finish, so a registration emitted in that same
+    // turn lands on a LIVE router. `admitCoveredTool` folds such a name into the
+    // deny set before it evaluates the dispatch (see
+    // `foldForwardedRegistrations`), so it cannot escape the refusal either.
+    invalidationTeardown = Promise.resolve()
+      .then(() => disposeNative())
       .catch((error) => {
         console.error(`a5sf: native shadow invalidation teardown failed: ${error instanceof Error ? error.message : String(error)}`)
       })
@@ -844,17 +900,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       // it once the shadow is torn down), then invalidate: a post-settle
       // registration is outside what this attach verified, and silently
       // accepting it was the measured `a5sf-s1` §3.2 escape.
-      const lateRegistrations: string[] = []
-      for (const entry of managedPartitions) {
-        for (const name of entry.partition.forwarded) {
-          if (expectedDefinitions.has(name)) continue
-          const definition = entry.partition.forwardedDefinitions.get(name)
-          if (definition === undefined) continue
-          expectedDefinitions.set(name, definition)
-          managedRealmOf.set(name, { realm: entry.realm, toolBindingIdentity: entry.label })
-          lateRegistrations.push(name)
-        }
-      }
+      const lateRegistrations = foldForwardedRegistrations()
       const uncovered: string[] = []
       if (typeof tools.get === 'function') {
         for (const [name, definition] of expectedDefinitions) {

@@ -1,0 +1,15 @@
+[2026-11-04T02:13:10.699Z] runtime peers resolved from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-event-driven/packages/runtime/package.json
+[2026-11-04T02:13:10.829Z] E1-absent-provider-same-config: mounted=true elapsedMs=6 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.830Z] E1-absent-provider-same-config: PASS
+[2026-11-04T02:13:10.841Z] E2-absent-managed-provider-preset-serves-name: mounted=true elapsedMs=6 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.841Z] E2-absent-managed-provider-preset-serves-name: PASS
+[2026-11-04T02:13:10.847Z] E3a-provider-after-settle-managed-only: mounted=true elapsedMs=5 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.848Z] E3a-provider-after-settle-managed-only: PASS
+[2026-11-04T02:13:10.854Z] E3b-provider-after-settle-product-order: mounted=true elapsedMs=5 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.854Z] E3b-provider-after-settle-product-order: FAIL — the provider registration did NOT throw (RED: INACTIVE_EFFECT): providerRegistration={"threw":true,"name":"Error","code":"INACTIVE_EFFECT","message":"cannot create effect on inactive context"}; the provider stays registered: false; the preset plane's definition is visible again after the teardown: definitionAfterEvent=absent; the admission deny COVERS the name (folded after the boundary record): dispatch={"isError":true,"text":"Error: unknown tool \"subagent\"","info":{"name":"ToolNotFoundError","code":"UNKNOWN_TOOL"}}
+[2026-11-04T02:13:10.861Z] E4-provider-present-before-mount: mounted=true elapsedMs=5 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":["subagent"],"observed":["subagent"],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.862Z] E4-provider-present-before-mount: PASS
+[2026-11-04T02:13:10.869Z] E5-provider-removed-after-covered-mount: mounted=true elapsedMs=6 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":["subagent"],"observed":["subagent"],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.869Z] E5-provider-removed-after-covered-mount: PASS
+[2026-11-04T02:13:10.875Z] E6-expected-tools-declared-divergent: mounted=true elapsedMs=4 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T02:13:10.875Z] E6-expected-tools-declared-divergent: FAIL — the attach is REFUSED (not silently accepted with zero shadow): mounted=true routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]; the refusal is TYPED and names the declaration: error=null; the refusal NAMES the missing tool: message=

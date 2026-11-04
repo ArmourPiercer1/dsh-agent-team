@@ -1052,3 +1052,226 @@ test('C3 (review 2026-11-03) a registration by an ALREADY-ACTIVE fiber AFTER the
     await realm.dispose()
   }
 })
+
+// ===========================================================================
+// E3 (2026-11-03, event-driven shape) — a fixed EventTarget contract:
+// `subagent/provider-added` registers the managed tool AND the preset plane's
+// own listener registers the same name, in the SAME synchronous emission.
+// ===========================================================================
+
+/**
+ * A module shaped like the pinned `dsh-tool-subagent`: it registers NOTHING in
+ * `apply`; its only registration runs from an event listener, after the attach
+ * has settled. This is the third registration shape (not `apply`, not a
+ * deferred child fiber), and the one the settle window cannot see.
+ */
+function writeEventModule(label, toolName, eventName) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-event-${label}-`)))
+  const file = join(dir, 'event.mjs')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-event-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+  ctx.on(${JSON.stringify(eventName)}, () => {
+    ctx.tools.register({
+      name: ${JSON.stringify(toolName)},
+      description: ${JSON.stringify(`managed event ${label} ${toolName}`)},
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+      async execute() { return 'managed-event-body' },
+    })
+  })
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
+test('E3 (event-driven 2026-11-03) a preset-plane registration inside the SAME emission must not abort the managed one; the late name is folded and DENIED', async () => {
+  // MEASURED with the real pinned `dsh-tool-subagent` (probe-event-driven E3b):
+  // the preset plane's listener registers first, the surface gate invalidates,
+  // and the router used to be torn down WHILE the managed module's listener for
+  // the same event had not run yet. That registration then threw Cordis
+  // `INACTIVE_EFFECT` out of the emitter, the provider registration was rolled
+  // back, and the name vanished — the attach's own event contract was broken by
+  // its teardown. The teardown is now deferred one microtask (the record is
+  // still set FIRST) and the admission deny folds a name that lands in that
+  // turn, so the emitter completes and the name can never be served by the
+  // visible preset definition.
+  const EVENT = 'assembly/provider-added'
+  const managedModule = writeEventModule('e3', 'x_event_probe', EVENT)
+  const world = await makeWorld('event-driven-same-emission', { bindingIdentities: [], modules: [managedModule] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  const presetPlane = {
+    name: 'fixture-preset-event-plane-e3',
+    inject: ['tools'],
+    apply(ctx) {
+      ctx.on(EVENT, () => {
+        ctx.tools.register({
+          name: 'x_event_plane_probe',
+          description: 'preset plane event body',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+          async execute() { return 'preset-plane-body' },
+        })
+      })
+    },
+  }
+  try {
+    // Applied BEFORE the attach, so its listener runs first (the product order:
+    // the preset composition exists when the Member is assembled).
+    await agentCtx.plugin(presetPlane)
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.equal(realm.nativeInvalidation ?? null, null, 'the attach itself is accepted (the event has not fired)')
+    assert.deepEqual(routingsOf(fibers)[0].forwarded, [], 'the event-driven module registered nothing during apply')
+
+    // THE EMISSION. Pre-fix this THREW `INACTIVE_EFFECT` from the managed
+    // listener after the preset-plane registration had already invalidated.
+    assert.doesNotThrow(() => root.emit(EVENT), 'the managed registration must not be aborted by its own teardown')
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the surface change inside the emission must be RECORDED')
+    assert.ok([...record.surfaceAdded].includes('x_event_plane_probe'), `the record names the preset plane's newly visible name: ${JSON.stringify(record)}`)
+    assert.deepEqual([...record.uncovered], [], 'the managed registration was live, so nothing was "uncovered"')
+
+    // The preset plane's definition is what stays visible; the managed one was
+    // folded into the deny before the teardown, so NEITHER body may serve.
+    assert.notEqual(definitionOf(root, agentKey, 'x_event_probe'), undefined, 'the preset definition is visible after the teardown')
+    const after = await dispatch(root, agentKey, 'x_event_probe', {})
+    assert.equal(after.isError, true, `the name must be REFUSED at admission: ${after.text}`)
+    assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
+    assert.equal(after.text.includes('preset-plane-body'), false, 'no preset body may serve the managed name')
+    assert.equal(after.text.includes('managed-event-body'), false, 'the managed body must not serve either')
+    await realm.whenNativeVerificationSettled()
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// EXPECT (2026-11-03, opt-in) — `expectedTools` declares what the composition
+// BELIEVES a managed module provides. It grants nothing: its only power is to
+// turn "declared, but never shadowed" into a typed refusal instead of a
+// silently accepted zero-shadow attach whose declared name falls back to a
+// preset definition with zero guard facts.
+// ===========================================================================
+
+test('EXPECT-1 a declared module that FORWARDS its declared tool is ACCEPTED and the deny covers it like any observed name', async () => {
+  const moduleA = writeNativeModule('exp1', [{ name: 'read', reads: true }])
+  const world = await makeWorld('expected-forwarded', {
+    bindingIdentities: [],
+    modules: [{ url: moduleA, expectedTools: ['read'] }],
+  })
+  const { root, fixture, realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], ['read'], 'the declared tool is the forwarded one')
+    const served = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(served.isError, false, `a declared-and-shadowed tool serves on the routed lane: ${served.text}`)
+    assert.equal(served.text, 'INSIDE\n')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a satisfied declaration arms nothing')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('EXPECT-2 a declared module that forwards NOTHING is REFUSED, typed, naming the missing name — the divergent composition', async () => {
+  // The event-driven module with a provider that never appears: it registers
+  // nothing by the settle boundary, so the preset definition stays the one the
+  // agent resolves. Declared `expectedTools` turns that into a refusal.
+  const silent = writeEventModule('exp2', 'x_assembly_probe', 'never/fired')
+  const world = await makeWorld('expected-unshadowed', {
+    bindingIdentities: [],
+    modules: [{ url: silent, expectedTools: ['x_assembly_probe'] }],
+  })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetProbe = definitionOf(root, agentKey, 'x_assembly_probe')
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_EXPECTED_TOOLS_UNSHADOWED', `expected the typed declaration refusal, got ${error.name}: ${error.message}`)
+        assert.match(error.message, /x_assembly_probe/, 'the refusal NAMES the declared-but-unshadowed tool')
+        assert.match(error.message, /expectedTools/, 'the refusal names the declaration')
+        return true
+      },
+      'a declared tool that no routed fiber shadows must refuse the attach',
+    )
+    // The refusal released the routers and recorded NO invalidation (it is a
+    // caller refusal, not a late-change event), and it did not touch the preset.
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a refused attach is not an invalidation')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'the failed attach left the preset definition untouched')
+    assert.deepEqual(toolNames(root, agentKey).sort(), ['read', 'write', 'x_assembly_probe'].sort(), 'surface neutral after the refusal')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('EXPECT-3 ABSENT expectedTools keeps today\'s behaviour: a zero-registration attach is still ACCEPTED (merged C3/A7 contract untouched)', async () => {
+  const silent = writeEventModule('exp3', 'x_assembly_probe', 'never/fired')
+  const world = await makeWorld('expected-absent', { bindingIdentities: [], modules: [silent] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetProbe = definitionOf(root, agentKey, 'x_assembly_probe')
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], [], 'nothing is forwarded')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'no declaration, no refusal, no invalidation')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'the preset definition is untouched (the pre-declaration behaviour)')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener registers first — the fold path names the late registration', async () => {
+  // Same shape as E3, opposite listener order (the managed module is attached
+  // BEFORE the preset-plane listener is applied). This is the order where the
+  // realm's own verification is still attached when the registration lands, so
+  // the record must name it in `lateRegistrations` — the fold path, not the
+  // surface gate. Pinning BOTH orders keeps the record from being "sometimes
+  // folds": each order has its own named mechanism and its own assertion.
+  const EVENT = 'assembly/provider-added-fold'
+  const managedModule = writeEventModule('e3fold', 'x_event_probe', EVENT)
+  const world = await makeWorld('event-driven-managed-first', { bindingIdentities: [], modules: [managedModule] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  const presetPlane = {
+    name: 'fixture-preset-event-plane-e3fold',
+    inject: ['tools'],
+    apply(ctx) {
+      ctx.on(EVENT, () => {
+        ctx.tools.register({
+          name: 'x_event_plane_probe',
+          description: 'preset plane event body (fold order)',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+          async execute() { return 'preset-plane-body' },
+        })
+      })
+    },
+  }
+  try {
+    // MANAGED first: the module's listener is registered by the attach, then the
+    // preset-plane listener is applied, so the managed registration lands first.
+    await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    await agentCtx.plugin(presetPlane)
+    assert.doesNotThrow(() => root.emit(EVENT), 'the fold path must not throw either')
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the post-settle registration must be RECORDED')
+    assert.deepEqual([...record.lateRegistrations], ['x_event_probe'], `the record names the late registration: ${JSON.stringify(record)}`)
+    assert.match(record.reason, /after the mount settled/, 'the reason states the post-settle rule')
+    assert.deepEqual([...record.uncovered], [], 'the folded definition was live when caught')
+
+    const after = await dispatch(root, agentKey, 'x_event_probe', {})
+    assert.equal(after.isError, true, `the folded name must be REFUSED at admission: ${after.text}`)
+    assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
+    assert.equal(after.text.includes('managed-event-body'), false, 'the managed body must not serve after invalidation')
+    // The preset plane's own (unmanaged) name is outside the declaration and
+    // outside this attach's managed set: it is NOT denied, and that is expected.
+    const plane = await dispatch(root, agentKey, 'x_event_plane_probe', {})
+    assert.equal(plane.isError, false, `an unmanaged name is not the deny's business: ${plane.text}`)
+    assert.equal(plane.text, 'preset-plane-body')
+  } finally {
+    await realm.dispose()
+  }
+})
