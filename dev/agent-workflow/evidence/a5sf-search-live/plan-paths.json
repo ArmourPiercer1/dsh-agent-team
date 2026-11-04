@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-search-live/plan-paths/1",
-  "at": "2026-11-04T20:16:47.666Z",
-  "head": "21d37c51bb8831fbcba801dc8bcf89379ab057e9",
+  "at": "2026-11-04T20:23:45.669Z",
+  "head": "deec8053e8d303ef8f7bba212c2e591bef3ab244",
   "ceilingReadAllow": [
     "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live"
   ],

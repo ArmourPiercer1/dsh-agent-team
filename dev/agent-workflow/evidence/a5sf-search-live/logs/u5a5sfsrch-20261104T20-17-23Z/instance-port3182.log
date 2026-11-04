@@ -1,0 +1,4 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=avpdit2Y3UvX6JDixxTM_2DwjYhBE7iCD0WdKhq0BwY
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface

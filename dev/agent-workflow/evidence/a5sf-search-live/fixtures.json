@@ -1,42 +1,42 @@
 {
-  "worldId": "u5a5sfsrch-20261104T20-10-19Z",
+  "worldId": "u5a5sfsrch-20261104T20-17-23Z",
   "homePatch": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/cordis.patch.yml",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/cordis.patch.yml",
     "mode": "workspace-write",
-    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace"
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace"
   },
   "fixtures": {
-    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace",
-    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside",
-    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/needle.txt",
-    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/outside-restriction.txt",
-    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside",
-    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside/secret.txt",
-    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside-glob",
-    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/invalid",
-    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/glob",
-    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside/blocking.fifo",
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace",
+    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside",
+    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/needle.txt",
+    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt",
+    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside",
+    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside/secret.txt",
+    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside-glob",
+    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid",
+    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/blocking.fifo",
     "ceiling": {
-      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace",
-      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace"
+      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace",
+      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace"
     },
     "restrictionReadAllow": [
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside"
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
     ],
     "effectiveRead": [
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside"
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
     ]
   },
   "claims": {
-    "needle": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-10-19Z",
-    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-10-19Z",
-    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-10-19Z",
+    "needle": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
+    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z",
+    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z",
     "outsidePattern": "A5SF_SEARCH_OUTSIDE",
-    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5a5sfsrch-20261104T20-10-19Z",
+    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5a5sfsrch-20261104T20-17-23Z",
     "restrictedPattern": "A5SF_SEARCH_RESTRICTION",
     "fifoPattern": "A5SF_SEARCH_FIFO"
   },
-  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/a5sf-consult.jsonl",
-  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/search-counter.jsonl",
-  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/lane-report.json"
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/a5sf-consult.jsonl",
+  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/search-counter.jsonl",
+  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/lane-report.json"
 }

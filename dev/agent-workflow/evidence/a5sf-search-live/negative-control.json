@@ -3,16 +3,16 @@
     "result": {
       "source": "model",
       "isError": false,
-      "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-10-19Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-10-19Z"
+      "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z"
     },
     "forbidden": [
-      "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-10-19Z",
-      "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-10-19Z"
+      "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z",
+      "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z"
     ],
     "guardFactsBeforeRealm": [],
     "baseSpawns": [
       {
-        "at": "2026-11-04T20:10:24.893Z",
+        "at": "2026-11-04T20:17:28.404Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -26,7 +26,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:10:24.924Z",
+        "at": "2026-11-04T20:17:28.434Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -38,7 +38,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:10:24.965Z",
+        "at": "2026-11-04T20:17:28.476Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -48,21 +48,21 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:10:24.992Z",
+        "at": "2026-11-04T20:17:28.509Z",
         "leg": "base-spawn",
         "argv": [
           "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
           "--no-config",
           "--json",
-          "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-10-19Z",
+          "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
           "--",
-          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/workspace/lane/inside"
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
         ],
         "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
         "instance": false
       },
       {
-        "at": "2026-11-04T20:10:25.032Z",
+        "at": "2026-11-04T20:17:28.549Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -74,7 +74,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:10:25.071Z",
+        "at": "2026-11-04T20:17:28.588Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -84,7 +84,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:12:25.616Z",
+        "at": "2026-11-04T20:19:29.121Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -96,7 +96,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:12:25.666Z",
+        "at": "2026-11-04T20:19:29.171Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -106,7 +106,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:12:25.695Z",
+        "at": "2026-11-04T20:19:29.199Z",
         "leg": "base-spawn",
         "argv": [
           "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
@@ -114,13 +114,13 @@
           "--json",
           "--regexp=A5SF_SEARCH_OUTSIDE",
           "--",
-          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside"
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
         ],
         "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
         "instance": false
       },
       {
-        "at": "2026-11-04T20:12:25.746Z",
+        "at": "2026-11-04T20:19:29.239Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -132,7 +132,7 @@
         "instance": false
       },
       {
-        "at": "2026-11-04T20:12:25.799Z",
+        "at": "2026-11-04T20:19:29.286Z",
         "leg": "base-spawn",
         "argv": [
           "/usr/bin/git",
@@ -159,11 +159,11 @@
     "detail": {
       "result": {
         "isError": false,
-        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-10-19Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-10-19Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-10-19Z"
+        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z"
       },
       "leakedTokens": [
-        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-10-19Z",
-        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-10-19Z"
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z"
       ],
       "baseSpawns": 11,
       "confinedSpawns": 0,

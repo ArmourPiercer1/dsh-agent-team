@@ -1,12 +1,12 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status (2026-11-05 round): the pool is FULLY SPENT — 6 of 6 `P2-04` starts, 0 of
-6 rows *judged*, and the Member half is now REACHED: the realm installs, the confined
-face serves `grep` AND `glob`, and seven guard facts were recorded live (3 allow,
-4 deny `IO_READ_DENIED`) in 400 ms. The run then aborted in the cancellation window
-because the FIFO operand sat outside the effective read lane and was refused at
-admission — a fixture defect, fixed here. No grade is promoted: `M-06`/`M-07` keep
-`ENFORCE-PARTIAL`, `V@B=no`.**
+**Status (2026-11-05, second re-grant): FOUR OF SIX ROWS ARE JUDGED PASS.** The owner
+granted 4 further boots (pool 10, 9 spent, 1 unspent). Rows **2, 3, 5 and 4 PASS** live;
+row **1 REFUTED with bytes** (`rg` reads the repo's ancestor `.git`, is refused by the
+ceiling and exits 2); row **6 FAIL** on a real question (an archived member's tool route
+still executes and spawns). `M-06` stays `ENFORCE-PARTIAL` — now with four measured
+clauses and one refuted clause — and `M-07`'s two glob arms are PROVEN live for the first
+time. Nothing is promoted in the matrix: that file is the owner's.
 
 | attempt | when | port | got to | died at |
 |---|---|---|---|---|
@@ -16,6 +16,9 @@ admission — a fixture defect, fixed here. No grade is promoted: `M-06`/`M-07` 
 | 4 | 18:51:35–18:55:58Z | 3184 | probe artifact + control + `team.create` ok | **member-install** — the search module was mounted with an empty config |
 | 5 | 18:58:10–19:05:32Z | 3184 | control **PROVEN** (leak), `team.create` ok, delegate answer captured | **member-install** — `SERVICE_MOUNT_FAILED … $.sampleOverCapGlobResults missing` |
 | 6 | 19:07:58–19:17:21Z | 3184 | **member realm installed**, 3 confined spawns, 7 guard facts | **cancellation-window** — the FIFO operand was outside the read lane, refused at admission |
+| 7 | 20:01:20–20:07:01Z | 3182 | **rows 2/3/5 judged PASS**; row 1 REFUTED with stderr | completed — row 4 refused by arithmetic, row 6 a finding |
+| 8 | 20:10:19–20:15:30Z | 3182 | the cancel was accepted **4 ms** after the FIFO spawned | completed — row 4's three clauses were mis-reads |
+| 9 | 20:17:23–20:22:33Z | 3182 | **row 4 PASS** (`CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT`) | completed — 4 PASS / 2 FAIL |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
 - branch: `task/a5sf-search-live-20261104`; draft PR #588
@@ -333,6 +336,72 @@ the attempt-6 operand (`<ceiling>/lane/blocking.fifo`), so the check cannot be g
 for "any FIFO anywhere". A mutation control rewrites the placement to
 `join(inLane, '..', 'blocking.fifo')` and requires the dry run RED.
 
+## 3d. The second re-grant: four rows judged, and what the two failures are
+
+Four boots were granted on 2026-11-05 (pool 10). Three were spent; the fourth is
+unspent. The verdicts below are from run 9 (`2026-11-04T20-17-23Z`), the only run in
+which all six rows reached a judge with a complete sample.
+
+| row | verdict | reason | evidence |
+|---|---|---|---|
+| 1 | **FAIL (refuted)** | `ROW1_CLAUSE_FAILED` (`resultNotError`, `matchReturned`, `fileNamed`) | `confined-exit code=2`, `stderr="rg: …/.git: Permission denied (os error 13)"` |
+| 2 | **PASS** | `OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS` | one `deny` fact `IO_READ_DENIED`, `confined-spawn` unchanged |
+| 3 | **PASS** | `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION` | `allow` for the ceiling, `deny` for the restriction, effective `deny` |
+| 4 | **PASS** | `CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT` | interrupt `result.ok=true, accepted=true`; child `code=143` (SIGTERM) 4 ms later; no result delivered |
+| 5 | **PASS** | `INVALID_PATTERN_SURFACED_AS_TOOL_ERROR` | tool error, never "no matches" |
+| 6 | **FAIL (finding)** | `ROW6_CLAUSE_FAILED` (`noSuccessAfterStop`, `noCallableShadow`, `noProcessAfterStop`, …) | `postStopGrep=200`, `postStopGlob=200`, a `confined-spawn` 55 ms after `stopInstant` |
+
+### Row 1 is refuted by the repository, not by the ceiling
+
+```
+row 1 confined-exit code=2 signal= stderrBytes=115
+stderr="rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)
+"
+tool text: "Error: grep search failed (exit 2): rg: …/.git: Permission denied (os error 13)"
+```
+
+`rg` discovers VCS state by walking the **ancestors** of its search root. The World's
+workspace lives inside this repository, so it finds the worktree's `.git`, the ceiling
+refuses it (correctly — it is out of lane), and `rg` exits 2; the pinned module maps
+exit ∉ {0,1} to `SearchError`. The row therefore fails for a reason that is neither the
+ceiling nor the guard: **a confined `grep` cannot run inside a git work tree.** Two
+remedies are possible and both are policy decisions, not driver fixes: give the module
+`--no-ignore`/`--no-ignore-vcs` (argv is the shipped allow-list's to decide), or place
+the World's workspace outside any repository. The second would make the row measure a
+different environment, so it is disclosed rather than taken.
+
+### Row 6: an archived member is still callable
+
+`hostDead=true portReleased=true homeDeleted=true noOrphanProcess=true` — the teardown
+itself is clean. What fails is the **window between archiving and the Host's death**:
+`team_archive_member` returns `lifecycle-changed SETTLED→ARCHIVED`, and the tool route
+still executes (`postStopGrep=200`, `postStopGlob=200`) and even spawns a new confined
+process 55 ms after the stop instant. So `archive` does not revoke the member's tool
+surface. Whether it should (row 6's reading) or whether the surface is only revoked when
+the child session closes (the product's apparent reading) is a contract question for the
+owner; it is not something a re-run answers, which is why the fourth boot was not spent.
+
+### Row 4 needed the interrupt to be issued INSIDE `team.create`
+
+Run 7 failed row 4 with a child exit 143 that came from the module's own 30 s tool
+timeout: `team.create` waits for the leader's first turn, that turn is the synchronous
+delegate, and the delegate waits for the member's turn — the blocking FIFO grep. The
+driver therefore had no control during the only window in which the search was in
+flight. Run 8 fixed that (`createPromise` + a concurrent watcher that reads the FIFO's
+`confined-spawn` and the worker's `childSessionId`, then calls the shipped cancel route):
+the interrupt was accepted **4 ms** after the spawn. Three clauses still failed, and all
+three were mis-reads of the product's own evidence:
+
+1. `interruptAcknowledged` read `body.ok`; the route answers `{result:{ok:true,
+   value:{accepted:true}}}`, so an accepted cancel was recorded `ok:false`.
+2. `childTerminatedBySignal` demanded a non-empty `signal`; the launcher reports a
+   signal-killed payload as `code = 128 + signum` with an empty signal string —
+   `provider.ts`'s documented convention, and the record said `143`.
+3. `settlementIsCancelled` falls back to the termination evidence when no result is
+   delivered, so it inherited (2).
+
+Run 9, with those three reads corrected, judged row 4 **PASS**.
+
 ## 4. The two live findings
 
 ### F1 — WITHDRAWN: it was the lane's own instrumentation, not a product finding
@@ -439,7 +508,11 @@ is `realm='member'`, `toolBindingIdentity=null`. The matrix/backlog note should 
 "last start" ruling, and the owner's **3-start re-grant** of 2026-11-05 (pool 3 spent +
 3 fresh = 6). `run-ledger.jsonl` holds 6 intents and 6 boot rows; the invariant
 `bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` six times). Pool item
-`P2-04 grep (BL-16)`: **6 allocated, 6 spent, 0 remaining**. `go-no-go.mjs` now prints:
+`P2-04 grep (BL-16)`: **10 allocated, 9 spent, 1 remaining** (`go-no-go` prints GO — the
+pool is not exhausted, but the lane stops here on purpose: the two remaining failures are
+findings a re-run cannot change). 5 ruling entries: the original task, the retry, the
+"last start" ruling, the owner's 3-start re-grant, and the owner's 4-start re-grant of
+2026-11-05. `go-no-go.mjs` now prints:
 
 ```
 PASS budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason):
@@ -452,13 +525,16 @@ REFUSE the same check after the third boot  →  NO-GO  (spent=3, remaining=0)
 
 ### The cost line the retry ruling asked for
 
-**This vertical has spent 6 of 6 starts and judged 0 of 6 rows.** The first three: a handoff the gate could not see, a composition gap (F2) plus the
-lane's own instrument (F1, withdrawn), and a launch method that killed its own run.
-The last three bought the leader probe, the PROVEN control, the member realm install
-and seven live guard facts — and then stopped on a FIFO that was one directory away
-from being admissible. Six starts, zero judged rows, and every loss is attributable —
-which is the only thing that makes the spend defensible. The trend is the point: each
-start moved the failure forward by exactly one handoff.
+**This vertical has spent 9 of 10 starts and judged 4 of 6 rows PASS** (rows 2, 3, 5, 4),
+with row 1 refuted by a byte-level cause and row 6 open on a contract question. The
+first three starts: a handoff the gate could not see, a composition gap (F2) plus the
+lane's own instrument (F1, withdrawn), and a launch method that killed its own run. The
+next three bought the leader probe, the PROVEN control, the member realm install and
+seven live guard facts, then stopped on a FIFO one directory outside the lane. The last
+three bought the judging itself: rows 2/3/5 at dispatch, row 4 after the interrupt was
+moved inside `team.create`, and the two findings above. Every loss is attributable, and
+each start moved the failure forward by exactly one handoff — which is the only thing
+that makes the spend defensible.
 
 The composed-profile gap was invisible to a green `--plan`. The reusable lesson for every later live lane (P3-00
 inventory will hit the same handoff): *a host-free gate must run the handoff, not
