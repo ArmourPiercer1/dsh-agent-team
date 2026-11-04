@@ -383,7 +383,7 @@ stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW T spelling (
 [dsh-agent-team] a5-admission: event=admission-admitted callId=plane-read-189fd42d-ac27-4f60-b39a-81703c45960e-1 grantId=grant:eb179c49e3123bc9cfd8c30a2e9e1f64
 
 stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW T spelling (plan (b) T1-T2) > T1 trailing-space twin files: "t-a " reads the TRAILING file, "t-a" reads the plain one
-[dsh-agent-team] a5g7-read: governed-read RAN bytes=20 path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/tests/homes/a5rsw-mw2oo59k/root/t-a 
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=20 path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/tests/homes/a5rsw-mw2oo59k/root/t-a
 
 stdout | packages/runtime/test/a5-read-slice-window.test.ts > A5RSW T spelling (plan (b) T1-T2) > T1 trailing-space twin files: "t-a " reads the TRAILING file, "t-a" reads the plain one
 [dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-read-189fd42d-ac27-4f60-b39a-81703c45960e-2 grantId=grant:96b015d2abe5b92a82f7be2499fe2bad effects=2
@@ -6575,7 +6575,7 @@ stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — t
 [dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-agent-state:10f35f9b-901f-4e87-ba9b-e3bc2aac03ed:2 grantId=grant:a709fbd42c9aa54d2afe5b74dd9fe93b caseId=tadm:u7fb-root:u7fb-inst:sha256:591cebb5d154ae6a95d94f3d5950c4ff976add69d713385b941d94743cd2f6ef:g0
 
 stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
-[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:a 
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:a
 
 stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
 [dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-agent-state:10f35f9b-901f-4e87-ba9b-e3bc2aac03ed:3 approvalCaseId=tadm:u7fb-root:u7fb-inst:sha256:df1577c00bb67ef5a6ada47fc6435dcc261d041aa2b4dca1da43500fc0d9b74f:g0 requiredAuthority=leader
@@ -6595,7 +6595,7 @@ stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — t
 [dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-agent-state:10f35f9b-901f-4e87-ba9b-e3bc2aac03ed:4 grantId=grant:44b5b634cce869fe7e9e7459506998b9 caseId=tadm:u7fb-root:u7fb-inst:sha256:7b3bcdd908df3fc6bdeae9f4ef9ebd368a3e9e5c2f12cf9d7303e733248d90d4:g0
 
 stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
-[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:a 
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:a
 
 stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · create over an ACTIVE current → GOAL_ALREADY_EXISTS with ZERO durable writes
 [dsh-agent-team] a5-admission: event=production-admission-note
@@ -9369,4 +9369,3 @@ If this is a long-running test, pass a timeout value as the last argument or con
       Tests  1 failed | 8820 passed (8821)
    Start at  06:23:33
    Duration  257.41s (transform 111.30s, setup 0ms, import 425.77s, tests 813.74s, environment 193ms)
-

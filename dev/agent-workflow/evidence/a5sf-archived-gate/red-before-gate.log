@@ -50,4 +50,3 @@ AssertionError: the restart resume phase re-bound the archived Member (no lifecy
       Tests  3 failed | 1 passed (4)
    Start at  05:57:21
    Duration  2.10s (transform 1.50s, setup 0ms, import 286ms, tests 1.71s, environment 0ms)
-
