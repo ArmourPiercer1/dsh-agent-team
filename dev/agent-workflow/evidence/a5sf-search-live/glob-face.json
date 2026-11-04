@@ -1,0 +1,189 @@
+{
+  "inLane": {
+    "sample": {
+      "result": {
+        "source": "model",
+        "isError": false,
+        "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob/needle.txt"
+      },
+      "facts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 5,
+          "observedAt": "2026-11-04T20:06:28.186Z"
+        }
+      ],
+      "records": [
+        {
+          "at": "2026-11-04T20:06:28.188Z",
+          "leg": "confined-spawn",
+          "realm": "member:inst-14xcgx11i3lu",
+          "argv": [
+            "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--files",
+            "--glob=needle.txt",
+            "--sort=modified",
+            "--no-ignore",
+            "--hidden",
+            "--glob=!**/.git",
+            "--glob=!**/.git/**",
+            "--glob=!**/.svn",
+            "--glob=!**/.svn/**",
+            "--glob=!**/.hg",
+            "--glob=!**/.hg/**",
+            "--glob=!**/.bzr",
+            "--glob=!**/.bzr/**",
+            "--glob=!**/.jj",
+            "--glob=!**/.jj/**",
+            "--glob=!**/.sl",
+            "--glob=!**/.sl/**",
+            "--",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob"
+          ],
+          "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use"
+        },
+        {
+          "at": "2026-11-04T20:06:28.218Z",
+          "leg": "confined-exit",
+          "realm": "member:inst-14xcgx11i3lu",
+          "argv": [
+            "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--files",
+            "--glob=needle.txt",
+            "--sort=modified",
+            "--no-ignore",
+            "--hidden",
+            "--glob=!**/.git",
+            "--glob=!**/.git/**",
+            "--glob=!**/.svn",
+            "--glob=!**/.svn/**",
+            "--glob=!**/.hg",
+            "--glob=!**/.hg/**",
+            "--glob=!**/.bzr",
+            "--glob=!**/.bzr/**",
+            "--glob=!**/.jj",
+            "--glob=!**/.jj/**",
+            "--glob=!**/.sl",
+            "--glob=!**/.sl/**",
+            "--",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob"
+          ],
+          "code": 0,
+          "signal": "",
+          "stderr": "",
+          "stderrBytes": 0
+        }
+      ],
+      "declaredRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob",
+      "needle": "needle.txt",
+      "fileName": "needle.txt"
+    },
+    "verdict": "PROVEN",
+    "reason": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+    "failed": [],
+    "checks": {
+      "resultNotError": true,
+      "matchReturned": true,
+      "fileNamed": true,
+      "exactlyOneAllowFact": true,
+      "allowDecidedByALLOW": true,
+      "allowLocatorIsDeclaredRoot": true,
+      "noDenyFactOnAdmittedRoot": true,
+      "noBaseServiceSpawn": true,
+      "exactlyOneProcess": true
+    },
+    "detail": {
+      "declaredRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob",
+      "result": {
+        "isError": false,
+        "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob/needle.txt"
+      },
+      "factCount": 1,
+      "allowFact": {
+        "realm": "member",
+        "toolBindingIdentity": null,
+        "method": "spawn",
+        "decision": "allow",
+        "decidedBy": "ALLOW",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/workspace/lane/inside/glob"
+      },
+      "factRealm": "member",
+      "toolBindingIdentity": null,
+      "confinedSpawns": 1,
+      "baseSpawns": 0,
+      "note": "the live search face is the MEMBER realm (BL-17 forbids a binding-realm subprocess face); the law asserted is the product's, the realm is reported"
+    }
+  },
+  "outside": {
+    "sample": {
+      "result": {
+        "source": "model",
+        "isError": true,
+        "text": "Error: glob subprocess failed before reporting an outcome (ripgrep provider failure)"
+      },
+      "facts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-14xcgx11i3lu",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/ceiling-outside-glob",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "sequence": 6,
+          "observedAt": "2026-11-04T20:06:28.240Z"
+        }
+      ],
+      "records": [],
+      "declaredRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/ceiling-outside-glob",
+      "forbidden": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-01-20Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-01-20Z"
+      ]
+    },
+    "verdict": "PROVEN",
+    "reason": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+    "failed": [],
+    "checks": {
+      "resultIsError": true,
+      "exactlyOneDenyFact": true,
+      "denyDecidedByReadDenied": true,
+      "denyLocatorIsDeclaredRoot": true,
+      "noAllowFact": true,
+      "noConfinedProcess": true,
+      "noInheritedBaseProcess": true,
+      "noForbiddenBytes": true
+    },
+    "detail": {
+      "declaredRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/ceiling-outside-glob",
+      "result": {
+        "isError": true,
+        "text": "Error: glob subprocess failed before reporting an outcome (ripgrep provider failure)"
+      },
+      "denyFact": {
+        "realm": "member",
+        "toolBindingIdentity": null,
+        "method": "spawn",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-01-20Z/ceiling-outside-glob"
+      },
+      "leakedTokens": [],
+      "confinedSpawns": 0,
+      "baseSpawns": 0,
+      "factCount": 1
+    }
+  }
+}

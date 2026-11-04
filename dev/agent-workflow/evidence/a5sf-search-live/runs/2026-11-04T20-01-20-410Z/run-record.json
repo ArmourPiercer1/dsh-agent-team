@@ -1,0 +1,128 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-search-2026-11-04T19-07-58-223Z",
+  "suite": "a5sf-search",
+  "startedAt": "2026-11-04T19:07:58.224Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-teardown-no-callable-shadow"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4",
+        "snapshot_version": "as20261102r1"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "snapshotDigest": "fcd6d8e232e23b9a720b7b63a1d576f96334593b44eabae0a209a4f32734c49e"
+    },
+    "teamSha": "e17f0cec87dd2f2ebae6b1543938e5953821ac00",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfsrch",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-search-e17f0cec87dd-b6",
+    "allocationItem": "P2-04 grep (BL-16)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs (no product provider exists at this base)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous"
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    },
+    {
+      "id": "live:search-row6-teardown-no-callable-shadow",
+      "verdict": "FAIL",
+      "at": "2026-11-04T19:17:20.911Z",
+      "reason": "DRIVER_ABORTED_AT_cancellation-window",
+      "stage": "cancellation-window",
+      "stageDetail": "the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched",
+      "error": "CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=present, confined-spawn=3, base-spawn=21, installFs=0). The search never reached the confined face"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-04T19:07:58.262Z",
+        "runId": "a5sf-search-2026-11-04T19-07-58-223Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-search-e17f0cec87dd-b6",
+        "grantId": "grant-a5sf-search-e17f0cec87dd-b6",
+        "grantedBy": "1 start(s) by direct task instruction (coordinator): the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation || 1 start(s) by coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope. || 1 start(s) by coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374 (last P2-04 start): LAST START AUTHORISED for one attempt on the current tree (which also carries 165059eea: F1's cause fixed at the evidence layer, F2 verified with a mutation control). After this attempt the pool is fully spent whether or not rows are judged. Rationale: F1 was the thing that made the negative control vacuous and would have broken any Member grep; F1-ROW-SPAWN now reproduces the World's exact failure pre-fix and a real rg match post-fix, boot-free. This is the first attempt where the two known blockers are closed and the remaining unknown is a specific, nameable handoff. || 3 start(s) by owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: NEW BUDGET: the owner allocated 3 more P2-04 starts (pool 3 spent + 3 fresh = 6). Resume on a fresh branch off current master; the old branch is merged. No product code is needed — the driver only had to be run correctly. The two instrument defects (original.apply(this, spec); nohup launch) are fixed on master.",
+        "boundCommit": "e17f0cec87dd2f2ebae6b1543938e5953821ac00",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-04T19:08:04.704Z",
+        "runId": "a5sf-search-2026-11-04T19-07-58-223Z",
+        "suite": "a5sf-search",
+        "world": "u5a5sfsrch-20261104T19-07-58Z",
+        "phase": "a5sf-search-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-search-boot1",
+      "world": "u5a5sfsrch-20261104T19-07-58Z",
+      "port": 3184,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T19-07-58Z/instance-port3184.log"
+    }
+  ],
+  "overall": "FAIL",
+  "finishedAt": "2026-11-04T19:17:21.063Z"
+}

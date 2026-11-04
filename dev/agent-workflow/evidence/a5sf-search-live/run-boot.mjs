@@ -1365,11 +1365,43 @@ async function boot() {
 
     abortStage = 'team-create'
     abortStageDetail = 'team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed'
-    const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
+    // THE CANCELLATION WINDOW OPENS INSIDE `team.create`, NOT AFTER IT.
+    // `initialWork` makes the create call wait for the leader's first turn, and that
+    // turn is the synchronous delegate: leader -> member -> the member's FIFO grep,
+    // which blocks. So the ONLY moment at which the FIFO search is in flight is
+    // while the create promise is unresolved (attempt 7, 2026-11-04T20:07Z: the
+    // child was already gone — exit 143 from the module's OWN 30 s timeout — by the
+    // time the driver got control back, and the cancel arrived 0.9 s too late).
+    // Therefore: issue the create, and watch + interrupt CONCURRENTLY.
+    const createPromise = remoteCall(fetchJson, origin, cookie, 'team.create', {
       rootSessionId: ACCEPTANCE_ROOT,
       blueprintId: BP_MAIN_ID,
       initialWork: { prompt: MK_L1 },
     }, 'a5sfsrch')
+    const cancelWatch = (async () => {
+      const deadline = Date.now() + 180_000
+      let spawnSeen = null
+      let session = ''
+      while (Date.now() < deadline) {
+        const rows = parseJsonl(counterPath)
+        spawnSeen = rows.find((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))) ?? null
+        if (spawnSeen !== null) {
+          try {
+            const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 10_000)
+            const worker = (Array.isArray(st.body?.members) ? st.body.members : []).find((m) => String(m?.templateId) === 'worker' && String(m?.childSessionId ?? '') !== '')
+            session = String(worker?.childSessionId ?? '')
+          } catch { session = '' }
+          if (session !== '') break
+        }
+        await new Promise((r) => setTimeout(r, 120))
+      }
+      if (spawnSeen === null || session === '') return { spawnSeen, session, cancelCall: null, at: null }
+      const call = await apiSessionCancel(origin, cookie, session, 'a5sfsrch')
+      log(`concurrent cancel: fifo spawn observed; session=${session.slice(0, 24)}… status=${String(call.status)} body=${redact(JSON.stringify(call.body ?? null)).slice(0, 200)}`)
+      return { spawnSeen, session, cancelCall: call, at: new Date().toISOString() }
+    })()
+    const created = await createPromise
+    const cancelEarly = await cancelWatch
     const createOk = created.status === 200 && created.body?.result?.ok === true
     log(`team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
     if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 300)}`)
@@ -1461,15 +1493,18 @@ async function boot() {
     // the lane report tells which.
     abortStage = 'cancellation-window'
     abortStageDetail = 'the member grep on the FIFO must be admitted by the confined subprocess face (a confined-spawn record) before a cancel can be dispatched'
-    const fifoInFlight = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
+    const fifoInFlight = cancelEarly.spawnSeen !== null || await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-spawn' && (row?.argv ?? []).some((a) => String(a) === paths.fifo || String(a).endsWith('/blocking.fifo'))), 240_000)
     log(`fifo call admitted (confined spawn observed)=${String(fifoInFlight)}`)
     if (!fifoInFlight) {
       const rows = parseJsonl(counterPath)
       throw new Error(`CANCELLATION_WINDOW_NO_CONFINED_SPAWN: the member ran but no confined spawn for the FIFO appeared within 240s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}, confined-spawn=${String(rows.filter((row) => row?.leg === 'confined-spawn').length)}, base-spawn=${String(rows.filter((row) => row?.leg === 'base-spawn').length)}, installFs=${String(rows.filter((row) => row?.leg === 'install-fs').length)}). The search never reached the confined face`)
     }
+    // The interrupt was already dispatched concurrently with `team.create`; only fall
+    // back to the post-hoc route if that watcher never saw the spawn.
+    let cancelCall = cancelEarly.cancelCall
+    if (cancelCall !== null) log(`cancel already dispatched in the activity window at ${String(cancelEarly.at)}`)
     await new Promise((r) => setTimeout(r, 600))
-    let cancelCall = null
-    if (fifoInFlight) {
+    if (cancelCall === null && fifoInFlight) {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         cancelCall = await apiSessionCancel(origin, cookie, memberSession, 'a5sfsrch')
         log(`cancel attempt ${String(attempt)}: status=${String(cancelCall.status)} body=${redact(JSON.stringify(cancelCall.body ?? null)).slice(0, 300)}`)

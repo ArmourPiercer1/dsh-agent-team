@@ -245,6 +245,12 @@ check('driver: the control counts only ITS OWN operand and the member-install ab
   && /teamCalls/u.test(driverSource)
   && /MEMBER_INSTALL_NO_WORKER/u.test(driverSource),
   'the probe turn runs first, so a name-only control count answers without its grep (NOT_REACHED at 18:53Z); and no-Member-appeared must carry what team_delegate answered')
+check('driver: the cancellation is dispatched CONCURRENTLY with team.create',
+  /const createPromise = remoteCall\(/u.test(driverSource)
+  && /const cancelWatch = \(async \(\) => \{/u.test(driverSource)
+  && driverSource.indexOf('const createPromise') < driverSource.indexOf('const created = await createPromise')
+  && /const cancelEarly = await cancelWatch/u.test(driverSource),
+  'attempt 7 died here: team.create blocks until the leader turn (and therefore the member FIFO grep) settles, so a cancel issued after it returns is always too late — the child was already gone at exit 143')
 check('row artifact: the confined exit row carries the payload stderr',
   /stderrChunks/u.test(providerSource) && /stderr: Buffer\.concat\(stderrChunks\)/u.test(providerSource) && /handleStderr\.on\('data'/u.test(providerSource),
   'row 1 can fail as a real REFUTED verdict (an in-lane grep exiting 2); without the payload stderr the reason dies with the World home')
