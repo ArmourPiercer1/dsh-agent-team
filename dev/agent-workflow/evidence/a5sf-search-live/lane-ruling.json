@@ -1,0 +1,42 @@
+{
+  "schema": "a5sf-search-live/lane-ruling/1",
+  "lane": "task/a5sf-search-live-20261104",
+  "allocationItem": "P2-04 grep (BL-16)",
+  "poolAllocated": 3,
+  "authorisedStarts": 3,
+  "rulings": [
+    {
+      "starts": 1,
+      "by": "direct task instruction (coordinator)",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation"
+    },
+    {
+      "starts": 1,
+      "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope.",
+      "conditions": [
+        "go-no-go itself must evaluate the rows-given-to-the-World handoff, not only the dry run",
+        "the pre-boot assertion is content-bearing: the rows the World composes equal the emitted rows by identity, in order, with the health probe row present (a length check would have passed last time)",
+        "stage attribution must distinguish composition vs member-install vs delegate-dispatch, so an abort teaches WHICH handoff is broken",
+        "if this attempt aborts before any row is judged: stop and report; do NOT ask for a third start"
+      ]
+    },
+    {
+      "starts": 1,
+      "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374 (last P2-04 start)",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "LAST START AUTHORISED for one attempt on the current tree (which also carries 165059eea: F1's cause fixed at the evidence layer, F2 verified with a mutation control). After this attempt the pool is fully spent whether or not rows are judged. Rationale: F1 was the thing that made the negative control vacuous and would have broken any Member grep; F1-ROW-SPAWN now reproduces the World's exact failure pre-fix and a real rg match post-fix, boot-free. This is the first attempt where the two known blockers are closed and the remaining unknown is a specific, nameable handoff.",
+      "conditions": [
+        "run go-no-go.mjs and let it say GO; refuse to boot on any refusal other than already-spent starts",
+        "before team.create, call grep from the anchor leader and capture the tool result (base-spawn-failed rows make the cause attributable), and make a host-side log sink survive teardown",
+        "expect member-install next; if it aborts the stage attribution must name the handoff",
+        "judge honestly; promote nothing unmeasured; row 3 stays UNSUPPORTED for preset-expression",
+        "if it aborts before any row: stop, report, no fourth request"
+      ]
+    }
+  ],
+  "note": "The driver and go-no-go both read this file: a start is allowed only while the shared ledger's boot rows for this lane are fewer than `authorisedStarts`. A third boot requires a NEW ruling appended here \u2014 editing `authorisedStarts` upward without a ruling entry is a self-authorisation and is called out in the README.",
+  "remainingAfterThisLane": 0
+}

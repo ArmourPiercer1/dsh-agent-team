@@ -1,0 +1,127 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
+  "suite": "a5sf-search",
+  "startedAt": "2026-11-04T15:56:53.720Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-teardown-no-callable-shadow"
+  ],
+  "bindings": {
+    "teamSha": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfsrch",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-search-098f445f51ee-b2",
+    "allocationItem": "P2-04 grep (BL-16)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs (no product provider exists at this base)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound after the run: the record predates the manifest's authority-binding requirement; the pointer is the one current at this head and is re-checked by eb3-run-manifest --new-since"
+    }
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.021Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.021Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    },
+    {
+      "id": "live:search-row6-teardown-no-callable-shadow",
+      "verdict": "FAIL",
+      "at": "2026-11-04T16:00:00.022Z",
+      "reason": "DRIVER_ABORTED_AT_team-create",
+      "stage": "team-create",
+      "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+      "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate fa"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-04T15:56:53.767Z",
+        "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-search-098f445f51ee-b2",
+        "grantId": "grant-a5sf-search-098f445f51ee-b2",
+        "grantedBy": "1 start(s) by direct task instruction (coordinator): the live half of P2-03/BL-16: exactly ONE Host boot; if it fails, stop and report, no retry without authorisation || 1 start(s) by coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: RETRY AUTHORISED, funded by ONE of the remaining two P2-04 starts. The first attempt's abort was an INSTRUMENT defect (rows emitted, never given to the World), not a product finding, and that class is now guarded by a check plus a mutation control that requires it to go RED. Spending a second start on a genuinely new guard is not the same as retrying the same hope.",
+        "boundCommit": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-04T15:56:55.361Z",
+        "runId": "a5sf-search-2026-11-04T15-56-53-720Z",
+        "suite": "a5sf-search",
+        "world": "u5a5sfsrch-20261104T15-56-53Z",
+        "phase": "a5sf-search-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-search-boot1",
+      "world": "u5a5sfsrch-20261104T15-56-53Z",
+      "port": 3182,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T15-56-53Z/instance-port3182.log"
+    }
+  ],
+  "overall": "FAIL",
+  "finishedAt": "2026-11-04T16:00:00.115Z"
+}

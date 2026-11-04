@@ -1,0 +1,20 @@
+{
+  "schema": "a5sf-search-live/oracle-samples/1",
+  "note": "the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.",
+  "roots": {
+    "bootRoot": "session-a5sf-acceptance-root",
+    "teamRoot": "session-a5sf-acceptance-team",
+    "createRoot": "session-a5sf-acceptance-team",
+    "stateQueryRoot": "session-a5sf-acceptance-team",
+    "toolRouteRoot": "session-a5sf-acceptance-team",
+    "toolRouteRootIsLabel": true,
+    "archiveRoot": "session-a5sf-acceptance-team",
+    "oracleRoot": "session-a5sf-acceptance-team",
+    "directiveRoot": "session-a5sf-acceptance-team"
+  },
+  "cases": {},
+  "negativeControl": {
+    "sample": null,
+    "verdict": null
+  }
+}

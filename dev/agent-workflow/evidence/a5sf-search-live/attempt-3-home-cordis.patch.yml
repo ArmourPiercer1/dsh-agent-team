@@ -1,0 +1,9 @@
+# a5sf search-live fixture (README §4): pin the DEPLOYMENT file-sandbox
+# fallback root to this World's workspace. The base bundle sets
+# `workspaceRoot: !!js process.cwd()` (the pristine host tree) and the
+# confined realm resolves sandboxPolicy WITHOUT a session, so the fallback
+# — not the session cwd — fences every Team read/write.
+- id: sandbox-policy
+  config:
+    mode: "workspace-write"
+    workspaceRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace"

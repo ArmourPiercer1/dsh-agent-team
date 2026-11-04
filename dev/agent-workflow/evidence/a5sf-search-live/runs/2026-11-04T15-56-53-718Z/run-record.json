@@ -1,0 +1,115 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+  "suite": "a5sf-search",
+  "startedAt": "2026-11-04T15:36:59.674Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-teardown-no-callable-shadow"
+  ],
+  "bindings": {
+    "teamSha": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfsrch",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
+    "allocationItem": "P2-04 grep (BL-16)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-search-live/a5sf-search-realm-provider-row.mjs (no product provider exists at this base)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound after the run: the record predates the manifest's authority-binding requirement; the pointer is the one current at this head and is re-checked by eb3-run-manifest --new-since"
+    }
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    },
+    {
+      "id": "live:search-row6-teardown-no-callable-shadow",
+      "verdict": "FAIL",
+      "at": "2026-11-04T15:39:18.951Z",
+      "reason": "DRIVER_ABORTED_AT_post-boot",
+      "error": "the p6t6 harness route never answered: the World did not reach a usable Host"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-04T15:36:59.705Z",
+        "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-search-a2c56fb8457a-b1",
+        "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
+        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-04 grep (BL-16 native write/search)\" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver's to spend.",
+        "boundCommit": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-04T15:37:06.134Z",
+        "runId": "a5sf-search-2026-11-04T15-36-59-674Z",
+        "suite": "a5sf-search",
+        "world": "u5a5sfsrch-20261104T15-36-59Z",
+        "phase": "a5sf-search-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-search-boot1",
+      "world": "u5a5sfsrch-20261104T15-36-59Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T15-36-59Z/instance-port3183.log"
+    }
+  ],
+  "overall": "FAIL",
+  "finishedAt": "2026-11-04T15:39:19.042Z"
+}

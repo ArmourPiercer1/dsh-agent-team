@@ -1,0 +1,6 @@
+F2-SURFACE-REAL: recorded surface=24 tools; managed vocabulary=7; team tools=15
+F2-LEADER-DENY: deny=[glob,grep,u5_canary,u6fs_probe] → gate ok=true on 20 tools
+F2-MUTATION-NO-DENY: mutant deny=[u5_canary,u6fs_probe] → gate ok=false entries=["glob","grep"] — the World's refusal reproduced
+F2-MEMBER-REALM: leader deny is leader-only; Member realm still expects [glob,grep] (executed proof: dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs)
+
+VERDICT: PASS (4/4 arms)

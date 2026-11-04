@@ -1,0 +1,10 @@
+{
+  "grantId": "grant-a5sf-search-a2c56fb8457a-b1",
+  "maxStarts": 2,
+  "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-04 grep (BL-16 native write/search)\" holds 3 boots and is untouched. This driver spends ONE of them (the live half BL-16 declared V@B=no for); the remaining 2 are NOT this driver's to spend.",
+  "allocationItem": "P2-04 grep (BL-16)",
+  "boundCommit": "a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9",
+  "note": "maxStarts = 0 prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = 2; the BL-14 gate counts shared-ledger rows, not spawns",
+  "bootSequence": 1,
+  "dedicatedStarts": 1
+}

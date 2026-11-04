@@ -1,0 +1,129 @@
+{
+  "schema": "a5sf-search-live/stage-diagnosis/1",
+  "at": "2026-11-04T16:00:00.021Z",
+  "error": "team.create failed: status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5sfsrch-1agv8x27ae\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-acceptance-team' failed: permission coverage gate failed for instance 'inst-leader': 2 u",
+  "probe": {
+    "stage": "team-create",
+    "stageDetail": "team.create must accept the main blueprint (leader + worker template + preset), or the Team row is not composed",
+    "hostReached": true,
+    "rows": [
+      "a5sf-search-realm",
+      "dsh-agent-team",
+      "p6t6-team-tools",
+      "preset-a5sf-search-base"
+    ],
+    "composedProfile": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T15-56-53Z/composed-profile-d16e1d58631f63046ba18d8c2388a2bec451beb10915f83325fcdd3132a88ed4.patch.yml",
+      "presentRowIds": [
+        "u5-canary",
+        "u6-fs-probe-host",
+        "a5sf-search-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-search-base"
+      ],
+      "missingRowIds": []
+    },
+    "counter": {
+      "install-fs": 0,
+      "install-subprocess": 0,
+      "base-spawn": 2,
+      "confined-spawn": 0,
+      "confined-exit": 0,
+      "confined-spawn-failed": 0
+    },
+    "laneReport": {
+      "schema": "a5sf-tool-binding-lane-report/1",
+      "kind": "search",
+      "computedBy": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets / matchLocator (the emitted product algebra; compileEffectiveIo is not in the host emitted set at this base)",
+      "bindingIdentity": "dsh.search/grep",
+      "ceiling": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        }
+      },
+      "restriction": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace/lane/inside"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": "no-additional-narrowing"
+      },
+      "effective": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace/lane/inside"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        }
+      },
+      "probePaths": [
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace/lane/inside/needle.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace/lane/outside-restriction.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/ceiling-outside/secret.txt",
+          "ceilingRead": "deny",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/ceiling-outside-glob/secret.txt",
+          "ceilingRead": "deny",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T15-56-53Z/workspace/lane/blocking.fifo",
+          "ceilingRead": "allow",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        }
+      ],
+      "note": "the CEILING and RESTRICTION inputs are test-composition fixtures (no product v3->compiled lane bridge at this base); the intersection and the dispositions are the product functions, called here. The confined `subprocess` face is a MEMBER-realm face (BL-17 refuses a binding-realm one), so its facts carry realm=member and toolBindingIdentity=null."
+    },
+    "sinkFacts": 0,
+    "member": null,
+    "mockRequests": 3,
+    "memberTurnSeen": false,
+    "toolUseNames": [
+      "grep"
+    ]
+  }
+}

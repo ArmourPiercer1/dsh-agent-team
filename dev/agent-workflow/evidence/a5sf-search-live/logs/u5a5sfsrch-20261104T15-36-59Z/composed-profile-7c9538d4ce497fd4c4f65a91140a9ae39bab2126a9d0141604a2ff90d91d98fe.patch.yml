@@ -1,0 +1,16 @@
+# U6-fs World: canary + probe rows + the production Team row, p6t6
+# observer and preset declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "u6-fs-probe-host"
+      name: "./u6-fs-probe-host.mjs"
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
