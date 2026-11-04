@@ -235,7 +235,7 @@ absent provider is a preflight blocker, not something to work around.**
 4. `node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs` →
    **29 pass, 0 fail** (three-way oracle, #575 split-root control, real live
    stream, name-keyed vs blanket invalidation, C13–C16);
-5. `negative-controls.mjs` → **10/10 controls behave**: each correction is
+5. `negative-controls.mjs` → **11/11 controls behave**: each correction is
    re-broken in the LIBRARY, the oracle suite must go red on the named test
    (`C9` / `C14` / `C15` / `C16`), and the original bytes are restored and
    sha256-verified (`allControlsBehaved=true`, library pristine, suite green
@@ -265,9 +265,10 @@ holds an `instance-port*.log` or a composed profile. `dry-run.json.preserved`
 records both sha256 values.
 
 **Negative controls** (`negative-controls.json` / `.log`, kept as evidence):
-ten source mutations, one per corrected clause
+eleven source mutations, one per corrected clause
 (`NC1` row-2 `readText` filter, `NC2a` 4a ceiling-only, `NC2b` 4b Team-lane
 refusal, `NC2c` 4b read-lane laundering, `NC2d` 4b guard-denied write,
+`NC2e` 4b read-coupling acceptance,
 `NC3a` row-6 temporal clause, `NC3b` row-6 parseable `observedAt`,
 `NC3c` row-6 probe delta counted as product facts, `NC3d` row-6 served probe,
 `NC4` write-method partition). Each is
@@ -387,7 +388,7 @@ a blocker, not a gate.
 | `go-no-go.mjs` / `go-no-go.json` / `go-no-go.log` | §6, the boot-authorisation gate (refuses on a stale product tree, an INCONSISTENT ledger, an exhausted pool) |
 | `probe-mount-compat.mjs` / `mount-compat.json` / `mount-compat.log` | §4, 4-arm move measurement |
 | `dry-run.mjs` / `dry-run.log` / `dry-run.json` | §5, the one-command preflight (**57 checks**, `productTreeDigest`, preserved live transcript, the frozen boot-2 stream replayed) |
-| `negative-controls.mjs` / `negative-controls.json` / `negative-controls.log` | the TEN mutation controls: each post-live correction, re-broken, must turn the oracle suite red on its named test; the library is restored byte-for-byte |
+| `negative-controls.mjs` / `negative-controls.json` / `negative-controls.log` | the ELEVEN mutation controls: each post-live correction, re-broken, must turn the oracle suite red on its named test; the library is restored byte-for-byte |
 | `replay-defect-a.mjs` / `replay-defect-a.log` | §12.8.1, the host-free reproduction of boot 2's row-6 FAIL: the 8-fact stop-time sink PROVES, the 10-fact live sample REFUTES, the split PROVES and the injected +1 s twin REFUTES |
 | `plan.log` / `plan.json` | World plan: composition, patch layer, home-level sandbox pin, blueprints, lane algebra, teardown |
 | `run.log` / `consultations.jsonl` / `guard-facts.json` / `counter.json` / `transcript.json` / `teardown.json` / `run-record.json` | the BOOT-2 live run (§12.8), append-only evidence: the transcript, the product's own **8-fact stop-time** sink (`consultations.jsonl`; the 2 probe facts are in `teardown.json.probeFacts`), the provider counter, the run record |
@@ -468,7 +469,7 @@ Shared contract (tracked, not in this directory):
 | gate | result | raw |
 | --- | --- | --- |
 | `dry-run.mjs` | **57/57 PASS, exit 0, `goNoGo=true`** (was 48/48; the new checks bind the two boot-2 repairs and replay the frozen stream) | `dry-run.log` / `dry-run.json` |
-| `negative-controls.mjs` | **10/10 controls behaved** (was 7/7), library restored byte-for-byte, suite green after | `negative-controls.log` / `negative-controls.json` |
+| `negative-controls.mjs` | **11/11 controls behaved** (was 7/7), library restored byte-for-byte, suite green after | `negative-controls.log` / `negative-controls.json` |
 | the oracle test file | **29/29 pass** (`C14`/`C15` re-pinned to the live answer; `C15` gained the probe-attribution arms) | run in `dry-run.log`, suite evidence in `negative-controls.log` |
 | all ten a5sf node suites | **156/156** (unchanged total; the oracle file is still 29 tests) | `all-a5sf-node-suites.log` |
 | `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** (unchanged — host-free seams) | `vitest-a5sf.log` |
@@ -1004,7 +1005,7 @@ driver list was updated.
 | gate | result | raw |
 | --- | --- | --- |
 | `dry-run.mjs` | **57/57 PASS, exit 0, `goNoGo=true`** (was 48/48) | `dry-run.log` / `dry-run.json` |
-| `negative-controls.mjs` | **10/10 controls behaved**, library restored byte-for-byte (`873eadc7…`), suite green after | `negative-controls.log` / `negative-controls.json` |
+| `negative-controls.mjs` | **11/11 controls behaved**, library restored byte-for-byte (`873eadc7…`), suite green after | `negative-controls.log` / `negative-controls.json` |
 | the oracle test file | **29/29 pass** | `node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs` |
 | all ten a5sf node suites | **156/156** | `all-a5sf-node-suites.log` |
 | `vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
@@ -1015,13 +1016,14 @@ Verbatim final line (`go-no-go.log`):
 
 ```
 PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=2 remaining=4
-GO — head=cf2f1ab9c61f385383f172495f510ed9f9c3fe40 digest=35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782
+GO — head=12c0b1f607da09373054412e0fde68bd6f94633f digest=35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782
 ```
 
 The controls that are load-bearing for THIS round: `NC2b` (4b credits a Team lane
 refusal), `NC2c` (4b launders a read-lane allow), `NC2d` (4b accepts a
-guard-denied write), `NC3c` (row 6 re-counts the probe delta as product facts —
-the boot-2 defect itself) and `NC3d` (row 6 accepts a served probe). The earlier
+guard-denied write), `NC2e` (4b accepts the retired read-coupling answer),
+`NC3c` (row 6 re-counts the probe delta as product facts — the boot-2 defect
+itself) and `NC3d` (row 6 accepts a served probe). The earlier
 controls (`NC1`, `NC2a`, `NC3a`, `NC3b`, `NC4`) still behave.
 
 **What this round is least certain about on the next live run** (a new boot was

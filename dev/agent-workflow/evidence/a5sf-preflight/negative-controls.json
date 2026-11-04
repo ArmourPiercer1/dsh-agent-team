@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-acceptance-preflight/negative-controls/1",
-  "at": "2026-11-04T08:32:16.067Z",
+  "at": "2026-11-04T08:33:53.321Z",
   "library": "tests/world-factory/lib/a5sf-acceptance-preflight.mjs",
   "librarySha256Before": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
   "librarySha256After": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
@@ -77,6 +77,31 @@
       "suiteFail": 1,
       "failingTests": [
         "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+      ],
+      "expectFailing": [
+        "C14"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "873eadc7419f9d167aac2da8980d16338e106b10a9310627d60d1cd2e6d4cc52",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC2e-row4b-accepts-the-retired-read-coupling-answer",
+      "fix": "boot-2 correction (4b clause 2: the read coupling is NOT this row answer)",
+      "why": "the retired row REQUIRED the read-coupling sentence; restoring that blindness makes the coupling refusal pass as this row, which is exactly the defect boot 2 measured",
+      "mutation": {
+        "find": "    notReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text) !== true,",
+        "replace": "    notReadCouplingRefusal: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 27,
+      "suiteFail": 2,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
         "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
       ],
       "expectFailing": [

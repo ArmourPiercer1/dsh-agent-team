@@ -20,6 +20,8 @@
  *   NC2b row 4b credits a TEAM LANE refusal as "not the lane voice"
  *        (boot 2: the guard allowed the write; a lane refusal is the opposite
  *        answer)                                                   -> C14;
+ *   NC2e row 4b accepts the RETIRED read-coupling answer (the clause the old
+ *        row required)                                             -> C14;
  *   NC2c row 4b ignores a write allow laundered onto the read lane -> C14;
  *   NC2d row 4b accepts a write the guard DENIED (no ceiling allow fact) -> C14;
  *   NC3a row 6 drops the temporal clause (back to "always true")     -> C15;
@@ -98,6 +100,14 @@ const CONTROLS = [
     replace: '    notTeamLaneRefusal: true,',
     expectFailing: ['C14'],
     why: 'a guard refusal means the ceiling did NOT admit the write — the opposite of the two-axis claim — so crediting it as "not the lane voice" would launder a wrong answer into the row',
+  },
+  {
+    id: 'NC2e-row4b-accepts-the-retired-read-coupling-answer',
+    fix: 'boot-2 correction (4b clause 2: the read coupling is NOT this row answer)',
+    find: '    notReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text) !== true,',
+    replace: '    notReadCouplingRefusal: true,',
+    expectFailing: ['C14'],
+    why: 'the retired row REQUIRED the read-coupling sentence; restoring that blindness makes the coupling refusal pass as this row, which is exactly the defect boot 2 measured',
   },
   {
     id: 'NC2c-row4b-accepts-a-laundered-read-lane-allow',
