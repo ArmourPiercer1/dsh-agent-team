@@ -126,6 +126,8 @@ check('oracle: row 2 scopes its facts to the READ consultation', libSource.inclu
   'review B1: the row-4 write fact at the same locator is the healthy stream (pinned by C9)')
 check('oracle: row 5/6 cannot launder an answered refusal into NOT_REACHED', ['INVALIDATION_NOT_RAISED', 'INVALIDATION_TRIGGER_FAILED', 'ARCHIVE_REFUSED'].every((reason) => libSource.includes(reason)),
   'review B2: asked-and-contradicted is REFUTED; only a never-dispatched step is NOT_REACHED')
+check('oracle: row 5 requires the NAME-KEYED code, not the blanket realm freeze', libSource.includes("REALM_INVALIDATED_CODE = 'A5SF_MEMBER_REALM_INVALIDATED'") && libSource.includes('BLANKET_INVALIDATION_ONLY') && libSource.includes('notBlanketFreeze'),
+  'E8/#580: a blanket A5SF_MEMBER_REALM_INVALIDATED-only refusal is REFUTED (pinned by C12)')
 check('oracle: root identity includes the production row + directive values', libSource.includes('productionRowRoot') && libSource.includes('directiveRoot !== first'),
   'review B3: the two product-side values are asserted, not just the constants')
 check('oracle: the #575 stream is a real committed fixture', existsSync(join(REPO_ROOT, 'tests', 'world-factory', 'fixtures', 'a5sf-575-teardown-observations.json')),

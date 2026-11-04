@@ -105,13 +105,15 @@ The `#575` archive/delegate asymmetry is also gone: `as:` (actor), the payload
 
 The decision function lives in
 `tests/world-factory/lib/a5sf-acceptance-preflight.mjs` and is pinned by
-`tests/world-factory/a5sf-acceptance-preflight.test.mjs` (**24/24 pass**, run by
+`tests/world-factory/a5sf-acceptance-preflight.test.mjs` (**25/25 pass**, run by
 `dry-run.mjs`). Each row has three outcomes; the test file feeds each judge a
 NOT_REACHED sample, a REFUTED sample and a PASS base, and asserts the verdicts
-differ (`C0`–`C3`), plus the four review arms: the row-2 healthy replay (`C9`),
-the three row-5 laundering arms (`C10`), the row-6 archive refusal (`C11`), the
-real #575 stream (`B5`), the decorated-fault grammar (`B6`), and the production
-row / directive root assertions (`A5`/`A6`).
+differ (`C0`–`C3`), plus the review arms: the row-2 healthy replay (`C9`), the
+three row-5 laundering arms (`C10`), the row-6 archive refusal (`C11`), the
+real #575 stream (`B5`), the decorated-fault grammar (`B6`), the production
+row / directive root assertions (`A5`/`A6`), and the **name-keyed vs blanket
+invalidation** discrimination (`C12`: an `A5SF_MEMBER_REALM_INVALIDATED`-only
+refusal is REFUTED with `BLANKET_INVALIDATION_ONLY`).
 
 | row | PASS requires (state assertion) | REFUTED (the product answered wrongly) | NOT_REACHED (never asked) | #575 defect this repair kills |
 | --- | --- | --- | --- | --- |
@@ -120,7 +122,7 @@ row / directive root assertions (`A5`/`A6`).
 | 2 read B | `isError`, typed lane refusal, no claim/write-content leak, **exactly one READ fact** for B (the later row-4 write fact at the same locator is not counted) and **exactly one** binding deny, **no** provider read | any clause false (`ROW2_CLAUSE_FAILED`) | no call/result (`NO_READ_CALL_B` / `NO_READ_RESULT_B`) | same |
 | 3 read C | refused + typed, no leak, exactly one binding deny, no provider read, **and** the lane report shows ceiling `deny`, restriction `allow`, effective `deny`, with no widened allow entry | clause or no-widening false (`ROW3_CLAUSE_FAILED`) | no call/result, **or no lane report**, or no probe for C (`NO_LANE_REPORT_C`, `NO_LANE_PROBE_C`) | the no-widening claim had no channel; "pass" could be produced by an empty report |
 | 4 write B | not error, disk equals the written content, a write allow fact exists, **every** write fact is on the ceiling realm (`toolBindingIdentity:null`), **zero** read-lane write facts, confined provider served | any clause false (`ROW4_CLAUSE_FAILED`) | no call/result (`NO_WRITE_CALL_B` / `NO_WRITE_RESULT_B`) | same |
-| 5 post-invalidation | Member child session present, late tool registered, invalidation line observed, post-read refused with `A5SF_NATIVE_SHADOW_INVALIDATED` **and** the typed name, no forbidden bytes, sink delta 0, counter delta 0, in-lane read also refused with the typed code | the trigger was rejected (`INVALIDATION_TRIGGER_FAILED`), the tool was accepted but not registered (`INVALIDATION_TOOL_NOT_REGISTERED`), the tool IS registered + trigger 200 yet **no invalidation line** (`INVALIDATION_NOT_RAISED` — NoStaleShadow), or the post-read served bytes / missed the typed refusal (`ROW5_CLAUSE_FAILED`) | no Member session (`NO_MEMBER_CHILD_SESSION_IN_STATE`), **no trigger dispatched** (`NO_INVALIDATION_TRIGGER`), no post-read (`NO_POST_INVALIDATION_READ`) | #575's only NOT_REACHED — correct there; now "asked and not raised" can never be laundered into it (review B2, `C10`) |
+| 5 post-invalidation | Member child session present, late tool registered, invalidation line observed, post-read refused with `A5SF_NATIVE_SHADOW_INVALIDATED` **and** the typed name, **not** the blanket `A5SF_MEMBER_REALM_INVALIDATED` freeze, no forbidden bytes, sink delta 0, counter delta 0, in-lane read also refused with the name-keyed code | the trigger was rejected (`INVALIDATION_TRIGGER_FAILED`), the tool was accepted but not registered (`INVALIDATION_TOOL_NOT_REGISTERED`), the tool IS registered + trigger 200 yet **no invalidation line** (`INVALIDATION_NOT_RAISED` — NoStaleShadow), the refusal is blanket-only (`BLANKET_INVALIDATION_ONLY`: the realm died, not the named shadow), or the post-read served bytes / missed the typed refusal (`ROW5_CLAUSE_FAILED`) | no Member session (`NO_MEMBER_CHILD_SESSION_IN_STATE`), **no trigger dispatched** (`NO_INVALIDATION_TRIGGER`), no post-read (`NO_POST_INVALIDATION_READ`) | #575's only NOT_REACHED — correct there; now "asked and not raised" can never be laundered into it (review B2, `C10`) |
 | 6 teardown | archived lifecycle `ARCHIVED`, every post-stop dispatch explained (422 `NO_LIVE_AGENT` or a 200 refusal), **no** success after stop, **no** forbidden bytes, `classifyDisposeFaults` reports no managed/unattributed fault, sink delta 0, health 200, host alive | any clause false (`ROW6_CLAUSE_FAILED`), **or the archive was answered with a refusal** (`ARCHIVE_REFUSED`: non-200 or `ok:false` — review B2, `C11`) | no member (`NO_MEMBER_TO_STOP`), archive never dispatched (`NO_ARCHIVE_DISPATCH`), no post-stop dispatch (`NO_POST_STOP_DISPATCH`) | #575 printed FAIL with `archiveOk:false` and 27 false "faults"; a missing scenario is now NOT_REACHED, an answered refusal is REFUTED, and a fault must be identity-attributable |
 
 Every judge returns `{verdict, reason, detail}` with `reason` a **closed code**
@@ -192,7 +194,8 @@ absent provider is a preflight blocker, not something to work around.**
    the real #575 fixture exists;
 2. `agent-bindings.mjs` byte-identical to `origin/master` (sha256 above);
 3. `node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs` →
-   **24 pass, 0 fail** (three-way oracle, #575 split-root control, real stream);
+   **25 pass, 0 fail** (three-way oracle, #575 split-root control, real stream,
+   name-keyed vs blanket invalidation);
 4. `run-boot.mjs --plan` → factory `createWorld` + patch layer emission
    (**6163 bytes**, sha256 `33ef72f1…6347`, in `plan.json`) + **both blueprints
    parsed by the host's own dist facade** + row-identity preflight (3 rows) +
@@ -358,7 +361,7 @@ Shared contract (tracked, not in this directory):
 | --- | --- | --- |
 | `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | **26/26 PASS, exit 0, `goNoGo=true`** | `dry-run.log` / `dry-run.json` |
 | `node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs` | refuses only the un-amended pool / stale tree — see §6; GO on the boot head after the amendment | `go-no-go.json` / `go-no-go.log` |
-| all ten a5sf node suites (`node --test tests/world-factory/a5sf-*.test.mjs`) | **146/146** (24+30+12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
+| all ten a5sf node suites (`node --test tests/world-factory/a5sf-*.test.mjs`) | **147/147** (25+30+12+9+10+8+14+9+13+17) | `all-a5sf-node-suites.log` |
 | `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | law suites + p4t6 (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`, `p4t6-session-event-scan`), p4t6 last | **54/54, 4 files** | `law-and-p4t6.log` |
 | `pnpm typecheck` (9 projects) | pass | `typecheck.log` |

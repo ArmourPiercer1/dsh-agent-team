@@ -90,6 +90,15 @@ export const INVALIDATED_NAME = 'A5sfNativeShadowInvalidatedError'
 /** The binding identity the two-axis composition declares for native `read`. */
 export const READ_BINDING_IDENTITY = 'dsh.fs/read'
 
+/**
+ * The BLANKET admission code the realm-wide freeze (E8, #580) returns for a name
+ * that is NOT covered by the invalidation's name set. It is deliberately NOT an
+ * acceptable row-5 refusal: row 5 asserts that the RIGHT shadow was condemned by
+ * name, so `A5SF_MEMBER_REALM_INVALIDATED` alone means "everything was refused
+ * because the realm died", which is the opposite claim. See `judgeRow5`.
+ */
+export const REALM_INVALIDATED_CODE = 'A5SF_MEMBER_REALM_INVALIDATED'
+
 /** The two refusal phrases the shipped guard emits (source: path-rules/guard). */
 const LANE_REFUSAL = /outside every allow subtree of the lane/
 
@@ -647,9 +656,18 @@ export function judgeRow5({
   const body = postRead.body ?? null
   const error = body?.error ?? null
   const text = String(error?.message ?? '')
+  const observedCode = error?.info?.code ?? null
+  // THE NAME-KEYED vs BLANKET DISCRIMINATION. Row 5's claim is that the
+  // invalidation condemned THIS covered name, so the refusal must carry the
+  // name-keyed code. The realm-wide freeze added by E8 (#580) answers
+  // `A5SF_MEMBER_REALM_INVALIDATED` for names OUTSIDE the invalidation's set;
+  // seeing that code here means the whole realm was frozen and the row cannot
+  // tell "the right shadow was condemned" from "everything was refused". It is
+  // therefore a dedicated REFUTED reason, not a generic clause failure.
   const checks = {
     refused: postRead.status === 200 && body?.ok === false,
-    typedCode: error?.info?.code === INVALIDATED_CODE,
+    typedCode: observedCode === INVALIDATED_CODE,
+    notBlanketFreeze: observedCode !== REALM_INVALIDATED_CODE,
     typedName: error?.info?.name === INVALIDATED_NAME,
     noForbiddenBytes: text.includes(String(forbiddenClaim)) !== true && JSON.stringify(body ?? {}).includes(String(forbiddenClaim)) !== true,
     noGuardFact: sinkDelta === 0,
@@ -659,10 +677,26 @@ export function judgeRow5({
       && inLaneRead.body?.error?.info?.code === INVALIDATED_CODE,
   }
   const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
+  // A refusal that is ONLY the blanket realm freeze cannot satisfy the row.
+  // Name it separately so the record says which product error fired.
+  if (checks.refused === true && observedCode === REALM_INVALIDATED_CODE) {
+    return refuted('BLANKET_INVALIDATION_ONLY', {
+      checks,
+      failed,
+      expectedCode: INVALIDATED_CODE,
+      observedCode,
+      postRead: { status: postRead.status, ok: body?.ok ?? false, code: observedCode, name: error?.info?.name ?? null },
+      inLaneCode: inLaneRead?.body?.error?.info?.code ?? null,
+      note: 'the refusal came from the realm-wide freeze, not from the name-keyed invalidation — the row cannot distinguish "the right shadow was condemned" from "everything was refused because the realm died"',
+    })
+  }
   if (failed.length > 0) return refuted('ROW5_CLAUSE_FAILED', {
     checks,
     failed,
-    postRead: { status: postRead.status, ok: body?.ok ?? null, code: error?.info?.code ?? null, name: error?.info?.name ?? null },
+    expectedCode: INVALIDATED_CODE,
+    observedCode,
+    postRead: { status: postRead.status, ok: body?.ok ?? null, code: observedCode, name: error?.info?.name ?? null },
+    inLaneCode: inLaneRead?.body?.error?.info?.code ?? null,
     sinkDelta,
     counterDelta,
   })

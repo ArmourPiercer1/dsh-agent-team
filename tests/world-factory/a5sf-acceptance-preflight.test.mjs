@@ -43,6 +43,7 @@ import {
   judgeRow5,
   judgeRow6,
   normalizeObservation,
+  REALM_INVALIDATED_CODE,
   toRunVerdict,
 } from './lib/a5sf-acceptance-preflight.mjs'
 
@@ -567,4 +568,53 @@ test('C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REF
   assert.equal(judged.reason, 'ARCHIVE_REFUSED')
   assert.equal(judged.detail.archive.status, 200)
   assert.equal(judged.detail.archive.ok, false)
+})
+
+test('C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm freeze', () => {
+  // The E8 realm-wide freeze (#580) answers `A5SF_MEMBER_REALM_INVALIDATED` for
+  // names outside the invalidation set. Row 5's covered name must still get the
+  // name-keyed code; blanket-only is a REFUTED with its own reason, because it
+  // means "the realm died", not "the right shadow was condemned".
+  assert.equal(REALM_INVALIDATED_CODE, 'A5SF_MEMBER_REALM_INVALIDATED')
+  const blanket = judgeRow5({
+    ...PASS.row5,
+    postRead: {
+      status: 200,
+      body: { ok: false, error: { info: { code: REALM_INVALIDATED_CODE, name: 'A5sfMemberRealmInvalidatedError' }, message: 'realm invalidated' } },
+    },
+  })
+  assert.equal(blanket.verdict, 'REFUTED')
+  assert.equal(blanket.reason, 'BLANKET_INVALIDATION_ONLY')
+  assert.equal(blanket.detail.expectedCode, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+  assert.equal(blanket.detail.observedCode, REALM_INVALIDATED_CODE)
+  assert.equal(blanket.detail.checks.typedCode, false)
+  assert.equal(blanket.detail.checks.notBlanketFreeze, false)
+
+  // the covered-name PASS still carries the name-keyed code on both reads
+  const proven = judgeRow5(PASS.row5)
+  assert.equal(proven.verdict, 'PROVEN')
+  assert.equal(proven.detail.checks.typedCode, true)
+  assert.equal(proven.detail.checks.notBlanketFreeze, true)
+
+  // a blanket code ONLY on the in-lane read is still a failed clause
+  const inLaneBlanket = judgeRow5({
+    ...PASS.row5,
+    inLaneRead: {
+      status: 200,
+      body: { ok: false, error: { info: { code: REALM_INVALIDATED_CODE, name: 'A5sfMemberRealmInvalidatedError' }, message: 'realm invalidated' } },
+    },
+  })
+  assert.equal(inLaneBlanket.verdict, 'REFUTED')
+  assert.equal(inLaneBlanket.detail.check, undefined)
+  assert.equal(inLaneBlanket.detail.checks.inLaneAlsoRefused, false)
+  assert.equal(inLaneBlanket.detail.inLaneCode, REALM_INVALIDATED_CODE)
+
+  // an unrelated wrong code is neither the right shadow nor the blanket freeze
+  const other = judgeRow5({
+    ...PASS.row5,
+    postRead: { status: 200, body: { ok: false, error: { info: { code: 'A5SF_SOMETHING_ELSE' }, message: 'no' } } },
+  })
+  assert.equal(other.verdict, 'REFUTED')
+  assert.equal(other.reason, 'ROW5_CLAUSE_FAILED')
+  assert.equal(other.detail.observedCode, 'A5SF_SOMETHING_ELSE')
 })
