@@ -1,0 +1,3 @@
+MEASURED p4t6 tie, MEASURED LAST on this tree (all files on disk at run time):
+  scanSessionEventVocabulary: filesScanned=1428 files.length=1428 hits={"eventString":15,"payloadSymbol":0,"declarationMerge":0,"total":15}
+  ledger derived expected=1428 violations=[] summed=445
