@@ -1868,6 +1868,9 @@ export function createTeamProductionRoot(params) {
         now,
         // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
         ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
+        ...(params.onNotificationFailure !== undefined
+            ? { onNotificationFailure: params.onNotificationFailure }
+            : {}),
         ...(alpha6RequestNotification !== undefined
             ? { requestNotification: alpha6RequestNotification }
             : live.deliverRootControlNotification !== undefined

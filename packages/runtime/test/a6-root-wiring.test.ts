@@ -48,6 +48,10 @@ function v5Source(revision: string): string {
     'policyStates: []',
     'permissionMutationEnvelope: { rules: [] }',
     'teamHardEnvelope: { rules: [] }',
+    'teamEnvelope:',
+    '  allow:',
+    '    - request-control',
+    '  deny: []',
     'metadata: {}',
     'reviewRouting:',
     '  enabled: true',
@@ -237,6 +241,128 @@ describe('A6 root wiring — production entry opt-in', () => {
     expect(legacyRoot.alpha6TurnLatchStart).toBeUndefined()
     expect(legacyRoot.alpha6TurnLatchEnd).toBeUndefined()
     expect(legacyRoot.alpha6RecoverWakeLatches).toBeUndefined()
+    destroyDir(base)
+  })
+
+  it('merges three real requestControl rows into ONE wake, then re-wakes after release', async () => {
+    const { createTeamDomain } = await import('../../storage/repositories/index.js')
+    const { FileStorageSeam, scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+    const { parseChildSessionId, parseInstanceId, parseRootSessionId, parseTemplateId } = await import('../../contracts/src/index.js')
+    const { createAgentBindings: createStubBindings } = await import('./p8s5a-stub-glue.mjs')
+    const { createTeamProductionRoot } = await import('../src/plugin/root.js')
+
+    const base = scratchDir(`a6rootwake-${Math.random().toString(36).slice(2, 8)}`)
+    const seam = new FileStorageSeam(base)
+    const domain = await createTeamDomain(seam)
+    const row = (instanceId: string, templateId: string, child: string) => ({
+      rootSessionId: parseRootSessionId(ROOT),
+      instanceId: parseInstanceId(instanceId),
+      templateId: parseTemplateId(templateId),
+      label: instanceId,
+      childSessionId: parseChildSessionId(child),
+      lifecycle: 'RUNNING' as never,
+      createdAt: '2026-11-04T12:00:00.000Z',
+      activityVersion: 1,
+    })
+    await domain.repositories.memberInstances.put(row('inst-a6wakeofficer', 'officer', 'session-a6wake-officer'))
+    await domain.repositories.memberInstances.put(row('inst-a6wakeworker', 'worker', 'session-a6wake-worker'))
+
+    const wakes: Array<{ targetSessionId: string; wakeId: string; text: string }> = []
+    const notificationFailures: unknown[] = []
+    const config = {
+      bootPhase: 'create' as const,
+      rootSessionId: ROOT,
+      generation: 1,
+      defaultWorkspace: `${base}/workspace`,
+      seedMembers: [],
+      staticModel: { provider: 'a6-root', model: 'a6-root-model' },
+      deniedSelection: null,
+      mcpServer: null,
+      environmentFacts: [],
+      externalPolicyFacts: { hard: {}, capabilityExists: {} },
+      blueprintSource: v5Source('11'),
+      alpha6ReviewRouting: true,
+    }
+    const teamToolsRef = { current: undefined }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
+    const live: any = createStubBindings({ config, teamToolsRef, domain })
+    live.deliverReviewWake = async (input: { targetSessionId: string; wakeId: string; text: string }) => {
+      wakes.push(input)
+    }
+    const root = createTeamProductionRoot({
+      config,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
+      domain: domain as any,
+      storageSeam: seam,
+      live,
+      now: () => '2026-11-04T12:00:00.000Z',
+      teamToolsRef,
+      controlServiceRef: { current: undefined },
+      legacyInspect: (() => { throw new Error('legacy inspect unused') }) as never,
+      fsContainsKeys: () => true,
+      permissionPlaneRef: { current: undefined },
+      onNotificationFailure: (failure) => {
+        notificationFailures.push(failure.error)
+      },
+    })
+    await root.boot()
+    const leaderRow = (await domain.repositories.memberInstances.list(parseRootSessionId(ROOT))).find(
+      (member) => member.templateId === 'leader',
+    )
+    if (leaderRow === undefined) throw new Error('the booted root has no Leader row')
+    const leaderCaller = { kind: 'instance' as const, instanceId: leaderRow.instanceId }
+    const { parseBlueprintV5 } = await import('../../domain/blueprint/src/index.js')
+    const parsedBlueprint = parseBlueprintV5(v5Source('11'))
+
+    const ask = async (n: number): Promise<void> => {
+      await root.control.requestApprovalLeg({
+        rootSessionId: ROOT,
+        caller: leaderCaller,
+        kind: 'leader-approval',
+        reviewAuthority: 'leader',
+        requiredAuthorityAtCreation: 'leader',
+        identity: {
+          subject: { kind: 'instance', instanceId: 'inst-a6wakeworker' },
+          beneficiaryAuthority: 'member',
+          requestedEffect: 'ask',
+          operationFingerprint: `fp-a6wake-${String(n)}`,
+          authorityScope: {
+            operationClass: 'tool-invoke',
+            matcher: { kind: 'exact', resource: 'tool:team_bash' },
+          },
+          correlation: `corr-a6wake-${String(n)}`,
+        },
+        actionName: 'team_bash',
+        toolName: 'team_bash',
+        operationOwnerTemplateId: 'worker',
+        operationToolDefinitionIdentity: 'tooldef-a6wake',
+        operationToolOwner: 'a6-root',
+        operationToolName: 'team_bash',
+        authorityGeneration: 0,
+        blueprintContentHash: parsedBlueprint.contentHash,
+        blueprintRevision: parsedBlueprint.revision,
+      })
+    }
+    for (const n of [1, 2, 3]) await ask(n)
+    const until = async (predicate: () => boolean): Promise<void> => {
+      const deadline = Date.now() + 5_000
+      while (!predicate()) {
+        if (Date.now() > deadline) {
+          throw new Error(
+            `wake never arrived (count=${String(wakes.length)} failures=${notificationFailures.map((error) => (error instanceof Error ? error.message : String(error))).join(' | ')})`,
+          )
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      }
+    }
+    await until(() => wakes.length === 1)
+    expect(wakes[0]!.targetSessionId).toBe('session-a6wake-officer')
+
+    root.alpha6TurnLatchStart?.('session-a6wake-officer')
+    await root.alpha6TurnLatchEnd?.('session-a6wake-officer')
+
+    await ask(4)
+    await until(() => wakes.length === 2)
     destroyDir(base)
   })
 })

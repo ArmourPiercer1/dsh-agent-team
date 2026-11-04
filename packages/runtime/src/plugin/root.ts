@@ -845,6 +845,16 @@ export interface TeamProductionRootParams {
    * decision point; the root fills it, the entry calls `boot()` only after.
    */
   readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+  /**
+   * Diagnostic only: a rejected/sync-throwing request notification. It never
+   * changes the request outcome (the durable row stands); tests use it to
+   * surface a liveness fault that is otherwise swallowed.
+   */
+  readonly onNotificationFailure?: (failure: {
+    readonly requestId: string
+    readonly kind: string
+    readonly error: unknown
+  }) => void
   /** PR358-B: the ONE authority facts object (host-built); its
    *  `currentCallFacts` read is published on the plane ref for the PA
    *  call-level adapter. Absent = the face stays unpublished (old worlds
@@ -2646,6 +2656,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
     // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
     ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
+    ...(params.onNotificationFailure !== undefined
+      ? { onNotificationFailure: params.onNotificationFailure }
+      : {}),
     ...(alpha6RequestNotification !== undefined
       ? { requestNotification: alpha6RequestNotification }
       : live.deliverRootControlNotification !== undefined

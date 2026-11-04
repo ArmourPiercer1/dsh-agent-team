@@ -33,5 +33,5 @@ OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L131=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L132=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L133=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
-OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L65=v5, L65=v4
-OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L66=v5, L66=v4
+OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
+OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
