@@ -907,7 +907,9 @@ function lastUserTextOf(req) {
   const i = lastTriggerIndex(req)
   if (i === -1) return ''
   const last = messages[i]
-  return typeof last.content === 'string' ? last.content : JSON.stringify(last.content ?? '')
+  // 0.2.0 user messages carry content BLOCKS; the notification/trigger text is
+  // the concatenated text blocks, never the JSON wrapper.
+  return contentText(last.content)
 }
 
 /**
@@ -921,9 +923,19 @@ function toolMsgsOf(req) {
   return messages.slice(i + 1).filter(isToolResultMessage)
 }
 
+/** Flatten 0.2.0 content blocks (text / tool_result) to plain text. */
+function contentText(content) {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) return content.map((block) => {
+    if (block?.type === 'tool_result') return contentText(block.content)
+    return typeof block?.text === 'string' ? block.text : ''
+  }).join('\n')
+  return JSON.stringify(content ?? '')
+}
+
 /** The instance id from a team_create_member / team_delegate tool result. */
 function extractInstanceId(content) {
-  const text = typeof content === 'string' ? content : JSON.stringify(content ?? '')
+  const text = contentText(content)
   const m =
     /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(text) ??
     /"instanceId"\s*:\s*"([^"]+)"/.exec(text) ??
@@ -1055,7 +1067,7 @@ function makeDecide() {
         })
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `C1_${isX ? 'X' : 'Z'}_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (id === null) return { kind: 'text', content: `C1_${isX ? 'X' : 'Z'}_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           return toolCall('team_delegate', {
             rootSessionId: root,
             requestToken: `c1-${isX ? 'x' : 'z'}-delegate-${RUN_STAMP}`,
@@ -1079,7 +1091,7 @@ function makeDecide() {
         })
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `C1_Y_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (id === null) return { kind: 'text', content: `C1_Y_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           // SYNC delegation (EXPLICIT async: false — the 2026-09-27
           // ruling made the sync path opt-in; no arg = async default) —
           // the S6 blocked Leader turn: this call does not return to the
@@ -1105,7 +1117,7 @@ function makeDecide() {
       // (S5a: same requestId, one row, no re-notify) → done.
       // The member instance id: the session history carries the
       // create_member result (a tool message from the Z leader chain).
-      const allToolMsgs = messagesOf(req).filter((m) => m.role === 'tool')
+      const allToolMsgs = messagesOf(req).filter(isToolResultMessage)
       const memberId = allToolMsgs.map((m) => extractInstanceId(m.content)).find((v) => v !== null) ?? null
       switch (tools) {
         case 0: return toolCall('team_list_pending_control', {
@@ -1114,7 +1126,7 @@ function makeDecide() {
         })
         case 1: {
           const requestId = extractListedRequestId(toolMsgsOf(req)[0]?.content)
-          if (requestId === null) return { kind: 'text', content: `C1_ZCHECK_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (requestId === null) return { kind: 'text', content: `C1_ZCHECK_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           return toolCall('team_resolve_control', {
             rootSessionId: CREATE_ROOT_Z,
             requestToken: `c1-z-check-res-${RUN_STAMP}`,
@@ -1406,7 +1418,7 @@ async function main() {
         fail('S1')
         check('S1d', 'S1: the Leader called team_list_pending_control (tool result observed)', false, `requests=${mock.requests.length}`)
       } else {
-        const listResult = String(xNotifList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const listResult = contentText(toolMsgsOf(xNotifList).pop()?.content ?? '')
         writeEvidence('s1-x-list-result.json', { seq: xNotifList.seq, result: listResult.slice(0, 2000) })
         check('S1d', 'S1: team_list_pending_control returned the EXACT pending requestId',
           listResult.includes(xAllowRequestId ?? '\u0000'),
@@ -1427,7 +1439,7 @@ async function main() {
       fail('S2')
       check('S2b', 'S2: the member bash executed after the allow (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
-      const execResult = String(xExec.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const execResult = contentText(toolMsgsOf(xExec).pop()?.content ?? '')
       writeEvidence('s2-x-bash-result.json', { seq: xExec.seq, result: execResult.slice(0, 800) })
       check('S2b', 'S2: the member bash EXECUTED after the Leader allow (guard passed, output returned)',
         execResult.includes('x-allow-executed') && !/blocked|denied|pending/i.test(execResult.slice(0, 400)),
@@ -1455,7 +1467,7 @@ async function main() {
         fail('S3')
         check('S3b', 'S3: the Leader resolved deny and the member received the verdict', false, `requests=${mock.requests.length}`)
       } else {
-        const denyResult = String(xDenyResult.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const denyResult = contentText(toolMsgsOf(xDenyResult).pop()?.content ?? '')
         writeEvidence('s3-x-deny-result.json', { seq: xDenyResult.seq, result: denyResult.slice(0, 800) })
         check('S3b', 'S3: the denied member bash was BLOCKED (verdict returned, no output)',
           /blocked|denied|deny|pending/i.test(denyResult.slice(0, 400)) && !denyResult.includes('x-deny-executed'),
@@ -1550,7 +1562,7 @@ async function main() {
         `${MK_XCROSS} cross-root probe: ROOTZ=${CREATE_ROOT_Z} ZREQ=${zReq.requestId} — call team_list_pending_control for ROOTZ, then team_resolve_control for ROOTZ with ZREQ (decision allow).`)
       if (xcPrompt.status !== 200) fail('XC1')
       const xcList = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && toolMsgsOf(r).length === 1, 120_000, 'XCROSS list result')
-      const xcListResult = xcList === null ? '' : String(toolMsgsOf(xcList).pop()?.content ?? '')
+      const xcListResult = xcList === null ? '' : contentText(toolMsgsOf(xcList).pop()?.content ?? '')
       writeEvidence('xcross-list-result.json', { seq: xcList?.seq ?? null, result: xcListResult.slice(0, 2000) })
       const xcListRejected = xcListResult.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
       check('XC1', 'RH2: Leader X team_list_pending_control(root=Z) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no pending data leaked)',
@@ -1558,7 +1570,7 @@ async function main() {
         `result=${xcListResult.slice(0, 300)}`)
       if (!xcListRejected || xcListResult.includes(zReq.requestId)) fail('XC1')
       const xcDone = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_XCROSS_DONE', 120_000, 'XCROSS chain done')
-      const xcRes = xcDone === null ? '' : String(toolMsgsOf(xcDone).slice(-1)[0]?.content ?? '')
+      const xcRes = xcDone === null ? '' : contentText(toolMsgsOf(xcDone).slice(-1)[0]?.content ?? '')
       writeEvidence('xcross-resolve-result.json', { seq: xcDone?.seq ?? null, result: xcRes.slice(0, 2000) })
       const xcResRejected = xcRes.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
       check('XC2', 'RH3: Leader X team_resolve_control(root=Z, requestId=Z-pending) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no decision recorded)',
@@ -1631,7 +1643,7 @@ async function main() {
       fail('S4c')
       check('S4c', 'S4: the explicit Leader input reached the Leader turn (recovery chain running)', false, `requests=${mock.requests.length}`)
     } else {
-      const zListResult = String(zCheckList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const zListResult = contentText(toolMsgsOf(zCheckList).pop()?.content ?? '')
       writeEvidence('s4-z-list-result.json', { seq: zCheckList.seq, result: zListResult.slice(0, 2000) })
       check('S4c', 'S4: team_list_pending_control (explicit read, NO notification) discovered the exact pending requestId',
         zListResult.includes(zReq.requestId ?? '\u0000'), `result=${zListResult.slice(0, 300)}`)
@@ -1649,7 +1661,7 @@ async function main() {
         fail('S4e')
         check('S4e', 'S4: the recovered member bash EXECUTED (the operation proceeded after the pending-list recovery)', false, `requests=${mock.requests.length}`)
       } else {
-        const zResult = String(zExec.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const zResult = contentText(toolMsgsOf(zExec).pop()?.content ?? '')
         writeEvidence('s4-z-bash-result.json', { seq: zExec.seq, result: zResult.slice(0, 800) })
         check('S4e', 'S4: the recovered member bash EXECUTED (the operation proceeded after the pending-list recovery)',
           zResult.includes('z-executed') && !/blocked|denied|pending/i.test(zResult.slice(0, 400)),
@@ -1829,7 +1841,7 @@ async function main() {
         const yNotifList = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).startsWith(NOTIF_PREFIX) && lastUserTextOf(r).includes(SUM_Y) && toolMsgsOf(r).length === 1, 60_000, 'Y post-turn notification list result')
         const yDoneAt = yDone?.receivedAt
         const yNotifAt = yNotifAfter.receivedAt
-        const yListResult = yNotifList === undefined ? '' : String(yNotifList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const yListResult = yNotifList === undefined ? '' : contentText(toolMsgsOf(yNotifList).pop()?.content ?? '')
         writeEvidence('s6-y-post-turn-notification.json', {
           yDoneAt,
           yNotifAt,
