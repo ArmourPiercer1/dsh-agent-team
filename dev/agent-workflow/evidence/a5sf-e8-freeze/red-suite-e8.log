@@ -55,9 +55,9 @@ a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member to
 test at tests/world-factory/a5sf-assembly.test.mjs:1226:1
 ✖ E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener registers first — the fold path names the late registration (7.064123ms)
   AssertionError [ERR_ASSERTION]: an unmanaged name is ALSO refused while the realm is frozen: preset-plane-body
-  
+
   false !== true
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze-red/tests/world-factory/a5sf-assembly.test.mjs:1289:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
@@ -72,9 +72,9 @@ test at tests/world-factory/a5sf-assembly.test.mjs:1226:1
 test at tests/world-factory/a5sf-assembly.test.mjs:1521:1
 ✖ E8 (freeze 2026-11-03) a dispatch issued inside the boundary emission is REFUSED by the frozen realm; neither body serves (10.266284ms)
   AssertionError [ERR_ASSERTION]: a dispatch inside the invalidated boundary must be REFUSED: managed-event-body
-  
+
   false !== true
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze-red/tests/world-factory/a5sf-assembly.test.mjs:1570:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
@@ -90,10 +90,10 @@ test at tests/world-factory/a5sf-assembly.test.mjs:1617:1
 ✖ E8-lift (freeze 2026-11-03) the freeze lifts ONLY on a full verified re-assembly — a fresh mount + attach admits calls again (6.556073ms)
   AssertionError [ERR_ASSERTION]: the Member is frozen
   + actual - expected
-  
+
   + undefined
   - 'A5SF_MEMBER_REALM_INVALIDATED'
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze-red/tests/world-factory/a5sf-assembly.test.mjs:1633:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
