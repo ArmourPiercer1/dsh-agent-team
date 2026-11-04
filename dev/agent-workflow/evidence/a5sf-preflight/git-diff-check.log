@@ -1,2 +1,2 @@
-# git diff --check origin/master..HEAD
-clean (exit 0)
+dev/agent-workflow/evidence/a5sf-preflight/run.log:33: trailing whitespace.
++[2026-11-04T07:28:28.839Z]   counter {"at":"2026-11-04T07:28:24.737Z","leg":"counter-installed","baseCtor":"SandboxedFileSystem","baseInstance":"fs-0","methods":["readText","streamText","readBytes","readByteRange","writeText","editText"],"note":"test composition instrumentation; the shipped host fs provider has no counter of its own. A refused call never 

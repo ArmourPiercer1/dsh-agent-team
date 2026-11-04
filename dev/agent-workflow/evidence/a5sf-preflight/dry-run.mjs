@@ -14,7 +14,7 @@
  *   1. the shared three-way oracle (`tests/world-factory/lib/
  *      a5sf-acceptance-preflight.mjs`) is green under `node --test`, including
  *      the #575 split-root negative control and the NOT_REACHED/REFUTED/PASS
- *      discrimination for all six rows;
+ *      discrimination for all eight cases (precondition + rows 1-3, 4a, 4b, 5, 6);
  *   2. the corrected driver carries NO second root literal, and its `team.create`
  *      precedes the state wait that asserts the SAME root;
  *   3. no row-verdict input is character-clipped in the driver;
@@ -27,7 +27,16 @@
  *   6. `packages/runtime/src/plugin/live/agent-bindings.mjs` is byte-identical to
  *      `origin/master` (CORE PATCH BUDGET = 0);
  *   7. the pinned World composition mounts `@deepseek-ai/dsh-attachment-local`
- *      (the `attachments` service the deferred `read_image` needs).
+ *      (the `attachments` service the deferred `read_image` needs);
+ *   8. THE THREE POST-LIVE CORRECTIONS are bound to their live evidence and to
+ *      the product source, host-free: the read/write method partition equals
+ *      `fs.ts`'s own `WRITE_METHODS`, the row-4b refusal prose matches the
+ *      `IO_WRITE_REQUIRES_READ` call site, the row-6 bound is temporal over the
+ *      REAL live stream, and the sandbox-policy pin restates the whole config of
+ *      the row it replaces;
+ *   9. each correction has a MUTATION-BASED NEGATIVE CONTROL (`negative-controls.mjs`):
+ *      the lib is broken the way the defect broke it, the oracle suite must go
+ *      red, and the original bytes are restored.
  *
  * WHAT IT CANNOT PROVE, STRUCTURALLY (stated in the README, printed here):
  *   - that the live Host runs the ACCEPTANCE blueprint's members (creation is a
@@ -44,6 +53,12 @@ import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  ACCEPTANCE_CASES,
+  ACCEPTANCE_CASE_IDS,
+  IO_WRITE_REQUIRES_READ_PROSE,
+  WRITE_PATH_METHODS,
+} from '../../../../tests/world-factory/lib/a5sf-acceptance-preflight.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(HERE, '..', '..', '..', '..')
@@ -90,10 +105,14 @@ const report = {
   checks,
   runs: {},
   agentBindings: null,
+  negativeControls: null,
+  liveStream: null,
+  sandboxPin: null,
+  caseIds: null,
   structurallyUnverifiable: [
     'a live `team.create` of the acceptance blueprint on the booted Host (it is an RPC against a running Host; no host-free entry point exists)',
     'that the p6t6 directive the driver writes is the one the row reads (the directive path is World-internal and materialises only during boot)',
-    'that the six rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)',
+    'that the seven rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)',
     'that the Host\'s own teardown disposes the a5sf realm without a fault (the dispose observation channel is a live-State route)',
   ],
 }
@@ -105,8 +124,10 @@ check('driver: no second root literal', !driverSource.includes("'session-a5sf-ac
   'neither root literal appears in the driver; both come from P2_01_ACCEPTANCE_ROOTS')
 check('driver: imports the shared contract', /P2_01_ACCEPTANCE_ROOTS/.test(driverSource) && /assertAcceptanceRootWiring/.test(driverSource) && /classifyDisposeFaults/.test(driverSource),
   'root identity + dispose classification are imported, not re-implemented')
-check('driver: every row is judged by the shared oracle', ['judgePrecondition', 'judgeRow1', 'judgeRow2', 'judgeRow3', 'judgeRow4', 'judgeRow5', 'judgeRow6'].every((name) => driverSource.includes(`${name}(`)),
-  'all seven decisions call into a5sf-acceptance-preflight.mjs')
+check('driver: every case is judged by the shared oracle', ['judgePrecondition', 'judgeRow1', 'judgeRow2', 'judgeRow3', 'judgeRow4a', 'judgeRow4b', 'judgeRow5', 'judgeRow6'].every((name) => driverSource.includes(`${name}(`)),
+  'all eight decisions call into a5sf-acceptance-preflight.mjs')
+check('driver: row 4 is SPLIT, and the retired single-row id/judge is gone', driverSource.includes('judgeRow4a(') && driverSource.includes('judgeRow4b(') && !/judgeRow4\b(?!a|b)/.test(driverSource) && !driverSource.includes('live:row4-write-b-ceiling-allowed-no-read-lane-fact'),
+  'the write the product allows (4a) and the write it refuses (4b) are two questions, two ids and two dispatches')
 const createIndex = driverSource.indexOf("'team.create'")
 const stateAssertIndex = driverSource.indexOf('st.body?.rootSessionId === ACCEPTANCE_ROOT')
 check('driver: create precedes the state assertion on the SAME root', createIndex > 0 && stateAssertIndex > createIndex,
@@ -124,8 +145,10 @@ check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED',
   'post-boot aborts are labelled UNJUDGED and FAIL; only pre-boot aborts are NOT_REACHED')
 const LIB = join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-acceptance-preflight.mjs')
 const libSource = readFileSync(LIB, 'utf8')
-check('oracle: row 2 scopes its facts to the READ consultation', libSource.includes('exactlyOneReadFactForB') && libSource.includes("=== 'readText'"),
-  'review B1: the row-4 write fact at the same locator is the healthy stream (pinned by C9)')
+check('oracle: row 2 asserts a DECISION on every read-path consultation (never a count)', libSource.includes('isReadPathConsultation') && libSource.includes('everyReadPathConsultationDenied') && libSource.includes('everyReadPathFactOnBindingLane') && !libSource.includes("const readFacts = facts.filter((fact) => String(fact?.method ?? '') === 'readText')"),
+  'live defect 1: a refused read is recorded at `stat` (the denied target never reaches `readText`); the old name filter counted zero facts and refuted a correct refusal')
+check('oracle: the read/write partition is the PRODUCT\'s closed write set', /WRITE_PATH_METHODS\s*=\s*Object\.freeze\(\['writeText', 'editText'\]\)/.test(libSource),
+  'any other method (including a future one) is counted as a read-path consultation — fail-closed, never silently ignored')
 check('oracle: row 5/6 cannot launder an answered refusal into NOT_REACHED', ['INVALIDATION_NOT_RAISED', 'INVALIDATION_TRIGGER_FAILED', 'ARCHIVE_REFUSED'].every((reason) => libSource.includes(reason)),
   'review B2: asked-and-contradicted is REFUTED; only a never-dispatched step is NOT_REACHED')
 check('oracle: row 5 requires the NAME-KEYED code, not the blanket realm freeze', libSource.includes("REALM_INVALIDATED_CODE = 'A5SF_MEMBER_REALM_INVALIDATED'") && libSource.includes('BLANKET_INVALIDATION_ONLY') && libSource.includes('notBlanketFreeze'),
@@ -155,6 +178,75 @@ report.agentBindings = { path: relative(REPO_ROOT, BINDINGS), sha256Head: bindin
 check('agent-bindings.mjs is untouched vs origin/master', bindingsBase !== null && bindingsBase === bindingsHead,
   `${bindingsHead} == ${String(bindingsBase)}`)
 
+// ── 0b. THE THREE POST-LIVE CORRECTIONS, bound host-free ────────────────────
+// Each check below ties an oracle decision to the PRODUCT bytes it describes (or
+// to the committed live transcript), so the correction cannot drift into a
+// private convention: if the product renames its write set or re-words the
+// refusal, this script goes red instead of the oracle quietly certifying a
+// different question.
+const FS_SRC = join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'fs.ts')
+const fsSource = readFileSync(FS_SRC, 'utf8')
+const productWriteMethods = (() => {
+  const found = /const WRITE_METHODS: ReadonlySet<string> = new Set\(\[([^\]]*)\]\)/.exec(fsSource)
+  return found === null ? null : [...found[1].matchAll(/'([^']+)'/g)].map((m) => m[1])
+})()
+report.productWriteMethods = productWriteMethods
+check('lib: the read/write partition EQUALS the product\'s WRITE_METHODS', productWriteMethods !== null && JSON.stringify(productWriteMethods) === JSON.stringify([...WRITE_PATH_METHODS]),
+  `fs.ts WRITE_METHODS=${JSON.stringify(productWriteMethods)} lib WRITE_PATH_METHODS=${JSON.stringify([...WRITE_PATH_METHODS])} (a third product write method would make the oracle mis-scope facts)`)
+
+// The row-4b witness is a SENTENCE, so bind it to the ONE call site that emits
+// it: the write⇒read coupling's first arm (target outside the read rule set).
+const omitArm = (() => {
+  const start = fsSource.indexOf('if (!locatorWithinRuleSet(policy.read, hostPath)) {')
+  // 700 chars covers that arm's whole throw (5 lines) and cannot reach the
+  // second arm's DIFFERENT sentence (the pattern has no `s` flag, so `.` stops
+  // at the newline).
+  return start === -1 ? null : fsSource.slice(start, start + 700)
+})()
+report.row4bWitness = {
+  callSite: 'team-services/src/fs.ts: if (!locatorWithinRuleSet(policy.read, hostPath)) -> TeamIoDenial(IO_WRITE_REQUIRES_READ, …)',
+  matched: omitArm === null ? null : IO_WRITE_REQUIRES_READ_PROSE.test(omitArm),
+  sentence: omitArm === null ? null : (omitArm.match(/must read[^`]*write does not imply read/) ?? [null])[0],
+}
+check('lib: the row-4b refusal prose IS the product\'s IO_WRITE_REQUIRES_READ sentence', report.row4bWitness.matched === true,
+  report.row4bWitness.sentence ?? 'the call site was not found in fs.ts')
+check('lib: a SECOND IO_WRITE_REQUIRES_READ arm exists with different wording (the row must not credit it)', (fsSource.match(/IO_WRITE_REQUIRES_READ/g) ?? []).length === 2 && fsSource.includes('and the read axis refused it'),
+  'the "outside the read rule set" arm is the one row 4b asks for; the "read axis refused it" arm is a different answer')
+
+// the case list
+report.caseIds = [...ACCEPTANCE_CASES]
+check('contract: eight cases, and row 4 is two of them', ACCEPTANCE_CASES.length === 8 && ACCEPTANCE_CASES.includes(ACCEPTANCE_CASE_IDS.row4a) && ACCEPTANCE_CASES.includes(ACCEPTANCE_CASE_IDS.row4b) && ACCEPTANCE_CASES.includes(ACCEPTANCE_CASE_IDS.row2) && ACCEPTANCE_CASE_IDS.row2.includes('read-path'),
+  ACCEPTANCE_CASES.join(' | '))
+check('contract: the renamed/retired ids are gone from the contract', !ACCEPTANCE_CASES.some((id) => /exactly-one-fact|row4-write-b/.test(id)),
+  'the old id NAMED an assertion the oracle no longer makes, so it could not stay')
+
+// the live stream + the temporal bound, re-measured here
+const LIVE_STREAM = join(HERE, 'consultations.jsonl')
+const LIVE_RUN_LOG = join(HERE, 'run.log')
+const liveFacts = readFileSync(LIVE_STREAM, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line))
+const stopFromLog = (() => {
+  const line = readFileSync(LIVE_RUN_LOG, 'utf8').split('\n').find((l) => l.includes('archive via product tool route'))
+  return line === undefined ? null : (/^\[(\d{4}-\d{2}-\d{2}T[0-9:.]+Z)\]/.exec(line)?.[1] ?? null)
+})()
+const liveAfter = stopFromLog === null ? null : liveFacts.filter((fact) => Date.parse(fact.observedAt) > Date.parse(stopFromLog))
+report.liveStream = {
+  path: relative(REPO_ROOT, LIVE_STREAM),
+  facts: liveFacts.length,
+  stopInstantFromRunLog: stopFromLog,
+  factsAfterStop: liveAfter === null ? null : liveAfter.length,
+  newestObservedAt: liveFacts.map((f) => f.observedAt).sort().at(-1) ?? null,
+  injectedReplay: liveAfter === null ? null : [...liveFacts, { ...liveFacts[0], observedAt: new Date(Date.parse(stopFromLog) + 1000).toISOString() }].filter((fact) => Date.parse(fact.observedAt) > Date.parse(stopFromLog)).length,
+}
+check('row6: the REAL live stream carries NO fact after the stop instant', liveFacts.length === 5 && stopFromLog !== null && liveAfter !== null && liveAfter.length === 0,
+  `facts=${String(liveFacts.length)} stop=${String(stopFromLog)} newest=${String(report.liveStream.newestObservedAt)} afterStop=${String(report.liveStream.factsAfterStop)}`)
+check('row6: injecting ONE later observedAt makes the same bound fail (the control)', report.liveStream.injectedReplay === 1,
+  `afterStop=${String(report.liveStream.injectedReplay)} (the assertion is load-bearing, not vacuous)`)
+check('oracle: row 6 no longer checks a fact COUNT', libSource.includes('noFactAfterStop: afterStop.length === 0') && libSource.includes('NO_STOP_INSTANT') && libSource.includes('factsAreTimestamped') && !libSource.includes('noFactAfterStop: sinkDelta === 0'),
+  'live defect 3: an append-only file makes `sinkDelta === 0` structurally unable to express "nothing after the stop"; the old clause refuted a clean stream')
+
+report.oracleLibSha256Before = sha256File(LIB)
+report.oracleLibPath = relative(REPO_ROOT, LIB)
+
 // ── 1. the oracle test suite ────────────────────────────────────────────────
 report.runs.oracleTests = run('oracle-tests', ['--test', join(REPO_ROOT, 'tests', 'world-factory', 'a5sf-acceptance-preflight.test.mjs')])
 const testText = report.runs.oracleTests.stdout + report.runs.oracleTests.stderr
@@ -164,13 +256,60 @@ report.oracleTests = { pass: passMatch === null ? null : Number(passMatch[1]), f
 check('oracle suite is green', report.runs.oracleTests.status === 0 && report.oracleTests.fail === 0 && (report.oracleTests.pass ?? 0) > 0,
   `pass=${String(report.oracleTests.pass)} fail=${String(report.oracleTests.fail)}`)
 
+// The correction-specific tests must EXIST and pass, not merely "some tests".
+const correctionTests = ['C9', 'C13', 'C14', 'C15', 'C16']
+const missingCorrectionTests = correctionTests.filter((id) => !new RegExp(`^✔ ${id} `, 'm').test(testText))
+check('oracle: the correction replays are present and green', missingCorrectionTests.length === 0,
+  `passing: ${correctionTests.join(',')}${missingCorrectionTests.length === 0 ? '' : ` MISSING ${JSON.stringify(missingCorrectionTests)}`}`)
+
+// ── 1b. the mutation-based negative controls (each correction is load-bearing) ─
+report.runs.negativeControls = run('negative-controls', [join(HERE, 'negative-controls.mjs')])
+const negative = existsSync(join(HERE, 'negative-controls.json'))
+  ? JSON.parse(readFileSync(join(HERE, 'negative-controls.json'), 'utf8'))
+  : null
+report.negativeControls = negative === null ? null : {
+  allControlsBehaved: negative.allControlsBehaved,
+  controls: negative.controls.map((entry) => ({ id: entry.id, behaved: entry.behaved, failingTests: entry.failingTests, expectFailing: entry.expectFailing })),
+  libraryPristineAfter: negative.libraryPristineAfter,
+  librarySha256Before: negative.librarySha256Before,
+  librarySha256After: negative.librarySha256After,
+}
+check('negative controls: every correction, when re-broken, makes the oracle suite FAIL', negative !== null && negative.allControlsBehaved === true && negative.controls.length >= 7,
+  negative === null ? 'negative-controls.json was not written' : `controls=${String(negative.controls.length)} behaved=${String(negative.controls.filter((c) => c.behaved === true).length)}`)
+check('negative controls: the oracle library is left byte-identical (no mutation survives)', negative !== null && negative.libraryPristineAfter === true && negative.librarySha256After === report.oracleLibSha256Before,
+  negative === null ? null : `${String(negative.librarySha256Before)} -> ${String(negative.librarySha256After)}`)
+check('negative controls: the suite is green again after the last restore', report.runs.negativeControls.status === 0 && negative?.suiteAfter?.fail === 0,
+  negative === null ? null : negative.suiteAfter)
+
 // ── 2. the World plan (composition + config + lane algebra) ─────────────────
-// Plan mode appends to run.log; keep the plan evidence separate so a later live
-// run's run.log is unambiguously the live one.
+// Plan mode APPENDS to run.log, and run.log is the COMMITTED live transcript of
+// the first real acceptance run. The previous version of this script deleted it
+// (`rmSync`) and renamed the result to plan.log — i.e. re-running the preflight
+// destroyed the very evidence the preflight cites. The live transcript is now
+// preserved BYTE-FOR-BYTE: the pre-existing prefix is restored after the plan,
+// and only the plan's own appended suffix becomes plan.log.
 const RUN_LOG = join(HERE, 'run.log')
-if (existsSync(RUN_LOG)) rmSync(RUN_LOG)
+const PLAN_LOG = join(HERE, 'plan.log')
+const preservedRunLog = existsSync(RUN_LOG) ? readFileSync(RUN_LOG, 'utf8') : null
+report.preserved = {
+  runLogBytes: preservedRunLog === null ? null : Buffer.byteLength(preservedRunLog),
+  runLogSha256: preservedRunLog === null ? null : createHash('sha256').update(preservedRunLog).digest('hex'),
+  consultationsSha256: sha256File(join(HERE, 'consultations.jsonl')),
+}
 report.runs.plan = run('plan', [DRIVER, '--plan'])
-if (existsSync(RUN_LOG)) renameSync(RUN_LOG, join(HERE, 'plan.log'))
+const afterPlanRunLog = existsSync(RUN_LOG) ? readFileSync(RUN_LOG, 'utf8') : ''
+if (preservedRunLog !== null) {
+  const appended = afterPlanRunLog.startsWith(preservedRunLog) ? afterPlanRunLog.slice(preservedRunLog.length) : afterPlanRunLog
+  writeFileSync(PLAN_LOG, appended)
+  writeFileSync(RUN_LOG, preservedRunLog)
+} else if (afterPlanRunLog !== '') {
+  writeFileSync(PLAN_LOG, afterPlanRunLog)
+  rmSync(RUN_LOG)
+}
+report.preserved.runLogRestoredVerbatim = preservedRunLog === null
+  ? null
+  : (existsSync(RUN_LOG) && readFileSync(RUN_LOG, 'utf8') === preservedRunLog)
+report.preserved.planLogBytes = existsSync(PLAN_LOG) ? statSync(PLAN_LOG).size : null
 const plan = JSON.parse(readFileSync(join(HERE, 'plan.json'), 'utf8'))
 check('plan: root wiring', plan.rootWiring?.ok === true, plan.rootWiring)
 check('plan: attachments provider composed', plan.attachmentsProvider?.mounted === true, plan.attachmentsProvider?.evidence ?? null)
@@ -180,19 +319,75 @@ check('plan: row identity preflight', plan.rowIdentity?.ok === true, plan.rowIde
 const disposition = Object.fromEntries((plan.lane?.dispositions ?? []).map((entry) => [entry.locator.split('/').pop(), entry.effective]))
 check('plan: lane algebra A allow / B deny / C deny', disposition['a.txt'] === 'allow' && disposition['b.txt'] === 'deny' && disposition['c.txt'] === 'deny', disposition)
 check('plan: world torn down', plan.world?.teardown?.homeDeleted !== undefined && !existsSync(String(plan.world?.home ?? '')), { home: plan.world?.home, teardown: plan.world?.teardown })
-// Keep ONLY the latest World's emitted composition (the six-row profile), so the
-// committed evidence is the composition this preflight certifies, not nine
-// retries of it.
+check('preflight: the committed LIVE transcript is preserved byte-for-byte', report.preserved.runLogRestoredVerbatim === true,
+  `run.log bytes=${String(report.preserved.runLogBytes)} sha256=${String(report.preserved.runLogSha256)} plan.log bytes=${String(report.preserved.planLogBytes)}`)
+
+// ── 2b. the sandbox-policy pin (fixture correction, README §12.4) ───────────
+// Bound to the row it REPLACES: a patch entry replaces an entry's whole config,
+// so a pin that restated only one field would silently drop the other. The base
+// bundle is read from the PINNED host tree, and its exact keys must be ours.
+const BASE_BUNDLE = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', 'bundle', 'base', 'cordis.patch.yml')
+const baseBundleText = existsSync(BASE_BUNDLE) ? readFileSync(BASE_BUNDLE, 'utf8') : ''
+const baseRow = (() => {
+  const start = baseBundleText.indexOf('- id: sandbox-policy')
+  if (start === -1) return null
+  // Stop at the NEXT row: a fixed-width slice ran into `bash-sandbox` and would
+  // have demanded restating a `timeoutMs` that belongs to another plugin.
+  const next = baseBundleText.indexOf('\n    - id:', start)
+  return baseBundleText.slice(start, next === -1 ? undefined : next)
+})()
+const baseKeys = baseRow === null ? null : [...baseRow.matchAll(/^ {8}(\w+):/gm)].map((m) => m[1])
+const pinnedKeys = plan.homePatch === null || plan.homePatch === undefined
+  ? null
+  : [...String(plan.homePatch.yaml).matchAll(/^ {4}(\w+):/gm)].map((m) => m[1])
+report.sandboxPin = {
+  baseRow: baseRow === null ? null : baseRow.split('\n').slice(0, 6).join('\n'),
+  baseConfigKeys: baseKeys,
+  pinnedConfigKeys: pinnedKeys,
+  baseWorkspaceRootExpression: baseRow === null ? null : (/workspaceRoot: (!!js [^\n]+)/.exec(baseRow) ?? [null, null])[1],
+  pin: plan.homePatch === null || plan.homePatch === undefined ? null : {
+    path: plan.homePatch.path,
+    mode: plan.homePatch.mode,
+    workspaceRoot: plan.homePatch.workspaceRoot,
+    insideWorldHome: plan.homePatch.insideWorldHome,
+    isNotTheProfilePatch: plan.homePatch.isNotTheProfilePatch,
+    pathIsNotUnderProfiles: !String(plan.homePatch.path).includes('/profiles/'),
+    sha256: plan.homePatch.sha256,
+  },
+}
+check('pin: the replacement RESTATES every key the base row sets', baseKeys !== null && pinnedKeys !== null && JSON.stringify([...baseKeys].sort()) === JSON.stringify([...pinnedKeys].sort()),
+  `base=${JSON.stringify(baseKeys)} pinned=${JSON.stringify(pinnedKeys)}`)
+check('pin: the deployment root the base row uses IS the defect (process.cwd of the spawned host)', report.sandboxPin.baseWorkspaceRootExpression === '!!js process.cwd()',
+  String(report.sandboxPin.baseWorkspaceRootExpression))
+check('pin: the home-level layer is inside the World home and is NOT the profile patch', plan.homePatch?.insideWorldHome === true && (plan.homePatch?.isNotTheProfilePatch === true || report.sandboxPin.pin?.pathIsNotUnderProfiles === true),
+  JSON.stringify(report.sandboxPin.pin))
+check('pin: the pinned root is the World workspace the write rows write into', plan.homePatch?.workspaceRoot === plan.world?.workspace,
+  `pinned=${String(plan.homePatch?.workspaceRoot)} world=${String(plan.world?.workspace)}`)
+// Keep the plan World's emitted composition PLUS every directory that carries a
+// LIVE transcript (`instance-port*.log` or a composed profile). The previous
+// version pruned everything but the newest directory, which would have deleted
+// the first live run's `instance-port3183.log` — evidence the README quotes.
 const LOGS = join(HERE, 'logs')
+const isLiveTranscript = (dir) => {
+  try {
+    return readdirSync(dir).some((file) => /^instance-port\d+\.log$/.test(file) || /^composed-profile-.*\.patch\.yml$/.test(file))
+  } catch {
+    return false
+  }
+}
+const prunedDirs = []
 if (existsSync(LOGS)) {
   for (const entry of readdirSync(LOGS)) {
     const dir = join(LOGS, entry)
-    if (!statSync(dir).isDirectory() || entry === plan.world?.id) continue
+    if (!statSync(dir).isDirectory() || entry === plan.world?.id || isLiveTranscript(dir)) continue
     rmSync(dir, { recursive: true, force: true })
+    prunedDirs.push(entry)
   }
 }
 const keptLogs = existsSync(LOGS) ? readdirSync(LOGS).filter((entry) => statSync(join(LOGS, entry)).isDirectory()) : []
-check('plan: only the latest World log directory is kept', keptLogs.length <= 1, keptLogs)
+report.logs = { kept: keptLogs, pruned: prunedDirs, liveTranscriptsPreserved: keptLogs.filter((entry) => isLiveTranscript(join(LOGS, entry))) }
+check('plan: the plan World plus every LIVE transcript directory is kept', keptLogs.includes(String(plan.world?.id)) && report.logs.liveTranscriptsPreserved.length >= 1,
+  report.logs)
 
 // ── 3. the mount-compatibility measurement ──────────────────────────────────
 report.runs.mountProbe = run('mount-probe', [join(HERE, 'probe-mount-compat.mjs')])

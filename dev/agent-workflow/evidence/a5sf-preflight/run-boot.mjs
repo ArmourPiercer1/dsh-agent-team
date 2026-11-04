@@ -101,17 +101,20 @@ import {
 } from '../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { presetDeclarationRow, smokePresetPlugins } from '../../../../tests/kits/_shared/preset-seam.mjs'
 import {
+  ACCEPTANCE_CASE_IDS,
   ACCEPTANCE_CASES,
   INVALIDATED_CODE,
   INVALIDATED_NAME,
   P2_01_ACCEPTANCE_ROOTS,
   assertAcceptanceRootWiring,
   classifyDisposeFaults,
+  isWritePathConsultation,
   judgePrecondition,
   judgeRow1,
   judgeRow2,
   judgeRow3,
-  judgeRow4,
+  judgeRow4a,
+  judgeRow4b,
   judgeRow5,
   judgeRow6,
   toRunVerdict,
@@ -208,14 +211,20 @@ const READ_SECTION_TEXT = 'Use the read tool — not shell commands like cat'
 const BINDING_IDENTITY = 'dsh.fs/read'
 const LATE_TOOL_ROUTE = '/__a5sf/late-tool'
 
-/** The six acceptance rows + one precondition case (so a composition failure is
- *  never mis-read as a row failure). */
+/**
+ * The acceptance cases: one precondition + SEVEN rows. The precondition exists so
+ * a composition failure is never mis-read as a row failure; rows 4a and 4b are
+ * the two halves of the retired row 4 (see `judgeRow4a`/`judgeRow4b` and README
+ * §12). The literal is kept as an INDEPENDENT copy of the contract: a drift from
+ * `ACCEPTANCE_CASES` throws before the grant (assertCaseListMatchesContract).
+ */
 const CASES = Object.freeze([
   'live:composition-precondition-read-surface',
   'live:row1-read-a-inside-both-allowed',
-  'live:row2-read-b-binding-deny-exactly-one-fact',
+  'live:row2-read-b-binding-deny-on-read-path',
   'live:row3-read-c-refused-no-widening',
-  'live:row4-write-b-ceiling-allowed-no-read-lane-fact',
+  'live:row4a-write-in-lane-readable-allowed-ceiling-only',
+  'live:row4b-write-b-refused-read-not-implied',
   'live:row5-post-invalidation-refused-shadow-invalidated',
   'live:row6-teardown-no-usable-unconstrained-shadow',
 ])
@@ -227,7 +236,10 @@ const PLAN_ONLY = process.argv.includes('--plan')
 const IDENTITY_CHECK_AT = process.argv.indexOf('--identity-check')
 const startedAt = new Date().toISOString()
 function log(line) {
-  const text = `[${new Date().toISOString()}] ${line}`
+  // A truncated dump can end mid-token with a trailing space; the transcript is
+  // committed evidence, so keep it free of trailing whitespace (the first live
+  // run's run.log:33 carried one, from a 320-char counter slice).
+  const text = `[${new Date().toISOString()}] ${String(line)}`.replace(/[ \t]+$/u, '')
   // eslint-disable-next-line no-console
   console.log(text)
   try {
@@ -308,6 +320,46 @@ function assertBlueprintText(text, wantId, wantMembers, label) {
 // the scripted provider (mock model)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * The HOME-LEVEL patch layer: pin the DEPLOYMENT file-sandbox fallback root to
+ * the World workspace.
+ *
+ * WHY THIS IS A FIXTURE CORRECTION, NOT A PRODUCT RELAXATION. The base bundle
+ * mounts `sandbox-policy` with `workspaceRoot: !!js process.cwd()` — the cwd of
+ * the spawned `dsh web`, i.e. the PRISTINE HOST TREE (`tests/deepseek-harness-
+ * test-use`) — and `mode: !!js process.env.DSH_PERMISSION_MODE ?? 'workspace-write'`.
+ * A confined provider that is asked without a per-call policy resolves
+ * `ctx.sandboxPolicy.resolve()` with NO session, which falls back to that
+ * deployment root; the a5sf realm provider deliberately drops the caller's
+ * `policy` (`createConfinedFileSystemClass` → `void policy`), so every Team write
+ * is fenced by the DEPLOYMENT root, not by the World. The first live run measured
+ * the consequence: row 4's write was refused by the HOST sandbox
+ * (`[sandbox: file access denied under workspace-write mode]`) and the row could
+ * never observe a Team-lane decision at all.
+ *
+ * The home patch is the launcher's own documented tweak layer, applied AFTER the
+ * profile patch, so it outranks it — and it is written into the World's own
+ * DSH_HOME, so it changes nothing shared. The replacement row RESTATES the whole
+ * config of the row it replaces (both fields the base sets).
+ */
+function homeSandboxPin({ home, workspaceRoot }) {
+  const root = realpathSync(workspaceRoot)
+  const path = join(home, 'cordis.patch.yml')
+  const yaml = [
+    '# a5sf preflight fixture (see README §12.4): pin the DEPLOYMENT file-sandbox',
+    '# fallback root to this World\'s workspace. The base bundle sets',
+    '# `workspaceRoot: !!js process.cwd()` (the pristine host tree) and the a5sf',
+    '# realm provider calls sandboxPolicy.resolve() WITHOUT a session, so the',
+    '# fallback — not the session cwd — fences every Team write.',
+    '- id: sandbox-policy',
+    '  config:',
+    '    mode: "workspace-write"',
+    `    workspaceRoot: ${JSON.stringify(root)}`,
+    '',
+  ].join('\n')
+  return { path, yaml, mode: 'workspace-write', workspaceRoot: root }
+}
+
 function countAssistantToolUses(req, name) {
   let n = 0
   for (const message of messagesOf(req)) {
@@ -337,11 +389,16 @@ function lastToolResultText(req) {
 }
 
 /**
- * The worker's eight-call script, one call per turn, in the row order:
- * read A -> read B -> read C -> write B -> done. Nothing else is issued by the
- * model; rows 5 and 6 are driver-initiated through the product's own dispatch
- * route (a post-invalidation call cannot be scripted from a model turn whose
- * surface the invalidation just changed).
+ * The worker's six-call script, one call per turn, in the row order:
+ * read A -> read B -> read C -> read w4a -> write w4a -> write B -> done.
+ * Nothing else is issued by the model; rows 5 and 6 are driver-initiated through
+ * the product's own dispatch route (a post-invalidation call cannot be scripted
+ * from a model turn whose surface the invalidation just changed).
+ *
+ * `read w4a` exists for two reasons, both measured: the host's read-before-edit
+ * policy turns a write to an UNOBSERVED existing file into `createIfAbsent` (a
+ * different refusal than the row is about), and read-then-write is the shape the
+ * product's write⇒read coupling describes.
  */
 function makeDecide({ rowPaths }) {
   return function decide({ req }) {
@@ -371,7 +428,23 @@ function makeDecide({ rowPaths }) {
           toolCalls: [{ id: 'call-a5sfacc-read-c', name: 'read', arguments: { file_path: rowPaths.c.path } }],
         }
       }
+      if (reads < 4) {
+        // row 4a reads its target first: an EXISTING file whose write must be
+        // observed (the fs-observation policy turns an unread existing target
+        // into `createIfAbsent`, which would fail for the wrong reason), and the
+        // read⇒write shape is what the product's write coupling is about.
+        return {
+          kind: 'tool-call',
+          toolCalls: [{ id: 'call-a5sfacc-read-w4a', name: 'read', arguments: { file_path: rowPaths.w4a.path } }],
+        }
+      }
       if (writes < 1) {
+        return {
+          kind: 'tool-call',
+          toolCalls: [{ id: 'call-a5sfacc-write-w4a', name: 'write', arguments: { file_path: rowPaths.w4a.path, content: rowPaths.w4a.writeContent } }],
+        }
+      }
+      if (writes < 2) {
         return {
           kind: 'tool-call',
           toolCalls: [{ id: 'call-a5sfacc-write-b', name: 'write', arguments: { file_path: rowPaths.b.path, content: rowPaths.b.writeContent } }],
@@ -460,6 +533,8 @@ function rowPathsOf({ home, workspaceDir }) {
     workspace,
     a: { path: join(workspace, 'axis', 'allow', 'a.txt') },
     b: { path: join(workspace, 'axis', 'b.txt') },
+    // row 4a: INSIDE the readable in-lane subtree, so write⇒read is satisfiable.
+    w4a: { path: join(workspace, 'axis', 'allow', 'w4a.txt') },
     c: { path: join(home, 'restriction-outside', 'c.txt') },
     restrictionReadAllow: [
       join(workspace, 'axis', 'allow'),
@@ -748,6 +823,24 @@ async function planOnly() {
     log(`pre-boot row identity check: ${JSON.stringify(identity)}`)
     if (identity.ok !== true) throw new Error(`row composition refused in plan: ${identity.reason}: ${identity.detail}`)
     plan.rowIdentity = identity
+    // The home-level pin (helper header): recorded host-free, never applied in
+    // plan mode — the plan World is torn down without a spawn.
+    const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
+    const profilePatch = world.instance?.patchFile ?? null
+    plan.homePatch = {
+      path: homePin.path,
+      insideWorldHome: homePin.path === join(world.home, 'cordis.patch.yml'),
+      isNotTheProfilePatch: profilePatch === null ? null : homePin.path !== profilePatch,
+      bytes: Buffer.byteLength(homePin.yaml),
+      sha256: createHash('sha256').update(homePin.yaml).digest('hex'),
+      yaml: homePin.yaml,
+      mode: homePin.mode,
+      workspaceRoot: homePin.workspaceRoot,
+      outranksProfilePatch: 'the launcher applies the per-profile patch first, then the home-level cordis.patch.yml (app-boot README)',
+    }
+    if (plan.homePatch.insideWorldHome !== true) throw new Error(`the home patch is not inside the World home: ${homePin.path}`)
+    if (plan.homePatch.isNotTheProfilePatch === false) throw new Error('the home patch path collides with the profile patch path')
+    log(`home patch layer: ${homePin.path} mode=${homePin.mode} workspaceRoot=${homePin.workspaceRoot}`)
     // The lane report is emitted by the ROW at apply time; the plan mode cannot
     // run it, so the same product algebra is exercised here to make a lane-shape
     // defect visible BEFORE the boot.
@@ -852,8 +945,11 @@ async function boot() {
   const claimA = `A5SF_ACC_A_${world.id}`
   const claimB = `A5SF_ACC_B_${world.id}`
   const claimC = `A5SF_ACC_C_${world.id}`
+  const claim4aOrig = `A5SF_ACC_W4A_ORIG_${world.id}`
   const writeContent = `A5SF_ACC_WRITE_${world.id}\n`
+  const writeContent4a = `A5SF_ACC_WRITE_4A_${world.id}\n`
   rowPaths.b.writeContent = writeContent
+  rowPaths.w4a.writeContent = writeContent4a
   const sinkPath = join(world.home, 'a5sf-consult.jsonl')
   const counterPath = join(world.home, COUNTER_NAME)
   const laneReportPath = join(world.home, LANE_REPORT_NAME)
@@ -867,10 +963,12 @@ async function boot() {
   let abortStage = 'pre-boot'
   const evidence = {
     worldId: world.id,
+    homePatch: { path: homePin.path, mode: homePin.mode, workspaceRoot: homePin.workspaceRoot },
     rows: {
       a: { path: rowPaths.a.path, claim: claimA, lane: 'inside ceiling AND inside the binding restriction' },
       b: { path: rowPaths.b.path, claim: claimB, writeContent, lane: 'inside ceiling, OUTSIDE the binding restriction' },
       c: { path: rowPaths.c.path, claim: claimC, lane: 'OUTSIDE the ceiling, inside the binding restriction' },
+      w4a: { path: rowPaths.w4a.path, claim: claim4aOrig, writeContent: writeContent4a, lane: 'inside ceiling AND inside the binding restriction (row 4a read+writes it)' },
     },
     sinkPath,
     counterPath,
@@ -888,11 +986,28 @@ async function boot() {
     mkdirSync(dirname(rowPaths.c.path), { recursive: true })
     writeFileSync(rowPaths.a.path, `${claimA}\n`)
     writeFileSync(rowPaths.c.path, `${claimC}\n`)
-    log(`planted A=${rowPaths.a.path} (${claimA}); C=${rowPaths.c.path} (${claimC}); B=${rowPaths.b.path} (not created; written by row 4)`)
+    // B is PLANTED, not created by the write rows. Row 4b asks for the product's
+    // write⇒read refusal, and that branch fires only for an EXISTING target
+    // (`team-services/src/fs.ts`: the coupling is skipped when the target is
+    // absent). A missing B made the old row 4 measure a different refusal. It also
+    // makes row 2's "no claim leak" clause non-vacuous: B now HAS content that
+    // must not be served.
+    writeFileSync(rowPaths.b.path, `${claimB}\n`)
+    // 4a's target exists too, so its write is a REPLACE of an observed file and
+    // not a `createIfAbsent` — the same read⇒write shape as 4b, on an allowed lane.
+    writeFileSync(rowPaths.w4a.path, `${claim4aOrig}\n`)
+    log(`planted A=${rowPaths.a.path} (${claimA}); B=${rowPaths.b.path} (${claimB}, writable by the ceiling but unreadable by the binding lane); C=${rowPaths.c.path} (${claimC}); w4a=${rowPaths.w4a.path} (${claim4aOrig}, read+written by row 4a)`)
     log(`rows: ${rows.map((r) => r.id).join(',')}`)
     log(`team row a5sfEvidencePath=${String(config.a5sfEvidencePath)} a5sfNativeToolModules=${JSON.stringify(config.a5sfNativeToolModules)}`)
     log(`provider counter ledger: ${counterPath}`)
     world.u6Fs.rows.push(...rows)
+
+    // ── the home-level pin, written BEFORE the spawn (helper header) ────────
+    const homePin = homeSandboxPin({ home: world.home, workspaceRoot: world.workspaceDir })
+    writeFileSync(homePin.path, homePin.yaml)
+    const homePinRead = readFileSync(homePin.path, 'utf8')
+    if (homePinRead !== homePin.yaml) throw new Error(`the home patch did not persist verbatim: ${homePin.path}`)
+    log(`home patch written: ${homePin.path} (mode=${homePin.mode} workspaceRoot=${homePin.workspaceRoot}) sha256=${createHash('sha256').update(homePinRead).digest('hex')}`)
 
     await world.startMock({ decide: makeDecide({ rowPaths }) })
     log(`mock started on ${String(world.mock?.port)}`)
@@ -1032,15 +1147,22 @@ async function boot() {
     const readCalls = calls.filter((c) => c.name === 'read')
     const writeCalls = calls.filter((c) => c.name === 'write')
     const callFor = (path) => readCalls.find((c) => String(c.args?.file_path ?? '') === path) ?? null
+    const writeFor = (path) => writeCalls.find((c) => String(c.args?.file_path ?? '') === path) ?? null
     const callA = callFor(rowPaths.a.path)
     const callB = callFor(rowPaths.b.path)
     const callC = callFor(rowPaths.c.path)
-    const writeCall = writeCalls.find((c) => String(c.args?.file_path ?? '') === rowPaths.b.path) ?? null
+    const call4a = callFor(rowPaths.w4a.path)
+    // Row 4a and 4b are DISTINCT dispatches at distinct locators: the same
+    // `write` tool is called twice, and the rows must not share a result.
+    const writeCall = writeFor(rowPaths.b.path)
+    const writeCall4a = writeFor(rowPaths.w4a.path)
     const resultOf = (call) => (call === null ? null : results.find((r) => r.callId === call.callId) ?? null)
     const resultA = resultOf(callA)
     const resultB = resultOf(callB)
     const resultC = resultOf(callC)
+    const result4a = resultOf(call4a)
     const resultWrite = resultOf(writeCall)
+    const resultWrite4a = resultOf(writeCall4a)
 
     const memberRequests = requests.filter((r) => userTextOf(r).includes(`${MEMBER_ENVELOPE}${TOK_D1}`))
     const surfacePerMemberRequest = memberRequests.map((r) => {
@@ -1063,6 +1185,7 @@ async function boot() {
     const factsA = factsFor(guardFacts, rowPaths.a.path)
     const factsB = factsFor(guardFacts, rowPaths.b.path)
     const factsC = factsFor(guardFacts, rowPaths.c.path)
+    const facts4a = factsFor(guardFacts, rowPaths.w4a.path)
     const bindingFacts = guardFacts.filter((f) => f.realm === 'binding' && f.toolBindingIdentity === BINDING_IDENTITY)
     log(`sink=${sinkPath} exists=${String(sinkExists)} rows=${String(sinkRows.length)} guardFacts=${String(guardFacts.length)} A=${String(factsA.length)} B=${String(factsB.length)} C=${String(factsC.length)} bindingLane=${String(bindingFacts.length)}`)
     for (const f of guardFacts) log(`  fact ${JSON.stringify(f).slice(0, 460)}`)
@@ -1086,6 +1209,7 @@ async function boot() {
     evidence.laneReport = laneReport
 
     const diskB = existsSync(rowPaths.b.path) ? readFileSync(rowPaths.b.path, 'utf8') : null
+    const disk4a = existsSync(rowPaths.w4a.path) ? readFileSync(rowPaths.w4a.path, 'utf8') : null
     const hostLogAtRows = (() => { try { return readFileSync(bootInfo.logPath, 'utf8') } catch { return '' } })()
     evidence.requests = {
       total: requests.length,
@@ -1108,7 +1232,8 @@ async function boot() {
       a: { call: callA, result: resultA === null ? null : { isError: resultA.isError, text: redact(resultA.text) } },
       b: { call: callB, result: resultB === null ? null : { isError: resultB.isError, text: redact(resultB.text) } },
       c: { call: callC, result: resultC === null ? null : { isError: resultC.isError, text: redact(resultC.text) } },
-      write: { call: writeCall, result: resultWrite === null ? null : { isError: resultWrite.isError, text: redact(resultWrite.text) }, disk: diskB },
+      write4a: { call: call4a, result: result4a === null ? null : { isError: result4a.isError, text: redact(result4a.text) }, disk: disk4a },
+      writeB: { call: writeCall, result: resultWrite === null ? null : { isError: resultWrite.isError, text: redact(resultWrite.text) }, disk: diskB },
     }
 
     // ── PERSIST FIRST (a late typo must not cost the record again) ──────────
@@ -1148,8 +1273,8 @@ async function boot() {
       readCalls: readCalls.length,
     }
     const precondition = judgePrecondition(preconditionSample)
-    oracleSamples[ACCEPTANCE_CASES[0]] = { sample: preconditionSample, ...precondition }
-    add(ACCEPTANCE_CASES[0], toRunVerdict(precondition.verdict), {
+    oracleSamples[ACCEPTANCE_CASE_IDS.precondition] = { sample: preconditionSample, ...precondition }
+    add(ACCEPTANCE_CASE_IDS.precondition, toRunVerdict(precondition.verdict), {
       ...precondition.detail,
       writeCalls: writeCalls.length,
       surface,
@@ -1162,8 +1287,8 @@ async function boot() {
     const aCounter = rowsForPath(readRows, rowPaths.a.path)
     const row1Sample = { call: callA ?? null, result: resultA ?? null, claim: claimA, allowFacts: aAllowFacts, bindingAllowFacts: aBindingAllow, counterRows: aCounter }
     const row1 = judgeRow1(row1Sample)
-    oracleSamples[ACCEPTANCE_CASES[1]] = { sample: row1Sample, ...row1 }
-    add(ACCEPTANCE_CASES[1], toRunVerdict(row1.verdict), {
+    oracleSamples[ACCEPTANCE_CASE_IDS.row1] = { sample: row1Sample, ...row1 }
+    add(ACCEPTANCE_CASE_IDS.row1, toRunVerdict(row1.verdict), {
       ...row1.detail,
       call: callA ?? null,
       observed: resultA === null ? null : { isError: resultA.isError, text: redact(resultA.text) },
@@ -1177,10 +1302,10 @@ async function boot() {
     const bDeny = factsB.filter((f) => f.decision === 'deny')
     const bBindingDeny = bDeny.filter((f) => f.realm === 'binding' && f.toolBindingIdentity === BINDING_IDENTITY)
     const bCounterReads = rowsForPath(readRows, rowPaths.b.path)
-    const row2Sample = { call: callB ?? null, result: resultB ?? null, claim: claimB, writeContent, facts: factsB, bindingDenyFacts: bBindingDeny, counterRows: bCounterReads }
+    const row2Sample = { call: callB ?? null, result: resultB ?? null, claim: claimB, writeContent, facts: factsB, counterRows: bCounterReads }
     const row2 = judgeRow2(row2Sample)
-    oracleSamples[ACCEPTANCE_CASES[2]] = { sample: row2Sample, ...row2 }
-    add(ACCEPTANCE_CASES[2], toRunVerdict(row2.verdict), {
+    oracleSamples[ACCEPTANCE_CASE_IDS.row2] = { sample: row2Sample, ...row2 }
+    add(ACCEPTANCE_CASE_IDS.row2, toRunVerdict(row2.verdict), {
       ...row2.detail,
       call: callB ?? null,
       observed: resultB === null ? null : { isError: resultB.isError, text: redact(resultB.text) },
@@ -1188,7 +1313,7 @@ async function boot() {
       bindingLaneDenyFacts: bBindingDeny.map((f) => ({ schema: f.schema, realm: f.realm, toolBindingIdentity: f.toolBindingIdentity, memberIdentity: f.memberIdentity, method: f.method, decision: f.decision, decidedBy: f.decidedBy, policyRevision: f.policyRevision, sequence: f.sequence, observedAt: f.observedAt, locator: f.locator })),
       providerReadRowsForB: bCounterReads.length,
       lane: 'inside ceiling [workspace], OUTSIDE the binding read restriction [workspace/axis/allow]',
-      note: 'the binding lane refused it; exactly ONE deny fact carries realm:"binding" + toolBindingIdentity:"dsh.fs/read"; no provider read method ran for it',
+      note: 'the binding lane refused it: EVERY read-path consultation at B (the live one was `stat`, because a refused read never reaches `readText`) is a binding-lane deny, and no provider read method ran for it. The row does NOT assert a count — see judgeRow2 and README §12.1.',
     })
 
     // ── row 3: read C (ceiling no, restriction yes) ────────────────────────
@@ -1209,8 +1334,8 @@ async function boot() {
       laneReport,
     }
     const row3 = judgeRow3(row3Sample)
-    oracleSamples[ACCEPTANCE_CASES[3]] = { sample: row3Sample, ...row3 }
-    add(ACCEPTANCE_CASES[3], toRunVerdict(row3.verdict), {
+    oracleSamples[ACCEPTANCE_CASE_IDS.row3] = { sample: row3Sample, ...row3 }
+    add(ACCEPTANCE_CASE_IDS.row3, toRunVerdict(row3.verdict), {
       ...row3.detail,
       call: callC ?? null,
       observed: resultC === null ? null : { isError: resultC.isError, text: redact(resultC.text) },
@@ -1230,33 +1355,64 @@ async function boot() {
       note: 'the restriction alone would ALLOW C; the request was refused anyway, and the product algebra report shows the binding lane enforces the INTERSECTION (ceiling deny + restriction allow => effective deny). A binding lane cannot widen the ceiling.',
     })
 
-    // ── row 4: native write to B (ceiling only) ────────────────────────────
+    // ── row 4a: native write INSIDE the readable in-lane subtree ───────────
+    // The product ALLOWS this write (the target is inside the ceiling write lane
+    // AND inside the binding read allowance, and it was read first). What the row
+    // asserts is that the ALLOWANCE did not cross channels: every write fact is
+    // ceiling-realm, none is on the binding (read) lane.
+    const writeFacts4a = facts4a.filter((f) => /write|edit/i.test(String(f.method ?? '')))
+    const row4aSample = {
+      call: writeCall4a ?? null,
+      result: resultWrite4a ?? null,
+      expectedContent: writeContent4a,
+      disk: disk4a,
+      facts: facts4a,
+      counterRows: rowsForPath(writeRows, rowPaths.w4a.path),
+    }
+    const row4a = judgeRow4a(row4aSample)
+    oracleSamples[ACCEPTANCE_CASE_IDS.row4a] = { sample: row4aSample, ...row4a }
+    add(ACCEPTANCE_CASE_IDS.row4a, toRunVerdict(row4a.verdict), {
+      ...row4a.detail,
+      call: writeCall4a ?? null,
+      readOfTarget: call4a ?? null,
+      observed: resultWrite4a === null ? null : { isError: resultWrite4a.isError, text: redact(resultWrite4a.text) },
+      diskContent: disk4a,
+      plantedContentBefore: `${claim4aOrig}\n`,
+      writeFacts: writeFacts4a.map((f) => ({ realm: f.realm, toolBindingIdentity: f.toolBindingIdentity, method: f.method, decision: f.decision, decidedBy: f.decidedBy })),
+      lane: 'w4a.txt is inside the ceiling write lane [workspace] AND inside the binding read allowance [workspace/axis/allow], and it was READ before the write',
+      note: 'the native write was ALLOWED and landed on disk; EVERY write fact is ceiling-realm (realm:"member", toolBindingIdentity:null). No write fact exists on the read (binding) lane — the allow did not cross channels.',
+    })
+
+    // ── row 4b: native write to B is REFUSED (write does not imply read) ───
+    // The SAME property, asserted on the refusal: B is inside the ceiling write
+    // lane but OUTSIDE the binding read allowance, so the product's write⇒read
+    // coupling refuses it (#579). The ceiling lane still ADMITS the write (the
+    // live run measured `writeText`/allow on realm `member`), and the row treats
+    // that as expected — what must not happen is a write-allow fact on the READ
+    // lane, i.e. a refusal laundered into the other channel.
     const writeFactsB = factsB.filter((f) => /write|edit/i.test(String(f.method ?? '')))
-    const writeOnCeiling = writeFactsB.filter((f) => f.realm === 'member' && f.toolBindingIdentity === null)
-    const writeReadLaneFacts = factsB.filter((f) => f.realm === 'binding' && f.toolBindingIdentity === BINDING_IDENTITY && /write|edit/i.test(String(f.method ?? '')))
     const writeCounterRows = rowsForPath(writeRows, rowPaths.b.path)
-    const row4Sample = {
+    const row4bSample = {
       call: writeCall ?? null,
       result: resultWrite ?? null,
-      expectedContent: writeContent,
+      plantedContent: `${claimB}\n`,
       disk: diskB,
-      writeFacts: writeFactsB,
-      ceilingFacts: writeOnCeiling,
-      readLaneWriteFacts: writeReadLaneFacts,
+      facts: factsB,
       counterRows: writeCounterRows,
     }
-    const row4 = judgeRow4(row4Sample)
-    oracleSamples[ACCEPTANCE_CASES[4]] = { sample: row4Sample, ...row4 }
-    add(ACCEPTANCE_CASES[4], toRunVerdict(row4.verdict), {
-      ...row4.detail,
+    const row4b = judgeRow4b(row4bSample)
+    oracleSamples[ACCEPTANCE_CASE_IDS.row4b] = { sample: row4bSample, ...row4b }
+    add(ACCEPTANCE_CASE_IDS.row4b, toRunVerdict(row4b.verdict), {
+      ...row4b.detail,
       call: writeCall ?? null,
       observed: resultWrite === null ? null : { isError: resultWrite.isError, text: redact(resultWrite.text) },
       diskContent: diskB,
+      plantedContent: `${claimB}\n`,
       writeFacts: writeFactsB.map((f) => ({ realm: f.realm, toolBindingIdentity: f.toolBindingIdentity, method: f.method, decision: f.decision, decidedBy: f.decidedBy })),
       readLaneFactsForBOverall: factsB.filter((f) => f.realm === 'binding').map((f) => ({ method: f.method, decision: f.decision })),
       counterRows: writeCounterRows.map((r) => ({ leg: r.leg, method: r.method, instance: r.instance, isBase: r.isBase })),
-      lane: 'B is inside the ceiling write lane [workspace]; the binding declares no-additional-narrowing for write',
-      note: 'the native write succeeded on the CEILING lane (realm:"member", toolBindingIdentity:null); NO read-lane fact (realm binding / dsh.fs/read) was produced by it — the sibling lane is not contaminated',
+      lane: 'B is inside the ceiling write lane [workspace] but OUTSIDE the binding read allowance [workspace/axis/allow]',
+      note: 'the write was REFUSED with the product write⇒read coupling (the ceiling realm admitted it, the guard did not translate that into read access); the planted content is unchanged and NO write-allow fact exists on the read lane. The refusal is the intended product behavior, measured host-free in #579 — the row checks it, it does not relax it.',
     })
 
     // ── row 5: post-invalidation managed call (THE P0 ROW) ─────────────────
@@ -1347,8 +1503,8 @@ async function boot() {
       }
     }
     const row5 = judgeRow5(row5Sample)
-    oracleSamples[ACCEPTANCE_CASES[5]] = { sample: row5Sample, ...row5 }
-    add(ACCEPTANCE_CASES[5], toRunVerdict(row5.verdict), {
+    oracleSamples[ACCEPTANCE_CASE_IDS.row5] = { sample: row5Sample, ...row5 }
+    add(ACCEPTANCE_CASE_IDS.row5, toRunVerdict(row5.verdict), {
       ...row5.detail,
       state: redact(JSON.stringify(stateBefore.body ?? null)),
       lateToolTrigger: lateTrigger === null ? null : { status: lateTrigger.status, body: lateTrigger.body },
@@ -1381,6 +1537,12 @@ async function boot() {
     const membersMid = Array.isArray(stateMid.body?.members) ? stateMid.body.members : []
     const workerMid = membersMid.find((m) => String(m.templateId) === 'worker') ?? null
     const targetSession = String(workerMid?.childSessionId ?? workerSession)
+    // THE STOP INSTANT. The row's temporal bound is "no fact observed AFTER the
+    // stop", so the driver records the instant the product ANSWERED the archive
+    // dispatch (and the dispatch instant, so a reader can see the window). The
+    // instant is taken immediately after the response resolves, before any other
+    // dispatch — never derived from the sink.
+    const archiveDispatchedAt = new Date().toISOString()
     const archiveCall = targetSession === ''
       ? null
       : await fetchJson(`${origin}/__p6t6/tool`, {
@@ -1393,7 +1555,8 @@ async function boot() {
           callId: 'a5sfacc-archive',
         }),
       }, 60_000)
-    log(`archive via product tool route: status=${String(archiveCall?.status)} body=${redact(JSON.stringify(archiveCall?.body ?? null)).slice(0, 600)}`)
+    const stopInstant = new Date().toISOString()
+    log(`archive via product tool route: status=${String(archiveCall?.status)} dispatchedAt=${archiveDispatchedAt} stopInstant=${stopInstant} body=${redact(JSON.stringify(archiveCall?.body ?? null)).slice(0, 600)}`)
     const stateAfterArchive = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
     const membersAfter = Array.isArray(stateAfterArchive.body?.members) ? stateAfterArchive.body.members : []
     const observations = Array.isArray(stateAfterArchive.body?.observations) ? stateAfterArchive.body.observations : []
@@ -1476,12 +1639,21 @@ async function boot() {
       postStopDispatches: dispatchedAfterStop,
       residencyDrop,
       forbiddenClaim: claimB,
+      // THE TEMPORAL BOUND: every guard-consultation fact the World produced.
+      // The judge compares each `observedAt` with the stop instant; the old
+      // `sinkDelta` count is carried as an informational number and is NOT a
+      // check (an append-only file makes a delta structurally unable to express
+      // "nothing happened after the stop" — README §12.3).
+      facts: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1'),
+      stopInstant,
       sinkDelta: factsAfter6 - factsBefore6,
       healthStatus: healthAfter.status,
       hostAlive: hostAlive(),
     }
     const row6 = judgeRow6(row6Sample)
-    oracleSamples[ACCEPTANCE_CASES[6]] = { sample: { ...row6Sample, observations: row6Sample.observations.length, membersAfter: row6Sample.membersAfter.length }, ...row6 }
+    // The sample keeps the FULL facts array (not a count): a reader must be able
+    // to re-run `judgeRow6` on this evidence without the World.
+    oracleSamples[ACCEPTANCE_CASE_IDS.row6] = { sample: { ...row6Sample, observations: row6Sample.observations.length, membersAfter: row6Sample.membersAfter.length }, ...row6 }
     const teardownEvidence = {
       archive: archiveCall === null ? null : { status: archiveCall.status, body: archiveCall.body, ok: archiveOk },
       membersAfterArchive: membersAfter.map((m) => ({ instanceId: m.instanceId, templateId: m.templateId, lifecycle: m.lifecycle, childSessionId: m.childSessionId })),
@@ -1496,6 +1668,8 @@ async function boot() {
       anySuccessAfterStop: anySuccessAfterStop.map((r) => ({ status: r.status, body: r.body })),
       refusalCodesAfterStop,
       healthAfterDrop: { status: healthAfter.status, body: healthAfter.body },
+      stopInstant,
+      archiveDispatchedAt,
       sinkFactsBefore: factsBefore6,
       sinkFactsAfter: factsAfter6,
       hostAlive: hostAlive(),
@@ -1515,7 +1689,7 @@ async function boot() {
     evidence.teardown = teardownEvidence
     writeFileSync(join(HERE, 'teardown.json'), JSON.stringify(teardownEvidence, null, 2) + '\n')
     log(`teardown.json written: ${JSON.stringify({ faultsAtArchive: faultsAtArchive.managed.length, foreign: faultsAtArchive.foreign.length, ignored: faultsAtArchive.ignoredNonFaultCount, faultsAfterDrop: faultsAfterDrop.managed.length }).slice(0, 700)}`)
-    add(ACCEPTANCE_CASES[6], toRunVerdict(row6.verdict), {
+    add(ACCEPTANCE_CASE_IDS.row6, toRunVerdict(row6.verdict), {
       ...row6.detail,
       archiveOk,
       postArchiveReadStatus: postArchiveRead?.status ?? null,
@@ -1524,7 +1698,10 @@ async function boot() {
       postDropReadStatus: postDropRead?.status ?? null,
       refusalCodesAfterStop,
       anySuccessAfterStop: anySuccessAfterStop.length,
-      sinkDeltaAfterStop: factsAfter6 - factsBefore6,
+      stopInstant,
+      archiveDispatchedAt,
+      factsAfterStop: row6.detail.factsAfterStop ?? null,
+      sinkDeltaObserved: factsAfter6 - factsBefore6,
       disposeFaultsAtArchive: faultsAtArchive,
       disposeFaultsAfterDrop: faultsAfterDrop,
       seamsObserved: teardownEvidence.seamsObserved,
@@ -1544,7 +1721,16 @@ async function boot() {
       denyList,
       guardFacts: guardFacts.length,
       counterRows: counterRows.length,
-      rowPaths: { a: rowPaths.a.path, b: rowPaths.b.path, c: rowPaths.c.path },
+      rowPaths: { a: rowPaths.a.path, b: rowPaths.b.path, c: rowPaths.c.path, w4a: rowPaths.w4a.path },
+      homePatch: {
+        path: homePin.path,
+        mode: homePin.mode,
+        workspaceRoot: homePin.workspaceRoot,
+        sha256: createHash('sha256').update(homePin.yaml).digest('hex'),
+        why: 'pins the deployment file-sandbox fallback root to this World workspace (README §12.4)',
+      },
+      stopInstant,
+      archiveDispatchedAt,
     }
   } catch (error) {
     failure = error

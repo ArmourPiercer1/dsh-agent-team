@@ -33,8 +33,8 @@
  *     two typed fault grammars count, a fault that names a session is matched
  *     by EXACT session id, and a non-fault line that merely contains the
  *     session name is not a fault.
- *   - {@link judgeAcceptanceRow} (and the six `judgeRowN` functions) — a
- *     THREE-WAY oracle per row. Every judge separates:
+ *   - {@link judgeAcceptanceRow} (and the eight `judgeRowN`/`judgePrecondition`
+ *     functions) — a THREE-WAY oracle per case. Every judge separates:
  *       NOT_REACHED  the observable the row asserts was never produced (the
  *                    drive never arrived at the asserted step, or the evidence
  *                    channel that carries it never existed);
@@ -42,6 +42,14 @@
  *       PROVEN       the observable exists and satisfies every clause.
  *     A row whose "pass" could be produced by `null` inputs is impossible here:
  *     each judge's first branch is the reachability predicate.
+ *
+ * CORRECTION ROUND AFTER THE FIRST LIVE RUN (2026-11-04T07:28Z, 4 PROVEN /
+ * 3 FAIL). All three FAILs were defects of the QUESTION, not of the product:
+ * `readText`-only fact counting on a `stat`-denied read (row 2), one row asking
+ * for an allowance the write⇒read coupling correctly refuses (row 4), and a
+ * COUNT of an append-only file standing in for "no fact after the stop" (row 6).
+ * Each correction is stated at its judge, and each has a replay over the REAL
+ * live stream plus a mutation-based negative control (`negative-controls.mjs`).
  *
  * WHAT THIS MODULE IS NOT: it does not observe anything, spawn anything, or
  * read a Host log. It is a pure decision contract over evidence the driver
@@ -72,16 +80,69 @@ export function toRunVerdict(verdict) {
   return mapped
 }
 
-/** The six rows + the composition precondition (the same case ids #575 used). */
-export const ACCEPTANCE_CASES = Object.freeze([
-  'live:composition-precondition-read-surface',
-  'live:row1-read-a-inside-both-allowed',
-  'live:row2-read-b-binding-deny-exactly-one-fact',
-  'live:row3-read-c-refused-no-widening',
-  'live:row4-write-b-ceiling-allowed-no-read-lane-fact',
-  'live:row5-post-invalidation-refused-shadow-invalidated',
-  'live:row6-teardown-no-usable-unconstrained-shadow',
-])
+/**
+ * The case ids, NAMED so no caller indexes the list. The first live run
+ * (2026-11-04T07:28Z) proved that a positional index is a latent defect of its
+ * own: splitting row 4 into 4a/4b renumbers rows 4–6.
+ *
+ * `row2` and `row4*` were RENAMED by the 2026-11-04 correction round, because
+ * the old names stated assertions the oracle no longer makes:
+ *   - `live:row2-read-b-binding-deny-exactly-one-fact` (the count of `readText`
+ *     facts) → `…-binding-deny-on-read-path` (every read-PATH consultation for B
+ *     is a binding-lane deny; see {@link judgeRow2});
+ *   - `live:row4-write-b-ceiling-allowed-no-read-lane-fact` (ONE row asserting an
+ *     allowance the product correctly denies) → `live:row4a-…` and
+ *     `live:row4b-…` (see {@link judgeRow4a} / {@link judgeRow4b}).
+ * The historical `run-record.json` of the first live run keeps the old ids: it
+ * is append-only evidence, not a current contract.
+ */
+export const ACCEPTANCE_CASE_IDS = Object.freeze({
+  precondition: 'live:composition-precondition-read-surface',
+  row1: 'live:row1-read-a-inside-both-allowed',
+  row2: 'live:row2-read-b-binding-deny-on-read-path',
+  row3: 'live:row3-read-c-refused-no-widening',
+  row4a: 'live:row4a-write-in-lane-readable-allowed-ceiling-only',
+  row4b: 'live:row4b-write-b-refused-read-not-implied',
+  row5: 'live:row5-post-invalidation-refused-shadow-invalidated',
+  row6: 'live:row6-teardown-no-usable-unconstrained-shadow',
+})
+
+/** The composition precondition + SEVEN rows (4a and 4b are separate cases). */
+export const ACCEPTANCE_CASES = Object.freeze(Object.values(ACCEPTANCE_CASE_IDS))
+
+/**
+ * The Provider methods the shipped guard treats as the WRITE half
+ * (`packages/runtime/team-services/src/fs.ts`: `const WRITE_METHODS:
+ * ReadonlySet<string> = new Set(['writeText', 'editText'])`). Kept as data so
+ * `dry-run.mjs` can assert this list EQUALS the product's own set: if the
+ * product grows a third write method, the copy here is wrong and the dry run
+ * says so instead of the oracle silently mis-scoping a fact.
+ */
+export const WRITE_PATH_METHODS = Object.freeze(['writeText', 'editText'])
+
+/**
+ * Is this guard-consultation fact on the READ path?
+ *
+ * THE LIVE DEFECT THIS REPLACES. The row-2 clause filtered `method ===
+ * 'readText'`. But the native `read` tool STATS the target before it reads it,
+ * and the binding lane denies the stat, so a refused read NEVER reaches
+ * `readText` — the live stream carried `stat`/`deny` and the clause counted
+ * zero facts (`exactlyOneReadFactForB: false`, 2026-11-04T07:28Z). The read
+ * path is the provider surface MINUS the product's closed write set: an
+ * unknown future method is therefore counted as a read-path consultation
+ * (fail-closed, refuting) instead of being silently ignored.
+ *
+ * @param {{method?: unknown}} fact
+ * @returns {boolean}
+ */
+export function isReadPathConsultation(fact) {
+  return !WRITE_PATH_METHODS.includes(String(fact?.method ?? ''))
+}
+
+/** @param {{method?: unknown}} fact */
+export function isWritePathConsultation(fact) {
+  return WRITE_PATH_METHODS.includes(String(fact?.method ?? ''))
+}
 
 /** The product's typed refusal code the row-5 admission gate materialises. */
 export const INVALIDATED_CODE = 'A5SF_NATIVE_SHADOW_INVALIDATED'
@@ -89,6 +150,23 @@ export const INVALIDATED_CODE = 'A5SF_NATIVE_SHADOW_INVALIDATED'
 export const INVALIDATED_NAME = 'A5sfNativeShadowInvalidatedError'
 /** The binding identity the two-axis composition declares for native `read`. */
 export const READ_BINDING_IDENTITY = 'dsh.fs/read'
+
+/**
+ * The product's typed refusal for "this write target exists and the Member's
+ * READ axis does not cover it" (`team-services/src/fs.ts`, the write⇒read
+ * coupling; measured host-free in #579).
+ *
+ * WHY THE ROW ASSERTS PROSE AND NOT A CODE. The denial is a `TeamIoDenial`, not
+ * a `HarnessError`, and the harness's tool layer renders `error.info` only for
+ * `HarnessError` (`core/tools/src/index.ts#errorInfo`), so neither the model's
+ * tool result nor the p6t6 tool route exports the code. The prose below is the
+ * exact sentence of that ONE call site; `dry-run.mjs` binds it host-free (the
+ * pattern must match the sentence inside the `IO_WRITE_REQUIRES_READ` branch of
+ * `packages/runtime/team-services/src/fs.ts`), so asserting the prose IS
+ * asserting the typed refusal — not a guess about wording.
+ */
+export const IO_WRITE_REQUIRES_READ = 'IO_WRITE_REQUIRES_READ'
+export const IO_WRITE_REQUIRES_READ_PROSE = /must read .+ before rewriting it, but the Member read axis does not cover it; write does not imply read/
 
 /**
  * The BLANKET admission code the realm-wide freeze (E8, #580) returns for a name
@@ -493,35 +571,71 @@ export function judgeRow1({ call, result, claim, allowFacts = [], bindingAllowFa
 
 /**
  * Row 2 — read B (inside the ceiling, OUTSIDE the binding restriction) is
- * refused by the BINDING lane with EXACTLY ONE deny fact carrying the binding
- * identity, no bytes, and no provider read.
+ * refused by the BINDING lane, the refusal is typed, no bytes escape, and
+ * EVERY read-path consultation at B's locator is a binding-lane deny.
+ *
+ * THE RULE (replaces "exactly one `readText` fact", which the first live run
+ * refuted): the COUNT of read-path consultations is not an assertion — the
+ * native `read` tool walks a path (`stat` then `readText`) and the product is
+ * free to consult the guard once per step. What must hold is the DECISION:
+ *   1. at least one read-path consultation exists (the sink channel is part of
+ *      the claim: a denial nobody recorded is not evidence);
+ *   2. every one of them is `deny`;
+ *   3. every one of them comes from the BINDING lane (`realm: 'binding'` +
+ *      `toolBindingIdentity: 'dsh.fs/read'`), so a CEILING-realm deny cannot be
+ *      credited to the restriction lane;
+ *   4. at least one binding-lane read-path deny exists.
+ *
+ * WHY A LEGITIMATE DOUBLE CONSULTATION (stat-then-read on an ALLOWED target)
+ * MUST NOT BE A FAILURE *OF THIS RULE*: on an allowed target the product
+ * records `stat allow` + `readText allow` (the live A stream: 2 allow facts on
+ * the binding realm). Two facts are correct there — but B is not an allowed
+ * target, so for row 2 those two allows contradict the row (clause 2 fails on
+ * the DECISION, never on the multiplicity). Two DENIES at the same locator are
+ * equally fine: both consultations were refused, which is the stronger form of
+ * the same claim.
+ *
+ * The row-4 write fact at the same locator (`writeText`, ceiling realm) is
+ * excluded by the product's own write-method partition and reported as
+ * `nonReadPathFacts` — visible, never counted.
  *
  * NOT_REACHED iff the read call or its result was never produced.
  */
-export function judgeRow2({ call, result, claim, writeContent = '', facts = [], bindingDenyFacts = [], counterRows = [] }) {
+export function judgeRow2({ call, result, claim, writeContent = '', facts = [], counterRows = [] }) {
   if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_READ_CALL_B' : 'NO_READ_RESULT_B' })
   const text = textOfResult(result)
-  // THE SAME LOCATOR IS TOUCHED TWICE IN A HEALTHY RUN: the worker reads B
-  // (row 2) and later WRITES B (row 4). The write is served by the ceiling
-  // realm and emits its own `writeText` fact at the same locator, so counting
-  // raw facts made a healthy stream REFUTE row 2 (review B1 — a deterministic
-  // false FAIL). The row is about the READ consultation: scope to the read
-  // method, and let an unexpected non-read fact be visible in the detail rather
-  // than counted.
-  const readFacts = facts.filter((fact) => String(fact?.method ?? '') === 'readText')
-  const nonReadFacts = facts.filter((fact) => String(fact?.method ?? '') !== 'readText')
+  const list = Array.isArray(facts) ? facts : []
+  const readPathFacts = list.filter((fact) => isReadPathConsultation(fact))
+  const nonReadPathFacts = list.filter((fact) => isWritePathConsultation(fact))
+  const bindingReadPath = readPathFacts.filter((fact) => String(fact?.realm ?? '') === 'binding'
+    && String(fact?.toolBindingIdentity ?? '') === READ_BINDING_IDENTITY)
+  const readPathDenies = readPathFacts.filter((fact) => fact?.decision === 'deny')
   const checks = {
     isError: result.isError === true,
     typedLaneRefusal: LANE_REFUSAL.test(text),
     noClaimLeak: text.includes(String(claim)) !== true,
     noWriteContentLeak: String(writeContent) === '' ? true : text.includes(String(writeContent).trim()) !== true,
-    exactlyOneReadFactForB: readFacts.length === 1,
-    exactlyOneBindingDeny: bindingDenyFacts.length === 1,
+    readPathConsulted: readPathFacts.length >= 1,
+    everyReadPathConsultationDenied: readPathFacts.length >= 1 && readPathDenies.length === readPathFacts.length,
+    everyReadPathFactOnBindingLane: readPathFacts.length >= 1 && bindingReadPath.length === readPathFacts.length,
+    bindingDenyOnReadPath: bindingReadPath.some((fact) => fact?.decision === 'deny'),
     noProviderRead: counterRows.length === 0,
   }
   const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
-  if (failed.length > 0) return refuted('ROW2_CLAUSE_FAILED', { checks, failed, readFactsForB: readFacts.length, nonReadFactsForB: nonReadFacts.map((fact) => ({ method: fact?.method ?? null, decision: fact?.decision ?? null, realm: fact?.realm ?? null })), factsForB: facts.length, bindingDenyFacts: bindingDenyFacts.length, counterRows: counterRows.length, observed: text })
-  return proven({ reason: 'BINDING_DENY_EXACTLY_ONE', checks, readFacts: readFacts.length, nonReadFacts: nonReadFacts.length })
+  const detail = {
+    checks,
+    failed,
+    readPathFacts: readPathFacts.length,
+    readPathMethods: readPathFacts.map((fact) => String(fact?.method ?? '')),
+    readPathDecisions: readPathFacts.map((fact) => String(fact?.decision ?? '')),
+    nonReadPathFacts: nonReadPathFacts.map((fact) => ({ method: fact?.method ?? null, decision: fact?.decision ?? null, realm: fact?.realm ?? null })),
+    bindingReadPathFacts: bindingReadPath.length,
+    factsForB: list.length,
+    counterRows: counterRows.length,
+    observed: text,
+  }
+  if (failed.length > 0) return refuted('ROW2_CLAUSE_FAILED', detail)
+  return proven({ reason: 'BINDING_DENY_ON_READ_PATH', ...detail })
 }
 
 /**
@@ -565,36 +679,119 @@ export function judgeRow3({ call, result, claim, denyFacts = [], bindingDenyFact
 }
 
 /**
- * Row 4 — native `write` to B succeeds on the CEILING lane, lands on disk, and
- * produces NO read-lane fact (the sibling lane is not contaminated).
+ * Row 4a (first half of the split row 4) — native `write` to a file INSIDE the
+ * readable in-lane subtree (`<workspace>/axis/allow/`) is ALLOWED, lands on
+ * disk, and produces write facts on the CEILING realm ONLY.
  *
- * NOT_REACHED iff the write call/result never existed; a missing on-disk file
- * after a successful result is REFUTED (the effect channel exists and
+ * WHY 4a AND 4b ARE TWO ROWS, NOT ONE (the first live run's contradiction):
+ * row 4 wrote to B — inside the ceiling write lane but OUTSIDE the restriction
+ * read allowance — and asked for "allowed AND no read-lane fact". The product
+ * refuses that write with `IO_WRITE_REQUIRES_READ` (write⇒read coupling, #579),
+ * so the question could only ever have one answer: FAIL. The write lanes are
+ * not the only axis: a Member that may write a subtree but may not read it is
+ * refused by design. The split keeps the real property ("a write must not cross
+ * channels") in BOTH halves:
+ *   4a  the write the product allows   → ceiling-only facts, disk matches;
+ *   4b  the write the product refuses  → typed refusal, disk unchanged, and NO
+ *       write-allow fact on the read (binding) lane, i.e. the refused write did
+ *       not get laundered into the other channel.
+ * Both halves are measured live; neither is inferred from the other.
+ *
+ * The target is read by the model BEFORE it is written (the fixture script
+ * reads it), for two independent reasons: the host's read-before-edit policy
+ * turns an unobserved existing target into `createIfAbsent` (which would fail
+ * for a different reason), and "read then write" is the shape the product's
+ * coupling is about.
+ *
+ * NOT_REACHED iff the write call/result never existed; a missing or stale disk
+ * content after a successful result is REFUTED (the effect channel exists and
  * contradicts the claim).
  */
-export function judgeRow4({ call, result, expectedContent, disk, writeFacts = [], ceilingFacts = [], readLaneWriteFacts = [], counterRows = [] }) {
-  if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_WRITE_CALL_B' : 'NO_WRITE_RESULT_B' })
+export function judgeRow4a({ call, result, expectedContent, disk, facts = [], counterRows = [] }) {
+  if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_WRITE_CALL_4A' : 'NO_WRITE_RESULT_4A' })
+  const list = Array.isArray(facts) ? facts : []
+  const writeFacts = list.filter((fact) => isWritePathConsultation(fact))
+  const ceilingFacts = writeFacts.filter((fact) => String(fact?.realm ?? '') === 'member' && (fact?.toolBindingIdentity ?? null) === null)
+  // Derived for the reader, not a separate clause: "every write fact is on the
+  // ceiling realm" IS "no write fact on the read lane" — asserting both would be
+  // one property with two names, and a mutation of either would be caught by the
+  // other (measured: negative-control NC2a could not fail until this was one
+  // clause).
+  const readLaneWriteFacts = writeFacts.filter((fact) => String(fact?.realm ?? '') === 'binding')
   const checks = {
     notError: result.isError !== true,
     diskMatches: disk === String(expectedContent),
     allowFactPresent: writeFacts.some((fact) => fact?.decision === 'allow'),
     everyWriteFactOnCeiling: writeFacts.length > 0 && ceilingFacts.length === writeFacts.length,
-    noReadLaneFact: readLaneWriteFacts.length === 0,
     confinedProviderServed: counterRows.length >= 1 && counterRows.every((row) => row?.isBase !== true),
   }
   const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
-  if (failed.length > 0) return refuted('ROW4_CLAUSE_FAILED', {
+  const detail = {
     checks,
     failed,
     isError: result.isError === true,
     disk,
     expectedContent,
+    observed: textOfResult(result),
     writeFacts: writeFacts.length,
     ceilingFacts: ceilingFacts.length,
     readLaneWriteFacts: readLaneWriteFacts.length,
     counterRows: counterRows.length,
-  })
-  return proven({ reason: 'CEILING_WRITE_NO_READ_LANE_FACT', checks })
+  }
+  if (failed.length > 0) return refuted('ROW4A_CLAUSE_FAILED', detail)
+  return proven({ reason: 'CEILING_WRITE_IN_LANE_READABLE', ...detail })
+}
+
+/**
+ * Row 4b (second half) — native `write` to B (inside the ceiling, outside the
+ * restriction read allowance, EXISTING on disk) is REFUSED with the product's
+ * typed `IO_WRITE_REQUIRES_READ`, the planted content is unchanged, and NO
+ * write-allow fact exists on the read (binding) lane.
+ *
+ * The ceiling-realm `writeText` allow fact that the live run recorded for the
+ * same locator (`realm: "member"`, `toolBindingIdentity: null`) is EXPECTED and
+ * is not a violation: the ceiling lane admitted the write, the write tool's
+ * read coupling then refused it. What must never happen is the write crossing
+ * into the read lane's fact stream as an allow — that would mean the refusal
+ * was laundered.
+ *
+ * NOT_REACHED: the write never happened, or the driver did not plant the target
+ * (the "unchanged" claim has no baseline without it).
+ * REFUTED: asked and answered differently — including the case where the
+ * refusal is NOT the typed read coupling (e.g. a host file-sandbox denial, or
+ * the read-before-edit policy's `createIfAbsent` failure): those are different
+ * refusals and the row must not be credited for them.
+ */
+export function judgeRow4b({ call, result, plantedContent, disk, facts = [], counterRows = [] }) {
+  if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_WRITE_CALL_4B' : 'NO_WRITE_RESULT_4B' })
+  if (typeof plantedContent !== 'string' || plantedContent === '') return reached({ reason: 'NO_PLANTED_B' })
+  const text = textOfResult(result)
+  const list = Array.isArray(facts) ? facts : []
+  const writeFacts = list.filter((fact) => isWritePathConsultation(fact))
+  const readLaneWriteAllowFacts = writeFacts.filter((fact) => String(fact?.realm ?? '') === 'binding' && fact?.decision === 'allow')
+  const checks = {
+    isError: result.isError === true,
+    typedReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text),
+    noPlantedBytesReturned: text.includes(plantedContent.trim()) !== true,
+    diskUnchanged: disk === plantedContent,
+    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,
+    noProviderWrite: counterRows.length === 0,
+  }
+  const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
+  const detail = {
+    checks,
+    failed,
+    isError: result.isError === true,
+    disk,
+    plantedContent,
+    observed: text,
+    writeFacts: writeFacts.length,
+    writeDecisions: writeFacts.map((fact) => ({ method: fact?.method ?? null, decision: fact?.decision ?? null, realm: fact?.realm ?? null })),
+    readLaneWriteAllowFacts: readLaneWriteAllowFacts.length,
+    counterRows: counterRows.length,
+  }
+  if (failed.length > 0) return refuted('ROW4B_CLAUSE_FAILED', detail)
+  return proven({ reason: 'WRITE_REFUSED_READ_NOT_IMPLIED', ...detail })
 }
 
 /**
@@ -728,6 +925,14 @@ export function judgeRow6({
   postStopDispatches = [],
   residencyDrop = null,
   forbiddenClaim,
+  /** Every `a5sf-guard-consult/1` fact the World produced (all rows). */
+  facts = [],
+  /**
+   * The instant the product ANSWERED the archive dispatch — the stop instant.
+   * Recorded by the driver; the row's temporal bound.
+   */
+  stopInstant = null,
+  /** Informational: the old count-based window input. NOT a check (see below). */
   sinkDelta = null,
   healthStatus = null,
   hostAlive = null,
@@ -748,6 +953,21 @@ export function judgeRow6({
   if (!Array.isArray(postStopDispatches) || postStopDispatches.length === 0) {
     return reached({ reason: 'NO_POST_STOP_DISPATCH' })
   }
+  // ── THE TEMPORAL BOUND (replaces the `sinkDelta === 0` count) ─────────────
+  // The fact file is APPEND-ONLY and spans the whole run, so facts from rows
+  // 1–5 land inside any "after the stop" window and a DELTA can never express
+  // "nothing happened after the stop" (live: 2 facts between the row-6 baseline
+  // and the end, both from before the archive → the count clause reported FAIL
+  // on a clean stream). The row's claim is temporal: NO fact may carry an
+  // `observedAt` LATER than the stop instant. A fact whose `observedAt` cannot
+  // be parsed cannot be proven to precede the stop, so it also refutes
+  // (fail-closed).
+  const stopMs = Date.parse(String(stopInstant ?? ''))
+  if (!Number.isFinite(stopMs)) return reached({ reason: 'NO_STOP_INSTANT', stopInstant: stopInstant ?? null })
+  const typedFacts = (Array.isArray(facts) ? facts : []).filter((fact) => fact !== null && fact !== undefined)
+  const dated = typedFacts.map((fact) => ({ fact, at: Date.parse(String(fact?.observedAt ?? '')) }))
+  const undated = dated.filter((entry) => !Number.isFinite(entry.at))
+  const afterStop = dated.filter((entry) => Number.isFinite(entry.at) && entry.at > stopMs)
   const identity = classifyDisposeFaults({ observations, managed, duringManagedDisposal, managedRealmCount })
   const successes = postStopDispatches.filter((reply) => reply !== null && reply !== undefined && reply.status === 200 && reply.body?.ok === true)
   const unexplained = postStopDispatches.filter((reply) => reply === null || reply === undefined
@@ -761,7 +981,8 @@ export function judgeRow6({
     noForbiddenBytesAfterStop: servedForbidden !== true,
     noManagedDisposeFault: identity.managed.length === 0,
     noUnattributedRealmFault: identity.unattributed.length === 0,
-    noFactAfterStop: sinkDelta === 0,
+    factsAreTimestamped: undated.length === 0,
+    noFactAfterStop: afterStop.length === 0,
     hostHealthy: healthStatus === 200,
     hostAlive: hostAlive === true,
   }
@@ -771,12 +992,19 @@ export function judgeRow6({
     failed,
     identity,
     archive: { status: archive.status, ok: archive.body?.ok ?? null },
+    stopInstant: String(stopInstant),
+    factsObserved: typedFacts.length,
+    factsAfterStop: afterStop.map((entry) => ({ method: entry.fact?.method ?? null, locator: entry.fact?.locator ?? null, realm: entry.fact?.realm ?? null, observedAt: entry.fact?.observedAt ?? null })),
+    factsWithoutObservedAt: undated.length,
     residencyDrop: residencyDrop === null || residencyDrop === undefined ? null : residencyDrop.body ?? null,
     postStop: postStopDispatches.map((reply) => reply === null || reply === undefined
       ? null
       : { status: reply.status, ok: reply.body?.ok ?? null, code: reply.body?.error?.info?.code ?? null }),
     successes: successes.length,
-    sinkDelta,
+    // Informational only. The first live run was judged by this number and it
+    // is structurally incapable of expressing the claim; it is reported so a
+    // reader can see the old window, never checked.
+    sinkDeltaObserved: sinkDelta,
   }
   if (failed.length > 0) return refuted('ROW6_CLAUSE_FAILED', detail)
   return proven({ reason: 'NO_USABLE_UNCONSTRAINED_SHADOW', ...detail })
@@ -791,13 +1019,14 @@ export function judgeRow6({
  */
 export function judgeAcceptanceRow(caseId, sample = {}) {
   switch (caseId) {
-    case 'live:composition-precondition-read-surface': return judgePrecondition(sample)
-    case 'live:row1-read-a-inside-both-allowed': return judgeRow1(sample)
-    case 'live:row2-read-b-binding-deny-exactly-one-fact': return judgeRow2(sample)
-    case 'live:row3-read-c-refused-no-widening': return judgeRow3(sample)
-    case 'live:row4-write-b-ceiling-allowed-no-read-lane-fact': return judgeRow4(sample)
-    case 'live:row5-post-invalidation-refused-shadow-invalidated': return judgeRow5(sample)
-    case 'live:row6-teardown-no-usable-unconstrained-shadow': return judgeRow6(sample)
+    case ACCEPTANCE_CASE_IDS.precondition: return judgePrecondition(sample)
+    case ACCEPTANCE_CASE_IDS.row1: return judgeRow1(sample)
+    case ACCEPTANCE_CASE_IDS.row2: return judgeRow2(sample)
+    case ACCEPTANCE_CASE_IDS.row3: return judgeRow3(sample)
+    case ACCEPTANCE_CASE_IDS.row4a: return judgeRow4a(sample)
+    case ACCEPTANCE_CASE_IDS.row4b: return judgeRow4b(sample)
+    case ACCEPTANCE_CASE_IDS.row5: return judgeRow5(sample)
+    case ACCEPTANCE_CASE_IDS.row6: return judgeRow6(sample)
     default: throw new Error(`no acceptance judge for ${JSON.stringify(caseId)} (known: ${ACCEPTANCE_CASES.join(', ')})`)
   }
 }

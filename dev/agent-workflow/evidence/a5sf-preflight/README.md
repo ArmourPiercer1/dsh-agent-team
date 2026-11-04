@@ -102,19 +102,27 @@ The `#575` archive/delegate asymmetry is also gone: `as:` (actor), the payload
 
 ---
 
-## 3. The six-row oracle, re-derived in the driver
+## 3. The oracle, re-derived in the driver — EIGHT cases
+
+**The case set changed after the first live run (§11/§12): the precondition plus
+SEVEN rows. Row 4 was split into 4a (the write the product allows) and 4b (the
+write it refuses), and rows 2/4 were renamed because their old ids named
+assertions the oracle no longer makes.** `ACCEPTANCE_CASE_IDS` is the named
+contract; the driver never indexes a positional list (a split renumbers rows).
 
 The decision function lives in
 `tests/world-factory/lib/a5sf-acceptance-preflight.mjs` and is pinned by
-`tests/world-factory/a5sf-acceptance-preflight.test.mjs` (**25/25 pass**, run by
-`dry-run.mjs`). Each row has three outcomes; the test file feeds each judge a
+`tests/world-factory/a5sf-acceptance-preflight.test.mjs` (**29/29 pass**, run by
+`dry-run.mjs`). Each case has three outcomes; the test file feeds each judge a
 NOT_REACHED sample, a REFUTED sample and a PASS base, and asserts the verdicts
-differ (`C0`–`C3`), plus the review arms: the row-2 healthy replay (`C9`), the
-three row-5 laundering arms (`C10`), the row-6 archive refusal (`C11`), the
-real #575 stream (`B5`), the decorated-fault grammar (`B6`), the production
-row / directive root assertions (`A5`/`A6`), and the **name-keyed vs blanket
-invalidation** discrimination (`C12`: an `A5SF_MEMBER_REALM_INVALIDATED`-only
-refusal is REFUTED with `BLANKET_INVALIDATION_ONLY`). The precedence itself
+differ (`C0`–`C3`), plus the review arms: the row-2 replay over the **REAL live
+stream** (`C9`), the three row-5 laundering arms (`C10`), the row-6 archive
+refusal (`C11`), the real #575 stream (`B5`), the decorated-fault grammar (`B6`),
+the production row / directive root assertions (`A5`/`A6`), the **name-keyed vs
+blanket invalidation** discrimination (`C12`), and the three post-live
+corrections: the two-consultation rule (`C13`), the 4a/4b split (`C14`), the
+temporal row-6 bound over the real stream (`C15`), and the product-bound
+read/write partition (`C16`). The precedence itself
 is pinned host-free: `dry-run.mjs` reads `mount.ts` and requires the covered-name
 branch (`expectedDefinitions.has(name)` → `refusalOf(name, record)`, the
 name-keyed code) to precede the blanket `realmFreezeRefusalOf(record)` in
@@ -127,11 +135,12 @@ product.
 | --- | --- | --- | --- | --- |
 | precondition | a Member turn was captured (`surfacePerMemberRequest` non-empty), exactly **one** `read` schema, no duplicate names, prompt `read` mentions ≤ discovery's, the `tool:read` section count unchanged, ≥3 `read` calls | any of those clauses false (`MEMBER_SURFACE_DRIFT`) | no Member request at all (`NO_MEMBER_REQUEST`) | #575 printed FAIL with `memberRequestSeen:false` — an absence reported as a failure |
 | 1 read A | result not error, planted bytes returned, ≥1 **binding-realm** allow fact with `toolBindingIdentity: 'dsh.fs/read'`, ≥1 confined provider row, and **no base-instance row** | bytes missing / no binding allow / served by base (`ROW1_CLAUSE_FAILED`) | no call or no result (`NO_READ_CALL_A` / `NO_READ_RESULT_A`) | #575 FAIL on a read that never happened |
-| 2 read B | `isError`, typed lane refusal, no claim/write-content leak, **exactly one READ fact** for B (the later row-4 write fact at the same locator is not counted) and **exactly one** binding deny, **no** provider read | any clause false (`ROW2_CLAUSE_FAILED`) | no call/result (`NO_READ_CALL_B` / `NO_READ_RESULT_B`) | same |
+| 2 read B | `isError`, typed lane refusal, no claim/write-content leak, **≥1 read-path consultation exists**, **EVERY one of them is a deny**, **EVERY one is on the binding lane** (`realm:'binding'` + `toolBindingIdentity:'dsh.fs/read'`), **≥1 binding-lane read-path deny**, **no** provider read. The read PATH is the provider surface minus the product's closed write set (`writeText`, `editText`), so the count is not asserted and a future read method cannot slip past a name filter (§12.1) | any clause false (`ROW2_CLAUSE_FAILED`); the failed clause NAMES a decision, never a count | no call/result (`NO_READ_CALL_B` / `NO_READ_RESULT_B`) | #575 FAIL on a read that never happened; and the live FAIL on a `readText`-only filter that the product cannot emit (a refused read is recorded at `stat`) |
 | 3 read C | refused + typed, no leak, exactly one binding deny, no provider read, **and** the lane report shows ceiling `deny`, restriction `allow`, effective `deny`, with no widened allow entry | clause or no-widening false (`ROW3_CLAUSE_FAILED`) | no call/result, **or no lane report**, or no probe for C (`NO_LANE_REPORT_C`, `NO_LANE_PROBE_C`) | the no-widening claim had no channel; "pass" could be produced by an empty report |
-| 4 write B | not error, disk equals the written content, a write allow fact exists, **every** write fact is on the ceiling realm (`toolBindingIdentity:null`), **zero** read-lane write facts, confined provider served | any clause false (`ROW4_CLAUSE_FAILED`) | no call/result (`NO_WRITE_CALL_B` / `NO_WRITE_RESULT_B`) | same |
+| 4a write in-lane | not error, disk equals the written content, a write allow fact exists, **every** write fact is on the ceiling realm (`realm:'member'`, `toolBindingIdentity:null` — which IS "no write fact on the read lane"), confined provider served. The target was READ first (a replace of an observed file, not a `createIfAbsent`) | any clause false (`ROW4A_CLAUSE_FAILED`) | no call/result (`NO_WRITE_CALL_4A` / `NO_WRITE_RESULT_4A`) | the old single row asked for an ALLOWANCE on B that the write⇒read coupling correctly refuses — it could never pass (§12.2) |
+| 4b write B refused | `isError`, the text IS the product's `IO_WRITE_REQUIRES_READ` sentence for the "outside the read rule set" arm (`dry-run.mjs` binds it to `fs.ts`), no planted bytes returned, disk still the planted content, **no write-allow fact on the read lane**, no provider write call. The ceiling-realm `writeText`/allow fact at the same locator is EXPECTED (measured live) and is reported, not counted | any clause false (`ROW4B_CLAUSE_FAILED`) — including "refused, but not by the read coupling" (the live host-sandbox denial is exactly that) | no call/result (`NO_WRITE_CALL_4B` / `NO_WRITE_RESULT_4B`), or the target was not planted (`NO_PLANTED_B`: "unchanged" has no baseline) | the live row 4 read the wrong refusal: B was never planted, and the Host sandbox (not the Team guard) denied the write |
 | 5 post-invalidation | Member child session present, late tool registered, invalidation line observed, post-read refused with `A5SF_NATIVE_SHADOW_INVALIDATED` **and** the typed name, **not** the blanket `A5SF_MEMBER_REALM_INVALIDATED` freeze, no forbidden bytes, sink delta 0, counter delta 0, in-lane read also refused with the name-keyed code | the trigger was rejected (`INVALIDATION_TRIGGER_FAILED`), the tool was accepted but not registered (`INVALIDATION_TOOL_NOT_REGISTERED`), the tool IS registered + trigger 200 yet **no invalidation line** (`INVALIDATION_NOT_RAISED` — NoStaleShadow), the refusal is blanket-only (`BLANKET_INVALIDATION_ONLY`: the realm died, not the named shadow), or the post-read served bytes / missed the typed refusal (`ROW5_CLAUSE_FAILED`) | no Member session (`NO_MEMBER_CHILD_SESSION_IN_STATE`), **no trigger dispatched** (`NO_INVALIDATION_TRIGGER`), no post-read (`NO_POST_INVALIDATION_READ`) | #575's only NOT_REACHED — correct there; now "asked and not raised" can never be laundered into it (review B2, `C10`) |
-| 6 teardown | archived lifecycle `ARCHIVED`, every post-stop dispatch explained (422 `NO_LIVE_AGENT` or a 200 refusal), **no** success after stop, **no** forbidden bytes, `classifyDisposeFaults` reports no managed/unattributed fault, sink delta 0, health 200, host alive | any clause false (`ROW6_CLAUSE_FAILED`), **or the archive was answered with a refusal** (`ARCHIVE_REFUSED`: non-200 or `ok:false` — review B2, `C11`) | no member (`NO_MEMBER_TO_STOP`), archive never dispatched (`NO_ARCHIVE_DISPATCH`), no post-stop dispatch (`NO_POST_STOP_DISPATCH`) | #575 printed FAIL with `archiveOk:false` and 27 false "faults"; a missing scenario is now NOT_REACHED, an answered refusal is REFUTED, and a fault must be identity-attributable |
+| 6 teardown | archived lifecycle `ARCHIVED`, every post-stop dispatch explained (422 `NO_LIVE_AGENT` or a 200 refusal), **no** success after stop, **no** forbidden bytes, `classifyDisposeFaults` reports no managed/unattributed fault, **every fact carries a parseable `observedAt` and NONE is LATER than the stop instant** (the driver records the instant the archive was answered), health 200, host alive | any clause false (`ROW6_CLAUSE_FAILED`), **or the archive was answered with a refusal** (`ARCHIVE_REFUSED`: non-200 or `ok:false` — review B2, `C11`) | no member (`NO_MEMBER_TO_STOP`), archive never dispatched (`NO_ARCHIVE_DISPATCH`), no post-stop dispatch (`NO_POST_STOP_DISPATCH`), **no stop instant recorded** (`NO_STOP_INSTANT`) | #575 printed FAIL with `archiveOk:false` and 27 false "faults"; the live run printed FAIL because a COUNT of an append-only file cannot express "nothing after the stop" (§12.3). A missing scenario is NOT_REACHED, an answered refusal is REFUTED, a fault must be identity-attributable |
 
 Every judge returns `{verdict, reason, detail}` with `reason` a **closed code**
 (`ACCEPTANCE_VERDICTS` + `C*` reason set); `toRunVerdict` maps `PROVEN→PASS`,
@@ -139,7 +148,8 @@ Every judge returns `{verdict, reason, detail}` with `reason` a **closed code**
 equal to `ACCEPTANCE_CASES` before a grant is taken and before boot.
 
 Files: `oracle-samples.json` (written by a live run) persists the sample and the
-judge output per case, so the decision can be re-derived without the World.
+judge output per case, so the decision can be re-derived without the World. The
+row-6 sample keeps the FULL fact array, because its assertion is over the facts.
 
 ---
 
@@ -192,41 +202,64 @@ absent provider is a preflight blocker, not something to work around.**
 
 ## 5. Dry-run output (what was actually executed)
 
-`dry-run.log` (committed) — **28/28 checks PASS, `goNoGo=true`**, ~1 s, no Host:
+`dry-run.log` (committed) — **48/48 checks PASS, `goNoGo=true`**, ~2.5 s, no Host:
 
-1. static: no root literal / imports the contract / all seven judges used /
-   `team.create` precedes the same-root state assertion / no clipped result /
-   full observation arrays / `expectedTools` declared / **post-boot abort is
-   `FAIL`, never `NOT_REACHED`** / row-2 facts scoped to `readText` / row-5+6
-   refusal reasons present / production-row+directive root assertion present /
-   the real #575 fixture exists;
-2. `agent-bindings.mjs` byte-identical to `origin/master` (sha256 above);
-3. `node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs` →
-   **25 pass, 0 fail** (three-way oracle, #575 split-root control, real stream,
-   name-keyed vs blanket invalidation);
-4. `run-boot.mjs --plan` → factory `createWorld` + patch layer emission
+1. static: no root literal / imports the contract / all **eight** judges used /
+   the retired single row-4 id and judge are GONE / `team.create` precedes the
+   same-root state assertion / no clipped result / full observation arrays /
+   `expectedTools` declared / **post-boot abort is `FAIL`, never `NOT_REACHED`** /
+   row-2 asserts a DECISION on every read-path consultation (the `readText`-only
+   filter is absent) / row-5+6 refusal reasons present / production-row+directive
+   root assertion present / the real #575 fixture exists;
+2. **the three corrections bound to their evidence** (§12): the lib's
+   `WRITE_PATH_METHODS` EQUALS `fs.ts`'s own `WRITE_METHODS`; the row-4b prose IS
+   the `IO_WRITE_REQUIRES_READ` sentence of the "outside the read rule set" arm
+   (and a SECOND arm with different wording exists, which the row must not
+   credit); the eight case ids are the contract; the REAL `consultations.jsonl`
+   carries 5 facts and NONE after the stop instant parsed out of the committed
+   `run.log` (injecting one later `observedAt` makes the same check fail);
+3. `agent-bindings.mjs` byte-identical to `origin/master` (sha256 above);
+4. `node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs` →
+   **29 pass, 0 fail** (three-way oracle, #575 split-root control, real live
+   stream, name-keyed vs blanket invalidation, C13–C16);
+5. `negative-controls.mjs` → **7/7 controls behave**: each correction is
+   re-broken in the LIBRARY, the oracle suite must go red on the named test
+   (`C9` / `C14` / `C15` / `C16`), and the original bytes are restored and
+   sha256-verified (`allControlsBehaved=true`, library pristine, suite green
+   again);
+6. `run-boot.mjs --plan` → factory `createWorld` + patch layer emission
    (**6163 bytes**, sha256 `33ef72f1…6347`, in `plan.json`) + **both blueprints
    parsed by the host's own dist facade** + row-identity preflight (3 rows) +
-   product lane algebra (A `allow` / B `deny` / C `deny`) + world **teardown**
-   (`homeDeleted`, `releasedPorts: []`, no port ever bound) → `plan.log` /
-   `plan.json`;
-5. `probe-mount-compat.mjs` → §4 table → `mount-compat.json`;
-6. head / base / pinned host / **`productTreeDigest`** recorded in
+   product lane algebra (A `allow` / B `deny` / C `deny`) + **the home-level
+   sandbox-policy pin, bound to the base-bundle row it replaces** (§12.4) + world
+   **teardown** (`homeDeleted`, `releasedPorts: []`, no port ever bound) →
+   `plan.log` / `plan.json`;
+7. `probe-mount-compat.mjs` → §4 table → `mount-compat.json`;
+8. head / base / pinned host / **`productTreeDigest`** recorded in
    `dry-run.json`. The digest is the binding identity: it covers
    `packages scripts tests docs/plans docs/contracts dev/engineering` and the
    lock/workspace manifests but **not** `dev/agent-workflow/evidence/**`, so
    `go-no-go.mjs` can tell "the evidence was committed after the run" (fine)
    from "the product tree changed after the run" (refuse).
 
-**Negative controls** (`negative-controls.log`, kept as evidence): re-introducing
-the two #575 defects into the driver — the `CREATE_ROOT` literal and
-`.slice(0, 320)` on `rowValues.a` — makes `dry-run.mjs` exit **1** with exactly
-those two checks FAIL (`checks=28 failed=2 goNoGo=false`); restoring the driver
-returns it to 28/28. The oracle's own negative controls are `A4` (the #575 split
-literals must throw `ACCEPTANCE_ROOT_MISMATCH`), `A5`/`A6` (production row /
-directive root), `C9` (the healthy row-2 replay is PASS), `C10` (three row-5
-laundering arms are REFUTED), `C11` (archive refusal is REFUTED) and the `C*`
-families (a row whose observable is absent must not be PROVEN).
+**The preflight no longer destroys the evidence it cites.** The previous version
+of `dry-run.mjs` did `rmSync(run.log)` and pruned `logs/` to the newest
+directory — i.e. re-running it deleted the committed live transcript and the
+first live run's `instance-port3183.log`. It now saves the pre-existing
+`run.log` bytes, restores them verbatim after the plan run (only the plan's
+appended suffix becomes `plan.log`), and keeps every `logs/*/` directory that
+holds an `instance-port*.log` or a composed profile. `dry-run.json.preserved`
+records both sha256 values.
+
+**Negative controls** (`negative-controls.json` / `.log`, kept as evidence):
+seven source mutations, one per corrected clause
+(`NC1` row-2 `readText` filter, `NC2a` 4a ceiling-only, `NC2b` 4b refusal
+identity, `NC2c` 4b read-lane laundering, `NC3a` row-6 temporal clause,
+`NC3b` row-6 parseable `observedAt`, `NC4` write-method partition). Each is
+applied to the library, the oracle suite is run, the named test must fail, and
+the library is restored byte-for-byte. The oracle's own controls remain `A4`–`A6`,
+`C0`–`C3`, `C9`, `C10`, `C11`, `C12` (a row whose observable is absent must not
+be PROVEN).
 
 ### Structurally unverifiable without a boot (and why)
 
@@ -266,7 +299,8 @@ below is literally true. Each item names the confirming measurement it performs.
 | 2 | the **product tree** still is the tree the dry run measured | `sha256(git ls-tree -r HEAD -- packages scripts tests docs/plans docs/contracts dev/engineering package.json pnpm-lock.yaml pnpm-workspace.yaml)` vs `dry-run.json.productTreeDigest` | equal. Evidence-only commits are ignored; any code/test/config change refuses until the dry run is re-run **and its output committed** |
 | 3 | no uncommitted product change | `git status --porcelain --untracked-files=no -- ':!dev/agent-workflow/evidence'` | empty |
 | 4 | on the preflight branch | `git rev-parse --abbrev-ref HEAD` | `task/a5sf-preflight-20261103` |
-| 5 | **no boot was already spent** | `dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl` | absent (an orphan pre-registration would be a spent boot) |
+| 5 | **the ledger is a consistent budget account** | every row parses; every boot row belongs to a `runId` that has an intent row; each intent's `plannedStarts` equals the number of boot rows charged to it | empty `unparseable` / `orphanBootRuns` / `plannedMismatch`. This replaced "the ledger file must be absent": after the first live run legitimately spent one start, the old clause refused forever. **The ledger is append-only evidence, not a pre-run state** |
+| 5b | **at least one start of the pool is still unspent** | `pool.allocation[item ^= "P2-01"].boots - ledgerBootRows` | `>= 1` (measured: 6 − 1 = 5) |
 | 6 | the pool allocates the three dedicated P2-01 starts | `/allocation[item ^= "P2-01"].boots` | **>= 6** (the amendment). At 3 it prints *"the pool amendment is not on this HEAD — merge master forward and re-run; do NOT spend a boot on the un-amended three-boot allocation"* and exits 1 |
 | 7 | the pinned host tree is the pin and is clean | `git -C tests/deepseek-harness-test-use rev-parse HEAD` + `status --porcelain` | `639ed015397290b3745d163aafe02ffee4aa3f84` / empty |
 
@@ -281,9 +315,12 @@ After the gate is green, the boot itself is one command:
 node dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs
 ```
 
-Then re-run the gate (it will refuse with item 5 once a ledger row exists —
-that is the point; the gate is for the FIRST of the three boots; boots 2 and 3
-have their own grant/ledger discipline).
+Then re-run the gate: items 1 and 2 refuse until the dry run has been re-run on
+the new HEAD **and its output committed** (the evidence-only commit changes the
+tree the dry run measured), item 3 refuses while the product tree is dirty, and
+item 5b counts down (6 → 5 after the first run). Item 5 no longer refuses merely
+because a start was spent — a gate that a successful run can never pass again is
+a blocker, not a gate.
 
 ## 7. Disclosures / residual risk
 
@@ -332,21 +369,27 @@ have their own grant/ledger discipline).
 | --- | --- |
 | `run-boot.mjs` | the corrected ONE-boot driver (§2) |
 | `a5sf-realm-provider-row.mjs` | the six-row `teamA5sfRealm` provider + late-tool route; a **byte-identical copy** of the #575 row (sha256 `b691ce23…e46b`), which supplies members AND bindings (`bindings: [{toolBindingIdentity: 'dsh.fs/read', tools: ['read'], members: [...]}]`) |
-| `go-no-go.mjs` / `go-no-go.json` / `go-no-go.log` | §6, the boot-authorisation gate (refuses on a stale product tree, a spent ledger, an unamended pool) |
+| `go-no-go.mjs` / `go-no-go.json` / `go-no-go.log` | §6, the boot-authorisation gate (refuses on a stale product tree, an INCONSISTENT ledger, an exhausted pool) |
 | `probe-mount-compat.mjs` / `mount-compat.json` / `mount-compat.log` | §4, 4-arm move measurement |
-| `dry-run.mjs` / `dry-run.log` / `dry-run.json` | §5, the one-command preflight (**28 checks**, `productTreeDigest`) |
-| `plan.log` / `plan.json` | World plan: composition, patch layer, blueprints, lane algebra, teardown |
-| `negative-controls.log` | the two #575 defects re-introduced → 2 FAILs, restored → 28/28 |
+| `dry-run.mjs` / `dry-run.log` / `dry-run.json` | §5, the one-command preflight (**48 checks**, `productTreeDigest`, preserved live transcript) |
+| `negative-controls.mjs` / `negative-controls.json` / `negative-controls.log` | the SEVEN mutation controls: each post-live correction, re-broken, must turn the oracle suite red on its named test; the library is restored byte-for-byte |
+| `plan.log` / `plan.json` | World plan: composition, patch layer, home-level sandbox pin, blueprints, lane algebra, teardown |
+| `run.log` / `consultations.jsonl` / `guard-facts.json` / `counter.json` / `transcript.json` / `teardown.json` / `run-record.json` | the FIRST live run (§11), append-only evidence: the transcript, the product's own 5-fact sink, the provider counter, the run record |
+| `logs/<world>/instance-port*.log`, `logs/<world>/composed-profile-*.patch.yml` | the launched composition + Host log of the first live run (§11); preserved by §5 |
+| `oracle-samples.json` | written by the NEXT live run: the exact sample each judge received (row 6 keeps its full fact array) |
 | `README.md` | this gate |
 
 Shared contract (tracked, not in this directory):
 
 - `tests/world-factory/lib/a5sf-acceptance-preflight.mjs` — verdicts, root
   identity (incl. production-row + directive values), dispose classifier (with
-  log-decoration normalisation), seven judges, `ACCEPTANCE_CASES`
-- `tests/world-factory/a5sf-acceptance-preflight.test.mjs` — **24 tests**: 3-way
-  oracle per row, #575 split-root control, real-#575-stream fixture, decorated
-  fault grammar, row-2 healthy replay, row-5 laundering arms, row-6 refusal
+  log-decoration normalisation), **eight** judges, `ACCEPTANCE_CASE_IDS` (the
+  named contract) + `ACCEPTANCE_CASES`, the read/write path partition
+- `tests/world-factory/a5sf-acceptance-preflight.test.mjs` — **29 tests**: 3-way
+  oracle per case, #575 split-root control, real-#575-stream fixture, decorated
+  fault grammar, row-2 replay over the REAL live stream + the two-consultation
+  rule, the 4a/4b split, the row-6 temporal bound, row-5 laundering arms, row-6
+  refusal
 - `tests/world-factory/fixtures/a5sf-575-teardown-observations.json` — the real
   20-line observation stream read-only-extracted from the committed #575
   `teardown.json` (+ the old filter's 27-line result)
@@ -384,6 +427,17 @@ Shared contract (tracked, not in this directory):
 | `git diff --check origin/master..HEAD` | clean (exit 0) | `git-diff-check.log` |
 | `pnpm ci:local --base origin/master` | **exit 2, `coverage=undetermined`** — see below | `ci-local.log` |
 
+### The correction round re-ran the gates (§12, 2026-11-04)
+
+| gate | result | raw |
+| --- | --- | --- |
+| `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | **48/48 PASS, exit 0, `goNoGo=true`** (was 28/28) | `dry-run.log` / `dry-run.json` |
+| `node dev/agent-workflow/evidence/a5sf-preflight/negative-controls.mjs` | **7/7 controls behaved**, library restored byte-for-byte, suite green after | `negative-controls.log` / `negative-controls.json` |
+| all ten a5sf node suites | **156/156** (was 152; the oracle file grew 25→29) | `all-a5sf-node-suites.log` |
+| `node_modules/.bin/vitest run a5sf` | **166/166, 11 files** (unchanged — the corrections are host-free test seams) | `vitest-a5sf.log` |
+| `git diff --check origin/master..HEAD` | clean (exit 0). It reported **one** trailing space inside the committed live transcript (`run.log:33`, an artifact of a 320-char counter slice); the space was stripped and the driver's `log()` now strips trailing whitespace so no future transcript carries one. Nothing else changed in that line | `git-diff-check.log` |
+| `node dev/agent-workflow/evidence/a5sf-preflight/go-no-go.mjs` | **GO**, no boot spent (see §12.7) | `go-no-go.log` / `go-no-go.json` |
+
 ### Why `ci:local` is exit 2 (deliberate, not a failure)
 
 All five steps it ran passed (`failed=0`). It returns 2 because the change adds TWO
@@ -415,6 +469,11 @@ suite was measured **last**, after every other suite and after the evidence was 
 disk (`law-and-p4t6.log`).
 
 ## 11. THE FIRST LIVE SIX-ROW RUN — 2026-11-04T07:28Z (head `1ee898c33`, port 3183, 1 start)
+
+> **This section is the historical record and is not rewritten.** The three FAILs
+> it diagnoses were defects of the QUESTION. §12 is the correction round: what was
+> changed, why the change corrects rather than relaxes, and the replay evidence
+> for each. The run record (`run-record.json`) keeps the OLD case ids on purpose.
 
 **Overall FAIL: 4 PASS / 3 FAIL.** The three FAILs are **contract/oracle defects, not enforcement
 gaps** — and the run's most important result is that the Member **activated at all**, which is what
@@ -473,3 +532,236 @@ The complete live sink was five facts:
 
 `bootsSpent=1` of the three dedicated P2-01 starts; ledger rows = intent + boot1. The pool reserve
 was not touched. Port released, home deleted, no orphan Host.
+
+---
+
+## 12. The correction round — three defective questions, repaired
+
+The first live run asked three questions that the product could not answer
+correctly (§11): a `readText`-only fact filter, ONE row demanding an allowance
+the write⇒read coupling refuses, and a COUNT of an append-only file standing in
+for "nothing after the stop". **No product code changed** (CORE PATCH BUDGET = 0;
+`packages/**` untouched; `agent-bindings.mjs` sha256 unchanged, checked by
+`dry-run.mjs`). The run count went from **7 to 8 cases** (precondition + 7 rows).
+
+| fix | where | what changed |
+| --- | --- | --- |
+| 1 read-PATH decision | `tests/world-factory/lib/a5sf-acceptance-preflight.mjs:99` (`ACCEPTANCE_CASE_IDS`), `:121` (`WRITE_PATH_METHODS`), `:138` (`isReadPathConsultation`), `:604` (`judgeRow2`) | the row no longer counts `readText` facts; it asserts a DECISION on every read-path consultation |
+| 2 the 4a/4b split | lib `:710` (`judgeRow4a`), `:765` (`judgeRow4b`); driver `run-boot.mjs:435` (read w4a), `:992` (plant B + w4a), `:1361`/`:1392` (samples) | the allowed write and the refused write are two cases, two ids, two dispatches |
+| 3 the temporal bound | lib `:917` (`judgeRow6`); driver `:1555` (`stopInstant`) | no fact may carry an `observedAt` later than the instant the archive was answered |
+| (fixture) sandbox pin | driver `:342` (`homeSandboxPin`), `:1003` (written before the spawn) | the deployment file-sandbox fallback root is pinned to the World workspace (§12.4) |
+| replays | `tests/world-factory/a5sf-acceptance-preflight.test.mjs:603` (`C9`), `:705` (`C13`), `:736` (`C14`), `:780` (`C15`), `:835` (`C16`) | each fix replayed over the REAL live stream, plus a refuting twin |
+| controls | `negative-controls.mjs` (7 controls, §12.5) | each fix re-broken in the library must turn the oracle suite red |
+
+### 12.1 Fix 1 — row 2 asserts a DECISION, not a count
+
+**The live defect.** `exactlyOneReadFactForB` counted `method === 'readText'`
+facts. The native `read` tool STATS its target first; when the binding lane
+denies the stat, `readText` is never reached, so a correctly refused read
+produces **zero** `readText` facts. The live stream for B was `stat`/`deny` —
+the clause reported `readFactsForB: 0` on a refusal that was right.
+
+**The rule now** (`judgeRow2`): let the read PATH be every consultation whose
+`method` is NOT in the product's closed write set (`writeText`, `editText` — read
+from `fs.ts` at runtime by `dry-run.mjs`, not copied by faith). Then:
+
+1. ≥1 read-path consultation must exist (a refusal nobody recorded is not
+   evidence);
+2. EVERY one must be `deny`;
+3. EVERY one must be on the BINDING lane (`realm:'binding'` +
+   `toolBindingIdentity:'dsh.fs/read'`) — a ceiling deny cannot be credited to
+   the restriction;
+4. ≥1 binding-lane read-path deny must exist.
+
+The count is not asserted. The row-4 `writeText` fact at the same locator is
+excluded by the product's own partition and reported in `nonReadPathFacts`.
+
+**Why a legitimate double consultation is never a failure OF THIS RULE.** A
+healthy read of an ALLOWED target is stat-then-readText: two allow facts (the
+live A stream). B is not an allowed target, so two ALLOWS refute the row — on the
+DECISION, never on the multiplicity. Two DENIES at the same locator are equally
+acceptable: both consultations were refused, which is the stronger form of the
+same claim.
+
+**Replays, verbatim from the test run:**
+
+```
+✔ C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN
+   reason=BINDING_DENY_ON_READ_PATH readPathFacts=1 readPathMethods=["stat"]
+   nonReadPathFacts=[{method:"writeText",decision:"allow",realm:"member"}] factsForB=2
+   (the replaced filter counts 0 `readText` facts on the same stream)
+✔ C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure
+   two denies  -> PROVEN,  failed=[]
+   two allows  -> REFUTED, failed=["bindingDenyOnReadPath","everyReadPathConsultationDenied"]   (both DECISION clauses)
+   write-only  -> REFUTED, readPathFacts=0
+```
+
+`C9`'s fixture is `consultations.jsonl` — the committed live sink itself, not a
+synthetic stream. That was the original mistake: the old fixture contained a
+`readText` deny the product never emits, so the oracle was pinned against a
+stream the World cannot produce.
+
+### 12.2 Fix 2 — row 4 splits into 4a and 4b (a correction, not a relaxation)
+
+**The live contradiction.** Row 4 wrote `b.txt` and demanded "allowed **and** no
+read-lane fact". `b.txt` is inside the ceiling write lane but OUTSIDE the
+binding read allowance, and the product refuses to write what the Member may not
+read (`IO_WRITE_REQUIRES_READ`, `team-services/src/fs.ts:122-128`, measured
+host-free in #579). The row could only ever FAIL. The live refusal was in fact
+the **Host file sandbox** (`[sandbox: file access denied under workspace-write
+mode]`), because `b.txt` was never planted and the deployment root — not the
+Team lanes — fenced the write (§12.4). Two independent defects in one row.
+
+**The split.** Both halves keep the property "the write must not cross
+channels", measured from opposite sides:
+
+| | 4a — the write the product ALLOWS | 4b — the write the product REFUSES |
+| --- | --- | --- |
+| target | `<workspace>/axis/allow/w4a.txt` (inside the ceiling **and** the read allowance), read first, then written | `<workspace>/axis/b.txt` (inside the ceiling, outside the read allowance), **planted** with claim content |
+| expected live result | `notError`, disk = the new content, ≥1 write fact, **every** write fact ceiling-realm (`realm:'member'`, `toolBindingIdentity:null`), confined provider served | `isError`, the text **is** the product's read-coupling sentence, disk = the planted content, **no write-allow fact on the read lane**, no provider write call |
+| what must never happen | a write fact on the read (binding) lane | a write-allow laundered onto the read lane |
+| live-derived expectation | the ceiling `writeText` allow fact, exactly as the live run measured for B | the ceiling allow is EXPECTED (the ceiling lane admitted it) and is reported, not counted |
+
+**Why this corrects rather than relaxes the question.** The product's write⇒read
+coupling is *intended*, and it is already measured host-free (#579). A row that
+demands an allowance the product is designed to refuse is not a stricter test —
+it is a test of nothing, because its only possible answer is FAIL. The real
+invariant ("a write admitted on one lane must not appear as an allow on the
+other") is now asserted **twice**, on an allowed write and on a refused one, and
+the refused half additionally pins the refusal's IDENTITY (the read-coupling
+sentence, not any error). `judgeRow4b` refuses to credit the live host-sandbox
+denial: it is an error, but not the asked question.
+
+**Replays** (`C14`):
+
+```
+✔ C14 rows 4a/4b: the split is two questions, and neither loosens the other
+   4a PROVEN; crossed write fact -> REFUTED, failed=["everyWriteFactOnCeiling"], readLaneWriteFacts=1
+   4a stale disk -> REFUTED; base-instance provider -> REFUTED; error result -> REFUTED
+   4b PROVEN with the read-coupling sentence; ceiling allow REPORTED (realm="member")
+   4b on the LIVE row-4 text (host sandbox denial) -> REFUTED, typedReadCouplingRefusal=false
+   4b changed disk -> REFUTED; unplanted target -> NOT_REACHED (NO_PLANTED_B)
+   4b laundered read-lane allow -> REFUTED
+```
+
+### 12.3 Fix 3 — row 6's bound is an INSTANT, not a delta
+
+**The live defect.** `sinkDelta === 0` counted facts in a window of an
+APPEND-ONLY file read at two instants. Two pre-stop facts (sequences 4–5) landed
+in the window, so a clean teardown reported `noFactAfterStop: false` while the
+newest fact (`07:28:27.080Z`) plainly preceded the archive
+(`07:28:28.916Z`).
+
+**The rule now** (`judgeRow6`): the driver records `stopInstant` — the instant
+the archive dispatch was answered — and the row asserts
+
+* every fact carries a parseable `observedAt` (`factsAreTimestamped`), and
+* no fact's `observedAt` is LATER than `stopInstant` (`noFactAfterStop`).
+
+An unparseable timestamp cannot be proven to precede the stop, so it fails
+closed. `sinkDelta` is still carried in the sample and reported as
+`sinkDeltaObserved`, and is **not** checked — C15 proves that the verdict is
+unchanged for `sinkDelta` 0 and 2 on the same stream. The other clauses
+(`noSuccessAfterStop`, `noForbiddenBytesAfterStop`, the two dispose-fault
+clauses) are untouched.
+
+**Replays** (`C15`), over the real stream, stop instant parsed from the committed
+`run.log`:
+
+```
+✔ C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt
+   PROVEN  : factsObserved=5, factsAfterStop=[], newest=2026-11-04T07:28:27.080Z, stop=2026-11-04T07:28:28.916Z
+   REFUTED : one injected fact with observedAt=2026-11-04T07:28:29.500Z -> failed=["noFactAfterStop"]
+             factsAfterStop=[{method:"writeText",locator:"/w/after-stop.txt",observedAt:"2026-11-04T07:28:29.500Z"}]
+   boundary: a fact AT the stop instant is NOT after it -> PROVEN
+   undated : observedAt=null -> REFUTED, failed=["factsAreTimestamped"]
+   no stop : stopInstant=null -> NOT_REACHED (NO_STOP_INSTANT)
+```
+
+### 12.4 The fixture correction the write rows needed: the sandbox-policy pin
+
+This is disclosed because it changes the WORLD, not the oracle — and it is the
+one change that decides whether the write rows can observe the Team lanes at all.
+
+The base bundle mounts `sandbox-policy` with
+`workspaceRoot: !!js process.cwd()` — the cwd of the spawned `dsh web`, i.e. the
+**pristine host tree** — and `mode: workspace-write`. A confined provider asked
+without a per-call policy resolves `ctx.sandboxPolicy.resolve()` with NO session,
+which falls back to that deployment root. The a5sf realm provider deliberately
+drops the caller's policy (`createConfinedFileSystemClass` → `void policy`), so
+**every Team write is fenced by the deployment root, not by the World**. Measured
+consequence in §11: row 4 was refused by the host sandbox and the Team lanes were
+never consulted.
+
+The driver now writes the launcher's documented **home-level** patch layer into
+the World's own `DSH_HOME` (`<home>/cordis.patch.yml`, applied AFTER the profile
+patch, so it outranks it) with one replacement row that RESTATES the whole config
+of the row it replaces:
+
+```yaml
+- id: sandbox-policy
+  config:
+    mode: "workspace-write"
+    workspaceRoot: "<world>/workspace"
+```
+
+Three independent checks in `dry-run.mjs` keep this honest host-free: the base
+row's key set equals the pinned key set (`mode`, `workspaceRoot` — a patch
+replaces the WHOLE config), the base row's `workspaceRoot` expression is
+literally `!!js process.cwd()` (i.e. the defect is real), and the pinned root
+equals the World workspace the write rows target. Because the pin makes the HOST
+fence allow exactly the root the Team ceiling write lane already allows, the write
+rows measure the TEAM lanes. Nothing is shared: the file lives inside the World
+home, which is deleted with the World.
+
+### 12.5 Negative controls (mutation, not inspection)
+
+`negative-controls.mjs` re-breaks each corrected clause in the library, runs the
+oracle suite, requires the NAMED test to fail, and restores the original bytes
+(sha256-verified; a stale backup from a crashed run is restored at start):
+
+| control | mutation | must break |
+| --- | --- | --- |
+| `NC1` | row 2 filters `method === 'readText'` again | `C9` |
+| `NC2a` | 4a accepts any write fact (`writeFacts.length > 0`) | `C14` |
+| `NC2b` | 4b accepts ANY refusal | `C14` |
+| `NC2c` | 4b ignores a read-lane write allow | `C14` |
+| `NC3a` | row 6's temporal clause is always true | `C15` |
+| `NC3b` | row 6 stops requiring a parseable `observedAt` | `C15` |
+| `NC4` | `WRITE_PATH_METHODS` loses `editText` | `C16` |
+
+Result: `allControlsBehaved=true`, library pristine, suite green again
+(`negative-controls.json` / `.log`; `dry-run.mjs` fails if any control stops
+behaving). The `NC2a` control is itself a finding: the first version of `judgeRow4a`
+had two clauses for one property ("every write fact is on the ceiling" and "no
+write fact on the read lane"), so mutating either left the other to catch it — one
+property, one clause.
+
+### 12.6 What is still least certain
+
+**That the pin + the planted `B` + the prior read of `w4a.txt` actually produce
+4a ALLOWED and 4b REFUSED-by-read-coupling in one live run.** Three unverified
+links chain here: (a) the home-level patch really outranks the profile patch for
+`sandbox-policy` in this launcher, (b) the host's read-before-edit policy accepts
+the model's read of `w4a.txt` as the observation its write needs, (c) the
+write⇒read refusal reaches the model as the prose sentence rather than being
+re-rendered by the tool layer. Each is plausible from the source and each is
+cheap to check `--plan`-side, but none can be confirmed without spending a boot —
+which this lane must not do.
+
+### 12.7 The gate after the corrections (no boot spent)
+
+`go-no-go.mjs` was re-run on the corrected tree. Two of its items were THEMSELVES
+defective for this phase and were repaired with the rest:
+
+* item **5** used to require that `ledger.jsonl` **not exist** ("no boot was already
+  spent"). After the first live run legitimately spent one start, that clause
+  refused forever — a gate a successful run can never pass again is a blocker.
+  It now reads the ledger as a budget ACCOUNT: every row parses, every boot row
+  belongs to a runId with an intent row, and each intent's `plannedStarts` equals
+  the boot rows charged to it.
+* a new item **5b** asserts the pool still has a start for the run being
+  authorised: `boots (6) − bootRows (1) = 5 ≥ 1`.
+
+Result on this head, with **no boot spent by the correction round**:
+`go-no-go.log` / `go-no-go.json` — see the committed files for the verbatim line.

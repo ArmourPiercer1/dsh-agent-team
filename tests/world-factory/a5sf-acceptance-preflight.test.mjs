@@ -28,18 +28,24 @@ import { readFileSync } from 'node:fs'
 
 import {
   ACCEPTANCE_CASES,
+  ACCEPTANCE_CASE_IDS,
   AcceptanceRootMismatch,
+  IO_WRITE_REQUIRES_READ,
   P2_01_ACCEPTANCE_ROOTS,
+  WRITE_PATH_METHODS,
   acceptanceRootIdentity,
   assertAcceptanceRootWiring,
   classifyDisposeFaults,
   classifyObservation,
+  isReadPathConsultation,
+  isWritePathConsultation,
   judgeAcceptanceRow,
   judgePrecondition,
   judgeRow1,
   judgeRow2,
   judgeRow3,
-  judgeRow4,
+  judgeRow4a,
+  judgeRow4b,
   judgeRow5,
   judgeRow6,
   normalizeObservation,
@@ -113,7 +119,8 @@ test('A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks
 })
 
 test('A4 the verdict vocabulary maps 1:1 onto the run record and is total', () => {
-  assert.deepEqual(ACCEPTANCE_CASES.length, 7)
+  // precondition + SEVEN rows: row 4 was split into 4a (allowed) and 4b (refused).
+  assert.equal(ACCEPTANCE_CASES.length, 8)
   assert.equal(toRunVerdict('PROVEN'), 'PASS')
   assert.equal(toRunVerdict('REFUTED'), 'FAIL')
   assert.equal(toRunVerdict('NOT_REACHED'), 'NOT_REACHED')
@@ -272,9 +279,42 @@ const CLAIM_A = 'A5SF_ACC_A_world'
 const CLAIM_B = 'A5SF_ACC_B_world'
 const CLAIM_C = 'A5SF_ACC_C_world'
 const WRITE_B = 'A5SF_ACC_WRITE_world\n'
+const WRITE_4A = 'A5SF_ACC_WRITE_4A_world\n'
+const ORIG_4A = 'A5SF_ACC_WRITE4A_ORIG_world\n'
+
+/**
+ * THE REAL LIVE STREAM (session 2026-11-04T07:28Z, the first six-row run):
+ * `dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl`, copied
+ * verbatim by the driver from the World sink. It is the fixture the previous
+ * round should have used: the synthetic C9 stream contained a `readText` deny,
+ * which the product never emits (the `read` tool STATS first and the denied
+ * target never reaches `readText`), so the oracle was pinned against a stream
+ * the World cannot produce.
+ */
+const LIVE_CONSULTATIONS = readFileSync(
+  new URL('../../dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl', import.meta.url),
+  'utf8',
+).split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line))
+const LIVE_B_LOCATOR = LIVE_CONSULTATIONS.find((fact) => String(fact.locator).endsWith('/axis/b.txt'))?.locator ?? ''
+const LIVE_A_LOCATOR = LIVE_CONSULTATIONS.find((fact) => String(fact.locator).endsWith('/axis/allow/a.txt'))?.locator ?? ''
+const liveFactsAt = (locator) => LIVE_CONSULTATIONS.filter((fact) => fact.locator === locator)
+/** The archive instant of that run (`run.log` @ 1465d3ef7: `07:28:28.916Z`). */
+const LIVE_STOP_INSTANT = '2026-11-04T07:28:28.916Z'
+/**
+ * The live row-4 refusal, VERBATIM from `run-record.json` of that run: the Host
+ * file sandbox denied the write because the deployment root (`process.cwd()` of
+ * the `dsh web` process) did not cover the World home. It is NOT the product's
+ * write⇒read refusal, and row 4b must refuse to credit it.
+ */
+const LIVE_ROW4_SANDBOX_DENIAL = 'Error: [sandbox: file access denied under workspace-write mode]\n'
+  + '[sandbox: escalation available — retry this exact operation once with sandbox permissions '
+  + '(the narrowest wider mode that suffices) + justification; the approval prompt asks the user]'
 
 const readCall = (path) => ({ callId: `call-${path}`, name: 'read', args: { file_path: path } })
+const writeCall = (path) => ({ callId: `call-${path}-write`, name: 'write', args: { file_path: path } })
 const result = (text, isError = false) => ({ isError, text })
+const writeFact = (realm, decision, method = 'writeText') => ({ realm, toolBindingIdentity: realm === 'binding' ? 'dsh.fs/read' : null, method, decision })
+const readFact = (method, decision) => ({ realm: 'binding', toolBindingIdentity: 'dsh.fs/read', method, decision })
 
 /** Failing/passing samples are DERIVED from one passing base per row, so a
  *  mutation of the base cannot make the "pass" sample silently weaker. */
@@ -304,8 +344,13 @@ const PASS = {
     result: result('read refused: path is outside every allow subtree of the lane', true),
     claim: CLAIM_B,
     writeContent: WRITE_B,
-    facts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
-    bindingDenyFacts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
+    // THE LIVE SHAPE: the `read` tool stats B, the binding lane denies the stat,
+    // and `readText` is never reached. Plus the row-4 ceiling write fact at the
+    // same locator, which must stay visible and uncounted.
+    facts: [
+      readFact('stat', 'deny'),
+      writeFact('member', 'allow'),
+    ],
     counterRows: [],
   },
   row3: {
@@ -318,15 +363,23 @@ const PASS = {
     probeC: { locator: '/outside/c.txt', ceilingRead: 'deny', restrictionRead: 'allow', effectiveRead: 'deny' },
     laneReport: { effective: { read: { allow: ['/w/axis/allow'] } } },
   },
-  row4: {
-    call: { callId: 'call-write-b', name: 'write', args: { file_path: '/w/b.txt' } },
-    result: result('wrote 18 bytes'),
-    expectedContent: WRITE_B,
-    disk: WRITE_B,
-    writeFacts: [{ realm: 'member', toolBindingIdentity: null, method: 'write', decision: 'allow' }],
-    ceilingFacts: [{ realm: 'member', toolBindingIdentity: null, method: 'write', decision: 'allow' }],
-    readLaneWriteFacts: [],
-    counterRows: [{ leg: 'write-call', isBase: false }],
+  row4a: {
+    call: writeCall('/w/axis/allow/w4a.txt'),
+    result: result('wrote 22 bytes'),
+    expectedContent: WRITE_4A,
+    disk: WRITE_4A,
+    facts: [writeFact('member', 'allow')],
+    counterRows: [{ leg: 'write-call', isBase: false, instance: 'fs-2' }],
+  },
+  row4b: {
+    call: writeCall('/w/b.txt'),
+    result: result("Error: native writeText must read '/w/b.txt' before rewriting it, but the Member read axis does not cover it; write does not imply read", true),
+    plantedContent: `${CLAIM_B}\n`,
+    disk: `${CLAIM_B}\n`,
+    // The ceiling admit is expected here (measured live): the refusal comes from
+    // the write tool's read coupling, AFTER the ceiling lane allowed the write.
+    facts: [writeFact('member', 'allow')],
+    counterRows: [],
   },
   row5: {
     member: { instanceId: 'inst-1', templateId: 'worker', childSessionId: 'session-child-1' },
@@ -365,57 +418,78 @@ const PASS = {
     ],
     residencyDrop: { status: 200, body: { ok: true, dropped: true } },
     forbiddenClaim: CLAIM_B,
-    sinkDelta: 0,
+    facts: LIVE_CONSULTATIONS,
+    stopInstant: LIVE_STOP_INSTANT,
+    // The old rule's input: TWO facts sit inside the window, both from BEFORE
+    // the archive. It is reported, never checked.
+    sinkDelta: 2,
     healthStatus: 200,
     hostAlive: true,
   },
 }
 
+/** The `PASS` key for every case id (row4a/row4b are not `row<digit>`). */
+const PASS_KEY = {
+  [ACCEPTANCE_CASE_IDS.precondition]: 'precondition',
+  [ACCEPTANCE_CASE_IDS.row1]: 'row1',
+  [ACCEPTANCE_CASE_IDS.row2]: 'row2',
+  [ACCEPTANCE_CASE_IDS.row3]: 'row3',
+  [ACCEPTANCE_CASE_IDS.row4a]: 'row4a',
+  [ACCEPTANCE_CASE_IDS.row4b]: 'row4b',
+  [ACCEPTANCE_CASE_IDS.row5]: 'row5',
+  [ACCEPTANCE_CASE_IDS.row6]: 'row6',
+}
+
 /** The three samples each case MUST distinguish. */
 const NOT_REACHED_SAMPLES = {
-  'live:composition-precondition-read-surface': { hostAlive: true, memberRequest: null, discovery: null, readCalls: 0 },
-  'live:row1-read-a-inside-both-allowed': { call: null, result: null, claim: CLAIM_A },
-  'live:row2-read-b-binding-deny-exactly-one-fact': { call: readCall('/w/b.txt'), result: null, claim: CLAIM_B },
-  'live:row3-read-c-refused-no-widening': { call: null, result: null, claim: CLAIM_C },
-  'live:row4-write-b-ceiling-allowed-no-read-lane-fact': { call: null, result: null, expectedContent: WRITE_B },
-  'live:row5-post-invalidation-refused-shadow-invalidated': { member: null, forbiddenClaim: CLAIM_B },
-  'live:row6-teardown-no-usable-unconstrained-shadow': { member: null, archive: null, forbiddenClaim: CLAIM_B },
+  [ACCEPTANCE_CASE_IDS.precondition]: { hostAlive: true, memberRequest: null, discovery: null, readCalls: 0 },
+  [ACCEPTANCE_CASE_IDS.row1]: { call: null, result: null, claim: CLAIM_A },
+  [ACCEPTANCE_CASE_IDS.row2]: { call: readCall('/w/b.txt'), result: null, claim: CLAIM_B },
+  [ACCEPTANCE_CASE_IDS.row3]: { call: null, result: null, claim: CLAIM_C },
+  [ACCEPTANCE_CASE_IDS.row4a]: { call: null, result: null, expectedContent: WRITE_4A },
+  [ACCEPTANCE_CASE_IDS.row4b]: { call: null, result: null, plantedContent: `${CLAIM_B}\n` },
+  [ACCEPTANCE_CASE_IDS.row5]: { member: null, forbiddenClaim: CLAIM_B },
+  [ACCEPTANCE_CASE_IDS.row6]: { member: null, archive: null, forbiddenClaim: CLAIM_B },
 }
 
 const REFUTED_SAMPLES = {
-  'live:composition-precondition-read-surface': {
+  [ACCEPTANCE_CASE_IDS.precondition]: {
     ...PASS.precondition,
     memberRequest: { ...PASS.precondition.memberRequest, readSchemas: 2 },
   },
-  'live:row1-read-a-inside-both-allowed': { ...PASS.row1, result: result('permission denied', true) },
-  'live:row2-read-b-binding-deny-exactly-one-fact': {
+  [ACCEPTANCE_CASE_IDS.row1]: { ...PASS.row1, result: result('permission denied', true) },
+  // A read-path ALLOW at B contradicts the row (the decision, not the count).
+  [ACCEPTANCE_CASE_IDS.row2]: {
     ...PASS.row2,
-    // TWO read facts is the contradiction; a WRITE fact at the same locator is
-    // the healthy stream and is pinned by C9.
-    facts: [...PASS.row2.facts, { realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
+    facts: [{ ...readFact('stat', 'allow') }, writeFact('member', 'allow')],
   },
-  'live:row3-read-c-refused-no-widening': {
+  [ACCEPTANCE_CASE_IDS.row3]: {
     ...PASS.row3,
     probeC: { ...PASS.row3.probeC, effectiveRead: 'allow' },
   },
-  'live:row4-write-b-ceiling-allowed-no-read-lane-fact': {
-    ...PASS.row4,
-    readLaneWriteFacts: [{ realm: 'binding', toolBindingIdentity: 'dsh.fs/read', method: 'write', decision: 'allow' }],
+  // The write CROSSED channels: a write allow appeared on the read lane.
+  [ACCEPTANCE_CASE_IDS.row4a]: {
+    ...PASS.row4a,
+    facts: [writeFact('member', 'allow'), writeFact('binding', 'allow')],
   },
-  'live:row5-post-invalidation-refused-shadow-invalidated': {
+  // Asked and answered, but not by the read coupling: the live sandbox denial.
+  [ACCEPTANCE_CASE_IDS.row4b]: {
+    ...PASS.row4b,
+    result: result(LIVE_ROW4_SANDBOX_DENIAL, true),
+  },
+  [ACCEPTANCE_CASE_IDS.row5]: {
     ...PASS.row5,
     postRead: { status: 200, body: { ok: true, value: { text: CLAIM_B } } },
   },
-  'live:row6-teardown-no-usable-unconstrained-shadow': {
+  [ACCEPTANCE_CASE_IDS.row6]: {
     ...PASS.row6,
-    observations: [
-      ...PASS.row6.observations,
-      'a5sf: realm dispose failed: disposer rejected: boom',
-    ],
+    facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: '2026-11-04T07:28:29.500Z', locator: '/w/late-fact.txt' }],
   },
 }
 
 test('C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED', () => {
+  assert.equal(ACCEPTANCE_CASES.length, 8, 'precondition + SEVEN rows (4a and 4b are separate cases)')
+  for (const caseId of ACCEPTANCE_CASES) assert.equal(PASS_KEY[caseId] !== undefined, true, `${caseId} has no PASS key`)
   assert.deepEqual(Object.keys(NOT_REACHED_SAMPLES).sort(), [...ACCEPTANCE_CASES].sort())
   assert.deepEqual(Object.keys(REFUTED_SAMPLES).sort(), [...ACCEPTANCE_CASES].sort())
   for (const caseId of ACCEPTANCE_CASES) {
@@ -427,9 +501,7 @@ test('C0 every case has all three samples and every NOT_REACHED sample answers N
 
 test('C1 every case PROVES on the passing sample and REFUTES on the contradicted sample', () => {
   for (const caseId of ACCEPTANCE_CASES) {
-    const passKey = caseId === 'live:composition-precondition-read-surface' ? 'precondition'
-      : `row${caseId.match(/row(\d)/)[1]}`
-    const passSample = PASS[passKey]
+    const passSample = PASS[PASS_KEY[caseId]]
     const proven = judgeAcceptanceRow(caseId, passSample)
     assert.equal(proven.verdict, 'PROVEN', `${caseId}: ${JSON.stringify(proven)}`)
     const refuted = judgeAcceptanceRow(caseId, REFUTED_SAMPLES[caseId])
@@ -480,10 +552,14 @@ test('C3 the row-level reason codes distinguish "never asked" from "asked and co
 })
 
 test('C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim)', () => {
-  const noSink = judgeRow2({ ...PASS.row2, facts: [], bindingDenyFacts: [] })
-  assert.equal(noSink.verdict, 'REFUTED', 'a call that exists but records no deny fact contradicts "exactly one"')
-  const wrongLane = judgeRow2({ ...PASS.row2, bindingDenyFacts: [] })
+  const noSink = judgeRow2({ ...PASS.row2, facts: [] })
+  assert.equal(noSink.verdict, 'REFUTED', 'a refused read that recorded NO read-path fact is not evidence')
+  assert.equal(noSink.detail.checks.readPathConsulted, false)
+  // A deny recorded by the WRONG realm cannot be credited to the binding lane.
+  const wrongLane = judgeRow2({ ...PASS.row2, facts: [writeFact('member', 'deny')] })
   assert.equal(wrongLane.verdict, 'REFUTED')
+  assert.equal(wrongLane.detail.checks.everyReadPathFactOnBindingLane, false)
+  assert.equal(wrongLane.detail.checks.bindingDenyOnReadPath, false)
 })
 
 test('C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line', () => {
@@ -518,29 +594,32 @@ test('C7 the precondition requires a member request AND the one-read surface (ne
 
 test('C8 each verdict carries a closed reason code (auditable without prose)', () => {
   for (const caseId of ACCEPTANCE_CASES) {
-    const judged = judgeAcceptanceRow(caseId, PASS[caseId === 'live:composition-precondition-read-surface' ? 'precondition' : `row${caseId.match(/row(\d)/)[1]}`])
+    const judged = judgeAcceptanceRow(caseId, PASS[PASS_KEY[caseId]])
     assert.match(judged.reason, /^[A-Z0-9_]+$/)
     assert.equal(judged.detail.reason, judged.reason)
   }
 })
 
-test('C9 row 2 replay: the HEALTHY stream (read-B deny + later write-B allow at the same locator) is PASS', () => {
-  // The exact stream the live world produces: the worker reads B (binding deny,
-  // readText) and row 4 later writes B (ceiling allow, write). B1: the raw
-  // `facts.length === 1` counted both and REFUTED a healthy run.
-  const healthy = {
-    ...PASS.row2,
-    facts: [
-      { realm: 'binding', toolBindingIdentity: 'dsh.fs/read', method: 'readText', decision: 'deny', locator: '/w/b.txt' },
-      { realm: 'member', toolBindingIdentity: null, method: 'write', decision: 'allow', locator: '/w/b.txt' },
-    ],
-  }
-  const judged = judgeRow2(healthy)
+test('C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN', () => {
+  // The fixture is `consultations.jsonl` from the 2026-11-04T07:28Z run, not a
+  // synthetic stream: the old clause counted `method === 'readText'` facts and
+  // this stream has NONE (the denied target is refused at `stat`), which is how
+  // the live row 2 was reported FAIL while the product had refused correctly.
+  assert.equal(LIVE_CONSULTATIONS.length, 5, 'the live sink carried five facts')
+  const factsForB = liveFactsAt(LIVE_B_LOCATOR)
+  assert.equal(factsForB.length, 2, 'B carries the stat deny AND the row-4 writeText allow')
+  const judged = judgeRow2({ ...PASS.row2, facts: factsForB })
   assert.equal(judged.verdict, 'PROVEN', JSON.stringify(judged))
-  assert.equal(judged.detail.readFacts, 1)
-  assert.equal(judged.detail.nonReadFacts, 1, 'the write fact is visible, not counted')
-  // and no read fact at all still refutes (the sink channel is part of the claim)
-  assert.equal(judgeRow2({ ...healthy, facts: [] }).verdict, 'REFUTED')
+  assert.equal(judged.reason, 'BINDING_DENY_ON_READ_PATH')
+  assert.equal(judged.detail.readPathFacts, 1)
+  assert.deepEqual(judged.detail.readPathMethods, ['stat'], 'the live read-path consultation IS the stat')
+  assert.equal(judged.detail.nonReadPathFacts.length, 1, 'the writeText allow is visible, not counted')
+  assert.equal(judged.detail.nonReadPathFacts[0].method, 'writeText')
+  // The SAME stream with the live `readText` filter (the replaced rule) counts
+  // zero read facts and would refute a correct refusal — the defect, in one line.
+  assert.equal(factsForB.filter((fact) => fact.method === 'readText').length, 0)
+  // and a stream with no read-path fact at all still refutes (the channel is part of the claim)
+  assert.equal(judgeRow2({ ...PASS.row2, facts: [] }).verdict, 'REFUTED')
 })
 
 test('C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED', () => {
@@ -617,4 +696,153 @@ test('C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm
   assert.equal(other.verdict, 'REFUTED')
   assert.equal(other.reason, 'ROW5_CLAUSE_FAILED')
   assert.equal(other.detail.observedCode, 'A5SF_SOMETHING_ELSE')
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// D. the corrections after the FIRST LIVE RUN (2026-11-04T07:28Z)
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure', () => {
+  // THE RULE: the row asserts a DECISION on every read-path consultation for B,
+  // not a cardinality. A healthy `read` on an ALLOWED target is stat+readText
+  // (two allows, the live A stream); a refused target may be consulted once
+  // (stat only, the live B stream) or twice (stat + readText, both denied). None
+  // of those shapes is a failure BY ITSELF; only an ALLOW for B is.
+  const twoDenies = judgeRow2({
+    ...PASS.row2,
+    facts: [readFact('stat', 'deny'), readFact('readText', 'deny')],
+  })
+  assert.equal(twoDenies.verdict, 'PROVEN', JSON.stringify(twoDenies))
+  assert.deepEqual(twoDenies.detail.readPathMethods, ['stat', 'readText'])
+  assert.deepEqual(twoDenies.detail.failed, [], 'two consultations, both refused: no clause fails')
+
+  // The live A-locator shape (stat allow + readText allow) applied to B: the row
+  // is REFUTED because the product SERVED the target — the two-lane allow is the
+  // contradiction, never the two facts.
+  const twoAllows = judgeRow2({ ...PASS.row2, facts: liveFactsAt(LIVE_A_LOCATOR) })
+  assert.equal(twoAllows.verdict, 'REFUTED')
+  assert.deepEqual(twoAllows.detail.failed.sort(), ['bindingDenyOnReadPath', 'everyReadPathConsultationDenied'])
+  for (const clause of twoAllows.detail.failed) {
+    assert.equal(/count|exactly|length/i.test(clause), false, `the failure must be a decision clause, got ${clause}`)
+  }
+  assert.equal(twoAllows.detail.readPathFacts, 2, 'both consultations are counted and reported, not hidden')
+
+  // A write fact at the same locator neither counts nor rescues the row.
+  const writeOnly = judgeRow2({ ...PASS.row2, facts: [writeFact('member', 'allow')] })
+  assert.equal(writeOnly.verdict, 'REFUTED')
+  assert.equal(writeOnly.detail.readPathFacts, 0)
+})
+
+test('C14 rows 4a/4b: the split is two questions, and neither loosens the other', () => {
+  // 4a: in-lane readable write, ceiling-only fact, disk matches.
+  const fourA = judgeRow4a(PASS.row4a)
+  assert.equal(fourA.verdict, 'PROVEN', JSON.stringify(fourA))
+  assert.equal(fourA.detail.checks.everyWriteFactOnCeiling, true)
+  assert.equal(fourA.detail.readLaneWriteFacts, 0, 'the channel fact is reported: no write fact on the read lane')
+  // 4a REFUTES if the write fact crosses into the read lane...
+  const crossed = judgeRow4a(REFUTED_SAMPLES[ACCEPTANCE_CASE_IDS.row4a])
+  assert.equal(crossed.verdict, 'REFUTED')
+  assert.deepEqual(crossed.detail.failed, ['everyWriteFactOnCeiling'], 'the crossing is the ONE failed clause')
+  assert.equal(crossed.detail.readLaneWriteFacts, 1)
+  // ...or if the disk does not carry the new content...
+  assert.equal(judgeRow4a({ ...PASS.row4a, disk: ORIG_4A }).verdict, 'REFUTED')
+  // ...or if no confined provider served the call (the base instance would be unguarded).
+  assert.equal(judgeRow4a({ ...PASS.row4a, counterRows: [{ leg: 'write-call', isBase: true }] }).verdict, 'REFUTED')
+  // ...or if the CONFINED write the product refused is credited as an allow:
+  assert.equal(judgeRow4a({ ...PASS.row4a, result: result('permission denied', true) }).verdict, 'REFUTED')
+
+  // 4b: the SAME property (no channel crossing) asserted on the refusal.
+  const fourB = judgeRow4b(PASS.row4b)
+  assert.equal(fourB.verdict, 'PROVEN', JSON.stringify(fourB))
+  assert.equal(fourB.detail.checks.typedReadCouplingRefusal, true)
+  assert.equal(fourB.detail.checks.ceilingFactReported, undefined, 'no invented clause')
+  assert.equal(fourB.detail.writeDecisions.length, 1, 'the ceiling allow is REPORTED (measured live), not a violation')
+  assert.equal(fourB.detail.writeDecisions[0].realm, 'member')
+  // the LIVE row-4 refusal (host sandbox, not the read coupling) must NOT be
+  // credited to 4b — that is exactly the wrong-question failure being repaired.
+  const sandbox = judgeRow4b(REFUTED_SAMPLES[ACCEPTANCE_CASE_IDS.row4b])
+  assert.equal(sandbox.verdict, 'REFUTED')
+  assert.equal(sandbox.detail.checks.typedReadCouplingRefusal, false)
+  assert.equal(sandbox.detail.checks.isError, true, 'it IS an error — just not the one the row asks for')
+  // a write that CHANGED the file is REFUTED even with the right prose
+  assert.equal(judgeRow4b({ ...PASS.row4b, disk: WRITE_B }).verdict, 'REFUTED')
+  // an unplanted target is an ABSENCE (the "unchanged" claim has no baseline)
+  assert.equal(judgeRow4b({ ...PASS.row4b, plantedContent: '' }).reason, 'NO_PLANTED_B')
+  // a laundered allow on the read lane is REFUTED
+  assert.equal(judgeRow4b({ ...PASS.row4b, facts: [writeFact('member', 'allow'), writeFact('binding', 'allow')] }).verdict, 'REFUTED')
+
+  // the split is COMPLETE: no case id or judge from the retired single row survives
+  assert.equal(judgeRow4a({}).verdict, 'NOT_REACHED')
+  assert.equal(judgeRow4b({}).verdict, 'NOT_REACHED')
+  assert.equal(Object.values(ACCEPTANCE_CASE_IDS).some((id) => /row4-write-b/.test(id)), false)
+})
+
+test('C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt', () => {
+  // The live stream's newest fact is 07:28:27.080Z; the archive was answered at
+  // 07:28:28.916Z. NOTHING follows the stop — and the old `sinkDelta === 0`
+  // clause reported FAIL on this same stream because two facts from rows 1–2
+  // landed inside its "after" window.
+  const live = judgeRow6(PASS.row6)
+  assert.equal(live.verdict, 'PROVEN', JSON.stringify(live))
+  assert.equal(live.detail.checks.noFactAfterStop, true)
+  assert.equal(live.detail.factsObserved, 5)
+  assert.deepEqual(live.detail.factsAfterStop, [])
+  assert.equal(live.detail.stopInstant, LIVE_STOP_INSTANT)
+  const newest = Math.max(...LIVE_CONSULTATIONS.map((fact) => Date.parse(fact.observedAt)))
+  assert.equal(newest < Date.parse(LIVE_STOP_INSTANT), true, 'every live fact precedes the stop')
+  // The replaced rule, evaluated inline: the live run recorded sinkDelta = 2 for
+  // this window (both facts from before the archive), so a count-based clause
+  // necessarily refuted a clean stream. `PASS.row6.sinkDelta` carries that 2.
+  assert.equal(PASS.row6.sinkDelta, 2, 'the old window input, as measured live')
+  // The count input is CARRIED but not checked: the same sample with the old
+  // sinkDelta (2) still PROVES, which is what makes the fix load-bearing.
+  assert.equal(judgeRow6({ ...PASS.row6, sinkDelta: 2 }).verdict, 'PROVEN')
+  assert.equal(judgeRow6({ ...PASS.row6, sinkDelta: 0 }).verdict, 'PROVEN')
+
+  // Injected one fact with a LATER observedAt → REFUTED, and the fact is named.
+  const injected = judgeRow6({
+    ...PASS.row6,
+    facts: [...LIVE_CONSULTATIONS, {
+      ...LIVE_CONSULTATIONS[0],
+      method: 'writeText',
+      locator: '/w/after-stop.txt',
+      observedAt: '2026-11-04T07:28:29.500Z',
+    }],
+  })
+  assert.equal(injected.verdict, 'REFUTED')
+  assert.equal(injected.reason, 'ROW6_CLAUSE_FAILED')
+  assert.deepEqual(injected.detail.failed, ['noFactAfterStop'])
+  assert.equal(injected.detail.factsAfterStop.length, 1)
+  assert.equal(injected.detail.factsAfterStop[0].observedAt, '2026-11-04T07:28:29.500Z')
+  assert.equal(injected.detail.factsAfterStop[0].locator, '/w/after-stop.txt')
+
+  // A fact AT the stop instant is not "after" it (boundary is strict).
+  assert.equal(judgeRow6({ ...PASS.row6, facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: LIVE_STOP_INSTANT }] }).verdict, 'PROVEN')
+  // A fact with NO parseable observedAt cannot be proven to precede the stop.
+  const undated = judgeRow6({ ...PASS.row6, facts: [...LIVE_CONSULTATIONS, { ...LIVE_CONSULTATIONS[0], observedAt: null }] })
+  assert.equal(undated.verdict, 'REFUTED')
+  assert.deepEqual(undated.detail.failed, ['factsAreTimestamped'])
+  // No stop instant = the row is unanswerable (the driver must record it).
+  const noStop = judgeRow6({ ...PASS.row6, stopInstant: null })
+  assert.equal(noStop.verdict, 'NOT_REACHED')
+  assert.equal(noStop.reason, 'NO_STOP_INSTANT')
+  // The other three clauses are unchanged and still fire.
+  assert.equal(judgeRow6({ ...PASS.row6, postStopDispatches: [{ status: 200, body: { ok: true, value: { text: CLAIM_B } } }] }).detail.checks.noSuccessAfterStop, false)
+  assert.equal(judgeRow6({ ...PASS.row6, postStopDispatches: [{ status: 200, body: { ok: true, value: { text: CLAIM_B } } }] }).detail.checks.noForbiddenBytesAfterStop, false)
+  assert.equal(judgeRow6({ ...PASS.row6, healthStatus: 500 }).detail.checks.hostHealthy, false)
+})
+
+test('C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation', () => {
+  // `dry-run.mjs` binds WRITE_PATH_METHODS to fs.ts; here the ORACLE behaviour
+  // is pinned: a method nobody has seen before is NOT ignored (fail-closed).
+  assert.deepEqual([...WRITE_PATH_METHODS], ['writeText', 'editText'])
+  assert.equal(isWritePathConsultation({ method: 'writeText' }), true)
+  assert.equal(isWritePathConsultation({ method: 'editText' }), true)
+  assert.equal(isReadPathConsultation({ method: 'stat' }), true)
+  assert.equal(isReadPathConsultation({ method: 'readText' }), true)
+  assert.equal(isReadPathConsultation({ method: 'aMethodThatDidNotExistYet' }), true)
+  assert.equal(isReadPathConsultation({ method: undefined }), true)
+  const future = judgeRow2({ ...PASS.row2, facts: [readFact('aMethodThatDidNotExistYet', 'allow')] })
+  assert.equal(future.verdict, 'REFUTED', 'a future read method that is ALLOWED must refute, not slip past a name filter')
+  assert.equal(IO_WRITE_REQUIRES_READ, 'IO_WRITE_REQUIRES_READ')
 })

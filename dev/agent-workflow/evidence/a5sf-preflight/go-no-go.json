@@ -1,21 +1,34 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
   "branch": "task/a5sf-preflight-20261103",
-  "evidenceHeadAtDryRun": "483bfea4cf8e4901e4cddf755f9bdb6be4f7e149",
+  "evidenceHeadAtDryRun": "1465d3ef77fa1caec76b98e9b637368f5601d0c5",
   "productTreeDigest": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-01 live read (BL-14 / G2 live half)",
     "boots": 6,
-    "allocated": true
+    "allocated": true,
+    "consumed": 1,
+    "remaining": 5
   },
-  "go": true,
+  "ledger": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+    "rows": 2,
+    "intents": 1,
+    "bootRows": 1,
+    "unparseable": 0,
+    "orphanBootRuns": [],
+    "plannedMismatch": [],
+    "bootsInPool": 6,
+    "remaining": 5
+  },
+  "go": false,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 29,
+        "checks": 48,
         "failed": 0
       }
     },
@@ -29,8 +42,8 @@
     },
     {
       "id": "the product tree has no uncommitted modifications",
-      "ok": true,
-      "detail": ""
+      "ok": false,
+      "detail": "M tests/world-factory/a5sf-acceptance-preflight.test.mjs\n M tests/world-factory/lib/a5sf-acceptance-preflight.mjs"
     },
     {
       "id": "branch is the preflight branch",
@@ -38,9 +51,32 @@
       "detail": "task/a5sf-preflight-20261103"
     },
     {
-      "id": "no ledger row exists for this evidence directory (no boot was spent)",
+      "id": "ledger: every row parses and each boot row has its intent row",
       "ok": true,
-      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl"
+      "detail": {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl",
+        "rows": 2,
+        "intents": 1,
+        "bootRows": 1,
+        "unparseable": 0,
+        "orphanBootRuns": [],
+        "plannedMismatch": [],
+        "bootsInPool": 6,
+        "remaining": 5
+      }
+    },
+    {
+      "id": "ledger: each intent's plannedStarts equals the boot rows charged to it",
+      "ok": true,
+      "detail": {
+        "intents": 1,
+        "mismatch": []
+      }
+    },
+    {
+      "id": "budget: at least ONE start of the P2-01 pool is still available",
+      "ok": true,
+      "detail": "boots=6 spent=1 remaining=5"
     },
     {
       "id": "boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)",
@@ -66,7 +102,7 @@
   "structurallyUnverifiableWithoutBoot": [
     "a live `team.create` of the acceptance blueprint on the booted Host (it is an RPC against a running Host; no host-free entry point exists)",
     "that the p6t6 directive the driver writes is the one the row reads (the directive path is World-internal and materialises only during boot)",
-    "that the six rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)",
+    "that the seven rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)",
     "that the Host's own teardown disposes the a5sf realm without a fault (the dispose observation channel is a live-State route)"
   ]
 }

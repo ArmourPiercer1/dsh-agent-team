@@ -1,0 +1,187 @@
+{
+  "schema": "a5sf-acceptance-preflight/negative-controls/1",
+  "at": "2026-11-04T07:59:14.545Z",
+  "library": "tests/world-factory/lib/a5sf-acceptance-preflight.mjs",
+  "librarySha256Before": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+  "librarySha256After": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+  "libraryPristineAfter": true,
+  "suiteAfter": {
+    "status": 0,
+    "pass": 29,
+    "fail": 0
+  },
+  "allControlsBehaved": true,
+  "controls": [
+    {
+      "id": "NC1-row2-readtext-only-filter",
+      "fix": "correction 1 (read-PATH decision, not a readText count)",
+      "why": "the live B stream has NO readText fact (the deny is at `stat`), so this filter silently counts zero and refutes a correct refusal",
+      "mutation": {
+        "find": "  const readPathFacts = list.filter((fact) => isReadPathConsultation(fact))",
+        "replace": "  const readPathFacts = list.filter((fact) => String(fact?.method ?? '') === 'readText')"
+      },
+      "suiteStatus": 1,
+      "suitePass": 26,
+      "suiteFail": 3,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN",
+        "C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN",
+        "C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure"
+      ],
+      "expectFailing": [
+        "C9"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC2a-row4a-accepts-any-write-fact",
+      "fix": "correction 2 (4a: an allowed write must not cross channels)",
+      "why": "a write-allow laundered onto the read lane would be credited as a clean 4a as soon as ANY write fact exists",
+      "mutation": {
+        "find": "    everyWriteFactOnCeiling: writeFacts.length > 0 && ceilingFacts.length === writeFacts.length,",
+        "replace": "    everyWriteFactOnCeiling: writeFacts.length > 0,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 27,
+      "suiteFail": 2,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+      ],
+      "expectFailing": [
+        "C14"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC2c-row4b-accepts-a-laundered-read-lane-allow",
+      "fix": "correction 2 (4b: the refusal must not be laundered into the read lane)",
+      "why": "a write-allow on the binding (read) realm is the one channel crossing 4b must refuse",
+      "mutation": {
+        "find": "    noReadLaneWriteAllow: readLaneWriteAllowFacts.length === 0,",
+        "replace": "    noReadLaneWriteAllow: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 28,
+      "suiteFail": 1,
+      "failingTests": [
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+      ],
+      "expectFailing": [
+        "C14"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC2b-row4b-accepts-any-refusal",
+      "fix": "correction 2 (4b: the refusal must BE the read coupling)",
+      "why": "the live row-4 text WAS an error (host sandbox denial under the old root); only the write⇐read sentence makes it the asked question",
+      "mutation": {
+        "find": "    typedReadCouplingRefusal: IO_WRITE_REQUIRES_READ_PROSE.test(text),",
+        "replace": "    typedReadCouplingRefusal: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 27,
+      "suiteFail": 2,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C14 rows 4a/4b: the split is two questions, and neither loosens the other"
+      ],
+      "expectFailing": [
+        "C14"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC3a-row6-drops-the-temporal-clause",
+      "fix": "correction 3 (no fact AFTER the stop instant)",
+      "why": "with the clause always true, one injected fact with a later observedAt still PROVES",
+      "mutation": {
+        "find": "    noFactAfterStop: afterStop.length === 0,",
+        "replace": "    noFactAfterStop: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 27,
+      "suiteFail": 2,
+      "failingTests": [
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
+        "C1 every case PROVES on the passing sample and REFUTES on the contradicted sample",
+        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+      ],
+      "expectFailing": [
+        "C15"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC3b-row6-accepts-an-undated-fact",
+      "fix": "correction 3 (fail-closed on an unparseable observedAt)",
+      "why": "a fact that cannot be shown to precede the stop must refute, not slip past the bound",
+      "mutation": {
+        "find": "    factsAreTimestamped: undated.length === 0,",
+        "replace": "    factsAreTimestamped: true,"
+      },
+      "suiteStatus": 1,
+      "suitePass": 28,
+      "suiteFail": 1,
+      "failingTests": [
+        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt",
+        "C15 row 6 temporal bound: PROVEN over the REAL live stream, REFUTED by one later observedAt"
+      ],
+      "expectFailing": [
+        "C15"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    },
+    {
+      "id": "NC4-write-partition-loses-editText",
+      "fix": "the read/write partition equals the product WRITE_METHODS",
+      "why": "editText would be miscounted as a read-path consultation (and the partition would silently drift from fs.ts)",
+      "mutation": {
+        "find": "export const WRITE_PATH_METHODS = Object.freeze(['writeText', 'editText'])",
+        "replace": "export const WRITE_PATH_METHODS = Object.freeze(['writeText'])"
+      },
+      "suiteStatus": 1,
+      "suitePass": 28,
+      "suiteFail": 1,
+      "failingTests": [
+        "C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation",
+        "C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation"
+      ],
+      "expectFailing": [
+        "C16"
+      ],
+      "expectedTestFailed": true,
+      "restoredSha256": "7605522f8a8c22bf1a51cb0d67f2620e5675163687a564a7a082f7631be3e0da",
+      "restoredVerbatim": true,
+      "behaved": true
+    }
+  ]
+}

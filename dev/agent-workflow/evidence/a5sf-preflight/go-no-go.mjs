@@ -13,9 +13,14 @@
  *     invalidate it, while a code/test/config change does);
  *   - the product tree has uncommitted modifications;
  *   - the branch is not the preflight branch;
- *   - a ledger row already exists for this evidence directory (an orphan
- *     pre-registration would mean a boot was already spent);
- *   - the boot pool does not allocate the three dedicated P2-01 starts
+ *   - the LEDGER IS INCONSISTENT with itself (an intent row whose
+ *     `plannedStarts` does not match the boot rows of its `runId`, or a boot row
+ *     with no intent) — this replaces the old "no ledger row may exist", which
+ *     became a false refusal the moment the first live run legitimately spent
+ *     its one start, and which would have kept refusing forever;
+ *   - the pool has no START LEFT for this run (`boots - bootRows < 1`), i.e. the
+ *     remaining budget is not enough for the run this checklist authorises;
+ *   - the boot pool does not allocate the six P2-01 starts
  *     (this is the amendment fact: `boots >= 6`, review B5);
  *   - the pinned host tree is not the pinned commit or is dirty.
  *
@@ -43,6 +48,7 @@ const PIN = (() => {
   try { return readFileSync(join(REPO_ROOT, 'tests', 'paths.mjs'), 'utf8').match(/TEST_USE_BASELINE_SHA\s*=\s*'([0-9a-f]+)'/)?.[1] ?? null } catch { return null }
 })()
 
+let report_ledger = null
 const results = []
 function check(id, ok, detail) {
   results.push({ id, ok: ok === true, detail })
@@ -75,7 +81,48 @@ check('dry-run evidence exists and is green', dryRun !== null && dryRun.goNoGo =
 check('the PRODUCT tree matches the one the dry run measured', dryRun !== null && dryRun.productTreeDigest === digestNow, { committed: dryRun?.productTreeDigest ?? null, now: digestNow })
 check('the product tree has no uncommitted modifications', productStatus === '', productStatus)
 check('branch is the preflight branch', /^task\/a5sf-preflight-/.test(branch), branch)
-check('no ledger row exists for this evidence directory (no boot was spent)', !existsSync(ledgerPath), ledgerPath)
+// ── the ledger, read as a BUDGET ACCOUNT (replaces "no row may exist") ──────
+// The first live run (07:28Z) spent exactly one start and left one intent row +
+// one boot row, which is the HEALTHY post-run state. The old clause asserted the
+// PRE-run state and therefore could only ever pass before a boot — after the run
+// it refused forever, which is how a gate turns into a blocker.
+const ledgerRows = existsSync(ledgerPath)
+  ? readFileSync(ledgerPath, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => {
+    try { return JSON.parse(line) } catch { return { unparseable: line.slice(0, 200) } }
+  })
+  : []
+const unparseableRows = ledgerRows.filter((row) => row.unparseable !== undefined)
+const intents = ledgerRows.filter((row) => row.kind === 'budget-intent')
+const bootRows = ledgerRows.filter((row) => row.kind !== 'budget-intent' && row.phase !== undefined)
+const runsOf = (rows) => [...new Set(rows.map((row) => String(row.runId ?? '')))]
+const intentRuns = runsOf(intents)
+const bootRuns = runsOf(bootRows)
+const orphanBootRuns = bootRuns.filter((runId) => !intentRuns.includes(runId))
+const plannedMismatch = intentRuns.map((runId) => {
+  const planned = intents.filter((row) => String(row.runId ?? '') === runId)
+  const spent = bootRows.filter((row) => String(row.runId ?? '') === runId).length
+  const declared = planned.reduce((sum, row) => sum + Number(row.plannedStarts ?? 0), 0)
+  return { runId, plannedStarts: declared, bootRows: spent, ok: declared === spent }
+}).filter((entry) => entry.ok !== true)
+const bootsSpent = bootRows.length
+const remaining = Number(p201?.boots ?? 0) - bootsSpent
+report_ledger = {
+  path: ledgerPath,
+  rows: ledgerRows.length,
+  intents: intents.length,
+  bootRows: bootsSpent,
+  unparseable: unparseableRows.length,
+  orphanBootRuns,
+  plannedMismatch,
+  bootsInPool: Number(p201?.boots ?? 0),
+  remaining,
+}
+check('ledger: every row parses and each boot row has its intent row', unparseableRows.length === 0 && orphanBootRuns.length === 0,
+  report_ledger)
+check('ledger: each intent\'s plannedStarts equals the boot rows charged to it', plannedMismatch.length === 0,
+  { intents: intentRuns.length, mismatch: plannedMismatch })
+check('budget: at least ONE start of the P2-01 pool is still available', remaining >= 1,
+  `boots=${String(p201?.boots ?? null)} spent=${String(bootsSpent)} remaining=${String(remaining)}`)
 check('boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)', poolOk === true, {
   poolFile: 'dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json',
   item: p201?.item ?? null,
@@ -94,7 +141,8 @@ const report = {
   evidenceHeadAtDryRun: dryRun?.head ?? null,
   productTreeDigest: digestNow,
   pinnedHost: PIN,
-  pool: { item: p201?.item ?? null, boots: p201?.boots ?? null, allocated: poolOk },
+  pool: { item: p201?.item ?? null, boots: p201?.boots ?? null, allocated: poolOk, consumed: report_ledger?.bootRows ?? null, remaining: report_ledger?.remaining ?? null },
+  ledger: report_ledger,
   go: results.every((entry) => entry.ok === true),
   checks: results,
   next: 'node dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs  (ONE Host, ONE ledger row, port family 3180)',
