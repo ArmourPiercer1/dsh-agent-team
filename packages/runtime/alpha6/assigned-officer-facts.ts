@@ -187,14 +187,20 @@ export interface AssignedOfficerCategoryQuery {
  */
 export type AuthorityGenerationSource =
   | number
-  | (() => Promise<number | undefined>)
+  | ((input: {
+      readonly rootSessionId: string
+      readonly reviewerInstanceId: string
+    }) => Promise<number | undefined>)
 
-/** Read the current generation; a faulting/unanswerable read is a refusal. */
-async function resolveGeneration(source: AuthorityGenerationSource | undefined): Promise<number | undefined> {
+/** Read the current generation for the RESOLVED reviewer; a faulting read is a refusal. */
+async function resolveGeneration(
+  source: AuthorityGenerationSource | undefined,
+  input: { readonly rootSessionId: string; readonly reviewerInstanceId: string },
+): Promise<number | undefined> {
   if (source === undefined) return undefined
   if (typeof source === 'number') return source
   try {
-    return await source()
+    return await source(input)
   } catch {
     return undefined
   }
@@ -376,7 +382,10 @@ export function createAssignedOfficerFactsPort(
     // The generation must be present on BOTH sides and agree. Absent/0 is "no
     // generation frozen", which is exactly the case the capability must not
     // paper over.
-    const authorityGeneration = await resolveGeneration(input.authorityGeneration)
+    const authorityGeneration = await resolveGeneration(input.authorityGeneration, {
+      rootSessionId: root,
+      reviewerInstanceId: resolved.officer.instanceId,
+    })
     if (!isGeneration(authorityGeneration)) return null
     if (!isGeneration(leg.authorityGeneration)) return null
     if (leg.authorityGeneration !== authorityGeneration) return null
