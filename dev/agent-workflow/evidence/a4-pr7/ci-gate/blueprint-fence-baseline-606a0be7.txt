@@ -19,7 +19,6 @@
 # Discipline: "at the next PR base, the coordinator re-captures ... publishes the new baseline
 # file"), and a lane that quietly replaces it has deleted the only thing making this leg mean
 # something.
-#
 # Standing condition at recording time: dirty(6 files, 15 sites), unknown(0 files, 0 sites),
 # adjudicated(16 files, 24 sites), refused(52 files, 115 sites), prose(5 files, 5 sites).
 OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
@@ -34,7 +33,5 @@ OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L131=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L132=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L133=v5
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
-OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L129=v5
-OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L131=v5
-OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L132=v5
-OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L133=v5
+OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L65=v5, L65=v4
+OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L66=v5, L66=v4

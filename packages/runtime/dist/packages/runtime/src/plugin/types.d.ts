@@ -153,6 +153,26 @@ export interface TeamPluginConfig {
      * host row).
      */
     readonly blueprintDir?: string;
+    /**
+     * Alpha.6 trusted-review-facts ports — EXPLICIT OPT-IN, DEFAULT `false`
+     * (absent and `false` are the same state). When `true`, the production
+     * root wires the two trusted Control ports
+     * (`reviewCallFactsForAssignedOfficer` / `currentReviewerForTransfer`)
+     * assembled by `createAlpha6RootWiring` over the LIVE durable member view
+     * and the non-locking `ControlService.readControlState`. When absent or
+     * `false`, the object handed to `createControlService` is byte-identical
+     * to the Alpha.5 wiring (no Alpha.6 parse, no member read, no ports).
+     *
+     * This flag does NOT swap the control notifier and does NOT deliver review
+     * wake — the direct Officer notifier stays off the production root path
+     * until Control WorkChanged → Router → Coordinator → Inbox is the declared
+     * main path. It only arms the facts ports.
+     *
+     * Fail-closed: with `true`, a non-v5 source / disabled `reviewRouting` /
+     * missing Officer template is REFUSED at root construction (the Team
+     * refuses to boot) — never a silent fall back to the Leader path.
+     */
+    readonly alpha6ReviewRouting?: boolean;
     /** The durable TeamSession `generation` (positive integer). */
     readonly generation: number;
     /** The effective default workspace (TeamSession record field). */

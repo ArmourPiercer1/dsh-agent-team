@@ -220,6 +220,7 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
+import { createAlpha6RootWiring } from '../../alpha6/root-composition.js'
 import type { PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -2396,12 +2397,66 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined } = {
     current: (input) => readPaCallFactsPort(input as PaCallFactsInput),
   }
+  // A6 ROOT WIRING (candidate round, explicit opt-in, DEFAULT OFF) — the two
+  // trusted review-facts ports (`reviewCallFactsForAssignedOfficer` /
+  // `currentReviewerForTransfer`) assembled over the LIVE durable member
+  // repository and the NON-LOCKING `ControlService.readControlState`.
+  //
+  // The opt-in is `config.alpha6ReviewRouting === true`; absent/false does
+  // NOT even invoke the thunk below, so no Alpha.6 parse happens, no member
+  // row is read and the object handed to `createControlService` is the
+  // Alpha.5 object verbatim (byte-identical behavior).
+  //
+  // `controlRef` is late-bound: the ports are created BEFORE the service
+  // exists, and their `readControlState` closure reads this binding at
+  // query time (the same lazy-ref pattern as `controlServiceRef`). Control
+  // operations only run after construction, so the binding is always filled.
+  const controlRef: { current?: ControlService } = {}
+  const alpha6Wiring = createAlpha6RootWiring(config.alpha6ReviewRouting === true, () => ({
+    // The SAME bound source the router/wiring consumes; parsed once more by
+    // the composition's ONE v5 parser (`parseAlpha6Routing`) — no second
+    // parser is introduced here.
+    blueprintSource: config.blueprintSource,
+    rootSessionId: rootSid,
+    leaderTemplateId: blueprint.leader.templateId,
+    // The LIVE member view: production creates members AFTER the control
+    // service exists, so a snapshot would be empty/stale. The composition
+    // re-resolves the unique RUNNING Officer on every query.
+    members: {
+      get: (rootSessionId, instanceId) => repos.memberInstances.get(rootSessionId, instanceId),
+      list: (rootSessionId) => repos.memberInstances.list(rootSessionId),
+    },
+    control: {
+      readControlState: (rootSessionId) => {
+        // Unreachable after construction (the closure is only invoked by
+        // control operations); throwing keeps the fail-closed direction.
+        const current = controlRef.current
+        if (current === undefined) {
+          throw new Error('Alpha.6 control port read before the ControlService was constructed')
+        }
+        return current.readControlState(rootSessionId)
+      },
+    },
+  }))
+  // Fail closed: an explicit opt-in that cannot compose must NOT silently
+  // fall back to the Leader path. Refusing here fails the root construction
+  // (the Team does not boot) with a typed plugin error.
+  if (alpha6Wiring.mode === 'refused') {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      `alpha6ReviewRouting is enabled but the Alpha.6 composition refused (${alpha6Wiring.refused}); ` +
+        'the Team refuses to boot rather than fall back to the Leader path',
+      { rootSessionId: rootSid, reason: 'alpha6-review-routing-refused', refused: alpha6Wiring.refused },
+    )
+  }
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,
     now,
+    // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
+    ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
     ...(live.deliverRootControlNotification !== undefined
       ? {
           requestNotification: createLeaderControlNotifier({
@@ -2428,6 +2483,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }),
         }),
   })
+  // Fill the late-bound Alpha.6 control reader immediately — the ports above
+  // captured the binding, not this service value.
+  controlRef.current = control
   // A6 (alpha.2 plan §11): publish the fully-constructed control service to
   // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
   // pattern — filled during construction, the entry calls boot() only after,
