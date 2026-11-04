@@ -474,7 +474,9 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
       deferTurnEnd: true,
     })
     expect(first.delivered).toHaveLength(1)
-    inbox.remove(first.delivered[0]!.wakeId)
+    const firstWakeId = first.delivered[0]?.wakeId
+    if (typeof firstWakeId !== 'string') throw new Error('the first delivery has no wake id')
+    inbox.remove(firstWakeId)
 
     const again = await dispatchReviewWakes({
       plan,
