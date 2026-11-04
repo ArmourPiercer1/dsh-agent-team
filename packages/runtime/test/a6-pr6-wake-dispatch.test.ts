@@ -20,6 +20,7 @@ import type { ReviewRouting } from '../../domain/blueprint/src/index.js'
 import { planReviewWakes as planRaw } from '../alpha6/wake-plan.js'
 function planReviewWakes(inputs: readonly ReviewRouteInput[]) { return planRaw(inputs, { sessionIdFor: (id: string) => id }) }
 import {
+  claimReviewWake,
   dispatchReviewWakes,
   planFingerprint,
   releaseReviewWake,
@@ -27,8 +28,10 @@ import {
 } from '../alpha6/wake-dispatch.js'
 import {
   createReviewWakeCoordinator,
+  renderReviewWake,
   type ReviewWakeCoordinator,
   type ReviewWakeDeliveryPort,
+  type ReviewWakeDeliverEffect,
 } from '../review-wake/index.js'
 
 const ROUTING: ReviewRouting = {
@@ -77,18 +80,21 @@ function input(requestId: string, over: Partial<ReviewRouteInput> = {}): ReviewR
 interface RecordingPort {
   readonly calls: { wakeId: string; target: string; text: string }[]
   readonly deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>
+  readonly deliverEffect: (effect: ReviewWakeDeliverEffect) => Promise<void>
 }
 
 function recordingPort(): RecordingPort {
   const calls: { wakeId: string; target: string; text: string }[] = []
+  const record = (wakeId: string, target: string, text: string): void => {
+    calls.push({ wakeId, target, text })
+  }
   return {
     calls,
     deliver: async (delivery, _targetSessionId) => {
-      calls.push({
-        wakeId: delivery.wakeId,
-        target: delivery.key.reviewerInstanceId,
-        text: delivery.text,
-      })
+      record(delivery.wakeId, delivery.key.reviewerInstanceId, delivery.text)
+    },
+    deliverEffect: async (effect) => {
+      record(effect.wakeId, effect.key.reviewerInstanceId, renderReviewWake(effect))
     },
   }
 }
@@ -123,15 +129,17 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
     expect(result.delivered[0]?.legCount).toBe(3)
     expect(result.delivered[0]?.workFingerprint).toMatch(/^a6wake:v1:3:/)
     expect(result.delivered[0]?.sessionId).toBe(OFFICER)
-    expect(result.delivered[0]?.status).toBe('idle')
+    // Inbox acceptance is QUEUED: it never proves a turn was claimed/started.
+    expect(result.delivered[0]?.status).toBe('queued')
     expect(result.delivered[0]?.dirty).toBe(false)
     expect(result.failures).toEqual([])
     expect(result.held).toEqual([])
   })
 
-  it('leaves the latch running when turn ownership is deferred, then releases at the real boundary', async () => {
+  it('leaves the latch QUEUED after Inbox acceptance, then claims and releases at the real boundary', async () => {
     const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')])
     const coordinators = coordinatorsFor(plan)
+    const coordinator = coordinators[0]!
     const port = recordingPort()
     const first = await dispatchReviewWakes({
       plan,
@@ -141,36 +149,38 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
       deliver: port.deliver,
       deferTurnEnd: true,
     })
-    expect(first.delivered[0]?.status).toBe('running')
+    expect(first.delivered[0]?.status).toBe('queued')
+    expect(coordinator.state.status).toBe('queued')
     expect(port.calls).toHaveLength(1)
 
+    // Same plan over the same queued latch: pending-but-unchanged, no wake.
+    const repeat = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(repeat.delivered).toHaveLength(0)
+    expect(port.calls).toHaveLength(1)
+
+    // Only the Host's REAL turn-start claim moves queued -> running.
+    expect(claimReviewWake(coordinator).outcome).toBe('applied')
+    expect(coordinator.state.status).toBe('running')
+
+    // A release with a NEW fingerprint drains its own deliver-wake: exactly
+    // one fresh delivery, with no extra dispatch call.
     const during = planReviewWakes([input('req-1'), input('req-2'), input('req-3'), input('req-4')])
-    const second = await dispatchReviewWakes({
-      plan: during,
-      rootSessionId: ROOT,
-      sessionGeneration: GENERATION,
-      coordinators,
-      deliver: port.deliver,
-      deferTurnEnd: true,
-    })
-    expect(second.delivered).toHaveLength(0)
-    expect(coordinators[0]?.state.status).toBe('running')
-    expect(port.calls).toHaveLength(1)
-
-    expect(releaseReviewWake(coordinators[0]!, {
-      kind: 'ready',
-      fingerprint: first.deliveries[0]?.workFingerprint ?? '',
-    }).outcome).toBe('applied')
-    const after = await dispatchReviewWakes({
-      plan: during,
-      rootSessionId: ROOT,
-      sessionGeneration: GENERATION,
-      coordinators,
-      deliver: port.deliver,
-      deferTurnEnd: true,
-    })
-    expect(after.delivered).toHaveLength(1)
+    const released = await releaseReviewWake(
+      coordinator,
+      { kind: 'ready', fingerprint: planFingerprint(during.wakes[0]!) },
+      { deliver: port.deliverEffect },
+    )
+    expect(released.outcome).toBe('applied')
+    expect(released.delivered).toHaveLength(1)
     expect(port.calls).toHaveLength(2)
+    expect(coordinator.state.status).toBe('queued')
   })
 
   it('is deterministic: the same plan yields the same key/fingerprint/wakeId and never re-wakes unchanged work', async () => {
@@ -235,9 +245,9 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
       deliver: port.deliver,
     })
     expect(port.calls).toHaveLength(1)
-    expect(coordinator.state.status).toBe('idle')
+    expect(coordinator.state.status).toBe('queued')
 
-    // Simulate the recipient's next turn: a queued wake was claimed and the
+    // Simulate the recipient's next turn: the queued wake was claimed and the
     // turn is still running when the next plan arrives.
     const queued = coordinator.dispatch({
       type: 'scan-result',
