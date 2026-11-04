@@ -1084,6 +1084,58 @@ async function boot() {
     log(`p6t6 health=${String(healthOk)} hostAlive=${String(hostAlive())}`)
     if (!healthOk) throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
 
+    // ── CONDITION 2: the leader grep probe, and the channels it writes ──────
+    // `persistRunChannels` copies the counter and the fact sink OUT of the World
+    // home. Teardown deletes the home, and that is what swallowed F1's cause
+    // twice: the instrument's own record died with the world it was measuring.
+    const persistRunChannels = (label) => {
+      const out = {}
+      for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
+        try {
+          if (source === null) continue
+          if (!existsSync(source)) { out[name] = 'absent'; continue }
+          const bytes = readFileSync(source)
+          writeFileSync(join(HERE, name), bytes)
+          out[name] = `${String(bytes.length)} bytes`
+        } catch (error) { out[name] = `copy failed: ${String(error?.message ?? error)}` }
+      }
+      log(`run channels persisted (${label}): ${JSON.stringify(out)}`)
+      return out
+    }
+    const counterPrefixEndAtProbe = parseJsonl(counterPath).length
+    abortStage = 'leader-grep-probe'
+    abortStageDetail = 'the anchor leader must be able to grep the in-lane file through the base subprocess face; a failure here makes the negative control vacuous'
+    const probePrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_PROBE, 'a5sfsrch')
+    const probeDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_PROBE_DONE')), 120_000)
+    await new Promise((r) => setTimeout(r, 500))
+    const probeRequests = world.mock?.requests ?? []
+    const probeCall = probeRequests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
+      .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.inLaneDir) ?? null
+    const probeResult = probeCall === null ? null : toolResultFor(probeRequests, probeCall.id)
+    const probeText = String(probeResult?.text ?? '')
+    const probeCounter = parseJsonl(counterPath).slice(counterPrefixEndAtProbe)
+    const probeRowsForOperand = probeCounter.filter((row) => (row?.argv ?? []).some((a) => String(a) === paths.inLaneDir))
+    const probeArtifact = {
+      schema: 'a5sf-search-live/leader-grep-probe/1',
+      at: new Date().toISOString(),
+      stage: 'before team.create, no Member realm exists',
+      promptStatus: probePrompt.status,
+      turnSettled: probeDone,
+      toolResult: probeResult,
+      success: probeResult !== null && probeResult.isError !== true && probeText.includes(claims.needle),
+      counterRowsForOperand: probeRowsForOperand,
+      baseSpawnRows: probeRowsForOperand.filter((row) => row?.leg === 'base-spawn').length,
+      baseSpawnFailedRows: probeRowsForOperand.filter((row) => row?.leg === 'base-spawn-failed'),
+      factsBeforeRealm: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1').length,
+      note: 'base-spawn-failed carries the Node cause (name/code/errno/syscall/path/message) and whether argv[0] and the cwd existed: a launch failure can never again be recorded as a successful spawn',
+    }
+    writeFileSync(join(HERE, 'probe-leader-grep.json'), JSON.stringify(probeArtifact, null, 2) + '\n')
+    persistRunChannels('after leader grep probe')
+    log(`LEADER GREP PROBE: success=${String(probeArtifact.success)} baseSpawn=${String(probeArtifact.baseSpawnRows)} failed=${String(probeArtifact.baseSpawnFailedRows.length)} facts=${String(probeArtifact.factsBeforeRealm)}`)
+    if (probeArtifact.success !== true) {
+      throw new Error(`LEADER_GREP_PROBE_FAILED: the anchor leader's unconfined grep did not return the needle (isError=${String(probeResult?.isError)}); text=${redact(probeText).slice(0, 200)}; base-spawn-failed=${JSON.stringify(probeArtifact.baseSpawnFailedRows).slice(0, 600)} — the base subprocess face cannot launch rg, so the negative control is vacuous and no Member row can be measured`)
+    }
+
     // ── THE NEGATIVE CONTROL, before any Member exists ──────────────────────
     abortStage = 'negative-control'
     abortStageDetail = 'the anchor leader (no Member realm) must grep the out-of-lane file and LEAK; a refusal here means the control is vacuous'
@@ -1110,57 +1162,6 @@ async function boot() {
     negativeControl.verdict = control
     log(`NEGATIVE CONTROL: verdict=${control.verdict} reason=${control.reason} failed=${JSON.stringify(control.failed)} detail=${JSON.stringify(control.detail).slice(0, 700)}`)
     writeFileSync(join(HERE, 'negative-control.json'), JSON.stringify({ sample: controlSample, verdict: control }, null, 2) + '\n')
-
-    // ── CONDITION 2: the leader grep probe, and the channels it writes ──────
-    // `persistRunChannels` copies the counter and the fact sink OUT of the World
-    // home. Teardown deletes the home, and that is what swallowed F1's cause
-    // twice: the instrument's own record died with the world it was measuring.
-    const persistRunChannels = (label) => {
-      const out = {}
-      for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
-        try {
-          if (source === null) continue
-          if (!existsSync(source)) { out[name] = 'absent'; continue }
-          const bytes = readFileSync(source)
-          writeFileSync(join(HERE, name), bytes)
-          out[name] = `${String(bytes.length)} bytes`
-        } catch (error) { out[name] = `copy failed: ${String(error?.message ?? error)}` }
-      }
-      log(`run channels persisted (${label}): ${JSON.stringify(out)}`)
-      return out
-    }
-    abortStage = 'leader-grep-probe'
-    abortStageDetail = 'the anchor leader must be able to grep the in-lane file through the base subprocess face; a failure here makes the negative control vacuous'
-    const probePrompt = await apiPrompt(origin, cookie, BOOT_ROOT, MK_PROBE, 'a5sfsrch')
-    const probeDone = await waitFor(() => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith('A5SF_SEARCH_PROBE_DONE')), 120_000)
-    await new Promise((r) => setTimeout(r, 500))
-    const probeRequests = world.mock?.requests ?? []
-    const probeCall = probeRequests.flatMap((r) => messagesOf(r)).flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
-      .find((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === paths.inLaneDir) ?? null
-    const probeResult = probeCall === null ? null : toolResultFor(probeRequests, probeCall.id)
-    const probeText = String(probeResult?.text ?? '')
-    const probeCounter = parseJsonl(counterPath).slice(counterPrefixEnd)
-    const probeRowsForOperand = probeCounter.filter((row) => (row?.argv ?? []).some((a) => String(a) === paths.inLaneDir))
-    const probeArtifact = {
-      schema: 'a5sf-search-live/leader-grep-probe/1',
-      at: new Date().toISOString(),
-      stage: 'before team.create, no Member realm exists',
-      promptStatus: probePrompt.status,
-      turnSettled: probeDone,
-      toolResult: probeResult,
-      success: probeResult !== null && probeResult.isError !== true && probeText.includes(claims.needle),
-      counterRowsForOperand: probeRowsForOperand,
-      baseSpawnRows: probeRowsForOperand.filter((row) => row?.leg === 'base-spawn').length,
-      baseSpawnFailedRows: probeRowsForOperand.filter((row) => row?.leg === 'base-spawn-failed'),
-      factsBeforeRealm: parseJsonl(sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1').length,
-      note: 'base-spawn-failed carries the Node cause (name/code/errno/syscall/path/message) and whether argv[0] and the cwd existed: a launch failure can never again be recorded as a successful spawn',
-    }
-    writeFileSync(join(HERE, 'probe-leader-grep.json'), JSON.stringify(probeArtifact, null, 2) + '\n')
-    persistRunChannels('after leader grep probe')
-    log(`LEADER GREP PROBE: success=${String(probeArtifact.success)} baseSpawn=${String(probeArtifact.baseSpawnRows)} failed=${String(probeArtifact.baseSpawnFailedRows.length)} facts=${String(probeArtifact.factsBeforeRealm)}`)
-    if (probeArtifact.success !== true) {
-      throw new Error(`LEADER_GREP_PROBE_FAILED: the anchor leader's unconfined grep did not return the needle (isError=${String(probeResult?.isError)}); text=${redact(probeText).slice(0, 200)}; base-spawn-failed=${JSON.stringify(probeArtifact.baseSpawnFailedRows).slice(0, 600)} — the base subprocess face cannot launch rg, so the negative control is vacuous and no Member row can be measured`)
-    }
 
     // ── team.create + state ─────────────────────────────────────────────────
     abortStage = 'surface'

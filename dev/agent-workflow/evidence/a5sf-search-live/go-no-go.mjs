@@ -126,7 +126,9 @@ check('handoff: the plan was produced on THIS commit and carries a non-empty pat
 check('the PRODUCT tree matches the one the dry run measured', dryRun !== null && dryRun.productTreeDigest === digestNow,
   { committed: dryRun?.productTreeDigest ?? null, now: digestNow })
 check('the product tree has no uncommitted modifications', productStatus === '', productStatus)
-check('branch is this lane\'s branch', /^task\/a5sf-search-live-/u.test(branch), branch)
+// the lane's branch series: task/a5sf-search-live-<date> (round 1) and
+// task/a5sf-search-live2-<date> (the 2026-11-05 round on a fresh master base)
+check('branch is this lane\'s branch', /^task\/a5sf-search-live2?-\d{8}$/u.test(branch), branch)
 
 // ── the ledger, read as a BUDGET ACCOUNT ───────────────────────────────────
 const ledgerRows = existsSync(ledgerPath)

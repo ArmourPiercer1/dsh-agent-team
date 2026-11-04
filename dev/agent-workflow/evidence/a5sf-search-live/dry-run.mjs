@@ -200,8 +200,9 @@ check('driver: the leader DENIES grep/glob (the coverage gate refuses them unman
 // F1's cause was swallowed twice because the instrument's record lived inside
 // the World home that teardown deletes; the probe now persists the counter and
 // the fact sink OUT of the home before team.create and again on the abort path.
-check('driver: the leader grep probe runs BEFORE team.create and persists its channels outside the home',
+check('driver: the leader grep probe runs FIRST — before the control and before team.create — and persists its channels outside the home',
   /MK_PROBE/u.test(driverSource)
+  && driverSource.indexOf("abortStage = 'leader-grep-probe'") < driverSource.indexOf("abortStage = 'negative-control'")
   && driverSource.indexOf("abortStage = 'leader-grep-probe'") < driverSource.indexOf("abortStage = 'surface'")
   && /LEADER_GREP_PROBE_FAILED/u.test(driverSource)
   && /persistRunChannels/u.test(driverSource)

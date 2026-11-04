@@ -1,19 +1,19 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
-  "branch": "task/a5sf-search-live-20261104",
-  "evidenceHeadAtDryRun": "165059eea4ab70eed728a8c48957692932f10aea",
-  "productTreeDigest": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237",
+  "branch": "task/a5sf-search-live2-20261105",
+  "evidenceHeadAtDryRun": "698285677ed68454c69887de7b931840557cc20c",
+  "productTreeDigest": "cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-04 grep (BL-16)",
-    "boots": 3,
-    "consumed": 2,
-    "remaining": 1
+    "boots": 6,
+    "consumed": 3,
+    "remaining": 3
   },
   "ruling": {
-    "authorisedStarts": 3,
-    "entries": 3,
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
+    "authorisedStarts": 6,
+    "entries": 6,
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
   },
   "handoff": {
     "emittedRowIds": [
@@ -29,20 +29,20 @@
       "preset-a5sf-search-base"
     ],
     "identityHolds": true,
-    "patchSha256": "3faca51aadb00357629c98e5bbd9e3e44ca2ce1af03c94683c78d09beee197da"
+    "patchSha256": "b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"
   },
   "ledger": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-    "rows": 4,
-    "intents": 2,
-    "bootRows": 2,
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+    "rows": 6,
+    "intents": 3,
+    "bootRows": 3,
     "aborts": 0,
     "unparseable": 0,
     "orphanBootRuns": [],
     "orphanAbortRuns": [],
     "plannedMismatch": [],
-    "bootsInPool": 3,
-    "remaining": 1
+    "bootsInPool": 6,
+    "remaining": 3
   },
   "go": true,
   "checks": [
@@ -99,8 +99,8 @@
       "id": "handoff: the driver CALLS the handoff before harness.boot( (independent source read)",
       "ok": true,
       "detail": {
-        "handoffIndex": 8736,
-        "bootIndex": 38593,
+        "handoffIndex": 8758,
+        "bootIndex": 39416,
         "call": "handOverRows(world, rows)"
       }
     },
@@ -108,18 +108,18 @@
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
       "ok": true,
       "detail": {
-        "planHead": "165059eea4ab70eed728a8c48957692932f10aea",
-        "head": "165059eea4ab70eed728a8c48957692932f10aea",
-        "patchBytes": 6531,
-        "patchSha256": "3faca51aadb00357629c98e5bbd9e3e44ca2ce1af03c94683c78d09beee197da"
+        "planHead": "698285677ed68454c69887de7b931840557cc20c",
+        "head": "698285677ed68454c69887de7b931840557cc20c",
+        "patchBytes": 6436,
+        "patchSha256": "b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"
       }
     },
     {
       "id": "the PRODUCT tree matches the one the dry run measured",
       "ok": true,
       "detail": {
-        "committed": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237",
-        "now": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237"
+        "committed": "cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9",
+        "now": "cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9"
       }
     },
     {
@@ -130,23 +130,23 @@
     {
       "id": "branch is this lane's branch",
       "ok": true,
-      "detail": "task/a5sf-search-live-20261104"
+      "detail": "task/a5sf-search-live2-20261105"
     },
     {
       "id": "ledger: every row parses and each boot row has its intent row",
       "ok": true,
       "detail": {
-        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-        "rows": 4,
-        "intents": 2,
-        "bootRows": 2,
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
+        "rows": 6,
+        "intents": 3,
+        "bootRows": 3,
         "aborts": 0,
         "unparseable": 0,
         "orphanBootRuns": [],
         "orphanAbortRuns": [],
         "plannedMismatch": [],
-        "bootsInPool": 3,
-        "remaining": 1
+        "bootsInPool": 6,
+        "remaining": 3
       }
     },
     {
@@ -160,14 +160,14 @@
       "id": "ledger: each intent's plannedStarts equals its boot rows, net of declared aborts",
       "ok": true,
       "detail": {
-        "intents": 2,
+        "intents": 3,
         "mismatch": []
       }
     },
     {
       "id": "budget: at least ONE P2-04 start is still available",
       "ok": true,
-      "detail": "boots=3 spent=2 remaining=1"
+      "detail": "boots=6 spent=3 remaining=3"
     },
     {
       "id": "boot pool allocates the three P2-04 starts (the ruling)",
@@ -175,15 +175,15 @@
       "detail": {
         "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
         "item": "P2-04 grep (BL-16)",
-        "boots": 3
+        "boots": 6
       }
     },
     {
       "id": "budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)",
       "ok": true,
       "detail": {
-        "authorisedStarts": 3,
-        "entries": 3,
+        "authorisedStarts": 6,
+        "entries": 6,
         "rulings": [
           {
             "starts": 1,
@@ -196,6 +196,10 @@
           {
             "starts": 1,
             "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374 (last P2-04 start)"
+          },
+          {
+            "starts": 3,
+            "by": "owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
           }
         ]
       }
@@ -203,7 +207,7 @@
     {
       "id": "budget: this start is authorised by the rulings and is NOT a third",
       "ok": true,
-      "detail": "authorised=3 spent=2 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+      "detail": "authorised=6 spent=3 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
     },
     {
       "id": "pinned host tree is at the pinned commit and clean",
