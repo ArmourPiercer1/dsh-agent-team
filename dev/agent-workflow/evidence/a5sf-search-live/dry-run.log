@@ -1,51 +1,51 @@
-[2026-11-04T17:09:25.789Z] oracle: node --test a5sf-search-live.test.mjs: status=0 ms=122 stdoutLines=53 stderrLines=0
-[2026-11-04T17:09:25.790Z] CHECK PASS oracle: the six-row three-way suite is green: {"pass":"45","fail":"0","status":0}
-[2026-11-04T17:09:25.790Z] CHECK PASS driver: no second root literal: neither root literal appears; both come from P2_01_ACCEPTANCE_ROOTS
-[2026-11-04T17:09:25.790Z] CHECK PASS driver: imports the shared root identity + the shared oracle: root identity, six-row dispatch, verdict mapping and the control all come from the shared modules
-[2026-11-04T17:09:25.790Z] CHECK PASS driver: the case list IS the contract list: a drifted/renamed id throws before the grant, not after a spent start
-[2026-11-04T17:09:25.790Z] CHECK PASS driver: create precedes the state assertion on the SAME root: team.create@62862 < state(rootSessionId===ACCEPTANCE_ROOT)@63675
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: no row-verdict input is character-clipped: no `result*.text.slice(0, N)` on any verdict path
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the full guard-fact stream is persisted: guard-facts.json + search-counter.jsonl are the raw channels, not a summary
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: declares expectedTools for BOTH native modules: the attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping the preset search
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: an abort after the Host is reached is a FAIL, never NOT_REACHED: a live regression must never be laundered into NOT_REACHED
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the start budget is the RULING FILE, not a constant the driver may raise: authorisedStarts sums named rulings; a start without a named ruling is a self-authorisation
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the cancellation trigger is the SHIPPED client route: /api/session/cancel -> agent.cancel({kind:"user"}); no test route composes a cancel
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the FIFO window is created or the boot refuses: a row-4 window that cannot be created refuses the boot instead of measuring nothing
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the composed rows are GIVEN to the World (not only emitted): the rows must reach `world.u6Fs.rows` through ONE handoff function BEFORE the spawn; an emitted-but-unpushed row set boots a bare World and burns the start
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: --plan hands the rows over and writes the identity artifact: plan-rows.json must carry emittedRowIds and worldRowIds so the gate compares CONTENT, not a count
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the leader DENIES grep/glob (the coverage gate refuses them unmanaged on a root session): the retry refused team.create on exactly this; the Member still gets grep/glob through its realm
-[2026-11-04T17:09:25.791Z] CHECK PASS driver: the leader grep probe runs BEFORE team.create and persists its channels outside the home: a base-spawn failure must reach the artifact with its Node cause, and the counter/sink must survive teardown
-[2026-11-04T17:09:25.792Z] CHECK PASS ruling: every authorised start is a NAMED ruling, and the pool is spent after this lane: three starts, three named authorisations (task instruction, retry, last start); no fourth
-[2026-11-04T17:09:25.792Z] CHECK PASS driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window: one generic post-boot abort wastes a start; the stage names say WHICH handoff broke
-[2026-11-04T17:09:25.792Z] CHECK PASS driver: the boot-mode run-record bindings are exercised host-free: a broken binding literal must fail in --plan, not after a start is spent
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: every judge is three-way and names its clauses: each judge has a reachability branch, a named-clause check set, and a REFUTED path
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: row 1 records the realm instead of assuming the binding realm: BL-17 makes a binding-realm subprocess face a refusal; the judge RECORDS `member`/`null` (README §3)
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: row 3 states the preset limit in the VERDICT, not only the README: a reader of the machine verdict sees that the restriction was composed by the fixture
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: row 4 accepts an undelivered settlement ONLY with a killed child: no silent green: absence of a result counts only with positive termination evidence
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: row 5 is discriminated by the PROCESS exit code, not the prose: a module that swallowed rg exit 2 into "No matches found" differs on this clause
-[2026-11-04T17:09:25.792Z] CHECK PASS oracle: row 6 is temporal, and judges the probe delta separately: the boot-2 lesson: a count delta cannot express "nothing after the stop"
-[2026-11-04T17:09:25.905Z] driver: --plan: status=0 ms=113 stdoutLines=124 stderrLines=0
-[2026-11-04T17:09:25.905Z] CHECK PASS driver --plan is green: PLAN OK
-[2026-11-04T17:09:26.243Z] CHECK PASS boot path: no undefined identifiers / use-before-define in the driver, row, oracle: exit=0 no undefined/use-before-define errors across 6 boot-path files
-[2026-11-04T17:09:26.376Z] CHECK PASS boot path: a use-before-define is refused (the homePin shape): the use-before-define probe is REFUSED, so the rule is load-bearing
-[2026-11-04T17:09:26.377Z] CHECK PASS lane: the in-lane operand is allowed by ceiling, restriction AND the intersection: allow
-[2026-11-04T17:09:26.377Z] CHECK PASS lane: the outside-ceiling operand is denied by the ceiling and by the intersection: {"ceiling":"deny","effective":"deny"}
-[2026-11-04T17:09:26.378Z] CHECK PASS lane: the inside-ceiling / outside-restriction operand is denied ONLY because of the restriction: {"ceiling":"allow","restriction":"deny","effective":"deny"}
-[2026-11-04T17:09:26.378Z] CHECK PASS lane: the intersection NEVER widens (no allow the ceiling denies): the upper-bound law EffectiveIo ⊆ Ceiling is checked on the three operands
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: staticProgramList: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: guardMethod: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: programAttribution: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: writeLaneRefusal: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: admissionOrder: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: memberRealmDefault: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: installIsolatesSubprocess: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: installStatesFaces: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: mountRefusesUnconfined: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS product seam: realmRowForwardsOptionalFace: present in THIS tree
-[2026-11-04T17:09:26.379Z] CHECK PASS pinned search module declares the `subprocess` injection: the module consumes the confined face; a `subprocess`-free module would not exercise it
-[2026-11-04T17:09:26.379Z] CHECK PASS pinned search module builds argv with `--json` and a `--` separator: the operand-after-`--` shape is what `readIntentsOf` reads (BL-16 B2/B3)
-[2026-11-04T17:09:28.888Z] CHECK PASS row 4 premise: ripgrep BLOCKS on an explicit FIFO operand (the cancellation window exists): {"rgPath":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg","fifoCreated":true,"launched":true,"signal":"SIGTERM","status":null,"error":"ETIMEDOUT","why":"the packaged rg blocks on an explicit FIFO operand (the row-4 window exists)"}
-[2026-11-04T17:09:28.898Z] CHECK PASS dist: the worktree `packages/` tree is identical to origin/master: (no diff)
-[2026-11-04T17:09:28.898Z] CHECK PASS dist: every artifact the rows depend on is NEWER than the last source commit: {"lastSourceCommit":"2026-11-04T14:30:30.000Z","artifacts":[{"path":"packages/runtime/dist/packages/runtime/team-services/src/subprocess.js","mtime":"2026-11-04T15:09:38.209Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/team-services/src/install.js","mtime":"2026-11-04T15:09:38.209Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs","mtime":"2026-11-04T15:09:38.192Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js","mtime":"2026-11-04T15:09:38.156Z","newerThanLastSourceCommit":true}]}
-[2026-11-04T17:09:28.903Z] CHECK PASS agent-bindings.mjs is untouched vs origin/master: df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b == df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b
-[2026-11-04T17:09:28.909Z] CHECK PASS the product tree has no uncommitted modification: (clean)
+[2026-11-04T17:09:35.125Z] oracle: node --test a5sf-search-live.test.mjs: status=0 ms=114 stdoutLines=53 stderrLines=0
+[2026-11-04T17:09:35.126Z] CHECK PASS oracle: the six-row three-way suite is green: {"pass":"45","fail":"0","status":0}
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: no second root literal: neither root literal appears; both come from P2_01_ACCEPTANCE_ROOTS
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: imports the shared root identity + the shared oracle: root identity, six-row dispatch, verdict mapping and the control all come from the shared modules
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: the case list IS the contract list: a drifted/renamed id throws before the grant, not after a spent start
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: create precedes the state assertion on the SAME root: team.create@62862 < state(rootSessionId===ACCEPTANCE_ROOT)@63675
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: no row-verdict input is character-clipped: no `result*.text.slice(0, N)` on any verdict path
+[2026-11-04T17:09:35.126Z] CHECK PASS driver: the full guard-fact stream is persisted: guard-facts.json + search-counter.jsonl are the raw channels, not a summary
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: declares expectedTools for BOTH native modules: the attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping the preset search
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: an abort after the Host is reached is a FAIL, never NOT_REACHED: a live regression must never be laundered into NOT_REACHED
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the start budget is the RULING FILE, not a constant the driver may raise: authorisedStarts sums named rulings; a start without a named ruling is a self-authorisation
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the cancellation trigger is the SHIPPED client route: /api/session/cancel -> agent.cancel({kind:"user"}); no test route composes a cancel
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the FIFO window is created or the boot refuses: a row-4 window that cannot be created refuses the boot instead of measuring nothing
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the composed rows are GIVEN to the World (not only emitted): the rows must reach `world.u6Fs.rows` through ONE handoff function BEFORE the spawn; an emitted-but-unpushed row set boots a bare World and burns the start
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: --plan hands the rows over and writes the identity artifact: plan-rows.json must carry emittedRowIds and worldRowIds so the gate compares CONTENT, not a count
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the leader DENIES grep/glob (the coverage gate refuses them unmanaged on a root session): the retry refused team.create on exactly this; the Member still gets grep/glob through its realm
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the leader grep probe runs BEFORE team.create and persists its channels outside the home: a base-spawn failure must reach the artifact with its Node cause, and the counter/sink must survive teardown
+[2026-11-04T17:09:35.127Z] CHECK PASS ruling: every authorised start is a NAMED ruling, and the pool is spent after this lane: three starts, three named authorisations (task instruction, retry, last start); no fourth
+[2026-11-04T17:09:35.127Z] CHECK PASS driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window: one generic post-boot abort wastes a start; the stage names say WHICH handoff broke
+[2026-11-04T17:09:35.128Z] CHECK PASS driver: the boot-mode run-record bindings are exercised host-free: a broken binding literal must fail in --plan, not after a start is spent
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: every judge is three-way and names its clauses: each judge has a reachability branch, a named-clause check set, and a REFUTED path
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: row 1 records the realm instead of assuming the binding realm: BL-17 makes a binding-realm subprocess face a refusal; the judge RECORDS `member`/`null` (README §3)
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: row 3 states the preset limit in the VERDICT, not only the README: a reader of the machine verdict sees that the restriction was composed by the fixture
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: row 4 accepts an undelivered settlement ONLY with a killed child: no silent green: absence of a result counts only with positive termination evidence
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: row 5 is discriminated by the PROCESS exit code, not the prose: a module that swallowed rg exit 2 into "No matches found" differs on this clause
+[2026-11-04T17:09:35.128Z] CHECK PASS oracle: row 6 is temporal, and judges the probe delta separately: the boot-2 lesson: a count delta cannot express "nothing after the stop"
+[2026-11-04T17:09:35.230Z] driver: --plan: status=0 ms=102 stdoutLines=124 stderrLines=0
+[2026-11-04T17:09:35.230Z] CHECK PASS driver --plan is green: PLAN OK
+[2026-11-04T17:09:35.532Z] CHECK PASS boot path: no undefined identifiers / use-before-define in the driver, row, oracle: exit=0 no undefined/use-before-define errors across 6 boot-path files
+[2026-11-04T17:09:35.659Z] CHECK PASS boot path: a use-before-define is refused (the homePin shape): the use-before-define probe is REFUSED, so the rule is load-bearing
+[2026-11-04T17:09:35.660Z] CHECK PASS lane: the in-lane operand is allowed by ceiling, restriction AND the intersection: allow
+[2026-11-04T17:09:35.660Z] CHECK PASS lane: the outside-ceiling operand is denied by the ceiling and by the intersection: {"ceiling":"deny","effective":"deny"}
+[2026-11-04T17:09:35.660Z] CHECK PASS lane: the inside-ceiling / outside-restriction operand is denied ONLY because of the restriction: {"ceiling":"allow","restriction":"deny","effective":"deny"}
+[2026-11-04T17:09:35.660Z] CHECK PASS lane: the intersection NEVER widens (no allow the ceiling denies): the upper-bound law EffectiveIo ⊆ Ceiling is checked on the three operands
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: staticProgramList: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: guardMethod: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: programAttribution: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: writeLaneRefusal: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: admissionOrder: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: memberRealmDefault: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: installIsolatesSubprocess: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: installStatesFaces: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: mountRefusesUnconfined: present in THIS tree
+[2026-11-04T17:09:35.661Z] CHECK PASS product seam: realmRowForwardsOptionalFace: present in THIS tree
+[2026-11-04T17:09:35.662Z] CHECK PASS pinned search module declares the `subprocess` injection: the module consumes the confined face; a `subprocess`-free module would not exercise it
+[2026-11-04T17:09:35.662Z] CHECK PASS pinned search module builds argv with `--json` and a `--` separator: the operand-after-`--` shape is what `readIntentsOf` reads (BL-16 B2/B3)
+[2026-11-04T17:09:38.168Z] CHECK PASS row 4 premise: ripgrep BLOCKS on an explicit FIFO operand (the cancellation window exists): {"rgPath":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg","fifoCreated":true,"launched":true,"signal":"SIGTERM","status":null,"error":"ETIMEDOUT","why":"the packaged rg blocks on an explicit FIFO operand (the row-4 window exists)"}
+[2026-11-04T17:09:38.178Z] CHECK PASS dist: the worktree `packages/` tree is identical to origin/master: (no diff)
+[2026-11-04T17:09:38.178Z] CHECK PASS dist: every artifact the rows depend on is NEWER than the last source commit: {"lastSourceCommit":"2026-11-04T14:30:30.000Z","artifacts":[{"path":"packages/runtime/dist/packages/runtime/team-services/src/subprocess.js","mtime":"2026-11-04T15:09:38.209Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/team-services/src/install.js","mtime":"2026-11-04T15:09:38.209Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs","mtime":"2026-11-04T15:09:38.192Z","newerThanLastSourceCommit":true},{"path":"packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js","mtime":"2026-11-04T15:09:38.156Z","newerThanLastSourceCommit":true}]}
+[2026-11-04T17:09:38.183Z] CHECK PASS agent-bindings.mjs is untouched vs origin/master: df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b == df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b
+[2026-11-04T17:09:38.189Z] CHECK PASS the product tree has no uncommitted modification: (clean)
