@@ -26,8 +26,14 @@ FAIL:
   `team tool guard: the Tool Binding for "bash" cannot be verified at
   dispatch time (no fallback to the native body)`. The allow decision and
   the single consumption fact are durable; the guarded execution does not
-  run, so the side-effect file is absent. This is a real-Host 0.2.0 binding
-  gap in the legacy re-execution path, not a kit assertion problem.
+  run, so the side-effect file is absent. This is the **known BIND-DIAG
+  limitation for a NON-TAKEOVER native name**, not a new 0.2.0 regression:
+  the supported execution face is the plane takeover spelling (`bash@bash`),
+  and this legacy c1 blueprint does not mount `teamToolPlane`/the plane-shaped
+  projection. An attempt to flip only `teamToolPlane.names.bash='bash'` was
+  refused by the plane projection (the blueprint's native-name deny rules are
+  not plane-shaped), so enabling takeover needs a plane-shaped blueprint,
+  not a one-key change.
 - **S4c/S5a/S5b** — after the deliberate notification 500, the Host keeps
   retrying the notification turn (mock requests 30–44 are all 500), so the
   explicit recovery prompt to the Z Leader does not get a turn before the
@@ -36,9 +42,11 @@ FAIL:
 ## Alpha.6 consequence
 
 The Alpha.6 opt-in boot and unit/e2e (production-root) evidence remain valid.
-The real-Host Member -> Officer arc is still NOT proven: the same C1 run does
-not reach a clean approval execution because of the S2b binding gap above.
-Do not cite this run as a passing end-to-end.
+The real-Host Member -> Officer arc is still NOT proven: this C1 run uses the
+legacy non-takeover surface, which the product refuses by design at the
+binding gate. A real arc needs a plane-shaped blueprint with `bash@bash`
+takeover, which this kit does not author. Do not cite this run as a passing
+end-to-end.
 
 Raw run output is intentionally not committed (large, machine-specific);
 the assertions above are reproducible with the kit and ports.
