@@ -25,11 +25,39 @@
  *
  *  2. CONTAINMENT (the OS): the child runs under
  *     {@link compileExecutionProfile}'s Landlock profile for the same policy —
- *     the SAME compiler P1-07 ships, reused rather than re-derived. A read the
- *     admission could not name (a shell body, a `--pre` program, a symlink hop)
- *     is refused by the KERNEL: the forbidden bytes are never read into the
- *     child, let alone returned. That layer cannot be expressed as string
- *     filtering either.
+ *     the SAME compiler P1-07 ships, reused rather than re-derived. That layer
+ *     cannot be expressed as string filtering either.
+ *
+ * THE MEASURED BOUNDARY OF LAYER 2 (do not read it as "the kernel refuses every
+ * undeclared read"): the profile is the effective lane PLUS a runtime allowance
+ * — `/bin`, `/usr`, `/lib`, `/lib64` (when present) and the program's own
+ * directory (execute + read), added here, PLUS the shared launcher's own
+ * `runtime_base` (`/usr` execute+read, `/etc` READ_FILE/READ_DIR, `/proc`
+ * READ_FILE/READ_DIR). The kernel therefore DOES serve
+ * `/bin/sh -c 'cat /etc/passwd'`, an in-lane symlink whose target is
+ * `/etc/passwd` / `/usr/lib/os-release` / `/proc/self/status`, and a
+ * pre-existing in-lane hardlink to an outside inode (hardlink resolution is
+ * inode-based; the path is in the lane). It DOES refuse an out-of-lane path
+ * (`/home`, `/srv`, `/var`, a scratch sibling) and a symlink whose target is
+ * outside the allowance. The arms in
+ * `dev/agent-workflow/evidence/a5sf-bl16-grep/` pin both halves.
+ *
+ * Because of that allowance, admission is the ONLY layer for a DECLARED root
+ * inside it: a declared `/etc`, `/usr` or `/proc` root is refused by layer 1
+ * even though layer 2 would allow it. Undeclared reads inside the allowance
+ * (a nested symlink, a hardlink, a shell body) are closed by the shell-class
+ * refusal below where they can be named; what remains is disclosed, not
+ * claimed away.
+ *
+ * SHELL-CLASS REFUSAL (BL-16 review round 2): a `spawn` whose reads cannot be
+ * statically attributed to the declared operands is refused at ADMISSION, with
+ * one typed `TeamIoDenial` and one recorded fact, before any process. The
+ * declared typed list is {@link CONFINED_SUBPROCESS_STATIC_PROGRAMS} (`rg`
+ * today — the binary the shipped grep/glob argv uses); every other program is
+ * unknown and therefore refused fail-closed. Interpreter/shell-class programs
+ * (sh, bash, python*, node, perl, ruby, awk, xargs, find, …) are named in
+ * {@link CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS} only to make the refusal
+ * detail truthful; they are refused by the same allow-list rule.
  *
  * WHAT IT DOES NOT DO, stated so it cannot be read as more:
  *  - It is not a second policy evaluator. The lane decision is
@@ -54,7 +82,7 @@
  */
 
 import { existsSync } from 'node:fs'
-import { dirname, isAbsolute, resolve as resolvePath } from 'node:path'
+import { basename, dirname, isAbsolute, resolve as resolvePath } from 'node:path'
 import type { Readable, Writable } from 'node:stream'
 import { constants as osConstants } from 'node:os'
 import type { AllowPathEntry, PayloadExitRecord, ProviderResult, SpawnRequest, StreamingOptions } from '../../sandbox-provider/index.js'
@@ -188,6 +216,107 @@ type FeedableReader = ConfinedOutputReader & { push(chunk: Buffer): void }
 // ---------------------------------------------------------------------------
 
 /**
+ * The DECLARED, typed list of programs whose reads this face can attribute to
+ * `argv` operands. It is an ALLOW-LIST, not a shell-class deny-list: a program
+ * not named here is unknown to the admission and is refused, so a future tool
+ * must add its program here deliberately (with its argv contract) instead of
+ * inheriting the face by accident. `rg` is the binary the shipped `grep`/`glob`
+ * argv executes (`@vscode/ripgrep`, invoked by `dsh-tool-fs-search` with
+ * `--no-config` and the search root behind `--`).
+ */
+export const CONFINED_SUBPROCESS_STATIC_PROGRAMS: readonly string[] = Object.freeze(['rg'])
+
+/**
+ * Interpreter / shell-class program names. They are named ONLY so the refusal
+ * detail is truthful ("this is a shell body, not a declared operand"); the
+ * allow-list above is what refuses them (they are not on it). Prefixes cover
+ * versioned interpreters (`python3.12`, `nodejs`, …).
+ */
+export const CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS: readonly string[] = Object.freeze([
+  'sh', 'bash', 'dash', 'zsh', 'ksh', 'mksh', 'ash', 'fish', 'csh', 'tcsh',
+  'busybox', 'env', 'xargs', 'find', 'sed', 'awk', 'gawk', 'mawk', 'nawk',
+  'perl', 'ruby', 'lua', 'php', 'tclsh', 'wish', 'expect', 'script', 'timeout',
+  'nice', 'nohup', 'stdbuf', 'setsid', 'su', 'sudo', 'doas',
+])
+const SHELL_CLASS_PREFIXES: readonly string[] = Object.freeze(['python', 'node', 'perl', 'ruby', 'php', 'lua'])
+
+/** One attribution refusal (a typed denial, decided before any process). */
+export interface ProgramAttributionRefusal {
+  /** The existing denial code: this is a read refusal, decided at admission. */
+  readonly code: 'IO_READ_DENIED'
+  /** Why the reads cannot be attributed to the declared operands. */
+  readonly detail: string
+  /** The program path the refusal is about (also the recorded fact locator). */
+  readonly target: string
+}
+
+/** True for a shell/interpreter-class program name (basename, lower-case). */
+export function isShellClassProgram(programName: string): boolean {
+  const name = programName.toLowerCase()
+  return CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS.includes(name)
+    || SHELL_CLASS_PREFIXES.some((prefix) => name.startsWith(prefix))
+}
+
+/**
+ * Decide whether this `argv` is statically attributable to the declared read
+ * roots. Returns `undefined` when it is, or the typed refusal when it is not.
+ *
+ * The rule is a declared allow-list plus a per-program argv contract:
+ *  - the program's basename must be in {@link CONFINED_SUBPROCESS_STATIC_PROGRAMS};
+ *  - for `rg`, `--no-config` MUST be present (otherwise a ripgrep config file is
+ *    read without appearing in any operand) and the flags that EXECUTE another
+ *    program (`--pre`, `--search-zip`/`-z`) are refused.
+ *
+ * Every other program — including `sh`, `bash`, `python*`, `node`, `perl`,
+ * `ruby`, `awk`, `xargs`, `find` and any unknown binary — is refused. An
+ * unknown program cannot be proven to read only its operands, so the face
+ * fails closed instead of guessing.
+ */
+export function programAttributionRefusal(
+  spec: { readonly argv: readonly string[] },
+): ProgramAttributionRefusal | undefined {
+  const program = spec.argv[0]
+  if (typeof program !== 'string' || program.length === 0) {
+    return Object.freeze({ code: 'IO_READ_DENIED', detail: 'argv has no program element, so its reads cannot be attributed', target: String(program) })
+  }
+  const name = basename(program).toLowerCase()
+  if (isShellClassProgram(name)) {
+    return Object.freeze({
+      code: 'IO_READ_DENIED',
+      detail: `argv[0] ${JSON.stringify(program)} is shell/interpreter-class (${name}); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process`,
+      target: program,
+    })
+  }
+  if (!CONFINED_SUBPROCESS_STATIC_PROGRAMS.includes(name)) {
+    return Object.freeze({
+      code: 'IO_READ_DENIED',
+      detail: `argv[0] ${JSON.stringify(program)} (${name}) is not in the declared statically-attributable program list (${CONFINED_SUBPROCESS_STATIC_PROGRAMS.join(', ')}); an unknown binary is refused fail-closed`,
+      target: program,
+    })
+  }
+  if (name === 'rg') {
+    if (!spec.argv.includes('--no-config')) {
+      return Object.freeze({
+        code: 'IO_READ_DENIED',
+        detail: 'argv[0] rg did not pass --no-config: a ripgrep config file would be read without appearing in the declared operands',
+        target: program,
+      })
+    }
+    const escaping = spec.argv.find((token) => token === '--pre' || token.startsWith('--pre=')
+      || token === '--search-zip' || token === '-z'
+      || (token.length > 1 && token.startsWith('-') && !token.startsWith('--') && token.slice(1).includes('z')))
+    if (escaping !== undefined) {
+      return Object.freeze({
+        code: 'IO_READ_DENIED',
+        detail: `argv[0] rg passes ${JSON.stringify(escaping)}, which executes another program (or a decompressor) whose reads are not in the declared operands`,
+        target: program,
+      })
+    }
+  }
+  return undefined
+}
+
+/**
  * The DECLARED read roots of one spawn request.
  *
  * The rule is deliberately narrow and auditable: everything after the first
@@ -196,8 +325,17 @@ type FeedableReader = ConfinedOutputReader & { push(chunk: Buffer): void }
  * pattern (`--regexp=a/b`) and a flag are never consulted as paths. When no
  * operand exists, the walk root IS `cwd`, so `cwd` is the intent.
  *
+ * A shell's `-c` argument is a COMMAND STRING, not a path: for a shell-class
+ * `argv[0]` the token after `-c` is skipped instead of being resolved (it used
+ * to be mistaken for an operand whenever the body began with an absolute path,
+ * and the lane guard then reported `IO_READ_DENIED: ... does not exist` — a
+ * misleading code for a body that is refused for a different reason). The
+ * shell-class refusal ({@link programAttributionRefusal}) is what actually
+ * decides that spawn, and it runs BEFORE intent extraction.
+ *
  * This is admission, NOT containment: a process that names no path can still
- * try to read one, and the OS profile (layer 2) is what refuses that.
+ * try to read one, and the OS profile (layer 2) is what refuses that — within
+ * the runtime allowance documented at the top of this module.
  */
 export function readIntentsOf(
   spec: { readonly argv: readonly string[]; readonly cwd: string },
@@ -210,8 +348,14 @@ export function readIntentsOf(
     const operands = spec.argv.slice(separator + 1).map((token) => (isAbsolute(token) ? resolvePath(token) : resolvePath(cwd, token)))
     return operands.length === 0 ? Object.freeze([cwd]) : Object.freeze(operands)
   }
+  const shellClass = spec.argv.length > 1 && typeof spec.argv[0] === 'string' && isShellClassProgram(basename(spec.argv[0]))
   const operands: string[] = []
-  for (const token of spec.argv.slice(1)) {
+  for (let index = 1; index < spec.argv.length; index += 1) {
+    const token = spec.argv[index] as string
+    if (token === '-c' && shellClass) {
+      index += 1 // the command string is not a path; the shell is refused anyway
+      continue
+    }
     if (token.startsWith('-')) continue
     if (isAbsolute(token)) {
       operands.push(resolvePath(token))
@@ -264,8 +408,14 @@ function systemRuntimeAllowPaths(): AllowPathEntry[] {
   return entries
 }
 
-/** Merge the compiled profile with the runtime allowance (lane wins on overlap). */
-function allowPathsFor(profile: readonly AllowPathEntry[], program: string, extra: readonly AllowPathEntry[]): AllowPathEntry[] {
+/**
+ * Merge the compiled profile with the runtime allowance (lane wins on overlap).
+ *
+ * Exported so an OS-layer arm can build the SAME request the product builds
+ * WITHOUT re-deriving the allowance in the test (a test-local copy could drift
+ * from the shipped one). It is a construction helper, not a policy decision.
+ */
+export function confinedSpawnAllowPaths(profile: readonly AllowPathEntry[], program: string, extra: readonly AllowPathEntry[] = []): AllowPathEntry[] {
   const byPath = new Map<string, AllowPathEntry>()
   for (const entry of [...systemRuntimeAllowPaths(), ...extra]) byPath.set(entry.path, entry)
   for (const entry of profile) {
@@ -495,10 +645,29 @@ export function createConfinedSubprocessClass(
   // every spawn into a typed refusal — never into an unconfined run, and never
   // into an install-time failure that would take the Member's `fs` lane down.
   const profile = compileExecutionProfile(effective)
-  const baseGuard = options.guard ?? createMemberSubprocessGuard(effective)
+  const laneGuard = options.guard ?? createMemberSubprocessGuard(effective)
+  // The attribution refusal is a DECISION of this face, not a lane lookup, but
+  // it must travel through the SAME observed guard so it is recorded as one
+  // fact with the same schema. The queue is consumed synchronously by the
+  // guard call below (spawn runs to that first `await` before returning), so a
+  // concurrent spawn can never pick up another spawn's refusal.
+  const pendingAttribution: ProgramAttributionRefusal[] = []
+  const admissionGuard: FsGuard = async (method: string, hostPath: string): Promise<void> => {
+    const at = pendingAttribution.findIndex((refusal) => refusal.target === hostPath)
+    if (at !== -1) {
+      const [refusal] = pendingAttribution.splice(at, 1)
+      if (refusal === undefined) throw new TypeError('subprocess admission: attribution queue lost its head')
+      throw new TeamIoDenial(refusal.code, refusal.detail, {
+        memberIdentity: effective.memberIdentity,
+        method,
+        target: hostPath,
+      })
+    }
+    await laneGuard(method, hostPath)
+  }
   const guard = options.onGuardConsult === undefined
-    ? baseGuard
-    : observeGuard(baseGuard, options.onGuardConsult, {
+    ? admissionGuard
+    : observeGuard(admissionGuard, options.onGuardConsult, {
       realm: options.realm ?? 'member',
       memberIdentity: effective.memberIdentity,
       toolBindingIdentity: options.toolBindingIdentity ?? null,
@@ -527,10 +696,28 @@ export function createConfinedSubprocessClass(
       // handle's `done` is the rejection point for a refused admission: the
       // refusal is still decided BEFORE any provider call, and `spawn` itself
       // throws synchronously for every purely syntactic refusal above.
-      const intents = readIntentsOf(spec)
+      //
+      // ATTRIBUTION RUNS FIRST (BL-16 review round 2): a shell-class or unknown
+      // program is refused before intent extraction, so a shell body can never
+      // reach the lane guard (and can no longer be misreported as a lane "does
+      // not exist" denial). A shell body that reaches the KERNEL is exactly the
+      // general-face hole this refusal closes.
+      const attribution = programAttributionRefusal(spec)
+      const intents = attribution === undefined ? readIntentsOf(spec) : Object.freeze([] as string[])
       const started = (async () => {
+        if (attribution !== undefined) {
+          pendingAttribution.push(attribution)
+          await guard(SUBPROCESS_GUARD_METHOD, attribution.target)
+          // The guard rethrows the typed denial above; this line is defence
+          // against an admission invariant breaking silently.
+          throw new TeamIoDenial(attribution.code, attribution.detail, {
+            memberIdentity: effective.memberIdentity,
+            method: SUBPROCESS_GUARD_METHOD,
+            target: attribution.target,
+          })
+        }
         for (const intent of intents) await guard(SUBPROCESS_GUARD_METHOD, intent)
-        const allowPaths = allowPathsFor(profile.value.allowPaths, spec.argv[0] as string, options.runtimeAllowPaths ?? [])
+        const allowPaths = confinedSpawnAllowPaths(profile.value.allowPaths, spec.argv[0] as string, options.runtimeAllowPaths ?? [])
         const request: SpawnRequest = {
           grantFingerprint: `bl16:${options.realmId ?? effective.memberIdentity}:${effective.policyRevision}:${String(Date.now())}:${String(++spawnSequence)}`,
           realmId: options.realmId ?? effective.memberIdentity,

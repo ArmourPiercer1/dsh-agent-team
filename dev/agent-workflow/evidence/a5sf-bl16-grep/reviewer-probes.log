@@ -1,0 +1,95 @@
+$ node .reviewer-tmp/probe-q1.mjs
+hardlink /etc failed: EXDEV
+--- kernel arms (cwd in-lane, argv names only sh) ---
+A in-lane control  cat inside/needle: DONE REJECTED IO_READ_DENIED
+A in-lane control  cat inside/needle: leaked=false stdout="" stderr=""
+B direct outside    cat outside/secret: DONE REJECTED IO_READ_DENIED
+B direct outside    cat outside/secret: leaked=false stdout="" stderr=""
+C symlink FILE      cat inside/link-file: DONE REJECTED IO_READ_DENIED
+C symlink FILE      cat inside/link-file: leaked=false stdout="" stderr=""
+D symlink DIR       cat inside/link-dir/secret: DONE REJECTED IO_READ_DENIED
+D symlink DIR       cat inside/link-dir/secret: leaked=false stdout="" stderr=""
+E nested ..         cat inside/../outside/secret: DONE REJECTED IO_READ_DENIED
+E nested ..         cat inside/../outside/secret: leaked=false stdout="" stderr=""
+F hardlink (pre)    cat inside/hard-inside: DONE REJECTED IO_READ_DENIED
+F hardlink (pre)    cat inside/hard-inside: leaked=false stdout="" stderr=""
+G hardlink (child)  ln then cat: DONE REJECTED IO_READ_DENIED
+G hardlink (child)  ln then cat: leaked=false stdout="" stderr=""
+H /etc/passwd (README says kernel-refused): DONE REJECTED IO_READ_DENIED
+H /etc/passwd (README says kernel-refused): leaked=false stdout="" stderr=""
+I /usr read        head /usr/share/dict/words? -> /usr/lib/os-release: DONE REJECTED IO_READ_DENIED
+I /usr read        head /usr/share/dict/words? -> /usr/lib/os-release: leaked=false stdout="" stderr=""
+J /proc/self/status: DONE REJECTED IO_READ_DENIED
+J /proc/self/status: leaked=false stdout="" stderr=""
+K /etc via symlink inside: DONE REJECTED IO_READ_DENIED
+K /etc via symlink inside: leaked=false stdout="" stderr=""
+rg exists: true /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+--- rg arms (declared root = inside, which holds a symlink + hardlink) ---
+RG default (no follow): DONE REJECTED IO_READ_DENIED
+RG default (no follow): leaked=false stdout="" stderr=""
+RG --follow: DONE REJECTED IO_READ_DENIED
+RG --follow: leaked=false stdout="" stderr=""
+RG root = symlink dir (declared root is a symlink): DONE REJECTED IO_READ_DENIED
+RG root = symlink dir (declared root is a symlink): leaked=false stdout="" stderr=""
+--- admission arms (readIntentsOf + guard, no provider call) ---
+root=symlink-dir: intents=["/tmp/bl16-q1-dXvFdH/inside/link-dir"] decision=IO_READ_DENIED
+root=symlink-file: intents=["/tmp/bl16-q1-dXvFdH/inside/link-file"] decision=IO_READ_DENIED
+root=hardlink: intents=["/tmp/bl16-q1-dXvFdH/inside/hard-inside"] decision=ALLOW
+root=outside: intents=["/tmp/bl16-q1-dXvFdH/outside"] decision=IO_READ_DENIED
+
+$ node .reviewer-tmp/probe-symlink-allowance.mjs
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:660
+      throw new TeamIoDenial(refusal.code, refusal.detail, {
+            ^
+
+TeamIoDenial: argv[0] "/bin/sh" is shell/interpreter-class (sh); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+    at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:660:13)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:710:17
+    at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:744:9)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.reviewer-tmp/probe-symlink-allowance.mjs:30:21 {
+  code: 'IO_READ_DENIED',
+  memberIdentity: 'm',
+  method: 'spawn',
+  target: '/bin/sh'
+}
+
+Node.js v24.21.0
+
+$ node .reviewer-tmp/probe-narrow.mjs
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:660
+      throw new TeamIoDenial(refusal.code, refusal.detail, {
+            ^
+
+TeamIoDenial: argv[0] "/bin/sh" is shell/interpreter-class (sh); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+    at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:660:13)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:710:17
+    at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl16-grep/packages/runtime/team-services/src/subprocess.ts:744:9)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.reviewer-tmp/probe-narrow.mjs:34:21 {
+  code: 'IO_READ_DENIED',
+  memberIdentity: 'm',
+  method: 'spawn',
+  target: '/bin/sh'
+}
+
+Node.js v24.21.0
+
+$ node .reviewer-tmp/probe-order.mjs
+spawn returned handle: true syncThrow: false
+DONE REJECTED: TeamIoDenial IO_READ_DENIED | undefined
+providerCalls: 0 facts: 1 {
+  method: 'spawn',
+  decision: 'deny',
+  decidedBy: 'IO_READ_DENIED',
+  locator: '/tmp/bl16-order-sbM1HE/out',
+  realm: 'member',
+  toolBindingIdentity: null
+} order: [ 'FACT:deny' ]
+
+$ node .reviewer-tmp/probe-isolate.mjs
+PRE root fs outside read: ALLOWED:OUT | root subprocess spawn: THREW:BASE_SPAWN
+member fs is confined: true | ctx fs is confined: true
+ctx subprocess is confined: true | subprocess surface present: true
+root fs identity equal: false | root subprocess identity equal: false
+POST root fs outside read: ALLOWED:OUT | root subprocess spawn: THREW:BASE_SPAWN
+out-of-lane fs read refused: IO_READ_DENIED
+member ctx subprocess after dispose THREW: Cannot read properties of undefined (reading 'spawn')

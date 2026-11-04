@@ -29,12 +29,16 @@ import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PassThrough } from 'node:stream'
+import type { Readable } from 'node:stream'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../member-io-policy/src/types.js'
 import { compileEffectiveIo } from '../member-io-policy/src/index.js'
+import { compileExecutionProfile } from '../team-sandbox/src/profile.js'
 import {
+  confinedSpawnAllowPaths,
   createConfinedSubprocessClass,
   createMemberSubprocessGuard,
+  programAttributionRefusal,
   readIntentsOf,
 } from '../team-services/src/subprocess.js'
 import type { ConfinedProcessProvider, ConfinedStreamProcess } from '../team-services/src/subprocess.js'
@@ -220,6 +224,22 @@ describe('BL-16 read-intent extraction (pure)', () => {
 
   it('never mistakes a pattern or a --flag=value for a path', () => {
     expect(readIntentsOf({ argv: ['/usr/bin/rg', '--regexp=foo/bar', '--glob=**/*.ts'], cwd: inside })).toEqual([inside])
+    // BL-16 review round 2: a shell's `-c` body is a command string, never an
+    // operand — it used to be admitted as an absolute read root when the body
+    // began with `/`, and the lane guard then reported a misleading
+    // `IO_READ_DENIED: ... does not exist`.
+    expect(readIntentsOf({ argv: ['/bin/sh', '-c', '/etc/passwd; echo x'], cwd: inside })).toEqual([inside])
+    // The truthful refusal for that spawn is attribution, not a lane lookup.
+    const shell = programAttributionRefusal({ argv: ['/bin/sh', '-c', '/etc/passwd'] })
+    expect(shell?.code).toBe('IO_READ_DENIED')
+    expect(shell?.detail).toMatch(/shell\/interpreter-class/)
+    expect(shell?.detail).not.toMatch(/does not exist/)
+    // The declared allow-list and its per-program argv contract.
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--regexp=x', '--', inside] })).toBeUndefined()
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--regexp=x', '--', inside] })?.detail).toMatch(/--no-config/)
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '--pre=sh', '--', inside] })?.detail).toMatch(/--pre/)
+    expect(programAttributionRefusal({ argv: ['/usr/bin/rg', '--no-config', '-z', '--', inside] })?.detail).toMatch(/search-zip|-z/)
+    expect(programAttributionRefusal({ argv: ['/tmp/not-authored', '--', inside] })?.detail).toMatch(/unknown binary/)
   })
 })
 
@@ -368,7 +388,7 @@ describe('BL-16 exit-code and cancellation fidelity', () => {
 })
 
 describe('BL-16 real OS leg (Landlock launcher, host-free)', () => {
-  it('refuses a read the admission did not name, at the KERNEL, with the bytes absent', async (ctx) => {
+  it('refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly', async (ctx) => {
     const { createConfinedProcessProvider } = await import('../sandbox-provider/provider.js')
     const policy = effective(lane([inside]), lane([inside]), lane([inside]))
     const osProvider = createConfinedProcessProvider({
@@ -386,23 +406,56 @@ describe('BL-16 real OS leg (Landlock launcher, host-free)', () => {
       ctx.skip('this backend does not enforce content-read; the OS law cannot be proven here')
       return
     }
+    // (a) Admission: a shell body is refused BEFORE the provider is called.
+    const counts = { spawn: 0 }
+    const counted = {
+      async spawnStreaming(request: SpawnRequest, streaming?: { graceMs: number }) {
+        counts.spawn += 1
+        return osProvider.spawnStreaming(request, streaming)
+      },
+    }
+    const facts: { method: string; locator: string; decision: string; decidedBy: string }[] = []
     const Confined = createConfinedSubprocessClass(BaseSubprocess as never, {
       effective: policy,
-      provider: osProvider as unknown as ConfinedProcessProvider,
+      provider: counted as unknown as ConfinedProcessProvider,
       realmId: 'realm-bl16-os',
+      onGuardConsult: (fact) => {
+        facts.push({ method: fact.method, locator: fact.locator, decision: fact.decision, decidedBy: fact.decidedBy })
+      },
     }) as unknown as { new (ctx: unknown): { spawn(spec: unknown): HandleLike } }
-    // A shell whose body names no path in argv: the admission has nothing to
-    // consult, so ONLY the kernel stands between it and the outside file.
-    const spec = {
-      argv: ['/bin/sh', '-c', `cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt 2>&1`],
+    const handle = new Confined({}).spawn({
+      argv: ['/bin/sh', '-c', `cat /etc/passwd; cat ${outside}/secret.txt; cat ${inside}/needle.txt`],
       cwd: inside,
       stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
       graceMs: 2000,
-    }
-    const handle = new Confined({}).spawn(spec)
-    const outcome = await handle.done
-    const text = String(handle.collected.stdout?.readFrom(0).text ?? '') + String(handle.collected.stderr?.readFrom(0).text ?? '')
-    expect(outcome.exitCode).toBe(0)
+    })
+    await expect(handle.done).rejects.toThrowError(/statically attributed|shell/i)
+    expect(counts.spawn).toBe(0)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]).toMatchObject({ method: 'spawn', locator: '/bin/sh', decision: 'deny', decidedBy: 'IO_READ_DENIED' })
+    expect(String(handle.collected.stdout?.readFrom(0).text ?? '')).toBe('')
+
+    // (b) Layer 2 alone, with the SAME request builder: the kernel DOES serve
+    //     /etc (the launcher's runtime_base) and DOES refuse the out-of-lane
+    //     sibling. This is the measured boundary the README now states.
+    const rawProfile = compileExecutionProfile(policy)
+    expect(rawProfile.ok).toBe(true)
+    if (!rawProfile.ok) return
+    const spawned = await osProvider.spawnStreaming({
+      grantFingerprint: 'bl16-unit-kernel',
+      realmId: 'realm-bl16-os',
+      bindingId: 'dsh.search/grep',
+      memberScope: IDENTITY.memberInstanceId,
+      argv: ['/bin/sh', '-c', `head -c 24 /etc/passwd; echo SEP; cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt`],
+      cwd: inside,
+      env: [],
+      allowPaths: confinedSpawnAllowPaths(rawProfile.value.allowPaths, '/bin/sh'),
+      exitPassthrough: true,
+    }, { graceMs: 2000 })
+    expect(spawned.ok).toBe(true)
+    if (!spawned.ok) return
+    const text = await drainConfined(spawned.value)
+    expect(text).toContain('root:x:0:0')
     expect(text).toContain('INSIDE-NEEDLE')
     expect(text).toMatch(/Permission denied|EACCES/)
     expect(text).not.toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
@@ -412,3 +465,13 @@ describe('BL-16 real OS leg (Landlock launcher, host-free)', () => {
     expect(await readFile(join(outside, 'secret.txt'), 'utf8')).toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
   }, 60_000)
 })
+
+/** Drain every stream of a raw provider handle, then report the exit. */
+async function drainConfined(handle: ConfinedStreamProcess): Promise<string> {
+  const chunks: Buffer[] = []
+  const consume = async (stream: Readable): Promise<void> => {
+    for await (const chunk of stream) chunks.push(Buffer.from(chunk as Buffer))
+  }
+  await Promise.all([consume(handle.stdout), consume(handle.stderr), handle.exited])
+  return Buffer.concat(chunks).toString('utf8')
+}

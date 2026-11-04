@@ -40,6 +40,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import type { Readable } from 'node:stream'
 import { pathToFileURL } from 'node:url'
 import { Context, Service } from '@deepseek-ai/cordis'
 import { bindScopeParent, createScope } from '@deepseek-ai/dsh-scope'
@@ -50,8 +51,10 @@ import { compileEffectiveIo } from '../member-io-policy/src/index.js'
 import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../member-io-policy/src/index.js'
 import type { TrustedMemberIdentity } from '../member-io-policy/src/types.js'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
+import { compileExecutionProfile } from '../team-sandbox/src/profile.js'
 import { readGuardConsultFile } from '../team-services/src/guard-observability.js'
-import type { ConfinedProcessProvider } from '../team-services/src/subprocess.js'
+import { confinedSpawnAllowPaths } from '../team-services/src/subprocess.js'
+import type { ConfinedProcessProvider, ConfinedStreamProcess } from '../team-services/src/subprocess.js'
 
 const REPO = realpathSync(join(__dirname, '../../..'))
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -431,11 +434,10 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
     }
   }, 30_000)
 
-  it('R5: an admission-named in-lane root cannot be used to read an unnamed outside file (kernel layer)', async () => {
-    // cwd IS in lane (so the admission admits it); the argv names nothing, and a
-    // shell body reads ../outside/secret.txt. The kernel profile has no grant for
-    // the outside directory, so the read fails and the bytes never reach the
-    // harness — the layer the string-level admission cannot provide.
+  it('R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly', async () => {
+    // (a) The general-face hole: `sh -c 'cat /etc/passwd'` used to reach the
+    // kernel with NO fact. Round 2 closes it at admission: shell/interpreter
+    // argv is not statically attributable, so no process exists.
     const effective = effectiveOf(lane([inside]), lane([inside]), lane([inside]))
     const osProvider = createConfinedProcessProvider({
       realmId: 'realm-bl16-r5',
@@ -445,7 +447,7 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
     }) as unknown as ConfinedProcessProvider & {
       probe(): Promise<{ ok: boolean; value?: { dimension: string; level: string }[] }>
     }
-    const { provider } = countingProvider(osProvider)
+    const { provider, spawns } = countingProvider(osProvider)
     const probe = await osProvider.probe()
     const dimension = probe.value?.find((row) => row.dimension === 'content-read')
     const enforced = probe.ok === true && dimension?.level === 'enforced'
@@ -455,27 +457,53 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
       return
     }
     const { createConfinedSubprocessClass } = await import('../team-services/src/subprocess.js')
+    const facts: { method: string; locator: string; decision: string; decidedBy: string }[] = []
     const Confined = createConfinedSubprocessClass(BaseSubprocess as never, {
       effective,
       provider,
       realmId: 'realm-bl16-r5',
       bindingId: 'dsh.search/grep',
       memberScope: IDENTITY.memberInstanceId,
+      onGuardConsult: (fact) => {
+        facts.push({ method: fact.method, locator: fact.locator, decision: fact.decision, decidedBy: fact.decidedBy })
+      },
     })
-    // The class IS the service: constructing it registers `subprocess` on the
-    // (isolated) Context exactly as the realm mount does.
     const root = new Context()
     const service = new (Confined as unknown as new (ctx: Context) => {
       spawn(spec: unknown): { done: Promise<{ exitCode: number | null; signal: string | null }>; collected: { stdout?: { readFrom(n: number): { text: string } } } }
     })(root)
     const handle = service.spawn({
-      argv: ['/bin/sh', '-c', `cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt`],
+      argv: ['/bin/sh', '-c', `cat /etc/passwd; cat ${outside}/secret.txt; cat ${inside}/needle.txt`],
       cwd: inside,
       stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
       graceMs: 5000,
     })
-    await handle.done
-    const text = handle.collected.stdout?.readFrom(0).text ?? ''
+    await expect(handle.done).rejects.toThrow(/statically attributed|shell/i)
+    expect(spawns.count).toBe(0)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]).toMatchObject({ method: 'spawn', locator: '/bin/sh', decision: 'deny', decidedBy: 'IO_READ_DENIED' })
+    expect(handle.collected.stdout?.readFrom(0).text ?? '').toBe('')
+
+    // (b) Layer 2 alone (same request builder): the kernel DOES serve /etc
+    // (the launcher's runtime_base) and DOES refuse the out-of-lane sibling.
+    const profile = compileExecutionProfile(effective)
+    expect(profile.ok).toBe(true)
+    if (!profile.ok) return
+    const spawned = await osProvider.spawnStreaming({
+      grantFingerprint: 'bl16-realm-kernel',
+      realmId: 'realm-bl16-r5',
+      bindingId: 'dsh.search/grep',
+      memberScope: IDENTITY.memberInstanceId,
+      argv: ['/bin/sh', '-c', `head -c 24 /etc/passwd; echo SEP; cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt`],
+      cwd: inside,
+      env: [],
+      allowPaths: confinedSpawnAllowPaths(profile.value.allowPaths, '/bin/sh'),
+      exitPassthrough: true,
+    }, { graceMs: 5000 })
+    expect(spawned.ok).toBe(true)
+    if (!spawned.ok) return
+    const text = await drainRealm(spawned.value)
+    expect(text).toContain('root:x:0:0')
     expect(text).toContain('INSIDE-NEEDLE')
     expect(text).not.toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
     expect(text).toMatch(/Permission denied|EACCES/)
@@ -484,3 +512,13 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
     expect(readFileSync(join(outside, 'secret.txt'), 'utf8')).toContain('OUTSIDE-SECRET-MUST-NOT-LEAK')
   }, 60_000)
 })
+
+/** Drain every stream of a raw provider handle, then report the exit. */
+async function drainRealm(handle: ConfinedStreamProcess): Promise<string> {
+  const chunks: Buffer[] = []
+  const consume = async (stream: Readable): Promise<void> => {
+    for await (const chunk of stream) chunks.push(Buffer.from(chunk as Buffer))
+  }
+  await Promise.all([consume(handle.stdout), consume(handle.stderr), handle.exited])
+  return Buffer.concat(chunks).toString('utf8')
+}

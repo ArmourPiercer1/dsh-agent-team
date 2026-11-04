@@ -26,11 +26,16 @@ export type {
 } from './install.js'
 export {
   CONFINED_SUBPROCESS_REFUSAL_CODES,
+  CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS,
+  CONFINED_SUBPROCESS_STATIC_PROGRAMS,
   ConfinedSubprocessRefusal,
   confinedChildEnvironment,
+  confinedSpawnAllowPaths,
   createConfinedOutputReader,
   createConfinedSubprocessClass,
   createMemberSubprocessGuard,
+  isShellClassProgram,
+  programAttributionRefusal,
   readIntentsOf,
   SUBPROCESS_GUARD_METHOD,
 } from './subprocess.js'
@@ -44,6 +49,7 @@ export type {
   ConfinedStreamProcess,
   ConfinedSubprocessOptions,
   ConfinedSubprocessRefusalCode,
+  ProgramAttributionRefusal,
   SubprocessProviderConstructor,
 } from './subprocess.js'
 export { mountA5sfRealm } from './mount.js'

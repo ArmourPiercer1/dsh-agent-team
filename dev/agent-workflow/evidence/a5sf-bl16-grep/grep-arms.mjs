@@ -28,12 +28,26 @@
  *   GREP-EXIT2 an invalid pattern is a failure (rg exit 2), never "no matches"
  *   GLOB-IN    in-lane glob lists the file
  *   GLOB-OUT   out-of-lane glob refused, no process, one deny fact
- *   KERNEL     a read the argv never named is refused by the KERNEL profile
- *              (the layer string-level admission cannot provide)
+ *   SHELL-DENY the review-round-2 closure: `sh -c 'cat /etc/passwd'` is refused
+ *              at ADMISSION — one deny fact, `spawns` unchanged, no bytes
+ *   KERNEL     layer 2 measured directly (raw provider, admission bypassed):
+ *              the kernel refuses the out-of-lane read while the in-lane read
+ *              succeeds — the allowance boundary, pinned rather than described
+ *   PIN-ETC    layer 2 directly: a direct `/etc/passwd` read SUCCEEDS (the
+ *              launcher's runtime_base), with ZERO guard facts
+ *   PIN-SYMLINK an in-lane symlink -> `/etc/passwd` is served through rg
+ *              (`--follow`), one ALLOW fact on the declared in-lane root
+ *   PIN-HARDLINK a PRE-EXISTING in-lane hardlink to an outside inode is served
+ *              (rg default arm), one ALLOW fact — the limit, measured
+ *   PIN-CAPS   the in-lane capability narrowing, measured: write-a-file yes;
+ *              mkdir, symlink creation and in-lane execve are DENIED; a
+ *              hardlink BETWEEN two in-lane paths IS created (no link bit)
+ *   PIN-PROGDIR a Member-writable copy NAMED `rg` executes: the allow-list is
+ *              a name contract, not a byte-identity check (residual #3)
  */
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createRequire, register } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -49,6 +63,7 @@ const policy = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime',
 const guarded = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'guard-observability.ts')).href)
 const confinedModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'subprocess.ts')).href)
 const providerModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'sandbox-provider', 'provider.ts')).href)
+const profileModule = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-sandbox', 'src', 'profile.ts')).href)
 
 const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'package.json'))
 const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
@@ -95,6 +110,16 @@ mkdirSync(outside, { recursive: true })
 writeFileSync(join(inside, 'needle.txt'), 'INSIDE-NEEDLE\n', 'utf8')
 writeFileSync(join(inside, 'quiet.txt'), 'nothing to see here\n', 'utf8')
 writeFileSync(join(outside, 'secret.txt'), 'OUTSIDE-SECRET-MUST-NOT-LEAK\n', 'utf8')
+// The three pinned limits (created OUTSIDE the sandbox, as the host would):
+symlinkSync('/etc/passwd', join(inside, 'link-passwd'))
+linkSync(join(outside, 'secret.txt'), join(inside, 'hard-secret'))
+writeFileSync(join(inside, 's.sh'), '#!/bin/sh\necho RAN\n')
+chmodSync(join(inside, 's.sh'), 0o755)
+const RG_PATH = join(BASELINE, 'node_modules', '.pnpm', '@vscode+ripgrep-linux-x64@1.18.0', 'node_modules', '@vscode', 'ripgrep-linux-x64', 'bin', 'rg')
+// A Member-writable copy of the allowed program name (residual #3 measured).
+mkdirSync(join(inside, 'tools'), { recursive: true })
+copyFileSync(RG_PATH, join(inside, 'tools', 'rg'))
+chmodSync(join(inside, 'tools', 'rg'), 0o755)
 const sinkOf = (name) => join(world, `consult-${name}.jsonl`)
 const factsOf = async (path) => (existsSync(path) ? await guarded.readGuardConsultFile(path) : [])
 const factLine = (f) => `${f.realm}/${String(f.toolBindingIdentity)}/${f.memberIdentity}/${f.method}/${f.decision}/${f.decidedBy}/${f.locator}`
@@ -127,6 +152,46 @@ function countingProvider(inner) {
       probe: () => inner.probe(),
     },
   }
+}
+
+function makeRaw(realmId, scratchName) {
+  return providerModule.createConfinedProcessProvider({
+    realmId,
+    trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+    scratchRoot: join(world, `scratch-${scratchName}`),
+    assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
+  })
+}
+
+/** Drain a raw provider handle (streams + exit) to text. */
+async function drainHandle(handle) {
+  const chunks = []
+  const consume = async (stream) => { for await (const chunk of stream) chunks.push(Buffer.from(chunk)) }
+  await Promise.all([consume(handle.stdout), consume(handle.stderr), handle.exited])
+  return Buffer.concat(chunks).toString('utf8')
+}
+
+/**
+ * Run one request against the RAW provider, bypassing the admission on
+ * purpose: this is how the OS boundary is pinned. `allowPaths` is built by the
+ * product's own helper, so the test cannot drift from the shipped allowance.
+ */
+async function rawSpawnText(raw, realmId, effective, argv) {
+  const profile = profileModule.compileExecutionProfile(effective)
+  assert.equal(profile.ok, true, JSON.stringify(profile))
+  const spawned = await raw.spawnStreaming({
+    grantFingerprint: `bl16-raw-${Math.random().toString(16).slice(2)}`,
+    realmId,
+    bindingId: BINDING,
+    memberScope: IDENTITY.memberInstanceId,
+    argv,
+    cwd: inside,
+    env: [],
+    allowPaths: confinedModule.confinedSpawnAllowPaths(profile.value.allowPaths, argv[0]),
+    exitPassthrough: true,
+  }, { graceMs: 5000 })
+  assert.equal(spawned.ok, true, JSON.stringify(spawned))
+  return drainHandle(spawned.value)
 }
 
 async function worldWith({ read, write, restriction, name, withLocalSubprocess = false }) {
@@ -320,39 +385,149 @@ try {
     } finally { await w.realm.dispose(); w.active = false }
   })
 
-  // --- KERNEL: the unnamed read the admission cannot see ---------------------
-  await arm('KERNEL (unnamed read refused by the OS profile)', async () => {
+  // --- SHELL-DENY: the review-round-2 closure --------------------------------
+  await arm('SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'shelldeny' })
+    try {
+      const service = w.realm.installation.members[0]?.subprocess
+      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
+      const before = w.spawns.count
+      const handle = service.spawn({
+        argv: ['/bin/sh', '-c', `cat /etc/passwd; cat ${outside}/secret.txt`],
+        cwd: inside,
+        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
+        graceMs: 5000,
+      })
+      const denial = await handle.done.then(() => undefined, (error) => error)
+      const after = w.spawns.count
+      const facts = await factsOf(w.sinkPath)
+      const text = handle.collected?.stdout?.readFrom(0).text ?? ''
+      assert.notEqual(denial, undefined, 'the shell spawn was ADMITTED')
+      assert.equal(after, before, 'a process was spawned for a refused shell body')
+      assert.equal(facts.length, 1, `expected one fact, got ${JSON.stringify(facts)}`)
+      assert.equal(facts[0].decision, 'deny')
+      assert.equal(facts[0].decidedBy, 'IO_READ_DENIED')
+      assert.equal(facts[0].method, 'spawn')
+      assert.equal(facts[0].locator, '/bin/sh')
+      assert.match(String(denial?.detail ?? denial?.message), /statically attributed|shell/i)
+      assert.equal(text, '', 'a refused shell body returned bytes')
+      assert.equal(readFileSync(join(outside, 'secret.txt'), 'utf8').includes('OUTSIDE-SECRET'), true)
+      return `spawns=${before}->${after} denial=${denial.code} facts=[${facts.map(factLine).join(',')}] bytes=${JSON.stringify(text)}`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  // --- KERNEL: layer 2 alone, admission bypassed -----------------------------
+  await arm('KERNEL (raw provider: out-of-lane refused, in-lane served)', async () => {
     const effective = effectiveOf(IN_LANE.read, IN_LANE.write, IN_LANE.restriction)
     const realmId = 'realm-bl16-kernel'
-    const raw = providerModule.createConfinedProcessProvider({
-      realmId,
-      trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
-      scratchRoot: join(world, 'scratch-kernel'),
-      assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
-    })
-    const root = new Context()
-    cleanup.push(root)
-    await root.plugin(BaseFs, {})
-    const service = new (confinedModule.createConfinedSubprocessClass(subprocessLocal.default ?? subprocessLocal, {
-      effective,
-      provider: raw,
-      realmId,
-      bindingId: BINDING,
-      memberScope: IDENTITY.memberInstanceId,
-    }))(root)
-    const handle = service.spawn({
-      argv: ['/bin/sh', '-c', `cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt`],
-      cwd: inside,
-      stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
-      graceMs: 5000,
-    })
-    await handle.done
-    const text = handle.collected.stdout?.readFrom(0).text ?? ''
+    const raw = makeRaw(realmId, 'kernel')
+    const before = await factsOf(join(world, 'no-such-sink.jsonl'))
+    const text = await rawSpawnText(raw, realmId, effective,
+      ['/bin/sh', '-c', `cat ${outside}/secret.txt 2>&1; echo RC=$?; cat ${inside}/needle.txt`])
     assert.match(text, /INSIDE-NEEDLE/, `the admitted read did not run: ${text}`)
     assert.doesNotMatch(text, /OUTSIDE-SECRET-MUST-NOT-LEAK/, 'the outside bytes reached the harness')
     assert.match(text, /Permission denied|EACCES/, 'the outside read was not refused by the kernel')
     assert.match(readFileSync(join(outside, 'secret.txt'), 'utf8'), /OUTSIDE-SECRET-MUST-NOT-LEAK/, 'the fixture changed')
-    return `stdout=${JSON.stringify(text.replace(/\n/g, '\\n').slice(0, 96))}`
+    return `facts=${before.length} stdout=${JSON.stringify(text.replace(/\n/g, '\\n').slice(0, 96))}`
+  })
+
+  // --- PIN-ETC: the runtime_base grants /etc --------------------------------
+  await arm('PIN-ETC (raw provider: direct /etc, /usr and /proc reads SUCCEED, zero guard facts)', async () => {
+    const effective = effectiveOf(IN_LANE.read, IN_LANE.write, IN_LANE.restriction)
+    const realmId = 'realm-bl16-pin-etc'
+    const text = await rawSpawnText(makeRaw(realmId, 'pin-etc'), realmId, effective,
+      ['/bin/sh', '-c', 'head -c 24 /etc/passwd; echo SEP; head -c 24 /usr/lib/os-release; echo SEP; head -c 24 /proc/self/status'])
+    assert.match(text, /root:x:0:0/, `the kernel did not serve /etc/passwd: ${text}`)
+    assert.match(text, /PRETTY_NAME=/, `the kernel did not serve /usr/lib/os-release: ${text}`)
+    assert.match(text, /Name:/, `the kernel did not serve /proc/self/status: ${text}`)
+    return `kernelRead=/etc/passwd+/usr/lib/os-release+/proc/self/status SUCCEEDED facts=0 (raw provider, no admission consulted) stdout=${JSON.stringify(text.replace(/\n/g, '\\n').slice(0, 96))}`
+  })
+
+  // --- PIN-CAPS: the in-lane capability narrowing ---------------------------
+  await arm('PIN-CAPS (raw provider: write-file yes; mkdir/symlink/execve DENIED; in-lane hardlink ALLOWED)', async () => {
+    const effective = effectiveOf(IN_LANE.read, IN_LANE.write, IN_LANE.restriction)
+    const realmId = 'realm-bl16-pin-caps'
+    const text = await rawSpawnText(makeRaw(realmId, 'pin-caps'), realmId, effective,
+      ['/bin/sh', '-c', `mkdir ${join(inside, 'd1')} 2>&1; echo MK=$?; echo hi > ${join(inside, 'f1')} 2>&1; echo WR=$?; ln -s needle.txt ${join(inside, 'link-in')} 2>&1; echo SYM_IN=$?; ln -s /etc/passwd ${join(inside, 'link-new')} 2>&1; echo SYM_ETC=$?; ln ${join(inside, 'needle.txt')} ${join(inside, 'hard-new')} 2>&1; echo HARD=$?; ( exec ${join(inside, 's.sh')} ) 2>&1; echo EX=$?`])
+    assert.match(text, /mkdir: Permission denied/, `mkdir was not narrowed: ${text}`)
+    assert.match(text, /MK=1/)
+    assert.match(text, /WR=0/, `an in-lane file write was refused: ${text}`)
+    assert.match(text, /ln: failed to create symbolic link/, `symlink creation was not narrowed: ${text}`)
+    assert.match(text, /SYM_IN=1/)
+    assert.match(text, /SYM_ETC=1/)
+    // MEASURED, contrary to the "no link creation" shorthand: a hardlink
+    // between two in-lane paths IS created (the OS profile has no link bit;
+    // only the cross-device outside source fails, and that is EXDEV, not a
+    // denial). The real narrowing is symlinks + mkdir + in-lane execve.
+    assert.match(text, /HARD=0/, `in-lane hardlink creation behaved differently: ${text}`)
+    assert.match(text, /exec: .*Permission denied/, `in-lane execve was not narrowed: ${text}`)
+    assert.match(text, /EX=126|EX=1/, `in-lane execve returned an unexpected code: ${text}`)
+    return `mkdir=DENIED writeFile=ALLOWED symlink=DENIED(symInLane+symToEtc) hardlinkInLane=ALLOWED inLaneExecve=DENIED (raw provider) stdout=${JSON.stringify(text.replace(/\n/g, '\\n').slice(0, 200))}`
+  })
+
+  // --- PIN-SYMLINK: an in-lane symlink to /etc is served --------------------
+  await arm('PIN-SYMLINK (in-lane symlink -> /etc/passwd served; one ALLOW fact)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'pinsym' })
+    try {
+      const service = w.realm.installation.members[0]?.subprocess
+      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
+      const handle = service.spawn({
+        argv: [RG_PATH, '--no-config', '--follow', '--regexp=root:', '--', inside],
+        cwd: inside,
+        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
+        graceMs: 5000,
+      })
+      await handle.done
+      const text = handle.collected.stdout?.readFrom(0).text ?? ''
+      const facts = await factsOf(w.sinkPath)
+      assert.match(text, /link-passwd:root:x:0:0/, `rg did not follow the in-lane symlink: ${text}`)
+      assert.equal(facts.length, 1, `expected one fact, got ${JSON.stringify(facts)}`)
+      assert.equal(facts[0].decision, 'allow')
+      assert.equal(facts[0].locator, inside)
+      return `symlinkTarget=/etc/passwd SERVED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} facts=[${facts.map(factLine).join(',')}]`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  // --- PIN-PROGDIR: the allow-list is a NAME, not a byte identity ------------
+  await arm('PIN-PROGDIR (a Member-writable copy named rg EXECUTES; the allow-list is by name)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'pinprog' })
+    try {
+      const service = w.realm.installation.members[0]?.subprocess
+      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
+      const handle = service.spawn({
+        argv: [join(inside, 'tools', 'rg'), '--no-config', '--regexp=INSIDE-NEEDLE', '--', inside],
+        cwd: inside,
+        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
+        graceMs: 5000,
+      })
+      await handle.done
+      const text = handle.collected.stdout?.readFrom(0).text ?? ''
+      assert.match(text, /needle\.txt:INSIDE-NEEDLE/, `the in-lane program copy did not execute: ${text}`)
+      return `memberWritableProgram EXECUTED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} (programDir grant; residual #3)`
+    } finally { await w.realm.dispose(); w.active = false }
+  })
+
+  // --- PIN-HARDLINK: a pre-existing in-lane hardlink leaks -------------------
+  await arm('PIN-HARDLINK (pre-existing in-lane hardlink to an outside inode served; one ALLOW fact)', async () => {
+    const w = await worldWith({ ...IN_LANE, name: 'pinhard' })
+    try {
+      const service = w.realm.installation.members[0]?.subprocess
+      assert.ok(service !== undefined, 'the realm mounted no confined subprocess face')
+      const handle = service.spawn({
+        argv: [RG_PATH, '--no-config', '--regexp=OUTSIDE-SECRET', '--', inside],
+        cwd: inside,
+        stdio: { stdin: 'ignore', stdout: { maxBytes: 1 << 20 }, stderr: { maxBytes: 1 << 16 } },
+        graceMs: 5000,
+      })
+      await handle.done
+      const text = handle.collected.stdout?.readFrom(0).text ?? ''
+      const facts = await factsOf(w.sinkPath)
+      assert.match(text, /hard-secret:OUTSIDE-SECRET-MUST-NOT-LEAK/, `rg did not serve the hardlink: ${text}`)
+      assert.equal(facts.length, 1, `expected one fact, got ${JSON.stringify(facts)}`)
+      assert.equal(facts[0].decision, 'allow')
+      assert.equal(facts[0].locator, inside)
+      return `outsideInode SERVED result=${JSON.stringify(text.split('\n')[0].slice(0, 72))} facts=[${facts.map(factLine).join(',')}]`
+    } finally { await w.realm.dispose(); w.active = false }
   })
 } finally {
   for (const root of cleanup) { try { await root.dispose?.() } catch { /* best effort */ } }

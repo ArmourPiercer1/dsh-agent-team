@@ -38,24 +38,39 @@ Three additions, all on existing seams (no new policy evaluator, no upstream pat
 
 | File | What it does |
 | --- | --- |
-| `packages/runtime/team-services/src/subprocess.ts` (new) | `readIntentsOf` (declared read roots), `createMemberSubprocessGuard` (the SAME `FsGuard` shape, the SAME `evaluateLocatorAccess` decision, the SAME `TeamIoDenial` codes), `createConfinedOutputReader` (bounded, offset-based collect), `createConfinedSubprocessClass` (the Service subclass that replaces `spawn`) |
+| `packages/runtime/team-services/src/subprocess.ts` (new) | `readIntentsOf` (declared read roots), `programAttributionRefusal` + `CONFINED_SUBPROCESS_STATIC_PROGRAMS` (the typed statically-attributable allow-list: `rg`), `createMemberSubprocessGuard` (the SAME `FsGuard` shape, the SAME `evaluateLocatorAccess` decision, the SAME `TeamIoDenial` codes), `createConfinedOutputReader` (bounded, offset-based collect), `createConfinedSubprocessClass` (the Service subclass that replaces `spawn`) |
 | `packages/runtime/team-services/src/install.ts` / `mount.ts` / `src/plugin/live/a5sf-realm-row.mjs` | an **optional** `subprocess` face: `compiledFor` may answer `{ effective, provider, realmId? }`; the installer nests `root.isolate('fs', label).isolate('subprocess', label2)` so the confined process service lives in the SAME isolated chain the route-C native modules are re-mounted into |
 
 Two layers, and neither one is a filter over results:
 
-1. **ADMISSION (before any process).** The request's *declared* read roots — the
-   operands after `--`, resolved against `cwd`, or `cwd` itself when the argv names no
-   operand — are consulted one by one against the **effective** lane
-   (`ceiling ∩ restriction`, the output of the ONE compiler `compileEffectiveIo`). A
-   root outside it throws `TeamIoDenial('IO_READ_DENIED' | 'IO_POLICY_UNSUPPORTED')`
-   and writes exactly one `a5sf-guard-consult/1` fact via the existing `observeGuard`
-   transport — **before** `provider.spawnStreaming` is called. The negative control is
-   a counter, not a string: `spawns=0->0` (§4).
+1. **ADMISSION (before any process).** Two decisions, in this order:
+   **(a) attribution** — a spawn whose reads cannot be statically attributed to the
+   declared read roots is refused: `sh`, `bash`, `dash`, `zsh`, `python*`, `node`,
+   `perl`, `ruby`, `awk`, `xargs`, `find`, … and every binary not on the declared,
+   typed allow-list (`CONFINED_SUBPROCESS_STATIC_PROGRAMS = ['rg']`) fail closed, and
+   for `rg` the argv contract is enforced (`--no-config` required; `--pre`,
+   `--search-zip`/`-z` refused). This refusal is a typed `TeamIoDenial`
+   (`IO_READ_DENIED`) carrying the truthful attribution reason, plus exactly one
+   `a5sf-guard-consult/1` fact (`decision=deny`, `locator=argv[0]`) — and **zero**
+   provider calls. **(b) lane** — the request's declared read roots (operands after
+   `--`, resolved against `cwd`; `cwd` itself when the argv names no operand) are
+   consulted one by one against the **effective** lane (`ceiling ∩ restriction`, the
+   output of the ONE compiler `compileEffectiveIo`). A root outside it throws the same
+   typed denial and one fact, again **before** `provider.spawnStreaming`. The negative
+   control is a counter, not a string: `spawns=0->0` (§4 `SHELL-DENY`, `GREP-OUT`).
 2. **CONTAINMENT (the OS).** The same effective policy is compiled by the SAME
    P1-07 compiler (`compileExecutionProfile`) into a Landlock allowlist, and the child
-   runs under the real launcher. A read the admission could not name (a shell body, a
-   `--pre` program, a symlink hop) is refused by the KERNEL: the bytes are never read.
-   Profiled in §4 `KERNEL`.
+   runs under the real launcher. **Its boundary is narrower than "everything the
+   admission did not name":** the profile is
+   `lane ∪ /bin,/usr,/lib,/lib64,programDir ∪ /etc,/proc` (the first four and the
+   program directory are added by this face for exec/loader; `/etc` and `/proc`
+   READ_FILE/READ_DIR come from the shared launcher's own `runtime_base`). The kernel
+   serves a direct `/etc/passwd`, `/usr/lib/os-release`, `/proc/self/status` read, an
+   in-lane symlink to any of them, and a pre-existing in-lane hardlink to an outside
+   inode; it refuses an out-of-lane path (`/home`, `/srv`, `/var`, a scratch sibling)
+   and a symlink whose target is outside the allowance. §4 `PIN-ETC`, `PIN-SYMLINK`,
+   `PIN-HARDLINK` pin both sides. The admission is the ONLY layer for a **declared**
+   root inside that allowance.
 
 Refusals are typed and fail closed. This face refuses, instead of degrading:
 `mode: 'all'` lanes (`PATH_LANE_UNRESTRICTED` — a default-deny OS ruleset cannot
@@ -103,12 +118,32 @@ other caller's spawn without a caller-identity check that does not exist on the
 subprocess contract. Narrowing per-tool would require a second, tool-aware wrapper —
 exactly the second policy evaluator this lane must not add.
 
-The tradeoff, disclosed: with (A) a command whose *body* names a path the argv does not
-name (e.g. `sh -c 'cat /etc/passwd'`) is refused by the KERNEL with **no guard fact**
-(the admission had nothing to consult). That is a real asymmetry between "declared read
-intent" (typed refusal + fact) and "undeclared read attempt" (kernel errno + no fact).
-For `grep`/`glob` the root is always in the argv (`--`) or is `cwd`, so the acceptance
-arms do produce facts. **Owner question** in §6.
+The first version of (A) disclosed a real asymmetry and left it open: a command whose
+*body* named a path the argv did not name (`sh -c 'cat /etc/passwd'`) reached the
+kernel and, because the launcher's `runtime_base` grants `/etc` (and `/proc`), was
+**served** — with no guard fact. Review round 2 closes that general-face hole by
+**admission, not string filtering**: the spawn is refused before any process because
+its reads cannot be statically attributed. The negative control is the same counter
+discipline as `GREP-OUT`:
+
+```
+SHELL-DENY  sh -c 'cat /etc/passwd; cat <outside>/secret.txt'
+            → spawns=0->0, providerCalls=0,
+              one fact member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//bin/sh,
+              bytes returned = ""
+```
+
+The declared allow-list is `rg` (the binary the shipped `grep`/`glob` argv executes),
+not a heuristic shell-name filter: an unknown binary cannot be proven to read only its
+operands, so it fails closed until a future tool adds its program **and its argv
+contract** deliberately. `rg`'s contract is enforced too (`--no-config` mandatory, so a
+ripgrep config file can never be read off-operand; `--pre`/`--search-zip` rejected
+because they execute another program). Consequence, stated because it is a real
+limitation: the shipped search argv still executes, but an ad-hoc caller that omits
+`--no-config` is refused (the reviewer's own probe passes such an argv, and it now
+denies — see §4.3). The kernel stays as defence in depth; it is no longer the layer
+that a shell body reaches.
+
 
 ## 4. What the arms measured (this host, this run)
 
@@ -132,9 +167,15 @@ GREP-EXIT1 (no match is not an error): result="No matches found"
 GREP-EXIT2 (invalid pattern is a failure): result="Error: grep pattern rejected by ripgrep: rg: regex parse error: …"
 GLOB-IN (in-lane): result="<inside>/quiet.txt\n<inside>/needle.txt" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
 GLOB-OUT (out-of-lane, refused): spawns=0->0 facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<outside>]
-KERNEL (unnamed read refused by the OS profile): stdout="cat: <outside>/secret.txt: Permission denied\nRC=1\nINSIDE-NEEDLE\n"
+SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//bin/sh] bytes=""
+KERNEL (raw provider: out-of-lane refused, in-lane served): facts=0 stdout="cat: <outside>/secret.txt: Permission denied\nRC=1\nINSIDE-NEEDLE\n"
+PIN-ETC (raw provider: direct /etc, /usr and /proc reads SUCCEED, zero guard facts): kernelRead=/etc/passwd+/usr/lib/os-release+/proc/self/status SUCCEEDED facts=0 … stdout="root:x:0:0:root:/root:/bSEP\nPRETTY_NAME=\"Ubuntu 26.0SEP\nName:\thead\nUmask:\t0022\n…"
+PIN-CAPS (raw provider: write-file yes; mkdir/symlink/execve DENIED; in-lane hardlink ALLOWED): mkdir=DENIED writeFile=ALLOWED symlink=DENIED(symInLane+symToEtc) hardlinkInLane=ALLOWED inLaneExecve=DENIED …
+PIN-SYMLINK (in-lane symlink -> /etc/passwd served; one ALLOW fact): symlinkTarget=/etc/passwd SERVED result="<inside>/link-passwd:root:x:0:0:root:/root:/b" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
+PIN-PROGDIR (a Member-writable copy named rg EXECUTES; the allow-list is by name): memberWritableProgram EXECUTED result="<inside>/needle.txt:INSIDE-NEEDLE" (programDir grant; residual #3)
+PIN-HARDLINK (pre-existing in-lane hardlink to an outside inode served; one ALLOW fact): outsideInode SERVED result="<inside>/hard-secret:OUTSIDE-SECRET-MUST-NOT-" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
 
-9 arms measured; receipt -> dev/agent-workflow/evidence/a5sf-bl16-grep/arms.json
+15 arms measured; receipt -> dev/agent-workflow/evidence/a5sf-bl16-grep/arms.json
 ```
 
 Reading the lines, precisely:
@@ -150,11 +191,33 @@ Reading the lines, precisely:
 * `GREP-EXIT1` vs `GREP-EXIT2`: exit `1` (no match) is a NORMAL result while exit `2`
   (invalid pattern) is an ERROR. Both survive the handle adaptation; a flattened exit
   code would have collapsed one into the other.
-* `KERNEL`: `cwd` is in lane, so the admission admits it; the shell body then reads
-  `../outside/secret.txt`. The kernel refuses it (`Permission denied`, `RC=1`), the
-  in-lane read still succeeds, and the outside file still holds its secret on the host
-  (the refusal is a read refusal, not a deletion). **No guard fact exists for this
-  arm** — see §6.1.
+* `SHELL-DENY` is review round 2's closure: the same `sh -c 'cat /etc/passwd; cat
+  <outside>/secret.txt'` request that used to be SERVED (measured before the edit: the
+  file came back) is now refused at admission — **one** fact, `locator=/bin/sh`,
+  `decision=deny`, `decidedBy=IO_READ_DENIED`, `spawns=0->0`, and the collected bytes
+  are empty. The detail says the reads are not statically attributable, not "does not
+  exist".
+* `KERNEL` is now measured at **layer 2 alone** (raw provider, admission deliberately
+  bypassed): the out-of-lane read is refused (`Permission denied`, `RC=1`) while the
+  in-lane read succeeds. This is what the kernel still contributes after the shell
+  path is closed — defence in depth for an inner-root symlink/hardlink, not the primary
+  boundary.
+* `PIN-ETC` is the measured limit, not a claim: a direct `/etc/passwd`,
+  `/usr/lib/os-release` and `/proc/self/status` read **succeeds** with **zero guard
+  facts** when the admission is bypassed. The allowance is
+  `lane ∪ /bin,/usr,/lib,/lib64,programDir ∪ /etc,/proc`; the admission is the only
+  layer for a declared root inside it.
+* `PIN-SYMLINK` / `PIN-HARDLINK`: with the declared root `inside` (in lane), an
+  in-lane symlink to `/etc/passwd` and a pre-existing in-lane hardlink to an outside
+  inode are both **served**, each with one `ALLOW` fact on the in-lane root. That is
+  the residual aid the kernel gives a nested link; no claim here says otherwise.
+* `PIN-CAPS` measures the in-lane capability narrowing: file write succeeds; `mkdir`,
+  symlink creation and in-lane `execve` are **DENIED**; a hardlink between two in-lane
+  paths **IS created** (the profile has no link bit). The shorthand "no link creation"
+  would have been false for hardlinks and is not used.
+* `PIN-PROGDIR` measures the allow-list's limit: a Member-writable copy **named `rg`**
+  executes through the in-lane program-directory grant and reads the in-lane needle.
+  The admission keys on the basename, not on the binary's bytes.
 
 ### 4.2 The CI-collected suites
 
@@ -166,21 +229,57 @@ node_modules/.bin/vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts
 ```
 
 `a5sf-confined-subprocess.test.ts` (unit, no process) pins: intent extraction
-(operands after `--`, cwd fallback, a pattern/`--flag=` is never a path); admission
-allow + the request's `allowPaths` bits + the fact shape; refusal outside the CEILING;
-refusal INSIDE the ceiling but OUTSIDE the tool restriction (the two-axis algebra is
-not a single-axis check); a `..` escape through cwd; cwd-out-of-lane when no operand is
-named; `mode:'all'` refusal; stdio refusals; `spawnTerminal` refusal; exit `0/1/2`
-fidelity; `{form:'missing'}` rejection; signal death; cancellation terminating the
-child. Its real-OS leg runs a shell body that reads `../outside` with `cwd` in lane.
+(operands after `--`, cwd fallback, a pattern/`--flag=` is never a path; a shell `-c`
+body is not a path); the attribution allow-list (`rg` admitted, `sh` refused with a
+truthful detail, unknown binaries refused, `--no-config` required, `--pre`/`-z`
+refused); admission allow + the request's `allowPaths` bits + the fact shape; refusal
+outside the CEILING; refusal INSIDE the ceiling but OUTSIDE the tool restriction (the
+two-axis algebra is not a single-axis check); a `..` escape through cwd; cwd-out-of-lane
+when no operand is named; `mode:'all'` refusal; stdio refusals; `spawnTerminal` refusal;
+exit `0/1/2` fidelity; `{form:'missing'}` rejection; signal death; cancellation
+terminating the child. Its real-OS leg now does both halves: (a) the shell body is
+refused at admission with `providerCalls=0` and one deny fact; (b) the raw provider
+(same request builder) serves `/etc/passwd` and refuses `../outside` — the kernel
+boundary pinned rather than described.
 
 `a5sf-bl16-grep-realm.test.ts` (product seam, real pinned module, real rg) pins:
 `R0/R1` the preset definition reaches the INHERITED service (its tripwire throws) while
 the shadow reaches the confined one (the tripwire is never called again) — the
 discriminating pair; `R2` out-of-lane refused with `spawns` unchanged and one
 `IO_READ_DENIED` fact; `R3` no-match is not an error; `R4` invalid pattern is an error;
-`G1/G2` glob rides the SAME face (in-lane lists, out-of-lane refused); `R5` the kernel
-arm above.
+`G1/G2` glob rides the SAME face (in-lane lists, out-of-lane refused); `R5` shell body
+refused at admission (one fact, zero spawns) **plus** the direct layer-2 measurement
+(`/etc` served, outside refused).
+
+### 4.3 The reviewer's probes, re-run against this build
+
+The five probes in `.reviewer-tmp/` were written independently of the author's arms.
+Their outcomes on the corrected build, verbatim from the run:
+
+```
+probe-q1.mjs                  A..K shell arms ALL "DONE REJECTED IO_READ_DENIED";
+                              leaked=false; RG arms also rejected (their argv omits
+                              --no-config, so the rg contract refuses them); admission
+                              arm root=hardlink still ALLOW (layer 1 cannot see an
+                              inode alias)
+probe-symlink-allowance.mjs   aborts on the first arm: TeamIoDenied IO_READ_DENIED,
+                              target '/bin/sh' (previously: /etc/passwd,
+                              /usr/lib/os-release, /proc/self/status all returned)
+probe-narrow.mjs              aborts on the first arm: TeamIoDenied IO_READ_DENIED,
+                              target '/bin/sh' (the same capabilities are re-measured
+                              at layer 2 by PIN-CAPS)
+probe-order.mjs               providerCalls: 0, facts: 1, order: [FACT:deny] — the
+                              fact is recorded before any provider call
+probe-isolate.mjs             member fs confined, ctx subprocess confined, root
+                              services unchanged; out-of-lane fs read refused
+```
+
+The two probes that abort do so **because the shell hole is closed**: they call
+`sh -c` and await `done` without a rejection handler. Their old measurements are
+preserved by the new raw-provider arms (`PIN-ETC`, `PIN-CAPS`), which are labelled as
+layer 2. The reviewer's rg probe argv is refused for a second, deliberate reason:
+it omits `--no-config`, so its reads are not statically attributable. The shipped
+module passes it, which is why `GREP-IN`/`GLOB-IN` still execute.
 
 ## 5. RED first
 
@@ -211,9 +310,14 @@ second policy evaluator).
   on the Member realm (`realm=member`, `toolBindingIdentity=null`).
 * Out-of-lane `grep`/`glob` are refused with NO process created and one typed
   `IO_READ_DENIED` fact.
+* A shell/interpreter/unknown-argv spawn is refused at ADMISSION with one typed
+  `IO_READ_DENIED` fact, no process, and no bytes (`SHELL-DENY`; the same `sh -c`
+  command was measured returning `/etc/passwd` before the edit).
 * Exit `0/1/2` fidelity, an unrecordable exit rejection, signal death, cancellation.
-* The kernel layer refuses an **undeclared** outside read while an in-lane read in the
-  same process succeeds (content-read ENFORCED on this host).
+* Layer 2, measured directly: the kernel refuses an out-of-lane read while an in-lane
+  read in the same process succeeds (content-read ENFORCED on this host), **and** it
+  serves direct `/etc`, `/usr`, `/proc`, in-lane symlinks to them, and a pre-existing
+  in-lane hardlink (`PIN-ETC`/`PIN-SYMLINK`/`PIN-HARDLINK`).
 
 ### 6.2 Needs a live Host (not run; no boot authorised — P2-01 start budget spent)
 * That the production preset/glue actually supplies a `subprocess` face and that the
@@ -225,39 +329,72 @@ second policy evaluator).
   `spawn`/`spawnTerminal`.
 
 ### 6.3 Residual risks (disclosed, not mitigated)
-1. **The runtime allowance is a widening OUTSIDE the lane.** The OS profile carries the
-   effective lane PLUS `/bin`, `/usr`, `/lib`, (`/lib64`), and the program's own
-   directory (execute+read), because a child cannot exec or load without them. It is
-   the same allowance the governed search rows already ship, and it is exactly why
-   layer 1 (admission) is load-bearing for grep/glob: the kernel would ALLOW a read
-   under `/usr/...` that the lane does not. An argv naming `/usr/share/...` is refused
-   by the admission, but the OS alone would not refuse it.
-2. **Undeclared reads have no fact.** See §3: kernel refusal, no `a5sf-guard-consult/1`
-   line. A future acceptance that greps the sink for a denial would see nothing.
-3. **The model-facing text of a refusal is generic.** The pinned module catches the
+1. **The runtime allowance is a widening OUTSIDE the lane, and it is larger than this
+   README first said.** The OS profile carries
+   `lane ∪ /bin,/usr,/lib,/lib64,programDir ∪ /etc,/proc`. The first four and the
+   program directory are added by this face (execute + read); `/etc` and `/proc`
+   READ_FILE/READ_DIR are added by the **shared launcher's own `runtime_base`**
+   (`packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py`, the same
+   builder both exec arms use). Consequence, measured: a direct `/etc/passwd`,
+   `/usr/lib/os-release`, `/proc/self/status` read SUCCEEDS; an in-lane symlink to any
+   of them succeeds; a pre-existing in-lane hardlink to an outside inode succeeds. The
+   kernel refuses `/home`, `/srv`, `/var` and scratch siblings. **The admission is the
+   only layer for a declared root inside the allowance.** Narrowing the shared base is
+   P1-07 code and an owner decision, recorded as backlog BL-39 — it may be needed by
+   other tools, so this lane does not change it.
+2. **Nested links/hardlinks inside an admitted root are served with an ALLOW fact.**
+   The admission consults the declared ROOT, not every entry under it. A nested symlink
+   to `/etc` or a hardlink to an outside inode therefore reads successfully and records
+   `decision=allow` on the in-lane root (`PIN-SYMLINK`, `PIN-HARDLINK`). This is the
+   kernel allowance above showing through the search path; no claim in this file says
+   the admission inspects the tree.
+3. **The allow-list is by program NAME, not program BYTES — measured, not inferred.**
+   `rg` is admitted by basename; the face does not hash the binary. `PIN-PROGDIR`
+   copied the pinned `rg` into the Member's write lane and executed it successfully
+   through the program-directory grant. A Member-writable executable named `rg` is
+   therefore executed. The shipped binary is outside the Member write lane, and no
+   Member-write path to the shipped binary was measured; a binary-identity check is
+   follow-up, not done.
+4. **The model-facing text of a refusal is generic.** The pinned module catches the
    `done` rejection and reports `grep subprocess failed before reporting an outcome
    (ripgrep provider failure)`; the typed code lives in the thrown `TeamIoDenial` and
    in the recorded fact, not in the tool text. Making the text typed would require
    shadowing the module's error mapping (an upstream-internal concern).
-4. **`grep`/`glob` share one face.** A future binding-specific subprocess lane (the
-   RIGHT factor for search) does not exist: search has no `dsh.fs/*` binding, so the
-   ceiling realm enforces the effective intersection supplied by the composition.
-   `toolBindingIdentity` is therefore `null` in every fact below.
-5. **OS-level vs string-level.** The admission is a string/path-level decision over
+5. **`grep`/`glob` share one face, and the install spec has no field to set the binding
+   identity.** `ConfinedSubprocessOptions.toolBindingIdentity` exists and defaults to
+   `null`; `ConfinedSubprocessRealmSpec` (the install/realm input) exposes no such
+   field, so every fact in §4 records `toolBindingIdentity=null`. The `createConfinedSubprocessClass`
+   caller may pass it, but the product mount does not. For search this is not a loss:
+   search has no `dsh.fs/*` binding, so the ceiling realm is the intended fact realm;
+   a future binding-scoped subprocess lane would need the field wired through.
+6. **The binding-realm gap (BL-17 hazard).** `mountNativeToolModules` routes a
+   binding-owned mount to `binding?.ctx`; `installToolBindingRealm` isolates `fs` only
+   and mounts **no** `subprocess` face. A future binding-mounted native module that
+   injects `subprocess` would resolve the inherited, unconfined host service, silently.
+   Search does not hit this (it mounts on the ceiling `memberTarget`), but BL-17 must
+   not be built on the premise that the binding realm confines processes.
+7. **The in-lane capability set is narrower than a normal shell.** Measured
+   (`PIN-CAPS`, raw provider): file write succeeds; `mkdir`, symlink creation and
+   in-lane `execve` are DENIED; a hardlink between two in-lane paths **is created**
+   (there is no link bit in the profile). A shell/PTY row (BL-17) must be designed
+   against this narrowed capability set — the shorthand "no link creation" would be
+   wrong for hardlinks and is not used.
+8. **OS-level vs string-level.** The admission is a string/path-level decision over
    DECLARED intents (with `evaluateLocatorAccess`'s symlink resolution); the kernel is
    the OS-level layer. They are not the same mechanism and this README never calls the
    admission "OS confinement".
-6. **Real `rg` vs a test double.** The product-seam arms use the real binary; the unit
+9. **Real `rg` vs a test double.** The product-seam arms use the real binary; the unit
    suite uses a deterministic fake for the refusal/exit matrix, so a future change in
    `rg`'s argv could pass the unit suite and fail the probe (which is why both exist).
 
-### 6.4 The fork for the owner
-Whether (A) — a general confined `ctx.subprocess` — is the intended product shape, or
-whether bash-style tools should keep a SEPARATE, fact-carrying path (the §3 asymmetry
-above). This lane implemented (A) because it is the only shape the seam can express
-without a second evaluator; the alternative needs a decision, not a patch.
-
-## 7. Gates
+### 6.4 The fork for the owner, after review round 2
+(A) — a general confined `ctx.subprocess` — is still the only shape the seam can
+express without a second evaluator, but it is now (A) + a **declared admission
+allow-list** (`rg` only). The owner decision that remains is BL-17's: a shell/PTY row
+cannot run under this rule (shell class is refused by design), so it needs a separate,
+fact-carrying path whose reads are attributed some other way (e.g. a declared command
+list), not a widening of this one. That is recorded as backlog BL-40 (BL-17 depends on
+this rule).
 
 ## 7. Gates (verbatim verdicts, run on the final tree)
 
@@ -270,19 +407,26 @@ without a second evaluator; the alternative needs a decision, not a patch.
 | new unit suite | `vitest run packages/runtime/test/a5sf-confined-subprocess.test.ts` | **16/16 pass** |
 | new realm suite | `vitest run packages/runtime/test/a5sf-bl16-grep-realm.test.ts` | **6/6 pass** |
 | lane-hygiene suite (touched ledger) | `vitest run packages/runtime/test/a5p4-lane-hygiene.test.ts` | **8/8 pass** (the new types-only edge is booked with its pinned import line) |
-| product-seam probe | `node dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs` | **9/9 arms**, receipt `arms.json` |
+| product-seam probe | `node dev/agent-workflow/evidence/a5sf-bl16-grep/grep-arms.mjs` | **15/15 arms**, receipt `arms.json` |
+| reviewer probe set | `node .reviewer-tmp/probe-{q1,symlink-allowance,narrow,order,isolate}.mjs` | re-run against this build; outcomes in §4.3 (shell closure measured; two probes abort on the now-closed shell path) |
 | world-factory (node:test) | `node --test tests/world-factory/a5sf-{native-route-c,p2-wiring,f1-ctx,assembly}.test.mjs` | **61/61 pass** |
 | scripts/checks (node:test) | `node --test scripts/ci-local.test.mjs`, `node --test tests/checks/dist-placements.test.mjs` | **pass / pass** |
-| whitespace | `git diff --check` | **clean** |
+| whitespace | `git diff --check origin/master...HEAD` | **clean, rc=0** (the earlier "clean" was the WORKING TREE only; the reviewer was right — two trailing-blank-line findings are fixed) |
 | full runtime suite (parallel) | `vitest run packages/runtime` | **6008/6015 pass**; the 7 failures were all 5 s vitest timeouts under full-suite load — isolation proof below (`runtime-full.verdict.txt`) |
-| L0 CI | `pnpm ci:local` | **FAIL (exit 1) — reported honestly, see below** |
+| L0 CI | `pnpm ci:local` | **NOT RUN this round.** Known load-flaky on this host and the reviewer already isolated all four identities as flakes (`alpha5-search-backend` P11, `a5g6-install-face-render`, `a5p4-lane-hygiene` tsc leg, `alpha5-glob-backend`). Historical two-run verdicts are kept in §7.1; no green is claimed. |
 
 Raw verdict extracts live next to this file: `ci-local-1.verdict.txt`,
-`ci-local-2.verdict.txt`, `runtime-full.verdict.txt`, `red-1.log`, `arms.json`
+`ci-local-2.verdict.txt`, `runtime-full.verdict.txt`, `red-1.log`, `arms.json`,
+`reviewer-probes.log`
 (the full 1.2 MB CI logs are NOT committed — the extracts carry every failure identity
 and the verdict line).
 
-### 7.1 The `ci:local` verdicts, exactly
+### 7.1 The historical `ci:local` verdicts (pre-review-round-2; not re-run)
+
+These two runs belong to the AUTHOR's original tree. This correction round did not run
+`pnpm ci:local` (known load-flaky; the reviewer already isolated all four flake
+identities). They are kept because they are the reason the flake set is known, not as
+a current verdict.
 
 ```
 run #1 @ 18:57  DSH-CI-LOCAL verdict=fail steps=5 failed=1 coverage=determined files=4 wall=275.1s
@@ -324,4 +468,3 @@ git worktree carries none). Four of those symlinks were initially DANGLING
 `ENOENT … packages/tools/node_modules`. Removing the dangling links fixed it (21/21).
 This is worktree hygiene, not a product change: the same test passes on the main checkout,
 where pnpm has created those directories.
-
