@@ -16,7 +16,7 @@ brief). The diagnosis evidence commit `d75a03c38` is cherry-picked (evidence onl
 | `row6-durable-read.test.mjs` | durable-read cost measurement (steady state / cold resume / boot) |
 | `row6-rejudge.test.mjs` / `row6-rejudge.json` | row-6 re-judge over the archived samples with the fixed seam |
 | `green-rejudge-cost.log` | both arms above, green |
-| `runtime-full.log`, `build.log` | the full runtime suite and the dist rebuild |
+| `full-suite.log`, `build.log` | the full suite from the repo root, and the dist rebuild |
 
 ---
 
@@ -168,7 +168,25 @@ product contract change to the protected row assembly, reviewed as such). `dist`
 `packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs` is byte-identical to the source
 (same sha256), and both artifact gates are run on the committed tree.
 
-## 6. Residual risks
+## 6. Gates (verbatim)
+
+| gate | result |
+|---|---|
+| `node --test tests/world-factory/a5sf-*.test.mjs` | `tests 219 / pass 219 / fail 0` |
+| runtime a5sf suites (13 files) | `195 passed (195)` |
+| `tsc -p packages/runtime/tsconfig.json --noEmit` | rc 0 |
+| `pnpm -r run typecheck` | rc 0 (9 workspace projects) |
+| eslint on the touched paths | `0 errors` (6 evidence/test files are intentionally ignored by the repo config) |
+| `pnpm run build` + `place-dist-glue` + `build-client-composition` | rc 0; 101 placements; glue emitted byte-identical (same sha256) |
+| `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=1960 glue=101` |
+| `node scripts/check-artifacts-at-head.mjs` (committed tree, scratch build) | `verdict=ok compared=1960 drift=0` — "HEAD carries its own build" |
+| `packages/testkit/test/a4p7-merge-gate.test.ts` (35 static+driven legs) | `35 passed (35)` with a writable `DSH_ARTIFACT_CHECK_STORE_DIR` |
+| full suite from the repo root | `8820/8821`; the one failure is `a5g6-install-face-render` hitting its 5 s timeout under 668-file parallel load — it passes alone in 750 ms (5/5), and `a5mcp-native-trust-filter` (also a 5 s timeout in an earlier run) passes alone 7/7 |
+| `git diff --check origin/master...HEAD` | rc 0 |
+
+Two environment notes, so a later reader does not mistake them for product failures: (a) `check-artifacts-at-head` needs a **writable** pnpm store; this worktree's `node_modules/.modules.yaml` still names a deleted lane scratch, so the gate was run with `DSH_ARTIFACT_CHECK_STORE_DIR=$PWD/.scratch/pnpm-store` (a store the gate itself warms); (b) the evidence vitest configs live outside `packages/**` and are deliberately not in the product suite.
+
+## 7. Residual risks
 
 1. **A Member archived in a different process than the resumer.** The gate reads the open `TeamDomain`'s
    durable rows, and those tables are an **in-memory snapshot** of the medium (`seam.ts:65`). If a *different*
