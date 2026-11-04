@@ -11,7 +11,7 @@
  */
 import type { AssignedOfficerReviewFacts, AssignedOfficerReviewFactsQuery, ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
 import type { Alpha6CompositionDecision } from './composition.js';
-import type { ReviewRoute } from '../review-router/index.js';
+import type { ReviewRoute } from './root-router.js';
 export interface WakeDeliveryPort {
     (input: {
         readonly targetSessionId: string;
