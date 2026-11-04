@@ -1,0 +1,13 @@
+[2026-11-04T06:08:42.589Z] runtime peers resolved from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze/packages/runtime/package.json
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+[2026-11-04T06:08:42.733Z] E8-same-emission-dispatch-window-CLOSED: mounted=true elapsedMs=10 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T06:08:42.733Z] E8-same-emission-dispatch-window-CLOSED: PASS
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+[2026-11-04T06:08:42.751Z] E8-lift-full-reassembly-admits-again: mounted=true elapsedMs=16 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T06:08:42.751Z] E8-lift-full-reassembly-admits-again: PASS
+[2026-11-04T06:08:42.757Z] ACK-empty-frontier-recorded: mounted=true elapsedMs=4 preset=[] after=[] routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T06:08:42.757Z] ACK-empty-frontier-recorded: PASS
+[2026-11-04T06:08:42.764Z] ACK-nonempty-frontier-not-acknowledged: mounted=true elapsedMs=4 preset=["subagent"] after=["subagent"] routings=[{"realm":"ceiling","forwarded":["subagent"],"observed":["subagent"],"dropped":[],"forwardedSections":[]}]
+[2026-11-04T06:08:42.764Z] ACK-nonempty-frontier-not-acknowledged: PASS
+[2026-11-04T06:08:42.764Z] wrote /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-e8-freeze/dev/agent-workflow/evidence/a5sf-e8-freeze/probe-e8-freeze.json
+[2026-11-04T06:08:42.764Z] RESULT arms=4 PASS:4 FAIL:0

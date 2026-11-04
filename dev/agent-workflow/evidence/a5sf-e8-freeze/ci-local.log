@@ -1,0 +1,194 @@
+$ pnpm ci:local --base origin/master
+[TRANSCRIPT TRIMMED FOR THE EVIDENCE BOUND: the full run was 1214582 bytes (> 1 MiB); this file keeps
+the invocation/steps head, the failing test block, the selected a5sf node --test block and the verdict
+verbatim. The red is the pre-existing full-pool load/timeout flake; isolation proof and names are in
+ci-local-red-isolation.log and README §10.]
+
+$ node scripts/ci-local.mjs --base origin/master
+
+▶ docs:probe
+docs:probe base=origin/master head=2d0a824ae changed=33 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+ADVISORY DOC_IMPACT_OWNED: 5 source path(s) have declared owner documents
+ADVISORY SOURCE_CHANGED_DOC_IMPACT: owning-document selection is advisory except where dev/engineering/doc-ownership.yaml marks a rule enforce:true; those are self-imposed refusals (DOC_OWNER_UPDATE_MISSING), and CI wiring (EB-ADR-0001) remains a separate coordination decision
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+✔ docs:probe (0.3s)
+
+▶ docs:sync --check
+docs:sync --check: docs=112 notes=4 plans=75(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261102r1.json","snapshot_version":"as20261102r1","content_digest":"sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+✔ docs:sync --check (0.3s)
+
+▶ ci shape (eb3-ci-required)
+EB3-CI-REQUIRED pass workflows=9 findings=0
+✔ ci shape (eb3-ci-required) (0.1s)
+
+▶ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+✔ pnpm typecheck (13.7s)
+
+
+     ✓ A5 the REAL confined rg walk under the same swap race (6600 walks), zero leak  181822ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/a5g6-install-face-render.test.ts:146:3
+    144|   }
+    145|
+    146|   it('the four definitions all carry a render that returns an array of…
+       |   ^
+    147|     const definitions = await buildDefinitions()
+    148|     // U7-F: the process family's second row mounts at its fixed native
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
+   Start at  14:10:35
+   Duration  229.12s (transform 72.41s, setup 0ms, import 386.98s, tests 559.26s, environment 103ms)
+
+✘ vitest (selected) (229.8s)
+
+▶ node --test (selected)
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (26.273581ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (13.211431ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (5.317278ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.263959ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (29.552777ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (15.780495ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (34.245106ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (36.433962ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (7.543289ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (7.517542ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (30.672608ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (3.682762ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["write"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback (6.922335ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ C3 (review 2026-11-03) a registration by an ALREADY-ACTIVE fiber AFTER the settle window is FOLDED IN and INVALIDATES — never an unrecorded live shadow (36.68427ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3 (event-driven 2026-11-03) a preset-plane registration inside the SAME emission must not abort the managed one; the late name is folded and DENIED (8.025394ms)
+✔ EXPECT-1 a declared module that FORWARDS its declared tool is ACCEPTED and the deny covers it like any observed name (5.314421ms)
+✔ EXPECT-2 a declared module that forwards NOTHING is REFUSED, typed, naming the missing name — the divergent composition (3.583101ms)
+✔ EXPECT-3 ABSENT expectedTools keeps today's behaviour: a zero-registration attach is still ACCEPTED (merged C3/A7 contract untouched) (3.354483ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener registers first — the fold path names the late registration (7.445476ms)
+✔ C2-a (review 2026-11-03) a CONFIGURED module with an EMPTY routed frontier is REFUSED — the natural composition cannot silently leave a preset definition serving (3.733648ms)
+✔ C2-b (review 2026-11-03) `allowEmpty: true` is the EXPLICIT opt-out: the same composition attaches and records nothing (3.368435ms)
+✔ C2-c (review 2026-11-03) the top-level `a5sfExpectedTools` map declares on a STRING entry — accepted when forwarded, deny covers the name (3.940151ms)
+✔ C2-d (review 2026-11-03) the map declaration on a STRING entry that forwards NOTHING is REFUSED, typed (3.460451ms)
+✔ C2-e (review 2026-11-03) an `a5sfExpectedTools` specifier that no entry names is a configuration fault (a typo cannot declare nothing) (0.286012ms)
+✔ C3-a (review 2026-11-03) `expectedTools` VALIDATION: a non-array is a configuration fault (0.190561ms)
+✔ C3-b `expectedTools` VALIDATION: an EMPTY array is a contradiction, not an opt-out (0.139624ms)
+✔ C3-c `expectedTools` VALIDATION: a BLANK name is a fault (0.072788ms)
+✔ C3-d `expectedTools` VALIDATION: a NON-STRING name is a fault (0.047911ms)
+✔ C3-e `expectedTools` VALIDATION: a DUPLICATE name is a fault (0.0475ms)
+✔ C3-f `expectedTools` VALIDATION: the top-level map refuses the same faults (empty map, non-array entry) (0.065403ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8 (freeze 2026-11-03) a dispatch issued inside the boundary emission is REFUSED by the frozen realm; neither body serves (11.169717ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8-lift (freeze 2026-11-03) the freeze lifts ONLY on a full verified re-assembly — a fresh mount + attach admits calls again (11.058695ms)
+✔ ACK-1 (allowEmpty 2026-11-03) an acknowledged-empty attach carries the flag explicitly; a non-empty attach does not (6.266774ms)
+✔ ACK-2 (allowEmpty 2026-11-03) `allowEmpty` may acknowledge an EMPTY frontier that DECLARED names: accepted, and the names are carried as acknowledged, never as verified (3.781116ms)
+✔ ACK-2b (allowEmpty 2026-11-03) `allowEmpty` acknowledges only an EMPTY frontier: a PARTIAL frontier that also declares names is still REFUSED, typed (3.320208ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 579.455728
+✔ node --test (selected) (0.6s)
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=244.7s
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
+
+... [selected node --test block, verbatim] ...
+
+▶ node --test (selected)
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (26.273581ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (13.211431ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (5.317278ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.263959ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (29.552777ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (15.780495ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (34.245106ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (36.433962ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (7.543289ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (7.517542ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (30.672608ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (3.682762ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["write"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback (6.922335ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ C3 (review 2026-11-03) a registration by an ALREADY-ACTIVE fiber AFTER the settle window is FOLDED IN and INVALIDATES — never an unrecorded live shadow (36.68427ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3 (event-driven 2026-11-03) a preset-plane registration inside the SAME emission must not abort the managed one; the late name is folded and DENIED (8.025394ms)
+✔ EXPECT-1 a declared module that FORWARDS its declared tool is ACCEPTED and the deny covers it like any observed name (5.314421ms)
+✔ EXPECT-2 a declared module that forwards NOTHING is REFUSED, typed, naming the missing name — the divergent composition (3.583101ms)
+✔ EXPECT-3 ABSENT expectedTools keeps today's behaviour: a zero-registration attach is still ACCEPTED (merged C3/A7 contract untouched) (3.354483ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener registers first — the fold path names the late registration (7.445476ms)
+✔ C2-a (review 2026-11-03) a CONFIGURED module with an EMPTY routed frontier is REFUSED — the natural composition cannot silently leave a preset definition serving (3.733648ms)
+✔ C2-b (review 2026-11-03) `allowEmpty: true` is the EXPLICIT opt-out: the same composition attaches and records nothing (3.368435ms)
+✔ C2-c (review 2026-11-03) the top-level `a5sfExpectedTools` map declares on a STRING entry — accepted when forwarded, deny covers the name (3.940151ms)
+✔ C2-d (review 2026-11-03) the map declaration on a STRING entry that forwards NOTHING is REFUSED, typed (3.460451ms)
+✔ C2-e (review 2026-11-03) an `a5sfExpectedTools` specifier that no entry names is a configuration fault (a typo cannot declare nothing) (0.286012ms)
+✔ C3-a (review 2026-11-03) `expectedTools` VALIDATION: a non-array is a configuration fault (0.190561ms)
+✔ C3-b `expectedTools` VALIDATION: an EMPTY array is a contradiction, not an opt-out (0.139624ms)
+✔ C3-c `expectedTools` VALIDATION: a BLANK name is a fault (0.072788ms)
+✔ C3-d `expectedTools` VALIDATION: a NON-STRING name is a fault (0.047911ms)
+✔ C3-e `expectedTools` VALIDATION: a DUPLICATE name is a fault (0.0475ms)
+✔ C3-f `expectedTools` VALIDATION: the top-level map refuses the same faults (empty map, non-array entry) (0.065403ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8 (freeze 2026-11-03) a dispatch issued inside the boundary emission is REFUSED by the frozen realm; neither body serves (11.169717ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8-lift (freeze 2026-11-03) the freeze lifts ONLY on a full verified re-assembly — a fresh mount + attach admits calls again (11.058695ms)
+✔ ACK-1 (allowEmpty 2026-11-03) an acknowledged-empty attach carries the flag explicitly; a non-empty attach does not (6.266774ms)
+✔ ACK-2 (allowEmpty 2026-11-03) `allowEmpty` may acknowledge an EMPTY frontier that DECLARED names: accepted, and the names are carried as acknowledged, never as verified (3.781116ms)
+✔ ACK-2b (allowEmpty 2026-11-03) `allowEmpty` acknowledges only an EMPTY frontier: a PARTIAL frontier that also declares names is still REFUSED, typed (3.320208ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 579.455728
+✔ node --test (selected) (0.6s)
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=244.7s
