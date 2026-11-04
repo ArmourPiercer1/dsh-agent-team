@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
-  "at": "2026-11-04T06:21:43.604Z",
-  "head": "ef9e9bb50415a9a9d47e71b5b267d06714195652",
+  "at": "2026-11-04T06:22:52.274Z",
+  "head": "f9bae503f38bc81089209041daeade07fb466486",
   "branch": "task/a5sf-preflight-20261103",
   "evidenceHeadAtDryRun": "7d465b14aec6d8ca07927998cc440a6efff5364c",
   "productTreeDigest": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276",
