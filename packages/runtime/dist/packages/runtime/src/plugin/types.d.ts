@@ -173,6 +173,12 @@ export interface TeamPluginConfig {
      * refuses to boot) — never a silent fall back to the Leader path.
      */
     readonly alpha6ReviewRouting?: boolean;
+    /**
+     * Alpha.6 (opt-in only) — the durable single-row wake-intent file used by
+     * the crash-recovery protocol. Required for full recovery; when absent the
+     * latch still works in-process but a restart cannot reconcile a queued wake.
+     */
+    readonly alpha6WakeIntentPath?: string;
     /** The durable TeamSession `generation` (positive integer). */
     readonly generation: number;
     /** The effective default workspace (TeamSession record field). */
@@ -743,6 +749,15 @@ export interface TeamProductionRoot {
     readonly messaging: MessagingCoordinator;
     /** A25 — the durable control-plane service. */
     readonly control: ControlService;
+    /**
+     * Alpha.6 (opt-in only) — the Host's REAL turn boundary for a review
+     * recipient's latch. `start` is called from `agent/inbox/claimed` when the
+     * claimed message carries the review-wake marker; `end` is called from the
+     * `agent/status` idle transition and answers the post-turn rescan with the
+     * SAME trusted facts read. Absent when `alpha6ReviewRouting` is off.
+     */
+    readonly alpha6TurnLatchStart?: (targetSessionId: string) => void;
+    readonly alpha6TurnLatchEnd?: (targetSessionId: string) => Promise<void>;
     /** A26 — the activity ledger (guarded progress writes + durable reads). */
     readonly activity: ActivityLedger;
     /** A27 — the fork reconciliation (sidecar recognition + child team). */

@@ -115,6 +115,6 @@ export function createAlpha6LiveRootComposition(input) {
         authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
         fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
     });
-    return { mode: 'alpha6', ports };
+    return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId };
 }
 //# sourceMappingURL=root-composition.js.map

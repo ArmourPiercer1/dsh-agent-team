@@ -72,7 +72,35 @@ export declare function createAlpha6RootControlNotifier(ports: {
      */
     readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>;
     readonly reviewFacts?: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    /** Coordinator seam: when present, delivery goes through the latch. */
+    readonly dispatchWake?: (input: {
+        readonly reviewerInstanceId: string;
+        readonly targetSessionId: string;
+        readonly currentLegIds: readonly string[];
+    }) => Promise<void>;
 }): ControlRequestNotificationPort;
 /** One wake for a group of delegable pending legs; every id stays visible. */
 export declare function renderMergedOfficerReviewWake(requests: readonly ControlRequestRecord[]): string;
+export interface Alpha6DelegableLegsInput {
+    readonly rootSessionId: string;
+    readonly reviewerInstanceId: string;
+    /** The already-trusted leg that triggered this read (included verbatim). */
+    readonly seed?: ControlRequestRecord;
+    readonly readRequests: () => Promise<readonly ControlRequestRecord[]>;
+    readonly reviewFacts: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    readonly resolveCurrentReviewer: (query: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly instanceId: string;
+    } | null>;
+}
+/**
+ * The ONE trusted pending-leg collector used by the notifier and by the Host
+ * turn-end rescan. Every candidate is filtered by the same facts port and the
+ * same reviewer resolution; nothing here decides authority.
+ */
+export declare function collectAlpha6DelegableLegs(input: Alpha6DelegableLegsInput): Promise<ControlRequestRecord[]>;
 //# sourceMappingURL=notifier.d.ts.map

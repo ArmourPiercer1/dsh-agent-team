@@ -181,3 +181,50 @@ describe('A6 root notifier — trusted merge', () => {
     expect(wake.wakeId).toBe('review:req-a6-merge-1,req-a6-merge-3')
   })
 })
+
+describe('A6 root notifier — coordinator seam', () => {
+  const legs = ['1', '2', '3'].map((n) => ({
+    ...request,
+    requestId: `req-a6-latch-${n}`,
+    approvalCaseId: `case-a6-latch-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('hands the merged leg set to the coordinator seam once', async () => {
+    const dispatchWake = vi.fn(
+      async (_input: {
+        reviewerInstanceId: string
+        targetSessionId: string
+        currentLegIds: readonly string[]
+      }) => {},
+    )
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver: async () => {
+        throw new Error('direct delivery must not run when the latch seam exists')
+      },
+      dispatchWake,
+      readRequests: async () => legs,
+      reviewFacts: async () => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(dispatchWake).toHaveBeenCalledTimes(1)
+    expect(dispatchWake.mock.calls[0]![0].currentLegIds).toEqual([
+      'req-a6-latch-1',
+      'req-a6-latch-2',
+      'req-a6-latch-3',
+    ])
+  })
+})

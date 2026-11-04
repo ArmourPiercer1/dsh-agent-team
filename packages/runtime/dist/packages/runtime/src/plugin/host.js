@@ -110,6 +110,7 @@ import { createRuntimeRequirementFactsProvider } from '../../requirement-facts/i
 import { SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, shippedStatePersonaObserver, } from '../../requirements/observed-persona.js';
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
 import { createTeamProductionRoot } from './root.js';
+import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js';
 import { createTeamSessionActivationFence } from './team-session-activation.js';
 import { resolveOwningTeamRoot } from './team-session-ownership.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError, } from './types.js';
@@ -2146,6 +2147,32 @@ export async function apply(ctx, config) {
         // armed, and the boot preload below runs after this point).
         policyReaderRef.current = builtRoot.policyReader;
         paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current;
+        // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
+        // `agent/inbox/claimed` is the message's owning turn start; `agent/status`
+        // idle is the turn end. The marker filter keeps ordinary user turns from
+        // claiming a wake latch.
+        const alpha6TurnLatchStart = builtRoot.alpha6TurnLatchStart;
+        const alpha6TurnLatchEnd = builtRoot.alpha6TurnLatchEnd;
+        if ((alpha6TurnLatchStart !== undefined || alpha6TurnLatchEnd !== undefined) &&
+            typeof ctx.on === 'function') {
+            const onHostEvent = ctx.on.bind(ctx);
+            if (alpha6TurnLatchStart !== undefined) {
+                onHostEvent('agent/inbox/claimed', (payload) => {
+                    const parts = payload.message?.content ?? [];
+                    const isLatchWake = parts.some((part) => part.type === 'text' && part.text?.includes(ALPHA6_WAKE_MARKER) === true);
+                    if (!isLatchWake)
+                        return;
+                    alpha6TurnLatchStart(String(payload.agent.id));
+                }, { global: true });
+            }
+            if (alpha6TurnLatchEnd !== undefined) {
+                onHostEvent('agent/status', (payload) => {
+                    if (payload.status !== 'idle')
+                        return;
+                    void alpha6TurnLatchEnd(String(payload.agent.id)).catch(() => undefined);
+                }, { global: true });
+            }
+        }
         // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
         // --- one artifact-read authority per production root, built over the
         // --- OPEN domain's durable repositories (session identity + the

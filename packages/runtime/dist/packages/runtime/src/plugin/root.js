@@ -105,7 +105,9 @@ import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js';
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js';
-import { createAlpha6RootControlNotifier } from '../../alpha6/notifier.js';
+import { collectAlpha6DelegableLegs, createAlpha6RootControlNotifier, } from '../../alpha6/notifier.js';
+import { createFileWakeIntentStore } from '../../alpha6/wake-intent-store.js';
+import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs';
@@ -1711,6 +1713,104 @@ export function createTeamProductionRoot(params) {
         throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but this Host exposes no live wake seam; ' +
             'the Team refuses to boot rather than silently notify the Leader', { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' });
     }
+    const alpha6WakeIntent = alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath === 'string'
+        ? createFileWakeIntentStore({ filePath: config.alpha6WakeIntentPath })
+        : undefined;
+    const alpha6WakeCoordinators = new Map();
+    const alpha6WakeBySession = new Map();
+    const alpha6DispatchWake = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
+        ? async (input) => {
+            const wake = {
+                reviewerInstanceId: input.reviewerInstanceId,
+                targetSessionId: input.targetSessionId,
+                templateId: alpha6Wiring.officerTemplateId,
+                routeRole: 'officer',
+                currentLegIds: input.currentLegIds,
+            };
+            const key = latchKeyFor(wake, rootSid, 0);
+            const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`;
+            let coordinator = alpha6WakeCoordinators.get(mapKey);
+            if (coordinator === undefined) {
+                coordinator = createLatchCoordinator(key);
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+            }
+            alpha6WakeBySession.set(input.targetSessionId, coordinator);
+            const result = await dispatchLatch({
+                plan: { wakes: [wake], humanLegIds: [], held: [] },
+                rootSessionId: rootSid,
+                coordinators: [coordinator],
+                ...(alpha6WakeIntent === undefined ? {} : { intent: alpha6WakeIntent }),
+                deliver: async (delivery, targetSessionId) => {
+                    if (live.deliverReviewWake === undefined) {
+                        throw new Error('Alpha.6 wake seam disappeared after boot');
+                    }
+                    await live.deliverReviewWake({
+                        rootSessionId: rootSid,
+                        targetSessionId,
+                        wakeId: delivery.wakeId,
+                        text: delivery.text,
+                    });
+                },
+            });
+            if (result.failures.length > 0) {
+                throw new Error(`Alpha.6 wake dispatch failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+            }
+        }
+        : undefined;
+    const alpha6ReviewWakeTurnStart = alpha6Wiring.mode === 'alpha6'
+        ? (targetSessionId) => {
+            const coordinator = alpha6WakeBySession.get(targetSessionId);
+            if (coordinator === undefined || coordinator.state.status !== 'queued')
+                return;
+            claimLatch(coordinator);
+        }
+        : undefined;
+    const alpha6ReviewWakeTurnEnd = alpha6Wiring.mode === 'alpha6'
+        ? async (targetSessionId) => {
+            const coordinator = alpha6WakeBySession.get(targetSessionId);
+            if (coordinator === undefined || coordinator.state.status !== 'running')
+                return;
+            // The FRESH authoritative read answering the post-turn rescan: the
+            // same facts port and the same reviewer resolution as the notifier.
+            const current = controlRef.current;
+            const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
+            const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
+            const fresh = await collectAlpha6DelegableLegs({
+                rootSessionId: rootSid,
+                reviewerInstanceId,
+                readRequests: async () => requests,
+                reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+            });
+            const freshWake = {
+                reviewerInstanceId,
+                targetSessionId,
+                templateId: alpha6Wiring.officerTemplateId,
+                routeRole: 'officer',
+                currentLegIds: fresh.map((entry) => entry.requestId),
+            };
+            const work = fresh.length === 0
+                ? { kind: 'no-ready-work' }
+                : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
+            const result = await releaseLatch(coordinator, work, {
+                ...(alpha6WakeIntent === undefined ? {} : { intent: alpha6WakeIntent }),
+                deliver: async (delivery) => {
+                    if (live.deliverReviewWake === undefined) {
+                        throw new Error('Alpha.6 wake seam disappeared after boot');
+                    }
+                    await live.deliverReviewWake({
+                        rootSessionId: rootSid,
+                        targetSessionId,
+                        wakeId: delivery.wakeId,
+                        text: renderLatchWake(delivery),
+                    });
+                },
+            });
+            if (result.failures.length > 0) {
+                throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+            }
+        }
+        : undefined;
     const alpha6RequestNotification = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
         ? createAlpha6RootControlNotifier({
             rootSessionId: rootSid,
@@ -1728,6 +1828,7 @@ export function createTeamProductionRoot(params) {
                 return (await current.readControlState(rootSid)).requests;
             },
             reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+            ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
         : undefined;
     const control = createControlService({
@@ -3505,6 +3606,8 @@ export function createTeamProductionRoot(params) {
         remoteDispatcher: remoteSurfaces.dispatcher,
         messaging,
         control,
+        ...(alpha6ReviewWakeTurnStart === undefined ? {} : { alpha6TurnLatchStart: alpha6ReviewWakeTurnStart }),
+        ...(alpha6ReviewWakeTurnEnd === undefined ? {} : { alpha6TurnLatchEnd: alpha6ReviewWakeTurnEnd }),
         activity,
         fork,
         handoff,

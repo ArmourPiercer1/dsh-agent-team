@@ -78,6 +78,7 @@ export type Alpha6LiveRootComposition = {
 } | {
     readonly mode: 'alpha6';
     readonly ports: Alpha6ControlPorts;
+    readonly officerTemplateId: string;
 };
 export interface Alpha6LiveRootCompositionInput {
     readonly enabled: boolean;
@@ -113,6 +114,7 @@ export type Alpha6RootWiring = {
 } | {
     readonly mode: 'alpha6';
     readonly ports: Alpha6ControlPorts;
+    readonly officerTemplateId: string;
 };
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
 export type Alpha6RootWiringLiveInput = Omit<Alpha6LiveRootCompositionInput, 'enabled'>;

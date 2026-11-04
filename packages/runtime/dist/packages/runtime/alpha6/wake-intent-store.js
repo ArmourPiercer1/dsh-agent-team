@@ -1,0 +1,84 @@
+/**
+ * Alpha.6 — a FILE-BACKED `ReviewWakeIntentStore` (one durable row per latch).
+ *
+ * This is the production-shaped implementation of the existing narrow port:
+ * `persistQueued` writes the row BEFORE delivery, `markAccepted` records Inbox
+ * acceptance, `clear` removes it, and `read` answers the row (or `null`).
+ * Writes are atomic (temp file + rename) so a crash leaves either the old row
+ * or the new one, never a torn JSON document.
+ *
+ * It is NOT a second ledger: the row carries only latch identity, wakeId and
+ * work fingerprint — no decision, no authority, no payload.
+ *
+ * @module packages/runtime/alpha6/wake-intent-store
+ */
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+function isRow(value) {
+    if (typeof value !== 'object' || value === null)
+        return false;
+    const row = value;
+    const key = row['key'];
+    if (typeof key !== 'object' || key === null)
+        return false;
+    const k = key;
+    return (typeof k['rootSessionId'] === 'string' &&
+        typeof k['reviewerInstanceId'] === 'string' &&
+        typeof k['sessionGeneration'] === 'number' &&
+        typeof row['wakeId'] === 'string' &&
+        typeof row['workFingerprint'] === 'string' &&
+        (row['status'] === 'queued' || row['status'] === 'accepted'));
+}
+export function createFileWakeIntentStore(options) {
+    const file = options.filePath;
+    const tmp = `${file}.tmp`;
+    async function write(row) {
+        await mkdir(dirname(file), { recursive: true });
+        await writeFile(tmp, `${JSON.stringify(row)}\n`, 'utf8');
+        await rename(tmp, file);
+    }
+    return {
+        async persistQueued(intent) {
+            await write({ ...intent, status: 'queued' });
+        },
+        async markAccepted(wakeId) {
+            const row = await readRow();
+            if (row === null || row.wakeId !== wakeId)
+                return;
+            await write({ ...row, status: 'accepted' });
+        },
+        async clear(wakeId) {
+            if (wakeId !== undefined) {
+                const row = await readRow();
+                if (row !== null && row.wakeId !== wakeId)
+                    return;
+            }
+            try {
+                await unlink(file);
+            }
+            catch (error) {
+                if (error.code !== 'ENOENT')
+                    throw error;
+            }
+        },
+        async read() {
+            return readRow();
+        },
+    };
+    async function readRow() {
+        let raw;
+        try {
+            raw = await readFile(file, 'utf8');
+        }
+        catch (error) {
+            if (error.code === 'ENOENT')
+                return null;
+            throw error;
+        }
+        const parsed = JSON.parse(raw);
+        if (!isRow(parsed))
+            throw new Error('alpha6: the wake-intent row is malformed');
+        return parsed;
+    }
+}
+//# sourceMappingURL=wake-intent-store.js.map

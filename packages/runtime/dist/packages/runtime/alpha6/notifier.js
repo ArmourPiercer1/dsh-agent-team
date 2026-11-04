@@ -87,52 +87,24 @@ export function createAlpha6RootControlNotifier(ports) {
             // MERGE: only legs this SAME facts port proves delegable to the SAME
             // reviewer join the wake. A leg with no case identity, a refused fact,
             // a fixed Leader/Human category or a different reviewer is left out.
-            const merged = [request];
-            if (ports.readRequests !== undefined && ports.reviewFacts !== undefined) {
-                let pending;
-                try {
-                    pending = await ports.readRequests();
-                }
-                catch {
-                    pending = [];
-                }
-                for (const candidate of pending) {
-                    if (candidate.requestId === request.requestId)
-                        continue;
-                    if (candidate.status !== 'pending')
-                        continue;
-                    if (candidate.kind !== 'leader-approval')
-                        continue;
-                    if (candidate.approvalCaseId === undefined || candidate.legOrdinal === undefined)
-                        continue;
-                    if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined)
-                        continue;
-                    let facts;
-                    try {
-                        facts = await ports.reviewFacts({
-                            rootSessionId: ports.rootSessionId,
-                            approvalCaseId: candidate.approvalCaseId,
-                            currentLegRequestId: candidate.requestId,
-                            legOrdinal: candidate.legOrdinal,
-                            kind: candidate.kind,
-                            reviewAuthority: candidate.reviewAuthority,
-                        });
-                    }
-                    catch {
-                        continue;
-                    }
-                    if (facts === null || facts.requiresHuman || facts.fixedLeaderOrHumanCategory)
-                        continue;
-                    const candidateReviewer = await ports.resolveCurrentReviewer({
-                        rootSessionId: ports.rootSessionId,
-                        approvalCaseId: candidate.approvalCaseId,
-                        currentLegRequestId: candidate.requestId,
-                        legOrdinal: candidate.legOrdinal,
-                    });
-                    if (candidateReviewer?.instanceId !== reviewer.instanceId)
-                        continue;
-                    merged.push(candidate);
-                }
+            const merged = ports.readRequests !== undefined && ports.reviewFacts !== undefined
+                ? await collectAlpha6DelegableLegs({
+                    rootSessionId: ports.rootSessionId,
+                    reviewerInstanceId: reviewer.instanceId,
+                    seed: request,
+                    readRequests: ports.readRequests,
+                    reviewFacts: ports.reviewFacts,
+                    resolveCurrentReviewer: ports.resolveCurrentReviewer,
+                })
+                : [request];
+            const mergedIds = merged.map((entry) => entry.requestId).sort();
+            if (ports.dispatchWake !== undefined) {
+                await ports.dispatchWake({
+                    reviewerInstanceId: reviewer.instanceId,
+                    targetSessionId,
+                    currentLegIds: mergedIds,
+                });
+                return;
             }
             if (merged.length === 1) {
                 await ports.deliver({
@@ -142,10 +114,9 @@ export function createAlpha6RootControlNotifier(ports) {
                 });
                 return;
             }
-            const ids = merged.map((entry) => entry.requestId).sort();
             await ports.deliver({
                 targetSessionId,
-                wakeId: `review:${ids.join(',')}`,
+                wakeId: `review:${mergedIds.join(',')}`,
                 text: renderMergedOfficerReviewWake(merged),
             });
         },
@@ -163,5 +134,58 @@ export function renderMergedOfficerReviewWake(requests) {
         'Decide each with `team_resolve_control` using that EXACT requestId.',
         'Inspect your pending work with `team_list_pending_control`.',
     ].join('\n');
+}
+/**
+ * The ONE trusted pending-leg collector used by the notifier and by the Host
+ * turn-end rescan. Every candidate is filtered by the same facts port and the
+ * same reviewer resolution; nothing here decides authority.
+ */
+export async function collectAlpha6DelegableLegs(input) {
+    const merged = input.seed === undefined ? [] : [input.seed];
+    let pending;
+    try {
+        pending = await input.readRequests();
+    }
+    catch {
+        pending = [];
+    }
+    for (const candidate of pending) {
+        if (candidate.requestId === input.seed?.requestId)
+            continue;
+        if (candidate.status !== 'pending')
+            continue;
+        if (candidate.kind !== 'leader-approval')
+            continue;
+        if (candidate.approvalCaseId === undefined || candidate.legOrdinal === undefined)
+            continue;
+        if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined)
+            continue;
+        let facts;
+        try {
+            facts = await input.reviewFacts({
+                rootSessionId: input.rootSessionId,
+                approvalCaseId: candidate.approvalCaseId,
+                currentLegRequestId: candidate.requestId,
+                legOrdinal: candidate.legOrdinal,
+                kind: candidate.kind,
+                reviewAuthority: candidate.reviewAuthority,
+            });
+        }
+        catch {
+            continue;
+        }
+        if (facts === null || facts.requiresHuman || facts.fixedLeaderOrHumanCategory)
+            continue;
+        const candidateReviewer = await input.resolveCurrentReviewer({
+            rootSessionId: input.rootSessionId,
+            approvalCaseId: candidate.approvalCaseId,
+            currentLegRequestId: candidate.requestId,
+            legOrdinal: candidate.legOrdinal,
+        });
+        if (candidateReviewer?.instanceId !== input.reviewerInstanceId)
+            continue;
+        merged.push(candidate);
+    }
+    return merged;
 }
 //# sourceMappingURL=notifier.js.map

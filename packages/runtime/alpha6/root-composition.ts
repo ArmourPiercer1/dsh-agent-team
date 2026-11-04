@@ -127,7 +127,11 @@ export function createAlpha6RootComposition(input: Alpha6RootCompositionInput): 
 export type Alpha6LiveRootComposition =
   | { readonly mode: 'legacy'; readonly reason: 'disabled' }
   | { readonly mode: 'refused'; readonly refused: Alpha6CompositionRefusal }
-  | { readonly mode: 'alpha6'; readonly ports: Alpha6ControlPorts }
+  | {
+      readonly mode: 'alpha6'
+      readonly ports: Alpha6ControlPorts
+      readonly officerTemplateId: string
+    }
 
 export interface Alpha6LiveRootCompositionInput {
   readonly enabled: boolean
@@ -164,7 +168,11 @@ export interface Alpha6LiveRootCompositionInput {
 export type Alpha6RootWiring =
   | { readonly mode: 'legacy' }
   | { readonly mode: 'refused'; readonly refused: Alpha6CompositionRefusal }
-  | { readonly mode: 'alpha6'; readonly ports: Alpha6ControlPorts }
+  | {
+      readonly mode: 'alpha6'
+      readonly ports: Alpha6ControlPorts
+      readonly officerTemplateId: string
+    }
 
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
 export type Alpha6RootWiringLiveInput = Omit<Alpha6LiveRootCompositionInput, 'enabled'>
@@ -224,5 +232,5 @@ export function createAlpha6LiveRootComposition(
       generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
-  return { mode: 'alpha6', ports }
+  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId }
 }
