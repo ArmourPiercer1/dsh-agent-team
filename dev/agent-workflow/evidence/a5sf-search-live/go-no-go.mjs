@@ -181,14 +181,19 @@ check('boot pool allocates the three P2-04 starts (the ruling)', Number(p204?.bo
   item: p204?.item ?? null,
   boots: p204?.boots ?? null,
 })
-const rulingStarts = ruling === null ? null : Number(ruling.authorisedStarts)
+// The NAMED entries are the authorisation. `authorisedStarts` is the frozen ORIGINAL
+// allocation: a re-grant APPENDS an entry (the owner's 2026-11-05 grant is the fifth),
+// and the earlier refusal was exactly the mistake of editing that number instead.
 const rulingSum = ruleRowsSum(ruling)
-check('budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)',
-  ruling !== null && Number.isFinite(rulingStarts) && rulingStarts >= 1 && rulingSum === rulingStarts
+const rulingStarts = Number.isFinite(rulingSum) ? rulingSum : null
+const rulingDeclared = ruling === null ? null : Number(ruling.authorisedStarts)
+check('budget: the lane ruling is well-formed (the named entries are the authorisation, each names by + reason)',
+  ruling !== null && rulingSum >= 1 && Number.isFinite(rulingDeclared) && rulingDeclared >= 1 && rulingDeclared <= rulingSum
+  && rulingSum === Number(p204?.boots ?? -1)
   && Array.isArray(ruling.rulings) && ruling.rulings.length > 0 && ruling.rulings.every((row) => String(row?.by ?? '') !== '' && String(row?.reason ?? '') !== ''),
-  ruling === null ? 'lane-ruling.json missing' : { authorisedStarts: rulingStarts, entries: rulingSum, rulings: (ruling.rulings ?? []).map((row) => ({ starts: row.starts, by: row.by })) })
-check('budget: this start is authorised by the rulings and is NOT a third', rulingStarts !== null && bootsSpent < rulingStarts && bootsSpent + 1 <= rulingStarts,
-  `authorised=${String(rulingStarts)} spent=${String(bootsSpent)} — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts`)
+  ruling === null ? 'lane-ruling.json missing' : { namedEntries: rulingSum, frozenAuthorisedStarts: rulingDeclared, poolBoots: Number(p204?.boots ?? null), rulings: (ruling.rulings ?? []).map((row) => ({ starts: row.starts, by: row.by })) })
+check('budget: this start is authorised by the named rulings', rulingStarts !== null && bootsSpent + 1 <= rulingStarts,
+  `named=${String(rulingStarts)} spent=${String(bootsSpent)} — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts`)
 check('pinned host tree is at the pinned commit and clean', hostHead !== null && hostHead === PIN && hostStatus === '', { hostHead, pin: PIN, porcelain: hostStatus })
 
 const report = {

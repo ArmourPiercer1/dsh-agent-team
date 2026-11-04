@@ -49,8 +49,23 @@
         "one start at a time: fresh GO before each, ledger reconciliation after each; a further start needs a named change since the previous attempt, never 'try again'",
         "if all 3 are spent without a judged row, stop and report; go-no-go must refuse a 7th without a new ruling"
       ]
+    },
+    {
+      "starts": 4,
+      "by": "owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374",
+      "at": "2026-11-05T00:00:00Z",
+      "reason": "NEW BUDGET: the owner granted 4 further P2-04 boots (total granted 10, spent 6). The correction round made every sample judge at the point it becomes complete (dispatch -> delegate-dispatch, each row -> evidence-collection, teardown, abort:<stage>), so rows 1/2/3/5 settle BEFORE the cancellation window; an abort now re-judges from surviving channels instead of asserting six FAILs. A third channel (mock-requests.json, tool-result bytes outside the World home) exists but is unexecuted. The remaining instrument risk is row 1: an in-lane grep exited 2 and the pinned module maps exit not in {0,1} to SearchError, which points at rg ignore/git discovery in the ANCESTORS of the search root.",
+      "conditions": [
+        "append this entry; do not edit authorisedStarts - go-no-go refuses that, and it must now say GO",
+        "merge origin/master before booting and re-run go-no-go against the tree actually booted",
+        "row 1 is a TWO-WAY test: capture stderr to the host-side sink and report it; if row 1 fails because of ancestor discovery, that is a real REFUTED row 1 plus a finding, not a driver problem",
+        "judge rows 1/2/3/5, then cancellation row 4 and teardown row 6; confirm row 3's restriction-lane status live rather than re-deriving it",
+        "if a start aborts, name the stage and typed error and say what changed before the next start",
+        "start the driver as a managed background job, archive before each start, reconcile the ledger after each, keep the host-side sink surviving teardown",
+        "stop when the rows are judged or when the next start would repeat an already-explained failure"
+      ]
     }
   ],
-  "note": "2026-11-05: 3 of 6 spent; 3 fresh on branch task/a5sf-search-live2-20261105 off master 61503f15d. Superseded file copies live in the merged evidence home at that commit.",
+  "note": "2026-11-05 (second re-grant): 4 further boots granted by the owner, total granted 10, spent 6 at the time of grant. The 6-start round exhausted its pool with 0/6 rows judged; the Member half was reached (7 live guard facts) and the cancellation-window abort was a fixture defect, now fixed by the lane algebra.",
   "remainingAfterThisLane": null
 }

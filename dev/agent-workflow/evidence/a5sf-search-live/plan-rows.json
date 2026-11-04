@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-search-live/plan-rows/1",
-  "at": "2026-11-04T19:50:21.641Z",
-  "head": "337b5b34fe6270b05c8a046ad11957893e4e1548",
+  "at": "2026-11-04T19:59:11.253Z",
+  "head": "9d1bda4e2cd892baf44340486f35252cb9a7f8ed",
   "patchBytes": 6630,
   "patchSha256": "a165c6e05a40bb185020f2c2ce17b8b89b3954687703871221881baf39cb3d2b",
   "emittedRowIds": [

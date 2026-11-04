@@ -2,17 +2,17 @@
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live2-20261105",
   "evidenceHeadAtDryRun": "337b5b34fe6270b05c8a046ad11957893e4e1548",
-  "productTreeDigest": "80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f",
+  "productTreeDigest": "07cce98be61c5d2c968a9e34518e66cc19fb52eb866977f9e0b50724c14b268a",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-04 grep (BL-16)",
-    "boots": 6,
+    "boots": 10,
     "consumed": 6,
-    "remaining": 0
+    "remaining": 4
   },
   "ruling": {
     "authorisedStarts": 6,
-    "entries": 6,
+    "entries": 10,
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
   },
   "handoff": {
@@ -41,8 +41,8 @@
     "orphanBootRuns": [],
     "orphanAbortRuns": [],
     "plannedMismatch": [],
-    "bootsInPool": 6,
-    "remaining": 0
+    "bootsInPool": 10,
+    "remaining": 4
   },
   "go": false,
   "checks": [
@@ -106,26 +106,26 @@
     },
     {
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
-      "ok": true,
+      "ok": false,
       "detail": {
         "planHead": "337b5b34fe6270b05c8a046ad11957893e4e1548",
-        "head": "337b5b34fe6270b05c8a046ad11957893e4e1548",
+        "head": "9d1bda4e2cd892baf44340486f35252cb9a7f8ed",
         "patchBytes": 6630,
         "patchSha256": "a165c6e05a40bb185020f2c2ce17b8b89b3954687703871221881baf39cb3d2b"
       }
     },
     {
       "id": "the PRODUCT tree matches the one the dry run measured",
-      "ok": true,
+      "ok": false,
       "detail": {
         "committed": "80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f",
-        "now": "80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f"
+        "now": "07cce98be61c5d2c968a9e34518e66cc19fb52eb866977f9e0b50724c14b268a"
       }
     },
     {
       "id": "the product tree has no uncommitted modifications",
-      "ok": true,
-      "detail": ""
+      "ok": false,
+      "detail": "M dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json"
     },
     {
       "id": "branch is this lane's branch",
@@ -145,8 +145,8 @@
         "orphanBootRuns": [],
         "orphanAbortRuns": [],
         "plannedMismatch": [],
-        "bootsInPool": 6,
-        "remaining": 0
+        "bootsInPool": 10,
+        "remaining": 4
       }
     },
     {
@@ -166,8 +166,8 @@
     },
     {
       "id": "budget: at least ONE P2-04 start is still available",
-      "ok": false,
-      "detail": "boots=6 spent=6 remaining=0"
+      "ok": true,
+      "detail": "boots=10 spent=6 remaining=4"
     },
     {
       "id": "boot pool allocates the three P2-04 starts (the ruling)",
@@ -175,15 +175,15 @@
       "detail": {
         "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
         "item": "P2-04 grep (BL-16)",
-        "boots": 6
+        "boots": 10
       }
     },
     {
       "id": "budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)",
-      "ok": true,
+      "ok": false,
       "detail": {
         "authorisedStarts": 6,
-        "entries": 6,
+        "entries": 10,
         "rulings": [
           {
             "starts": 1,
@@ -199,6 +199,10 @@
           },
           {
             "starts": 3,
+            "by": "owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+          },
+          {
+            "starts": 4,
             "by": "owner allocation, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
           }
         ]

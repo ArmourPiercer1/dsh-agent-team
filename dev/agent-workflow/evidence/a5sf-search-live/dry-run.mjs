@@ -230,12 +230,14 @@ check('driver: the leader grep probe runs FIRST — before the control and befor
   const pool = JSON.parse(readFileSync(join(REPO_ROOT, 'dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json'), 'utf8'))
   const p204 = (pool?.allocation ?? []).find((item) => String(item?.item ?? '').startsWith('P2-04')) ?? null
   const poolBoots = Number(p204?.boots ?? 0)
+  const namedStarts = ruling.rulings.reduce((n, r) => n + Number(r?.starts ?? 0), 0)
   check('ruling: every authorised start is a NAMED ruling, and the pool allocates exactly that many',
-    ruling.authorisedStarts === poolBoots
+    namedStarts === poolBoots
       && ruling.rulings.length >= 3
-      && ruling.rulings.reduce((n, r) => n + r.starts, 0) === ruling.authorisedStarts
+      && Number(ruling.authorisedStarts) >= 1
+      && Number(ruling.authorisedStarts) <= namedStarts
       && ruling.rulings.every((r) => String(r.by ?? '').length > 0 && String(r.reason ?? '').length > 0),
-    'authorisedStarts must equal the pool item and the named rulings; a start without a named ruling is a self-authorisation')
+    'the NAMED entries are the authorisation and must equal the pool item; authorisedStarts is the frozen ORIGINAL allocation and may never exceed them (a re-grant is appended, never an edit of the frozen number) — a start without a named ruling is a self-authorisation')
 }
 check('driver: the control counts only ITS OWN operand and the member-install abort carries the delegate answer',
   /rowPaths\.outsideDir/u.test(driverSource)

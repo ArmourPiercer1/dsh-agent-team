@@ -221,10 +221,14 @@ async function waitForComposedProfile(world, expectedRowIds, timeoutMs) {
 /** Read the lane's ruling file: how many starts are authorised, and by whom. */
 function readRuling() {
   const ruling = JSON.parse(readFileSync(RULING_PATH, 'utf8'))
-  const starts = Number(ruling.authorisedStarts)
-  if (!Number.isFinite(starts) || starts < 1) throw new Error(`lane-ruling.json has no usable authorisedStarts: ${String(ruling.authorisedStarts)}`)
-  if (!Array.isArray(ruling.rulings) || ruling.rulings.reduce((sum, row) => sum + Number(row?.starts ?? 0), 0) !== starts) {
-    throw new Error('lane-ruling.json: the ruling entries do not sum to authorisedStarts — a start must name who granted it')
+  // The NAMED entries are the authorisation; `authorisedStarts` is the frozen ORIGINAL
+  // allocation that a re-grant may never edit (it appends an entry instead).
+  if (!Array.isArray(ruling.rulings) || ruling.rulings.length === 0) throw new Error('lane-ruling.json: no ruling entries')
+  const starts = ruling.rulings.reduce((sum, row) => sum + Number(row?.starts ?? 0), 0)
+  if (!Number.isFinite(starts) || starts < 1) throw new Error(`lane-ruling.json has no usable ruling entries: ${JSON.stringify(ruling.rulings)}`)
+  const declared = Number(ruling.authorisedStarts)
+  if (!Number.isFinite(declared) || declared < 1 || declared > starts) {
+    throw new Error(`lane-ruling.json: authorisedStarts=${String(ruling.authorisedStarts)} must be >= 1 and <= the ${String(starts)} named start(s) — a re-grant appends an entry, it never edits the frozen number`)
   }
   for (const row of ruling.rulings) {
     if (String(row?.by ?? '') === '' || String(row?.reason ?? '') === '') throw new Error('lane-ruling.json: every ruling needs `by` and `reason`')

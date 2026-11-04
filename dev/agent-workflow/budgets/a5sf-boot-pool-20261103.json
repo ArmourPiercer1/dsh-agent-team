@@ -24,15 +24,24 @@
     },
     {
       "item": "P2-04 grep (BL-16)",
-      "boots": 6,
-      "why": "one attempt per named handoff: the first spent on a handoff defect, the retry on the coverage gate, the last on the lane's own launch method \u2014 0 rows judged. RE-GRANTED 2026-11-05: the owner allocated 3 more starts (relayed by the coordinator, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374), on a fresh branch off master, with the two instrument defects fixed and the F2 deny verified.",
-      "regranted": {
-        "at": "2026-11-05",
-        "boots": 3,
-        "by": "owner (relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
-        "priorBoots": 3,
-        "priorSpent": 3
-      }
+      "boots": 10,
+      "why": "one attempt per named handoff: the first spent on a handoff defect, the retry on the coverage gate, the last on the lane's own launch method. RE-GRANTED 2026-11-05 (3 starts: reach member-install, judge the rows) and re-granted AGAIN 2026-11-05 (4 starts: the correction round judges every sample at completion, so rows 1/2/3/5 settle before the cancellation window; row 1 is a two-way test with stderr captured).",
+      "regranted": [
+        {
+          "at": "2026-11-05",
+          "boots": 3,
+          "by": "owner (relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
+          "priorBoots": 3,
+          "priorSpent": 3
+        },
+        {
+          "at": "2026-11-05",
+          "boots": 4,
+          "by": "owner (relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
+          "priorBoots": 6,
+          "priorSpent": 6
+        }
+      ]
     },
     {
       "item": "P3 native-origin inventory (BL-21)",
