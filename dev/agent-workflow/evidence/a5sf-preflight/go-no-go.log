@@ -1,10 +1,11 @@
 PASS dry-run evidence exists and is green: {"checks":57,"failed":0}
-PASS the PRODUCT tree matches the one the dry run measured: {"committed":"35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782","now":"35cf58020b6802a8b309d70ea05e153fdcfa66c0cc9fda8dcadff39856120782"}
+PASS the PRODUCT tree matches the one the dry run measured: {"committed":"fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17","now":"fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is the preflight branch: task/a5sf-preflight-20261103
-PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl","rows":6,"intents":3,"bootRows":2,"unparseable":0,"orphanBootRuns":[],"plannedMismatch":[],"aborts":1,"orphanAbortRuns":[],"bootsInPool":6,"remaining":4}
+PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl","rows":8,"intents":4,"bootRows":3,"unparseable":0,"orphanBootRuns":[],"plannedMismatch":[],"aborts":1,"orphanAbortRuns":[],"bootsInPool":6,"remaining":3}
 PASS ledger: an abort row names an existing intent (an abort without an intent is a defect): {"abortRuns":["a5sf-acceptance-2026-11-04T08-11-28-364Z"]}
-PASS ledger: each intent's plannedStarts equals the boot rows charged to it, net of declared aborts: {"intents":3,"mismatch":[]}
-PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=2 remaining=4
+PASS ledger: each intent's plannedStarts equals the boot rows charged to it, net of declared aborts: {"intents":4,"mismatch":[]}
+PASS budget: at least ONE start of the P2-01 pool is still available: boots=6 spent=3 remaining=3
 PASS boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment): {"poolFile":"dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json","item":"P2-01 live read (BL-14 / G2 live half)","boots":6,"why":"amended allocation present"}
 PASS pinned host tree is at the pinned commit and clean: {"hostHead":"639ed015397290b3745d163aafe02ffee4aa3f84","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","porcelain":""}
+GO — head=c7f9ffda65938df18b1c725ea113591d693e0acb digest=fdae974e047742902c88426fb6dff5685f90c212a2f3724468e927e7c3c8ff17
