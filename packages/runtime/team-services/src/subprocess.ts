@@ -49,6 +49,21 @@
  * refusal below where they can be named; what remains is disclosed, not
  * claimed away.
  *
+ * LANE-SCOPED SEARCH MUST NOT DEPEND ON OUTSIDE DATA (BL-16 live row 1,
+ * 2026-11-05): a confined `rg` whose search root sits inside a git worktree
+ * performs VCS/ancestor ignore discovery ABOVE that root, reads the worktree's
+ * `.git` FILE, and treats the lane's (correct) kernel denial of that read as
+ * fatal: `rg: …/.git: Permission denied (os error 13)`, `exit 2`, so the tool
+ * reported a search failure although the match was on stdout. The repair is in
+ * the INVOCATION, never the lane: {@link laneSafeSearchArgv} adds
+ * `--no-ignore-parent --no-ignore-vcs` (after `--no-config`) **only when a
+ * directory search root's ancestors are outside the effective read lane**, and
+ * the allow fact records exactly what that removed
+ * ({@link SEARCH_IGNORE_DISCOVERY_NOTES}) on the SAME fact — no extra fact,
+ * no extra process. A root whose discovery already stays inside the lane (the
+ * lane includes the worktree root) keeps the shipped argv and ordinary
+ * `.gitignore` semantics. `.git` remains unreadable outside the lane.
+ *
  * SHELL-CLASS REFUSAL (BL-16 review round 2): a `spawn` whose reads cannot be
  * statically attributed to the declared operands is refused at ADMISSION, with
  * one typed `TeamIoDenial` and one recorded fact, before any process. The
@@ -81,8 +96,8 @@
  * @module @dsh-agent-team/runtime/team-services/subprocess
  */
 
-import { existsSync } from 'node:fs'
-import { basename, dirname, isAbsolute, resolve as resolvePath } from 'node:path'
+import { existsSync, statSync } from 'node:fs'
+import { basename, dirname, isAbsolute, join, resolve as resolvePath } from 'node:path'
 import type { Readable, Writable } from 'node:stream'
 import { constants as osConstants } from 'node:os'
 import type { AllowPathEntry, PayloadExitRecord, ProviderResult, SpawnRequest, StreamingOptions } from '../../sandbox-provider/index.js'
@@ -321,6 +336,11 @@ export function programAttributionRefusal(
  * `--search-zip`/`-z` (another program runs), `--follow` (a nested symlink is
  * followed), or a `--no-config` that fell behind `--` and became an operand —
  * is refused before any process.
+ *
+ * The allow-list admits the DECLARED argv. The face may then ADD two flags it
+ * owns — `--no-ignore-parent` / `--no-ignore-vcs` — and does so only through
+ * {@link laneSafeSearchArgv} (see that function); those are never admitted
+ * from a caller and never widen a read.
  */
 const RG_ADMITTED_FLAGS: readonly string[] = Object.freeze([
   '--json',
@@ -457,6 +477,176 @@ export function readIntentsOf(
     if (exists(candidate)) operands.push(candidate)
   }
   return operands.length === 0 ? Object.freeze([cwd]) : Object.freeze(operands)
+}
+
+// ---------------------------------------------------------------------------
+// Ancestor/VCS ignore discovery — the live row-1 repair
+// ---------------------------------------------------------------------------
+
+/**
+ * THE MEASURED DEFECT (live `a5sf-search-live` 2026-11-04T20-17-23-485Z, row 1;
+ * judged FAIL `ROW1_CLAUSE_FAILED`):
+ *
+ *   Error: grep search failed (exit 2):
+ *   rg: …/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)
+ *
+ * The lane admitted the search root and denied the worktree's `.git` FILE. The
+ * confined `rg` walked ABOVE the search root for VCS/ancestor ignore discovery,
+ * tried to read that `.git`, was refused by the OS profile, and treats the
+ * refusal as FATAL (`exit 2`) even though the answer was already on stdout. The
+ * sandbox is correct; the INVOCATION depended on data outside the lane.
+ *
+ * These two flags stop that discovery. Measured on the packaged
+ * `@vscode/ripgrep-linux-x64@1.18.0` against a worktree whose `.git` file is
+ * unreadable: `--no-ignore-parent` ALONE still reads `.git` and still exits 2;
+ * `--no-ignore-vcs` is the flag that stops the VCS walk. Both are passed
+ * together so the ignore LAW above the root is the confined walker's default
+ * rather than an accident of which ancestors the lane happened to include.
+ */
+export const SEARCH_IGNORE_DISCOVERY_FLAGS: readonly string[] = Object.freeze(['--no-ignore-parent', '--no-ignore-vcs'])
+
+/**
+ * The disclosure recorded ON THE ALLOW FACT (never as an extra fact) when the
+ * flags are added. The second line says exactly what `--no-ignore-vcs` removed:
+ * `.gitignore` semantics are OFF for this invocation, so files a `.gitignore`
+ * would hide ARE searched — the recorded answer to "why did my grep not honour
+ * .gitignore". `.git` itself is never read.
+ */
+export const SEARCH_IGNORE_DISCOVERY_NOTES: readonly string[] = Object.freeze([
+  'search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it',
+  'search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read',
+])
+
+/** The result of {@link laneSafeSearchArgv}. */
+export interface LaneSafeSearchArgv {
+  /** The argv to execute (the declared argv, plus the flags when needed). */
+  readonly argv: readonly string[]
+  /** Flags this face added (empty when the declared argv is kept). */
+  readonly addedFlags: readonly string[]
+  /** The fact annotation for roots that triggered the flags (empty otherwise). */
+  readonly annotations: readonly string[]
+  /** The directory roots whose ancestor discovery would have left the lane. */
+  readonly annotatedRoots: readonly string[]
+}
+
+const unchangedSearchArgv = (argv: readonly string[]): LaneSafeSearchArgv => Object.freeze({
+  argv: Object.freeze([...argv]),
+  addedFlags: Object.freeze([]),
+  annotations: Object.freeze([]),
+  annotatedRoots: Object.freeze([]),
+})
+
+/**
+ * Does every ignore-discovery read from `root` upward stay inside `readLane`?
+ *
+ * The walk starts at the search root and only inspects directories the lane
+ * ALLOWS, so it never depends on data outside the lane. It stops when:
+ *  - it finds a `.git` that the lane allows → rg stops there too; contained;
+ *  - it finds a `.git` the lane denies → that read is the fatal one; not
+ *    contained (an explicit `deny: [<root>/.git]` is respected);
+ *  - the next ancestor is outside the lane → unknown above; not contained;
+ *  - it reaches the filesystem root → nothing above to read; contained.
+ *
+ * A FILE operand is skipped: ripgrep does no parent discovery for a file
+ * argument (measured: exit 0 with an unreadable ancestor `.git`), so adding
+ * ignore flags there would only change selection semantics for no reason.
+ */
+async function ancestorsStayInLane(
+  root: string,
+  readLane: PathRuleSet,
+  resolver: PathIdentityResolver,
+  deps: { readonly exists: (path: string) => boolean; readonly isDirectory: (path: string) => boolean },
+): Promise<boolean> {
+  if (!deps.isDirectory(root)) return true
+  let dir = root
+  for (;;) {
+    const decision = await evaluateLocatorAccess({ lane: readLane, locator: dir, access: 'read', resolver })
+    if (decision.decision !== 'allow') return false
+    const git = join(dir, '.git')
+    if (deps.exists(git)) {
+      const gitDecision = await evaluateLocatorAccess({ lane: readLane, locator: git, access: 'read', resolver })
+      return gitDecision.decision === 'allow'
+    }
+    const parent = dirname(dir)
+    // Reaching `/` through an allowed path means there is no ancestor left to
+    // read; `/.git` was just checked.
+    if (parent === dir) return true
+    dir = parent
+  }
+}
+
+/**
+ * Make an admitted `rg` invocation lane-self-contained: when a directory
+ * search root's ancestors are outside the effective read lane, add
+ * {@link SEARCH_IGNORE_DISCOVERY_FLAGS} before the first `--` (after
+ * `--no-config`) so ripgrep does not walk out of the lane. When the root's
+ * discovery already stays in the lane (e.g. the lane includes the worktree
+ * root), the declared argv is kept EXACTLY as shipped — ordinary `.gitignore`
+ * semantics are not changed globally.
+ *
+ * Callers must run this ONLY for argv {@link programAttributionRefusal}
+ * already admitted (it re-checks the `rg` basename anyway). `--no-ignore`
+ * already disables every ignore file and therefore the ancestor walk
+ * (measured), so such an invocation is left untouched. This function reads
+ * lane metadata only (in-lane ancestors), never the content of an outside
+ * path, and it launches no process.
+ */
+export async function laneSafeSearchArgv(
+  spec: { readonly argv: readonly string[]; readonly cwd: string },
+  readLane: PathRuleSet,
+  resolver: PathIdentityResolver = NODE_PATH_IDENTITY_RESOLVER,
+  deps: {
+    readonly exists?: (path: string) => boolean
+    readonly isDirectory?: (path: string) => boolean
+  } = {},
+): Promise<LaneSafeSearchArgv> {
+  const program = spec.argv[0]
+  if (typeof program !== 'string' || basename(program).toLowerCase() !== 'rg') return unchangedSearchArgv(spec.argv)
+  if (readLane.mode === 'all') return unchangedSearchArgv(spec.argv)
+  const separator = spec.argv.indexOf('--')
+  const flags = spec.argv.slice(1, separator === -1 ? spec.argv.length : separator)
+  // `--no-ignore` disables ALL ignore files (and, measured, the `.git` walk),
+  // so the shipped glob argv needs nothing added.
+  if (flags.includes('--no-ignore')) return unchangedSearchArgv(spec.argv)
+  const missing = SEARCH_IGNORE_DISCOVERY_FLAGS.filter((flag) => !flags.includes(flag))
+  if (missing.length === 0) return unchangedSearchArgv(spec.argv)
+
+  const exists = deps.exists ?? existsSync
+  const isDirectory = deps.isDirectory ?? ((path: string): boolean => {
+    try {
+      return statSync(path).isDirectory()
+    } catch {
+      return false
+    }
+  })
+  const roots = readIntentsOf(
+    { argv: spec.argv, cwd: spec.cwd },
+    { exists },
+  )
+  const outside: string[] = []
+  for (const root of roots) {
+    if (await ancestorsStayInLane(root, readLane, resolver, { exists, isDirectory })) continue
+    outside.push(root)
+  }
+  if (outside.length === 0) return unchangedSearchArgv(spec.argv)
+
+  // Insert AFTER `--no-config` when it is the first argument (the admitted
+  // shape), otherwise immediately before the first `--`. Both positions keep
+  // the flags out of the operand list.
+  const insertAt = spec.argv[1] === '--no-config'
+    ? 2
+    : (separator === -1 ? spec.argv.length : separator)
+  const argv = [
+    ...spec.argv.slice(0, insertAt),
+    ...missing,
+    ...spec.argv.slice(insertAt),
+  ]
+  return Object.freeze({
+    argv: Object.freeze(argv),
+    addedFlags: Object.freeze(missing),
+    annotations: SEARCH_IGNORE_DISCOVERY_NOTES,
+    annotatedRoots: Object.freeze(outside),
+  })
 }
 
 /**
@@ -813,14 +1003,29 @@ export function createConfinedSubprocessClass(
             target: refusal.target,
           })
         }
-        for (const intent of intents) await guard(SUBPROCESS_GUARD_METHOD, intent)
+        // BL-16 live row 1: a confined `rg` whose search root sits inside a
+        // git worktree used to walk ABOVE the lane for VCS/ancestor ignore
+        // discovery, read the lane-denied `.git`, and treat that kernel refusal
+        // as fatal (exit 2) even though the answer was on stdout. The lane is
+        // NOT widened: the INVOCATION is made self-contained (or, for a root
+        // whose discovery already stays in the lane, left exactly as shipped).
+        // The rewrite is disclosed on the allow fact, never as an extra fact.
+        const searchArgv = attribution === undefined
+          ? await laneSafeSearchArgv(spec, effective.read)
+          : unchangedSearchArgv(spec.argv)
+        for (const intent of intents) {
+          const annotations = searchArgv.annotatedRoots.includes(intent) && searchArgv.annotations.length > 0
+            ? searchArgv.annotations
+            : undefined
+          await guard(SUBPROCESS_GUARD_METHOD, intent, annotations)
+        }
         const allowPaths = confinedSpawnAllowPaths(profile.value.allowPaths, spec.argv[0] as string, options.runtimeAllowPaths ?? [])
         const request: SpawnRequest = {
           grantFingerprint: `bl16:${options.realmId ?? effective.memberIdentity}:${effective.policyRevision}:${String(Date.now())}:${String(++spawnSequence)}`,
           realmId: options.realmId ?? effective.memberIdentity,
           bindingId: options.bindingId ?? (effective.toolBindingIdentity ?? 'member'),
           memberScope: options.memberScope ?? effective.memberIdentity,
-          argv: [...spec.argv],
+          argv: [...searchArgv.argv],
           cwd: resolvePath(spec.cwd),
           env: envPairs({ ...confinedChildEnvironment(spec.env), ...options.env }),
           allowPaths,

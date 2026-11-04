@@ -1,0 +1,10 @@
+{
+  "schema": "a5sf-search-live/bl16-replacement/1",
+  "file": "docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md",
+  "row": "BL-16",
+  "target": "the final cell of the BL-16 row (入口 / 证据)",
+  "policy": "docs/plans/active/** is owner-owned; this diagnosis does not edit it — apply the exact string below",
+  "old": "证据 `evidence/a5sf-search-live/README.md` |",
+  "new": "证据 `evidence/a5sf-search-live/README.md`。**2026-11-05 row-6 复查（判 a，产品契约缺口）**：`team_archive_member` 提交 ARCHIVED 后，`ensureLiveAgent` 冷恢复与 boot resume 循环均不读 durable `MemberInstance.lifecycle`，archived Member 的 Session 被重新拉起并执行 `glob`（200 `ok:true`，post-stop allow fact ×2，confined spawn +2）；host-free 复判、静态链、4 腿 RED 臂（现 3 failed/1 passed；35 行门草图下 4/4）与契约/裁决框架见 `evidence/a5sf-search-live/row6-diagnosis.md`。本轮 live 其余：row 2/3/5/4 过；row 1 因 rg 读 `.git` 被 Landlock 拒（环境/driver 侧，另处理）。row 6 判定保持 FAIL，待产品门修复后复测。 |",
+  "replace": "single occurrence, literal"
+}

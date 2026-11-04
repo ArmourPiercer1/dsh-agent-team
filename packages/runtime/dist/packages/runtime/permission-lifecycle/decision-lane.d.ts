@@ -1,7 +1,7 @@
 /**
  * The PR4 permission-lifecycle DECISION lane — the execution read plane.
  *
- * ADR §8 makes the lifecycle an EXECUTION question, not a storage question:
+ * The frozen Architecture (§41.6/§30.2/§29.4) makes the lifecycle an EXECUTION question, not a storage question:
  *
  *     RUNNING   — overlay effective
  *     ARCHIVED  — overlay retained; execution disabled
@@ -71,7 +71,7 @@
 import type { EffectivePermissionStaticLayer } from '../effective-policy/permission-assembler.js';
 import type { PermissionDecisionLane, PermissionDecisionLaneDeps, PermissionKernelStaticFacts, PermissionLifecycleGateVerdict } from './types.js';
 /**
- * The ADR §8 execution gate as a pure function of the durable lifecycle
+ * The frozen-Architecture (§41.6/§30.2/§29.4) execution gate as a pure function of the durable lifecycle
  * state. Exported so a spec can pin all five states (and the unknown state)
  * directly, without a world.
  */

@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate
+
+
+[derived summary: the raw 1.25 MB capture was dropped to satisfy the evidence size bound;
+counts and failing-test lines only, as the gate asks]
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-4 invalid provider mount is REFUSED AT THE MOUNT (fail closed) — a broken provider never half-rides
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+     ✓ F7 the actual runner callback and owned-process cleanup regressions pass  1061ms
+     ✓ S13 file aliases, quoted values, and capture formats pass the standalone regressions  2653ms
+ ❯ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests | 1 failed) 5043ms
+    at fail (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/packages/runtime/src/plugin/host.ts:676:11)
+    at fail (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/packages/runtime/src/plugin/host.ts:676:11)
+    at fail (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/packages/runtime/src/plugin/host.ts:676:11)
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   Duration  257.41s (transform 111.30s, setup 0ms, import 425.77s, tests 813.74s, environment 193ms)

@@ -55,6 +55,13 @@ Two layers, and neither one is a filter over results:
    `--sort=modified`, `--no-ignore`, `--hidden` and the `--` root. `-f` / `--file` /
    `--ignore-file` (a pattern/ignore FILE read — B1), `--pre` / `--search-zip` / `-z`
    (another program/decompressor runs), `--follow` and every other flag are refused.
+   **The face itself may add ONE pair to the executed argv (2026-11-05,
+   `a5sf-rg-ancestors`):** `--no-ignore-parent --no-ignore-vcs`, inserted after
+   `--no-config` and before the first `--`, ONLY when an ancestor of a declared
+   directory root lies outside the effective read lane (§7.5). This is the calling
+   face completing a lane-scoped invocation, not the Member selecting a flag: the
+   admitted shapes above describe the caller's INPUT, and a Member-supplied copy of
+   either flag is still refused by the same allow-list.
    **(a2) program identity** — the name check is not a byte check, so a program whose
    REALPATH lies inside the Member's effective WRITE lane is refused (B3) through the
    SAME `evaluateLocatorAccess` (write access, same resolver), before any process.
@@ -705,3 +712,38 @@ that a refusal instead of an inherited-service mount), plus everything already
 listed in §6.3 (the `/etc`+`/proc` allowance until BL-39's audit, the
 pre-existing in-lane hardlink served with an ALLOW fact, `spec.env` unchecked,
 the layer-2-only nested symlink, no Host boot / V@B).
+
+### 7.5 Ancestor-ignore round (2026-11-05): the worktree `exit 2`, and why the lane did not move
+
+Defect source: `a5sf-search-live`, run `2026-11-04T20-17-23-485Z`, case
+`live:search-row1-grep-in-lane-allowed` → FAIL / `ROW1_CLAUSE_FAILED`. An in-lane
+`grep` inside a **git worktree** exited 2:
+
+```
+Error: grep search failed (exit 2): rg: /home/…/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)
+```
+
+`rg` performs VCS/ancestor ignore discovery ABOVE the search root (also true with
+`--no-ignore-parent`; only `--no-ignore-vcs` or `--no-ignore` stops it), reads
+the worktree's `.git` FILE, and treats the kernel's (correct) refusal as fatal.
+The lane decision was right; the invocation depended on outside data.
+
+Fix, in the caller face (`laneSafeSearchArgv`, `team-services/src/subprocess.ts`):
+for `rg` only, when a declared DIRECTORY root's ignore-discovery walk would leave
+the effective read lane (no lane-allowed `.git` found before an outside
+ancestor), insert `--no-ignore-parent --no-ignore-vcs` after `--no-config`,
+before the first `--`. A lane that includes the worktree root keeps the shipped
+argv and ordinary `.gitignore` semantics. `--no-ignore` shapes (glob) and FILE
+operands are skipped. The fact stream carries the disclosure on the SAME allow
+fact (`annotations`, optional additive field in `a5sf-guard-consult/1`); one
+fact, one process. No allowance changed: an explicit `.git` root is still denied
+at admission (0 spawns) and a raw `cat .git` is still kernel-denied.
+
+Measured this round (host-free, real launcher + packaged rg 1.18.0):
+`a5sf-confined-subprocess.test.ts` 35/35, `a5sf-bl16-grep-realm.test.ts` 10/10
+(new `R6`/`R6m`/`R7`/`R7m`; `R4` now also asserts the real `regex parse error`
+stderr), `a5sf-subprocess-unconfined-realm.test.ts` 4/4; `R6m` reproduces the
+live tool error verbatim. Full RED/GREEN logs, the REMOVED alternative (widening
+the lane to `.git`) and residual risk:
+`dev/agent-workflow/evidence/a5sf-rg-ancestors/README.md`. Row grade unchanged
+(`ENFORCE-PARTIAL`); the live lane still owns the re-judgment.

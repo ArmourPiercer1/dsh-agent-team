@@ -1,0 +1,57 @@
+{
+  "schema": "a5sf-archived-gate/row6-mutation-control/1",
+  "generatedAt": "2026-11-04T22:04:55.739Z",
+  "source": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+  "originalSourceSha256": "6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8",
+  "control": "PASS",
+  "outcomes": [
+    {
+      "mutant": "M1-seam1-ensureLiveAgentOnce",
+      "description": "remove the gate at the on-demand seam only (seam 1)",
+      "mutatedSourceSha256": "1cf08ccda1c88d975a448c03c8f1004da4584b782cc3e0cb0483477676248ea7",
+      "restoredSourceSha256": "6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8",
+      "vitestExitCode": 1,
+      "observed": {
+        "ARCHIVED": "failed",
+        "DISPOSED": "failed",
+        "SETTLED": "passed",
+        "RESTART": "passed"
+      },
+      "expected": {
+        "failed": [
+          "ARCHIVED",
+          "DISPOSED"
+        ],
+        "passed": [
+          "SETTLED",
+          "RESTART"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M2-seam2-boot-resume-loop",
+      "description": "remove the gate at the boot resume loop only (seam 2)",
+      "mutatedSourceSha256": "ecc4aa285d4ba855e7600c48964e91fe712edc501f3659919789b9faa66b62f1",
+      "restoredSourceSha256": "6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8",
+      "vitestExitCode": 1,
+      "observed": {
+        "ARCHIVED": "passed",
+        "DISPOSED": "passed",
+        "SETTLED": "passed",
+        "RESTART": "failed"
+      },
+      "expected": {
+        "failed": [
+          "RESTART"
+        ],
+        "passed": [
+          "ARCHIVED",
+          "DISPOSED",
+          "SETTLED"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ]
+}

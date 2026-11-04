@@ -1,0 +1,209 @@
+{
+  "schema": "a5sf-archived-gate/row6-rejudge/1",
+  "generatedAt": "2026-11-04T22:03:48.891Z",
+  "judge": "tests/world-factory/lib/a5sf-search-live.mjs#judgeRow6 (unmodified)",
+  "rowId": "live:search-row6-archive-boundary-no-callable-shadow",
+  "legacyRowId": "live:search-row6-teardown-no-callable-shadow",
+  "results": [
+    {
+      "stamp": "2026-11-04T20-10-19Z",
+      "runId": "a5sf-search-2026-11-04T20-10-19-766Z",
+      "archivedVerdict": {
+        "verdict": "REFUTED",
+        "reason": "ROW6_CLAUSE_FAILED",
+        "failed": [
+          "everyDispatchExplained",
+          "noSuccessAfterStop",
+          "noCallableShadow",
+          "probeFactsAreRefusals",
+          "noProcessAfterStop"
+        ]
+      },
+      "boundary": "2026-11-04T20:15:29.800Z",
+      "archive": {
+        "status": 200,
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-14xcgx11i3lu",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        }
+      },
+      "fixedSeam": {
+        "rootSessionId": "session-a5sf-acceptance-team",
+        "childSessionId": "session-team-child-47be99afeb8b0aac5c2a00478d3f8141",
+        "replies": [
+          {
+            "status": 422,
+            "body": {
+              "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+            }
+          },
+          {
+            "status": 422,
+            "body": {
+              "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+            }
+          }
+        ],
+        "directCode": "PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED",
+        "before": {
+          "resumes": 1,
+          "creates": 0,
+          "toolExecutions": 0
+        },
+        "after": {
+          "resumes": 1,
+          "creates": 0,
+          "toolExecutions": 0
+        },
+        "delta": {
+          "resumes": 0,
+          "creates": 0,
+          "toolExecutions": 0
+        }
+      },
+      "fixedVerdict": {
+        "verdict": "PROVEN",
+        "reason": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+        "checks": {
+          "archivedLifecycle": true,
+          "noActiveMemberLeft": true,
+          "everyDispatchExplained": true,
+          "noSuccessAfterStop": true,
+          "noCallableShadow": true,
+          "noManagedDisposeFault": true,
+          "noUnattributedRealmFault": true,
+          "factsAreTimestamped": true,
+          "noFactAfterStop": true,
+          "probeFactsAreRefusals": true,
+          "noProcessAfterStop": true,
+          "hostDead": true,
+          "portReleased": true,
+          "homeDeleted": true,
+          "noOrphanProcess": true
+        },
+        "postStop": [
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          },
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          }
+        ]
+      },
+      "substitutions": {
+        "postStopDispatches": "MEASURED by the fixed seam in this arm (the archived replies are the pre-fix history)",
+        "probeFacts": "MEASURED empty (no tool execution -> no guard consult)",
+        "confinedSpawnsAfterStop": "MEASURED empty (toolExecutions delta 0 -> no tool/subprocess)",
+        "baseSpawnsAfterStop": "MEASURED empty (same)",
+        "everythingElse": "VERBATIM from the archived sample (member, archive, membersAfter, stopInstant, facts, observations, process seam)"
+      }
+    },
+    {
+      "stamp": "2026-11-04T20-17-23Z",
+      "runId": "a5sf-search-2026-11-04T20-17-23-486Z",
+      "archivedVerdict": {
+        "verdict": "REFUTED",
+        "reason": "ROW6_CLAUSE_FAILED",
+        "failed": [
+          "everyDispatchExplained",
+          "noSuccessAfterStop",
+          "noCallableShadow",
+          "probeFactsAreRefusals",
+          "noProcessAfterStop"
+        ]
+      },
+      "boundary": "2026-11-04T20:22:33.292Z",
+      "archive": {
+        "status": 200,
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-14xcgx11i3lu",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        }
+      },
+      "fixedSeam": {
+        "rootSessionId": "session-a5sf-acceptance-team",
+        "childSessionId": "session-team-child-47be99afeb8b0aac5c2a00478d3f8141",
+        "replies": [
+          {
+            "status": 422,
+            "body": {
+              "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+            }
+          },
+          {
+            "status": 422,
+            "body": {
+              "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+            }
+          }
+        ],
+        "directCode": "PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED",
+        "before": {
+          "resumes": 1,
+          "creates": 0,
+          "toolExecutions": 0
+        },
+        "after": {
+          "resumes": 1,
+          "creates": 0,
+          "toolExecutions": 0
+        },
+        "delta": {
+          "resumes": 0,
+          "creates": 0,
+          "toolExecutions": 0
+        }
+      },
+      "fixedVerdict": {
+        "verdict": "PROVEN",
+        "reason": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+        "checks": {
+          "archivedLifecycle": true,
+          "noActiveMemberLeft": true,
+          "everyDispatchExplained": true,
+          "noSuccessAfterStop": true,
+          "noCallableShadow": true,
+          "noManagedDisposeFault": true,
+          "noUnattributedRealmFault": true,
+          "factsAreTimestamped": true,
+          "noFactAfterStop": true,
+          "probeFactsAreRefusals": true,
+          "noProcessAfterStop": true,
+          "hostDead": true,
+          "portReleased": true,
+          "homeDeleted": true,
+          "noOrphanProcess": true
+        },
+        "postStop": [
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          },
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          }
+        ]
+      },
+      "substitutions": {
+        "postStopDispatches": "MEASURED by the fixed seam in this arm (the archived replies are the pre-fix history)",
+        "probeFacts": "MEASURED empty (no tool execution -> no guard consult)",
+        "confinedSpawnsAfterStop": "MEASURED empty (toolExecutions delta 0 -> no tool/subprocess)",
+        "baseSpawnsAfterStop": "MEASURED empty (same)",
+        "everythingElse": "VERBATIM from the archived sample (member, archive, membersAfter, stopInstant, facts, observations, process seam)"
+      }
+    }
+  ]
+}

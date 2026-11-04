@@ -88,12 +88,12 @@ function laneOfRefusal(code) {
  */
 export function observeGuard(guard, observer, context) {
     let sequence = 0;
-    return async function observedGuard(method, hostPath) {
+    return async function observedGuard(method, hostPath, annotations) {
         let decision;
         let decidedBy;
         let denial = null;
         try {
-            await guard(method, hostPath);
+            await guard(method, hostPath, annotations);
             decision = 'allow';
             decidedBy = GUARD_ALLOW_DECIDED_BY;
         }
@@ -117,6 +117,11 @@ export function observeGuard(guard, observer, context) {
             decidedBy,
             sequence,
             observedAt: new Date().toISOString(),
+            // The key is absent (not `undefined`) when there is nothing to say, so an
+            // unannotated fact is byte-identical to the previous schema.
+            ...(annotations === undefined || annotations.length === 0
+                ? {}
+                : { annotations: Object.freeze([...annotations]) }),
         });
         try {
             await observer(fact);
@@ -200,6 +205,16 @@ function assertFact(value, path, line) {
     }
     if (!Number.isInteger(record.sequence) || record.sequence < 1) {
         throw invalid(`'sequence' must be a positive integer`);
+    }
+    // Additive optional field: when present it must be a non-empty array of
+    // non-empty strings. Its ABSENCE is the previous schema, so old sinks read
+    // unchanged.
+    if (record.annotations !== undefined) {
+        const annotations = record.annotations;
+        if (!Array.isArray(annotations) || annotations.length === 0
+            || annotations.some((note) => typeof note !== 'string' || note.trim() === '')) {
+            throw invalid('\'annotations\' must be a non-empty array of non-empty strings when present');
+        }
     }
     return value;
 }
