@@ -63,7 +63,7 @@ import {
   tcpConnectProbe,
 } from '../../../../tests/world-factory/lib/world-factory.mjs'
 import {
-  createRunRecord, formatSummary, overallVerdict,
+  createRunRecord, formatSummary, overallVerdict, readAuthorityBinding,
 } from '../../../../tests/world-factory/lib/run-record.mjs'
 import { TEST_USE_BASELINE_SHA } from '../../../../tests/paths.mjs'
 import { createA5sfHarness } from '../../../../tests/world-factory/lib/a5sf-harness.mjs'
@@ -724,6 +724,10 @@ function archivePreviousRun() {
 
 function runBindings(head, grant) {
   return {
+    // EB3 RUN rule: a NEW record must bind the live authority generation. This driver predated the
+    // rule and the gate (eb3-run-manifest --new-since) refused two records for the omission; the
+    // helper is the one home for the stamp, so it is called here rather than hand-rolled.
+    authority: readAuthorityBinding(REPO_ROOT),
     teamSha: head,
     hostSha: TEST_USE_BASELINE_SHA,
     hostTree: HOST_TREE,

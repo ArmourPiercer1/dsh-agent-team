@@ -23,7 +23,15 @@
     "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
     "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
     "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
-    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous"
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound after the run: the record predates the manifest's authority-binding requirement; the pointer is the one current at this head and is re-checked by eb3-run-manifest --new-since"
+    }
   },
   "cases": [
     {
