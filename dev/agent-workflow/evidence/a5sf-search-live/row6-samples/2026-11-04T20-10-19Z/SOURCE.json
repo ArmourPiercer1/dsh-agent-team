@@ -1,0 +1,42 @@
+{
+  "schema": "a5sf-search-live/row6-sample-source/1",
+  "note": "verbatim copies of the archived evidence of one run; the driver archives the PREVIOUS run into runs/<stamp> at the START of the next run, so the directory stamp and the runId inside differ",
+  "runId": "a5sf-search-2026-11-04T20-10-19-766Z",
+  "files": {
+    "consultations.jsonl": {
+      "sha256": "da1b811169850e09e907dc82dc97292bd1fda13ef22aec06d99da1610d1a00ce",
+      "bytes": 3036,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/consultations.jsonl"
+    },
+    "grant.json": {
+      "sha256": "83aaef4ceca00129cf8fbdb80672f87af90f97e35f1a988228cdf3cfa5591457",
+      "bytes": 3074,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/grant.json"
+    },
+    "guard-facts.json": {
+      "sha256": "7df04bda039966f377fe8c046d9a597527f0de60b8fc3e02d32f791d5508631f",
+      "bytes": 3543,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/guard-facts.json"
+    },
+    "oracle-samples.json": {
+      "sha256": "813e2cdc448a69d1e559233072c0b6ae3c68bf12eda8e315d42b92255281eb63",
+      "bytes": 41959,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/oracle-samples.json"
+    },
+    "run-record.json": {
+      "sha256": "09dbdc2721053eaa032820db07b273c7c7c5ca32402077b176286f58f7731bd7",
+      "bytes": 15702,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/run-record.json"
+    },
+    "search-counter.jsonl": {
+      "sha256": "21a7945da9b05520d0385c98fa1ba3d56c28e94abb6f52aa6cd78eac9d923b7a",
+      "bytes": 7229,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/search-counter.jsonl"
+    },
+    "teardown.json": {
+      "sha256": "428dcaa04de3cc9a551edb1898167cf7d6c178a027d4759892dc55afe6fae43a",
+      "bytes": 13672,
+      "origin": ".worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/runs/2026-11-04T20-17-23-485Z/teardown.json"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/dev/agent-workflow/evidence/a5sf-search-live
+
+ ❯ row6-red-arm.test.mjs (4 tests | 3 failed) 1826ms
+     × ARCHIVED: ensureLiveAgent(childSessionId) refuses typed and resumes NOTHING 1814ms
+     × DISPOSED: same seam, terminal code 5ms
+     ✓ SETTLED control: the same member DOES resume (the gate is lifecycle-specific) 3ms
+     × RESTART: the boot resume phase must not re-bind an ARCHIVED member 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  row6-red-arm.test.mjs > row 6 RED arm — an ARCHIVED Member must not be cold-resumed into a callable Agent > ARCHIVED: ensureLiveAgent(childSessionId) refuses typed and resumes NOTHING
+AssertionError: the archived Member was cold-resumed instead of refused; resumes=[{"sessionId":"session-child-row6-red","setupProvided":true}]: expected undefined to be an instance of Error
+ ❯ row6-red-arm.test.mjs:57:137
+     55|       const outcome = await capture(() => world.binding.ensureLiveAgen…
+     56|       // The RED assertion: today this resolves and world.agents.resum…
+     57|       expect(outcome.error, `the archived Member was cold-resumed inst…
+       |                                                                                                                                         ^
+     58|       expect(outcome.error?.code).toBe('PERMISSION_LIFECYCLE_EXECUTION…
+     59|       expect(world.agents.resumes, 'no resume may be attempted for an …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  row6-red-arm.test.mjs > row 6 RED arm — an ARCHIVED Member must not be cold-resumed into a callable Agent > DISPOSED: same seam, terminal code
+AssertionError: the disposed Member was cold-resumed instead of refused; resumes=[{"sessionId":"session-child-row6-red","setupProvided":true}]: expected undefined to be an instance of Error
+ ❯ row6-red-arm.test.mjs:69:137
+     67|     try {
+     68|       const outcome = await capture(() => world.binding.ensureLiveAgen…
+     69|       expect(outcome.error, `the disposed Member was cold-resumed inst…
+       |                                                                                                                                         ^
+     70|       expect(outcome.error?.code).toBe('PERMISSION_LIFECYCLE_EXECUTION…
+     71|       expect(world.agents.resumes).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  row6-red-arm.test.mjs > row 6 RED arm — an ARCHIVED Member must not be cold-resumed into a callable Agent > RESTART: the boot resume phase must not re-bind an ARCHIVED member
+AssertionError: the restart resume phase re-bound the archived Member (no lifecycle read at the boot resume loop): expected [ 'session-team-row6boot', …(1) ] to not include 'session-child-row6boot'
+ ❯ row6-red-arm.test.mjs:100:13
+     98|         world.agents.resumes.map((r) => r.sessionId),
+     99|         'the restart resume phase re-bound the archived Member (no lif…
+    100|       ).not.toContain('session-child-row6boot')
+       |             ^
+    101|     } finally {
+    102|       await world.binding.close().catch(() => undefined)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  05:46:35
+   Duration  2.25s (transform 1.60s, setup 0ms, import 310ms, tests 1.83s, environment 0ms)
