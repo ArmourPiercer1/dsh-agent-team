@@ -1,6 +1,6 @@
 PASS dry-run evidence exists and is green: {"checks":26,"failed":0}
 PASS the PRODUCT tree matches the one the dry run measured: {"committed":"9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276","now":"9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276"}
-PASS the product tree has no uncommitted modifications: 
+PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is the preflight branch: task/a5sf-preflight-20261103
 PASS no ledger row exists for this evidence directory (no boot was spent): /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl
 REFUSE boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment): {"poolFile":"dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json","item":"P2-01 live read (BL-14 / G2 live half)","boots":3,"why":"the pool amendment is not on this HEAD — merge master forward and re-run; do NOT spend a boot on the un-amended three-boot allocation"}

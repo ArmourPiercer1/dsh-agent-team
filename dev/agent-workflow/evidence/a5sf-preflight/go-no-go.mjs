@@ -47,7 +47,7 @@ const results = []
 function check(id, ok, detail) {
   results.push({ id, ok: ok === true, detail })
   // eslint-disable-next-line no-console
-  console.log(`${ok === true ? 'PASS' : 'REFUSE'} ${id}: ${typeof detail === 'string' ? detail : JSON.stringify(detail)}`)
+  console.log(`${ok === true ? 'PASS' : 'REFUSE'} ${id}: ${typeof detail === 'string' ? (detail === '' ? '(clean)' : detail) : JSON.stringify(detail)}`)
 }
 function git(args, cwd = REPO_ROOT) {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' })
@@ -99,7 +99,7 @@ const report = {
   structurallyUnverifiableWithoutBoot: dryRun?.structurallyUnverifiable ?? [],
 }
 writeFileSync(join(HERE, 'go-no-go.json'), JSON.stringify(report, null, 2) + '\n')
-writeFileSync(join(HERE, 'go-no-go.log'), results.map((entry) => `${entry.ok ? 'PASS' : 'REFUSE'} ${entry.id}: ${typeof entry.detail === 'string' ? entry.detail : JSON.stringify(entry.detail)}`).join('\n') + '\n')
+writeFileSync(join(HERE, 'go-no-go.log'), results.map((entry) => `${entry.ok ? 'PASS' : 'REFUSE'} ${entry.id}: ${typeof entry.detail === 'string' ? (entry.detail === '' ? '(clean)' : entry.detail) : JSON.stringify(entry.detail)}`).join('\n') + '\n')
 // eslint-disable-next-line no-console
 console.log(report.go ? `GO — head=${head} digest=${digestNow}` : `NO-GO — ${results.filter((entry) => entry.ok !== true).length} refusal(s); fix them before spending boot 1 of 3`)
 process.exitCode = report.go ? 0 : 1
