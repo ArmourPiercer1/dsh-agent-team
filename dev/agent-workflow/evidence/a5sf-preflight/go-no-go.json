@@ -1,10 +1,10 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
-  "at": "2026-11-04T06:13:15.859Z",
-  "head": "2e42ddcf92bdd9b977833c954cd0d391bd8f82ad",
+  "at": "2026-11-04T06:20:53.843Z",
+  "head": "de5043b1d68948e6999f4832bae9b32452500186",
   "branch": "task/a5sf-preflight-20261103",
-  "evidenceHeadAtDryRun": "2e42ddcf92bdd9b977833c954cd0d391bd8f82ad",
-  "productTreeDigest": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3",
+  "evidenceHeadAtDryRun": "7d465b14aec6d8ca07927998cc440a6efff5364c",
+  "productTreeDigest": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-01 live read (BL-14 / G2 live half)",
@@ -25,14 +25,14 @@
       "id": "the PRODUCT tree matches the one the dry run measured",
       "ok": true,
       "detail": {
-        "committed": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3",
-        "now": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3"
+        "committed": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276",
+        "now": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276"
       }
     },
     {
       "id": "the product tree has no uncommitted modifications",
-      "ok": false,
-      "detail": "M tests/world-factory/a5sf-acceptance-preflight.test.mjs\n M tests/world-factory/lib/a5sf-acceptance-preflight.mjs"
+      "ok": true,
+      "detail": ""
     },
     {
       "id": "branch is the preflight branch",
