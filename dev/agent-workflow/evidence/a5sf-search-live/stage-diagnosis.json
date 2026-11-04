@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/stage-diagnosis/1",
-  "at": "2026-11-04T18:55:57.977Z",
+  "at": "2026-11-04T19:05:32.577Z",
   "error": "MEMBER_INSTALL_NO_WORKER: the team reports no worker instance with a session after 120s (laneReport=present, team.create was ok). The delegate produced no Member, so no row can be measured",
   "probe": {
     "stage": "member-install",
@@ -13,7 +13,7 @@
       "preset-a5sf-search-base"
     ],
     "composedProfile": {
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T18-51-35Z/composed-profile-935b0789086b6fa2ef87eda4bd243a11c758f05ad71608c76cae2fdea4b0f054.patch.yml",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/logs/u5a5sfsrch-20261104T18-58-10Z/composed-profile-03b2f5956fee516fa8487092d10074625777df72ddfe365bc5073f8193856b48.patch.yml",
       "presentRowIds": [
         "u5-canary",
         "u6-fs-probe-host",
@@ -27,7 +27,7 @@
     "counter": {
       "install-fs": 0,
       "install-subprocess": 0,
-      "base-spawn": 13,
+      "base-spawn": 16,
       "confined-spawn": 0,
       "confined-exit": 0,
       "confined-spawn-failed": 0
@@ -41,7 +41,7 @@
         "read": {
           "mode": "restricted",
           "allow": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace"
           ],
           "ask": [],
           "deny": []
@@ -49,7 +49,7 @@
         "write": {
           "mode": "restricted",
           "allow": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace"
           ],
           "ask": [],
           "deny": []
@@ -59,7 +59,7 @@
         "read": {
           "mode": "restricted",
           "allow": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/inside"
           ],
           "ask": [],
           "deny": []
@@ -70,7 +70,7 @@
         "read": {
           "mode": "restricted",
           "allow": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/inside"
           ],
           "ask": [],
           "deny": []
@@ -78,7 +78,7 @@
         "write": {
           "mode": "restricted",
           "allow": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace"
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace"
           ],
           "ask": [],
           "deny": []
@@ -86,31 +86,31 @@
       },
       "probePaths": [
         {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/inside/needle.txt",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/inside/needle.txt",
           "ceilingRead": "allow",
           "restrictionRead": "allow",
           "effectiveRead": "allow"
         },
         {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/outside-restriction.txt",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/outside-restriction.txt",
           "ceilingRead": "allow",
           "restrictionRead": "deny",
           "effectiveRead": "deny"
         },
         {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/ceiling-outside/secret.txt",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/ceiling-outside/secret.txt",
           "ceilingRead": "deny",
           "restrictionRead": "deny",
           "effectiveRead": "deny"
         },
         {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/ceiling-outside-glob/secret.txt",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/ceiling-outside-glob/secret.txt",
           "ceilingRead": "deny",
           "restrictionRead": "deny",
           "effectiveRead": "deny"
         },
         {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-51-35Z/workspace/lane/blocking.fifo",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T18-58-10Z/workspace/lane/blocking.fifo",
           "ceilingRead": "allow",
           "restrictionRead": "deny",
           "effectiveRead": "deny"
@@ -124,7 +124,7 @@
       "instanceId": "",
       "hasSession": false
     },
-    "mockRequests": 7,
+    "mockRequests": 8,
     "memberTurnSeen": false,
     "toolUseNames": [
       "grep",

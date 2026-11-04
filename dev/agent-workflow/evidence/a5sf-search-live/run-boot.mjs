@@ -378,7 +378,19 @@ function teamRowConfig({ home }) {
     seamUrl,
     // ── route C enablement: the sink + the two native tool modules ──────────
     a5sfEvidencePath: join(home, 'a5sf-consult.jsonl'),
-    a5sfNativeToolModules: [pathToFileURL(HOST_TOOL_FS).href, pathToFileURL(HOST_TOOL_FS_SEARCH).href],
+    // The search module's Config REQUIRES `sampleOverCapGlobResults` (no default),
+    // so a bare string entry mounts it with an empty config and the product
+    // refuses the realm install:
+    //   SERVICE_MOUNT_FAILED: native tool module re-mount failed: invalid config:
+    //   $.sampleOverCapGlobResults missing required value
+    // (captured verbatim in delegate-artifact.json, 2026-11-04T19:05Z). False is
+    // the deterministic choice: an over-cap glob page keeps the modification-time
+    // head instead of sampling across top-level entries, so row 1 and row 5 do not
+    // depend on sampling. `tool-fs` keeps the string form: its config is defaulted.
+    a5sfNativeToolModules: [
+      pathToFileURL(HOST_TOOL_FS).href,
+      { url: pathToFileURL(HOST_TOOL_FS_SEARCH).href, config: { sampleOverCapGlobResults: false } },
+    ],
     // The identity declaration: grants nothing, but the attach REFUSES before
     // any row if the settled fibers do not forward every declared name.
     a5sfExpectedTools: {
@@ -553,6 +565,26 @@ function countAssistantToolUses(req, name) {
   }
   return n
 }
+/**
+ * The tool results the transcript carries, by `tool_use_id`.
+ *
+ * WHY THIS EXISTS (2026-11-04T18:58Z run): counting ASSISTANT tool_use blocks does
+ * not survive this harness's follow-up requests — the assistant echo is not there,
+ * so every turn's counter stayed 0 and the mock re-issued the same call. Each turn
+ * then burned its full 120 s settle timeout and issued a DUPLICATE tool call (two
+ * rg spawns 121 s apart). Tool RESULTS are present and are keyed by id, so the
+ * mock now decides on what it has actually been told back.
+ */
+function resultIdsOf(req) {
+  const ids = new Set()
+  for (const message of messagesOf(req)) {
+    if (!Array.isArray(message?.content)) continue
+    for (const block of message.content) {
+      if (block?.type === 'tool_result' && block?.tool_use_id !== undefined) ids.add(String(block.tool_use_id))
+    }
+  }
+  return ids
+}
 function userTextOf(req) {
   return messagesOf(req).filter((m) => m?.role === 'user')
     .map((m) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? ''))).join('\n')
@@ -588,28 +620,21 @@ function makeDecide({ rowPaths, claims }) {
 
     // ── MEMBER LANE ────────────────────────────────────────────────────────
     if (userText.includes(`${MEMBER_ENVELOPE}${TOK_D1}`)) {
-      const greps = countAssistantToolUses(req, 'grep')
-      const globs = countAssistantToolUses(req, 'glob')
-      if (greps < 1) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepIn, name: 'grep', arguments: { pattern: claims.needle, path: rowPaths.inLaneDir } }] }
-      }
-      if (greps < 2) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideCeiling, name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
-      }
-      if (greps < 3) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepOutsideRestriction, name: 'grep', arguments: { pattern: claims.restrictedPattern, path: rowPaths.restrictedFile } }] }
-      }
-      if (greps < 4) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepInvalid, name: 'grep', arguments: { pattern: 'A5SF_(', path: rowPaths.invalidDir } }] }
-      }
-      if (globs < 1) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globIn, name: 'glob', arguments: { pattern: 'needle.txt', path: rowPaths.globDir } }] }
-      }
-      if (globs < 2) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.globOutside, name: 'glob', arguments: { pattern: 'secret.txt', path: rowPaths.outsideGlobDir } }] }
-      }
-      if (greps < 5) {
-        return { kind: 'tool-call', toolCalls: [{ id: CALL_IDS.grepFifo, name: 'grep', arguments: { pattern: claims.fifoPattern, path: rowPaths.fifo } }] }
+      // Sequenced by TOOL RESULTS (ids), not by assistant tool_use counts: this
+      // harness does not echo the assistant tool_use block back, so a counter over
+      // them never advances and the mock would re-issue call #1 forever.
+      const seen = resultIdsOf(req)
+      const chain = [
+        [CALL_IDS.grepIn, 'grep', { pattern: claims.needle, path: rowPaths.inLaneDir }],
+        [CALL_IDS.grepOutsideCeiling, 'grep', { pattern: claims.outsidePattern, path: rowPaths.outsideDir }],
+        [CALL_IDS.grepOutsideRestriction, 'grep', { pattern: claims.restrictedPattern, path: rowPaths.restrictedFile }],
+        [CALL_IDS.grepInvalid, 'grep', { pattern: 'A5SF_(', path: rowPaths.invalidDir }],
+        [CALL_IDS.globIn, 'glob', { pattern: 'needle.txt', path: rowPaths.globDir }],
+        [CALL_IDS.globOutside, 'glob', { pattern: 'secret.txt', path: rowPaths.outsideGlobDir }],
+        [CALL_IDS.grepFifo, 'grep', { pattern: claims.fifoPattern, path: rowPaths.fifo }],
+      ]
+      for (const [id, name, args] of chain) {
+        if (!seen.has(id)) return { kind: 'tool-call', toolCalls: [{ id, name, arguments: args }] }
       }
       return { kind: 'text', content: `${DONE_D1} ${lastToolResultText(req).slice(0, 160)}` }
     }
@@ -623,38 +648,21 @@ function makeDecide({ rowPaths, claims }) {
     // needle; the counter records `base-spawn-failed` with the Node cause, so a
     // failure here is attributable instead of a bare "ripgrep launch failed".
     if (lastUser.includes(MK_PROBE)) {
-      // Count only the greps this probe issued: the control turn already put a
-      // grep in the transcript (with a DIFFERENT path), so a name-only count
-      // would answer immediately and the probe would look for a call nobody made.
-      const greps = messagesOf(req)
-        .filter((m) => m?.role === 'assistant' && Array.isArray(m?.content))
-        .flatMap((m) => m.content)
-        .filter((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === rowPaths.inLaneDir).length
-      if (greps < 1) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-probe')) {
         return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-probe', name: 'grep', arguments: { pattern: claims.needle, path: rowPaths.inLaneDir } }] }
       }
       return { kind: 'text', content: 'A5SF_SEARCH_PROBE_DONE' }
     }
 
     if (lastUser.includes(MK_DISC)) {
-      // The probe turn runs FIRST and leaves an in-lane grep in the transcript, so
-      // a name-only count would answer the control without issuing its grep and the
-      // control was recorded NOT_REACHED (2026-11-04T18:53Z run). Count only the
-      // greps on the control's own operand.
-      const greps = messagesOf(req)
-        .filter((m) => m?.role === 'assistant' && Array.isArray(m?.content))
-        .flatMap((m) => m.content)
-        .filter((b) => b?.type === 'tool_use' && b?.name === 'grep' && String(b?.input?.path ?? '') === rowPaths.outsideDir).length
-      if (greps < 1) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-control')) {
         return { kind: 'tool-call', toolCalls: [{ id: 'call-a5sfsrch-control', name: 'grep', arguments: { pattern: claims.outsidePattern, path: rowPaths.outsideDir } }] }
       }
       return { kind: 'text', content: 'A5SF_SEARCH_DISC_DONE' }
     }
     const isLeader = lastUser.includes(MK_L1) || allText.includes(MK_L1) || allText.includes('[team-work-settled')
     if (isLeader) {
-      const teamCalls = ['team_delegate', 'team_archive_member', 'team_follow_up']
-        .map((n) => countAssistantToolUses(req, n)).reduce((a, b) => a + b, 0)
-      if (teamCalls === 0) {
+      if (!resultIdsOf(req).has('call-a5sfsrch-delegate')) {
         return {
           kind: 'tool-call',
           toolCalls: [{ id: 'call-a5sfsrch-delegate', name: 'team_delegate', arguments: {

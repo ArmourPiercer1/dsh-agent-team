@@ -1,4 +1,4 @@
-[2026-11-04T18:57:54.340Z] CHECK PASS driver: --plan hands the rows over and writes the identity artifact: plan-rows.json must carry emittedRowIds and worldRowIds so the gate compares CONTENT, not a count
-[2026-11-04T18:57:54.341Z] CHECK PASS driver: the boot-mode run-record bindings are exercised host-free: a broken binding literal must fail in --plan, not after a start is spent
-[2026-11-04T18:57:54.457Z] driver: --plan: status=0 ms=116 stdoutLines=124 stderrLines=0
-[2026-11-04T18:57:54.457Z] CHECK PASS driver --plan is green: PLAN OK
+[2026-11-04T19:07:24.622Z] CHECK PASS driver: --plan hands the rows over and writes the identity artifact: plan-rows.json must carry emittedRowIds and worldRowIds so the gate compares CONTENT, not a count
+[2026-11-04T19:07:24.623Z] CHECK PASS driver: the boot-mode run-record bindings are exercised host-free: a broken binding literal must fail in --plan, not after a start is spent
+[2026-11-04T19:07:24.747Z] driver: --plan: status=0 ms=123 stdoutLines=126 stderrLines=0
+[2026-11-04T19:07:24.747Z] CHECK PASS driver --plan is green: PLAN OK

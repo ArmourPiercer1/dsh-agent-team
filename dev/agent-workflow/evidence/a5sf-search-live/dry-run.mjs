@@ -226,6 +226,14 @@ check('driver: the control counts only ITS OWN operand and the member-install ab
   && /teamCalls/u.test(driverSource)
   && /MEMBER_INSTALL_NO_WORKER/u.test(driverSource),
   'the probe turn runs first, so a name-only control count answers without its grep (NOT_REACHED at 18:53Z); and no-Member-appeared must carry what team_delegate answered')
+check('driver: the search module is mounted WITH the config its schema requires',
+  /sampleOverCapGlobResults: false/u.test(driverSource)
+  && /\{ url: pathToFileURL\(HOST_TOOL_FS_SEARCH\)\.href, config:/u.test(driverSource),
+  'a bare string entry mounts tool-fs-search with an empty config and the realm install is refused with SERVICE_MOUNT_FAILED (captured 2026-11-04T19:05Z)')
+check('driver: the mock sequences on TOOL RESULTS, not assistant tool_use echoes',
+  /function resultIdsOf/u.test(driverSource)
+  && !/const greps = countAssistantToolUses\(req, 'grep'\)/u.test(driverSource),
+  'this harness does not echo the assistant tool_use block, so a tool_use counter never advances: every turn re-issued its call and burned 120 s')
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)
