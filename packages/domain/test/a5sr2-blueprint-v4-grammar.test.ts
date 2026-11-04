@@ -116,9 +116,10 @@ describe('a5sr2 version sets — the FLIP round moved exactly the run set (翻�
   // The alpha5-v4-flip round INVERTS these two legs rather than deleting them
   // (the a4p1 V1 precedent): the pre-flip assertions stand in git history and
   // in `runs/a5fl1-RED.log`; from here on they pin the post-flip truth.
-  it('SUPPORTED=[3,4], DEFINED=[1,2,3,4], RETIRED=[1,2] exactly (the flip added to the run set; the derived retired set moved NOTHING)', () => {
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
-    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3, 4])
+  it('SUPPORTED=[3,4,5], DEFINED=[1,2,3,4,5], RETIRED=[1,2] exactly (the flips added to the run set; the derived retired set moved NOTHING)', () => {
+    // alpha6 v5-activation drill: 5 joined both sets; the law is unchanged.
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4, 5])
+    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3, 4, 5])
     expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
   })
 

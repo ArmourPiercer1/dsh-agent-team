@@ -26,10 +26,23 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isTeamContractError } from '../../contracts/src/index.js'
 import {
+  DEFINED_BLUEPRINT_DOCUMENT_VERSIONS,
   planBlueprintV3toV4Migration,
   validateBlueprintDocument,
   validateBlueprintV4Document,
 } from '../blueprint/src/index.js'
+
+/**
+ * The genuinely NEVER-DEFINED witness, DERIVED one past the defined set.
+ *
+ * The candidate file's N-V02 fragment was drafted against the `{3, 4}` window
+ * and spells `5` as "never defined". The alpha6 v5-activation drill DEFINED
+ * v5 (it is in both DEFINED and SUPPORTED), so `5` is no longer a witness of
+ * the never-defined arm — the arm itself is unchanged, its witness moves with
+ * the set (the same recorded move NEG_SCHEMA_VERSION_MISMATCH takes in
+ * `testdata/fixtures.ts`). Today this renders `6`.
+ */
+const NEVER_DEFINED_DOCUMENT_VERSION = Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS) + 1
 
 const NEG_PATH = fileURLToPath(new URL('../../../docs/plans/memo/alpha5-tool-io-governance/pr8-accept/migration-negative-cases.json', import.meta.url))
 const neg = JSON.parse(readFileSync(NEG_PATH, 'utf8')) as {
@@ -199,7 +212,7 @@ describe('a5sr5 version cases (gate surface) — the production gate keeps faili
 
   it('N-V01..N-V04', () => {
     expect(gateCode(baseDoc({ schemaVersion: 2 }))).toBe('SCHEMA_VERSION_MISMATCH')
-    expect(gateCode(baseDoc({ schemaVersion: 5 }))).toBe('SCHEMA_VERSION_MISMATCH')
+    expect(gateCode(baseDoc({ schemaVersion: NEVER_DEFINED_DOCUMENT_VERSION }))).toBe('SCHEMA_VERSION_MISMATCH')
     const VERSION_AS_STRING = String(4) // the string-digit spelling; named constant keeps it out of the fence's string-carrier class
     expect(gateCode(baseDoc({ schemaVersion: VERSION_AS_STRING }))).toBe('SCHEMA_VERSION_UNSUPPORTED')
     const missing = { ...baseDoc(), schemaVersion: undefined, toolBindings: [] } as Record<string, unknown>
