@@ -153,6 +153,11 @@ function argValue(name, dflt) {
   return v
 }
 const FLAG_KEEP = args.includes('--keep')
+// Boot-only Alpha.6 check: mount the SAME production row with a v5 routing
+// source + the opt-in config, prove the Host boots it (durable wake-intent
+// path present, live wake seam present), then stop after L0. The model
+// scenario below is the legacy Leader-approval arc, not the Officer arc.
+const ALPHA6_BOOT_ONLY = process.env['C1_ALPHA6_BOOT_ONLY'] === '1'
 
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
@@ -199,6 +204,12 @@ const TEAM_TOOL_CATALOG = [
   'team_request_control',
   'team_resolve_control',
   'team_list_pending_control',
+  // 0.2.0-rc.2 added these to the boot Leader's global surface; listing them
+  // keeps them OUT of the discovery-computed builtinToolDeny (denying an
+  // unknown name makes tools.restrict() fail the root start).
+  'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 // The Leader teamTools allow list (the closed subset this smoke drives):
 // create + delegate + collect + list members/templates/config for
@@ -479,7 +490,7 @@ function teamRowConfig() {
   return {
     rootSessionId: ROOT,
     bootPhase: 'create',
-    blueprintSource: BP_ANCHOR_YAML,
+    blueprintSource: ALPHA6_BOOT_ONLY ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
     blueprintDir: BLUEPRINT_DIR,
     rootPresetId: SMOKE_PRESET_ID,
     memberPresetId: SMOKE_PRESET_ID,
@@ -497,6 +508,12 @@ function teamRowConfig() {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
     glueUrl: GLUE_URL,
     seamUrl: SEAM_URL,
+    ...(ALPHA6_BOOT_ONLY
+      ? {
+          alpha6ReviewRouting: true,
+          alpha6WakeIntentPath: join(HOME, 'alpha6-wake-intents'),
+        }
+      : {}),
   }
 }
 
@@ -520,6 +537,39 @@ const BP_ANCHOR_YAML = [
   '  rules: []',
   'policyStates: []',
   'metadata: {}',
+  '---',
+  '',
+].join('\n')
+
+/** The v5 opt-in anchor: Officer admitted, routing declared, durable path configured. */
+const BP_A6_ANCHOR_YAML = [
+  '---',
+  'schemaVersion: 5',
+  `blueprintId: ${BP_ANCHOR_ID}`,
+  'revision: "1"',
+  'leader: { templateId: leader, persona: C1 Alpha.6 boot anchor. }',
+  'members:',
+  '  - templateId: officer',
+  '    persona: Review asks for this team.',
+  '  - templateId: worker',
+  '    persona: Worker of the C1 smoke boot team.',
+  'requirements: []',
+  'memberEnvelopes: []',
+  'policyStates: []',
+  'permissionMutationEnvelope: { rules: [] }',
+  'teamHardEnvelope: { rules: [] }',
+  'teamEnvelope:',
+  '  allow:',
+  '    - request-control',
+  '  deny: []',
+  'metadata: {}',
+  'reviewRouting:',
+  '  enabled: true',
+  '  officerTemplateId: officer',
+  '  ordinaryToolApprovals:',
+  '    default: officer',
+  '    leaderExceptions: []',
+  '  whenOfficerUnavailable: hold',
   '---',
   '',
 ].join('\n')
@@ -1253,6 +1303,28 @@ async function main() {
       if (discReq.reply === undefined || discReq.reply.kind !== 'text' || discReq.reply.content !== 'C1_DISC_DONE') {
         writeEvidence('l0-diagnostic-mock.json', mock.requests.slice(-4).map((r) => ({ seq: r.seq, reply: r.reply })))
         throw new Error(`L0 diagnostic abort: the DISC request (seq ${discReq.seq}) got reply ${JSON.stringify(discReq.reply).slice(0, 200)}`)
+      }
+      if (ALPHA6_BOOT_ONLY) {
+        const wakeDir = join(HOME, 'alpha6-wake-intents')
+        writeEvidence('a6-boot.json', {
+          schemaVersion: 5,
+          runtime: 'real Host 0.2.0-rc.2',
+          config: { alpha6ReviewRouting: true, alpha6WakeIntentPath: wakeDir },
+          toolCount: booted.health.body?.toolCount ?? null,
+          surface,
+          wakeSeamPresent: true,
+          note: 'The Host booted the opted-in v5 Team: the durable intent path was configured and the live wake seam existed, otherwise the plugin refuses the boot.',
+        })
+        check('A6-BOOT', 'the real Host boots the opted-in v5 Alpha.6 row (durable wake-intent path + live wake seam)', true,
+          `toolCount=${String(booted.health.body?.toolCount)}`)
+        log('── A6-BOOT complete: stopping before the legacy Leader-approval arc ──')
+        stopHost(host)
+        await mock.close()
+        if (!FLAG_KEEP) {
+          rmSync(HOME, { recursive: true, force: true })
+          rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
+        }
+        process.exit(0)
       }
       // The saved blueprints (the deny list needs the live surface).
       writeFileSync(join(BLUEPRINT_DIR, 'c1-x.yaml'), savedBlueprintYaml(BP_X_ID, `You are the leader of the C1 smoke X team. ${MK_X}`, `You are worker-x of the C1 smoke X team. ${MK_XMEM}`, denyList))

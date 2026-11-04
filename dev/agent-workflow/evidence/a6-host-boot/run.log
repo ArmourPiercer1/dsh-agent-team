@@ -1,0 +1,14 @@
+[2026-11-04T14:47:31.482Z] c1 real-host smoke — stamp 2026-11-04T14-47-31
+[2026-11-04T14:47:31.483Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-rootwiring
+[2026-11-04T14:47:31.483Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-04T14:47:31.483Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-rootwiring/dev/agent-workflow/evidence/a6-host-boot
+[2026-11-04T14:47:33.019Z] ports: host=3503 mock=3508
+[2026-11-04T14:47:38.030Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-04T14:47:38.031Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-04T14:47:38.038Z] mock model listening on 3508
+[2026-11-04T14:47:40.586Z] host booted at http://127.0.0.1:3503; row ready — toolCount=15
+[2026-11-04T14:47:40.586Z] ── L0: discovery ──
+[2026-11-04T14:47:41.008Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-04T14:47:41.008Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-04T14:47:41.009Z] PASS A6-BOOT: the real Host boots the opted-in v5 Alpha.6 row (durable wake-intent path + live wake seam) — toolCount=15
+[2026-11-04T14:47:41.009Z] ── A6-BOOT complete: stopping before the legacy Leader-approval arc ──
