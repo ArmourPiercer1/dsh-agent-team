@@ -226,6 +226,8 @@ import {
   createAlpha6RootControlNotifier,
 } from '../../alpha6/notifier.js'
 import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js'
+import { createAlpha6RootRouter } from '../../alpha6/root-router.js'
+import { createAlpha6CategoryLookup } from '../../alpha6/assigned-officer-facts.js'
 import {
   claimLatch,
   createLatchCoordinator,
@@ -2486,9 +2488,21 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' },
     )
   }
+  // An opted-in Team MUST have the durable intent store: without it a crash
+  // between "decided to deliver" and "Inbox accepted" is unrecoverable and the
+  // single-flight latch silently degrades to in-memory. A missing path is a
+  // configuration refusal, never a quiet memory-only mode.
+  if (alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath !== 'string') {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      'alpha6ReviewRouting is enabled but no durable wake-intent path is configured; ' +
+        'the Team refuses to boot without crash-safe single-flight state',
+      { rootSessionId: rootSid, reason: 'alpha6-wake-intent-path-missing' },
+    )
+  }
   const alpha6WakeIntents =
-    alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath === 'string'
-      ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
+    alpha6Wiring.mode === 'alpha6'
+      ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath as string)
       : undefined
   const alpha6WakeCoordinators = new Map<string, LatchCoordinator>()
   const alpha6WakeBySession = new Map<string, LatchCoordinator>()
@@ -2627,6 +2641,32 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }
         }
       : undefined
+  const alpha6Router =
+    alpha6Wiring.mode === 'alpha6'
+      ? createAlpha6RootRouter({
+          rootSessionId: rootSid,
+          routing: alpha6Wiring.routing,
+          leaderTemplateId: blueprint.leader.templateId,
+          control: {
+            readControlState: async (rootSessionId) => {
+              const current = controlRef.current
+              if (current === undefined) throw new Error('Alpha.6 router read before the ControlService was constructed')
+              return current.readControlState(rootSessionId)
+            },
+          },
+          members: { list: (rootSessionId) => repos.memberInstances.list(rootSessionId) },
+          fixedLeaderOrHumanCategory: ({ kind }) =>
+            createAlpha6CategoryLookup()({
+              rootSessionId: rootSid,
+              leg: { kind } as never,
+              routing: alpha6Wiring.routing,
+            }),
+        })
+      : undefined
+  const alpha6LeaderNotify =
+    live.deliverRootControlNotification === undefined
+      ? undefined
+      : createLeaderControlNotifier({ deliver: live.deliverRootControlNotification })
   const alpha6RequestNotification =
     alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
       ? createAlpha6RootControlNotifier({
@@ -2645,6 +2685,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             return (await current.readControlState(rootSid)).requests
           },
           reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+          ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+          ...(alpha6LeaderNotify === undefined
+            ? {}
+            : { notifyLeader: (request) => alpha6LeaderNotify.notifyLeaderRequest(request) }),
           ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
       : undefined

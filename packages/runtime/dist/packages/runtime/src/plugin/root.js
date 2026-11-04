@@ -107,6 +107,8 @@ import { createControlService, createLeaderControlNotifier } from '../../control
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js';
 import { collectAlpha6DelegableLegs, createAlpha6RootControlNotifier, } from '../../alpha6/notifier.js';
 import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js';
+import { createAlpha6RootRouter } from '../../alpha6/root-router.js';
+import { createAlpha6CategoryLookup } from '../../alpha6/assigned-officer-facts.js';
 import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, recoverLatch, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -1713,7 +1715,15 @@ export function createTeamProductionRoot(params) {
         throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but this Host exposes no live wake seam; ' +
             'the Team refuses to boot rather than silently notify the Leader', { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' });
     }
-    const alpha6WakeIntents = alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath === 'string'
+    // An opted-in Team MUST have the durable intent store: without it a crash
+    // between "decided to deliver" and "Inbox accepted" is unrecoverable and the
+    // single-flight latch silently degrades to in-memory. A missing path is a
+    // configuration refusal, never a quiet memory-only mode.
+    if (alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath !== 'string') {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but no durable wake-intent path is configured; ' +
+            'the Team refuses to boot without crash-safe single-flight state', { rootSessionId: rootSid, reason: 'alpha6-wake-intent-path-missing' });
+    }
+    const alpha6WakeIntents = alpha6Wiring.mode === 'alpha6'
         ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
         : undefined;
     const alpha6WakeCoordinators = new Map();
@@ -1840,6 +1850,30 @@ export function createTeamProductionRoot(params) {
             }
         }
         : undefined;
+    const alpha6Router = alpha6Wiring.mode === 'alpha6'
+        ? createAlpha6RootRouter({
+            rootSessionId: rootSid,
+            routing: alpha6Wiring.routing,
+            leaderTemplateId: blueprint.leader.templateId,
+            control: {
+                readControlState: async (rootSessionId) => {
+                    const current = controlRef.current;
+                    if (current === undefined)
+                        throw new Error('Alpha.6 router read before the ControlService was constructed');
+                    return current.readControlState(rootSessionId);
+                },
+            },
+            members: { list: (rootSessionId) => repos.memberInstances.list(rootSessionId) },
+            fixedLeaderOrHumanCategory: ({ kind }) => createAlpha6CategoryLookup()({
+                rootSessionId: rootSid,
+                leg: { kind },
+                routing: alpha6Wiring.routing,
+            }),
+        })
+        : undefined;
+    const alpha6LeaderNotify = live.deliverRootControlNotification === undefined
+        ? undefined
+        : createLeaderControlNotifier({ deliver: live.deliverRootControlNotification });
     const alpha6RequestNotification = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
         ? createAlpha6RootControlNotifier({
             rootSessionId: rootSid,
@@ -1857,6 +1891,10 @@ export function createTeamProductionRoot(params) {
                 return (await current.readControlState(rootSid)).requests;
             },
             reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+            ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+            ...(alpha6LeaderNotify === undefined
+                ? {}
+                : { notifyLeader: (request) => alpha6LeaderNotify.notifyLeaderRequest(request) }),
             ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
         : undefined;

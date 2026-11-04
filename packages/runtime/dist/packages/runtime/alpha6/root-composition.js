@@ -65,7 +65,7 @@ export function createAlpha6RootComposition(input) {
         authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
         fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
     });
-    return { mode: 'alpha6', ports, officerInstanceId: officer.instanceId };
+    return { mode: 'alpha6', ports, officerInstanceId: officer.instanceId, routing: parsed.routing };
 }
 export function createAlpha6RootWiring(enabled, live) {
     if (enabled !== true)
@@ -115,6 +115,6 @@ export function createAlpha6LiveRootComposition(input) {
         authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
         fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
     });
-    return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId };
+    return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing };
 }
 //# sourceMappingURL=root-composition.js.map

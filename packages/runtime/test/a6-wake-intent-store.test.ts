@@ -140,3 +140,22 @@ describe('A6 sharded wake-intent directory', () => {
     await expect(directory.list()).resolves.toEqual([])
   })
 })
+
+describe('A6 file wake-intent store — concurrent writers', () => {
+  it('never shares a temp file: 24 concurrent persists settle with one intact row', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'a6-wake-intent-race-'))
+    try {
+      const store = createFileWakeIntentStore({ filePath: join(dir, 'intent.json') })
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) =>
+          store.persistQueued({ key: KEY, wakeId: `wake-${String(i)}`, workFingerprint: `fp-${String(i)}` }),
+        ),
+      )
+      const row = await store.read()
+      expect(row).not.toBeNull()
+      expect(row!.wakeId).toMatch(/^wake-[0-9]+$/)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+})

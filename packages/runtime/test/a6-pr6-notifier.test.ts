@@ -271,3 +271,21 @@ describe('A6 root notifier — exclusion laws', () => {
     expect(deliver.mock.calls[0]![0].wakeId).toBe('review:req-a6-seed')
   })
 })
+
+describe('A6 root notifier — the shared router is the recipient authority', () => {
+  it('notifies the LEADER (never the Officer) when the router routes to the Leader', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => ({ kind: 'recipient', target: { kind: 'instance', instanceId: 'inst-leader', templateId: 'leader', routeRole: 'leader' }, reason: 'fixed Leader category' }),
+      notifyLeader,
+    })
+    await notifier.notifyLeaderRequest({ ...request, requestId: 'req-route-leader', approvalCaseId: 'case-route-leader', legOrdinal: 1 } as ControlRequestRecord)
+    expect(notifyLeader).toHaveBeenCalledTimes(1)
+    expect(deliver).not.toHaveBeenCalled()
+  })
+})
