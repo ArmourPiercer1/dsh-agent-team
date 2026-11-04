@@ -30,3 +30,4 @@ OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-s
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L129=v5
+OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L131=v5

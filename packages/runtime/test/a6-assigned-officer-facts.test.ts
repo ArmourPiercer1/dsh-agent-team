@@ -592,6 +592,7 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
    * its own service.
    */
   function composedService(world: P6T1World): { service: ControlService; ports: Alpha6ControlPorts } {
+    // eslint-disable-next-line prefer-const -- the ports closure needs the binding before the factory call
     let service!: ControlService
     const ports = createAlpha6ControlPorts({
       rootSessionId: P6T4_ROOT,
