@@ -107,6 +107,7 @@ import { createControlService, createLeaderControlNotifier } from '../../control
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js';
 import { collectAlpha6DelegableLegs, createAlpha6RootControlNotifier, } from '../../alpha6/notifier.js';
 import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js';
+import { pruneAbsentReviewWakeRow } from '../../alpha6/wake-intent.js';
 import { createAlpha6RootRouter } from '../../alpha6/root-router.js';
 import { createAlpha6CategoryLookup } from '../../alpha6/assigned-officer-facts.js';
 import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, recoverLatch, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
@@ -2044,12 +2045,11 @@ export function createTeamProductionRoot(params) {
                         const inbox = live.reviewWakeInbox?.(targetSessionId);
                         if (inbox === undefined)
                             return;
-                        try {
-                            if ((await inbox.has(intent.wakeId)) === false) {
-                                await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
-                            }
-                        }
-                        catch { /* unreadable Inbox: keep the row */ }
+                        await pruneAbsentReviewWakeRow({
+                            store: alpha6WakeIntents.forKey(intent.key),
+                            wakeId: intent.wakeId,
+                            inbox,
+                        });
                     });
                 }
             }

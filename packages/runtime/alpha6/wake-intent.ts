@@ -37,6 +37,28 @@ import type {
   ReviewWakeTransition,
 } from '../review-wake/index.js'
 
+/**
+ * Drop a stale row after a plan found no fresh work for it. The caller MUST
+ * hold the same per-latch lock that serializes dispatch, and must already have
+ * checked that no coordinator/session registration exists. The Inbox is the
+ * authority: only a positive `false` clears; an unreadable probe or a live
+ * message keeps the row. `store.clear(wakeId)` is itself row-conditional, so a
+ * concurrent replacement with a different wakeId is never deleted.
+ */
+export async function pruneAbsentReviewWakeRow(input: {
+  readonly store: ReviewWakeIntentStore
+  readonly wakeId: string
+  readonly inbox: Pick<ReviewWakeInboxPort, 'has'>
+}): Promise<'cleared' | 'kept' | 'unreadable'> {
+  try {
+    if ((await input.inbox.has(input.wakeId)) !== false) return 'kept'
+  } catch {
+    return 'unreadable'
+  }
+  await input.store.clear(input.wakeId)
+  return 'cleared'
+}
+
 /** What the reducer decided to deliver, before any Host call. */
 export interface ReviewWakeQueuedIntent {
   readonly key: ReviewWakeKey
