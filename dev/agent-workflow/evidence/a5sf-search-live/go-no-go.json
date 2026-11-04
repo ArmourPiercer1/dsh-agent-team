@@ -1,14 +1,14 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live2-20261105",
-  "evidenceHeadAtDryRun": "93f3248d6a1200f62fcd9afea9b07f8245f927a0",
+  "evidenceHeadAtDryRun": "e17f0cec87dd2f2ebae6b1543938e5953821ac00",
   "productTreeDigest": "cfb61761855d856c83476600a767743bd85f41353c44e21e468457b2ede22dc9",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-04 grep (BL-16)",
     "boots": 6,
-    "consumed": 4,
-    "remaining": 2
+    "consumed": 6,
+    "remaining": 0
   },
   "ruling": {
     "authorisedStarts": 6,
@@ -29,28 +29,28 @@
       "preset-a5sf-search-base"
     ],
     "identityHolds": true,
-    "patchSha256": "b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"
+    "patchSha256": "6d64408836f2ab9300b442d162d7a13c32cc94555a08413a86ccfaeab23ed6a5"
   },
   "ledger": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-    "rows": 8,
-    "intents": 4,
-    "bootRows": 4,
+    "rows": 12,
+    "intents": 6,
+    "bootRows": 6,
     "aborts": 0,
     "unparseable": 0,
     "orphanBootRuns": [],
     "orphanAbortRuns": [],
     "plannedMismatch": [],
     "bootsInPool": 6,
-    "remaining": 2
+    "remaining": 0
   },
-  "go": true,
+  "go": false,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 50,
+        "checks": 53,
         "failed": 0
       }
     },
@@ -100,7 +100,7 @@
       "ok": true,
       "detail": {
         "handoffIndex": 8758,
-        "bootIndex": 39936,
+        "bootIndex": 40556,
         "call": "handOverRows(world, rows)"
       }
     },
@@ -108,10 +108,10 @@
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
       "ok": true,
       "detail": {
-        "planHead": "93f3248d6a1200f62fcd9afea9b07f8245f927a0",
-        "head": "93f3248d6a1200f62fcd9afea9b07f8245f927a0",
-        "patchBytes": 6436,
-        "patchSha256": "b5921d3c5c2f97b70cfe53e5bb8d906fa10232c9aea7ae554969da077a12a2e3"
+        "planHead": "e17f0cec87dd2f2ebae6b1543938e5953821ac00",
+        "head": "e17f0cec87dd2f2ebae6b1543938e5953821ac00",
+        "patchBytes": 6514,
+        "patchSha256": "6d64408836f2ab9300b442d162d7a13c32cc94555a08413a86ccfaeab23ed6a5"
       }
     },
     {
@@ -137,16 +137,16 @@
       "ok": true,
       "detail": {
         "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-        "rows": 8,
-        "intents": 4,
-        "bootRows": 4,
+        "rows": 12,
+        "intents": 6,
+        "bootRows": 6,
         "aborts": 0,
         "unparseable": 0,
         "orphanBootRuns": [],
         "orphanAbortRuns": [],
         "plannedMismatch": [],
         "bootsInPool": 6,
-        "remaining": 2
+        "remaining": 0
       }
     },
     {
@@ -160,14 +160,14 @@
       "id": "ledger: each intent's plannedStarts equals its boot rows, net of declared aborts",
       "ok": true,
       "detail": {
-        "intents": 4,
+        "intents": 6,
         "mismatch": []
       }
     },
     {
       "id": "budget: at least ONE P2-04 start is still available",
-      "ok": true,
-      "detail": "boots=6 spent=4 remaining=2"
+      "ok": false,
+      "detail": "boots=6 spent=6 remaining=0"
     },
     {
       "id": "boot pool allocates the three P2-04 starts (the ruling)",
@@ -206,8 +206,8 @@
     },
     {
       "id": "budget: this start is authorised by the rulings and is NOT a third",
-      "ok": true,
-      "detail": "authorised=6 spent=4 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+      "ok": false,
+      "detail": "authorised=6 spent=6 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
     },
     {
       "id": "pinned host tree is at the pinned commit and clean",

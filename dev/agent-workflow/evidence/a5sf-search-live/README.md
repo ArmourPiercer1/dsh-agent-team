@@ -1,16 +1,21 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status: all 3 pooled `P2-04` starts are SPENT, and 0 of 6 rows are judged. No
-grade is promoted: `M-06`/`M-07` keep `ENFORCE-PARTIAL`, `V@B=no`, and their
-`tested` value. The third start was destroyed by the lane's own launch method
-(`nohup … &` inside a foreground call, killed at the first tool turn) — not by the
-product, and not by driver logic. §3b records it as such.**
+**Status (2026-11-05 round): the pool is FULLY SPENT — 6 of 6 `P2-04` starts, 0 of
+6 rows *judged*, and the Member half is now REACHED: the realm installs, the confined
+face serves `grep` AND `glob`, and seven guard facts were recorded live (3 allow,
+4 deny `IO_READ_DENIED`) in 400 ms. The run then aborted in the cancellation window
+because the FIFO operand sat outside the effective read lane and was refused at
+admission — a fixture defect, fixed here. No grade is promoted: `M-06`/`M-07` keep
+`ENFORCE-PARTIAL`, `V@B=no`.**
 
 | attempt | when | port | got to | died at |
 |---|---|---|---|---|
 | 1 | 15:36:59–15:39:18Z | 3183 | Host booted, authenticated, health never answered | **composition** — the driver emitted the four World rows but never gave them to the World |
 | 2 | 15:56:53–16:00:00Z | 3182 | composition verified, health 200 in 3 s, surface 24 tools, negative control ran | **team-create** — the product's permission coverage gate refused `grep`/`glob` on the leader |
 | 3 | 17:04:45–17:05:05Z | 3183 | composition verified, health 200 in 0.3 s, **the control's `rg` launched** | **killed** — the driver's own process group, 230 ms after the discovery turn |
+| 4 | 18:51:35–18:55:58Z | 3184 | probe artifact + control + `team.create` ok | **member-install** — the search module was mounted with an empty config |
+| 5 | 18:58:10–19:05:32Z | 3184 | control **PROVEN** (leak), `team.create` ok, delegate answer captured | **member-install** — `SERVICE_MOUNT_FAILED … $.sampleOverCapGlobResults missing` |
+| 6 | 19:07:58–19:17:21Z | 3184 | **member realm installed**, 3 confined spawns, 7 guard facts | **cancellation-window** — the FIFO operand was outside the read lane, refused at admission |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
 - branch: `task/a5sf-search-live-20261104`; draft PR #588
@@ -125,6 +130,83 @@ fact realm, row 3's binding restriction, cancellation. No abort row is claimed: 
 boot really happened, so the intent's `1 = 1 − 0` stands and the start is honestly
 counted as spent.
 
+## 3c. The 2026-11-05 round: three fresh starts, the Member reached, the window missed
+
+The owner granted three more starts on a fresh branch off master. The round is the
+first one in which the **Member** half of the vertical actually ran.
+
+| start | what it added | why it stopped |
+|---|---|---|
+| 4 | the leader grep probe (18:53Z) and a `team.create` that passed the coverage gate | `MEMBER_INSTALL_NO_WORKER`; the delegate answer was not captured yet |
+| 5 | the **negative control PROVEN** and the delegate answer captured | `team_delegate` → `TEAM_RUNTIME_DURABLE_WRITE_FAILED`: `SERVICE_MOUNT_FAILED: native tool module re-mount failed: invalid config: $.sampleOverCapGlobResults missing required value` |
+| 6 | member realm installed, `member turn dispatched=true`, 3 `confined-spawn` + 3 `confined-exit`, 7 guard facts | `CANCELLATION_WINDOW_NO_CONFINED_SPAWN` after 240 s |
+
+### The leader grep artifact (start 4, `probe-leader-grep.json`)
+
+```
+success=true   baseSpawn=1   base-spawn-failed=0   factsBeforeRealm=0
+toolResult: { isError:false,
+  text: "Found 2 matches …/workspace/lane/inside/glob/needle.txt
+         Line 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T18-51-35Z" }
+```
+
+This is the artifact the previous round never produced, and it settles F1 for good:
+the same composition, the same row, one base spawn, a real `rg` match, no failure row.
+
+### The negative control (start 5)
+
+```
+verdict=PROVEN  reason=UNCONFINED_CONTROL_LEAKS
+leakedTokens=[A5SF_SEARCH_OUTSIDE_SECRET_…, A5SF_SEARCH_OUTSIDE_SECOND_…]
+baseSpawns=11  confinedSpawns=0  guardFactsBeforeRealm=0
+```
+
+The anchor leader's *unconfined* search returns both out-of-lane secrets. That is the
+baseline that makes row 2 discriminating; attempt 2's `REFUTED` was the F1 instrument.
+
+### The Member, live (start 6)
+
+Seven facts, in order, all from `realm: "member"` / `memberIdentity:
+inst-14xcgx11i3lu` / `toolBindingIdentity: null`:
+
+| # | decision | decidedBy | locator (relative to the World home) |
+|---|---|---|---|
+| 1 | **allow** | `ALLOW` | `workspace/lane/inside` |
+| 2 | **deny** | `IO_READ_DENIED` | `ceiling-outside` |
+| 3 | **deny** | `IO_READ_DENIED` | `workspace/lane/outside-restriction.txt` |
+| 4 | allow | `ALLOW` | `workspace/lane/inside/invalid` |
+| 5 | allow | `ALLOW` | `workspace/lane/inside/glob` |
+| 6 | deny | `IO_READ_DENIED` | `ceiling-outside-glob` |
+| 7 | deny | `IO_READ_DENIED` | `workspace/lane/blocking.fifo` |
+
+The confined face served three spawns and three exits (in-lane `grep`, invalid-pattern
+`grep`, `glob`), and the two out-of-lane operands were refused **before** any process:
+`confined-spawn` stayed at 3, so the denies cost no process and no bytes. This is the
+first live evidence of rows 1, 2, 3 and 5's *guard* behaviour in the Member realm.
+
+**Why no row is judged:** the seven facts happened inside 400 ms, so the driver's
+cancellation stage — which waits for the FIFO grep to be *admitted* — found fact 7 was
+a denial instead. The FIFO was at `lane/blocking.fifo`, i.e. inside the ceiling but
+**outside** the tool restriction (`lane/inside`), so the guard correctly refused it.
+The window needs an ADMITTED search that then blocks. The fixture now places the FIFO
+inside the effective lane (`lane/inside/blocking.fifo`), which is the one-line change
+this round hands over.
+
+### The three instrument defects this round found and fixed
+
+1. **The probe poisoned the control.** The control counted greps by name; the probe
+   (now first) had already left one in the transcript, so the control answered without
+   issuing its grep and was recorded `NOT_REACHED`. Both now key on their own operand
+   via `tool_result.tool_use_id`.
+2. **Tool-use counting does not work in this harness.** The follow-up request does not
+   echo the assistant `tool_use` block, so every counter stayed 0, every turn re-issued
+   its call and burned its full 120 s settle timeout (two `rg` spawns 121 s apart). The
+   mock now sequences on `resultIdsOf(req)` — the `tool_result` ids.
+3. **The module was mounted with an empty config.** `tool-fs-search`'s `Config`
+   requires `sampleOverCapGlobResults`; a bare string entry mounts with `{}` and the
+   realm install is refused. The row now passes `{ sampleOverCapGlobResults: false }`
+   (deterministic head for an over-cap page).
+
 ## 4. The two live findings
 
 ### F1 — WITHDRAWN: it was the lane's own instrumentation, not a product finding
@@ -206,12 +288,11 @@ never an asserted pass.
 
 ## 6. The budget, honestly
 
-`lane-ruling.json` holds three named rulings (the original task; the coordinator's
-retry after the handoff defect; the coordinator's last-start ruling after F1 was
-diagnosed). `run-ledger.jsonl` holds 3 intents and 3 boot rows; the invariant
-`bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` three times). Pool
-item `P2-04 grep (BL-16)`: **3 allocated, 3 spent, 0 remaining**. `go-no-go.mjs`
-now prints:
+`lane-ruling.json` holds four named rulings: the original task, the retry, the
+"last start" ruling, and the owner's **3-start re-grant** of 2026-11-05 (pool 3 spent +
+3 fresh = 6). `run-ledger.jsonl` holds 6 intents and 6 boot rows; the invariant
+`bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` six times). Pool item
+`P2-04 grep (BL-16)`: **6 allocated, 6 spent, 0 remaining**. `go-no-go.mjs` now prints:
 
 ```
 PASS budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason):
@@ -224,12 +305,13 @@ REFUSE the same check after the third boot  →  NO-GO  (spent=3, remaining=0)
 
 ### The cost line the retry ruling asked for
 
-**This vertical has spent 3 of 3 starts and judged 0 of 6 rows.** The first was lost
-to a defect in the handoff the gate could not see, the second proved the composition
-and then hit a real composition gap (F2) plus a defect in the lane's own instrument
-(F1, withdrawn), and the third was destroyed by how the driver was launched. Three
-starts, zero judged rows, and every loss is attributable — which is the only thing
-that makes the spend defensible.
+**This vertical has spent 6 of 6 starts and judged 0 of 6 rows.** The first three: a handoff the gate could not see, a composition gap (F2) plus the
+lane's own instrument (F1, withdrawn), and a launch method that killed its own run.
+The last three bought the leader probe, the PROVEN control, the member realm install
+and seven live guard facts — and then stopped on a FIFO that was one directory away
+from being admissible. Six starts, zero judged rows, and every loss is attributable —
+which is the only thing that makes the spend defensible. The trend is the point: each
+start moved the failure forward by exactly one handoff.
 
 The composed-profile gap was invisible to a green `--plan`. The reusable lesson for every later live lane (P3-00
 inventory will hit the same handoff): *a host-free gate must run the handoff, not
@@ -252,7 +334,7 @@ records what the world looked like. Two starts bought two named handoffs, not tw
 ## 7. Gates, verbatim (current)
 
 ```
-DRY RUN GREEN — 49 checks, head=165059eea4ab70eed728a8c48957692932f10aea digest=614b28b1…
+DRY RUN GREEN — 53 checks, head=e17f0cec… digest=cfb61761…
 NEGATIVE CONTROLS GREEN — 9 controls, every guarded check went RED on the broken property and the bytes were restored
 ```
 
@@ -293,9 +375,12 @@ is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 
 ## 9. What is NOT proven (complete list)
 
-1. **All six live rows** — unmeasured.
-2. **The negative control** — ran and REFUTED because of F1; it is vacuous until the
-   base spawn can launch `rg`.
+1. **All six live rows** — unmeasured, though the Member half is now *reached*: the
+   guard facts, the confined spawns and the denies for rows 1/2/3/5 were all observed
+   live on 2026-11-04T19:13Z (§3c); what is missing is the *judging*, which the
+   cancellation fixture aborted.
+2. ~~The negative control~~ — **PROVEN** on 2026-11-05 (§3c): the unconfined search
+   leaks both out-of-lane tokens.
 3. ~~F1's exact cause~~ — **resolved and withdrawn** (`165059eea`): the lane's own
    wrapper called `spawn(undefined)`.
 4. **The leader-deny fix (F2)** — verified host-free against the real gate, not yet
@@ -457,6 +542,19 @@ each one is backed by a specific loss here.
    outlives the call — and it must copy its counter and fact sink **out of the World
    home before teardown**, because the home is deleted and that is what swallowed
    F1's cause twice.
+
+5. **The mock model must sequence on TOOL RESULTS, not on echoed tool_use blocks.**
+   This harness does not echo the assistant `tool_use`; a counter over it never
+   advances, so every turn re-issues its call and burns the whole settle timeout.
+   `resultIdsOf(req)` over `tool_result.tool_use_id` is the reliable key.
+6. **A native module's `Config` is a contract.** `tool-fs-search` requires
+   `sampleOverCapGlobResults` with no default; mounting it as a bare string entry
+   refuses the realm install with `SERVICE_MOUNT_FAILED`. Read the module's `Config`
+   schema before mounting it, and give the deployment choice explicitly.
+7. **A cancellation fixture must be ADMITTED before it can block.** A FIFO inside the
+   ceiling but outside the tool restriction is refused at admission (`IO_READ_DENIED`)
+   and the window never opens; the blocking operand has to sit inside the effective
+   read lane.
 
 Two smaller ones, already enforced: a fail-closed verdict (`DRIVER_ABORTED_AT_*`) is
 `FAIL`, never `NOT_REACHED`, once a Host was reached; and an instrument records and

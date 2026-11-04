@@ -418,7 +418,13 @@ function rowPathsOf({ home, workspaceDir }) {
      *  out-of-lane operand. */
     globDir: join(inLane, 'glob'),
     restrictedFile: join(workspace, 'lane', 'outside-restriction.txt'),
-    fifo: join(workspace, 'lane', 'blocking.fifo'),
+    // The FIFO must sit INSIDE the effective read lane (`lane/inside`), because the
+    // tool restriction narrows reads to that subtree. At `lane/blocking.fifo` the
+    // guard refused it (fact: deny IO_READ_DENIED), no confined spawn ever happened,
+    // the cancellation window never opened and the run aborted with
+    // CANCELLATION_WINDOW_NO_CONFINED_SPAWN after 240 s (2026-11-04T19:17Z). The
+    // window needs an ADMITTED search that then blocks, so the operand must be legal.
+    fifo: join(inLane, 'blocking.fifo'),
     outsideDir: join(home, 'ceiling-outside'),
     outsideFile: join(home, 'ceiling-outside', 'secret.txt'),
     outsideGlobDir: join(home, 'ceiling-outside-glob'),

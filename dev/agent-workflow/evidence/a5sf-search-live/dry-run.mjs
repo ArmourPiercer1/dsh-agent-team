@@ -234,6 +234,9 @@ check('driver: the mock sequences on TOOL RESULTS, not assistant tool_use echoes
   /function resultIdsOf/u.test(driverSource)
   && !/const greps = countAssistantToolUses\(req, 'grep'\)/u.test(driverSource),
   'this harness does not echo the assistant tool_use block, so a tool_use counter never advances: every turn re-issued its call and burned 120 s')
+check('driver: the cancellation FIFO sits INSIDE the effective read lane',
+  /fifo: join\(inLane, 'blocking\.fifo'\)/u.test(driverSource),
+  'a FIFO at lane/blocking.fifo is refused by the restriction (deny IO_READ_DENIED), so no confined spawn ever opens the window: the operand must be admitted')
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)
