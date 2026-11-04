@@ -427,6 +427,7 @@ async function makeWorld(label, { bindingIdentities = [READ_BINDING], modules })
     realm,
     remountRealm: mountRealm,
     agentCtx: topology.agentCtx,
+    standingCtx: topology.standing.ctx,
     agentKey: topology.agentKey,
     config: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath, a5sfNativeToolModules: modules }),
   }
@@ -1266,11 +1267,34 @@ test('E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener re
     assert.equal(after.isError, true, `the folded name must be REFUSED at admission: ${after.text}`)
     assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
     assert.equal(after.text.includes('managed-event-body'), false, 'the managed body must not serve after invalidation')
-    // The preset plane's own (unmanaged) name is outside the declaration and
-    // outside this attach's managed set: it is NOT denied, and that is expected.
+    // ── SUPERSEDED BOUNDARY — DISCLOSED, NOT SILENTLY FLIPPED ────────────────
+    // The merged arm asserted (verbatim, before 2026-11-03):
+    //
+    //   // The preset plane's own (unmanaged) name is outside the declaration and
+    //   // outside this attach's managed set: it is NOT denied, and that is expected.
+    //   const plane = await dispatch(root, agentKey, 'x_event_plane_probe', {})
+    //   assert.equal(plane.isError, false, `an unmanaged name is not the deny's business: ${plane.text}`)
+    //   assert.equal(plane.text, 'preset-plane-body')
+    //
+    // The E8 ruling (2026-11-03) deliberately SUPERSEDES that boundary: an
+    // invalidated Member's realm refuses EVERY new invocation at the same
+    // `tools/pre-execute` admission point, because the boundary has failed and
+    // nothing further may execute. The alternative — freeze everything except
+    // preset-plane names — is undecidable at admission (the plane that registered
+    // a name is not evidence available there) and would recreate the very
+    // intra-emission window E8 measures. So this arm now pins BOTH halves of the
+    // new contract: the unmanaged name is DENIED with the blanket freeze code,
+    // AND a covered managed name still yields its SPECIFIC name-keyed code.
     const plane = await dispatch(root, agentKey, 'x_event_plane_probe', {})
-    assert.equal(plane.isError, false, `an unmanaged name is not the deny's business: ${plane.text}`)
-    assert.equal(plane.text, 'preset-plane-body')
+    assert.equal(plane.isError, true, `an unmanaged name is ALSO refused while the realm is frozen: ${plane.text}`)
+    assert.equal(plane.info?.code, 'A5SF_MEMBER_REALM_INVALIDATED', `the blanket refusal is typed: ${JSON.stringify(plane.info)}`)
+    assert.equal(plane.text.includes('preset-plane-body'), false, 'the unmanaged preset body must not serve either')
+    // Precedence, re-asserted AFTER the blanket case: a covered name is not
+    // swallowed by the freeze — it keeps the specific shadow code.
+    const coveredAgain = await dispatch(root, agentKey, 'x_event_probe', {})
+    assert.equal(coveredAgain.isError, true, 'the covered name stays refused')
+    assert.equal(coveredAgain.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `a covered name keeps its specific code: ${JSON.stringify(coveredAgain.info)}`)
+    assert.equal(coveredAgain.text.includes('managed-event-body'), false, 'the covered body must not serve either')
   } finally {
     await realm.dispose()
   }
@@ -1451,4 +1475,266 @@ test('C3-f `expectedTools` VALIDATION: the top-level map refuses the same faults
     () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: ['file:///x.mjs'], a5sfExpectedTools: { 'file:///x.mjs': 'read' } }),
     (error) => error instanceof TypeError && /must be an array/.test(error.message),
   )
+})
+
+// ===========================================================================
+// E8 (freeze 2026-11-03) — THE INTRA-EMISSION DISPATCH WINDOW.
+//
+// Measured on the base tree (`evidence/a5sf-event-driven` probe E8): the preset
+// plane's listener registers the managed name INSIDE the synchronous
+// `provider-added` emission, the surface gate sets the invalidation record and
+// detaches verification, the teardown is deferred one microtask — and a dispatch
+// issued by ANOTHER listener in the SAME emission is ADMITTED, because the
+// managed registration has not landed yet and the deny only covered the names
+// `expectedDefinitions` already knew. The body that then ran was the PRESET
+// definition: exactly the definition the record exists to refuse.
+//
+// THE FIX (user ruling, 2026-11-03): while a Member's managed realm is
+// invalidated, refuse EVERY tool invocation at the existing `tools/pre-execute`
+// admission stage — not only the covered names. The record is the realm's own
+// state; the admission point already exists. Nothing further executes after the
+// boundary has failed; the deny lifts only on a full verified re-assembly.
+// ===========================================================================
+
+/** A preset-plane listener that registers `toolName` from `eventName`. */
+function writePresetEventPlane(label, toolName, eventName, body) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-preset-event-${label}-`)))
+  const file = join(dir, 'preset-event.mjs')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-preset-event-${label}`)}
+export const inject = ['tools']
+export function apply(ctx) {
+  ctx.on(${JSON.stringify(eventName)}, () => {
+    ctx.tools.register({
+      name: ${JSON.stringify(toolName)},
+      description: ${JSON.stringify(`preset event plane ${label} ${toolName}`)},
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+      async execute() { return ${JSON.stringify(body)} },
+    })
+  })
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
+test('E8 (freeze 2026-11-03) a dispatch issued inside the boundary emission is REFUSED by the frozen realm; neither body serves', async () => {
+  const EVENT = 'assembly/e8-provider-added'
+  const MANAGED = 'x_e8_managed'
+  const window = {}
+  const managedModule = writeEventModule('e8', MANAGED, EVENT)
+  const presetPlane = writePresetEventPlane('e8', MANAGED, EVENT, 'preset-e8-body')
+  const world = await makeWorld('e8-freeze', { bindingIdentities: [], modules: [managedModule] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    // Product order: the preset plane exists BEFORE the Member is assembled, so
+    // its listener runs FIRST in the boundary emission.
+    await world.standingCtx.plugin(await import(presetPlane))
+    // The "another listener" of the measured shape: mounted between the preset
+    // plane and the managed attach, it dispatches INSIDE the same emission.
+    await agentCtx.plugin({
+      name: 'fixture-e8-window-spy',
+      inject: ['tools'],
+      apply(ctx) {
+        ctx.on(EVENT, () => {
+          if (window.dispatch !== undefined) return
+          window.issued = true
+          window.dispatch = dispatch(root, agentKey, MANAGED, {})
+        })
+      },
+    })
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.equal(realm.nativeInvalidation ?? null, null, 'the attach itself is healthy before the event')
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], [], 'the event-driven module registered nothing during apply')
+    // BOUNDED: the freeze is set ONLY by an invalidation record — a healthy
+    // realm admits the very same unmanaged name that will be denied below.
+    assert.equal(realm.nativeInvalidation ?? null, null, 'no record, no freeze')
+    const healthy = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(healthy.isError, false, `a healthy realm admits normally: ${healthy.text}`)
+    assert.equal(healthy.text, 'preset')
+
+    // THE MEASURED SEQUENCE. Pre-fix: the emission completed, the window
+    // dispatch was ADMITTED and served `preset-e8-body` (the definition the
+    // record exists to refuse).
+    assert.doesNotThrow(() => root.emit(EVENT), 'the boundary emission must complete')
+    assert.equal(window.issued, true, 'the window dispatch was actually issued inside the emission')
+    const inWindow = await window.dispatch
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the preset-plane registration inside the emission invalidates the realm')
+    assert.ok([...record.surfaceAdded].includes(MANAGED), `the record names the name that appeared: ${JSON.stringify(record)}`)
+
+    // THE FREEZE: the in-window call is REFUSED with the realm-freeze code, and
+    // the typed name-keyed code is NOT what answered (the name was not yet a
+    // covered name when the dispatch passed admission).
+    assert.equal(inWindow.isError, true, `a dispatch inside the invalidated boundary must be REFUSED: ${inWindow.text}`)
+    assert.equal(inWindow.info?.code, 'A5SF_MEMBER_REALM_INVALIDATED', `the window refusal must carry the freeze code: ${JSON.stringify(inWindow.info)}`)
+    assert.equal(inWindow.text.includes('preset-e8-body'), false, 'the preset definition must never run')
+    assert.equal(inWindow.text.includes('managed-event-body'), false, 'the managed body must not serve either')
+    assert.match(inWindow.text, /re-assembl/, 'the refusal states what un-freezes the Member')
+
+    // NAME-KEYED PRECEDENCE: once the managed registration has landed and been
+    // folded, the covered name yields the SPECIFIC shadow code (the merged E3/
+    // E3-fold/P0 contract), not the generic freeze.
+    const covered = await dispatch(root, agentKey, MANAGED, {})
+    assert.equal(covered.isError, true, 'the covered name is refused after the emission too')
+    assert.equal(covered.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `a KNOWN covered name keeps its specific code: ${JSON.stringify(covered.info)}`)
+    assert.match(covered.text, /x_e8_managed/, 'the name-keyed refusal names the tool')
+
+    // REGISTRATION STILL COMPLETES (registration semantics unchanged): the
+    // managed listener ran during the invalidation, its registration landed on
+    // the still-live router, and admission FOLDED it into the managed set —
+    // that fold is exactly why the dispatch above answered with the SPECIFIC
+    // name-keyed code instead of the freeze code. (The fiber's receipt is an
+    // attach-time snapshot, so it correctly still shows nothing.)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], [], 'the routing receipt is the attach-time snapshot; the name landed afterwards')
+    assert.notEqual(definitionOf(root, agentKey, MANAGED), undefined, 'a definition of the managed name is visible after the teardown')
+
+    // EVERY call is refused while frozen: a name this attach never managed
+    // (the preset row's `x_assembly_probe`, zero I/O) is denied too. That cost is
+    // accepted: the boundary failed, so nothing further executes.
+    const unmanaged = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(unmanaged.isError, true, `an unmanaged name is refused while the realm is frozen: ${unmanaged.text}`)
+    assert.equal(unmanaged.info?.code, 'A5SF_MEMBER_REALM_INVALIDATED', `the blanket refusal is typed: ${JSON.stringify(unmanaged.info)}`)
+    assert.equal(unmanaged.text.includes('preset'), false, 'no preset body serves an unmanaged name either')
+
+    // BOUNDED LIFT: the caller's own native-attach release does NOT lift the
+    // freeze (an invalid realm keeps the deny; only a whole-realm re-assembly
+    // does — the E8-lift arm proves that half). A Member that can never be
+    // re-assembled therefore stays frozen permanently; that is reported through
+    // `nativeInvalidation` (and the invalidation log), NOT a Member-status
+    // surface — the frozen glue has none (see the evidence README).
+    await realm.disposeNativeToolModules()
+    const stillFrozen = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(stillFrozen.isError, true, 'releasing the native attach must not lift the freeze')
+    assert.equal(stillFrozen.info?.code, 'A5SF_MEMBER_REALM_INVALIDATED', `still the blanket code: ${JSON.stringify(stillFrozen.info)}`)
+    assert.equal(realm.nativeInvalidation !== null, true, 'the record that froze the realm is still observable')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('E8-lift (freeze 2026-11-03) the freeze lifts ONLY on a full verified re-assembly — a fresh mount + attach admits calls again', async () => {
+  const EVENT = 'assembly/e8-lift-provider-added'
+  const MANAGED = 'x_e8_lift_managed'
+  const managedModule = writeEventModule('e8lift', MANAGED, EVENT)
+  const world = await makeWorld('e8-freeze-lift', { bindingIdentities: [], modules: [managedModule] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    // 1. Invalidate through the same intra-emission shape (a preset plane
+    //    listener registering the managed name is enough; no spy needed).
+    await world.standingCtx.plugin(await import(writePresetEventPlane('e8lift', MANAGED, EVENT, 'preset-e8-lift-body')))
+    await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.doesNotThrow(() => root.emit(EVENT))
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the realm is invalidated')
+    const frozen = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(frozen.info?.code, 'A5SF_MEMBER_REALM_INVALIDATED', 'the Member is frozen')
+
+    // 2. A PARTIAL restoration is refused: the invalid realm cannot re-attach.
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: { name: 'x-partial', apply() {} } }]),
+      /invalidated/i,
+      'no partial re-attach can lift the freeze',
+    )
+
+    // 3. A FULL re-assembly — dispose the Member realm and mount + attach a NEW
+    //    one on the same agent/tool plane — passes verification and admits.
+    await realm.dispose()
+    const realm2 = await world.remountRealm()
+    try {
+      await row.attachA5sfNativeToolModules(realm2, agentCtx, config, agentKey)
+      await realm2.whenNativeVerificationSettled()
+      assert.equal(realm2.nativeInvalidation ?? null, null, 'the re-assembled realm is verified, not invalid')
+      const admitted = await dispatch(root, agentKey, 'x_assembly_probe', {})
+      assert.equal(admitted.isError, false, `calls are admitted again after a full re-assembly: ${admitted.text}`)
+      assert.equal(admitted.text, 'preset', 'the unmanaged preset row serves normally again')
+    } finally {
+      await realm2.dispose()
+    }
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('ACK-1 (allowEmpty 2026-11-03) an acknowledged-empty attach carries the flag explicitly; a non-empty attach does not', async () => {
+  const conditional = writeConditionalModule('ack1', 'x_assembly_probe')
+  const empty = await makeWorld('ack-empty', {
+    bindingIdentities: [],
+    modules: [{ url: conditional, config: { enabled: false }, allowEmpty: true }],
+  })
+  try {
+    await row.attachA5sfNativeToolModules(empty.realm, empty.agentCtx, empty.config, empty.agentKey)
+    const record = empty.realm.nativeAttachRecord ?? null
+    assert.notEqual(record, null, 'a successful attach publishes its record')
+    assert.equal(record.schema, 'a5sf-native-attach/1')
+    assert.equal(record.emptyFrontierAcknowledged, true, 'the opt-out is RECORDED, not inferred away')
+    assert.deepEqual([...record.emptyFrontierModules], ['fixture-conditional-ack1'], 'the acknowledged module is named')
+    assert.deepEqual([...record.emptyFrontierSpecifiers], [conditional], 'the ROW-CONFIG specifier is recorded, so an operator can trace the acceptance')
+    assert.deepEqual([...record.acknowledgedNames], [], 'nothing was declared on this entry')
+  } finally {
+    await empty.realm.dispose()
+  }
+
+  const moduleA = writeNativeModule('ack2', [{ name: 'read', reads: true }, { name: 'write' }])
+  const nonEmpty = await makeWorld('ack-nonempty', { bindingIdentities: [], modules: [moduleA] })
+  try {
+    await row.attachA5sfNativeToolModules(nonEmpty.realm, nonEmpty.agentCtx, nonEmpty.config, nonEmpty.agentKey)
+    const record = nonEmpty.realm.nativeAttachRecord ?? null
+    assert.notEqual(record, null, 'a non-empty attach also publishes its record')
+    assert.equal(record.emptyFrontierAcknowledged, false, 'a verified non-empty frontier is NOT an acknowledgement')
+    assert.deepEqual([...record.emptyFrontierModules], [])
+    assert.deepEqual([...record.emptyFrontierSpecifiers], [])
+    assert.deepEqual([...record.acknowledgedNames], [])
+  } finally {
+    await nonEmpty.realm.dispose()
+  }
+})
+
+test('ACK-2 (allowEmpty 2026-11-03) `allowEmpty` may acknowledge an EMPTY frontier that DECLARED names: accepted, and the names are carried as acknowledged, never as verified', async () => {
+  const silent = writeEventModule('ack2', 'x_ack_probe', 'never/fired')
+  const world = await makeWorld('ack-declared-empty', {
+    bindingIdentities: [],
+    modules: [{ url: silent, config: { enabled: true }, expectedTools: ['x_ack_probe'], allowEmpty: true }],
+  })
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(world.realm, world.agentCtx, world.config, world.agentKey)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], [], 'the acknowledged frontier is empty')
+    const record = world.realm.nativeAttachRecord ?? null
+    assert.equal(record.emptyFrontierAcknowledged, true, 'the empty frontier is acknowledged')
+    assert.deepEqual([...record.acknowledgedNames], ['x_ack_probe'], 'the DECLARED names are recorded as acknowledged (not shadowed, not verified)')
+  } finally {
+    await world.realm.dispose()
+  }
+})
+
+test('ACK-2b (allowEmpty 2026-11-03) `allowEmpty` acknowledges only an EMPTY frontier: a PARTIAL frontier that also declares names is still REFUSED, typed', async () => {
+  // Review #1 C5: ACK-2 accepted the empty-frontier exception but did not pin
+  // the boundary of it. The implementation already refuses a PARTIAL frontier
+  // (`allowEmpty` is checked only when `forwarded.size === 0`); this arm makes
+  // that a contract, so a later widening to "allowEmpty excuses any declaration"
+  // goes red here.
+  const partial = writeNativeModule('ack2b', [{ name: 'x_ack_present' }])
+  const world = await makeWorld('ack-declared-partial', {
+    bindingIdentities: [],
+    modules: [{ url: partial, expectedTools: ['x_ack_present', 'x_ack_absent'], allowEmpty: true }],
+  })
+  try {
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(world.realm, world.agentCtx, world.config, world.agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_EXPECTED_TOOLS_UNSHADOWED', `a partial frontier is not acknowledged: ${error.name}: ${error.message}`)
+        assert.match(error.message, /x_ack_absent/, 'the refusal names the DECLARED-but-unshadowed tool')
+        return true
+      },
+      'allowEmpty means an EMPTY frontier, never "the frontier is whatever it is"',
+    )
+    // The refused attach rolled back: no attach record survives it (C1's
+    // lifecycle: a rollback clears it).
+    assert.equal(world.realm.nativeAttachRecord ?? null, null, 'a refused attach leaves no attach record')
+    assert.equal(world.realm.nativeInvalidation ?? null, null, 'a caller refusal is not an invalidation')
+  } finally {
+    await world.realm.dispose()
+  }
 })

@@ -133,7 +133,11 @@ export const A5SF_EXPECTED_TOOLS_KEY = 'a5sfExpectedTools'
  *     was absent, or the composition's two planes disagree), so the declared
  *     managed names would fall back to whatever preset definition is visible.
  *     Opt-in: an entry WITHOUT `expectedTools` keeps the pre-declaration
- *     behaviour exactly.
+ *     behaviour exactly. ONE narrow exception (E8, 2026-11-03): an entry that
+ *     ALSO carries `allowEmpty: true` and forwarded NOTHING may declare names —
+ *     the empty frontier is acknowledged explicitly and those names are
+ *     recorded as ACKNOWLEDGED (`NativeAttachRecord.acknowledgedNames`), never
+ *     as verified. A partial frontier is still refused.
  *   - `A5SF_MANAGED_FRONTIER_EMPTY` — a module entry that CARRIES a `config`
  *     (i.e. the composition configured a conditional module: a provider, a
  *     feature switch) forwarded NOTHING at the settle boundary and did not
@@ -551,6 +555,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     }
     return Object.freeze({
       module: imported,
+      specifier: spec.url,
       ...(spec.config === undefined ? {} : { config: spec.config }),
       ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
       ...(spec.allowEmpty === undefined ? {} : { allowEmpty: spec.allowEmpty }),
@@ -638,7 +643,10 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // plane's config, which this seam cannot read; the model-visible surface looks
   // the same to it in the harmful case as a normal subset in the harmless one.
   // So the decidable unit is the entry's own shape, and the default is fail
-  // closed; `allowEmpty: true` is the explicit, documented opt-out.
+  // closed; `allowEmpty: true` is the explicit, documented opt-out. E8
+  // (2026-11-03): an accepted empty frontier is RECORDED on the attach record
+  // (`realm.nativeAttachRecord.emptyFrontierAcknowledged`) as a DECLARED
+  // HAZARD, never as a verification.
   const emptyFrontiers = emptyManagedFrontiers(nativeToolModules, expansion, fibers)
   if (emptyFrontiers.length > 0) {
     await releaseAttach()
@@ -883,6 +891,16 @@ function unshadowedExpectedTools(nativeToolModules, expansion, fibers) {
     }
     const missing = declared.filter((name) => !forwarded.has(name))
     if (missing.length > 0) {
+      // E8 / allowEmpty (2026-11-03): an entry that EXPLICITLY acknowledged an
+      // EMPTY frontier (`allowEmpty: true`, forwarded.size === 0) may also have
+      // declared the names it expected: the acknowledgement says "I know this
+      // frontier is empty", so the declaration is recorded as ACKNOWLEDGED on
+      // the attach record instead of being refused. This is NOT a verification
+      // and it is narrow: a PARTIAL frontier (some names forwarded, some not) is
+      // still refused even with allowEmpty — only an EMPTY frontier can be
+      // acknowledged. Without allowEmpty this branch is unchanged (EXPECT-2 /
+      // C2-d refusals stay exactly as merged).
+      if (module.allowEmpty === true && forwarded.size === 0) continue
       failures.push({
         moduleName: module.module?.name ?? `#${String(index)}`,
         expected: [...declared],
