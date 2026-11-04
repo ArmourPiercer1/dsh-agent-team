@@ -151,6 +151,15 @@ What this measures, stated plainly:
   predicate is not expressible in this policy model**; what is expressible and was measured is
   the path-axis split above (3a/3b) plus the tool-level content check (3d).
 
+**One disclosure that keeps (3) honest.** The pinned `edit` tool also asks the host's
+`fs/edit-intent` waterfall whether the file was already read, and the product composes a
+separate `fs-observation-policy` plugin to enforce that. **That plugin is not mounted in this
+probe world**, and the probe's `BaseFs` returns no guard from the intent slot, so the upstream
+per-session read-before-edit policy did not participate. What was measured is DSH Team's own
+read axis (`createMemberFsGuard`'s `write ⇒ read` rule) refusing the rewrite. The two
+mechanisms are distinct: the upstream one is a session observation policy, the Team one is a
+compiled lane. This lane does not claim the upstream policy was exercised.
+
 ### (4) Surface neutrality — `edit` once, on the ceiling partition
 
 ```
