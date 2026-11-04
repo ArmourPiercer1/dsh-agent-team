@@ -11,6 +11,7 @@
  */
 import type { AssignedOfficerReviewFacts, AssignedOfficerReviewFactsQuery, ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
 import type { Alpha6CompositionDecision } from './composition.js';
+import type { ReviewRoute } from './root-router.js';
 export interface WakeDeliveryPort {
     (input: {
         readonly targetSessionId: string;
@@ -72,6 +73,14 @@ export declare function createAlpha6RootControlNotifier(ports: {
      */
     readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>;
     readonly reviewFacts?: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    /**
+     * The ONE shared routing decision for a durable leg. When present it is the
+     * ONLY recipient authority: a Leader/Human/held route is never delivered to
+     * the current Officer merely because that Officer exists.
+     */
+    readonly route?: (requestId: string) => Promise<ReviewRoute | null>;
+    /** The legacy Leader liveness notification, used for a LEGAL Leader route. */
+    readonly notifyLeader?: (request: ControlRequestRecord) => Promise<void>;
     /** Coordinator seam: when present, delivery goes through the latch. */
     readonly dispatchWake?: (input: {
         readonly reviewerInstanceId: string;
@@ -96,6 +105,8 @@ export interface Alpha6DelegableLegsInput {
     }) => Promise<{
         readonly instanceId: string;
     } | null>;
+    /** The ONE shared router decision, when the caller has it. */
+    readonly route?: (requestId: string) => Promise<ReviewRoute | null>;
 }
 /**
  * The ONE trusted pending-leg collector used by the notifier and by the Host

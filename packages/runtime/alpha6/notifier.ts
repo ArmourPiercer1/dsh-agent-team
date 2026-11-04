@@ -17,6 +17,7 @@ import type {
   ControlSubject,
 } from '../control/types.js'
 import type { Alpha6CompositionDecision } from './composition.js'
+import type { ReviewRoute } from './root-router.js'
 
 export interface WakeDeliveryPort {
   (input: {
@@ -128,6 +129,14 @@ export function createAlpha6RootControlNotifier(ports: {
   readonly reviewFacts?: (
     query: AssignedOfficerReviewFactsQuery,
   ) => Promise<AssignedOfficerReviewFacts | null>
+  /**
+   * The ONE shared routing decision for a durable leg. When present it is the
+   * ONLY recipient authority: a Leader/Human/held route is never delivered to
+   * the current Officer merely because that Officer exists.
+   */
+  readonly route?: (requestId: string) => Promise<ReviewRoute | null>
+  /** The legacy Leader liveness notification, used for a LEGAL Leader route. */
+  readonly notifyLeader?: (request: ControlRequestRecord) => Promise<void>
   /** Coordinator seam: when present, delivery goes through the latch. */
   readonly dispatchWake?: (input: {
     readonly reviewerInstanceId: string
@@ -135,12 +144,37 @@ export function createAlpha6RootControlNotifier(ports: {
     readonly currentLegIds: readonly string[]
   }) => Promise<void>
 }): ControlRequestNotificationPort {
-  return {
+  const notifier: ControlRequestNotificationPort = {
     async notifyLeaderRequest(request: ControlRequestRecord): Promise<void> {
       if (request.approvalCaseId === undefined || request.legOrdinal === undefined) {
         throw new Error(
           `Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity`,
         )
+      }
+      if (ports.route !== undefined) {
+        const route = await ports.route(request.requestId)
+        if (route === null) {
+          throw new Error(
+            `Alpha.6 review wake refused: no trusted route for request '${request.requestId}' (no Leader fallback)`,
+          )
+        }
+        if (route.kind === 'no-work') return
+        if (route.kind === 'unroutable' || route.kind === 'hold') {
+          throw new Error(
+            `Alpha.6 review wake refused: request '${request.requestId}' is ${route.kind} (${route.reason}); no Officer wake and no Leader fallback`,
+          )
+        }
+        if (route.target.kind === 'native-human') return
+        if (route.target.routeRole === 'leader') {
+          if (ports.notifyLeader === undefined) {
+            throw new Error(
+              `Alpha.6 review wake refused: request '${request.requestId}' routes to the Leader but no Leader notification seam is wired`,
+            )
+          }
+          await ports.notifyLeader(request)
+          return
+        }
+        return await deliverOfficerWake(ports, request, route.target.instanceId)
       }
       const reviewer = await ports.resolveCurrentReviewer({
         rootSessionId: ports.rootSessionId,
@@ -153,6 +187,17 @@ export function createAlpha6RootControlNotifier(ports: {
           `Alpha.6 review wake refused: no trusted current reviewer for request '${request.requestId}' (no Leader fallback)`,
         )
       }
+      return await deliverOfficerWake(ports, request, reviewer.instanceId)
+    },
+  }
+  return notifier
+
+  async function deliverOfficerWake(
+    ports: Parameters<typeof createAlpha6RootControlNotifier>[0],
+    request: ControlRequestRecord,
+    reviewerInstanceId: string,
+  ): Promise<void> {
+      const reviewer = { instanceId: reviewerInstanceId }
       const member = await ports.memberSession(reviewer.instanceId)
       const targetSessionId = member?.childSessionId
       if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
@@ -173,6 +218,7 @@ export function createAlpha6RootControlNotifier(ports: {
               readRequests: ports.readRequests,
               reviewFacts: ports.reviewFacts,
               resolveCurrentReviewer: ports.resolveCurrentReviewer,
+              ...(ports.route === undefined ? {} : { route: ports.route }),
             })
           : [request]
       const mergedIds = merged.map((entry) => entry.requestId).sort()
@@ -197,7 +243,6 @@ export function createAlpha6RootControlNotifier(ports: {
         wakeId: `review:${mergedIds.join(',')}`,
         text: renderMergedOfficerReviewWake(merged),
       })
-    },
   }
 }
 
@@ -232,6 +277,8 @@ export interface Alpha6DelegableLegsInput {
     readonly currentLegRequestId: string
     readonly legOrdinal: number
   }) => Promise<{ readonly instanceId: string } | null>
+  /** The ONE shared router decision, when the caller has it. */
+  readonly route?: (requestId: string) => Promise<ReviewRoute | null>
 }
 
 /**
@@ -255,6 +302,18 @@ export async function collectAlpha6DelegableLegs(
     if (candidate.kind !== 'leader-approval') continue
     if (candidate.approvalCaseId === undefined || candidate.legOrdinal === undefined) continue
     if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined) continue
+    if (input.route !== undefined) {
+      const route = await input.route(candidate.requestId)
+      if (
+        route === null ||
+        route.kind !== 'recipient' ||
+        route.target.kind !== 'instance' ||
+        route.target.routeRole !== 'officer' ||
+        route.target.instanceId !== input.reviewerInstanceId
+      ) continue
+      merged.push(candidate)
+      continue
+    }
     let facts: AssignedOfficerReviewFacts | null
     try {
       facts = await input.reviewFacts({

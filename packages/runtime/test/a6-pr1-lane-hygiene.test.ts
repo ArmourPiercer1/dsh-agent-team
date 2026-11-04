@@ -51,10 +51,12 @@ describe('a6-pr1 lane hygiene', () => {
     }
     // A6-PR2a is the first legitimate importer (the capability evaluator
     // consumes the shared policy/router vocabulary); the router-first wake
-    // PLAN is the PR6 composition consumer. No OTHER alpha6 file (especially
-    // wiring) and no root/plugin path may import the lane.
+    // PLAN and the root ROUTER INPUT are the PR6 composition consumers. No
+    // OTHER alpha6 file and no root/plugin path may import the lane: the
+    // root consumes the composition, never the pure lane directly.
     expect(offenders.filter((f) => !f.includes('review-authority/')
-      && !f.endsWith(join('runtime', 'alpha6', 'wake-plan.ts')))).toEqual([])
+      && !f.endsWith(join('runtime', 'alpha6', 'wake-plan.ts'))
+      && !f.endsWith(join('runtime', 'alpha6', 'root-router.ts')))).toEqual([])
   })
 
   it('keeps the module set pure: no node builtins, no host/control/PA imports, no clock', () => {

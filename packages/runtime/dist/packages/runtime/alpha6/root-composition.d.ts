@@ -47,6 +47,7 @@ export type Alpha6RootComposition = {
     readonly mode: 'alpha6';
     readonly ports: Alpha6ControlPorts;
     readonly officerInstanceId: string;
+    readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting;
 };
 /**
  * Assemble the trusted ports. Any missing fact refuses; this function NEVER
@@ -79,6 +80,7 @@ export type Alpha6LiveRootComposition = {
     readonly mode: 'alpha6';
     readonly ports: Alpha6ControlPorts;
     readonly officerTemplateId: string;
+    readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting;
 };
 export interface Alpha6LiveRootCompositionInput {
     readonly enabled: boolean;
@@ -115,6 +117,7 @@ export type Alpha6RootWiring = {
     readonly mode: 'alpha6';
     readonly ports: Alpha6ControlPorts;
     readonly officerTemplateId: string;
+    readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting;
 };
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
 export type Alpha6RootWiringLiveInput = Omit<Alpha6LiveRootCompositionInput, 'enabled'>;

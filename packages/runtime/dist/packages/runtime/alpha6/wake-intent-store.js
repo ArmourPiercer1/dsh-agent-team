@@ -12,6 +12,7 @@
  *
  * @module packages/runtime/alpha6/wake-intent-store
  */
+import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 function isRow(value) {
@@ -31,9 +32,13 @@ function isRow(value) {
 }
 export function createFileWakeIntentStore(options) {
     const file = options.filePath;
-    const tmp = `${file}.tmp`;
     async function write(row) {
         await mkdir(dirname(file), { recursive: true });
+        // A UNIQUE temp name per write: two async writers of the same latch must
+        // never share a scratch file (one rename would publish the other's bytes,
+        // or fail ENOENT after the first rename). The rename stays the atomic
+        // publish point; an orphaned temp is ignored by every reader.
+        const tmp = `${file}.${randomUUID()}.tmp`;
         await writeFile(tmp, `${JSON.stringify(row)}\n`, 'utf8');
         await rename(tmp, file);
     }

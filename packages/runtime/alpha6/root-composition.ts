@@ -51,6 +51,7 @@ export type Alpha6RootComposition =
       readonly mode: 'alpha6'
       readonly ports: Alpha6ControlPorts
       readonly officerInstanceId: string
+      readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting
     }
 
 /**
@@ -105,7 +106,7 @@ export function createAlpha6RootComposition(input: Alpha6RootCompositionInput): 
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
 
-  return { mode: 'alpha6', ports, officerInstanceId: officer.instanceId }
+  return { mode: 'alpha6', ports, officerInstanceId: officer.instanceId, routing: parsed.routing }
 }
 
 /**
@@ -131,6 +132,7 @@ export type Alpha6LiveRootComposition =
       readonly mode: 'alpha6'
       readonly ports: Alpha6ControlPorts
       readonly officerTemplateId: string
+      readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting
     }
 
 export interface Alpha6LiveRootCompositionInput {
@@ -172,6 +174,7 @@ export type Alpha6RootWiring =
       readonly mode: 'alpha6'
       readonly ports: Alpha6ControlPorts
       readonly officerTemplateId: string
+      readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting
     }
 
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
@@ -232,5 +235,5 @@ export function createAlpha6LiveRootComposition(
       generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
-  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId }
+  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing }
 }

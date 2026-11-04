@@ -65,10 +65,31 @@ export function createComposedControlNotifier(ports) {
  * change the durable outcome, but it must be visible).
  */
 export function createAlpha6RootControlNotifier(ports) {
-    return {
+    const notifier = {
         async notifyLeaderRequest(request) {
             if (request.approvalCaseId === undefined || request.legOrdinal === undefined) {
                 throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity`);
+            }
+            if (ports.route !== undefined) {
+                const route = await ports.route(request.requestId);
+                if (route === null) {
+                    throw new Error(`Alpha.6 review wake refused: no trusted route for request '${request.requestId}' (no Leader fallback)`);
+                }
+                if (route.kind === 'no-work')
+                    return;
+                if (route.kind === 'unroutable' || route.kind === 'hold') {
+                    throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' is ${route.kind} (${route.reason}); no Officer wake and no Leader fallback`);
+                }
+                if (route.target.kind === 'native-human')
+                    return;
+                if (route.target.routeRole === 'leader') {
+                    if (ports.notifyLeader === undefined) {
+                        throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' routes to the Leader but no Leader notification seam is wired`);
+                    }
+                    await ports.notifyLeader(request);
+                    return;
+                }
+                return await deliverOfficerWake(ports, request, route.target.instanceId);
             }
             const reviewer = await ports.resolveCurrentReviewer({
                 rootSessionId: ports.rootSessionId,
@@ -79,48 +100,54 @@ export function createAlpha6RootControlNotifier(ports) {
             if (reviewer === null) {
                 throw new Error(`Alpha.6 review wake refused: no trusted current reviewer for request '${request.requestId}' (no Leader fallback)`);
             }
-            const member = await ports.memberSession(reviewer.instanceId);
-            const targetSessionId = member?.childSessionId;
-            if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
-                throw new Error(`Alpha.6 review wake refused: reviewer '${reviewer.instanceId}' has no live child session (no Leader fallback)`);
-            }
-            // MERGE: only legs this SAME facts port proves delegable to the SAME
-            // reviewer join the wake. A leg with no case identity, a refused fact,
-            // a fixed Leader/Human category or a different reviewer is left out.
-            const merged = ports.readRequests !== undefined && ports.reviewFacts !== undefined
-                ? await collectAlpha6DelegableLegs({
-                    rootSessionId: ports.rootSessionId,
-                    reviewerInstanceId: reviewer.instanceId,
-                    seed: request,
-                    readRequests: ports.readRequests,
-                    reviewFacts: ports.reviewFacts,
-                    resolveCurrentReviewer: ports.resolveCurrentReviewer,
-                })
-                : [request];
-            const mergedIds = merged.map((entry) => entry.requestId).sort();
-            if (ports.dispatchWake !== undefined) {
-                await ports.dispatchWake({
-                    reviewerInstanceId: reviewer.instanceId,
-                    targetSessionId,
-                    currentLegIds: mergedIds,
-                });
-                return;
-            }
-            if (merged.length === 1) {
-                await ports.deliver({
-                    targetSessionId,
-                    wakeId: `review:${request.requestId}`,
-                    text: renderOfficerReviewWake(request),
-                });
-                return;
-            }
-            await ports.deliver({
-                targetSessionId,
-                wakeId: `review:${mergedIds.join(',')}`,
-                text: renderMergedOfficerReviewWake(merged),
-            });
+            return await deliverOfficerWake(ports, request, reviewer.instanceId);
         },
     };
+    return notifier;
+    async function deliverOfficerWake(ports, request, reviewerInstanceId) {
+        const reviewer = { instanceId: reviewerInstanceId };
+        const member = await ports.memberSession(reviewer.instanceId);
+        const targetSessionId = member?.childSessionId;
+        if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
+            throw new Error(`Alpha.6 review wake refused: reviewer '${reviewer.instanceId}' has no live child session (no Leader fallback)`);
+        }
+        // MERGE: only legs this SAME facts port proves delegable to the SAME
+        // reviewer join the wake. A leg with no case identity, a refused fact,
+        // a fixed Leader/Human category or a different reviewer is left out.
+        const merged = ports.readRequests !== undefined && ports.reviewFacts !== undefined
+            ? await collectAlpha6DelegableLegs({
+                rootSessionId: ports.rootSessionId,
+                reviewerInstanceId: reviewer.instanceId,
+                seed: request,
+                readRequests: ports.readRequests,
+                reviewFacts: ports.reviewFacts,
+                resolveCurrentReviewer: ports.resolveCurrentReviewer,
+                ...(ports.route === undefined ? {} : { route: ports.route }),
+            })
+            : [request];
+        const mergedIds = merged.map((entry) => entry.requestId).sort();
+        if (ports.dispatchWake !== undefined) {
+            await ports.dispatchWake({
+                reviewerInstanceId: reviewer.instanceId,
+                targetSessionId,
+                currentLegIds: mergedIds,
+            });
+            return;
+        }
+        if (merged.length === 1) {
+            await ports.deliver({
+                targetSessionId,
+                wakeId: `review:${request.requestId}`,
+                text: renderOfficerReviewWake(request),
+            });
+            return;
+        }
+        await ports.deliver({
+            targetSessionId,
+            wakeId: `review:${mergedIds.join(',')}`,
+            text: renderMergedOfficerReviewWake(merged),
+        });
+    }
 }
 /** One wake for a group of delegable pending legs; every id stays visible. */
 export function renderMergedOfficerReviewWake(requests) {
@@ -160,6 +187,17 @@ export async function collectAlpha6DelegableLegs(input) {
             continue;
         if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined)
             continue;
+        if (input.route !== undefined) {
+            const route = await input.route(candidate.requestId);
+            if (route === null ||
+                route.kind !== 'recipient' ||
+                route.target.kind !== 'instance' ||
+                route.target.routeRole !== 'officer' ||
+                route.target.instanceId !== input.reviewerInstanceId)
+                continue;
+            merged.push(candidate);
+            continue;
+        }
         let facts;
         try {
             facts = await input.reviewFacts({

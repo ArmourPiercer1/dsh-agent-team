@@ -1,0 +1,187 @@
+/**
+ * Alpha.6 — the ROOT-side trusted router input builder.
+ *
+ * The notification layer must never equate "the unique live Officer" with
+ * "the reviewer of this leg". Leader exceptions, Officer self-asks, fixed
+ * Leader/Human categories, current-leg transfers and availability states are
+ * all decided by the ONE shared `routeReview` policy. This module turns the
+ * durable Control row + live member rows into that policy's input; it decides
+ * nothing itself.
+ *
+ * @module packages/runtime/alpha6/root-router
+ */
+import type { ReviewRouting } from '../../domain/blueprint/src/index.js'
+import type {
+  ControlRequestRecord,
+  ControlStateSnapshot,
+  CurrentLegTransferRecord,
+} from '../control/types.js'
+import { hasAuthorityResolver } from '../control/types.js'
+import { blueprintReviewPolicyFrom, routeReview } from '../review-router/index.js'
+import type {
+  CurrentOfficer,
+  ReviewLeaderTarget,
+  ReviewLegFacts,
+  ReviewRoute,
+  ReviewRouteInput,
+} from '../review-router/index.js'
+import type { AssignedOfficerMemberSnapshot } from './assigned-officer-facts.js'
+
+export interface Alpha6RootRouterInput {
+  readonly rootSessionId: string
+  readonly routing: ReviewRouting
+  readonly leaderTemplateId: string
+  readonly control: {
+    readonly readControlState: (rootSessionId: string) => Promise<ControlStateSnapshot>
+  }
+  readonly members: {
+    readonly list: (
+      rootSessionId: string,
+    ) => Promise<readonly AssignedOfficerMemberSnapshot[]> | readonly AssignedOfficerMemberSnapshot[]
+  }
+  readonly fixedLeaderOrHumanCategory: (input: {
+    readonly kind: ControlRequestRecord['kind']
+  }) => boolean | null | Promise<boolean | null>
+}
+
+export interface Alpha6RootRouter {
+  /** Route ONE durable leg; null when the row is absent/not a case leg. */
+  readonly route: (requestId: string) => Promise<ReviewRoute | null>
+}
+
+function authorityScopeOf(row: ControlRequestRecord): unknown {
+  const payload = row.reviewPayload
+  if (payload === null || typeof payload !== 'object') return null
+  const scope = (payload as Record<string, unknown>)['authorityScope']
+  return scope === undefined ? null : scope
+}
+
+function transferOf(
+  transfer: CurrentLegTransferRecord | undefined,
+): ReviewRouteInput['transfer'] {
+  if (transfer === undefined) return null
+  return transfer.target === 'leader'
+    ? { target: 'leader', actor: transfer.actor.kind === 'officer' ? 'officer' : 'trusted-team-runtime' }
+    : { target: 'native-human', actor: 'trusted-team-runtime' }
+}
+
+function leaderTargetOf(
+  members: readonly AssignedOfficerMemberSnapshot[],
+  leaderTemplateId: string,
+): ReviewLeaderTarget | null {
+  const leader = members.find(
+    (member) =>
+      member.templateId === leaderTemplateId &&
+      member.lifecycle === 'RUNNING' &&
+      typeof member.instanceId === 'string' &&
+      member.instanceId.length > 0,
+  )
+  return leader === undefined
+    ? null
+    : { instanceId: leader.instanceId, templateId: leader.templateId }
+}
+
+function officerStateOf(
+  members: readonly AssignedOfficerMemberSnapshot[],
+  officerTemplateId: string,
+  leaderTemplateId: string,
+): CurrentOfficer {
+  const candidates = members.filter(
+    (member) =>
+      member.templateId === officerTemplateId &&
+      member.childSessionId !== undefined &&
+      member.templateId !== leaderTemplateId,
+  )
+  const active = candidates.filter((member) => member.lifecycle === 'RUNNING')
+  if (active.length === 1) {
+    const officer = active[0]!
+    return {
+      status: 'active',
+      instanceId: officer.instanceId,
+      templateId: officer.templateId,
+    }
+  }
+  if (active.length > 1) return { status: 'ambiguous', activeCount: active.length }
+  if (candidates.length === 0) return { status: 'not-admitted' }
+  return {
+    status: 'missing',
+    hasAdmissionHistory: candidates.some(
+      (member) => member.lifecycle === 'ARCHIVED' || member.lifecycle === 'DISPOSED',
+    ),
+  }
+}
+
+function legFactsOf(
+  row: ControlRequestRecord,
+  fixedLeaderOrHumanCategory: boolean | null,
+): ReviewLegFacts {
+  const reviewAuthority = row.reviewAuthority
+  const category = fixedLeaderOrHumanCategory
+  const authorityScope = authorityScopeOf(row)
+  return {
+    requestId: row.requestId,
+    status: row.status,
+    kind: row.kind,
+    reviewAuthority: reviewAuthority ?? 'member',
+    operationOwnerTemplateId: row.operationOwnerTemplateId ?? null,
+    ordinaryAsk:
+      row.kind === 'leader-approval' &&
+      reviewAuthority === 'leader' &&
+      row.requestedEffect !== undefined &&
+      row.operationToolOwner !== undefined &&
+      row.operationToolName !== undefined &&
+      authorityScope !== null
+        ? {
+            kind: row.kind,
+            reviewAuthority,
+            requestedEffect: row.requestedEffect,
+            operationFingerprint: row.operationFingerprint ?? null,
+            mutationProposalFingerprint: row.mutationProposalFingerprint ?? null,
+            authorityScope,
+            operationTool: {
+              owner: row.operationToolOwner,
+              name: row.operationToolName,
+            },
+            perEffectRequiredAuthorities: row.perEffectRequiredAuthorities ?? [],
+            fixedLeaderOrHumanCategory: category === true,
+          }
+        : null,
+    requiresHuman: reviewAuthority === 'human-user',
+    hasLegalResolver: reviewAuthority !== undefined && hasAuthorityResolver(reviewAuthority),
+    fixedLeaderCategory: category === true,
+  }
+}
+
+export function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6RootRouter {
+  const policy = blueprintReviewPolicyFrom(input.routing)
+  return {
+    async route(requestId: string): Promise<ReviewRoute | null> {
+      let state: ControlStateSnapshot
+      try {
+        state = await input.control.readControlState(input.rootSessionId)
+      } catch {
+        return null
+      }
+      const row = state.requests.find((candidate) => candidate.requestId === requestId)
+      if (row === undefined || row.approvalCaseId === undefined || row.legOrdinal === undefined) {
+        return null
+      }
+      const members = await input.members.list(input.rootSessionId)
+      const categoryAnswer = await input.fixedLeaderOrHumanCategory({ kind: row.kind })
+      const category = categoryAnswer === true ? true : categoryAnswer === false ? false : null
+      const currentLeg = legFactsOf(row, category)
+      const transfer = transferOf(
+        state.transfers.find((candidate) => candidate.currentLegRequestId === requestId),
+      )
+      return routeReview({
+        policy,
+        currentLeg,
+        currentOfficer: officerStateOf(members, input.routing.officerTemplateId, input.leaderTemplateId),
+        leader: leaderTargetOf(members, input.leaderTemplateId),
+        transfer,
+      })
+    },
+  }
+}
+
+export type { ReviewRoute }

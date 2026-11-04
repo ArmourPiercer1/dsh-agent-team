@@ -205,8 +205,8 @@ describe('A6 root wiring — production entry opt-in', () => {
       environmentFacts: [],
       externalPolicyFacts: { hard: {}, capabilityExists: {} },
     }
-    const boot = (blueprintSource: string, withWake = true, enabled = true): unknown => {
-      const config = { ...baseConfig, blueprintSource, alpha6ReviewRouting: enabled }
+    const boot = (blueprintSource: string, withWake = true, enabled = true, withStore = true): unknown => {
+      const config = { ...baseConfig, blueprintSource, alpha6ReviewRouting: enabled, ...(withStore ? { alpha6WakeIntentPath: `${base}/wake-intents` } : {}) }
       const teamToolsRef = { current: undefined }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
       const live: any = createStubBindings({ config, teamToolsRef, domain })
@@ -231,6 +231,9 @@ describe('A6 root wiring — production entry opt-in', () => {
     // The opt-in requires a REAL wake seam; absence refuses rather than
     // silently notifying nobody or falling back to the Leader.
     expect(() => boot(v5Source('8'), false)).toThrow(/live wake seam|deliverReviewWake/)
+    // An opt-in WITHOUT the durable intent store is a configuration refusal,
+    // never a silent in-memory single-flight.
+    expect(() => boot(v5Source('10'), true, true, false)).toThrow(/wake-intent path|crash-safe/)
     // Opt-in OFF: the SAME v5 source boots with NO wake seam and exposes NO
     // Alpha.6 turn-latch surface (the Alpha.5 path stays byte-identical).
     const legacyRoot = boot(v5Source('9'), false, false) as {
@@ -282,6 +285,7 @@ describe('A6 root wiring — production entry opt-in', () => {
       externalPolicyFacts: { hard: {}, capabilityExists: {} },
       blueprintSource: v5Source('11'),
       alpha6ReviewRouting: true,
+      alpha6WakeIntentPath: `${base}/wake-intents`,
     }
     const teamToolsRef = { current: undefined }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
@@ -334,10 +338,17 @@ describe('A6 root wiring — production entry opt-in', () => {
         },
         actionName: 'team_bash',
         toolName: 'team_bash',
+        reviewPayload: {
+          authorityScope: {
+            operationClass: 'tool-invoke',
+            matcher: { kind: 'exact', resource: 'tool:team_bash' },
+          },
+        },
         operationOwnerTemplateId: 'worker',
         operationToolDefinitionIdentity: 'tooldef-a6wake',
         operationToolOwner: 'a6-root',
         operationToolName: 'team_bash',
+        perEffectRequiredAuthorities: ['leader'],
         authorityGeneration: 0,
         blueprintContentHash: parsedBlueprint.contentHash,
         blueprintRevision: parsedBlueprint.revision,
@@ -376,5 +387,84 @@ describe('A6 root wiring — production entry opt-in', () => {
     await root.alpha6TurnLatchEnd?.('session-a6wake-officer')
     await until(() => wakes.length === 3)
     destroyDir(base)
+  })
+})
+
+describe('A6 root router — recipient comes from the SHARED router, never "the unique Officer"', () => {
+  const root = 'session-a6-router'
+  const routing = {
+    enabled: true as const,
+    officerTemplateId: 'officer',
+    ordinaryToolApprovals: { default: 'officer' as const, leaderExceptions: [] },
+    whenOfficerUnavailable: 'hold' as const,
+  }
+  const leader = { instanceId: 'inst-leader', templateId: 'leader', childSessionId: 'session-root', lifecycle: 'RUNNING', rootSessionId: root }
+  const officer = { instanceId: 'inst-officer', templateId: 'officer', childSessionId: 'session-officer', lifecycle: 'RUNNING', rootSessionId: root }
+  const worker = { instanceId: 'inst-worker', templateId: 'worker', childSessionId: 'session-worker', lifecycle: 'RUNNING', rootSessionId: root }
+  const baseRow = {
+    requestId: 'req-1',
+    rootSessionId: root,
+    kind: 'leader-approval' as const,
+    requester: { kind: 'instance' as const, instanceId: 'inst-worker' },
+    subject: { kind: 'instance' as const, instanceId: 'inst-worker' },
+    actionName: 'team_bash',
+    correlation: 'corr-1',
+    status: 'pending' as const,
+    createdAt: '2026-11-04T12:00:00.000Z',
+    requestSequence: 1,
+    approvalCaseId: 'case-1',
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+    requestedEffect: 'ask' as const,
+    operationOwnerTemplateId: 'worker',
+    operationToolOwner: 'a6-root',
+    operationToolName: 'team_bash',
+    operationFingerprint: 'fp-1',
+    perEffectRequiredAuthorities: ['leader' as const],
+    reviewPayload: { authorityScope: { operationClass: 'tool-invoke', matcher: { kind: 'exact', resource: 'tool:team_bash' } } },
+  }
+  const makeRouter = async (
+    rows: readonly unknown[],
+    members: readonly unknown[],
+    overrides: { exceptions?: readonly unknown[]; transfers?: readonly unknown[]; kind?: string } = {},
+  ) => {
+    const { createAlpha6RootRouter } = await import('../alpha6/root-router.js')
+    return createAlpha6RootRouter({
+      rootSessionId: root,
+      routing: { ...routing, ordinaryToolApprovals: { ...routing.ordinaryToolApprovals, leaderExceptions: overrides.exceptions ?? [] } } as never,
+      leaderTemplateId: 'leader',
+      control: { readControlState: async () => ({ requests: rows, transfers: overrides.transfers ?? [], corruptLegs: [] }) as never },
+      members: { list: async () => members as never },
+      fixedLeaderOrHumanCategory: ({ kind }) => kind === ('envelope-mutation' as never) || overrides.kind === 'fixed',
+    })
+  }
+
+  it('routes an ordinary worker ask to the Officer', async () => {
+    const route = await (await makeRouter([baseRow], [leader, officer, worker])).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { kind: 'instance', instanceId: 'inst-officer', routeRole: 'officer' } })
+  })
+
+  it('routes the Officer self-ask to the Leader', async () => {
+    const route = await (await makeRouter([{ ...baseRow, operationOwnerTemplateId: 'officer' }], [leader, officer, worker])).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('routes a declared Leader exception to the Leader', async () => {
+    const route = await (await makeRouter([baseRow], [leader, officer, worker], {
+      exceptions: [{ memberTemplateId: 'worker', tool: { owner: 'a6-root', name: 'team_bash' } }],
+    })).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('routes a transferred leg to the Leader', async () => {
+    const route = await (await makeRouter([baseRow], [leader, officer, worker], {
+      transfers: [{ currentLegRequestId: 'req-1', target: 'leader', actor: { kind: 'trusted-team-runtime' } }],
+    })).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('never invents an Officer when none is active', async () => {
+    const route = await (await makeRouter([baseRow], [leader, worker])).route('req-1')
+    expect(route?.kind).toBe('hold')
   })
 })
