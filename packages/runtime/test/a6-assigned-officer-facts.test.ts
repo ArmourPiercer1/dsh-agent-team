@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService, CurrentLegTransferRecord } from '../control/index.js'
 import { createAlpha6AuthorityGenerationReader } from '../alpha6/authority-generation.js'
-import { createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
+import { createAlpha6CategoryLookup, createAssignedOfficerFactsPort, createAlpha6ControlPorts } from '../alpha6/assigned-officer-facts.js'
 import type {
   Alpha6ControlPorts,
   AssignedOfficerFactsPort,
@@ -577,6 +577,16 @@ describe('A6 assigned-Officer facts provider (composition-owned)', () => {
   })
 })
 
+describe('A6 fixed-category classifier', () => {
+  it('classifies the closed control kinds without inventing taxonomy', () => {
+    const classify = createAlpha6CategoryLookup()
+    const leg = (kind: 'leader-approval' | 'user-approval' | 'envelope-mutation') => ({ kind }) as never
+    expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('leader-approval'), routing: BASE_ROUTING.routing })).toBe(false)
+    expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('user-approval'), routing: BASE_ROUTING.routing })).toBe(true)
+    expect(classify({ rootSessionId: P6T4_ROOT, leg: leg('envelope-mutation'), routing: BASE_ROUTING.routing })).toBe(true)
+  })
+})
+
 describe('A6 authority generation reader', () => {
   it('answers 0 only for the legal no-port/no-row world and throws on a non-generation', async () => {
     expect(await createAlpha6AuthorityGenerationReader(undefined)({
@@ -621,7 +631,7 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
       },
       members: memberLookup(world),
       authorityGeneration: async () => GENERATION,
-      fixedLeaderOrHumanCategory: () => false,
+      fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
     })
     service = createControlService({
       teamDomain: world.domain,

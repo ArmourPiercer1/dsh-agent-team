@@ -200,6 +200,23 @@ async function resolveGeneration(source: AuthorityGenerationSource | undefined):
   }
 }
 
+/**
+ * The production fixed-category classifier over the CLOSED control kinds.
+ *
+ * It invents no taxonomy: `envelope-mutation` is the Leader governance /
+ * mutation category, and `user-approval` is Human-only by construction. Only
+ * `leader-approval` (the ordinary ask) is delegable to the Officer. Reading a
+ * frozen kind is deterministic and cannot be supplied by a model or caller.
+ */
+export function createAlpha6CategoryLookup(): AssignedOfficerCategoryLookup {
+  return ({ leg }) => {
+    if (leg.kind === 'envelope-mutation') return true
+    if (leg.kind === 'user-approval') return true
+    if (leg.kind === 'leader-approval') return false
+    return null
+  }
+}
+
 export type AssignedOfficerCategoryLookup = (
   query: AssignedOfficerCategoryQuery,
 ) => Promise<boolean | null> | boolean | null
