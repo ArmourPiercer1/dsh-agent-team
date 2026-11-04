@@ -593,6 +593,7 @@ describe('A6 root composition (offline, no root mutation)', () => {
     const world = await makeWorld(`a6-root-composition-${Math.random().toString(36).slice(2)}`)
     {
       const members = world.domain.repositories.memberInstances.list(P6T4_ROOT)
+      // eslint-disable-next-line prefer-const -- the composition closure needs the binding before the factory call
       let service!: ControlService
       const composition = createAlpha6RootComposition({
         enabled: true,
