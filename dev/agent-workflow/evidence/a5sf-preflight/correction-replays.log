@@ -1,0 +1,22 @@
+# The correction replays, verbatim (host-free; no Host was started)
+# fixture: dev/agent-workflow/evidence/a5sf-preflight/consultations.jsonl (the REAL 5-fact live sink)
+# stop instant: parsed from the committed run.log archive line = 2026-11-04T07:28:28.916Z
+
+## fix 1 — row 2 asserts a DECISION on every read-path consultation (C9, C13)
+real live B stream (stat/deny + writeText/allow) : {"verdict":"PROVEN","reason":"BINDING_DENY_ON_READ_PATH","readPathFacts":1,"readPathMethods":["stat"],"nonReadPathFacts":[{"method":"writeText","decision":"allow","realm":"member"}],"failed":[]}
+two denies at B (stat + readText)                : {"verdict":"PROVEN","reason":"BINDING_DENY_ON_READ_PATH","readPathFacts":2,"readPathMethods":["stat","readText"],"nonReadPathFacts":[],"failed":[]}
+two allows at B (the live A-locator shape)       : {"verdict":"REFUTED","reason":"ROW2_CLAUSE_FAILED","readPathFacts":2,"readPathMethods":["stat","readText"],"nonReadPathFacts":[],"failed":["everyReadPathConsultationDenied","bindingDenyOnReadPath"]}
+
+## fix 3 — row 6 bounds every observedAt by the stop instant (C15)
+real live stream, sinkDelta=2 (both pre-stop)    : {"verdict":"PROVEN","reason":"NO_USABLE_UNCONSTRAINED_SHADOW","factsObserved":5,"factsAfterStop":[],"stopInstant":"2026-11-04T07:28:28.916Z","failed":[]}
++ ONE injected fact with a later observedAt      : {"verdict":"REFUTED","reason":"ROW6_CLAUSE_FAILED","factsObserved":6,"factsAfterStop":[{"method":"writeText","locator":"/w/after-stop.txt","realm":"binding","observedAt":"2026-11-04T07:28:29.500Z"}],"stopInstant":"2026-11-04T07:28:28.916Z","failed":["noFactAfterStop"]}
++ ONE fact with observedAt=null                  : {"verdict":"REFUTED","reason":"ROW6_CLAUSE_FAILED","factsObserved":6,"factsAfterStop":[],"stopInstant":"2026-11-04T07:28:28.916Z","failed":["factsAreTimestamped"]}
+no stop instant recorded                         : {"verdict":"NOT_REACHED","reason":"NO_STOP_INSTANT","stopInstant":null}
+
+## fix 2 — rows 4a/4b (C14): fixtures, not live data (no live 4a/4b has run yet)
+4a PROVEN requires every write fact on the ceiling realm (realm "member",
+toolBindingIdentity null) and the disk carrying the new content. 4b PROVEN requires
+the IO_WRITE_REQUIRES_READ sentence of the "outside the read rule set" arm, the
+planted content unchanged on disk, and NO write-allow fact on the read lane. 4b
+REFUTES the live row-4 text (a host-sandbox denial): it IS an error, but not the
+asked question. See tests/world-factory/a5sf-acceptance-preflight.test.mjs C14.
