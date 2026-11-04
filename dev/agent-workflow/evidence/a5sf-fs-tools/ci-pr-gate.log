@@ -1,0 +1,10 @@
+DSH-CI-RUN head=d4ce1490a mode=default node=v24.21.0 cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-tools store-dir=default allow-refused=none
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.2 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 51
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.1 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 1100 commits); current contract ok (phase_id alpha5-sandbox-first, baseline 17ce70430899…, matrix rows 21 claimed 0, drift 63 path(s))
+  [blueprint-fence] exit=1 RESULT prose(7 files, 7 sites) | RESULT adjudicated(17 files, 25 sites) | RESULT verdict: dirty-or-unknown (see the OFFENDING/UNKNOWN lines)
+| ADJUDICATED packages/runtime/test/a5-m1-auth-bridge.test.ts :: L1264=v2 (SAME SITE as the ::L1263::v2 row above, drifted +1 line — NOT a second case and not a new judgement: durable LEDGER-ROW envelope version, the literal is the `ledger.put` row envelope (sequence/rootSessionId/factType/payload/cre…[line capped]
+| full capture: transcripts not enabled; rerun with --transcript-dir for the complete capture
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.2 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 1115 tracked files, baseline 6 identities)
+  [lint-identities] exit=0 lint-identities: 161 identity lines, 76 distinct (target .) | lint-identities: universe: 1560 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status) | baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=13.2 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+DSH-CI-VERDICT pass pass=4 fail=0 skip=0 skipped=none legs=4 refused=0 refusedlegs=none seconds=13.7
