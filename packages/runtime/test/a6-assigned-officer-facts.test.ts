@@ -697,6 +697,7 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
   it('live root composition pins no startup Officer and resolves the current unique one at query time', async () => {
     const world = await makeWorld('a6-live-root-composition')
     try {
+      // eslint-disable-next-line prefer-const -- the composition closure needs the binding before the factory call
       let service!: ControlService
       const composition = createAlpha6LiveRootComposition({
         enabled: true,
