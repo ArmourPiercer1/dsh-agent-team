@@ -873,17 +873,30 @@ function userTextOf(req) {
  *  input; sessions with no marker in the history fall back to the raw
  *  last user message. */
 const TRIGGER_RE = /C1MK_[A-Z0-9_]+_[0-9T:-]+|\[team-control requestId=/
+
+/**
+ * 0.2.0-rc.2 delivers tool results as `user` messages carrying a
+ * `tool_result` content block (0.1.x used role `tool`). Such a message can
+ * echo the prompt/persona text, so it must never be mistaken for a NEW chain
+ * trigger and must count as chain progress.
+ */
+function isToolResultMessage(m) {
+  if (m?.role === 'tool') return true
+  return m?.role === 'user' && Array.isArray(m.content)
+    && m.content.some((block) => block?.type === 'tool_result')
+}
+
 function lastTriggerIndex(req) {
   const messages = messagesOf(req)
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const m = messages[i]
-    if (m.role !== 'user') continue
+    if (m.role !== 'user' || isToolResultMessage(m)) continue
     const t = typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')
     if (TRIGGER_RE.test(t)) return i
   }
-  // Fallback: the raw last user message.
+  // Fallback: the raw last non-tool-result user message.
   for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role === 'user') return i
+    if (messages[i].role === 'user' && !isToolResultMessage(messages[i])) return i
   }
   return -1
 }
@@ -905,15 +918,16 @@ function lastUserTextOf(req) {
 function toolMsgsOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
-  return messages.slice(i + 1).filter((m) => m.role === 'tool')
+  return messages.slice(i + 1).filter(isToolResultMessage)
 }
 
 /** The instance id from a team_create_member / team_delegate tool result. */
 function extractInstanceId(content) {
+  const text = typeof content === 'string' ? content : JSON.stringify(content ?? '')
   const m =
-    /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /"instanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /inst-[A-Za-z0-9][A-Za-z0-9-]{3,64}/.exec(String(content))
+    /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(text) ??
+    /"instanceId"\s*:\s*"([^"]+)"/.exec(text) ??
+    /inst-[A-Za-z0-9][A-Za-z0-9-]{3,64}/.exec(text)
   return m === null ? null : m[1]
 }
 
@@ -1092,7 +1106,7 @@ function makeDecide() {
       // The member instance id: the session history carries the
       // create_member result (a tool message from the Z leader chain).
       const allToolMsgs = messagesOf(req).filter((m) => m.role === 'tool')
-      const memberId = allToolMsgs.map((m) => extractInstanceId(String(m.content ?? ''))).find((v) => v !== null) ?? null
+      const memberId = allToolMsgs.map((m) => extractInstanceId(m.content)).find((v) => v !== null) ?? null
       switch (tools) {
         case 0: return toolCall('team_list_pending_control', {
           rootSessionId: CREATE_ROOT_Z,
