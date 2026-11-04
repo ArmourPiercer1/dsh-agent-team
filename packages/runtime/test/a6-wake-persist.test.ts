@@ -385,6 +385,26 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(store.size).toBe(0)
   })
 
+  it('sticky Stop outranks a persisted queued wake and withdraws the Inbox row', async () => {
+    const plan = planFor('req-stop')
+    const identity = identityFor(plan)
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+
+    coordinator.dispatch({ type: 'stop' })
+    expect(coordinator.state.stopped).toBe(true)
+    await store.persistQueued({ key: identity.key, wakeId: identity.wakeId, workFingerprint: identity.fingerprint })
+    inbox.accept(identity.wakeId)
+
+    const recovered = await recoverReviewWake(coordinator, store, inbox)
+    expect(recovered.adopted).toBe(false)
+    expect(recovered.wakeId).toBeNull()
+    expect(inbox.has(identity.wakeId)).toBe(false)
+    await expect(store.read()).resolves.toBeNull()
+    expect(coordinator.state.stopped).toBe(true)
+  })
+
   it('release with a NEW fingerprint and no extra dispatch call yields exactly one new delivery', async () => {
     const firstPlan = planFor('req-r1')
     const coordinator = coordinatorFor(firstPlan)
