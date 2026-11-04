@@ -326,6 +326,9 @@ async function arm(label, options, body) {
     removeAfter = undefined,
     providerPresentBeforePreset = false,
     expectedTools = undefined,   // opt-in declaration on the managed module entry
+    allowEmpty = undefined,      // opt-out of the configured-empty-frontier refusal
+    spyEvent = undefined,        // mount a listener BETWEEN the preset row and the attach
+    expectedToolsMap = undefined, // top-level declaration map (string-entry form)
   } = options
   const dir = trackedDir(`a5sf-event-driven-${label}-`)
   const inside = join(dir, 'inside')
@@ -358,8 +361,16 @@ async function arm(label, options, body) {
       url: HOST_TOOL_SUBAGENT,
       config: { provider: managedProvider, toolName: 'subagent' },
       ...(expectedTools === undefined ? {} : { expectedTools }),
+      ...(allowEmpty === undefined ? {} : { allowEmpty }),
     }],
+    ...(expectedToolsMap === undefined ? {} : { a5sfExpectedTools: expectedToolsMap }),
   })
+  // C2 UNDECIDABILITY MEASUREMENT: the exact row input this seam receives. Two
+  // worlds that differ ONLY in the preset plane's module config must produce the
+  // same hash — that is what makes the hazard undecidable here.
+  // Normalized: the evidence path is a temp dir, and the point of the hash is
+  // that the ROW INPUT (modules + declaration + config) is identical.
+  const rowConfigJson = JSON.stringify(a5sfConfig.nativeToolModules)
   const out = {
     label,
     presetMode,
@@ -369,6 +380,8 @@ async function arm(label, options, body) {
     providerAfter: providerAfter ?? null,
     removeAfter: removeAfter ?? null,
     expectedTools: expectedTools ?? null,
+    allowEmpty: allowEmpty ?? null,
+    rowConfigJson: rowConfigJson === undefined ? null : rowConfigJson,
   }
   // FIBER TRACE: what the mount creates, so "a settle window is entered but
   // there is no transient descendant" is measured, not inferred.
@@ -376,6 +389,24 @@ async function arm(label, options, body) {
   const detachTrace = root.on('internal/plugin', (created) => {
     createdFibers.push({ uid: String(created.uid ?? ''), name: String(created.name ?? ''), state: created.state })
   })
+  if (spyEvent !== undefined) {
+    // C1 WINDOW PROBE: a listener mounted AFTER the preset row and BEFORE the
+    // managed attach. On the boundary emission it dispatches the managed name in
+    // the exact window the record exists to cover: the record is set, the
+    // managed registration has not landed, and the fold therefore sees nothing.
+    const spyPlugin = {
+      name: 'probe-window-spy',
+      inject: ['tools'],
+      apply(ctx) {
+        ctx.on(spyEvent, () => {
+          if (out.windowDispatch !== undefined) return
+          out.windowDispatch = dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS)
+        })
+      },
+    }
+    await standing.ctx.plugin(spyPlugin)
+    out.spyMounted = true
+  }
   let realm
   const started = Date.now()
   try {
@@ -463,6 +494,14 @@ function summarize(armResult) {
     providerAfter: armResult.providerAfter,
     removeAfter: armResult.removeAfter,
     expectedTools: armResult.expectedTools ?? null,
+    allowEmpty: armResult.allowEmpty ?? null,
+    rowConfigJson: armResult.rowConfigJson ?? null,
+    spyMounted: armResult.spyMounted ?? null,
+    windowDispatchIssued: armResult.windowDispatch !== undefined,
+    windowDispatchResult: armResult.windowDispatchResult ?? null,
+    invalidationAfterWindow: armResult.invalidationAfterWindow ?? null,
+    providerStartsAfterWindow: armResult.providerStartsAfterWindow ?? null,
+    guardFactsAfterWindow: armResult.guardFactsAfterWindow ?? null,
     mounted: armResult.mounted,
     elapsedMs: armResult.elapsedMs,
     presetSurface: armResult.presetSurface,
@@ -537,11 +576,43 @@ const result = {
 }
 try {
   // ── E1: absent provider, SAME config on both planes (the product shape) ───
-  const e1 = await arm('E1-absent-provider-same-config', {
+  // REVIEW C2 (2026-11-03): this shape is INDISTINGUISHABLE from E2 at the row —
+  // same entry, same config, same empty frontier; only the preset plane's module
+  // config differs, and the row cannot read it. The default is therefore fail
+  // closed for any CONFIGURED module that forwards nothing; `allowEmpty: true`
+  // is the explicit opt-out that E1b uses to keep the availability-only
+  // measurement on record.
+  const e1 = await arm('E1-absent-provider-same-config-REFUSED', {
     presetMode: 'real',
     presetProvider: 'in-process',
     managedProvider: 'in-process',
     providersAtBoot: [],
+  }, async ({ root, agentKey, out, subagents, sinkPath }) => {
+    // PRE-FIX BEHAVIOUR (RED): the attach is ACCEPTED and this body runs. Record
+    // what it measures, so the refusal's absence is a measurement, not a guess.
+    out.dispatches = { preFix: await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS) }
+    out.guardFacts = consultFacts(sinkPath).length
+    out.providerStarts = subagents.starts.length
+    out.subagentDefinitionAfterAttach = root.get('tools').get('subagent', agentKey)
+    out.subagentDefinition = out.subagentDefinitionAfterAttach === undefined ? 'absent' : 'definition-present'
+  })
+  result.arms.push(assertArm(e1, {
+    'the CONFIGURED module with an empty frontier is REFUSED': (r) => r.mounted === false,
+    'the refusal is TYPED': (r) => r.error?.code === 'A5SF_MANAGED_FRONTIER_EMPTY'
+      || `error=${JSON.stringify(r.error ?? null)}`,
+    'the refusal names the escape hatch': (r) => /allowEmpty/.test(r.error?.message ?? '')
+      || `message=${String(r.error?.message)}`,
+    'no invalidation (a refusal is not a late-change record)': (r) => r.invalidationAfterAttach === null,
+    'the preset plane registered nothing either (the same absent provider)': (r) => r.surfaceAtEnd?.includes('subagent') !== true
+      || `surface=${JSON.stringify(r.surfaceAtEnd)}`,
+  }, 'contract'))
+
+  const e1b = await arm('E1b-absent-provider-same-config-allowEmpty', {
+    presetMode: 'real',
+    presetProvider: 'in-process',
+    managedProvider: 'in-process',
+    providersAtBoot: [],
+    allowEmpty: true,
   }, async ({ realm, root, agentKey, out, subagents, sinkPath }) => {
     const dispatch = await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS)
     out.dispatches = { beforeProvider: dispatch }
@@ -551,8 +622,9 @@ try {
     out.attachFiberNames = (out.attachCreatedFibers ?? []).map((fiber) => fiber.name)
     void realm
   })
-  result.arms.push(assertArm(e1, {
+  result.arms.push(assertArm(e1b, {
     mounted: (r) => r.mounted === true || `attach refused: ${JSON.stringify(r.error ?? null)}`,
+    'the opt-out ACCEPTED the empty frontier': (r) => r.mounted === true,
     'the module registered NOTHING (observed empty)': (r) => (r.routings?.[0]?.observed ?? null)?.length === 0
       || `observed=${JSON.stringify(r.routings?.[0]?.observed ?? null)}`,
     'NOTHING was forwarded (no shadow)': (r) => (r.routings?.[0]?.forwarded ?? null)?.length === 0
@@ -576,11 +648,39 @@ try {
 
   // ── E2: the MANAGED module's provider is absent while the PRESET plane
   //        serves the same name (two different provider configs) ─────────────
-  const e2 = await arm('E2-absent-managed-provider-preset-serves-name', {
+  // REVIEW C2: the natural-composition hazard. On the PREVIOUS head this attach
+  // was accepted and the preset body executed with zero guard facts (E2b, the
+  // canary that still records it under the explicit opt-out). Default = REFUSED.
+  const e2 = await arm('E2-absent-managed-provider-preset-serves-name-REFUSED', {
     presetMode: 'real',
     presetProvider: 'in-process',
     managedProvider: 'ghost',
     providersAtBoot: ['in-process'],
+  }, async ({ root, agentKey, out, subagents, sinkPath }) => {
+    // PRE-FIX BEHAVIOUR (RED): the ATK4 composition is accepted and the preset
+    // definition executes the base provider with zero guard facts.
+    out.dispatches = { preFix: await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS) }
+    out.guardFacts = consultFacts(sinkPath).length
+    out.providerStarts = subagents.starts.length
+    out.subagentDefinitionAfterAttach = root.get('tools').get('subagent', agentKey)
+    out.subagentDefinition = out.subagentDefinitionAfterAttach === undefined ? 'absent' : 'definition-present'
+  })
+  result.arms.push(assertArm(e2, {
+    'the ATK4 composition is REFUSED at assembly': (r) => r.mounted === false,
+    'the refusal is TYPED': (r) => r.error?.code === 'A5SF_MANAGED_FRONTIER_EMPTY'
+      || `error=${JSON.stringify(r.error ?? null)}`,
+    'the preset definition was never executed': (r) => r.surfaceAtEnd?.includes('subagent') === true
+      && r.providerStartsAtEvent === undefined
+      || `surface=${JSON.stringify(r.surfaceAtEnd)} starts=${String(r.providerStartsAtEvent)}`,
+    'no invalidation (a refusal is not a late-change record)': (r) => r.invalidationAfterAttach === null,
+  }))
+
+  const e2b = await arm('E2b-absent-managed-provider-allowEmpty-canary', {
+    presetMode: 'real',
+    presetProvider: 'in-process',
+    managedProvider: 'ghost',
+    providersAtBoot: ['in-process'],
+    allowEmpty: true,
   }, async ({ root, agentKey, out, subagents, sinkPath }) => {
     out.guardFactsBefore = consultFacts(sinkPath).length
     const dispatch = await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS)
@@ -589,11 +689,9 @@ try {
     out.providerStarts = subagents.starts.length
     void root
   })
-  result.arms.push(assertArm(e2, {
+  result.arms.push(assertArm(e2b, {
     mounted: (r) => r.mounted === true || `attach refused: ${JSON.stringify(r.error ?? null)}`,
-    'the managed module registered NOTHING': (r) => (r.routings?.[0]?.observed ?? null)?.length === 0
-      || `observed=${JSON.stringify(r.routings?.[0]?.observed ?? null)}`,
-    'the attach was ACCEPTED with no shadow': (r) => r.mounted === true,
+    'the OPT-OUT accepts the empty frontier': (r) => r.mounted === true,
     'the preset plane DOES provide the name': (r) => r.presetHasSubagent === true
       || `preset surface=${JSON.stringify(r.presetSurface)}`,
     'the name still resolves to the PRESET definition after the attach': (r) => r.subagentDefinition === 'preset'
@@ -614,6 +712,7 @@ try {
     managedProvider: 'in-process',
     providersAtBoot: [],
     providerAfter: 'in-process',
+    allowEmpty: true,
   }, async ({ realm, root, agentKey, out, subagents, sinkPath }) => {
     out.dispatches = {}
     for (let i = 0; i < 80 && (out.fibers ?? []).some((fiber) => (fiber?.state ?? 4) < 4); i += 1) {
@@ -659,6 +758,7 @@ try {
     managedProvider: 'in-process',
     providersAtBoot: [],
     providerAfter: 'in-process',
+    allowEmpty: true,
   }, async ({ realm, root, agentKey, out, subagents, sinkPath }) => {
     out.dispatches = {}
     for (let i = 0; i < 80 && (out.fibers ?? []).some((fiber) => (fiber?.state ?? 4) < 4); i += 1) {
@@ -789,6 +889,104 @@ try {
       && r.surfaceAtEnd.includes('subagent')
       || `surfaceAtEnd=${JSON.stringify(r.surfaceAtEnd ?? null)}`,
   }, 'hazard-boundary'))
+
+  // ── E7: UNDECIDABILITY (review C2). Two worlds with the SAME row input — the
+  //        same managed entry, the same config, `allowEmpty: true` so both are
+  //        accepted — differing ONLY in the preset plane's module config, which
+  //        is NOT an input of `a5sfRealmConfigOf`/`attachA5sfNativeToolModules`.
+  //        World A: nothing serves the name anywhere (harmless). World B: the
+  //        preset definition serves it and executes the base provider with zero
+  //        guard facts (the ATK4 hazard). Identical `rowConfigJson` + opposite
+  //        outcomes = the row cannot decide this by inspection; the decidable
+  //        unit is the entry's own shape (`allowEmpty`) or a declaration.
+  const e7a = await arm('E7a-undecidable-world-A-nothing-serves', {
+    presetMode: 'real',
+    presetProvider: 'ghost',
+    managedProvider: 'ghost',
+    providersAtBoot: [],
+    allowEmpty: true,
+  }, async ({ root, agentKey, out, subagents, sinkPath }) => {
+    out.dispatches = { probe: await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS) }
+    out.guardFacts = consultFacts(sinkPath).length
+    out.providerStarts = subagents.starts.length
+    void root
+  })
+  result.arms.push(assertArm(e7a, {
+    mounted: (r) => r.mounted === true || `attach refused: ${JSON.stringify(r.error ?? null)}`,
+    'nothing is forwarded': (r) => (r.routings?.[0]?.forwarded ?? null)?.length === 0,
+    'the name is UNKNOWN (no definition anywhere)': (r) => r.subagentDefinition === 'absent'
+      || `definition=${String(r.subagentDefinition)}`,
+    'dispatch is unavailable': (r) => r.dispatches?.probe?.isError === true,
+    'the base provider never ran': (r) => r.providerStarts === 0,
+  }, 'measurement'))
+
+  const e7b = await arm('E7b-undecidable-world-B-preset-serves', {
+    presetMode: 'real',
+    presetProvider: 'in-process',
+    managedProvider: 'ghost',
+    providersAtBoot: ['in-process'],
+    allowEmpty: true,
+  }, async ({ root, agentKey, out, subagents, sinkPath }) => {
+    out.dispatches = { probe: await dispatchTool(root, agentKey, 'subagent', SUBAGENT_ARGS) }
+    out.guardFacts = consultFacts(sinkPath).length
+    out.providerStarts = subagents.starts.length
+    void root
+  })
+  result.arms.push(assertArm(e7b, {
+    mounted: (r) => r.mounted === true || `attach refused: ${JSON.stringify(r.error ?? null)}`,
+    'nothing is forwarded': (r) => (r.routings?.[0]?.forwarded ?? null)?.length === 0,
+    'the name resolves to the PRESET definition': (r) => r.subagentDefinition === 'preset'
+      || `definition=${String(r.subagentDefinition)}`,
+    'the preset definition EXECUTES unguarded': (r) => r.dispatches?.probe?.isError === false,
+    'ZERO guard facts': (r) => r.guardFacts === 0,
+    'the base provider ran': (r) => r.providerStarts === 1,
+  }, 'measurement'))
+
+  result.undecidability = {
+    identicalRowInput: e7a.rowConfigJson === e7b.rowConfigJson,
+    rowConfigJson: e7a.rowConfigJson,
+    worldA: { definition: e7a.subagentDefinition, providerStarts: e7a.providerStarts ?? null, text: e7a.dispatches?.probe?.text ?? null },
+    worldB: { definition: e7b.subagentDefinition, providerStarts: e7b.providerStarts ?? null, text: e7b.dispatches?.probe?.text ?? null },
+    differsOnlyIn: 'the preset plane module config (not an input of a5sfRealmConfigOf)',
+  }
+
+  // ── E8: the SAME-EMISSION DISPATCH WINDOW (review C1). A listener mounted
+  //        between the preset row and the managed attach dispatches the managed
+  //        name inside the boundary emission, right after the surface record is
+  //        set and before the managed registration lands. Measured: admission is
+  //        decided in that window (the fold sees nothing), and the body that
+  //        then runs is the one the name resolves to at execution time.
+  const e8 = await arm('E8-same-emission-dispatch-window', {
+    presetMode: 'real',
+    presetProvider: 'in-process',
+    managedProvider: 'in-process',
+    providersAtBoot: [],
+    providerAfter: 'in-process',
+    allowEmpty: true,
+    spyEvent: 'subagent/provider-added',
+  }, async ({ out, subagents, sinkPath }) => {
+    out.windowDispatchResult = out.windowDispatch === undefined
+      ? { missing: true }
+      : await out.windowDispatch
+    out.invalidationAfterWindow = out.invalidationAfterProviderEvent
+    out.providerStartsAfterWindow = subagents.starts.length
+    out.guardFactsAfterWindow = consultFacts(sinkPath).length
+  })
+  result.arms.push(assertArm(e8, {
+    'the window dispatch was actually issued': (r) => r.windowDispatchIssued === true
+      || `windowDispatchIssued=${String(r.windowDispatchIssued)} spyMounted=${String(r.spyMounted)}`,
+    'the dispatch was ADMITTED in the window (the fold saw nothing)': (r) => r.windowDispatchResult?.isError === false
+      || `result=${JSON.stringify(r.windowDispatchResult ?? null)}`,
+    'the body that ran is NAMED (measured, not inferred: the text is recorded verbatim)': (r) => (r.windowDispatchResult?.text ?? '').length > 0
+      || `result=${JSON.stringify(r.windowDispatchResult)}`,
+    'the record was already set when it ran': (r) => r.invalidationAfterWindow !== null
+      || 'no surface record before the managed registration',
+    'the emission itself completed (the provider registration did not throw)': (r) => r.providerRegistration?.threw === false
+      || `providerRegistration=${JSON.stringify(r.providerRegistration ?? null)}`,
+    'the managed registration still landed (surfaceAdded names it)': (r) => JSON.stringify(r.invalidation?.surfaceAdded) === JSON.stringify(['subagent'])
+      || `surfaceAdded=${JSON.stringify(r.invalidation?.surfaceAdded ?? null)}`,
+  }, 'measurement'))
+
 
 } finally {
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true })

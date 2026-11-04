@@ -1275,3 +1275,180 @@ test('E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener re
     await realm.dispose()
   }
 })
+
+/**
+ * A CONFIG-DRIVEN module: its `apply` registers the tool only when the
+ * composition passed `config.enabled === true`. This is the shape the review's
+ * ATK4 measured with the real `dsh-tool-subagent`: the entry carries a `config`,
+ * the condition is NOT met, and the module forwards nothing — so the row cannot
+ * verify what the name would resolve to.
+ */
+function writeConditionalModule(label, toolName) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-cond-${label}-`)))
+  const file = join(dir, 'conditional.mjs')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-conditional-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx, config = {}) {
+  if (config.enabled !== true) return
+  ctx.tools.register({
+    name: ${JSON.stringify(toolName)},
+    description: ${JSON.stringify(`conditional ${label} ${toolName}`)},
+    parameters: { type: 'object', properties: {}, additionalProperties: false },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+    async execute() { return 'conditional-body' },
+  })
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
+test('C2-a (review 2026-11-03) a CONFIGURED module with an EMPTY routed frontier is REFUSED — the natural composition cannot silently leave a preset definition serving', async () => {
+  // The review's ATK4: the preset plane serves the name on its own provider, the
+  // Member's managed entry configures a condition that is not met ("one Member
+  // needs the tool, another declares it managed-absent"). The row cannot read the
+  // preset plane's module config (measured: §7 of the evidence README), so the
+  // default is fail closed for every CONFIGURED module that forwards nothing.
+  const conditional = writeConditionalModule('c2a', 'x_assembly_probe')
+  const world = await makeWorld('configured-empty-frontier', {
+    bindingIdentities: [],
+    modules: [{ url: conditional, config: { enabled: false } }],
+  })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetProbe = definitionOf(root, agentKey, 'x_assembly_probe')
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_MANAGED_FRONTIER_EMPTY', `expected the typed empty-frontier refusal, got ${error.name}: ${error.message}`)
+        assert.match(error.message, /fixture-conditional-c2a/, 'the refusal NAMES the configured module')
+        assert.match(error.message, /allowEmpty/, 'the refusal names the escape hatch')
+        return true
+      },
+      'a configured module that shadows nothing must refuse the attach',
+    )
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a refused attach is not an invalidation')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'the refusal left the preset definition untouched (it was never executed)')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('C2-b (review 2026-11-03) `allowEmpty: true` is the EXPLICIT opt-out: the same composition attaches and records nothing', async () => {
+  const conditional = writeConditionalModule('c2b', 'x_assembly_probe')
+  const world = await makeWorld('configured-empty-allowed', {
+    bindingIdentities: [],
+    modules: [{ url: conditional, config: { enabled: false }, allowEmpty: true }],
+  })
+  const { realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], [], 'the opt-out accepts the empty frontier')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'no invalidation: nothing changed the surface')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('C2-c (review 2026-11-03) the top-level `a5sfExpectedTools` map declares on a STRING entry — accepted when forwarded, deny covers the name', async () => {
+  const moduleA = writeNativeModule('c2c', [{ name: 'x_assembly_probe' }])
+  const world = await makeWorld('map-declared-forwarded', { bindingIdentities: [], modules: [moduleA] })
+  const { root, realm, agentCtx, agentKey, sinkPath } = world
+  const config = row.a5sfRealmConfigOf({
+    a5sfEvidencePath: sinkPath,
+    a5sfNativeToolModules: [moduleA],
+    a5sfExpectedTools: { [moduleA]: ['x_assembly_probe'] },
+  })
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.deepEqual([...routingsOf(fibers)[0].forwarded], ['x_assembly_probe'], 'the string entry is managed and shadowed')
+    const served = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(served.isError, false, `the shadowed name serves on the routed lane: ${served.text}`)
+    assert.equal(served.text, 'ok', 'the fixture body served (not a preset body)')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('C2-d (review 2026-11-03) the map declaration on a STRING entry that forwards NOTHING is REFUSED, typed', async () => {
+  const silent = writeEventModule('c2d', 'x_assembly_probe', 'never/fired')
+  const world = await makeWorld('map-declared-unshadowed', { bindingIdentities: [], modules: [silent] })
+  const { realm, agentCtx, agentKey, sinkPath } = world
+  const config = row.a5sfRealmConfigOf({
+    a5sfEvidencePath: sinkPath,
+    a5sfNativeToolModules: [silent],
+    a5sfExpectedTools: { [silent]: ['x_assembly_probe'] },
+  })
+  try {
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_EXPECTED_TOOLS_UNSHADOWED', `expected the declaration refusal, got ${error.name}: ${error.message}`)
+        assert.match(error.message, /x_assembly_probe/)
+        return true
+      },
+      'the string-entry declaration must be enforced like the object form',
+    )
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('C2-e (review 2026-11-03) an `a5sfExpectedTools` specifier that no entry names is a configuration fault (a typo cannot declare nothing)', async () => {
+  const moduleA = writeNativeModule('c2e', [{ name: 'x_assembly_probe' }])
+  assert.throws(
+    () => row.a5sfRealmConfigOf({
+      a5sfEvidencePath: '/tmp/a5sf-assembly-c2e.jsonl',
+      a5sfNativeToolModules: [moduleA],
+      a5sfExpectedTools: { 'file:///typo/other-module.mjs': ['x_assembly_probe'] },
+    }),
+    (error) => error instanceof TypeError && /a5sfExpectedTools/.test(error.message) && /no .*a5sfNativeToolModules entry/.test(error.message),
+    'an orphan declaration must refuse at assembly',
+  )
+})
+
+test('C3-a (review 2026-11-03) `expectedTools` VALIDATION: a non-array is a configuration fault', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: [{ url: 'file:///x.mjs', expectedTools: 'read' }] }),
+    (error) => error instanceof TypeError && /expectedTools must be an array/.test(error.message),
+  )
+})
+
+test('C3-b `expectedTools` VALIDATION: an EMPTY array is a contradiction, not an opt-out', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: [{ url: 'file:///x.mjs', expectedTools: [] }] }),
+    (error) => error instanceof TypeError && /must not be empty/.test(error.message),
+  )
+})
+
+test('C3-c `expectedTools` VALIDATION: a BLANK name is a fault', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: [{ url: 'file:///x.mjs', expectedTools: ['read', '  '] }] }),
+    (error) => error instanceof TypeError && /non-blank tool-name strings/.test(error.message),
+  )
+})
+
+test('C3-d `expectedTools` VALIDATION: a NON-STRING name is a fault', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: [{ url: 'file:///x.mjs', expectedTools: ['read', 7] }] }),
+    (error) => error instanceof TypeError && /non-blank tool-name strings/.test(error.message),
+  )
+})
+
+test('C3-e `expectedTools` VALIDATION: a DUPLICATE name is a fault', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: [{ url: 'file:///x.mjs', expectedTools: ['read', 'read'] }] }),
+    (error) => error instanceof TypeError && /more than once/.test(error.message),
+  )
+})
+
+test('C3-f `expectedTools` VALIDATION: the top-level map refuses the same faults (empty map, non-array entry)', async () => {
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: ['file:///x.mjs'], a5sfExpectedTools: {} }),
+    (error) => error instanceof TypeError && /at least one module specifier/.test(error.message),
+  )
+  assert.throws(
+    () => row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/e.jsonl', a5sfNativeToolModules: ['file:///x.mjs'], a5sfExpectedTools: { 'file:///x.mjs': 'read' } }),
+    (error) => error instanceof TypeError && /must be an array/.test(error.message),
+  )
+})

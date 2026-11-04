@@ -152,10 +152,10 @@ host-free parity 与负控、（c）release gate 在无旧 body 的情况下通�
 | 6 | 失效之后，该 Member 的受管工具调用必须**在准入被拒**（不是回落到 preset 定义） | **是**：#574 `tools/pre-execute` admission deny（`a5sf-p0/README.md` §3；P0-1/P0-3） |
 | 7 | 模块的 prompt 段必须叫 `tool:<name>`（否则只进 ceiling fiber，模型可见面可能不平） | **部分**：路由按名转发，surface-neutrality 检查会拒绝名集变化，但**没有**“段名必须合规”的静态检查（`a5sf-s1/README.md` §3/§7.2 披露） |
 | 8 | 模块的 `apply` 必须可安全重复执行（探针会多跑一次） | **否**：这是模块作者契约；ruling §0.3 明确把 `observeOnly` 限定为“已验证可安全重复装载的模块”，代码不校验幂等/无副作用（assembly §9） |
-| 9 | 事件驱动条件注册（provider 缺失形状）必须被覆盖 | **否**：settle 窗口只等已创建的 fiber；provider 缺失时零注册、零 forwarded 名、零身份检查（§1.1/§5.3）。需要 per-module arm 或“provider 先于 mount 解析”的前置拒绝 |
+| 9 | 事件驱动条件注册（provider 缺失形状）必须被覆盖 | **部分覆盖（2026-11-03 实测 + 修复）**：settle 窗口对事件回调里的 fiber 是空转，provider 缺失时 `observed=forwarded=[]`；provider 在 mount 后出现时注册会落地、realm 会 fold+invalidate、admission deny 覆盖该名（`a5sf-event-driven` E3a/E3b，两种监听顺序都钉住）；同一 emission 内 preset 先注册时 base 会抛 `INACTIVE_EFFECT`，已在 mount seam 修复。**新增默认拒绝**：带 `config` 的受管模块若 settle 边界零 forwarded ⇒ `A5SF_MANAGED_FRONTIER_EMPTY`；可选 `expectedTools`（对象条目或顶层 `a5sfExpectedTools` 映射）把“声明名未被 shadow”变成 `A5SF_EXPECTED_TOOLS_UNSHADOWED`；显式 `allowEmpty: true` 才接受未验证的空 frontier（同配置下仅为可用性缺口，异配置下 preset 会以 0 guard facts 执行 —— 由 canary 记录）。**仍未覆盖**：未声明、未配置（字符串条目且无 `config`）的零注册 attach 仍按 C3/A7 旧契约接受；emission 内窗口（`E8`）内可执行当时可见的 preset 定义，窗口外 deny 生效 |
 | 10 | 第二个模块不得与第一个模块**共享工具名** | **部分**：无 binding 时 row 直接返回、不做归属观测（`nativeToolMountsOf` 的 `identities.length === 0` 分支），两个 ceiling mount 会重复注册；`ToolRuntime` 对同 scope 重复名直接抛错（`packages/core/tools/lib/index.js:2634`）→ 仍是 fail-closed，但没有专门的 typed 诊断 |
 
-**结论**：1–6 已由代码强制，7–8 是契约/披露，9 是**当前不成立的缺口**。因此第二个模块的准入判据
+**结论**：1–6 已由代码强制，7–8 是契约/披露，9 是**部分覆盖**（默认拒绝已知形状，残余见该行与 §5.3）。因此第二个模块的准入判据
 应是：**同步注册（或延迟依赖可解析且可 settle）+ 工具名与既有模块不相交 + provider 在 mount 前已解析**；
 在这个形状上，`dsh-tool-fs-search`、`dsh-tool-str-replace-editor` 是代价最小的候选（同步、无延迟依赖），
 而 `dsh-tool-subagent` 这类事件驱动模块应先补专属 arm。
@@ -196,7 +196,17 @@ settle bound），而不是 `UNSUPPORTED`；裁决中“不得靠改登记名或
 
 裁决第 3 条只谈 `observeOnly` 探针与延迟注册；**事件驱动条件注册**（`tool-subagent` 的
 `subagent/provider-added`）是两者之外：它不创建待 settle 的 fiber，也不在 `ctx.inject` 里。后果见 §1.1/§4 第 9 条。
-本阶段不提议修它（不在此 lane 的授权与预算内），只把它记为**采用第二个模块时必须先补的判据**。
+
+**2026-11-03 实测（`a5sf-event-driven`，真 pinned 模块、双平面）**：
+(1) 该形状可经 routed mount 到达，`forwarded=observed=[]`、无 deferred 子 fiber；
+(2) provider 在 mount 后出现时注册会落地，realm 折叠 + invalidate，deny 覆盖（两种监听顺序）；
+(3) 同一同步 emission 内 preset 先注册会让 base 的 router 在 emission 中途被拆，managed 注册抛
+`INACTIVE_EFFECT` 并回滚 provider —— 已在 mount seam 修复（teardown 延迟一个 microtask、admission 时 fold）；
+(4) 带 `config` 的受管条目零 forwarded 时默认拒绝（`A5SF_MANAGED_FRONTIER_EMPTY`），
+`expectedTools`/顶层 `a5sfExpectedTools` 为精确声明，`allowEmpty: true` 为显式放弃验证。
+(5) 行无法读取 preset 平面的模块 config（测量：相同行输入、两种世界，E7），故不能做“配置分歧比较”；
+残余窗口见 `E8`。结论仍是**采用第二个模块时**：provider 必须先于 mount 解析、且在该条目上声明
+`expectedTools`（或确认两平面配置一致后显式 `allowEmpty`）。
 
 ### 5.4 让 trusted-registry 路线以后可行需要什么（只记录，不提议现在建）
 

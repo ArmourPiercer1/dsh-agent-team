@@ -89,14 +89,31 @@ the product composition this shape is an **availability gap**, not an execution 
 
 ### (2) Absent provider at mount — does anything register anywhere, and is a preset definition executable and unguarded?
 
-Two answers, because they are two compositions:
+There are two compositions, and from the seam they are **indistinguishable** (measured,
+E7 below). Both are handled by the same decidable rule.
 
-- **Same config on both planes (the product composition):** nothing registers anywhere.
-  E1 above: preset surface empty, managed partition empty, `UNKNOWN_TOOL`. Availability
-  only. This is the inventory's §1.1 reading, confirmed by measurement.
-- **Divergent config (a preset row with an available provider while the managed native
-  module's provider is absent): E2** — the preset-plane definition for the managed NAME
-  exists and is executable:
+**The decidable rule (review C2, 2026-11-03):** a managed entry that carries a `config` is
+a CONDITIONAL module — the composition configured the thing its registration depends on.
+When such a module forwards NOTHING at the settle boundary, the attach is **refused by
+default** with the typed `A5SF_MANAGED_FRONTIER_EMPTY` (the refusal names the module and
+both escapes). The row cannot read the preset plane's module config, so it cannot tell
+"absent everywhere" from "the preset serves this name on its own provider"; the honest
+default is fail closed. Two explicit opt-outs exist, and both are the composition saying
+"yes, I know": `expectedTools` (the precise contract, §4) and `allowEmpty: true` (accept an
+unverified empty frontier).
+
+- **Same config on both planes (product shape) — E1/`E1-REFUSED`:** refused at assembly.
+  With the explicit opt-out (`E1b`) the old state is reproducible and is availability only:
+
+```
+mounted=true preset=[] after=[]
+routings=[{"realm":"ceiling","forwarded":[],"observed":[],"dropped":[]}]
+dispatch: {"isError":true,"info":{"code":"UNKNOWN_TOOL"}} providerStarts=0 guardFacts=0
+```
+
+- **Divergent config (preset serves the name, managed provider absent) — E2/`E2-REFUSED`:**
+  refused at assembly (no preset definition ever executes). The old hazard is preserved as
+  the **canary** `E2b`, which is what the explicit `allowEmpty: true` buys:
 
 ```
 mounted=true preset=["subagent"] after=["subagent"]
@@ -106,10 +123,11 @@ dispatch: {"isError":false,"text":"BASE-PROVIDER-RAN:in-process","info":null}
 providerStarts=1 guardFacts=0 invalidation=null
 ```
 
-That is an unguarded preset execution with ZERO guard facts for a name the composition
-declares managed. The seam cannot detect it from inside: an attach that forwards zero
-names carries no evidence of which names it *would* have owned (§4). The OPT-IN answer is
-`expectedTools` — and **E6** measures it refusing that same composition:
+  An unguarded preset execution with ZERO guard facts for a name the composition declares
+  managed. `E2b` PASSES when it reproduces the hazard (`kind: "hazard-canary"`); it is not a
+  green contract, it is the documented cost of opting out.
+- **Declared (E6):** the same divergent composition with `expectedTools: ["subagent"]` is
+  refused with `A5SF_EXPECTED_TOOLS_UNSHADOWED`, naming the mismatch:
 
 ```
 mounted=false
@@ -117,6 +135,27 @@ error: {"name":"A5sfNativeAssemblyError","code":"A5SF_EXPECTED_TOOLS_UNSHADOWED"
         "message":"... (tool-subagent expected [\"subagent\"] but the attach forwarded []); ...
                     refusing the attach (fail closed)"}
 ```
+
+### (2b) WHY the row cannot decide this by inspection — E7, the undecidability measurement
+
+Two worlds were built with an **identical row input** (same entry, same `config`, same
+`allowEmpty: true`; `rowConfigJson` byte-equal, recorded in the JSON) and differ ONLY in the
+preset plane's module config — which is not an input of `a5sfRealmConfigOf` /
+`attachA5sfNativeToolModules`:
+
+| world | preset plane config | measured outcome with the SAME row input |
+| --- | --- | --- |
+| `E7a` | provider `ghost` (absent) | surface `[]`, `subagentDefinition="absent"`, dispatch `UNKNOWN_TOOL` |
+| `E7b` | provider `in-process` (present) | surface `["subagent"]`, `subagentDefinition="preset"`, dispatch `BASE-PROVIDER-RAN:in-process`, `guardFacts=0` |
+
+`result.undecidability.identicalRowInput = true`. That is why the "config divergence
+comparison" the review asked for is not implementable at this seam in this lane: the only
+components that see the preset plane's module config are the preset registry and the glue
+that mounts it (`agent-bindings.mjs`, frozen here — sha256 in §10), and its public API
+(`composedPreset()` returns an id; `compositionInventory()` exposes `moduleName`/`enabled`
+but **not** the row config) does not carry it. So the decidable unit is the entry's own
+shape (`config` present + empty frontier ⇒ refuse unless opted out), and `allowEmpty: true`
+is the explicit statement that the composition has checked the two planes agree.
 
 ### (3) Provider appears after settle — does the registration land, does the realm fold + invalidate, does the deny cover the name?
 
@@ -225,15 +264,29 @@ pre-existing `a5sf-assembly` arms are untouched and green (111/111 a5sf node tes
 
 ## 4. The opt-in declaration — `expectedTools` (2026-11-03)
 
-Optional key on a managed `a5sfNativeToolModules` entry:
+Two forms, same semantics (review C2/C6, 2026-11-03). The OBJECT form needs an object
+entry; the TOP-LEVEL MAP exists because a STRING entry — the form most fixtures use — could
+not declare at all, and a mitigation reachable only on a form nobody uses is not a
+mitigation.
 
 ```jsonc
+// form 1 — on the object entry
 "a5sfNativeToolModules": [
   { "url": "@deepseek-ai/dsh-tool-subagent",
     "config": { "provider": "in-process", "toolName": "subagent" },
-    "expectedTools": ["subagent"] }        // OPT-IN; omit for today's behaviour
+    "expectedTools": ["subagent"],   // OPT-IN
+    "allowEmpty": false }            // OPT-OUT of the empty-frontier refusal (default false)
 ]
+
+// form 2 — keyed by module specifier, works for STRING entries too
+"a5sfNativeToolModules": ["@deepseek-ai/dsh-tool-subagent"],
+"a5sfExpectedTools": { "@deepseek-ai/dsh-tool-subagent": ["subagent"] }
 ```
+
+A specifier in `a5sfExpectedTools` that no entry names is a configuration fault (a typo
+must not silently declare nothing). When both forms are present their union is required.
+`allowEmpty: true` is NOT a safety feature: it accepts that a configured module may shadow
+nothing, which is exactly the state the canary `E2b` measures.
 
 **What it is:** a statement of which tools the composition BELIEVES that module provides.
 **What it grants: NOTHING.** It is not an allowlist, not a second registry, not a second
@@ -256,8 +309,14 @@ Measured arms:
 | --- | --- | --- |
 | `EXPECT-1` / probe E4 | declared = the name the module forwards | ACCEPTED; routed definition serves; no invalidation |
 | `EXPECT-2` | declared, module forwards nothing (event-driven module, provider never appears) | typed refusal `A5SF_EXPECTED_TOOLS_UNSHADOWED`, names `x_assembly_probe`; no invalidation; surface neutral; preset untouched |
-| `EXPECT-3` | **absent** declaration, module forwards nothing | ACCEPTED — today's behaviour, exactly (the merged C3/A7/C1 contracts) |
+| `EXPECT-3` | **absent** declaration, module forwards nothing, entry carries NO config | ACCEPTED — today's behaviour, exactly (the merged C3/A7/C1 contracts; the C2 rule only bites CONFIGURED entries) |
+| `C2-c` | top-level map on a STRING entry, declared name forwarded | ACCEPTED; routed definition serves |
+| `C2-d` | top-level map on a STRING entry, nothing forwarded | refused `A5SF_EXPECTED_TOOLS_UNSHADOWED` |
+| `C2-e` | map key that no entry names | `TypeError` at row assembly |
+| `C3-a…f` | non-array / empty / blank / non-string / duplicate / map faults | each a `TypeError` at row assembly (mutation-tested: deleting the validation turns all five red) |
 | probe E6 | E2's divergent composition + declaration (real pinned module) | attach REFUSED, `A5SF_EXPECTED_TOOLS_UNSHADOWED`, message: `tool-subagent expected ["subagent"] but the attach forwarded []` |
+| probe `E1` / `E2` | product shape / divergent shape, no declaration | refused `A5SF_MANAGED_FRONTIER_EMPTY` (the C2 default) |
+| probe `E1b` / `E2b` | same shapes + `allowEmpty: true` | accepted; `E2b` reproduces the unguarded preset execution (canary) |
 
 Honest boundary of E6: refusing the managed attach does **not** unregister the preset
 plane's own definition — that registration belongs to the composition, not to this seam.
@@ -267,13 +326,21 @@ preset name); it is the composition author's job not to ship both planes.
 ## 5. What is still NOT covered — the stated limit
 
 **An event-driven module cannot be a managed native module unless its provider is resolved
-BEFORE the mount.** If the provider is absent at mount time and no `expectedTools` is
-declared, the attach is accepted with an empty partition (E1: `observed=[]`,
-`forwarded=[]`); nothing enforces the provider-resolution ordering, and the seam fails
-closed only AFTER the fact, by invalidating the realm when the name appears (E3a/E3b).
-`expectedTools` is the opt-in that turns that into an assembly refusal; it is opt-in
-precisely because refusing every zero-registration attach would reverse the merged
-C3 (`a5sf-assembly`) and A7 (`a5sf-deferred`) contracts.
+BEFORE the mount.** A CONFIGURED module (entry carries a `config`) that forwards nothing at
+the settle boundary is refused by default (`A5SF_MANAGED_FRONTIER_EMPTY`, E1/E2); a
+composition that knows the empty frontier is intended opts out with `allowEmpty: true`, and
+the seam then fails closed only AFTER the fact, by invalidating the realm when the name
+appears (E3a/E3b). This is deliberately narrower than "refuse every zero-registration
+attach": entries WITHOUT a config keep the merged C3 (`a5sf-assembly`) and A7
+(`a5sf-deferred`) contracts byte-for-byte (EXPECT-3), because those fixtures register
+nothing unconditionally and there is no configured condition to be unverified.
+
+**Still NOT covered, stated plainly:** (a) an UNCONFIGURED module (string entry, no
+`config`) that forwards nothing while the preset plane serves its name is accepted — the
+C3/A7 contract, and the row has no input that names the module's tools; declare
+`expectedTools` (form 2 works on string entries) to close it. (b) The intra-emission
+dispatch window measured by `E8` (§5, second risk). (c) A refusal never unregisters the
+preset plane's definition — that belongs to the composition.
 
 **Sharpest reviewer risk — E2.** A composition whose PRESET plane is configured with a
 different/available provider than the MANAGED module's provider reproduces the P0 class if
@@ -284,33 +351,35 @@ with zero guard facts and reaches the base provider (E2: `providerStarts=1`,
 contract. With the declaration (E6) the same composition is refused at assembly.
 
 Second risk: the deferred-teardown change means a router can outlive the invalidation
-record by one microtask. The record is set first and admission folds before it decides, so
-no dispatch can be served by an unverified definition in that window — but a reader who
-assumes "invalidated ⇒ routers already disposed" is wrong by one microtask, by design.
+record by one microtask (by design: the record is set first, the disposal waits for the
+turn to end). **Measured residual window (probe `E8`, review C1 2026-11-03):** a dispatch
+issued from ANOTHER listener inside the SAME boundary emission — after the record is set
+and before the managed registration lands — is **ADMITTED** (the admission deny folds only
+names the attach knows, and the managed name is not in `expectedDefinitions` yet), and it
+then executes the definition visible at that instant. Measured body:
+`{"isError":false,"text":"BASE-PROVIDER-RAN:in-process"}` with `guardFacts=0`, while the
+record already read `surfaceAdded:["subagent"]`. So in that microtask-sized window the name
+can be served by the **PRESET** definition, not the confined one — the exact definition the
+record exists to refuse. The window is reachable only by code running inside the
+composition's own synchronous emission (a model turn is a separate task; by the time it
+runs, the deny covers the name — `E3a`/`E3b` measure that). Closing it would mean denying
+*every* post-settle surface addition, which the merged `E3-fold` contract explicitly does
+not do (an unmanaged plane name must stay servable).
 
-## 6. Inventory gate-table delta (base mismatch disclosed)
+## 6. Inventory gate-table delta — APPLIED in this lane (base moved to `3bee414ef`)
 
-`docs/plans/active/alpha5-sandbox-first/NATIVE-SOURCE-INVENTORY.md` is **not on
-`origin/master`** `d0cbef9af`; it exists only on the unmerged p3 lane
-(`task/a5sf-p3-inventory-20261103`, `bbba12de0`), where §4 gate row 9 currently reads:
+`docs/plans/active/alpha5-sandbox-first/NATIVE-SOURCE-INVENTORY.md` was **not** on the
+base this lane started from (`d0cbef9af`); it landed on `origin/master` with #577
+(`3bee414ef`), which this branch merged forward (**merge, not rebase** — the branch carries
+committed run records). The measured row delta is therefore applied **in this lane**, in the
+merged file, not delivered as a patch:
 
-> 事件驱动条件注册（provider 缺失形状）必须被覆盖 | 否：settle 窗口只等已创建的 fiber；provider 缺失时零注册、零 forwarded 名、零身份检查（§1.1/§5.3）
-
-This lane did not duplicate that file (it is p3's artifact; adding it here would conflict).
-Ready-to-apply replacement for that row, measured on this tree:
-
-> 事件驱动条件注册（provider 缺失形状）必须被覆盖 |
-> **部分覆盖（实测 2026-11-03）**：settle 窗口对"注册在事件回调里"的 fiber 是空转，provider 缺失时
-> `observed=forwarded=[]`、attach 被接受、工具不可用（`UNKNOWN_TOOL`）——产品同配置下是可用性缺口，不是执行泄漏；
-> provider 在 mount 后出现时注册**会**落地、realm **会** fold + invalidate、admission deny 覆盖该名（E3a/E3-fold，
-> managed 先到的顺序把名字记入 `lateRegistrations`）；**mount 与"preset plane 同一同步 emission 内先注册"竞争时，
-> base commit 会把 router 在 emission 中途拆掉，导致 managed 注册抛 `INACTIVE_EFFECT` 并由 provider 注册回滚**——
-> 本 lane 已在 mount seam 修复（延迟一个 microtask 执行 teardown + admission 时 fold；product 顺序的记录由 surface
-> gate 产生，managed 名字在 admission 折叠），RED→GREEN 见 `a5sf-event-driven` 证据。
-> **新增可选判据**：`a5sfNativeToolModules[].expectedTools`（本 lane 实现）——声明后若 settle 边界仍有声明名未被
-> forwarded，attach 以 `A5SF_EXPECTED_TOOLS_UNSHADOWED` 拒绝（E6）；未声明时保持旧行为。**仍未覆盖**：两 plane 配置
-> 不一致且未声明 `expectedTools` 时，preset 定义会以 0 guard facts 执行——采用第二个模块时应在 composition 中声明
-> expectedTools（§5.4 item 2），本 lane 未把声明设为强制。
+- §4 gate row 9: `否` → **部分覆盖** with the measured mechanism (E3a/E3b both listener
+  orders, the `INACTIVE_EFFECT` repair, the new default refusal, `expectedTools` in both
+  forms, `allowEmpty`, and the two residual gaps: the unconfigured zero-registration attach
+  and the `E8` intra-emission window).
+- §5.3: the five measured facts, including the undecidability (E7) and the conclusion for
+  adopting a second module (provider resolved before mount + declare `expectedTools`).
 
 ## 7. Gates
 
@@ -318,16 +387,16 @@ All logs in this directory.
 
 | gate | result | log |
 | --- | --- | --- |
-| `node --test tests/world-factory/a5sf-*.test.mjs` | 111/111 pass | `all-a5sf-node-suites.log` |
+| `node --test tests/world-factory/a5sf-*.test.mjs` | 122/122 pass (30 assembly arms incl. C2-a…e / C3-a…f) | `all-a5sf-node-suites.log` |
 | `a5sf-deferred` probe (A1–A7, the merged deferred contract) | 7/7 pass | (re-run, committed evidence untouched) |
 | `pnpm vitest run a5sf` | 11 files / 166 tests pass | `vitest-a5sf.log` |
 | `pnpm -s typecheck` | EXIT=0 | `typecheck.log` |
 | `pnpm -s build` | EXIT=0 | `build.log` |
 | `pnpm -s lint` | pre-existing repo-wide debt (129 errors in untouched files); **zero findings in the files this lane touched** | `lint.log` |
-| `pnpm ci:local --base origin/master` | `verdict=fail steps=6 failed=1` — one 5000 ms load timeout in `a5p4-lane-hygiene.test.ts` (unrelated lane), passes alone in 668 ms | `ci-local.log`, `ci-local-red-isolation.log` |
+| `pnpm ci:local --base origin/master` | `verdict=fail steps=6 failed=1` — one 5000 ms load timeout in an UNRELATED lane; **the failing file's identity is load-dependent and unstable** (see §8), passes alone in 668 ms | `ci-local.log`, `ci-local-red-isolation.log` |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok` (1916 compared, drift 0) | `check-artifacts-committed.log` |
 | `node scripts/check-artifacts-at-head.mjs` | `verdict=ok` — HEAD carries its own build | `check-artifacts-at-head.log` |
-| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, added=17, findings=0 | `eb3-evidence-guard.log` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, added=22 at this head, findings=0 (the file count is a property of the HEAD, re-measured here — an older log quoted 17) | `eb3-evidence-guard.log` |
 | `node scripts/eb3-ci-required.mjs` | pass, workflows=9, findings=0 | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | 26/26 controls behaved as required | `eb3-negative-controls.log` |
 | `node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities` | `DSH-CI-VERDICT pass pass=4 fail=0` | `ci-pr-gate.log` |
@@ -366,6 +435,14 @@ invocation, the failing block, both step verdicts and the final verdict verbatim
 transcript exceeds the evidence bound; re-run `pnpm ci:local --base origin/master` to
 reproduce it).
 
+**C4 (review 2026-11-03) — the flake's identity is NOT stable.** This lane's run timed out
+in `a5p4-lane-hygiene.test.ts > self-typechecks with strict settings`; the reviewer's runs
+timed out in `a5g6-install-face-render` and `alpha5-glob-backend` (×3) — different files,
+same class (a 5000 ms per-test timeout hit while a 200 s+ suite saturates the box). So
+"which file" is load-dependent and must NOT be read as a property of that file: the
+reproducible fact is the class (one timeout under load, green in isolation), not the name.
+The isolation evidence below is for THIS run's file only.
+
 Per the lane rule, `verdict=fail` is not a pass: coverage is `determined` for the selected
 files and the single failure is a documented, reproduced-in-isolation timeout on an
 untouched lane (`a5p4` = team-sandbox files; this lane changed no team-sandbox file, and
@@ -386,6 +463,23 @@ changes are edits inside existing files; every new file is under `tests/` or
 
 ## 10. Discipline notes
 
+- **Review round (2026-11-03, conditions C1–C6) — what moved:**
+  - **C1 (honesty):** the absolute "no dispatch can be served in that window" claim is
+    replaced by the measured `E8` shape (a same-emission dispatch executes the PRESET
+    definition with 0 guard facts while the record is set). The claim was false as written.
+  - **C2 (the substantive one):** the declaration is now reachable on STRING entries
+    (`a5sfExpectedTools` map, C2-c/d/e) and the natural composition fails closed by default
+    (`A5SF_MANAGED_FRONTIER_EMPTY`, E1/E2; `allowEmpty: true` is the explicit opt-out whose
+    cost is the E2b canary). The undecidability of the "compare preset config" alternative
+    is measured (E7) — its inputs are not part of this seam.
+  - **C3:** the validation faults are pinned (C3-a…f) and mutation-tested (deleting the
+    validation turns all five red).
+  - **C4:** §8 now states the flake's identity is load-dependent and unstable
+    (`a5p4-lane-hygiene` here; `a5g6-install-face-render` / `alpha5-glob-backend` for the
+    reviewer) — the class is the fact, not the file.
+  - **C5:** the evidence-guard log is re-measured at this head (`added=22`).
+  - **C6:** both declaration forms are documented (§4).
+
 - **No Host boot** (0 boots, 0 ports), no `tests/homes/**`, no write to
   `tests/deepseek-harness-test-use/**` (read-only pristine host).
 - **`node_modules` in this worktree are symlinks to the sibling install** at
@@ -399,13 +493,17 @@ changes are edits inside existing files; every new file is under `tests/` or
 
 ## 11. Head
 
-Base `origin/master` = `d0cbef9af2949f88839741efdad758ba75c52743`. The branch head this
-evidence describes is the commit that last touched this directory:
+Base `origin/master` at the start of this lane = `d0cbef9af2949f88839741efdad758ba75c52743`;
+the review round merged `origin/master` `3bee414efd659b86f979ef01cd50c49c6045e791` (#577)
+**forward (merge, not rebase — the branch carries committed run records)**. The branch head
+this evidence describes is the commit that last touched this directory:
 
 ```
 git log -1 --format='%H %s' -- dev/agent-workflow/evidence/a5sf-event-driven
 ```
 
-(`git diff --stat origin/master..HEAD` at that head: `mount.ts` +74/−14, the row
-+119/−9, the assembly suite +223, the rebuilt `mount.js`/maps and the row's composition
-copy, and this evidence directory.)
+(`git diff --stat origin/master..HEAD` includes: the row's own diff (expectedTools in two
+forms, `allowEmpty`, the configured-empty-frontier refusal, validation), the assembly
+suite's new C2/C3 arms, the seam change from the first round, the rebuilt
+`mount.js`/`types.d.ts`/row composition copies, the merged #577 inventory with the applied
+gate row, and this evidence directory.)
