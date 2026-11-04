@@ -153,7 +153,11 @@ export function acceptanceRootIdentity({ bootRoot, teamRoot }) {
     // and by the host-free test, not by an empty state query after a boot.
     createRoot: teamRoot,
     stateQueryRoot: teamRoot,
+    // NOT an observation root: `POST /__p6t6/tool` dispatches by the MEMBER's
+    // child session (`as:`), not by a team root. Kept as a label for readers of
+    // the record only; the assertion below does NOT count it as evidence.
     toolRouteRoot: teamRoot,
+    toolRouteRootIsLabel: true,
     archiveRoot: teamRoot,
     oracleRoot: teamRoot,
     directiveRoot: teamRoot,
@@ -183,11 +187,14 @@ export const P2_01_ACCEPTANCE_ROOTS = acceptanceRootIdentity({
  * @returns {{ok: true, root: string, bootRoot: string}}
  * @throws {AcceptanceRootMismatch} when any observation seam disagrees.
  */
-export function assertAcceptanceRootWiring(roots) {
+export function assertAcceptanceRootWiring(roots, { productionRowRoot, directiveRoot } = {}) {
   if (roots === null || typeof roots !== 'object') {
     throw new AcceptanceRootMismatch(`roots must be an object (got ${JSON.stringify(roots)})`)
   }
-  const seams = ['createRoot', 'stateQueryRoot', 'toolRouteRoot', 'archiveRoot', 'oracleRoot', 'directiveRoot']
+  // `toolRouteRoot` is deliberately NOT in this list: the tool route dispatches
+  // by the member child session, so counting it as evidence would inflate the
+  // contract with a value no product seam reads.
+  const seams = ['createRoot', 'stateQueryRoot', 'archiveRoot', 'oracleRoot', 'directiveRoot']
   const values = seams.map((seam) => [seam, roots[seam]])
   const first = values[0][1]
   if (!isNonBlank(first)) throw new AcceptanceRootMismatch(`createRoot must be a non-blank session id (got ${JSON.stringify(first)})`)
@@ -195,17 +202,41 @@ export function assertAcceptanceRootWiring(roots) {
   if (disagreeing.length > 0) {
     throw new AcceptanceRootMismatch(
       `the acceptance Team would be created on ${JSON.stringify(first)} but ${disagreeing.map(([seam]) => `${seam}=${JSON.stringify(roots[seam])}`).join(', ')}`
-      + ' — the state query, the tool route, the archive dispatch and the row oracle must address the root the Team is created on'
-      + ' (this is exactly the #575 defect: 6/6 rows NOT_REACHED while the record printed numbers)',
+      + ' — the state query, the archive dispatch and the row oracle must address the root the Team is created on'
+      + ' (this is exactly the #575 defect: the record printed numbers for a different team)',
       { root: first, disagreeing },
     )
   }
-  if (isNonBlank(roots.bootRoot) && roots.bootRoot === first) {
-    // Not a defect: a future composition may anchor the acceptance blueprint
-    // at boot. Recorded so the reader knows the two roots coincided.
-    return { ok: true, root: first, bootRoot: roots.bootRoot, rootsCoincide: true }
+  // THE PRODUCTION ROW'S OWN VALUE. The row config anchors the ANCHOR team at
+  // boot (`bootPhase: create`); pointing it at the acceptance root passes a
+  // naive constant check and then dies at `team.create` with
+  // TEAM_CREATE_BLUEPRINT_MISMATCH on the live path.
+  if (productionRowRoot !== undefined && productionRowRoot !== roots.bootRoot) {
+    throw new AcceptanceRootMismatch(
+      `the production team row is anchored on ${JSON.stringify(productionRowRoot)} but the boot root is ${JSON.stringify(roots.bootRoot)}`
+      + ' — the anchor team must own the boot root, and the acceptance Team is created on a DIFFERENT root by team.create',
+      { root: first, bootRoot: roots.bootRoot, productionRowRoot },
+    )
   }
-  return { ok: true, root: first, bootRoot: String(roots.bootRoot ?? ''), rootsCoincide: false }
+  // THE DIRECTIVE'S OWN VALUE. `GET /__p6t6/state` answers for the directive's
+  // `rootSessionId`; a directive built from a second literal is the #575 bug.
+  if (directiveRoot !== undefined && directiveRoot !== first) {
+    throw new AcceptanceRootMismatch(
+      `the p6t6 directive names ${JSON.stringify(directiveRoot)} but the acceptance Team is created on ${JSON.stringify(first)}`
+      + ' — the state query would inspect a different team (the #575 defect)',
+      { root: first, directiveRoot },
+    )
+  }
+  const out = {
+    ok: true,
+    root: first,
+    bootRoot: String(roots.bootRoot ?? ''),
+    rootsCoincide: isNonBlank(roots.bootRoot) && roots.bootRoot === first,
+    productionRowRootChecked: productionRowRoot !== undefined,
+    directiveRootChecked: directiveRoot !== undefined,
+    toolRouteRootIsLabel: true,
+  }
+  return out
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -226,9 +257,42 @@ export function assertAcceptanceRootWiring(roots) {
  * {@link classifyLiveSurfaceChange}. It was in #575's regex, which conflated a
  * row-6 fault with row 5's event.
  */
+/**
+ * Log decoration a REAL Host line can carry before the product text: a leading
+ * level tag (`[error] `, `ERROR: `), or the line being JSON-quoted/wrapped.
+ * Normalising this is not cosmetic: a prefixed real fault that fell through as
+ * `ignoredNonFault` would silently PASS row 6 (review B4).
+ */
+const OBSERVATION_PREFIX = /^(?:\[(?:error|warn|warning|info|debug|trace|fatal|notice)\]\s*|(?:error|warn|warning|fatal)\s*[:|>-]\s*)+/i
+
+/**
+ * Strip log decoration and unwrap a quoted line, so the closed grammar sees the
+ * product text. Returns the normalised string (never throws).
+ *
+ * @param {unknown} observation
+ * @returns {string}
+ */
+export function normalizeObservation(observation) {
+  let text = typeof observation === 'string' ? observation : String(observation ?? '')
+  text = text.trim()
+  for (let round = 0; round < 3; round += 1) {
+    const next = text.replace(OBSERVATION_PREFIX, '').trim()
+    if (next === text) break
+    text = next
+  }
+  if (text.length >= 2) {
+    const first = text[0]
+    const last = text[text.length - 1]
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) text = text.slice(1, -1).trim()
+  }
+  return text
+}
+
 const DISPOSE_GRAMMAR = Object.freeze([
   Object.freeze({ kind: 'realm-dispose', re: /^a5sf: realm dispose failed:/, identity: 'unattributed' }),
-  Object.freeze({ kind: 'residency-dispose', re: /^p6t6: residency dispose failed for '([^']+)':/, identity: 'session' }),
+  // the shipped text is `for '<sid>':`; accept double quotes and an unquoted id
+  // so a re-wrapped line is still attributed instead of silently ignored.
+  Object.freeze({ kind: 'residency-dispose', re: /^p6t6: residency dispose failed for\s+(?:'([^']+)'|"([^"]+)"|(\S+))\s*:/, identity: 'session' }),
 ])
 
 /** The row-5 invalidation line (a live surface change, not a fault). */
@@ -242,14 +306,14 @@ const LIVE_CHANGE_GRAMMAR = /^a5sf: native tool shadow INVALIDATED \(/
  *   identity: 'session'|'unattributed'|null, liveSurfaceChange: boolean, text: string}}
  */
 export function classifyObservation(observation) {
-  const text = typeof observation === 'string' ? observation : String(observation ?? '')
+  const text = normalizeObservation(observation)
   for (const rule of DISPOSE_GRAMMAR) {
     const match = rule.re.exec(text)
     if (match !== null) {
       return {
         fault: true,
         kind: rule.kind,
-        sessionId: rule.identity === 'session' ? String(match[1]) : null,
+        sessionId: rule.identity === 'session' ? String(match[1] ?? match[2] ?? match[3]) : null,
         identity: rule.identity,
         liveSurfaceChange: false,
         text,
@@ -428,18 +492,27 @@ export function judgeRow1({ call, result, claim, allowFacts = [], bindingAllowFa
 export function judgeRow2({ call, result, claim, writeContent = '', facts = [], bindingDenyFacts = [], counterRows = [] }) {
   if (!callPresent(call, result)) return reached({ reason: call == null ? 'NO_READ_CALL_B' : 'NO_READ_RESULT_B' })
   const text = textOfResult(result)
+  // THE SAME LOCATOR IS TOUCHED TWICE IN A HEALTHY RUN: the worker reads B
+  // (row 2) and later WRITES B (row 4). The write is served by the ceiling
+  // realm and emits its own `writeText` fact at the same locator, so counting
+  // raw facts made a healthy stream REFUTE row 2 (review B1 — a deterministic
+  // false FAIL). The row is about the READ consultation: scope to the read
+  // method, and let an unexpected non-read fact be visible in the detail rather
+  // than counted.
+  const readFacts = facts.filter((fact) => String(fact?.method ?? '') === 'readText')
+  const nonReadFacts = facts.filter((fact) => String(fact?.method ?? '') !== 'readText')
   const checks = {
     isError: result.isError === true,
     typedLaneRefusal: LANE_REFUSAL.test(text),
     noClaimLeak: text.includes(String(claim)) !== true,
     noWriteContentLeak: String(writeContent) === '' ? true : text.includes(String(writeContent).trim()) !== true,
-    exactlyOneFactForB: facts.length === 1,
+    exactlyOneReadFactForB: readFacts.length === 1,
     exactlyOneBindingDeny: bindingDenyFacts.length === 1,
     noProviderRead: counterRows.length === 0,
   }
   const failed = Object.entries(checks).filter(([, ok]) => ok !== true).map(([name]) => name)
-  if (failed.length > 0) return refuted('ROW2_CLAUSE_FAILED', { checks, failed, factsForB: facts.length, bindingDenyFacts: bindingDenyFacts.length, counterRows: counterRows.length, observed: text })
-  return proven({ reason: 'BINDING_DENY_EXACTLY_ONE', checks })
+  if (failed.length > 0) return refuted('ROW2_CLAUSE_FAILED', { checks, failed, readFactsForB: readFacts.length, nonReadFactsForB: nonReadFacts.map((fact) => ({ method: fact?.method ?? null, decision: fact?.decision ?? null, realm: fact?.realm ?? null })), factsForB: facts.length, bindingDenyFacts: bindingDenyFacts.length, counterRows: counterRows.length, observed: text })
+  return proven({ reason: 'BINDING_DENY_EXACTLY_ONE', checks, readFacts: readFacts.length, nonReadFacts: nonReadFacts.length })
 }
 
 /**
@@ -540,10 +613,36 @@ export function judgeRow5({
 }) {
   const memberSession = isNonBlank(member?.childSessionId) ? member.childSessionId : ''
   if (memberSession === '') return reached({ reason: 'NO_MEMBER_CHILD_SESSION_IN_STATE', member: member ?? null })
-  if (lateTrigger === null || lateTrigger === undefined || lateTrigger.ok !== true || lateReport?.registered !== true) {
-    return reached({ reason: 'INVALIDATION_EVENT_NOT_PRODUCED', lateTrigger, lateReport })
+  // REACHABILITY IS NOT "THE PRODUCT DID NOT INVALIDATE" (review B2). Once the
+  // trigger was dispatched, the product was asked. A non-200 trigger, an
+  // unregistered late tool, or a registered tool with NO invalidation line is a
+  // contradiction, not an absence. Only a trigger that was never dispatched is
+  // NOT_REACHED.
+  if (lateTrigger === null || lateTrigger === undefined) {
+    return reached({ reason: 'NO_INVALIDATION_TRIGGER', member: member ?? null })
   }
-  if (!isNonBlank(invalidationLine)) return reached({ reason: 'INVALIDATION_LINE_NOT_OBSERVED' })
+  const triggerOk = lateTrigger.ok === true || lateTrigger.body?.ok === true
+  if (lateTrigger.status !== 200 || triggerOk !== true) {
+    return refuted('INVALIDATION_TRIGGER_FAILED', {
+      member: member ?? null,
+      lateTrigger: { status: lateTrigger.status ?? null, ok: lateTrigger.ok ?? null, body: lateTrigger.body ?? null },
+      note: 'the live-surface change was dispatched and the Host did not accept it — the product is implicated, so this is REFUTED, not NOT_REACHED',
+    })
+  }
+  if (lateReport?.registered !== true) {
+    return refuted('INVALIDATION_TOOL_NOT_REGISTERED', {
+      member: member ?? null,
+      lateReport: lateReport ?? null,
+      note: 'the trigger answered 200 but the fixture tool is not registered — the product accepted the change without the observable it is about',
+    })
+  }
+  if (!isNonBlank(invalidationLine)) {
+    return refuted('INVALIDATION_NOT_RAISED', {
+      member: member ?? null,
+      lateReport: lateReport ?? null,
+      note: 'the late tool IS registered and the trigger answered 200, yet the product recorded no native-shadow invalidation — NoStaleShadow is exactly this contradiction',
+    })
+  }
   if (postRead === null || postRead === undefined) return reached({ reason: 'NO_POST_INVALIDATION_READ' })
   const body = postRead.body ?? null
   const error = body?.error ?? null
@@ -602,8 +701,15 @@ export function judgeRow6({
   const memberSession = isNonBlank(member?.childSessionId) ? member.childSessionId : ''
   if (memberSession === '') return reached({ reason: 'NO_MEMBER_TO_STOP' })
   if (archive === null || archive === undefined) return reached({ reason: 'NO_ARCHIVE_DISPATCH' })
+  // THE PRODUCT WAS ASKED. A 200-with-ok:false envelope refusal, a non-200, or
+  // any other answer that is not an accepted archive is the product refusing
+  // the stop — REFUTED. Only "the archive was never dispatched" is an absence.
   if (archive.status !== 200 || archive.body?.ok !== true) {
-    return reached({ reason: 'MEMBER_NOT_STOPPED', archive: { status: archive.status, ok: archive.body?.ok ?? null, error: archive.body?.error ?? null } })
+    return refuted('ARCHIVE_REFUSED', {
+      member: member ?? null,
+      archive: { status: archive.status ?? null, ok: archive.body?.ok ?? null, error: archive.body?.error ?? null },
+      note: 'the archive dispatch was answered and the Member was not stopped; treating this as NOT_REACHED would hide a product refusal (review B2)',
+    })
   }
   if (!Array.isArray(postStopDispatches) || postStopDispatches.length === 0) {
     return reached({ reason: 'NO_POST_STOP_DISPATCH' })

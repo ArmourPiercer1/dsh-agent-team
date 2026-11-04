@@ -118,6 +118,18 @@ check('driver: full teardown observations are persisted', !/observations\.slice\
   'teardown.json carries the entire observation array, no tail-N window')
 check('driver: declares expectedTools on the row', driverSource.includes('a5sfExpectedTools'),
   'the live attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping a preset read_image')
+check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', driverSource.includes('RUN_ABORTED_AFTER_HOST_REACHED') && /add\(id, hostReached \? 'FAIL' : 'NOT_REACHED'/.test(driverSource),
+  'post-boot aborts are labelled UNJUDGED and FAIL; only pre-boot aborts are NOT_REACHED')
+const LIB = join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-acceptance-preflight.mjs')
+const libSource = readFileSync(LIB, 'utf8')
+check('oracle: row 2 scopes its facts to the READ consultation', libSource.includes('exactlyOneReadFactForB') && libSource.includes("=== 'readText'"),
+  'review B1: the row-4 write fact at the same locator is the healthy stream (pinned by C9)')
+check('oracle: row 5/6 cannot launder an answered refusal into NOT_REACHED', ['INVALIDATION_NOT_RAISED', 'INVALIDATION_TRIGGER_FAILED', 'ARCHIVE_REFUSED'].every((reason) => libSource.includes(reason)),
+  'review B2: asked-and-contradicted is REFUTED; only a never-dispatched step is NOT_REACHED')
+check('oracle: root identity includes the production row + directive values', libSource.includes('productionRowRoot') && libSource.includes('directiveRoot !== first'),
+  'review B3: the two product-side values are asserted, not just the constants')
+check('oracle: the #575 stream is a real committed fixture', existsSync(join(REPO_ROOT, 'tests', 'world-factory', 'fixtures', 'a5sf-575-teardown-observations.json')),
+  'review B4: 20 observations / 27 old-filter lines, extracted from the committed teardown.json')
 
 // The untouched product seam (CORE PATCH BUDGET = 0).
 const BINDINGS = join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs')
@@ -193,6 +205,18 @@ report.base = String(spawnSync('git', ['rev-parse', 'origin/master'], { cwd: REP
 // The evidence files themselves are the run's output, so they are excluded.
 report.productStatusPorcelain = String(spawnSync('git', ['status', '--porcelain', '--untracked-files=no', '--', ':!dev/agent-workflow/evidence'], { cwd: REPO_ROOT, encoding: 'utf8' }).stdout ?? '').trim()
 report.productTreeClean = report.productStatusPorcelain === ''
+/**
+ * The product tree the run certifies, as a digest that survives evidence-only
+ * commits. A committed `dry-run.json` is necessarily written before the commit
+ * that carries it, so the raw HEAD is one behind; the PRODUCT digest is not.
+ * `go-no-go.mjs` refuses when the digest of the tree it runs on differs from
+ * the digest the dry run measured (review B5).
+ */
+export function productTreeDigest() {
+  const r = spawnSync('git', ['ls-tree', '-r', 'HEAD', '--', 'packages', 'scripts', 'tests', 'docs/plans', 'docs/contracts', 'dev/engineering', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'], { cwd: REPO_ROOT, encoding: 'utf8' })
+  return createHash('sha256').update(String(r.stdout ?? '').trim()).digest('hex')
+}
+report.productTreeDigest = productTreeDigest()
 report.pinnedHost = (() => { try { return readFileSync(join(REPO_ROOT, 'tests', 'paths.mjs'), 'utf8').match(/TEST_USE_BASELINE_SHA\s*=\s*'([0-9a-f]+)'/)?.[1] ?? null } catch { return null } })()
 report.goNoGo = checks.every((entry) => entry.ok === true)
 writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n')

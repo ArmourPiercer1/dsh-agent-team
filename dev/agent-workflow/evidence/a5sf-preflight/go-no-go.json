@@ -1,0 +1,74 @@
+{
+  "schema": "a5sf-acceptance-preflight/go-no-go/1",
+  "at": "2026-11-04T06:13:15.859Z",
+  "head": "2e42ddcf92bdd9b977833c954cd0d391bd8f82ad",
+  "branch": "task/a5sf-preflight-20261103",
+  "evidenceHeadAtDryRun": "2e42ddcf92bdd9b977833c954cd0d391bd8f82ad",
+  "productTreeDigest": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3",
+  "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pool": {
+    "item": "P2-01 live read (BL-14 / G2 live half)",
+    "boots": 3,
+    "allocated": false
+  },
+  "go": false,
+  "checks": [
+    {
+      "id": "dry-run evidence exists and is green",
+      "ok": true,
+      "detail": {
+        "checks": 26,
+        "failed": 0
+      }
+    },
+    {
+      "id": "the PRODUCT tree matches the one the dry run measured",
+      "ok": true,
+      "detail": {
+        "committed": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3",
+        "now": "edbb1eeca3220cd6321dffd899a9074b2848240b0ee1c5e02f6e99bf09b26ea3"
+      }
+    },
+    {
+      "id": "the product tree has no uncommitted modifications",
+      "ok": false,
+      "detail": "M tests/world-factory/a5sf-acceptance-preflight.test.mjs\n M tests/world-factory/lib/a5sf-acceptance-preflight.mjs"
+    },
+    {
+      "id": "branch is the preflight branch",
+      "ok": true,
+      "detail": "task/a5sf-preflight-20261103"
+    },
+    {
+      "id": "no ledger row exists for this evidence directory (no boot was spent)",
+      "ok": true,
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl"
+    },
+    {
+      "id": "boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)",
+      "ok": false,
+      "detail": {
+        "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
+        "item": "P2-01 live read (BL-14 / G2 live half)",
+        "boots": 3,
+        "why": "the pool amendment is not on this HEAD — merge master forward and re-run; do NOT spend a boot on the un-amended three-boot allocation"
+      }
+    },
+    {
+      "id": "pinned host tree is at the pinned commit and clean",
+      "ok": true,
+      "detail": {
+        "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelain": ""
+      }
+    }
+  ],
+  "next": "node dev/agent-workflow/evidence/a5sf-preflight/run-boot.mjs  (ONE Host, ONE ledger row, port family 3180)",
+  "structurallyUnverifiableWithoutBoot": [
+    "a live `team.create` of the acceptance blueprint on the booted Host (it is an RPC against a running Host; no host-free entry point exists)",
+    "that the p6t6 directive the driver writes is the one the row reads (the directive path is World-internal and materialises only during boot)",
+    "that the six rows are PASS on live data (the dry run proves the decision function and the assembly, not the data)",
+    "that the Host's own teardown disposes the a5sf realm without a fault (the dispose observation channel is a live-State route)"
+  ]
+}

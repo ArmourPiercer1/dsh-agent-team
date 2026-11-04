@@ -161,6 +161,31 @@ const LINE = 'a5sfacc'
 const ROOTS = P2_01_ACCEPTANCE_ROOTS
 const BOOT_ROOT = ROOTS.bootRoot
 const ACCEPTANCE_ROOT = ROOTS.teamRoot
+
+/**
+ * The p6t6 directive, built in ONE place. `GET /__p6t6/state` answers for its
+ * `rootSessionId`, so this object is the state/tool-route root: an assertion
+ * that only checks the constants but not this file's content is exactly the
+ * hole review B3 found.
+ */
+function p6t6Directive({ worldId, logDir }) {
+  return { boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: ACCEPTANCE_ROOT }
+}
+
+/**
+ * Assert the root contract INCLUDING the two values that live in product-facing
+ * configuration rather than in the constants object: the production row's
+ * `rootSessionId` (must stay on the boot root) and the directive's
+ * `rootSessionId` (must be the acceptance root). Without these, pointing the
+ * production row at the acceptance root passes a naive check and dies at
+ * `team.create` on the live path (review B3).
+ */
+function assertDriverRootWiring() {
+  return assertAcceptanceRootWiring(ROOTS, {
+    productionRowRoot: teamRowConfig({ home: join(HERE, '.rowcheck') }).rootSessionId,
+    directiveRoot: p6t6Directive({ worldId: 'rowcheck', logDir: '.rowcheck' }).rootSessionId,
+  })
+}
 const BP_ANCHOR_ID = 'team.a5sf.acceptance.anchor'
 const BP_MAIN_ID = 'team.a5sf.acceptance.main'
 const PRESET_ID = 'a5sf-acceptance-base'
@@ -638,7 +663,7 @@ function attachmentsProviderComposition() {
 async function planOnly() {
   log(`PLAN MODE — no gate, no ledger row, no spawn. repo=${REPO_ROOT} hostTree=${HOST_TREE}`)
   assertCaseListMatchesContract()
-  const wiring = assertAcceptanceRootWiring(ROOTS)
+  const wiring = assertDriverRootWiring()
   log(`root identity (plan): ${JSON.stringify(wiring)}`)
   const head = resolveHeadCommit(REPO_ROOT)
   log(`HEAD=${String(head)} pinnedHost=${TEST_USE_BASELINE_SHA}`)
@@ -729,7 +754,7 @@ async function planOnly() {
 async function boot() {
   log(`BOOT MODE — exactly ONE Host start. repo=${REPO_ROOT}`)
   assertCaseListMatchesContract()
-  const rootWiring = assertAcceptanceRootWiring(ROOTS)
+  const rootWiring = assertDriverRootWiring()
   log(`root identity (boot): ${JSON.stringify(rootWiring)}`)
   log(`hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA}`)
   const head = resolveHeadCommit(REPO_ROOT)
@@ -771,7 +796,7 @@ async function boot() {
       sink: 'world-home a5sf-consult.jsonl (copy: consultations.jsonl)',
       grantId: grant.grantId,
       allocationItem: grant.allocationItem,
-      providerComposition: 'test row dev/agent-workflow/evidence/a5sf-acceptance/a5sf-realm-provider-row.mjs (no product provider exists at this base)',
+      providerComposition: `test row ${relative(REPO_ROOT, EVIDENCE_ROW)} (no product provider exists at this base; byte-identical to the #575 composition row)`,
       laneAlgebra: 'packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets (the product algebra; the lane INPUTS are fixtures)',
       providerCounter: 'installed by the SAME evidence row (config.counterPath): the shipped host fs has no counter; in-memory prototype wrap, pass-through',
       lateToolTrigger: 'test-composition HTTP route in the same evidence row: registers ONE unrelated tool through the public tools.register seam on demand (the invalidation it triggers is the product behaviour)',
@@ -821,6 +846,10 @@ async function boot() {
   let bootInfo = null
   let teardown = null
   let failure = null
+  /** Set when the Host was started. After that point an aborted run is a FAIL:
+   *  a live regression must never be laundered into NOT_REACHED (review B2). */
+  let hostReached = false
+  let abortStage = 'pre-boot'
   const evidence = {
     worldId: world.id,
     rows: {
@@ -838,9 +867,7 @@ async function boot() {
     mkdirSync(config.blueprintDir, { recursive: true })
     writeFileSync(join(config.blueprintDir, 'anchor.yaml'), BP_ANCHOR_YAML)
     writeFileSync(join(config.blueprintDir, 'main.yaml'), mainBlueprintYaml([]))
-    writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify({
-      boot: 1, phase: 'create', reportDir: world.logDir, runStamp: world.id, rootSessionId: ACCEPTANCE_ROOT,
-    }, null, 2))
+    writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2))
     assertBlueprintText(BP_ANCHOR_YAML, BP_ANCHOR_ID, 1, 'anchor.yaml')
     mkdirSync(dirname(rowPaths.a.path), { recursive: true })
     mkdirSync(dirname(rowPaths.c.path), { recursive: true })
@@ -857,6 +884,8 @@ async function boot() {
 
     // ── BOOT 1 of 1: intent row (written) -> start row -> spawn ────────────
     bootInfo = await lease.boot(() => harness.boot({ world, phase: 'a5sf-acceptance-boot1', bootTimeoutMs: 180_000 }))
+    hostReached = true
+    abortStage = 'post-boot'
     log(`BOOTED port=${bootInfo.port} (lease bootsSpent=${lease.bootsSpent()}) log=${bootInfo.logPath}`)
     record.record.boots = [{ phase: 'a5sf-acceptance-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
 
@@ -911,6 +940,7 @@ async function boot() {
     writeFileSync(join(config.blueprintDir, 'main.yaml'), mainText)
     log('main blueprint written and validated by the host facade')
 
+    abortStage = 'team.create'
     const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
       rootSessionId: ACCEPTANCE_ROOT,
       blueprintId: BP_MAIN_ID,
@@ -920,6 +950,7 @@ async function boot() {
     log(`team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
     if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 300)}`)
 
+    abortStage = 'state-query'
     // THE IDENTITY ASSERTION, IN THE BOOT: the state query is the root the Team
     // was created on. A false here is the #575 defect, not a row failure.
     const stateOk = await waitFor(async () => {
@@ -931,6 +962,7 @@ async function boot() {
       throw new Error(`the state query does not report the acceptance Team at the root it was created on (${ACCEPTANCE_ROOT}) — refusing to evaluate any row against a foreign team`)
     }
 
+    abortStage = 'drive'
     // ── drive: the leader chain is synchronous (async:false delegate) ──────
     const replySeen = (content) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith(content))
     const d1Ok = await waitFor(() => replySeen(DONE_D1), 300_000)
@@ -939,6 +971,7 @@ async function boot() {
     // Give the last tool result one beat to land in the mock corpus + the sink.
     await new Promise((r) => setTimeout(r, 1500))
 
+    abortStage = 'evidence-collection'
     // ── evidence collection (rows 1-4) ──────────────────────────────────────
     const requests = world.mock?.requests ?? []
     const callsById = new Map()
@@ -1500,9 +1533,24 @@ async function boot() {
     }
   } catch (error) {
     failure = error
-    log(`RUN FAILED: ${String(error?.stack ?? error)}`)
+    log(`RUN FAILED at stage=${abortStage} hostReached=${String(hostReached)}: ${String(error?.stack ?? error)}`)
     for (const id of CASES) {
-      if (record.getCase(id) === undefined) add(id, 'NOT_REACHED', { reason: 'RUN_ABORTED', detail: redact(String(error?.message ?? error)).slice(0, 600) })
+      if (record.getCase(id) === undefined) {
+        // A row that was never judged BECAUSE THE RUN ABORTED is not an absence
+        // of the observable; it is an aborted run. Before the Host exists the
+        // honest word is NOT_REACHED (no product was asked); after the Host
+        // exists it is FAIL — otherwise a live mount/create regression reads as
+        // "not reached" and the overall verdict outranks it (review B2).
+        add(id, hostReached ? 'FAIL' : 'NOT_REACHED', {
+          reason: hostReached ? 'RUN_ABORTED_AFTER_HOST_REACHED' : 'RUN_ABORTED_BEFORE_BOOT',
+          unjudged: true,
+          abortStage,
+          detail: redact(String(error?.message ?? error)),
+          note: hostReached
+            ? 'UNJUDGED: the run aborted after the Host was reached, so no row was evaluated. This is a FAIL, not NOT_REACHED.'
+            : 'UNJUDGED: the run aborted before any Host start, so no product was asked. This is NOT_REACHED.',
+        })
+      }
     }
   } finally {
     try {
@@ -1543,7 +1591,7 @@ async function boot() {
         schema: 'a5sf-acceptance-preflight/oracle-samples/1',
         note: 'the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.',
         roots: ROOTS,
-        rootWiring: assertAcceptanceRootWiring(ROOTS),
+        rootWiring: assertDriverRootWiring(),
         cases: oracleSamples,
       }, null, 2) + '\n')
     }

@@ -1,19 +1,20 @@
 
  RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight
 
- ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 7ms
  ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 7ms
- ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
- ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 22ms
- ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 17ms
- ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 73ms
- ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 73ms
- ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 359ms
- ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 141ms
- ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 519ms
- ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 86ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 27ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 25ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 91ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 85ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 410ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 169ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 581ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 91ms
 
  Test Files  11 passed (11)
       Tests  166 passed (166)
-   Start at  13:27:41
-   Duration  1.40s (transform 2.44s, setup 0ms, import 3.09s, tests 1.31s, environment 1ms)
+   Start at  14:12:49
+   Duration  1.56s (transform 2.68s, setup 0ms, import 3.49s, tests 1.50s, environment 4ms)
+

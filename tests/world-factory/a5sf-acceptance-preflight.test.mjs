@@ -24,6 +24,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 
 import {
   ACCEPTANCE_CASES,
@@ -41,8 +42,14 @@ import {
   judgeRow4,
   judgeRow5,
   judgeRow6,
+  normalizeObservation,
   toRunVerdict,
 } from './lib/a5sf-acceptance-preflight.mjs'
+
+/** The REAL #575 stream, extracted from the committed `teardown.json` (read-only
+ *  fixture: that boot cannot be re-run). Review B4: a synthetic 6-line stream
+ *  cannot prove the classifier against the stream that actually fooled #575. */
+const FIXTURE_575 = JSON.parse(readFileSync(new URL('./fixtures/a5sf-575-teardown-observations.json', import.meta.url), 'utf8'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A. the root identity contract
@@ -58,9 +65,16 @@ test('A1 the driver root constant is ONE value across every observation seam', (
   assert.equal(wired.bootRoot, 'session-a5sf-acceptance-root')
   assert.notEqual(wired.bootRoot, wired.root)
   assert.equal(wired.rootsCoincide, false)
-  for (const seam of ['createRoot', 'stateQueryRoot', 'toolRouteRoot', 'archiveRoot', 'oracleRoot', 'directiveRoot']) {
+  for (const seam of ['createRoot', 'stateQueryRoot', 'archiveRoot', 'oracleRoot', 'directiveRoot']) {
     assert.equal(roots[seam], roots.teamRoot, `${seam} must address the root the Team is created on`)
   }
+  // `toolRouteRoot` is a LABEL: the tool route dispatches by the member child
+  // session, so it is not counted as evidence in the assertion.
+  assert.equal(roots.toolRouteRoot, roots.teamRoot)
+  assert.equal(roots.toolRouteRootIsLabel, true)
+  assert.equal(wired.toolRouteRootIsLabel, true)
+  assert.equal(wired.productionRowRootChecked, false, 'the plain call does not claim to have checked the row config')
+  assert.equal(wired.directiveRootChecked, false)
 })
 
 test('A2 the #575 split wiring is REFUSED with the typed code, before any boot', () => {
@@ -103,6 +117,28 @@ test('A4 the verdict vocabulary maps 1:1 onto the run record and is total', () =
   assert.equal(toRunVerdict('REFUTED'), 'FAIL')
   assert.equal(toRunVerdict('NOT_REACHED'), 'NOT_REACHED')
   assert.throws(() => toRunVerdict('FAIL'), /not an acceptance verdict/)
+})
+
+test('A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED', () => {
+  const roots = P2_01_ACCEPTANCE_ROOTS
+  const ok = assertAcceptanceRootWiring(roots, { productionRowRoot: roots.bootRoot, directiveRoot: roots.teamRoot })
+  assert.equal(ok.ok, true)
+  assert.equal(ok.productionRowRootChecked, true)
+  assert.equal(ok.directiveRootChecked, true)
+
+  // review B3: this passed the old guard and died at team.create on the live path.
+  assert.throws(
+    () => assertAcceptanceRootWiring(roots, { productionRowRoot: roots.teamRoot, directiveRoot: roots.teamRoot }),
+    (error) => error instanceof AcceptanceRootMismatch && /production team row/.test(error.detail) && /TEAM_CREATE_BLUEPRINT_MISMATCH|anchor team/.test(error.detail),
+  )
+})
+
+test('A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED', () => {
+  const roots = P2_01_ACCEPTANCE_ROOTS
+  assert.throws(
+    () => assertAcceptanceRootWiring(roots, { productionRowRoot: roots.bootRoot, directiveRoot: roots.bootRoot }),
+    (error) => error instanceof AcceptanceRootMismatch && /p6t6 directive/.test(error.detail),
+  )
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -183,6 +219,50 @@ test('B4 an identity-bearing fault is managed regardless of the window; the wind
   assert.equal(realmWithoutWindow.unattributed.length, 1)
 })
 
+test('B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result)', () => {
+  assert.equal(FIXTURE_575.counts.observations, 20)
+  assert.equal(FIXTURE_575.counts.oldFilterFaults, 27)
+  assert.ok(FIXTURE_575.counts.oldFilterFaultsNotInObservations > 0, 'the #575 fault list was a different, longer snapshot')
+
+  for (const [label, list] of [['observations', FIXTURE_575.observations], ['old a5sfFaults', FIXTURE_575.a5sfFaultsAsRecordedByTheOldFilter]]) {
+    const result = classifyDisposeFaults({
+      observations: list,
+      managed: { sessionId: 'session-a5sf-acceptance-team', instanceId: 'inst-leader' },
+      duringManagedDisposal: true,
+      managedRealmCount: 1,
+    })
+    assert.equal(result.managed.length, 0, `${label}: no managed fault exists in this stream`)
+    assert.equal(result.foreign.length, 0, `${label}: no identity-bearing fault exists either`)
+    assert.equal(result.ignoredNonFaultCount, list.length, `${label}: every line is a non-fault`)
+    assert.equal(result.liveSurfaceChanges.length, 0, `${label}: the invalidation line was not in this snapshot`)
+  }
+})
+
+test('B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored)', () => {
+  const variants = [
+    '  p6t6: residency dispose failed for \'session-child-1\': boom',
+    '[error] p6t6: residency dispose failed for \'session-child-1\': boom',
+    'ERROR: p6t6: residency dispose failed for \'session-child-1\': boom',
+    '[warn] p6t6: residency dispose failed for "session-child-1": boom',
+    'p6t6: residency dispose failed for session-child-1: boom',
+    '"p6t6: residency dispose failed for \'session-child-1\': boom"',
+    '[error] a5sf: realm dispose failed: disposer rejected: boom',
+    '  " a5sf: realm dispose failed: boom "',
+  ]
+  for (const line of variants) {
+    const parsed = classifyObservation(line)
+    assert.equal(parsed.fault, true, `must detect: ${JSON.stringify(line)} -> normalized ${JSON.stringify(normalizeObservation(line))}`)
+  }
+  const result = classifyDisposeFaults({
+    observations: variants,
+    managed: { sessionId: 'session-child-1' },
+    duringManagedDisposal: true,
+    managedRealmCount: 1,
+  })
+  assert.equal(result.managed.length, 8, 'all eight decorated variants are attributed, none ignored')
+  assert.equal(result.ignoredNonFaultCount, 0)
+})
+
 // ─────────────────────────────────────────────────────────────────────────────
 // C. the three-way oracle
 // ─────────────────────────────────────────────────────────────────────────────
@@ -223,8 +303,8 @@ const PASS = {
     result: result('read refused: path is outside every allow subtree of the lane', true),
     claim: CLAIM_B,
     writeContent: WRITE_B,
-    facts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read' }],
-    bindingDenyFacts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read' }],
+    facts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
+    bindingDenyFacts: [{ realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
     counterRows: [],
   },
   row3: {
@@ -309,7 +389,9 @@ const REFUTED_SAMPLES = {
   'live:row1-read-a-inside-both-allowed': { ...PASS.row1, result: result('permission denied', true) },
   'live:row2-read-b-binding-deny-exactly-one-fact': {
     ...PASS.row2,
-    facts: [...PASS.row2.facts, { realm: 'member', decision: 'allow' }],
+    // TWO read facts is the contradiction; a WRITE fact at the same locator is
+    // the healthy stream and is pinned by C9.
+    facts: [...PASS.row2.facts, { realm: 'binding', decision: 'deny', toolBindingIdentity: 'dsh.fs/read', method: 'readText' }],
   },
   'live:row3-read-c-refused-no-widening': {
     ...PASS.row3,
@@ -366,24 +448,34 @@ test('C2 no row can be PROVEN with an absent observable (the #575 hole)', () => 
   }
 })
 
-test('C3 the row-level reason codes distinguish the two NOT_REACHED shapes #575 conflated', () => {
-  // row 5: no member in state vs. a member but no invalidation event.
+test('C3 the row-level reason codes distinguish "never asked" from "asked and contradicted"', () => {
+  // ROW 5 (review B2). Only a trigger that was NEVER dispatched is NOT_REACHED.
   const noMember = judgeRow5({ member: null })
   assert.equal(noMember.verdict, 'NOT_REACHED')
   assert.equal(noMember.reason, 'NO_MEMBER_CHILD_SESSION_IN_STATE')
-  const noEvent = judgeRow5({
-    ...PASS.row5,
-    lateTrigger: { status: 200, ok: false },
-    lateReport: { registered: false },
-  })
-  assert.equal(noEvent.verdict, 'NOT_REACHED')
-  assert.equal(noEvent.reason, 'INVALIDATION_EVENT_NOT_PRODUCED')
-  // row 6: no member vs. a member that was never stopped.
+
+  const neverDispatched = judgeRow5({ ...PASS.row5, lateTrigger: null })
+  assert.equal(neverDispatched.verdict, 'NOT_REACHED')
+  assert.equal(neverDispatched.reason, 'NO_INVALIDATION_TRIGGER')
+
+  // Registered, trigger 200, but the product recorded NO invalidation: the
+  // product WAS asked (NoStaleShadow). This used to come back NOT_REACHED.
+  const notRaised = judgeRow5({ ...PASS.row5, invalidationLine: null })
+  assert.equal(notRaised.verdict, 'REFUTED')
+  assert.equal(notRaised.reason, 'INVALIDATION_NOT_RAISED')
+
+  // The trigger itself was rejected by the Host.
+  const triggerFailed = judgeRow5({ ...PASS.row5, lateTrigger: { status: 500, body: { ok: false } } })
+  assert.equal(triggerFailed.verdict, 'REFUTED')
+  assert.equal(triggerFailed.reason, 'INVALIDATION_TRIGGER_FAILED')
+
+  // ROW 6. No archive dispatch is an absence; a REFUSED archive is the product
+  // answering, so it is REFUTED.
   assert.equal(judgeRow6({ member: null }).reason, 'NO_MEMBER_TO_STOP')
-  assert.equal(
-    judgeRow6({ ...PASS.row6, archive: { status: 200, body: { ok: false, error: { code: 'TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS' } } } }).reason,
-    'MEMBER_NOT_STOPPED',
-  )
+  const refused = judgeRow6({ ...PASS.row6, archive: { status: 200, body: { ok: false, error: { code: 'TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS' } } } })
+  assert.equal(refused.verdict, 'REFUTED')
+  assert.equal(refused.reason, 'ARCHIVE_REFUSED')
+  assert.equal(judgeRow6({ ...PASS.row6, archive: { status: 500, body: {} } }).reason, 'ARCHIVE_REFUSED')
 })
 
 test('C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim)', () => {
@@ -429,4 +521,50 @@ test('C8 each verdict carries a closed reason code (auditable without prose)', (
     assert.match(judged.reason, /^[A-Z0-9_]+$/)
     assert.equal(judged.detail.reason, judged.reason)
   }
+})
+
+test('C9 row 2 replay: the HEALTHY stream (read-B deny + later write-B allow at the same locator) is PASS', () => {
+  // The exact stream the live world produces: the worker reads B (binding deny,
+  // readText) and row 4 later writes B (ceiling allow, write). B1: the raw
+  // `facts.length === 1` counted both and REFUTED a healthy run.
+  const healthy = {
+    ...PASS.row2,
+    facts: [
+      { realm: 'binding', toolBindingIdentity: 'dsh.fs/read', method: 'readText', decision: 'deny', locator: '/w/b.txt' },
+      { realm: 'member', toolBindingIdentity: null, method: 'write', decision: 'allow', locator: '/w/b.txt' },
+    ],
+  }
+  const judged = judgeRow2(healthy)
+  assert.equal(judged.verdict, 'PROVEN', JSON.stringify(judged))
+  assert.equal(judged.detail.readFacts, 1)
+  assert.equal(judged.detail.nonReadFacts, 1, 'the write fact is visible, not counted')
+  // and no read fact at all still refutes (the sink channel is part of the claim)
+  assert.equal(judgeRow2({ ...healthy, facts: [] }).verdict, 'REFUTED')
+})
+
+test('C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED', () => {
+  const base = PASS.row5
+  const cases = [
+    ['INVALIDATION_NOT_RAISED', { ...base, invalidationLine: '' }],
+    ['INVALIDATION_TRIGGER_FAILED', { ...base, lateTrigger: { status: 502, body: { ok: false } } }],
+    ['INVALIDATION_TRIGGER_FAILED', { ...base, lateTrigger: { status: 200, ok: false, body: { ok: false } } }],
+    ['INVALIDATION_TOOL_NOT_REGISTERED', { ...base, lateReport: { registered: false } }],
+  ]
+  for (const [reason, sample] of cases) {
+    const judged = judgeRow5(sample)
+    assert.equal(judged.verdict, 'REFUTED', `${reason}: ${JSON.stringify(judged)}`)
+    assert.equal(judged.reason, reason)
+    assert.notEqual(judged.verdict, 'NOT_REACHED')
+  }
+})
+
+test('C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED', () => {
+  const judged = judgeRow6({
+    ...PASS.row6,
+    archive: { status: 200, body: { ok: false, error: { info: { code: 'TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS' }, message: 'refused' } } },
+  })
+  assert.equal(judged.verdict, 'REFUTED')
+  assert.equal(judged.reason, 'ARCHIVE_REFUSED')
+  assert.equal(judged.detail.archive.status, 200)
+  assert.equal(judged.detail.archive.ok, false)
 })
