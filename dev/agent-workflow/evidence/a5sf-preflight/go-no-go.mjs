@@ -86,7 +86,6 @@ check('pinned host tree is at the pinned commit and clean', hostHead !== null &&
 
 const report = {
   schema: 'a5sf-acceptance-preflight/go-no-go/1',
-  at: new Date().toISOString(),
   head,
   branch,
   evidenceHeadAtDryRun: dryRun?.head ?? null,

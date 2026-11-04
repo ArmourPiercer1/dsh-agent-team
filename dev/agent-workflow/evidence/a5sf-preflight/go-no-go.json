@@ -1,23 +1,22 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
-  "at": "2026-11-04T06:23:07.841Z",
-  "head": "f011aa588268b0617d1339209257d72b5ce3da48",
+  "head": "836d88a15520290ca2626bba8baa6f92a9b8f407",
   "branch": "task/a5sf-preflight-20261103",
-  "evidenceHeadAtDryRun": "7d465b14aec6d8ca07927998cc440a6efff5364c",
-  "productTreeDigest": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276",
+  "evidenceHeadAtDryRun": "9465c99250b6ab741db04dfc1f8389704154ac89",
+  "productTreeDigest": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-01 live read (BL-14 / G2 live half)",
-    "boots": 3,
-    "allocated": false
+    "boots": 6,
+    "allocated": true
   },
-  "go": false,
+  "go": true,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 26,
+        "checks": 28,
         "failed": 0
       }
     },
@@ -25,8 +24,8 @@
       "id": "the PRODUCT tree matches the one the dry run measured",
       "ok": true,
       "detail": {
-        "committed": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276",
-        "now": "9d0b66508f7c3eb85511cb7b4ba9f4a44b777107ce417698de9b1eab6a0c6276"
+        "committed": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc",
+        "now": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc"
       }
     },
     {
@@ -46,12 +45,12 @@
     },
     {
       "id": "boot pool allocates the three dedicated P2-01 starts (boots >= 6, the amendment)",
-      "ok": false,
+      "ok": true,
       "detail": {
         "poolFile": "dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json",
         "item": "P2-01 live read (BL-14 / G2 live half)",
-        "boots": 3,
-        "why": "the pool amendment is not on this HEAD — merge master forward and re-run; do NOT spend a boot on the un-amended three-boot allocation"
+        "boots": 6,
+        "why": "amended allocation present"
       }
     },
     {
