@@ -142,6 +142,23 @@ describe('A6 sharded wake-intent directory', () => {
 })
 
 describe('A6 file wake-intent store — concurrent writers', () => {
+  it('serializes markAccepted/clear/persist: a newer row is never clobbered by an older accepted mark', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'a6-wake-intent-mix-'))
+    try {
+      const store = createFileWakeIntentStore({ filePath: join(dir, 'intent.json') })
+      await store.persistQueued({ key: KEY, wakeId: 'wake-1', workFingerprint: 'fp-1' })
+      await Promise.all([
+        store.markAccepted('wake-1'),
+        store.clear('wake-1'),
+        store.persistQueued({ key: KEY, wakeId: 'wake-2', workFingerprint: 'fp-2' }),
+      ])
+      const row = await store.read()
+      expect(row).toMatchObject({ wakeId: 'wake-2', workFingerprint: 'fp-2', status: 'queued' })
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
   it('never shares a temp file: 24 concurrent persists settle with one intact row', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'a6-wake-intent-race-'))
     try {

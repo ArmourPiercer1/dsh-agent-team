@@ -42,6 +42,30 @@ function isRow(value: unknown): value is PersistedReviewWakeIntent {
   )
 }
 
+/**
+ * Per-file mutation gate. The notifier dispatch and the turn-end release are
+ * fire-and-forget siblings in ONE Host process; without this, their
+ * read-modify-write pairs (markAccepted / clear / persistQueued) can clobber a
+ * newer row. Cross-process writers remain excluded by the single-writer
+ * worktree contract (atomic rename still prevents torn rows).
+ */
+const mutationTails = new Map<string, Promise<void>>()
+
+async function withMutationGate<T>(file: string, run: () => Promise<T>): Promise<T> {
+  const previous = mutationTails.get(file) ?? Promise.resolve()
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => { release = resolve })
+  const tail = previous.catch(() => undefined).then(() => gate)
+  mutationTails.set(file, tail)
+  await previous.catch(() => undefined)
+  try {
+    return await run()
+  } finally {
+    release()
+    if (mutationTails.get(file) === tail) mutationTails.delete(file)
+  }
+}
+
 export function createFileWakeIntentStore(
   options: FileWakeIntentStoreOptions,
 ): ReviewWakeIntentStore {
@@ -60,23 +84,27 @@ export function createFileWakeIntentStore(
 
   return {
     async persistQueued(intent: ReviewWakeQueuedIntent): Promise<void> {
-      await write({ ...intent, status: 'queued' })
+      await withMutationGate(file, async () => write({ ...intent, status: 'queued' }))
     },
     async markAccepted(wakeId: string): Promise<void> {
-      const row = await readRow()
-      if (row === null || row.wakeId !== wakeId) return
-      await write({ ...row, status: 'accepted' })
+      await withMutationGate(file, async () => {
+        const row = await readRow()
+        if (row === null || row.wakeId !== wakeId) return
+        await write({ ...row, status: 'accepted' })
+      })
     },
     async clear(wakeId?: string): Promise<void> {
-      if (wakeId !== undefined) {
-        const row = await readRow()
-        if (row !== null && row.wakeId !== wakeId) return
-      }
-      try {
-        await unlink(file)
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
-      }
+      await withMutationGate(file, async () => {
+        if (wakeId !== undefined) {
+          const row = await readRow()
+          if (row !== null && row.wakeId !== wakeId) return
+        }
+        try {
+          await unlink(file)
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+        }
+      })
     },
     async read(): Promise<PersistedReviewWakeIntent | null> {
       return readRow()
