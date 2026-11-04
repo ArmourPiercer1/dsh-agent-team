@@ -1,14 +1,14 @@
 $ node scripts/ci-local.mjs --base origin/master
 
 ▶ docs:probe
-docs:probe base=origin/master head=71b5cc3e8 changed=19 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
+docs:probe base=origin/master head=145963abe changed=19 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
 LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
 LIMIT no C1/C2/C3 substitution and no security negative control here
 LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
 LIMIT semantic equivalence of prose remains a Contract Owner judgement
 LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
 docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
-✔ docs:probe (0.3s)
+✔ docs:probe (0.2s)
 
 ▶ docs:sync --check
 docs:sync --check: docs=112 notes=4 plans=75(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
@@ -41,4 +41,4 @@ packages/client typecheck$ tsc -p tsconfig.json
 packages/client typecheck: Done
 ✔ pnpm typecheck (12.0s)
 
-DSH-CI-LOCAL verdict=pass steps=4 failed=0 coverage=determined files=0 wall=12.7s
+DSH-CI-LOCAL verdict=pass steps=4 failed=0 coverage=determined files=0 wall=12.6s
