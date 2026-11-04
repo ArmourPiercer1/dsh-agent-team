@@ -1,10 +1,10 @@
-PASS dry-run evidence exists and is green: {"checks":53,"failed":0}
-PASS negative controls exist and are green: {"controls":9,"failed":0}
+PASS dry-run evidence exists and is green: {"checks":59,"failed":0}
+PASS negative controls exist and are green: {"controls":14,"failed":0}
 PASS handoff: the rows the World composes EQUAL the emitted rows, by identity and in order: {"emitted":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"],"identityHolds":true}
 PASS handoff: the p6t6 health-probe row and all four evidence rows are among them: {"healthProbeRowPresent":true,"allFourRowsPresent":true,"world":["a5sf-search-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-search-base"]}
-PASS handoff: the driver CALLS the handoff before harness.boot( (independent source read): {"handoffIndex":8758,"bootIndex":40556,"call":"handOverRows(world, rows)"}
-PASS handoff: the plan was produced on THIS commit and carries a non-empty patch: {"planHead":"dbc626b436fb19d5dee61fa0c3ad603dc24115cb","head":"dbc626b436fb19d5dee61fa0c3ad603dc24115cb","patchBytes":6514,"patchSha256":"6d64408836f2ab9300b442d162d7a13c32cc94555a08413a86ccfaeab23ed6a5"}
-PASS the PRODUCT tree matches the one the dry run measured: {"committed":"a69199ed1b2b9c149c4704ab674779500788f3c0591433b7d18a34351be36e51","now":"a69199ed1b2b9c149c4704ab674779500788f3c0591433b7d18a34351be36e51"}
+PASS handoff: the driver CALLS the handoff before harness.boot( (independent source read): {"handoffIndex":8864,"bootIndex":40662,"call":"handOverRows(world, rows)"}
+PASS handoff: the plan was produced on THIS commit and carries a non-empty patch: {"planHead":"337b5b34fe6270b05c8a046ad11957893e4e1548","head":"337b5b34fe6270b05c8a046ad11957893e4e1548","patchBytes":6630,"patchSha256":"a165c6e05a40bb185020f2c2ce17b8b89b3954687703871221881baf39cb3d2b"}
+PASS the PRODUCT tree matches the one the dry run measured: {"committed":"80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f","now":"80b497f6bcf9b3496503a1726f8de764ce59d4853a2eed210780acb4dcdc520f"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is this lane's branch: task/a5sf-search-live2-20261105
 PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl","rows":12,"intents":6,"bootRows":6,"aborts":0,"unparseable":0,"orphanBootRuns":[],"orphanAbortRuns":[],"plannedMismatch":[],"bootsInPool":6,"remaining":0}

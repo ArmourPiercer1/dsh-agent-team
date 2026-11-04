@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/negative-controls/1",
-  "at": "2026-11-04T19:44:26.110Z",
+  "at": "2026-11-04T19:50:42.464Z",
   "controls": [
     {
       "id": "oracle: row 2 must REFUTE a refusal that still created a process",
@@ -54,7 +54,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: declares expectedTools for BOTH native modules, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T19:50:31.301Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 59 failed: driver: declares expectedTools for BOTH native modules"
       }
     },
     {
@@ -65,7 +65,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: the cancellation trigger is the SHIPPED client route, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T19:50:34.832Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 59 failed: driver: the cancellation trigger is the SHIPPED client route"
       }
     },
     {
@@ -76,7 +76,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 4 of 59 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T19:50:38.141Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 59 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle"
       }
     },
     {
@@ -131,7 +131,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: the cancellation FIFO is ADMITTED by the effective read lane, the product tree has no uncommitted modification"
+        "tail": "[2026-11-04T19:50:42.429Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 59 failed: driver: the cancellation FIFO is ADMITTED by the effective read lane"
       }
     },
     {
