@@ -123,6 +123,7 @@ function identityFor(plan: ReturnType<typeof planFor>): {
 /** A fake DURABLE store: one row per latch key, async API like disk. */
 class FakeIntentStore implements ReviewWakeIntentStore {
   readonly rows = new Map<string, PersistedReviewWakeIntent>()
+  readonly events: string[] = []
   persistCalls = 0
   acceptedCalls = 0
   clearCalls = 0
@@ -133,6 +134,7 @@ class FakeIntentStore implements ReviewWakeIntentStore {
 
   async persistQueued(intent: ReviewWakeQueuedIntent): Promise<void> {
     this.persistCalls += 1
+    this.events.push(`persist:${intent.wakeId}`)
     this.rows.set(FakeIntentStore.keyOf(intent.key), {
       ...intent,
       status: 'queued',
@@ -148,6 +150,7 @@ class FakeIntentStore implements ReviewWakeIntentStore {
 
   async clear(wakeId?: string): Promise<void> {
     this.clearCalls += 1
+    this.events.push(`clear:${String(wakeId)}`)
     if (wakeId === undefined) {
       this.rows.clear()
       return
@@ -446,6 +449,87 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(released.wakeId).not.toBe(first.delivered[0]?.wakeId)
     expect((await store.read())?.wakeId).toBe(released.wakeId)
     expect((await store.read())?.workFingerprint).toBe(movedFingerprint)
+    // The fresh row is durable BEFORE the released row disappears (a crash
+    // between them must leave a row boot recovery can enumerate).
+    expect(store.events.indexOf(`persist:${String(released.wakeId)}`)).toBeGreaterThanOrEqual(0)
+    expect(store.events.indexOf(`persist:${String(released.wakeId)}`))
+      .toBeLessThan(store.events.indexOf(`clear:${String(first.delivered[0]?.wakeId)}`))
+  })
+
+  it('a queued wake whose native message disappeared is released and re-delivered once', async () => {
+    const plan = planFor('req-q1')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    const first = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(first.delivered).toHaveLength(1)
+    inbox.remove(first.delivered[0]!.wakeId)
+
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(1)
+    expect(again.failures).toEqual([])
+    expect(port.calls).toHaveLength(2)
+    expect(inbox.messages.size).toBe(1)
+  })
+
+  it('a transport throw AFTER Inbox acceptance is not a delivery failure', async () => {
+    const plan = planFor('req-post')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const calls: string[] = []
+
+    const result = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: async (delivery) => {
+        calls.push(delivery.wakeId)
+        inbox.accept(delivery.wakeId)
+        throw new Error('transport lost the acknowledgement')
+      },
+      deferTurnEnd: true,
+    })
+
+    expect(result.failures).toEqual([])
+    expect(result.delivered).toHaveLength(1)
+    expect(inbox.messages.size).toBe(1)
+    expect((await store.read())?.status).toBe('accepted')
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: async (delivery) => { calls.push(delivery.wakeId); inbox.accept(delivery.wakeId) },
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(calls).toHaveLength(1)
   })
 
   it('a post-delivery markAccepted failure never re-delivers the released wake', async () => {

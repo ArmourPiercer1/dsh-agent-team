@@ -309,6 +309,11 @@ describe('A6 root wiring — production entry opt-in', () => {
       legacyInspect: (() => { throw new Error('legacy inspect unused') }) as never,
       fsContainsKeys: () => true,
       permissionPlaneRef: { current: undefined },
+      // A frozen leg generation > 0 resolves ONLY through the forwarded live
+      // overlay; without it the facts port answers null and no wake is ever
+      // routed (the generation-0 fixture used to hide exactly that).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- latest-only overlay double
+      permissionOverlay: { latest: async () => ({ metadata: { generation: 1 } }) } as any,
       onNotificationFailure: (failure) => {
         notificationFailures.push(failure.error)
       },
@@ -353,7 +358,7 @@ describe('A6 root wiring — production entry opt-in', () => {
         operationToolOwner: 'a6-root',
         operationToolName: 'team_bash',
         perEffectRequiredAuthorities: ['leader'],
-        authorityGeneration: 0,
+        authorityGeneration: 1,
         blueprintContentHash: parsedBlueprint.contentHash,
         blueprintRevision: parsedBlueprint.revision,
       })

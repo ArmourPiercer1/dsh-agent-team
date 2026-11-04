@@ -152,6 +152,11 @@ describe('A6-PR3 zero production consumers', () => {
       // purpose. PR3's no-consumer law is about UNWIRED production code; the
       // opt-in adapter below is inert until the Host chooses alpha6.
       if (file.startsWith(join(PACKAGES_DIR, 'runtime', 'alpha6') + sep)) continue
+      // A6-PR6: `src/plugin/root.ts` IS the opt-in consumer adapter. It is
+      // inert unless `alpha6ReviewRouting` is true, and the PR3 law targets
+      // UNWIRED production code, not this Host entry. Keep the exemption to
+      // exactly this file so any other runtime consumer still fails.
+      if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'root.ts')) continue
       const code = codeOnly(readFileSync(file, 'utf8'))
       if (/\breview-wake\b/.test(code) || /\bReviewWake/.test(code)) {
         consumers.push(relative(PACKAGES_DIR, file))

@@ -1684,6 +1684,9 @@ export function createTeamProductionRoot(params) {
         blueprintSource: config.blueprintSource,
         rootSessionId: rootSid,
         leaderTemplateId: blueprint.leader.templateId,
+        // The SAME durable overlay the Alpha.5 authority plane reads. Dropping it
+        // made every frozen leg generation > 0 unresolvable by the Officer.
+        ...(permissionOverlay === undefined ? {} : { permissionOverlay }),
         // The LIVE member view: production creates members AFTER the control
         // service exists, so a snapshot would be empty/stale. The composition
         // re-resolves the unique RUNNING Officer on every query.
@@ -1745,7 +1748,7 @@ export function createTeamProductionRoot(params) {
                 routeRole: 'officer',
                 currentLegIds: input.currentLegIds,
             };
-            const key = latchKeyFor(wake, rootSid, 0);
+            const key = latchKeyFor(wake, rootSid, config.generation);
             const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`;
             let coordinator = alpha6WakeCoordinators.get(mapKey);
             if (coordinator === undefined) {
@@ -1757,6 +1760,7 @@ export function createTeamProductionRoot(params) {
             const result = await dispatchLatch({
                 plan: { wakes: [wake], humanLegIds: [], held: [] },
                 rootSessionId: rootSid,
+                sessionGeneration: config.generation,
                 coordinators: [coordinator],
                 ...(intent === undefined ? {} : { intent }),
                 ...(live.reviewWakeInbox === undefined
@@ -1792,6 +1796,7 @@ export function createTeamProductionRoot(params) {
             const coordinator = alpha6WakeBySession.get(targetSessionId);
             if (coordinator === undefined || coordinator.state.status !== 'running')
                 return;
+            const releasedWakeId = coordinator.state.wakeId;
             try {
                 // The FRESH authoritative read answering the post-turn rescan: the
                 // same facts port and the same reviewer resolution as the notifier.
@@ -1840,11 +1845,23 @@ export function createTeamProductionRoot(params) {
                     throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
                 }
             }
-            catch {
+            catch (error) {
                 // A pre-read failure must not leave the single-flight latch
                 // `running` forever (later plans only poll, and no turn can end
-                // again). Release it; the next durable notification re-wakes.
+                // again). Release it and drop the consumed message's intent row so
+                // boot recovery does not adopt a wake whose turn already ended.
+                if (releasedWakeId !== null && alpha6WakeIntents !== undefined) {
+                    try {
+                        await alpha6WakeIntents.forKey(coordinator.state.key).clear(releasedWakeId);
+                    }
+                    catch { /* the release below is still the liveness fix */ }
+                }
                 coordinator.dispatch({ type: 'turn-end' });
+                params.onNotificationFailure?.({
+                    requestId: releasedWakeId ?? 'alpha6-review-wake',
+                    kind: 'review-wake-turn-end',
+                    error,
+                });
             }
         }
         : undefined;
