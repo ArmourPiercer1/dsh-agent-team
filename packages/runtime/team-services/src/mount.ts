@@ -54,6 +54,7 @@ import {
   type ToolBindingRealm,
   type ToolBindingRealmSpec,
 } from './install.js'
+import type { ConfinedSubprocessRealmSpec } from './install.js'
 import type { MemberIoInstallation } from './types.js'
 import { TeamServiceInstallError } from './types.js'
 
@@ -610,6 +611,13 @@ export interface MountA5sfRealmInput {
   readonly providerClass?: FsProviderConstructor
   /** Observe every guard consultation in every realm this call mounts. */
   readonly onGuardConsult?: GuardConsultObserver
+  /**
+   * BL-16: the confined `subprocess` face for this Member's isolated scope.
+   * Omitted = none is mounted (default-preserving). Mounted on the SAME scope
+   * the native route re-mounts into, so a `grep`/`glob` definition resolving
+   * `ctx.subprocess` gets the confined provider.
+   */
+  readonly subprocess?: ConfinedSubprocessRealmSpec
 }
 
 export interface MountedA5sfRealm {
@@ -706,6 +714,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     members: input.members,
     ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
     ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
+    ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
   })
 
   // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the

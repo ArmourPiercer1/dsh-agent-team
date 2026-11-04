@@ -1,0 +1,9 @@
+     × the four definitions all carry a render that returns an array of typed text blocks 5015ms
+     × self-typechecks with strict settings (in-process; the shared tsconfig stays untouched) 5446ms
+     × X3 the timeout arm settles cancelled and spills nothing 419ms
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+ FAIL  packages/runtime/test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)
+ FAIL  packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict > X3 the timeout arm settles cancelled and spills nothing
+ Test Files  3 failed | 482 passed (485)
+      Tests  3 failed | 6012 passed (6015)
+DSH-CI-LOCAL verdict=fail steps=5 failed=1 coverage=determined files=4 wall=245.8s

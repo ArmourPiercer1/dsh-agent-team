@@ -1,0 +1,5 @@
+ FAIL  packages/runtime/test/alpha5-search-backend.test.ts > P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) > P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+ Test Files  1 failed | 484 passed (485)
+      Tests  1 failed | 6014 passed (6015)
+DSH-CI-LOCAL verdict=fail steps=5 failed=1 coverage=determined files=4 wall=275.1s

@@ -36,6 +36,11 @@ import {
   type FsProviderConstructor,
   type FsProviderSurface,
 } from './fs.js'
+import {
+  createConfinedSubprocessClass,
+  type ConfinedProcessProvider,
+  type SubprocessProviderConstructor,
+} from './subprocess.js'
 import { observeGuard, type GuardConsultObserver } from './guard-observability.js'
 import {
   TeamServiceInstallError,
@@ -71,6 +76,41 @@ export interface InstallMemberIoProvidersInput {
    * `guard-observability.ts`.
    */
   readonly onGuardConsult?: GuardConsultObserver
+  /**
+   * BL-16 (additive, default-preserving): mount a CONFINED `subprocess`
+   * Provider on the SAME isolated Member scope, so a routed native module that
+   * injects `subprocess` (the pinned `grep`/`glob` module does) executes on the
+   * Member's lane instead of the inherited host service. Omitted = nothing is
+   * mounted and the inherited service is untouched (the historical behavior).
+   */
+  readonly subprocess?: ConfinedSubprocessRealmSpec
+}
+
+/**
+ * The confined `subprocess` face of ONE Member realm.
+ *
+ * `effective` is the compiled `EffectiveIo` the ceiling-routed tools enforce —
+ * for `grep`/`glob` that is `ceiling ∩ tool restriction`, produced by the ONE
+ * compiler (`compileEffectiveIo`); this lane never re-derives an intersection.
+ * `provider` is P1-07's OS-confined process provider, created by the
+ * composition that owns the launcher pin (the realm must not guess an assembly).
+ */
+export interface ConfinedSubprocessRealmSpec {
+  readonly effective: EffectiveIoPolicy
+  readonly provider: ConfinedProcessProvider
+  readonly realmId?: string
+  readonly bindingId?: string
+  readonly memberScope?: string
+  readonly env?: Readonly<Record<string, string>>
+  readonly runtimeAllowPaths?: Parameters<typeof createConfinedSubprocessClass>[1]['runtimeAllowPaths']
+  /** Explicit base class; omitted = sample the live `subprocess` service. */
+  readonly providerClass?: SubprocessProviderConstructor
+}
+
+/** The mounted confined `subprocess` service (structural, provider-private). */
+export interface ConfinedSubprocessSurface {
+  spawn(spec: unknown): unknown
+  spawnTerminal?(spec: unknown): Promise<unknown>
 }
 
 /** Member id → installed, per root Context. Guards double installation. */
@@ -110,6 +150,15 @@ function assertSpec(spec: MemberServiceSpec): MemberPolicy {
     )
   }
   return compiled
+}
+
+/** Sample the live `subprocess` service class (BL-16), if the host has one. */
+function sampleSubprocessClass(root: Context): SubprocessProviderConstructor | undefined {
+  const live = root.get('subprocess') as object | undefined
+  if (live === undefined || live === null) return undefined
+  const prototype = Object.getPrototypeOf(live) as { constructor?: unknown } | null
+  const ctor = prototype?.constructor
+  return typeof ctor === 'function' ? (ctor as SubprocessProviderConstructor) : undefined
 }
 
 /** Sample the live Provider class from the root service, if any. */
@@ -165,6 +214,20 @@ export async function installMemberIoProviders(
     throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail)
   }
 
+  // 2b. BL-16: a DECLARED confined subprocess face needs a live base class to
+  // shadow. A host with no `subprocess` service cannot mount one, and silently
+  // skipping it would leave `grep`/`glob` on the inherited unconfined service —
+  // exactly the hole this face exists to close. Refuse before any scope exists.
+  const SubprocessBase = input.subprocess === undefined
+    ? undefined
+    : input.subprocess.providerClass ?? sampleSubprocessClass(root)
+  if (input.subprocess !== undefined && SubprocessBase === undefined) {
+    throw new TeamServiceInstallError(
+      'PROVIDER_UNAVAILABLE',
+      'a confined subprocess face was declared but the root Context carries no `subprocess` service to confine; a Member never falls back to the host subprocess service',
+    )
+  }
+
   // 3. Mount, tracking every fiber so a later failure can roll back.
   const installed: MemberServiceInstallation[] = []
   const rollback = async (): Promise<void> => {
@@ -179,7 +242,15 @@ export async function installMemberIoProviders(
 
   for (const { spec, policy } of compiled) {
     const label = Symbol(`member:${spec.identity.memberInstanceId}`)
-    const scoped = root.isolate('fs', label)
+    const isolated = root.isolate('fs', label)
+    // BL-16: the subprocess face must live in the SAME isolated chain as the
+    // Member's `fs`, and Cordis isolates ONE service per call. Nesting keeps
+    // the `fs` scope identity intact while giving `subprocess` its own shadow
+    // (a sibling isolate would not be visible to the native modules, which are
+    // mounted on THIS ctx).
+    const scoped = input.subprocess === undefined
+      ? isolated
+      : isolated.isolate('subprocess', Symbol(`member-subprocess:${spec.identity.memberInstanceId}`))
     const guard = createMemberFsGuard(policy)
     // DEFAULT PATH = the original guard object (no wrapper, no extra call).
     const observed = input.onGuardConsult === undefined
@@ -212,6 +283,45 @@ export async function installMemberIoProviders(
       throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' mounted no fs service`)
     }
 
+    // BL-16: the confined subprocess face rides the SAME isolated Member scope,
+    // so a native module mounted by route C resolves it as `ctx.subprocess`.
+    let disposeSubprocess: (() => Promise<void>) | undefined
+    let subprocess: ConfinedSubprocessSurface | undefined
+    if (input.subprocess !== undefined && SubprocessBase !== undefined) {
+      const ConfinedSubprocess = createConfinedSubprocessClass(SubprocessBase as never, {
+        ...input.subprocess,
+        onGuardConsult: input.onGuardConsult,
+      })
+      try {
+        // Cordis' `plugin` overloads are keyed on the plugin's literal shape;
+        // this lane mounts a class created at runtime, exactly as the confined
+        // `fs` class above is mounted through the same call.
+        const mountPlugin = scoped.plugin as unknown as (plugin: unknown, config?: unknown) => Promise<{ dispose(): Promise<void> }>
+        const fiber = await mountPlugin(ConfinedSubprocess, {})
+        disposeSubprocess = async () => {
+          await fiber.dispose()
+        }
+      } catch (error) {
+        await disposeMount()
+        await rollback()
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `Member '${spec.identity.memberInstanceId}' confined subprocess mount failed: ${error instanceof Error ? error.message : String(error)}`,
+        )
+      }
+      const mounted = scoped.get('subprocess') as ConfinedSubprocessSurface | undefined
+      if (mounted === undefined) {
+        await disposeSubprocess()
+        await disposeMount()
+        await rollback()
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `Member '${spec.identity.memberInstanceId}' mounted no confined subprocess service`,
+        )
+      }
+      subprocess = mounted
+    }
+
     let disposed = false
     const installation: MemberServiceInstallation = Object.freeze({
       identity: spec.identity,
@@ -223,10 +333,12 @@ export async function installMemberIoProviders(
       }),
       ctx: scoped,
       fs,
+      ...(subprocess === undefined ? {} : { subprocess }),
       dispose: async (): Promise<void> => {
         if (disposed) return
         disposed = true
         INSTALLED.get(root)?.delete(spec.identity.memberInstanceId)
+        if (disposeSubprocess !== undefined) await disposeSubprocess()
         await disposeMount()
       },
     })

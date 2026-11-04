@@ -1,0 +1,9 @@
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived
+ FAIL  packages/runtime/test/a5-read-slice-window.test.ts > A5RSW F equivalence and identity (plan (b) F1-F2) > F2 GUARD: {file_path} vs {file_path,limit:2000} are distinct identities; omitted offset == offset 1
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+ FAIL  packages/runtime/test/a5mcp-native-trust-filter.test.ts > G2-MCP-B collection — the trusted-native harvest excludes the mcp__ family > the exported predicate excludes exactly the mcp__ prefix family
+ FAIL  packages/runtime/test/alpha5-search-backend.test.ts > P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) > P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row
+ FAIL  packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 mount gate — the zero-flip law and the seven claims > AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)
+ FAIL  packages/runtime/test/u7-w0b-family-seam.test.ts > u7-w0b seam — positive control > P0 a valid probe family mounts through the seam with ZERO plane change (the CA-01 shape)
+ Test Files  7 failed | 478 passed (485)
+      Tests  7 failed | 6008 passed (6015)

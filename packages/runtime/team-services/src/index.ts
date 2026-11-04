@@ -1,7 +1,8 @@
 /**
  * `@dsh-agent-team/runtime/team-services` — Alpha.5 P1-05: the per-Member
  * Service realm (isolated `ctx.fs` scope + confined Provider subclass) and the
- * install/denial vocabulary. No web/subprocess provider here yet (P1-06/P2).
+ * install/denial vocabulary. BL-16 adds the confined `subprocess` face
+ * (`subprocess.ts`); the web provider is still P1-06/out of this lane.
  *
  * @module @dsh-agent-team/runtime/team-services
  */
@@ -16,11 +17,35 @@ export {
   installToolBindingRealm,
 } from './install.js'
 export type {
+  ConfinedSubprocessRealmSpec,
+  ConfinedSubprocessSurface,
   InstallMemberIoProvidersInput,
   MemberServiceSpec,
   ToolBindingRealm,
   ToolBindingRealmSpec,
 } from './install.js'
+export {
+  CONFINED_SUBPROCESS_REFUSAL_CODES,
+  ConfinedSubprocessRefusal,
+  confinedChildEnvironment,
+  createConfinedOutputReader,
+  createConfinedSubprocessClass,
+  createMemberSubprocessGuard,
+  readIntentsOf,
+  SUBPROCESS_GUARD_METHOD,
+} from './subprocess.js'
+export type {
+  ConfinedCollectMode,
+  ConfinedOutputMode,
+  ConfinedOutputReader,
+  ConfinedProcessProvider,
+  ConfinedSpawnSpec,
+  ConfinedStdinMode,
+  ConfinedStreamProcess,
+  ConfinedSubprocessOptions,
+  ConfinedSubprocessRefusalCode,
+  SubprocessProviderConstructor,
+} from './subprocess.js'
 export { mountA5sfRealm } from './mount.js'
 export type {
   A5sfRealmBinding,
