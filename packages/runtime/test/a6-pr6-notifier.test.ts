@@ -119,3 +119,155 @@ describe('A6 root control notifier — trusted reviewer resolution', () => {
     expect(deliver).not.toHaveBeenCalled()
   })
 })
+
+describe('A6 root notifier — trusted merge', () => {
+  const legs = ['1', '2', '3'].map((n) => ({
+    ...request,
+    requestId: `req-a6-merge-${n}`,
+    approvalCaseId: `case-a6-merge-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('merges three delegable legs for one reviewer into ONE wake', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const resolve = vi.fn(async () => ({ instanceId: 'inst-officer' }))
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: resolve,
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async () => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    const wake = deliver.mock.calls[0]![0]
+    expect(wake.wakeId).toBe('review:req-a6-merge-1,req-a6-merge-2,req-a6-merge-3')
+    expect(wake.text).toContain('requests=3')
+  })
+
+  it('excludes a fixed Leader/Human leg from the merge', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async (query) => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: query.currentLegRequestId === 'req-a6-merge-2',
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    const wake = deliver.mock.calls[0]![0]
+    expect(wake.wakeId).toBe('review:req-a6-merge-1,req-a6-merge-3')
+  })
+})
+
+describe('A6 root notifier — coordinator seam', () => {
+  const legs = ['1', '2', '3'].map((n) => ({
+    ...request,
+    requestId: `req-a6-latch-${n}`,
+    approvalCaseId: `case-a6-latch-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('hands the merged leg set to the coordinator seam once', async () => {
+    const dispatchWake = vi.fn(
+      async (_input: {
+        reviewerInstanceId: string
+        targetSessionId: string
+        currentLegIds: readonly string[]
+      }) => {},
+    )
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver: async () => {
+        throw new Error('direct delivery must not run when the latch seam exists')
+      },
+      dispatchWake,
+      readRequests: async () => legs,
+      reviewFacts: async () => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: false,
+      }),
+    })
+    await notifier.notifyLeaderRequest(legs[0]!)
+    expect(dispatchWake).toHaveBeenCalledTimes(1)
+    expect(dispatchWake.mock.calls[0]![0].currentLegIds).toEqual([
+      'req-a6-latch-1',
+      'req-a6-latch-2',
+      'req-a6-latch-3',
+    ])
+  })
+})
+
+describe('A6 root notifier — exclusion laws', () => {
+  const legs = ['1', '2'].map((n) => ({
+    ...request,
+    requestId: `req-a6-exclude-${n}`,
+    approvalCaseId: `case-a6-exclude-${n}`,
+    legOrdinal: 1,
+    reviewAuthority: 'leader' as const,
+  } as ControlRequestRecord))
+
+  it('excludes a requiresHuman leg and a leg resolved to another reviewer', async () => {
+    const deliver = vi.fn(async (_wake: { targetSessionId: string; wakeId: string; text: string }) => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-pr6',
+      resolveCurrentReviewer: async (query) =>
+        query.currentLegRequestId === 'req-a6-exclude-2'
+          ? { instanceId: 'inst-other-officer' }
+          : { instanceId: 'inst-officer' },
+      memberSession: () => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+      readRequests: async () => legs,
+      reviewFacts: async (query) => ({
+        reviewRouting: {
+          enabled: true,
+          officerTemplateId: 'officer',
+          ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+          whenOfficerUnavailable: 'hold',
+        },
+        fixedLeaderOrHumanCategory: false,
+        requiresHuman: query.currentLegRequestId === 'req-a6-exclude-1',
+      }),
+    })
+    await notifier.notifyLeaderRequest({
+      ...request,
+      requestId: 'req-a6-seed',
+      approvalCaseId: 'case-a6-seed',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+    } as ControlRequestRecord)
+    expect(deliver).toHaveBeenCalledTimes(1)
+    expect(deliver.mock.calls[0]![0].wakeId).toBe('review:req-a6-seed')
+  })
+})

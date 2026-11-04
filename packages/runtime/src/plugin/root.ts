@@ -220,6 +220,24 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
+import { createAlpha6RootWiring } from '../../alpha6/root-composition.js'
+import {
+  collectAlpha6DelegableLegs,
+  createAlpha6RootControlNotifier,
+} from '../../alpha6/notifier.js'
+import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js'
+import {
+  claimLatch,
+  createLatchCoordinator,
+  dispatchLatch,
+  latchFingerprint,
+  latchKeyFor,
+  recoverLatch,
+  releaseLatch,
+  renderLatchWake,
+} from '../../alpha6/wake-dispatch.js'
+import type { LatchCoordinator } from '../../alpha6/wake-dispatch.js'
+import type { PlannedWake } from '../../alpha6/wake-plan.js'
 import type { PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -827,6 +845,16 @@ export interface TeamProductionRootParams {
    * decision point; the root fills it, the entry calls `boot()` only after.
    */
   readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+  /**
+   * Diagnostic only: a rejected/sync-throwing request notification. It never
+   * changes the request outcome (the durable row stands); tests use it to
+   * surface a liveness fault that is otherwise swallowed.
+   */
+  readonly onNotificationFailure?: (failure: {
+    readonly requestId: string
+    readonly kind: string
+    readonly error: unknown
+  }) => void
   /** PR358-B: the ONE authority facts object (host-built); its
    *  `currentCallFacts` read is published on the plane ref for the PA
    *  call-level adapter. Absent = the face stays unpublished (old worlds
@@ -2396,19 +2424,250 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined } = {
     current: (input) => readPaCallFactsPort(input as PaCallFactsInput),
   }
+  // A6 ROOT WIRING (candidate round, explicit opt-in, DEFAULT OFF) — the two
+  // trusted review-facts ports (`reviewCallFactsForAssignedOfficer` /
+  // `currentReviewerForTransfer`) assembled over the LIVE durable member
+  // repository and the NON-LOCKING `ControlService.readControlState`.
+  //
+  // The opt-in is `config.alpha6ReviewRouting === true`; absent/false does
+  // NOT even invoke the thunk below, so no Alpha.6 parse happens, no member
+  // row is read and the object handed to `createControlService` is the
+  // Alpha.5 object verbatim (byte-identical behavior).
+  //
+  // `controlRef` is late-bound: the ports are created BEFORE the service
+  // exists, and their `readControlState` closure reads this binding at
+  // query time (the same lazy-ref pattern as `controlServiceRef`). Control
+  // operations only run after construction, so the binding is always filled.
+  const controlRef: { current?: ControlService } = {}
+  const alpha6Wiring = createAlpha6RootWiring(config.alpha6ReviewRouting === true, () => ({
+    // The SAME bound source the router/wiring consumes; parsed once more by
+    // the composition's ONE v5 parser (`parseAlpha6Routing`) — no second
+    // parser is introduced here.
+    blueprintSource: config.blueprintSource,
+    rootSessionId: rootSid,
+    leaderTemplateId: blueprint.leader.templateId,
+    // The LIVE member view: production creates members AFTER the control
+    // service exists, so a snapshot would be empty/stale. The composition
+    // re-resolves the unique RUNNING Officer on every query.
+    members: {
+      get: (rootSessionId, instanceId) => repos.memberInstances.get(rootSessionId, instanceId),
+      list: (rootSessionId) => repos.memberInstances.list(rootSessionId),
+    },
+    control: {
+      readControlState: (rootSessionId) => {
+        // Unreachable after construction (the closure is only invoked by
+        // control operations); throwing keeps the fail-closed direction.
+        const current = controlRef.current
+        if (current === undefined) {
+          throw new Error('Alpha.6 control port read before the ControlService was constructed')
+        }
+        return current.readControlState(rootSessionId)
+      },
+    },
+  }))
+  // Fail closed: an explicit opt-in that cannot compose must NOT silently
+  // fall back to the Leader path. Refusing here fails the root construction
+  // (the Team does not boot) with a typed plugin error.
+  if (alpha6Wiring.mode === 'refused') {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      `alpha6ReviewRouting is enabled but the Alpha.6 composition refused (${alpha6Wiring.refused}); ` +
+        'the Team refuses to boot rather than fall back to the Leader path',
+      { rootSessionId: rootSid, reason: 'alpha6-review-routing-refused', refused: alpha6Wiring.refused },
+    )
+  }
+  // Alpha.6 needs a REAL wake seam. An opted-in Team without it would either
+  // notify nobody or fall back to the Leader — both are wrong; refuse to boot.
+  if (alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake === undefined) {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      'alpha6ReviewRouting is enabled but this Host exposes no live wake seam; ' +
+        'the Team refuses to boot rather than silently notify the Leader',
+      { rootSessionId: rootSid, reason: 'alpha6-wake-seam-missing' },
+    )
+  }
+  const alpha6WakeIntents =
+    alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath === 'string'
+      ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
+      : undefined
+  const alpha6WakeCoordinators = new Map<string, LatchCoordinator>()
+  const alpha6WakeBySession = new Map<string, LatchCoordinator>()
+  const alpha6DispatchWake =
+    alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
+      ? async (input: {
+          readonly reviewerInstanceId: string
+          readonly targetSessionId: string
+          readonly currentLegIds: readonly string[]
+        }): Promise<void> => {
+          const wake: PlannedWake = {
+            reviewerInstanceId: input.reviewerInstanceId,
+            targetSessionId: input.targetSessionId,
+            templateId: alpha6Wiring.officerTemplateId,
+            routeRole: 'officer',
+            currentLegIds: input.currentLegIds,
+          }
+          const key = latchKeyFor(wake, rootSid, 0)
+          const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`
+          let coordinator = alpha6WakeCoordinators.get(mapKey)
+          if (coordinator === undefined) {
+            coordinator = createLatchCoordinator(key)
+            alpha6WakeCoordinators.set(mapKey, coordinator)
+          }
+          alpha6WakeBySession.set(input.targetSessionId, coordinator)
+          const intent = alpha6WakeIntents?.forKey(key)
+          const result = await dispatchLatch({
+            plan: { wakes: [wake], humanLegIds: [], held: [] },
+            rootSessionId: rootSid,
+            coordinators: [coordinator],
+            ...(intent === undefined ? {} : { intent }),
+            ...(live.reviewWakeInbox === undefined
+              ? {}
+              : { inbox: live.reviewWakeInbox(input.targetSessionId) }),
+            deliver: async (delivery, targetSessionId) => {
+              if (live.deliverReviewWake === undefined) {
+                throw new Error('Alpha.6 wake seam disappeared after boot')
+              }
+              await live.deliverReviewWake({
+                rootSessionId: rootSid,
+                targetSessionId,
+                wakeId: delivery.wakeId,
+                text: delivery.text,
+              })
+            },
+          })
+          if (result.failures.length > 0) {
+            throw new Error(
+              `Alpha.6 wake dispatch failed: ${result.failures.map((failure) => failure.message).join('; ')}`,
+            )
+          }
+        }
+      : undefined
+  const alpha6ReviewWakeTurnStart =
+    alpha6Wiring.mode === 'alpha6'
+      ? (targetSessionId: string): void => {
+          const coordinator = alpha6WakeBySession.get(targetSessionId)
+          if (coordinator === undefined || coordinator.state.status !== 'queued') return
+          claimLatch(coordinator)
+        }
+      : undefined
+  const alpha6ReviewWakeTurnEnd =
+    alpha6Wiring.mode === 'alpha6'
+      ? async (targetSessionId: string): Promise<void> => {
+          const coordinator = alpha6WakeBySession.get(targetSessionId)
+          if (coordinator === undefined || coordinator.state.status !== 'running') return
+          // The FRESH authoritative read answering the post-turn rescan: the
+          // same facts port and the same reviewer resolution as the notifier.
+          const current = controlRef.current
+          const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests
+          const reviewerInstanceId = coordinator.state.key.reviewerInstanceId
+          const fresh = await collectAlpha6DelegableLegs({
+            rootSessionId: rootSid,
+            reviewerInstanceId,
+            readRequests: async () => requests,
+            reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+            resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+          })
+          const freshWake: PlannedWake = {
+            reviewerInstanceId,
+            targetSessionId,
+            templateId: alpha6Wiring.officerTemplateId,
+            routeRole: 'officer',
+            currentLegIds: fresh.map((entry) => entry.requestId),
+          }
+          const work =
+            fresh.length === 0
+              ? ({ kind: 'no-ready-work' } as const)
+              : ({ kind: 'ready', fingerprint: latchFingerprint(freshWake) } as const)
+          const intent = alpha6WakeIntents?.forKey(coordinator.state.key)
+          const result = await releaseLatch(coordinator, work, {
+            ...(intent === undefined ? {} : { intent }),
+            ...(live.reviewWakeInbox === undefined
+              ? {}
+              : { inbox: live.reviewWakeInbox(targetSessionId) }),
+            deliver: async (delivery) => {
+              if (live.deliverReviewWake === undefined) {
+                throw new Error('Alpha.6 wake seam disappeared after boot')
+              }
+              await live.deliverReviewWake({
+                rootSessionId: rootSid,
+                targetSessionId,
+                wakeId: delivery.wakeId,
+                text: renderLatchWake(delivery),
+              })
+            },
+          })
+          if (result.failures.length > 0) {
+            throw new Error(
+              `Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`,
+            )
+          }
+        }
+      : undefined
+  const alpha6RecoverWakeLatches =
+    alpha6Wiring.mode === 'alpha6' &&
+    alpha6WakeIntents !== undefined &&
+    live.reviewWakeInbox !== undefined
+      ? async (): Promise<void> => {
+          // ONE row per latch: adopt each independently; a row whose native
+          // Inbox message is gone is discarded by the recovery protocol.
+          for (const intent of await alpha6WakeIntents.list()) {
+            const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId)
+            const targetSessionId = member?.childSessionId
+            if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) continue
+            const coordinator = createLatchCoordinator(intent.key)
+            const recovered = await recoverLatch(
+              coordinator,
+              alpha6WakeIntents.forKey(intent.key),
+              live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
+            )
+            if (!recovered.adopted) continue
+            const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
+            alpha6WakeCoordinators.set(mapKey, coordinator)
+            alpha6WakeBySession.set(targetSessionId, coordinator)
+          }
+        }
+      : undefined
+  const alpha6RequestNotification =
+    alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
+      ? createAlpha6RootControlNotifier({
+          rootSessionId: rootSid,
+          resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+          memberSession: async (instanceId) => repos.memberInstances.get(rootSid, instanceId),
+          deliver: (wake) =>
+            live.deliverReviewWake === undefined
+              ? Promise.reject(new Error('Alpha.6 wake seam disappeared after boot'))
+              : live.deliverReviewWake({ rootSessionId: rootSid, ...wake }),
+          // Read the durable pending set lazily (the service exists after this
+          // closure is built); the SAME trusted facts port filters every leg.
+          readRequests: async () => {
+            const current = controlRef.current
+            if (current === undefined) return []
+            return (await current.readControlState(rootSid)).requests
+          },
+          reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+          ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
+        })
+      : undefined
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,
     now,
-    ...(live.deliverRootControlNotification !== undefined
-      ? {
-          requestNotification: createLeaderControlNotifier({
-            deliver: live.deliverRootControlNotification,
-          }),
-        }
+    // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
+    ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
+    ...(params.onNotificationFailure !== undefined
+      ? { onNotificationFailure: params.onNotificationFailure }
       : {}),
+    ...(alpha6RequestNotification !== undefined
+      ? { requestNotification: alpha6RequestNotification }
+      : live.deliverRootControlNotification !== undefined
+        ? {
+            requestNotification: createLeaderControlNotifier({
+              deliver: live.deliverRootControlNotification,
+            }),
+          }
+        : {}),
     // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
     // process has an authority-ceiling reader at all. Without it the guard
     // cannot confirm a v3 operation approval and refuses with
@@ -2428,6 +2687,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           }),
         }),
   })
+  // Fill the late-bound Alpha.6 control reader immediately — the ports above
+  // captured the binding, not this service value.
+  controlRef.current = control
   // A6 (alpha.2 plan §11): publish the fully-constructed control service to
   // the shared ref the glue's setup callback reads LAZILY (the teamToolsRef
   // pattern — filled during construction, the entry calls boot() only after,
@@ -4352,6 +4614,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     remoteDispatcher: remoteSurfaces.dispatcher,
     messaging,
     control,
+    ...(alpha6ReviewWakeTurnStart === undefined ? {} : { alpha6TurnLatchStart: alpha6ReviewWakeTurnStart }),
+    ...(alpha6ReviewWakeTurnEnd === undefined ? {} : { alpha6TurnLatchEnd: alpha6ReviewWakeTurnEnd }),
+    ...(alpha6RecoverWakeLatches === undefined
+      ? {}
+      : { alpha6RecoverWakeLatches }),
     activity,
     fork,
     handoff,

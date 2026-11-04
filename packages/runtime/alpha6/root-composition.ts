@@ -127,7 +127,11 @@ export function createAlpha6RootComposition(input: Alpha6RootCompositionInput): 
 export type Alpha6LiveRootComposition =
   | { readonly mode: 'legacy'; readonly reason: 'disabled' }
   | { readonly mode: 'refused'; readonly refused: Alpha6CompositionRefusal }
-  | { readonly mode: 'alpha6'; readonly ports: Alpha6ControlPorts }
+  | {
+      readonly mode: 'alpha6'
+      readonly ports: Alpha6ControlPorts
+      readonly officerTemplateId: string
+    }
 
 export interface Alpha6LiveRootCompositionInput {
   readonly enabled: boolean
@@ -145,6 +149,46 @@ export interface Alpha6LiveRootCompositionInput {
   }
   readonly control: Alpha6RootCompositionInput['control']
   readonly permissionOverlay?: Alpha6PermissionOverlayPort
+}
+
+/**
+ * The PRODUCTION opt-in assembly — the ONE seam `root.ts` calls.
+ *
+ * `enabled` is the explicit Host/Team opt-in
+ * (`TeamPluginConfig.alpha6ReviewRouting`). When it is not exactly `true`,
+ * this returns `legacy` WITHOUT invoking `live`: no blueprint field is read,
+ * no member row is listed, no Alpha.6 code runs, so the Alpha.5
+ * `createControlService` object stays byte-identical.
+ *
+ * When it is `true` the live composition runs and either yields the two
+ * trusted ports or a REFUSAL with NO ports. The caller MUST fail closed on a
+ * refusal (throw at wiring time); an opted-in Team never falls back to the
+ * Leader path.
+ */
+export type Alpha6RootWiring =
+  | { readonly mode: 'legacy' }
+  | { readonly mode: 'refused'; readonly refused: Alpha6CompositionRefusal }
+  | {
+      readonly mode: 'alpha6'
+      readonly ports: Alpha6ControlPorts
+      readonly officerTemplateId: string
+    }
+
+/** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
+export type Alpha6RootWiringLiveInput = Omit<Alpha6LiveRootCompositionInput, 'enabled'>
+
+export function createAlpha6RootWiring(
+  enabled: boolean,
+  live: () => Alpha6RootWiringLiveInput,
+): Alpha6RootWiring {
+  if (enabled !== true) return { mode: 'legacy' }
+  const composition = createAlpha6LiveRootComposition({ ...live(), enabled: true })
+  if (composition.mode === 'alpha6') return composition
+  if (composition.mode === 'refused') return { mode: 'refused', refused: composition.refused }
+  // Unreachable: the live composition cannot answer `legacy` when enabled.
+  // Throwing (never `legacy`) keeps the fail-closed direction even if a
+  // future edit breaks that invariant.
+  throw new Error('internal invariant broken: enabled Alpha.6 root wiring composed the legacy mode')
 }
 
 export function createAlpha6LiveRootComposition(
@@ -188,5 +232,5 @@ export function createAlpha6LiveRootComposition(
       generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
-  return { mode: 'alpha6', ports }
+  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId }
 }

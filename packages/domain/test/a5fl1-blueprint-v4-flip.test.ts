@@ -102,9 +102,12 @@ function expectError(fn: () => unknown): { code: string; message: string; detail
 }
 
 describe('a5fl1 flip constants — the run set gained 4, the derived retired set moved NOTHING', () => {
-  it('SUPPORTED=[3,4], DEFINED=[1,2,3,4], RETIRED derived stays [1,2] exactly', () => {
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
-    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3, 4])
+  it('SUPPORTED=[3,4,5], DEFINED=[1,2,3,4,5], RETIRED derived stays [1,2] exactly', () => {
+    // alpha6 v5-activation drill: the set moved again (5 joined run + DEFINED);
+    // the law this leg protects is unchanged — the retired set is DERIVED and
+    // nothing was demoted.
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4, 5])
+    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3, 4, 5])
     expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
   })
 
@@ -124,7 +127,7 @@ describe('a5fl1 gate-arm truth table — one leg per version row (flip-PREP tabl
     for (const version of RETIRED_BLUEPRINT_DOCUMENT_VERSIONS) {
       const err = expectError(() => validateBlueprintDocument({ schemaVersion: version }))
       expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
-      expect(err.details.supported).toEqual([3, 4])
+      expect(err.details.supported).toEqual([3, 4, 5])
     }
   })
 
@@ -162,7 +165,7 @@ describe('a5fl1 gate-arm truth table — one leg per version row (flip-PREP tabl
     expect(validateBlueprintDocument(raw).schemaVersion).toBe(4)
   })
 
-  it('a never-defined version keeps the typed arms UNCHANGED: 5/99 MISMATCH at the strong entry, rejected at the inspector', () => {
+  it('a never-defined version keeps the typed arms UNCHANGED: 6/99 MISMATCH at the strong entry, rejected at the inspector', () => {
     const next = Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS) + 1
     const err = expectError(() => validateBlueprintDocument({ schemaVersion: next }))
     expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')

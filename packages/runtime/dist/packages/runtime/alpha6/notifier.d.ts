@@ -9,7 +9,7 @@
  *
  * @module @dsh-agent-team/runtime/alpha6/notifier
  */
-import type { ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
+import type { AssignedOfficerReviewFacts, AssignedOfficerReviewFactsQuery, ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js';
 import type { Alpha6CompositionDecision } from './composition.js';
 export interface WakeDeliveryPort {
     (input: {
@@ -29,7 +29,7 @@ export declare function renderOfficerReviewWake(request: ControlRequestRecord): 
  * - `legacy` decision → the legacy notifier is invoked unchanged.
  * - `alpha6` decision → exactly one wake to the resolved Officer session and
  *   NO Leader notification.
- * - Any other decision (a refusal) → legacy; the safe fallback.
+ * - A `refused` decision → throw; never the Leader fallback.
  */
 export declare function createComposedControlNotifier(ports: {
     readonly decision: Alpha6CompositionDecision;
@@ -37,4 +37,70 @@ export declare function createComposedControlNotifier(ports: {
     readonly wake: WakeDeliveryPort;
     readonly recipientSessionId: string;
 }): ControlRequestNotificationPort;
+/** Resolve the CURRENT reviewer for one durable request (the trusted facts port). */
+export interface Alpha6NotifierReviewerPort {
+    (query: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }): Promise<{
+        readonly instanceId: string;
+    } | null>;
+}
+/**
+ * The root-level Alpha.6 notification path: a control request is resolved
+ * through the SAME trusted facts port the decision path uses, then delivered
+ * to that reviewer's live child session. There is NO Leader fallback:
+ * unresolvable reviewer, missing case identity or a delivery failure throws
+ * (the service's notification is fire-and-forget/liveness, so throwing cannot
+ * change the durable outcome, but it must be visible).
+ */
+export declare function createAlpha6RootControlNotifier(ports: {
+    readonly rootSessionId: string;
+    readonly resolveCurrentReviewer: Alpha6NotifierReviewerPort;
+    readonly memberSession: (instanceId: string) => {
+        readonly childSessionId?: string;
+    } | undefined | Promise<{
+        readonly childSessionId?: string;
+    } | undefined>;
+    readonly deliver: WakeDeliveryPort;
+    /**
+     * Optional trusted merge inputs. When BOTH are present, the notifier reads
+     * the durable pending legs, keeps only those the SAME facts port proves are
+     * delegable to the SAME reviewer, and delivers ONE wake for the group.
+     */
+    readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>;
+    readonly reviewFacts?: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    /** Coordinator seam: when present, delivery goes through the latch. */
+    readonly dispatchWake?: (input: {
+        readonly reviewerInstanceId: string;
+        readonly targetSessionId: string;
+        readonly currentLegIds: readonly string[];
+    }) => Promise<void>;
+}): ControlRequestNotificationPort;
+/** One wake for a group of delegable pending legs; every id stays visible. */
+export declare function renderMergedOfficerReviewWake(requests: readonly ControlRequestRecord[]): string;
+export interface Alpha6DelegableLegsInput {
+    readonly rootSessionId: string;
+    readonly reviewerInstanceId: string;
+    /** The already-trusted leg that triggered this read (included verbatim). */
+    readonly seed?: ControlRequestRecord;
+    readonly readRequests: () => Promise<readonly ControlRequestRecord[]>;
+    readonly reviewFacts: (query: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    readonly resolveCurrentReviewer: (query: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly instanceId: string;
+    } | null>;
+}
+/**
+ * The ONE trusted pending-leg collector used by the notifier and by the Host
+ * turn-end rescan. Every candidate is filtered by the same facts port and the
+ * same reviewer resolution; nothing here decides authority.
+ */
+export declare function collectAlpha6DelegableLegs(input: Alpha6DelegableLegsInput): Promise<ControlRequestRecord[]>;
 //# sourceMappingURL=notifier.d.ts.map

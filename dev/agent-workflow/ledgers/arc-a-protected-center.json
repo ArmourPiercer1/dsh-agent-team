@@ -1,231 +1,237 @@
 {
- "schema": "u6-arc-a-protected-center/1",
- "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) \u2014 family-addition PRs may never add one.",
- "bookedFrom": "5c03f7240a2a43534e6f52b87aa3c541fad993f7",
- "files": [
-  {
-   "path": "packages/runtime/control/errors.ts",
-   "sha256": "fed1da4aa8c8118f6832c9c95c09135e0a23e636d63dfc9ac9bbe0304a02ba03"
-  },
-  {
-   "path": "packages/runtime/control/index.ts",
-   "sha256": "f8c1381595194c615d1ac3b9933d5e84ed1e5a8ef546b4426d910352184b3a22"
-  },
-  {
-   "path": "packages/runtime/control/leader-notification.ts",
-   "sha256": "43ee4e0711acb6456e401d1aa4953af5ab74bb184c354e7ee6a716e501ccac31"
-  },
-  {
-   "path": "packages/runtime/control/service.ts",
-   "sha256": "83fa0ccadab24413d575c8bb5881d3533f41f925a5403d7b79a279d827e40b63"
-  },
-  {
-   "path": "packages/runtime/control/types.ts",
-   "sha256": "d72a4d0ec72a502bfce5c1ecb5cf185d377b6582ab374378d2d173c8b3e94ec7"
-  },
-  {
-   "path": "packages/runtime/governance-center/contribution-schema.ts",
-   "sha256": "79507ef4872807c93755577df43be7230934551c993ca55803e2de97e0584bf5"
-  },
-  {
-   "path": "packages/runtime/governance-center/host-adapter.ts",
-   "sha256": "14229ad0646fcdb6849587e23386464aa46ea129da45e326c1d36897e75ca931"
-  },
-  {
-   "path": "packages/runtime/governance-center/index.ts",
-   "sha256": "665fa79f44a77c9f0b18e78ae2b402a43e1bb2812a5a1e89e7eccfe3d4595845"
-  },
-  {
-   "path": "packages/runtime/governance-center/kernel.ts",
-   "sha256": "c818ecd972779b3ef197f14f7f89a0530aff9fe7f7fa6a07f36b7dfe198e1601"
-  },
-  {
-   "path": "packages/runtime/governance-center/registry.ts",
-   "sha256": "95375f591b0f5be187e826f99d22e717d0b8608057312eebaba9eae4af8865e5"
-  },
-  {
-   "path": "packages/runtime/operation-permission/approval-routing.ts",
-   "sha256": "24bd3e43c8a99c789fc314dbbd2a0a2a0dd237eb67b65a3ead2c58c43f89e127"
-  },
-  {
-   "path": "packages/runtime/operation-permission/canonical-operation.ts",
-   "sha256": "a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87"
-  },
-  {
-   "path": "packages/runtime/operation-permission/errors.ts",
-   "sha256": "3374cf09c4822dea1219e66bb9603abb642c7a01314404009ba6e9c0e481e5df"
-  },
-  {
-   "path": "packages/runtime/operation-permission/index.ts",
-   "sha256": "1e7a9e898f7dab9c0318f0da4d737e58b164750c638391c6645980c79d508df1"
-  },
-  {
-   "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
-   "sha256": "b2b895256595ef47dcd5110efacaf67d113a8c21eb5856a4b7c334180c9a1b53"
-  },
-  {
-   "path": "packages/runtime/operation-permission/permission-coverage.ts",
-   "sha256": "9ec6e4a21022a1597a380d0d2ca75716e237d200c500cb541d0964195c9177c4"
-  },
-  {
-   "path": "packages/runtime/operation-permission/permission-resolver.ts",
-   "sha256": "9841c61caa2f405efcd8a8402b77274a1d392f0756150ac86fbb9b0b1644d3a8"
-  },
-  {
-   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
-   "sha256": "014b802211d30ac7a02e1e65def0fb527062b118bdfdec98245542280a2a5a85"
-  },
-  {
-   "path": "packages/runtime/operation-permission/types.ts",
-   "sha256": "20ec48f10dfbeed06762d0132375f02a327f674599891419e8f05ecc29caf977"
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "bf081ae267fe45e41574f9d872c8cf11ed9bdb1e72faaf33ba4366f44c3bd3b4"
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
-   "sha256": "fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d"
-  },
-  {
-   "path": "packages/runtime/tool-admission/README.md",
-   "sha256": "6784ddec6f82d82a8bec584d9ef4418e9e2bb74606addf83f1b33b5b593d4ed6"
-  },
-  {
-   "path": "packages/runtime/tool-admission/admission-kernel.ts",
-   "sha256": "5b2af82a360cc64e386d7b179c5f6b712b7d2bbf0379aee57e0ddd8182b5d71f"
-  },
-  {
-   "path": "packages/runtime/tool-admission/approval-case.ts",
-   "sha256": "aa6df57bf03aea7fd90c8893822bd453b6525f488affabd7d24c512b8d2d205c"
-  },
-  {
-   "path": "packages/runtime/tool-admission/assurance-runtime.ts",
-   "sha256": "9812faa13db8bb1288492dbb68040c83132f2d7bbc1ccf3593bc53838944d0d3"
-  },
-  {
-   "path": "packages/runtime/tool-admission/clock.ts",
-   "sha256": "c947c3541cc43c80f5fd130dccd668bcab177aaf5ef69c08b4ddd044bc7a5356"
-  },
-  {
-   "path": "packages/runtime/tool-admission/grant-mint.ts",
-   "sha256": "153681b6acbff23aa0d250fe21dfd4db985c4dac7ff9f4f61a19034af7ec9ee9"
-  },
-  {
-   "path": "packages/runtime/tool-admission/index.ts",
-   "sha256": "2586d9b3b7d6e409000d83854f805b693a12cde5b92fc90d29468f19bdb4fd90"
-  },
-  {
-   "path": "packages/runtime/tool-dispatch/closed-world-guard.ts",
-   "sha256": "9e337c2570b3b36e27412e277daaaedd86591cbca2269eaf9c9ca946677f2865"
-  },
-  {
-   "path": "packages/runtime/tool-dispatch/index.ts",
-   "sha256": "0af2f127ee103f0f90df013be745a735d4a7fba6b03942d4c4da9216310e4a9b"
-  },
-  {
-   "path": "packages/runtime/tool-dispatch/install.ts",
-   "sha256": "e03d0a77abc1585794b681b9563f81d1f1dc17a35f6789bfdb7365d13a119189"
-  },
-  {
-   "path": "packages/runtime/tool-dispatch/pending-calls.ts",
-   "sha256": "01dd19744a3d56aeeeda39edb3a70cdee4410e1359d5af6c6b16f495b3aada09"
-  },
-  {
-   "path": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
-   "sha256": "a9e1b3990250619260094fb455c174f69bf691cc8d596a4fb2985d85d94b88ab"
-  }
- ],
- "overrides": [
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
-   "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
-   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it \u2014 the PR-body git-diff\u2229protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
-  },
-  {
-   "path": "packages/runtime/tool-admission/admission-kernel.ts",
-   "sha256": "6f25963ec2222c6866c94af0eb08fecc8714cec3e44c9e3d056f0810e33014cd",
-   "pr": "PR #391 (U7-6 named center-interface PR) \u2014 fix(u7-6): GLUE-4 \u2014 governed search rows are admissible at the template-policy coverage gate (no teeth lost); the number booked by the follow-up citation commit",
-   "reason": "GLUE-4 closure of the live governed-search refusal AT THE TEMPLATE-POLICY COVERAGE/PROJECTION GATE (admitCall) \u2014 NOT the assurance-LEVEL face, which is vacuous on this mount; no assurance-runtime capability is claimed or counted here. Evidence dev/agent-workflow/evidence/u7-6-glue4-20261026/ (root-cause receipt + post-fix receipt + C2 run + mutation probes). Four data-driven changes: (A) read-class resource rules also project the list companion (the anchored walk enumerates the surface the rule already FULLY reads; names are a subset of contents \u2014 never widens; meta-companion precedent; read_image/write keep none); (B) NEW trusted data input invokeClasses <effectClass <- governing rule tools>: governing rules project the class tool-invoke arm with the SAME ceiling and deny-source treatment, disclosure note, blinded empty/elsewhere/whole-tool-any policies still answer IO_POLICY_UNSUPPORTED; ZERO search-class tool-name literals enter this file \u2014 the law lives in the trusted plane mount that supplies the map (PR5 law L2 honored at the byte); (C) ProductionAdmissionConfig pass-through; (D) review R1 F1 \u2014 closed-world law: knownEffectClasses (the mount's declared row-class inventory) is REQUIRED beside any class law; a law key outside it is the typed refusal projection-invoke-class-unknown, a law without a declared world is projection-inventory-missing \u2014 a well-formed unknown/stub/attacker class can never acquire tool-invoke authority (mutation probes M2/M3 catch any relaxation). Assurance weakened nowhere: default-deny coverage gate intact, deny-lane mirror intact (M1 caught), ride ceiling never loosened (M4 caught), PA edge not bypassed."
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "03e74843356a2d5c7d66dea49d436ebd0219c17332e6a5779c944d3bc9c72dd3",
-   "pr": "U7-4a creation-lane attribution producer \u2014 NAMED center-interface change, task branch task/u7-4a-jobs-attribution-producer-20261026, PR title 'feat(u7-4a): governed background-bash attribution producer \u2014 job trio becomes manageable under CI-05 (user-ruled capability)' opened as PR #392 on 2026-10-26, booking commit appended here)",
-   "reason": "USER-RULINGS-2026-10-26 item 2 rules the governed background spawn an Alpha.5 capability: the entry wiring must MOUNT the creation attribution producer (jobs-background-producer.mjs) per durable member mount when planeCfg.backgroundJobs is configured. The hunk is conditional wiring only: with backgroundJobs unset (every pre-existing world) the produced mount surface is byte-identical (u74a C1 K4 zero-flip pin); no control/**, pa-mount-registry, tool-admission/dispatch or governance-center file moves."
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "e6f238baf3c871e4dc56e1edc30f561e10a647cdbb3b43c0896463d625bc9dab",
-   "pr": "a5w-bindseam assembly-gap fix \u2014 NAMED center-interface change, task branch task/a5w-bindseam-20261030 (workflow-A product implementation seat, coordinator-assigned); PR #508 (task/a5w-bindseam-20261030 -> master)",
-   "reason": "PRODUCT ASSEMBLY GAP CLOSED (bw5 boot-wave evidence dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/run-bw5.json trace[4]): the GLUE-5 assembly point \u2014 the ONLY production caller of createTeamToolPlaneAssembly \u2014 never passed the `fs` input, so a member template carrying ANY subtree rule hit the admission kernel's fail-closed projection law (projection-subtree-seam-missing) and the mount was refused with TOOL_BINDING_UNVERIFIED. The hunk is pure assembly: NEW module-level export a5PlaneSubtreeContains (the containment law the kernel refusal itself names \u2014 the C-FS wiring-face law: child === root, or child under the `root/` prefix; sibling shared-prefix never covered; three consumer faces one predicate; a non-path question throws \u2014 coverage is never guessed) + ONE new input key fs:{subtreeContains} at that call site. Zero policy semantics move: tool-admission/admission-kernel.ts, domain/** and the fs-family files are UNTOUCHED; the kernel subtree fail-closed law stays intact and is re-pinned at BOTH faces (plane assembly N1a, kernel options N1b) by the C1 spec packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts. Pre-existing worlds (no subtree rule) never reach the seam \u2014 their mount surface is unchanged, pinned by the full packages/runtime suite re-green; dist mirror rides via scripts/place-dist-glue.mjs (byte-identical, same commit)."
-  },
-  {
-   "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
-   "sha256": "319c3d550f91cddafa353cb3b75f4d3b8242ad3d7641c395d37813ae68449b52",
-   "pr": "a5w-vseam Control-side PA-verifier subtree-seam fix \u2014 NAMED center-interface change, task branch task/a5w-vseam-20261031 (workflow-A product implementation seat, coordinator-assigned); PR #510 (task/a5w-vseam-20261031 -> master)",
-   "reason": "bw7 named failure (PA ask row answered allow over the durable channel, ledger committed DENY reason pa-authority-drift with ok:true \u2014 evidence dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/LEG-SEMANTICS-INVESTIGATION.md \u00a76 \u2460): the resolve/guard verifier re-derived through pure core WITHOUT the SubtreeContains seam, so EVERY subtree-scoped rule answered `undeterminable` (domain/authority-envelope matcherCovers fail-closed arm) \u2192 undetermined set \u2192 DRIFT \u2192 durable DENY over a genuinely granted allow. The hunk threads the seam that pure core has always accepted: NEW OPTIONAL deps entry resolveSubtreeContains (per-call, closed input shape = readCallFacts' own tuple) + ONE 4th positional arg at the evaluateEffectSetExpansion call + the closed-shape member at the planEffectSetApproval and verifyEffectSetApproval calls, each added ONLY when a predicate resolves (absent \u21d2 the calls are byte-identical to before and the fail-closed arm is UNDIMMED: undetermined coverage still denies \u2014 pinned by the dual world in the new spec, where the SAME manifest over seam-less deps still commits the pa-authority-drift DENY with zero consumption). pa-verifier observation rows gain rootSessionId + instanceId so the composition can route them to the publishing mount's log; additive fields only, no consumer breaks (measured zero existing consumers). tool-admission/**, domain/** and control/service.ts are UNTOUCHED \u2014 the fix threads the QUESTION, never softens the ANSWER. Pinned by packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts (13 legs over the real durable ControlService: both gates land allow+consumed with the seam; drift dual; two-gate seam-loss pin; plan/verify-plane discriminator; ask path never consults the seam). The .d.mts type surface has none (the module has no .d.mts mirror); dist mirror rides the TS build in the same commit."
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "5663edb7a2a1b20c5dcbf2d3bf34120fc2c72cd3c1eb2aa921572411a68e992d",
-   "pr": "a5w-vseam Control-side PA-verifier subtree-seam fix \u2014 NAMED center-interface change, task branch task/a5w-vseam-20261031 (workflow-A product implementation seat, coordinator-assigned); PR #510 (task/a5w-vseam-20261031 -> master)",
-   "reason": "Same a5w-vseam round, the ARRIVAL half of the fix (investigation \u00a76 \u2461/\u2463): the Control-side verifier is composed WITHOUT the plane's seam and its verdict rows never reach the instance log \u2014 a subtree-scoped ask row re-derives `undeterminable` Control-side (committed DENY over a granted allow) and the drift is invisible in the one log that shows it. TWO new members ride the published mount entry: subtreeContains, passed through from the plane value object's mount face (a MOUNT face, never a fact \u2014 the closed 12-field PaCallFacts contract is untouched), and onObserve, a sink into THIS instance's existing observations array (string form `a5-pa-verifier: <gate>/<outcome> <detail>`, same channel as the existing a5-pa-bridge leg rows). Pure per-mount reference passing resolved fresh per call; no policy decision lives here; a world whose plane carries no seam declares NO member (omitted, not undefined) and the verifier resolver answers undefined \u2014 fail-closed law exactly as before. readCallAuthorityFacts' facts projection stays byte-identical; dist rides scripts/place-dist-glue.mjs in the same commit; the pre-fix suites (a5w-bindseam-subtree-seam-c1, a5-m1-*) stay green on this tree."
-  },
-  {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "c4c1e3ee84d740a292c3ae409fbc667f806e8467ae3c8e561a30a7f4370321c0",
-   "pr": "PR #568 (center-interface: review wake delivery)",
-   "reason": "A6-PR4 adds one additive review-wake delivery seam; no existing center behavior changes."
-  },
-  {
-   "path": "packages/runtime/control/index.ts",
-   "sha256": "3c44260caefa9969f2a4becec37d58e33dd7a6d0319f724e784c4f837e284e52",
-   "pr": "PR #571 (integration: A6 control chain)",
-   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
-  },
-  {
-   "path": "packages/runtime/control/service.ts",
-   "sha256": "b258a2dbea91c92b5e7280f7093851e5c780161ec785736a4d5f9046e10e6953",
-   "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-   "reason": "assignedOfficerCapability() builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the resolved candidate is persisted as decision evidence (resolve + escalate). Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered with durable evidence assertions."
-  },
-  {
-   "path": "packages/runtime/control/types.ts",
-   "sha256": "d764ddd9e2baf2872f3e978fa5b3d43465f5fd8504db35ff593768fa9f470ac3",
-   "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-   "reason": "Adds the optional trusted reviewCallFactsForAssignedOfficer overlay port (routing + frozen category only); no durable schema change, legacy rows fail closed."
-  },
-  {
-   "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
-   "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
-   "pr": "PR #571 (integration: A6 control chain)",
-   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
-  },
-  {
-   "path": "packages/runtime/control/service.ts",
-   "sha256": "f03a6a87a22e91833b7fb1090b59a032afb6916c278a12cdf24e9cd6254d8b8d",
-   "pr": "PR #571 (integration: A6 non-locking control reader)",
-   "reason": "Alpha.6 PR5 composition wiring: adds the read-only NON-LOCKING readControlState root method and extracts the shared projectControlState() snapshot helper that listControlState also uses, so the locking and non-locking read routes cannot drift. No durable schema change, no mutation/authority path change; the locking route's behavior and projections are byte-identical."
-  },
-  {
-   "path": "packages/runtime/control/types.ts",
-   "sha256": "b7aa3572a3b1e466ec3d2f7ce2e2156132eb47d45e3b9f4ad0fd31ab89c8ec2f",
-   "pr": "PR #571 (integration: A6 non-locking control reader)",
-   "reason": "Alpha.6 PR5 composition wiring: declares ControlStateSnapshot (the shared projection shape of BOTH read routes) and adds ControlService.readControlState, explicitly documented as a non-locking, read-only snapshot with no authority. listControlState's return type narrows to the same named shape (structurally identical); no durable schema change."
-  },
-  {
-   "path": "packages/runtime/control/index.ts",
-   "sha256": "01d91fbcf1a4e789d3a6439cd664badc0f7e96b991cc3c1d4e20da76c4358988",
-   "pr": "PR #571 (integration: A6 non-locking control reader)",
-   "reason": "Alpha.6 PR5 composition wiring: re-exports the ControlStateSnapshot type so external compositions can name the read-only snapshot shape. Public-surface export only; no runtime behavior change."
-  },
-  {
-   "path": "packages/runtime/control/service.ts",
-   "sha256": "9f782a07f5f15607b666365e15d74e903207b8d0cdbcbcf9e277f1d3586af328",
-   "pr": "PR #571 (integration: A6 trusted OperationOwner facts)",
-   "reason": "Alpha.6 authorization-facts fix: ReviewCallFacts' operationOwner.instanceId now derives from the durable leg SUBJECT (the executing Member written by pa-control-bridge) or the legacy targetInstanceId projection, never from the Requester. A Leader proxy ask no longer binds the Leader (or a same-template sibling) as OperationOwner. No durable schema change; the evaluator already compares the owner template against the frozen leg, and the composition facts provider independently proves the same owner."
-  }
- ]
+  "schema": "u6-arc-a-protected-center/1",
+  "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) \u2014 family-addition PRs may never add one.",
+  "bookedFrom": "5c03f7240a2a43534e6f52b87aa3c541fad993f7",
+  "files": [
+    {
+      "path": "packages/runtime/control/errors.ts",
+      "sha256": "fed1da4aa8c8118f6832c9c95c09135e0a23e636d63dfc9ac9bbe0304a02ba03"
+    },
+    {
+      "path": "packages/runtime/control/index.ts",
+      "sha256": "f8c1381595194c615d1ac3b9933d5e84ed1e5a8ef546b4426d910352184b3a22"
+    },
+    {
+      "path": "packages/runtime/control/leader-notification.ts",
+      "sha256": "43ee4e0711acb6456e401d1aa4953af5ab74bb184c354e7ee6a716e501ccac31"
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "83fa0ccadab24413d575c8bb5881d3533f41f925a5403d7b79a279d827e40b63"
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "d72a4d0ec72a502bfce5c1ecb5cf185d377b6582ab374378d2d173c8b3e94ec7"
+    },
+    {
+      "path": "packages/runtime/governance-center/contribution-schema.ts",
+      "sha256": "79507ef4872807c93755577df43be7230934551c993ca55803e2de97e0584bf5"
+    },
+    {
+      "path": "packages/runtime/governance-center/host-adapter.ts",
+      "sha256": "14229ad0646fcdb6849587e23386464aa46ea129da45e326c1d36897e75ca931"
+    },
+    {
+      "path": "packages/runtime/governance-center/index.ts",
+      "sha256": "665fa79f44a77c9f0b18e78ae2b402a43e1bb2812a5a1e89e7eccfe3d4595845"
+    },
+    {
+      "path": "packages/runtime/governance-center/kernel.ts",
+      "sha256": "c818ecd972779b3ef197f14f7f89a0530aff9fe7f7fa6a07f36b7dfe198e1601"
+    },
+    {
+      "path": "packages/runtime/governance-center/registry.ts",
+      "sha256": "95375f591b0f5be187e826f99d22e717d0b8608057312eebaba9eae4af8865e5"
+    },
+    {
+      "path": "packages/runtime/operation-permission/approval-routing.ts",
+      "sha256": "24bd3e43c8a99c789fc314dbbd2a0a2a0dd237eb67b65a3ead2c58c43f89e127"
+    },
+    {
+      "path": "packages/runtime/operation-permission/canonical-operation.ts",
+      "sha256": "a1746afc5ee34075be5d3359e4fbf62e2390a09c215359b9f283b14a3c5e0a87"
+    },
+    {
+      "path": "packages/runtime/operation-permission/errors.ts",
+      "sha256": "3374cf09c4822dea1219e66bb9603abb642c7a01314404009ba6e9c0e481e5df"
+    },
+    {
+      "path": "packages/runtime/operation-permission/index.ts",
+      "sha256": "1e7a9e898f7dab9c0318f0da4d737e58b164750c638391c6645980c79d508df1"
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "b2b895256595ef47dcd5110efacaf67d113a8c21eb5856a4b7c334180c9a1b53"
+    },
+    {
+      "path": "packages/runtime/operation-permission/permission-coverage.ts",
+      "sha256": "9ec6e4a21022a1597a380d0d2ca75716e237d200c500cb541d0964195c9177c4"
+    },
+    {
+      "path": "packages/runtime/operation-permission/permission-resolver.ts",
+      "sha256": "9841c61caa2f405efcd8a8402b77274a1d392f0756150ac86fbb9b0b1644d3a8"
+    },
+    {
+      "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "sha256": "014b802211d30ac7a02e1e65def0fb527062b118bdfdec98245542280a2a5a85"
+    },
+    {
+      "path": "packages/runtime/operation-permission/types.ts",
+      "sha256": "20ec48f10dfbeed06762d0132375f02a327f674599891419e8f05ecc29caf977"
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "bf081ae267fe45e41574f9d872c8cf11ed9bdb1e72faaf33ba4366f44c3bd3b4"
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/pa-mount-registry.mjs",
+      "sha256": "fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d"
+    },
+    {
+      "path": "packages/runtime/tool-admission/README.md",
+      "sha256": "6784ddec6f82d82a8bec584d9ef4418e9e2bb74606addf83f1b33b5b593d4ed6"
+    },
+    {
+      "path": "packages/runtime/tool-admission/admission-kernel.ts",
+      "sha256": "5b2af82a360cc64e386d7b179c5f6b712b7d2bbf0379aee57e0ddd8182b5d71f"
+    },
+    {
+      "path": "packages/runtime/tool-admission/approval-case.ts",
+      "sha256": "aa6df57bf03aea7fd90c8893822bd453b6525f488affabd7d24c512b8d2d205c"
+    },
+    {
+      "path": "packages/runtime/tool-admission/assurance-runtime.ts",
+      "sha256": "9812faa13db8bb1288492dbb68040c83132f2d7bbc1ccf3593bc53838944d0d3"
+    },
+    {
+      "path": "packages/runtime/tool-admission/clock.ts",
+      "sha256": "c947c3541cc43c80f5fd130dccd668bcab177aaf5ef69c08b4ddd044bc7a5356"
+    },
+    {
+      "path": "packages/runtime/tool-admission/grant-mint.ts",
+      "sha256": "153681b6acbff23aa0d250fe21dfd4db985c4dac7ff9f4f61a19034af7ec9ee9"
+    },
+    {
+      "path": "packages/runtime/tool-admission/index.ts",
+      "sha256": "2586d9b3b7d6e409000d83854f805b693a12cde5b92fc90d29468f19bdb4fd90"
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+      "sha256": "9e337c2570b3b36e27412e277daaaedd86591cbca2269eaf9c9ca946677f2865"
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/index.ts",
+      "sha256": "0af2f127ee103f0f90df013be745a735d4a7fba6b03942d4c4da9216310e4a9b"
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/install.ts",
+      "sha256": "e03d0a77abc1585794b681b9563f81d1f1dc17a35f6789bfdb7365d13a119189"
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/pending-calls.ts",
+      "sha256": "01dd19744a3d56aeeeda39edb3a70cdee4410e1359d5af6c6b16f495b3aada09"
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+      "sha256": "a9e1b3990250619260094fb455c174f69bf691cc8d596a4fb2985d85d94b88ab"
+    }
+  ],
+  "overrides": [
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
+      "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
+      "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it \u2014 the PR-body git-diff\u2229protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+    },
+    {
+      "path": "packages/runtime/tool-admission/admission-kernel.ts",
+      "sha256": "6f25963ec2222c6866c94af0eb08fecc8714cec3e44c9e3d056f0810e33014cd",
+      "pr": "PR #391 (U7-6 named center-interface PR) \u2014 fix(u7-6): GLUE-4 \u2014 governed search rows are admissible at the template-policy coverage gate (no teeth lost); the number booked by the follow-up citation commit",
+      "reason": "GLUE-4 closure of the live governed-search refusal AT THE TEMPLATE-POLICY COVERAGE/PROJECTION GATE (admitCall) \u2014 NOT the assurance-LEVEL face, which is vacuous on this mount; no assurance-runtime capability is claimed or counted here. Evidence dev/agent-workflow/evidence/u7-6-glue4-20261026/ (root-cause receipt + post-fix receipt + C2 run + mutation probes). Four data-driven changes: (A) read-class resource rules also project the list companion (the anchored walk enumerates the surface the rule already FULLY reads; names are a subset of contents \u2014 never widens; meta-companion precedent; read_image/write keep none); (B) NEW trusted data input invokeClasses <effectClass <- governing rule tools>: governing rules project the class tool-invoke arm with the SAME ceiling and deny-source treatment, disclosure note, blinded empty/elsewhere/whole-tool-any policies still answer IO_POLICY_UNSUPPORTED; ZERO search-class tool-name literals enter this file \u2014 the law lives in the trusted plane mount that supplies the map (PR5 law L2 honored at the byte); (C) ProductionAdmissionConfig pass-through; (D) review R1 F1 \u2014 closed-world law: knownEffectClasses (the mount's declared row-class inventory) is REQUIRED beside any class law; a law key outside it is the typed refusal projection-invoke-class-unknown, a law without a declared world is projection-inventory-missing \u2014 a well-formed unknown/stub/attacker class can never acquire tool-invoke authority (mutation probes M2/M3 catch any relaxation). Assurance weakened nowhere: default-deny coverage gate intact, deny-lane mirror intact (M1 caught), ride ceiling never loosened (M4 caught), PA edge not bypassed."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "03e74843356a2d5c7d66dea49d436ebd0219c17332e6a5779c944d3bc9c72dd3",
+      "pr": "U7-4a creation-lane attribution producer \u2014 NAMED center-interface change, task branch task/u7-4a-jobs-attribution-producer-20261026, PR title 'feat(u7-4a): governed background-bash attribution producer \u2014 job trio becomes manageable under CI-05 (user-ruled capability)' opened as PR #392 on 2026-10-26, booking commit appended here)",
+      "reason": "USER-RULINGS-2026-10-26 item 2 rules the governed background spawn an Alpha.5 capability: the entry wiring must MOUNT the creation attribution producer (jobs-background-producer.mjs) per durable member mount when planeCfg.backgroundJobs is configured. The hunk is conditional wiring only: with backgroundJobs unset (every pre-existing world) the produced mount surface is byte-identical (u74a C1 K4 zero-flip pin); no control/**, pa-mount-registry, tool-admission/dispatch or governance-center file moves."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "e6f238baf3c871e4dc56e1edc30f561e10a647cdbb3b43c0896463d625bc9dab",
+      "pr": "a5w-bindseam assembly-gap fix \u2014 NAMED center-interface change, task branch task/a5w-bindseam-20261030 (workflow-A product implementation seat, coordinator-assigned); PR #508 (task/a5w-bindseam-20261030 -> master)",
+      "reason": "PRODUCT ASSEMBLY GAP CLOSED (bw5 boot-wave evidence dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/run-bw5.json trace[4]): the GLUE-5 assembly point \u2014 the ONLY production caller of createTeamToolPlaneAssembly \u2014 never passed the `fs` input, so a member template carrying ANY subtree rule hit the admission kernel's fail-closed projection law (projection-subtree-seam-missing) and the mount was refused with TOOL_BINDING_UNVERIFIED. The hunk is pure assembly: NEW module-level export a5PlaneSubtreeContains (the containment law the kernel refusal itself names \u2014 the C-FS wiring-face law: child === root, or child under the `root/` prefix; sibling shared-prefix never covered; three consumer faces one predicate; a non-path question throws \u2014 coverage is never guessed) + ONE new input key fs:{subtreeContains} at that call site. Zero policy semantics move: tool-admission/admission-kernel.ts, domain/** and the fs-family files are UNTOUCHED; the kernel subtree fail-closed law stays intact and is re-pinned at BOTH faces (plane assembly N1a, kernel options N1b) by the C1 spec packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts. Pre-existing worlds (no subtree rule) never reach the seam \u2014 their mount surface is unchanged, pinned by the full packages/runtime suite re-green; dist mirror rides via scripts/place-dist-glue.mjs (byte-identical, same commit)."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "319c3d550f91cddafa353cb3b75f4d3b8242ad3d7641c395d37813ae68449b52",
+      "pr": "a5w-vseam Control-side PA-verifier subtree-seam fix \u2014 NAMED center-interface change, task branch task/a5w-vseam-20261031 (workflow-A product implementation seat, coordinator-assigned); PR #510 (task/a5w-vseam-20261031 -> master)",
+      "reason": "bw7 named failure (PA ask row answered allow over the durable channel, ledger committed DENY reason pa-authority-drift with ok:true \u2014 evidence dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/LEG-SEMANTICS-INVESTIGATION.md \u00a76 \u2460): the resolve/guard verifier re-derived through pure core WITHOUT the SubtreeContains seam, so EVERY subtree-scoped rule answered `undeterminable` (domain/authority-envelope matcherCovers fail-closed arm) \u2192 undetermined set \u2192 DRIFT \u2192 durable DENY over a genuinely granted allow. The hunk threads the seam that pure core has always accepted: NEW OPTIONAL deps entry resolveSubtreeContains (per-call, closed input shape = readCallFacts' own tuple) + ONE 4th positional arg at the evaluateEffectSetExpansion call + the closed-shape member at the planEffectSetApproval and verifyEffectSetApproval calls, each added ONLY when a predicate resolves (absent \u21d2 the calls are byte-identical to before and the fail-closed arm is UNDIMMED: undetermined coverage still denies \u2014 pinned by the dual world in the new spec, where the SAME manifest over seam-less deps still commits the pa-authority-drift DENY with zero consumption). pa-verifier observation rows gain rootSessionId + instanceId so the composition can route them to the publishing mount's log; additive fields only, no consumer breaks (measured zero existing consumers). tool-admission/**, domain/** and control/service.ts are UNTOUCHED \u2014 the fix threads the QUESTION, never softens the ANSWER. Pinned by packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts (13 legs over the real durable ControlService: both gates land allow+consumed with the seam; drift dual; two-gate seam-loss pin; plan/verify-plane discriminator; ask path never consults the seam). The .d.mts type surface has none (the module has no .d.mts mirror); dist mirror rides the TS build in the same commit."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "5663edb7a2a1b20c5dcbf2d3bf34120fc2c72cd3c1eb2aa921572411a68e992d",
+      "pr": "a5w-vseam Control-side PA-verifier subtree-seam fix \u2014 NAMED center-interface change, task branch task/a5w-vseam-20261031 (workflow-A product implementation seat, coordinator-assigned); PR #510 (task/a5w-vseam-20261031 -> master)",
+      "reason": "Same a5w-vseam round, the ARRIVAL half of the fix (investigation \u00a76 \u2461/\u2463): the Control-side verifier is composed WITHOUT the plane's seam and its verdict rows never reach the instance log \u2014 a subtree-scoped ask row re-derives `undeterminable` Control-side (committed DENY over a granted allow) and the drift is invisible in the one log that shows it. TWO new members ride the published mount entry: subtreeContains, passed through from the plane value object's mount face (a MOUNT face, never a fact \u2014 the closed 12-field PaCallFacts contract is untouched), and onObserve, a sink into THIS instance's existing observations array (string form `a5-pa-verifier: <gate>/<outcome> <detail>`, same channel as the existing a5-pa-bridge leg rows). Pure per-mount reference passing resolved fresh per call; no policy decision lives here; a world whose plane carries no seam declares NO member (omitted, not undefined) and the verifier resolver answers undefined \u2014 fail-closed law exactly as before. readCallAuthorityFacts' facts projection stays byte-identical; dist rides scripts/place-dist-glue.mjs in the same commit; the pre-fix suites (a5w-bindseam-subtree-seam-c1, a5-m1-*) stay green on this tree."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "c4c1e3ee84d740a292c3ae409fbc667f806e8467ae3c8e561a30a7f4370321c0",
+      "pr": "PR #568 (center-interface: review wake delivery)",
+      "reason": "A6-PR4 adds one additive review-wake delivery seam; no existing center behavior changes."
+    },
+    {
+      "path": "packages/runtime/control/index.ts",
+      "sha256": "3c44260caefa9969f2a4becec37d58e33dd7a6d0319f724e784c4f837e284e52",
+      "pr": "PR #571 (integration: A6 control chain)",
+      "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "b258a2dbea91c92b5e7280f7093851e5c780161ec785736a4d5f9046e10e6953",
+      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
+      "reason": "assignedOfficerCapability() builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the resolved candidate is persisted as decision evidence (resolve + escalate). Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered with durable evidence assertions."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "d764ddd9e2baf2872f3e978fa5b3d43465f5fd8504db35ff593768fa9f470ac3",
+      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
+      "reason": "Adds the optional trusted reviewCallFactsForAssignedOfficer overlay port (routing + frozen category only); no durable schema change, legacy rows fail closed."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
+      "pr": "PR #571 (integration: A6 control chain)",
+      "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "f03a6a87a22e91833b7fb1090b59a032afb6916c278a12cdf24e9cd6254d8b8d",
+      "pr": "PR #571 (integration: A6 non-locking control reader)",
+      "reason": "Alpha.6 PR5 composition wiring: adds the read-only NON-LOCKING readControlState root method and extracts the shared projectControlState() snapshot helper that listControlState also uses, so the locking and non-locking read routes cannot drift. No durable schema change, no mutation/authority path change; the locking route's behavior and projections are byte-identical."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "b7aa3572a3b1e466ec3d2f7ce2e2156132eb47d45e3b9f4ad0fd31ab89c8ec2f",
+      "pr": "PR #571 (integration: A6 non-locking control reader)",
+      "reason": "Alpha.6 PR5 composition wiring: declares ControlStateSnapshot (the shared projection shape of BOTH read routes) and adds ControlService.readControlState, explicitly documented as a non-locking, read-only snapshot with no authority. listControlState's return type narrows to the same named shape (structurally identical); no durable schema change."
+    },
+    {
+      "path": "packages/runtime/control/index.ts",
+      "sha256": "01d91fbcf1a4e789d3a6439cd664badc0f7e96b991cc3c1d4e20da76c4358988",
+      "pr": "PR #571 (integration: A6 non-locking control reader)",
+      "reason": "Alpha.6 PR5 composition wiring: re-exports the ControlStateSnapshot type so external compositions can name the read-only snapshot shape. Public-surface export only; no runtime behavior change."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "9f782a07f5f15607b666365e15d74e903207b8d0cdbcbcf9e277f1d3586af328",
+      "pr": "PR #571 (integration: A6 trusted OperationOwner facts)",
+      "reason": "Alpha.6 authorization-facts fix: ReviewCallFacts' operationOwner.instanceId now derives from the durable leg SUBJECT (the executing Member written by pa-control-bridge) or the legacy targetInstanceId projection, never from the Requester. A Leader proxy ask no longer binds the Leader (or a same-template sibling) as OperationOwner. No durable schema change; the evaluator already compares the owner template against the frozen leg, and the composition facts provider independently proves the same owner."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "4368865c155a9a4fc9de27f1a1ca39548f9bab23e95c3a2647c2f57500b55d69",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft)",
+      "reason": "Named Alpha.6 center-interface addition: the native-Inbox has/remove probe is the ONLY recovery observation the wake-intent protocol consumes; it materialises the target session so a boot-time recovery reads the durable Inbox, and it adds no authority, no decision and no durable write."
+    }
+  ]
 }

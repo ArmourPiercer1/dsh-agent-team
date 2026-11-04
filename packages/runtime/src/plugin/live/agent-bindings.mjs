@@ -5346,6 +5346,51 @@ export function createAgentBindings(deps) {
    * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
    * @returns {Promise<void>}
    */
+  /**
+   * Alpha.6 — the native-Inbox truth for ONE recipient session. `has` reads
+   * the LIVE pending lists only (never materializes an agent), matching the
+   * wakeId inside the rendered text; `remove` withdraws that exact message.
+   * @param {string} targetSessionId
+   * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
+   */
+  function reviewWakeInbox(targetSessionId) {
+    const sid = String(targetSessionId)
+    const handle = async () => {
+      const existing = liveAgents.get(sid)
+      if (existing !== undefined) return existing
+      try {
+        // Boot recovery runs before the recipient handle exists; materialising
+        // its durable session is what makes the native Inbox readable at all.
+        return await ensureLiveAgent(sid)
+      } catch {
+        return undefined
+      }
+    }
+    const pending = async () => {
+      const live = await handle()
+      if (live === undefined) return []
+      return [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+    }
+    const matches = (message, wakeId) => {
+      const content = Array.isArray(message?.content) ? message.content : []
+      return content.some(
+        (part) => part?.type === 'text' && typeof part.text === 'string' && part.text.includes(wakeId),
+      )
+    }
+    return {
+      async has(wakeId) {
+        return (await pending()).some((message) => matches(message, String(wakeId)))
+      },
+      async remove(wakeId) {
+        const live = await handle()
+        if (live === undefined) return false
+        const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
+        if (message === undefined) return false
+        return live.agent.inbox.remove(message.id)
+      },
+    }
+  }
+
   async function deliverReviewWake(input) {
     const rootSessionId = String(input?.rootSessionId ?? '')
     const targetSessionId = String(input?.targetSessionId ?? '')
@@ -6121,6 +6166,7 @@ export function createAgentBindings(deps) {
     // resolves the recipient session; idle -> followup, busy -> steer, and a
     // rejection releases the coordinator's queued latch.
     deliverReviewWake,
+    reviewWakeInbox,
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,

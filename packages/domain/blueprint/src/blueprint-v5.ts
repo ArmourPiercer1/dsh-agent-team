@@ -1,11 +1,13 @@
 /**
- * The v5 authoring grammar — DORMANT fifth parser for Alpha.6 review routing.
+ * The v5 authoring grammar — the fifth parser for Alpha.6 review routing.
  *
- * WHY DORMANT: `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` remains `[3, 4]` in
- * PR1. The production entry therefore still refuses `schemaVersion: 5` with
- * `SCHEMA_VERSION_MISMATCH`; the flip is a later, explicit step (PR6), so this
- * PR cannot change existing Alpha.5 blueprint behaviour. Direct callers can
- * exercise the grammar through `parseBlueprintV5` / `validateBlueprintV5Document`.
+ * ACTIVATION: this parser was DORMANT through PR1 (`SUPPORTED_BLUEPRINT_
+ * DOCUMENT_VERSIONS` stayed `[3, 4]`, so the production entry refused
+ * `schemaVersion: 5`). The v5-activation DRILL round adds `5` to that array
+ * and joins this parser at the two dispatch points in validate.ts — the same
+ * one-line join shape the v4 flip used. The drill branch is not merged; the
+ * grammar itself is unchanged and remains directly callable through
+ * `parseBlueprintV5` / `validateBlueprintV5Document`.
  *
  * STRUCTURE = zero drift by construction:
  *  - the v5 core face is the v4 face plus exactly one optional top-level
