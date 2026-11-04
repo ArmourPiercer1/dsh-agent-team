@@ -1,7 +1,6 @@
 PASS dry-run evidence exists and is green: {"checks":48,"failed":0}
-PASS the PRODUCT tree matches the one the dry run measured: {"committed":"83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc","now":"83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc"}
-REFUSE the product tree has no uncommitted modifications: M tests/world-factory/a5sf-acceptance-preflight.test.mjs
- M tests/world-factory/lib/a5sf-acceptance-preflight.mjs
+PASS the PRODUCT tree matches the one the dry run measured: {"committed":"6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65","now":"6cb0a2886984ff177685871fe2cdfdab85e1e0c186b4a91b43e8a63ce084dc65"}
+PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is the preflight branch: task/a5sf-preflight-20261103
 PASS ledger: every row parses and each boot row has its intent row: {"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/ledger.jsonl","rows":2,"intents":1,"bootRows":1,"unparseable":0,"orphanBootRuns":[],"plannedMismatch":[],"bootsInPool":6,"remaining":5}
 PASS ledger: each intent's plannedStarts equals the boot rows charged to it: {"intents":1,"mismatch":[]}

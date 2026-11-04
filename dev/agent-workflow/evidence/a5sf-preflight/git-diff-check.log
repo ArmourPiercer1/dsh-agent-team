@@ -1,2 +1,8 @@
-dev/agent-workflow/evidence/a5sf-preflight/run.log:33: trailing whitespace.
-+[2026-11-04T07:28:28.839Z]   counter {"at":"2026-11-04T07:28:24.737Z","leg":"counter-installed","baseCtor":"SandboxedFileSystem","baseInstance":"fs-0","methods":["readText","streamText","readBytes","readByteRange","writeText","editText"],"note":"test composition instrumentation; the shipped host fs provider has no counter of its own. A refused call never 
+# git diff --check origin/master..HEAD
+clean (exit 0)
+# git diff --check (working tree)
+clean (exit 0)
+# NOTE (2026-11-04, correction round): the range check briefly reported ONE
+# trailing space at run.log:33, an artifact of a 320-char counter slice in the
+# driver log. It was stripped in the correction commit and the driver now
+# strips trailing whitespace, so this file records the post-fix state.
