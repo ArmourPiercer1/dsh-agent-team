@@ -14,6 +14,14 @@
 
 - 每次受限调用必须满足 `EffectiveIo(member,tool,call) ⊆ MemberCeiling(member) ∩ ToolRestriction(member,tool)`；
   三轴 = read / write / network。本轮 `network=restricted` 为 **UNSUPPORTED**（没有目的地粒度）。
+  **2026-11-05 审查修复（B1，机制级）**：本前提曾有一个反例——`projectToolIoRestriction` 把合法的
+  v4 `{mode:'all', deny:[…]}` 整条塌缩为 `'no-additional-narrowing'`（丢弃 deny），realm 因此**服务**了
+  被拒绝的路径（实测 `readText(secret)` 成功、`providerReads = 1`）。已修：只有 `deny` 为空的 all
+  lane 才是交集恒等元，否则保留 `mode:'all'` + deny 的 `PathRuleSet`（交集/匹配/定位器判定本就支持该
+  形状，无需新形状、无需拒绝分支）。两级回归臂已锁：`a5sf-member-policy.test.ts`（投影层，
+  read+write 两轴）与 `tests/world-factory/a5sf-product-assembly.test.mjs` PA8（realm 层，
+  `IO_READ_DENIED`、`providerReads = 0`、被拒文件仍存在）。证据 =
+  `dev/agent-workflow/evidence/a5sf-product-assembly/README.md` §10-B1（含 RED 记录）。
 - 工具级 `allow all` 不是 Member 上界的提升；审批只决定“是否允许执行”，不改写硬上界。
 - 不允许的降级：Provider 不可用、后端不强制、策略不可表达时**拒绝执行**，绝不退回裸执行。
 - 同一 `member/tool/call/revision` 必须能追到：Alpha.4 允许/拒绝 → 编译结果 → Provider

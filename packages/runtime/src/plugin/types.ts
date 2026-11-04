@@ -266,7 +266,16 @@ export interface TeamPluginConfig {
    *     (`executionBoundary: confined-subprocess` -> `SUBPROCESS_UNCONFINED_REALM`,
    *     `delegated-remote` or a `network: deny` lane -> `NETWORK_UNCONFINED_REALM`)
    *     REFUSES at row assembly rather than mounting a narrower answer; a
-   *     malformed declaration refuses with `REALM_DECLARATION_INVALID`.
+   *     malformed declaration — including a `toolRestrictions` entry the shipped
+   *     v4 `toolBindings` grammar refuses, or an `authorization: deny` the realm
+   *     cannot honour (review B3/B4) — refuses with `REALM_DECLARATION_INVALID`;
+   *   - when the row carries `config.blueprintSource` for the SAME team, the
+   *     declared ceilings must be a NARROWING of the blueprint's
+   *     `memberIoCeilings[template]` on read/write/network, otherwise the row
+   *     refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` (review B2): a row-config
+   *     edit may not raise a ceiling without a new blueprint/authority revision.
+   *     A `blueprintSource` for a different team is not this Team's authority and
+   *     is not reconciled.
    */
   readonly a5sfMemberPolicies?: A5sfProductRealmDeclaration
   /**

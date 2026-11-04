@@ -68,6 +68,20 @@ export const TEAM_SERVICE_INSTALL_CODES = [
    * "no declaration" (that would silently unmanage the Member).
    */
   'REALM_DECLARATION_INVALID',
+  /**
+   * PRODUCT ASSEMBLY review B2 (2026-11-05, coordinator ruling): the
+   * `a5sfMemberPolicies` declaration is reconciled with the row's OWN bound
+   * blueprint (`config.blueprintSource`, when it parses to the same team), and
+   * a declared Member ceiling is NOT a narrowing of the blueprint's
+   * `memberIoCeilings[template]` on some axis — or names a template the
+   * blueprint declares no ceiling for. Refused at assembly, so a row-config
+   * edit can never widen a ceiling without a new blueprint/authority revision.
+   * A typed code of its own (rather than `REALM_DECLARATION_INVALID`) because
+   * the declaration can be perfectly well-formed and still disagree with the
+   * authority-bearing blueprint: callers must be able to tell "unreadable"
+   * from "wider than the bound authority".
+   */
+  'REALM_DECLARATION_EXCEEDS_BLUEPRINT',
 ] as const
 
 export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number]

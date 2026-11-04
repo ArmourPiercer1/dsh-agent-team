@@ -13,7 +13,7 @@
  * @module @dsh-agent-team/runtime/member-io-policy
  */
 export { compileEffectiveIo, compileMemberPolicy, projectToolIoRestriction } from './compile.js';
-export { coversLocator, intersectAllowLocators, intersectPathRuleSets, locatorWithinRuleSet, toLocatorKey, checkWriteRequiresRead, WRITE_REQUIRES_READ_REFUSAL_CODES, } from './path-rules.js';
+export { coversLocator, intersectAllowLocators, intersectPathRuleSets, laneWithinLane, locatorWithinRuleSet, toLocatorKey, toPathRuleSet, checkWriteRequiresRead, WRITE_REQUIRES_READ_REFUSAL_CODES, } from './path-rules.js';
 export { MANAGED_FS_METHODS, NODE_PATH_IDENTITY_RESOLVER, PATH_GUARD_REFUSAL_CODES, PROVIDER_CAPABILITY_REFUSAL_CODES, evaluateLocatorAccess, requireProviderCapabilities, } from './provider-capabilities.js';
 export { bindInvocation, bumpInvocationEpoch, consumeInvocation, createInvocationBinder, revokeInvocation, toInvocationAuthority, } from './invocation.js';
 export { createTrustRegistry, inspectTrustedBinding, registerTrustedBinding, verifyTrustedBinding, } from './trust-registry.js';

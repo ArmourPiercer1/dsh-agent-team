@@ -105,6 +105,36 @@ export declare function intersectAllowLocators(left: readonly string[], right: r
  */
 export declare function intersectPathRuleSets(member: PathRuleSet, tool: PathRuleSet): PathRuleSet;
 /**
+ * Normalize ONE authored (or already-projected) v4 lane into a frozen
+ * `PathRuleSet`: `mode: 'all'` iff the lane says so, and the three locator
+ * lists keep only string entries in authored order. There is ONE normalizer on
+ * purpose — the compiler and the product-declaration reconciliation read lanes
+ * through this function, so one authored lane can never acquire two meanings.
+ */
+export declare function toPathRuleSet(lane: unknown): PathRuleSet;
+/**
+ * Is `inner` a NARROWING of `outer` — i.e. does `inner` permit no location that
+ * `outer` does not permit? Pure authored-string containment over the same
+ * `coversLocator` relation the matcher uses (subtree-aware, `..` never folded),
+ * fail-closed in the same precedence order as `matchLocator`:
+ *
+ *  - every `allow` locator of `inner` that `inner` itself does not deny must be
+ *    (a) covered by an `allow` locator of `outer` (or by `outer.mode === 'all'`)
+ *    and (b) NOT denied by `outer` — an outer deny would make `inner` wider
+ *    exactly there;
+ *  - an `inner` `all` lane permits everything outside its own deny list, so
+ *    `outer` must also be `all` AND must deny nothing `inner` permits
+ *    (`all` ⊄ `restricted`: a finite allow list is never the complement of a
+ *    deny list);
+ *  - `inner.deny` only narrows, so it needs no check; `ask` is never a
+ *    permission (`matchLocator` never promotes it), and the intersection drops
+ *    an ask that either side denies, so it needs no check either.
+ *
+ * This predicate only ANSWERS a question: it never rewrites, intersects or
+ * widens a lane.
+ */
+export declare function laneWithinLane(inner: PathRuleSet, outer: PathRuleSet): boolean;
+/**
  * Is `locator` inside a compiled rule set? The matcher P1-03 will extend with
  * Provider-resolved identity; this is the authored-string answer used by the
  * compiler's own tests and by denial diagnostics.

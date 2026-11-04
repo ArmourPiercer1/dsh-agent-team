@@ -1,0 +1,51 @@
+# FINAL VERIFICATION — fix round, committed tree 186d68813
+
+$ git rev-parse HEAD
+186d688131bcf53d67298bddbf72508927ef66c1
+rc=0
+
+$ git rev-list --count HEAD..origin/master
+0
+
+$ node_modules/.bin/tsc -p packages/runtime/tsconfig.json --noEmit
+rc=0
+
+$ node --test tests/world-factory/a5sf-product-assembly.test.mjs
+✔ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (21.556939ms)
+✔ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (12.460288ms)
+✔ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (7.083852ms)
+✔ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (1.170745ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (3.037762ms)
+✔ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.050786ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (6.353037ms)
+✔ PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads (4.829072ms)
+✔ PA9 the declaration is reconciled with config.blueprintSource (B2): narrowing mounts, widening refuses typed, other team/absent skips (15.844155ms)
+✔ PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted (2.597677ms)
+✔ PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings (2.111567ms)
+ℹ tests 11
+ℹ pass 11
+ℹ fail 0
+
+$ node_modules/.bin/vitest run packages/runtime/test/a5sf-member-policy.test.ts packages/runtime/test/a5sf-service-install.test.ts packages/runtime/test/a5sf-provider-composition.test.ts packages/runtime/test/a5sf-bl16-grep-realm.test.ts packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts
+ Test Files  5 passed (5)
+      Tests  52 passed (52)
+
+$ node --test tests/world-factory/a5sf-*.test.mjs
+ℹ tests 212
+ℹ pass 212
+ℹ fail 0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+rc=0
+
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1960 glue=101
+rc=0
+
+$ git diff --check origin/master...HEAD
+rc=0
+
+$ sha256sum packages/runtime/src/plugin/live/agent-bindings.mjs
+df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b  packages/runtime/src/plugin/live/agent-bindings.mjs
+

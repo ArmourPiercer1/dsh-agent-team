@@ -68,6 +68,18 @@
 > 5. **boot 排序调整**：① 1 次 boot 完成 F1 实体验证（Team Tool Plane 拒绝并记录 consulted；原生 read 仍走 Base——这是**旁路基线记录**，不是验收成功）；② 优先复核 BL-22 路线 C；③ 原生工具 × ToolBinding 实际绑定；④ 之后才做 P2-01/02/03 的 C2 验收。**当前 3 次 F1 预算只用 1 次**，其余转入路线 C 与绑定验收。
 > 6. **风险趋势**：若连续多轮只完善 Team 自有工具面而原生工具仍走 Base，会重新形成两套执行体系 —— 这正是 Sandbox-First 要避免的。**下一轮的首要工作是把原生工具接入真实产品执行路径。**
 >
+> **P2 统一前置 — 2026-11-05 审查修复轮（PR #590；B1–B8，本条不新增条目）**：外部审查在**机制层**复现一个
+> 阻断缺陷（B1）：`projectToolIoRestriction` 把合法 v4 `{mode:'all', deny:[…]}` 塌缩为
+> `'no-additional-narrowing'`，deny 被丢弃、realm 服务被拒路径（实测 `readText(secret)` 成功）。已修
+> （只有 deny 为空的 all lane 才是恒等元）并在投影层 + realm 层各加回归臂（矩阵 §0 已同步）。同轮按协调
+> 裁决落地：**B2** 行内 `config.blueprintSource`（同队）对声明天花板做逐轴 narrowing 对账，越界以新增
+> `REALM_DECLARATION_EXCEEDS_BLUEPRINT` 拒绝（§9 的 embedded-vs-derived 决定**仍未定**，但现在只关乎
+> 重复书写，不再是加宽通道）；**B3** `authorization` 按 shipped 枚举校验、`deny` 拒绝而非挂载（文档化选择）；
+> **B4** `toolRestrictions` 走 shipped v4 `toolBindings` 校验（缺陷按路径点名）；**B5** `teamId`/
+> `blueprintRevision`/`instanceGeneration` 记录为 declared-not-bound；**B6** 陈旧注释/README 措辞修正；
+> **B7** 产品套件入列 CI（workflow + eb3-ci-manifest 腿，`eb3-ci-required` pass）；**B8** contentHash/revision
+> 覆盖 bindings。证据 = `dev/agent-workflow/evidence/a5sf-product-assembly/README.md` §10（含 RED 日志与逐项门）。
+>
 > **P2 统一前置 — 2026-11-05 状态（缺口 a 的产品半场已补；本条不新增条目）**：外部审查指出的「新系统基本建在
 > acceptance profile 里，产品装配尚未消费它」已按**产品可见声明**处理：Team 行 config 新增 `a5sfMemberPolicies`
 > （`packages/runtime/team-services/src/product-assembly.ts`；声明即受管、未声明模板走原路径），挂载仍走**同一个**

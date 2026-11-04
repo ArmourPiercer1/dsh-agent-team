@@ -75,11 +75,16 @@ Compilation inside `createProductRealmProvider(plan).compiledFor(member)`:
   (`EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction` on read/write/network).
 
 The declaration is validated by expanding it into a minimal **valid v4 blueprint document** (one
-reserved scaffold leader + one template per declared Member + the declared `memberIoCeilings`) and
-handing it to the shipped **`parseBlueprintV4`**. So lane/grammar defects are found by the shipped
-v4 validator, at its own path, and the resulting `contentHash` is the real content identity of
-exactly the declared ceilings. The reserved scaffold template id
-(`a5sf-product-scaffold-leader`) may never name a managed Member (typed refusal).
+reserved scaffold leader + one template per declared Member + the declared `memberIoCeilings` **and
+the declared `toolBindings`**) and handing it to the shipped **`parseBlueprintV4`**. So lane/grammar
+defects are found by the shipped v4 validator, at its own path, and the resulting `contentHash` is
+the real content identity of exactly the declared ceilings **and bindings**. The reserved scaffold
+template id (`a5sf-product-scaffold-leader`) may never name a managed Member (typed refusal).
+
+The binding family used to be OUTSIDE that document (it was projected directly by
+`projectToolIoRestriction` before the parse). The review-fix round (§10, B4/B8) moved it IN: a bogus
+`authorization`/`implementationOrigin` or a malformed locator list is now refused by the same shipped
+tables, and editing a restriction changes the `contentHash` — hence the Member policy `revision`.
 
 Two provider sources are refused: a config carrying **both** `a5sfMemberPolicies` and a live
 `teamA5sfRealm` service would give one Member two compiled-realm authorities, so
@@ -113,7 +118,9 @@ All refusals use the existing `TeamServiceInstallError` idiom and the **closed**
 | `executionBoundary: delegated-remote` | `NETWORK_UNCONFINED_REALM` (new) | row assembly | The realm owns no remote/web face; a local claim would be a lie. |
 | `ceiling.network` narrowing (`mode` ≠ `allow`) | `NETWORK_UNCONFINED_REALM` (new) | row assembly | No web face is installed, so a network narrowing could not be enforced. Refused early so the answer is specific, not a generic projection failure. |
 | ToolBinding `io.network` narrowing | `NETWORK_UNCONFINED_REALM` (new) | row assembly | Same reason; checked on the projected restriction. |
-| Malformed/ambiguous declaration: unknown or missing field, wrong schema, blank ids, empty members, duplicate template, reserved scaffold id, duplicate binding, a ceiling the shipped v4 validator refuses | `REALM_DECLARATION_INVALID` (new) | row assembly | A declaration that cannot be read must never be treated as "no declaration" (that would silently unmanage the Member). |
+| Malformed/ambiguous declaration: unknown or missing field, wrong schema, blank ids, empty members, duplicate template, reserved scaffold id, duplicate binding, a ceiling OR a `toolRestrictions` entry the shipped v4 validator refuses | `REALM_DECLARATION_INVALID` (new) | row assembly | A declaration that cannot be read must never be treated as "no declaration" (that would silently unmanage the Member). Since §10/B4 the restriction family rides the shipped `toolBindings` grammar, so this row covers both families. |
+| `toolRestrictions[].authorization` outside `allow/ask/deny`, or `authorization: "deny"` | `REALM_DECLARATION_INVALID` | row assembly | §10/B3: the enum is checked against `BLUEPRINT_V4_AUTHORIZATIONS`; a `deny` binding is REFUSED rather than mounted as decoration (dropping it would leave the tool on the wider base/ceiling surface). Call-time allow/ask stays Alpha.4's. |
+| A declared ceiling that exceeds the row's OWN bound blueprint (`config.blueprintSource`, same team) on read/write/network, or names a template the blueprint declares no ceiling for | `REALM_DECLARATION_EXCEEDS_BLUEPRINT` (new, §10/B2) | row assembly | A row-config edit must never widen a ceiling without a new blueprint/authority revision. A blueprint for a DIFFERENT team is not this Team's authority and is not reconciled; an absent source skips the guard (both forms keep working). |
 | Compiler/projector refusal of a declared lane (e.g. `authority.admitted: false` → `AUTHORITY_REFUSED`, `network: restricted` → `IO_POLICY_UNSUPPORTED`) | `MEMBER_POLICY_UNAVAILABLE` with the compiler's own code in the detail | `compiledFor` (per Member, before the realm mounts) | The one compiler's refusal is surfaced, never overridden. |
 | Member descriptor without `instanceId`/`templateId` | `MEMBER_IDENTITY_INVALID` | `compiledFor` | A template ceiling cannot bind an unknown identity, and cannot be guessed. |
 
@@ -135,12 +142,24 @@ root + `mkdtemp` fixtures), no boot, no port, no DSH_HOME.
 | PA5 | **Regression arm**: the evidence-era shape (`a5sfEvidencePath` + a `teamA5sfRealm` provider) is byte-identical (`deepEqual { evidencePath }`), still mounts, still writes `a5sf-guard-consult/1` facts (`realm: 'member'`). |
 | PA6 | Two provider sources (declaration + service) refuse instead of picking one. |
 | PA7 | The declaration compiles through the one compiler; unmanaged template → `undefined`; missing `templateId` → `MEMBER_IDENTITY_INVALID`; `admitted: false` → `MEMBER_POLICY_UNAVAILABLE` naming `AUTHORITY_REFUSED`. |
+| PA8 (§10/B1) | A legal v4 `mode: all` + `deny` restriction KEEPS its deny: the plan carries it, the sibling read is still served, the denied subtree is refused at the binding realm with `IO_READ_DENIED` and **zero provider reads**, and the file exists (the refusal is the lane, not a missing file). |
+| PA9 (§10/B2) | Reconciliation with `config.blueprintSource`: a narrowing declaration mounts and reads; a widening read ceiling, an `all` ceiling over a restricted blueprint, and a template the blueprint declares no ceiling for each refuse `REALM_DECLARATION_EXCEEDS_BLUEPRINT` at row assembly with **zero provider calls**; an unparseable source refuses `REALM_DECLARATION_INVALID`; another team's blueprint and an absent source are not reconciled (both forms keep working). |
+| PA10 (§10/B3+B4) | `authorization: "deny"` and an out-of-enum authorization refuse `REALM_DECLARATION_INVALID`; a bogus `implementationOrigin` and a scalar-shaped `allow` are refused by the SHIPPED v4 validator (the scalar shape used to become deny-all silently); an object-shaped `allow` is refused at projection (`MEMBER_POLICY_UNAVAILABLE`) — measured, not assumed. |
+| PA11 (§10/B8) | Two declarations with identical ceilings and different restrictions have different blueprint `contentHash`es, different `MemberPolicy.revision`s, and the binding's `effective.policyRevision` equals the Member revision — the bindings are inside the content identity. |
 
 **RED before GREEN (honest)**: with the pre-change tracked sources restored by `git stash` (new
 module + new suite still on disk), the suite reads **7 tests / 2 pass / 5 fail** — every product-path
 arm (PA1, PA2, PA3, PA4, PA6) fails; only the evidence regression (PA5) and the module-only arm
 (PA7) pass. Log: `gates/red-product-assembly.log`. Implementation then turns it **7/7**
 (`gates/green-product-assembly.log`).
+
+**Review-fix round RED (honest, 2026-11-05)**: with the FIX-ROUND sources stashed (the new arms on
+disk), the same command reads **11 tests / 7 pass / 4 fail** — PA8, PA9, PA10, PA11 fail and PA1–PA7
+stay green (the fix touches neither the assembly path nor the evidence regression). PA8's failure is
+the reviewer's mechanism verbatim: `Missing expected rejection` — the denied file was **served**.
+The projector arm separately reads `expected 'no-additional-narrowing' to deeply equal
+{mode:'all', …, deny:['/work/a/secret']}`. Logs: `gates/red-fix-round-product.log`,
+`gates/red-b1-projector.log`. After the fix: `11/11` and `17/17` (§6, §10).
 
 ## §6. Gates (verbatim)
 
@@ -158,6 +177,25 @@ arm (PA1, PA2, PA3, PA4, PA6) fails; only the evidence regression (PA5) and the 
 | `node scripts/check-artifacts-at-head.mjs` | rc=0 — `rev=HEAD verdict=ok compared=1960 drift=0` (HEAD carries its own build) | `gates/artifacts-at-head.log` |
 | `git diff --check origin/master...HEAD` | rc=0 | `gates/diff-check.log` (and the final battery) |
 | `sha256sum packages/runtime/src/plugin/live/agent-bindings.mjs` | `df9b46af…6464b` (unchanged) | `gates/protected-glue-sha256.log` |
+
+### §6.2 Review-fix round (2026-11-05) — the same gates, re-run
+
+| Gate | Result | Log |
+|---|---|---|
+| Product suite RED (fix-round sources stashed) | `tests 11 / pass 7 / fail 4` (PA8–PA11 fail) | `gates/red-fix-round-product.log` |
+| Projector arm RED (pre-fix `compile.ts`) | `Tests 1 failed / 16 passed` — `expected 'no-additional-narrowing' …` | `gates/red-b1-projector.log` |
+| Product suite GREEN | `tests 11 / pass 11 / fail 0` | `gates/green-fix-round-product.log` |
+| `a5sf-member-policy.test.ts` GREEN | `Tests 17 passed (17)` | `gates/green-b1-projector.log` |
+| `node --test tests/world-factory/a5sf-*.test.mjs` | `tests 212 / pass 212 / fail 0` (baseline 208 + 4) | `gates/fix-round-world-factory-a5sf.log` |
+| Runtime a5sf suites (`a5sf-member-policy`, `a5sf-service-install`, `a5sf-provider-composition`, `a5sf-bl16-grep-realm`, `a5sf-subprocess-unconfined-realm`) | `Test Files 5 passed / Tests 52 passed` (was 51) | `gates/fix-round-runtime-a5sf-suites.log` |
+| `tsc -p packages/runtime/tsconfig.json --noEmit` + `pnpm -r run typecheck` | rc=0; all packages `Done`; `0` × `error TS` | `gates/fix-round-tsc-runtime.log`, `gates/fix-round-typecheck-recursive.log` |
+| census (`p4t6-session-event-scan`) | `Test Files 1 passed / Tests 20 passed`; count unchanged at **1433** (no new scannable `.ts`; the existing booking still covers the edited files) | `gates/fix-round-p4t6-census.log` |
+| CI shape (`node scripts/eb3-ci-required.mjs`) | `EB3-CI-REQUIRED pass workflows=9 findings=0` | `gates/fix-round-ci-required.log` |
+| eslint on touched paths | rc=0 on every touched TS path EXCEPT `host.ts`; `host.ts` carries 2 findings that are **PRE-EXISTING at HEAD** (`'TemplatePermissionPolicy' is defined but never used` at :112, empty block at :3311/3314) — proven by linting `git show HEAD:…/host.ts` via stdin, same 2 findings; this round's only `host.ts` hunk is a comment and adds none. The `.mjs` test file is eslint-ignored (warning only) | `gates/fix-round-eslint.log`, `gates/fix-round-eslint-baseline-host.log` |
+| `pnpm run build` + `place-dist-glue` + `build-client-composition` | rc=0; `101 placement(s)`; client bundle 1 308 108 B (unchanged — no client code touched) | `gates/fix-round-build-dist.log` |
+| both artifact gates (committed tree) | `committed: verdict=ok compared=1960 glue=101`; `at-head: verdict=ok rev=HEAD compared=1960 drift=0` | `gates/fix-round-artifacts.log`, `gates/fix-round-artifacts-at-head.log`, `gates/fix-round-final-verification.log` |
+| `git diff --check origin/master...HEAD` | rc=0 | `gates/fix-round-final-verification.log` |
+| protected glue hash | `df9b46af…6464b` (unchanged) | `gates/fix-round-final-verification.log` |
 
 ### §6.1 Artifact gates — the command that is actually run
 
@@ -212,11 +250,23 @@ requires the two residuals above (process face) to be answered first.
 - **New**: `packages/runtime/team-services/src/product-assembly.ts` (declaration + parser + provider),
   `tests/world-factory/a5sf-product-assembly.test.mjs`, `packages/testkit/test/p4t6-bookings/a5sfprodasm.json`,
   this README + `gates/`.
-- **Edited**: `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` (enablement law, product provider,
-  optional sink), `packages/runtime/team-services/src/types.ts` (2 closed codes),
+- **Edited** (round 1): `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` (enablement law, product
+  provider, optional sink), `packages/runtime/team-services/src/types.ts` (2 closed codes),
   `packages/runtime/team-services/src/index.ts` (exports), `packages/runtime/src/plugin/types.ts`
   (`TeamPluginConfig` doc + type), `packages/runtime/tsconfig.build.json` (emit),
   `docs/plans/active/alpha5-sandbox-first/{ALPHA5-SANDBOX-BACKLOG,TOOL-ACCEPTANCE-MATRIX}.md`,
+  regenerated `packages/runtime/dist/**`.
+- **Edited** (review-fix round, §10): `packages/runtime/member-io-policy/src/compile.ts` (B1 projector;
+  the all-lane sentinel now needs an empty deny), `packages/runtime/member-io-policy/src/path-rules.ts`
+  (`toPathRuleSet` normalizer + `laneWithinLane` predicate), `packages/runtime/member-io-policy/src/index.ts`
+  (exports), `packages/runtime/team-services/src/product-assembly.ts` (B2 reconciliation, B3/B4
+  validation, B5 comments, B8 bindings in the content hash), `packages/runtime/team-services/src/types.ts`
+  (`REALM_DECLARATION_EXCEEDS_BLUEPRINT`), `packages/runtime/src/plugin/live/a5sf-realm-row.mjs`
+  (forward `config.blueprintSource`), `packages/runtime/src/plugin/{host.ts,types.ts}` (B6 docs),
+  `packages/runtime/test/a5sf-member-policy.test.ts` (B1 projector arm),
+  `tests/world-factory/a5sf-product-assembly.test.mjs` (PA8–PA11),
+  `.github/workflows/ci-integration.yml` + `dev/ci/eb3-ci-manifest.json` (B7),
+  `docs/plans/active/alpha5-sandbox-first/TOOL-ACCEPTANCE-MATRIX.md` (§0 claim note),
   regenerated `packages/runtime/dist/**`.
 - **Untouched**: `packages/runtime/src/plugin/live/agent-bindings.mjs` (protected, hash above),
   `tests/deepseek-harness-test-use` (pristine), every `:3080`/Host surface.
@@ -229,3 +279,181 @@ The alternative is deriving the same declaration **from the Team's resolved boun
 bootstrap** (no duplication; requires the live authority/resolver bridge and makes the product seam
 depend on the live blueprint resolver). This lane chose the embedded form because it is expressible,
 testable and host-free; the owner should confirm that choice before a shipped preset adopts it.
+
+**Coordinator ruling (2026-11-05, review finding B2): the decision is still open, but it is now ONLY
+about duplication — not about a widening channel.** A row-config edit can no longer raise a ceiling
+above the bound blueprint without a new blueprint/authority revision: when
+`config.blueprintSource` parses to the same team, `parseProductRealmDeclaration` refuses a
+declaration that is not a per-axis narrowing of the blueprint's `memberIoCeilings[template]`
+(`REALM_DECLARATION_EXCEEDS_BLUEPRINT`, arm PA9). The derived form (if the owner chooses it) would
+remove the duplicated facts; it would not remove an authority check that now already exists. Both
+forms keep working: no `blueprintSource` ⇒ the guard is skipped (host-free assembly), a
+`blueprintSource` for a different team ⇒ it is not this Team's authority and is not reconciled.
+
+## §10. Review-fix round (2026-11-05) — B1–B8, measured then fixed
+
+An independent reviewer reproduced a blocking defect. Everything below was **re-measured on this
+branch before any edit** (scratch reproductions in `.scratch/`, not committed), then fixed, then
+re-measured. `CORE PATCH BUDGET = 0` held: no upstream file, no new dependency, `:3080` untouched,
+`agent-bindings.mjs` hash unchanged.
+
+### B1 (BLOCKING, mechanism) — the projector dropped a legal all-lane deny
+
+**Re-measured first.**
+
+```
+projectToolIoRestriction({owner:'dsh.fs',name:'read',authorization:'ask',
+  io:{read:{mode:'all',deny:['/dir/secret']}, write:{mode:'all',deny:[]}, network:{mode:'allow'}},
+  execution:{implementationOrigin:'dsh-native',executionBoundary:'trusted-host'}})
+  → read: "no-additional-narrowing"          (WRONG: the deny vanished)
+
+realm-level, same declaration with ceiling read=[dir]:
+  parsed restriction  → { read:'no-additional-narrowing', write:'no-additional-narrowing' }
+  realm.bindings[0].fs.readText(dir/secret) → "SECRET\n"   providerReads = 1
+```
+
+The shape is **legal v4**: `BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE` makes `deny` REQUIRED in the `all`
+form, so `{mode:'all', deny:[...]}` is the ONLY way to write an all-lane. Collapsing it to the
+identity sentinel is a **mechanism** defect, not a product-seam one: any caller whose restriction has
+that shape leaves the intersection invariant through the projector, which is why the fix belongs in
+`compile.ts` and why the matrix's invariant claim (§0 of `TOOL-ACCEPTANCE-MATRIX.md`) is amended.
+
+**Fix** (`packages/runtime/member-io-policy/src/compile.ts`): the identity sentinel is returned
+**only when the all-lane's `deny` list is empty**. Otherwise the lane is projected as its
+`PathRuleSet` (`mode:'all'`, the deny kept) and `intersectPathRuleSets` binds — it already unions
+deny across both axes, and `matchLocator`/`locatorWithinRuleSet` already give deny precedence over
+`mode:'all'`, so **no new shape and no new vocabulary** were needed. There is no branch that turns a
+non-empty deny into the identity; a future consumer that could not represent the shape would have to
+refuse typed, never widen (stated in the function's doc comment).
+
+**Why the shape cannot widen any more** (checked, not asserted):
+
+1. projector: `deny.length === 0` is the ONLY sentinel condition;
+2. intersection: `deny = union(member.deny, tool.deny)` — an all-lane's deny survives a restricted
+   ceiling and a restricted tool lane alike (`intersectPathRuleSets` was already correct; it is now
+   reachable with this shape);
+3. matching: `matchLocator` checks `laneCoversDeny` FIRST, so `mode:'all'` cannot re-open a denied
+   subtree;
+4. the only other consumer of the sentinel (`intersectLane`) treats it as true identity, so returning
+   a deny-carrying rule set cannot be mis-read as "no narrowing".
+
+**Regression arms (both levels, RED → GREEN):**
+
+- **Projector**: `packages/runtime/test/a5sf-member-policy.test.ts` — *a mode-all restriction that
+  carries a deny narrows read AND write (deny is never dropped)*. Asserts the projected lanes keep the
+  deny on **both** axes, the effective lanes carry it, `locatorWithinRuleSet` refuses the denied
+  subtree while the sibling is still `true`, and the empty-deny form still returns
+  `'no-additional-narrowing'` (the pre-existing law is extended, not weakened; the old arm at
+  `a5sf-member-policy.test.ts:232-240` covered only the empty-deny form — the reviewer was right).
+  RED: `expected 'no-additional-narrowing' to deeply equal { mode:'all', allow:[], ask:[], deny:['/work/a/secret'] }`
+  (`gates/red-b1-projector.log`).
+- **Product realm**: `tests/world-factory/a5sf-product-assembly.test.mjs` PA8 — the same declaration
+  through `a5sfRealmConfigOf` → `mountMemberA5sfRealm`: the sibling read is served, the denied path is
+  refused with `IO_READ_DENIED`, **zero provider reads**, and the file is still on disk. RED:
+  `Missing expected rejection` — the denied file was served (`gates/red-fix-round-product.log`).
+
+### B2 — the declaration is now reconciled with `config.blueprintSource` (coordinator ruling)
+
+The reviewer was right: the declaration was never reconciled with the row's bound blueprint, so a
+row-config edit could widen a ceiling without an authority revision. `parseProductRealmDeclaration`
+takes an optional `{ blueprintSource }` context (the row passes `config.blueprintSource`); when that
+source **parses to the same team**, every declared ceiling must be a per-axis narrowing of
+`memberIoCeilings[template]`:
+
+- **read/write**: `laneWithinLane` (new pure predicate in `path-rules.ts`) — every declared `allow`
+  locator must be covered by the blueprint ceiling and not denied by it; a declared `mode:'all'` is a
+  narrowing only of a blueprint `mode:'all'` whose deny list it covers; `ask` never counts as a
+  permission and `deny` only narrows. One normalizer (`toPathRuleSet`) reads both lanes, so the two
+  documents cannot be compared under two different meanings.
+- **network**: the declaration is `allow` by law (else `NETWORK_UNCONFINED_REALM`), so the blueprint
+  ceiling must be `allow` too.
+
+Refusal is a **new precise typed code**, `REALM_DECLARATION_EXCEEDS_BLUEPRINT`
+(`TEAM_SERVICE_INSTALL_CODES`), used for "wider than the bound authority"; an **unparseable**
+`blueprintSource` is `REALM_DECLARATION_INVALID` (it cannot establish "same team", so it must not be
+silently skipped). Scope follows the ruling exactly: a different team's blueprint is not reconciled,
+and an absent source skips the guard — **both declaration forms keep working** (PA1–PA8 pass no
+`blueprintSource` and are unchanged). Restrictions are NOT reconciled: a restriction can only narrow
+the intersection, so it is not a widening channel (their grammar is B4's subject).
+
+### B3 — `authorization` validated and `deny` refused (documented choice)
+
+`authorization` is validated against the shipped `BLUEPRINT_V4_AUTHORIZATIONS` table. For
+`authorization: "deny"` this lane **refuses** (`REALM_DECLARATION_INVALID`) instead of mounting: the
+realm owns an enforced IO face for an authorized tool and has no call-time authorization decision, so
+it cannot both serve and deny one binding; **not mounting the binding** would be worse — the tool
+would fall back to the wider base/ceiling surface, i.e. it would be widened. The honest expression of
+"the Team must not run this tool" is absence from this declaration (or a deny the Alpha.4 permission
+lane owns), which the refusal's message says verbatim. Arm PA10.
+
+### B4 — the restriction family runs through the shipped v4 validator
+
+`toolRestrictions` are now emitted into the synthetic document as the real `toolBindings` family
+(absent when empty, so a restriction-less declaration keeps its byte-identical content hash), which
+means the shipped `parseBlueprintV4` validates their closed shapes with the same tables as a
+blueprint: `authorization` and `implementationOrigin`/`executionBoundary` enums, the exact keys per
+lane/mode, and locator lists. The refusal detail now carries the validator's collected
+`details.problems` (path + reason), so it NAMES the defect.
+
+Measured corrections to the reviewer's wording: an **object-shaped** `allow` was already refused
+before this round (the mapping engine flattens leaves, so `allow.dir` is an unmapped field →
+`MEMBER_POLICY_UNAVAILABLE`, never silent deny-all). The **scalar-shaped** `allow` (`allow: '/x'`) is
+the one that silently became deny-all (the projector filters non-arrays), and it is now refused by
+the shipped validator (`REALM_DECLARATION_INVALID`). Both shapes are pinned in PA10 with their real
+codes.
+
+### B5 — declared-not-bound, in the code and here
+
+`teamId`, `blueprintRevision` and `instanceGeneration` in the declaration are **row-config values**,
+not facts read from the live TeamDomain/blueprint/member row. Only `instanceId` and `templateId` come
+from the row's Member descriptor, and the compiler's `TrustedMemberIdentity` means "consumed verbatim
+by the compiler", NOT "verified against the live Team". Consequences, stated so they cannot be read
+as done: a stale declared generation cannot be detected here
+(`MEMBER_GENERATION_STALE` compares only what the caller passes); a wrong `teamId` is caught only
+indirectly (B2 refuses when the bound blueprint's `blueprintId` differs from the declaration's — it
+skips reconciliation, it does not reject the declaration); and `blueprintRevision` is a human string
+stamped into the synthetic document, not a claim about the live blueprint's revision. Code comments
+in `product-assembly.ts` carry the same statement at both fields and at the identity construction.
+
+### B6 — stale docs corrected
+
+- `host.ts` (`a5sfRealmProvider` accessor): said the realm needs **both** the accessor and
+  `a5sfEvidencePath`. Corrected to the enablement law: `a5sfMemberPolicies` (no provider needed) OR
+  `a5sfEvidencePath` (needs this accessor); neither ⇒ legacy path.
+- `a5sf-realm-row.mjs` (`a5sfRealmConfigOf`): the `@returns` said `{ evidencePath: string, … }`
+  although `evidencePath` is optional and `memberPolicies` was missing. Corrected (and it documents
+  the B2 context now being forwarded).
+- README §2/§4/§5 wording: §2 now says both families ride the shipped validator (B4/B8); §4 gained
+  the B2/B3 rows; §5 gained PA8–PA11 and the fix-round RED paragraph.
+
+### B7 — CI enrolment
+
+`tests/world-factory/a5sf-product-assembly.test.mjs` is now an explicit step in
+`.github/workflows/ci-integration.yml` (after the route-C step, following the enumerated a5sf
+steps) and a leg in `dev/ci/eb3-ci-manifest.json` with the file path in its `check` list — the
+shape checker (`node scripts/eb3-ci-required.mjs`) reports `pass workflows=9 findings=0`, so the
+workflow and the manifest agree.
+
+### B8 — the revision covers the tool restrictions
+
+Because the restrictions are now inside the synthetic document (B4), `blueprint.contentHash` covers
+them, and `contentHash` is an input to `compileMemberPolicy`'s `derivePolicyRevision`. So editing a
+restriction changes the Member `revision`, and `EffectiveIoPolicy.policyRevision` (the value the
+binding realm and the invocation authority carry) moves with it. Arm PA11 measures: same ceilings +
+different restriction ⇒ different `contentHash`, different Member revision, and
+`bindings[0].effective.policyRevision === members[0].policy.revision`. Granularity note (honest): the
+hash covers the WHOLE declaration document, so a restriction edit on one Member changes the revision
+of every declared Member of that row; the property that matters — a restriction edit can never be
+invisible to the revision — holds, and over-invalidation is the conservative direction.
+
+### What the review claimed that could not be reproduced
+
+- "An object-shaped `allow` silently becomes deny-all": not reproduced — it was already refused
+  (`MEMBER_POLICY_UNAVAILABLE`) by the mapping engine. The scalar-shaped `allow` is the real instance
+  of that class (now refused, PA10).
+- Nothing else in the review was contradicted; B1, B2, B3, B4, B8 were reproduced exactly as stated.
+
+### Gates for this round (verbatim)
+
+See §6's fix-round rows (`gates/green-fix-round-product.log`, `gates/red-fix-round-product.log`,
+`gates/red-b1-projector.log`, `gates/fix-round-final-verification.log`).

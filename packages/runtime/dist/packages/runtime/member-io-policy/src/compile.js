@@ -25,7 +25,7 @@
 import { createHash } from 'node:crypto';
 import { findMemberIoCeiling } from '../../../domain/blueprint/src/index.js';
 import { declareV4AuthoringMaps, projectV4MemberIoCeiling, projectV4ToolBindingAuthoring } from '../../../domain/vnext-field-mapping/src/index.js';
-import { intersectPathRuleSets } from './path-rules.js';
+import { intersectPathRuleSets, toPathRuleSet } from './path-rules.js';
 /** The one shipped declaration set (declaration is deterministic and pure). */
 const AUTHORING_MAPS = (() => {
     const declared = declareV4AuthoringMaps();
@@ -59,18 +59,6 @@ function canonicalJson(value) {
 /** Stable, content-addressed policy revision (changes iff any input changes). */
 function derivePolicyRevision(material) {
     return `a5sf1:${createHash('sha256').update(canonicalJson(material)).digest('hex').slice(0, 32)}`;
-}
-function laneFromProjected(projected) {
-    const list = (key) => {
-        const value = projected[key];
-        return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
-    };
-    return freezeRuleSet({
-        mode: projected['mode'] === 'all' ? 'all' : 'restricted',
-        allow: list('allow'),
-        ask: list('ask'),
-        deny: list('deny'),
-    });
 }
 /**
  * Compile the LEFT factor: one trusted Member → its hard I/O ceiling.
@@ -118,8 +106,8 @@ export function compileMemberPolicy(input) {
     if (ceilingProjection.networkCeiling.kind !== 'boolean') {
         return refuse('IO_POLICY_UNSUPPORTED', 'the Member ceiling requests a destination-restricted network lane; this round commits the network BOOLEAN only and never coerces restricted into allow/deny', 'boundBlueprint.blueprint.memberIoCeilings.network');
     }
-    const read = laneFromProjected(ceilingProjection.io.read);
-    const write = laneFromProjected(ceilingProjection.io.write);
+    const read = toPathRuleSet(ceilingProjection.io.read);
+    const write = toPathRuleSet(ceilingProjection.io.write);
     const network = Object.freeze({ access: ceilingProjection.networkCeiling.access });
     const revision = derivePolicyRevision({
         schema: 'a5sf-member-policy/1',
@@ -192,9 +180,26 @@ export function compileEffectiveIo(member, tool, invocation) {
 }
 /**
  * Project one v4 tool binding into the RIGHT factor of the two-axis policy.
- * `mode: all` becomes `'no-additional-narrowing'` — it declares no path, so
- * it cannot widen anything; a `restricted` network lane becomes the typed
- * `'unsupported'` this round, never a boolean guess.
+ *
+ * A `mode: all` lane becomes `'no-additional-narrowing'` ONLY when its `deny`
+ * list is EMPTY — an all-lane with no deny declares no path at all, so it can
+ * neither widen nor narrow anything. An all-lane that DOES carry a deny is a
+ * real restriction: v4 makes `deny` a REQUIRED field of the all form, so
+ * collapsing it to the identity sentinel would silently DROP the deny and let
+ * the tool read/write the denied subtree through the wider lane. That shape is
+ * projected as its `PathRuleSet` (`mode: 'all'`, deny kept), so
+ * `intersectPathRuleSets` — which unions deny on both axes — is what binds.
+ *
+ * Nothing downstream needs a new shape for it: `matchLocator`,
+ * `locatorWithinRuleSet` and `intersectPathRuleSets` already read
+ * `mode: 'all'` with deny precedence, and the effective lane stays
+ * `restricted` whenever the Member ceiling is restricted (the normal case).
+ * A `restricted` network lane becomes the typed `'unsupported'` this round,
+ * never a boolean guess.
+ *
+ * FAIL-CLOSED: if a future consumer could not represent an all-lane + deny, the
+ * right answer is the existing typed refusal — never this collapse. No branch
+ * of this function turns a non-empty deny into the identity.
  */
 export function projectToolIoRestriction(binding) {
     const projected = projectV4ToolBindingAuthoring(AUTHORING_MAPS, binding);
@@ -205,9 +210,12 @@ export function projectToolIoRestriction(binding) {
     const io = value['io'];
     const laneValue = (axis) => {
         const lane = io[axis];
-        if (lane['mode'] === 'all')
+        const deny = Array.isArray(lane['deny'])
+            ? lane['deny'].filter((item) => typeof item === 'string')
+            : [];
+        if (lane['mode'] === 'all' && deny.length === 0)
             return 'no-additional-narrowing';
-        return laneFromProjected(lane);
+        return toPathRuleSet(lane);
     };
     const networkLane = io['network'];
     const networkMode = networkLane['mode'];

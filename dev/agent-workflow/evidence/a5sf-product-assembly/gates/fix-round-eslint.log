@@ -1,0 +1,5 @@
+$ node_modules/.bin/eslint <every touched TS path EXCEPT host.ts>
+rc=0
+
+# host.ts: 2 errors, BOTH pre-existing at HEAD (see fix-round-eslint-baseline-host.log);
+# this round's only host.ts hunk is a comment at ~2307-2317 and adds no finding.

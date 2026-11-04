@@ -608,3 +608,328 @@ test('PA7 the declaration compiles with the ONE compiler and the unmanaged templ
     },
   )
 })
+
+// =============================================================================
+// PA8 — a v4 `mode: all` + deny restriction keeps its deny (B1 regression)
+// =============================================================================
+
+test('PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads', async () => {
+  const fixture = makeFixture('pa8')
+  CLEANUP.push(fixture.dir)
+  // A file INSIDE the ceiling and INSIDE the restriction's denied subtree.
+  mkdirSync(join(fixture.dir, 'secret'), { recursive: true })
+  const secret = join(fixture.dir, 'secret', 's.txt')
+  writeFileSync(secret, 'SECRET\n', 'utf8')
+  const deniedDir = join(fixture.dir, 'secret')
+
+  const root = await makeRoot()
+  const config = row.a5sfRealmConfigOf({
+    a5sfMemberPolicies: declaration([
+      memberDeclaration({
+        templateId: 'worker',
+        ceilingRead: rw([fixture.dir]),
+        // The LEGAL v4 all-lane form: `deny` is REQUIRED when `mode: all`.
+        // Before the B1 fix the projector collapsed this to
+        // 'no-additional-narrowing' and DROPPED the deny, so this read served
+        // "SECRET\n" through the binding realm.
+        restrictionRead: { mode: 'all', deny: [deniedDir] },
+      }),
+    ]),
+  })
+
+  const realm = await row.mountMemberA5sfRealm({
+    root,
+    a5sfConfig: config,
+    provider: () => undefined,
+    member: { sessionId: 'session-child-pa8', instanceId: 'mi-pa8', teamRootSessionId: 'session-root-pa8', templateId: 'worker' },
+  })
+  assert.notEqual(realm, undefined)
+  const bindingFs = realm.bindings[0].fs
+
+  // The sibling stays served: the deny narrows one subtree, it does not deny the lane.
+  assert.equal(await readThrough(bindingFs, fixture.allowed), 'A\n')
+
+  // The denied subtree is refused with the seam's own typed code, before any provider call.
+  providerReads = 0
+  await assert.rejects(readThrough(bindingFs, secret), (error) => {
+    assert.equal(error.code, 'IO_READ_DENIED', 'the denied path is refused, not served')
+    return true
+  })
+  assert.equal(providerReads, 0, 'the denied read never reached a provider')
+  assert.equal(readFileSync(secret, 'utf8'), 'SECRET\n', 'the file exists — the refusal was the lane, not a missing file')
+
+  // The parsed plan carries the deny, not the identity sentinel (the PROJECTOR
+  // assertion the realm behaviour above is the consequence of).
+  const restriction = config.memberPolicies.members[0].restrictions[0]
+  assert.notEqual(restriction.read, 'no-additional-narrowing', 'an all-lane with a deny is a restriction, not the intersection identity')
+  assert.deepEqual([...restriction.read.deny], [deniedDir])
+  await realm.dispose()
+})
+
+// =============================================================================
+// PA9 — B2: a declaration may not exceed the row's OWN bound blueprint
+// =============================================================================
+
+/** A real v4 blueprint SOURCE (the row's `config.blueprintSource`) for team TEAM. */
+function blueprintSourceOf({ teamId = TEAM, read, revision = '7' } = {}) {
+  const document = {
+    schemaVersion: 4,
+    blueprintId: teamId,
+    revision,
+    leader: { templateId: 'leader', persona: 'Lead.' },
+    members: [{ templateId: 'worker', persona: 'Worker.' }],
+    requirements: [],
+    memberEnvelopes: [],
+    policyStates: [],
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
+    metadata: {},
+    memberIoCeilings: [{
+      templateId: 'worker',
+      io: {
+        read,
+        // The declarations in this arm leave `write` at the all/empty-deny form,
+        // so the blueprint ceiling must be the same identity for the narrowing
+        // checks to be about the READ axis under test.
+        write: { mode: 'all', deny: [] },
+        network: { mode: 'allow' },
+      },
+    }],
+  }
+  return `---\n${JSON.stringify(document, null, 2)}\n---\n`
+}
+
+test('PA9 the declaration is reconciled with config.blueprintSource (B2): narrowing mounts, widening refuses typed, other team/absent skips', async () => {
+  const fixture = makeFixture('pa9')
+  CLEANUP.push(fixture.dir)
+
+  // --- NARROWING: the declaration allows less than the blueprint ⇒ accepted.
+  const narrowing = {
+    ...declaration([
+      memberDeclaration({
+        templateId: 'worker',
+        ceilingRead: rw([fixture.allowed]),
+        restrictionRead: rw([fixture.allowed]),
+      }),
+    ]),
+  }
+  const narrowingConfig = row.a5sfRealmConfigOf({
+    a5sfMemberPolicies: narrowing,
+    blueprintSource: blueprintSourceOf({ read: rw([fixture.dir]) }),
+  })
+  assert.notEqual(narrowingConfig.memberPolicies, undefined, 'a narrowing declaration still assembles')
+  const acceptingRoot = await makeRoot()
+  const acceptingRealm = await row.mountMemberA5sfRealm({
+    root: acceptingRoot,
+    a5sfConfig: narrowingConfig,
+    provider: () => undefined,
+    member: { sessionId: 'session-child-pa9a', instanceId: 'mi-pa9a', teamRootSessionId: 'session-root-pa9', templateId: 'worker' },
+  })
+  assert.equal(await readThrough(acceptingRealm.bindings[0].fs, fixture.allowed), 'A\n')
+  await acceptingRealm.dispose()
+
+  // --- WIDENING on the read axis: refused at ROW ASSEMBLY, typed, zero mounts.
+  providerReads = 0
+  assert.throws(
+    () => row.a5sfRealmConfigOf({
+      a5sfMemberPolicies: declaration([
+        memberDeclaration({
+          templateId: 'worker',
+          ceilingRead: rw([fixture.dir, fixture.restrictionOnly]),
+          restrictionRead: rw([fixture.allowed]),
+        }),
+      ]),
+      blueprintSource: blueprintSourceOf({ read: rw([fixture.allowed]) }),
+    }),
+    (error) => {
+      assert.equal(error.code, 'REALM_DECLARATION_EXCEEDS_BLUEPRINT')
+      assert.equal(error.name, 'TeamServiceInstallError')
+      assert.match(error.detail, /ceiling\.read/)
+      return true
+    },
+    'a read ceiling wider than the blueprint ceiling must refuse',
+  )
+
+  // --- `mode: all` over a restricted blueprint ceiling is a widening too.
+  assert.throws(
+    () => row.a5sfRealmConfigOf({
+      a5sfMemberPolicies: declaration([
+        memberDeclaration({
+          templateId: 'worker',
+          ceilingRead: { mode: 'all', deny: [] },
+          restrictionRead: rw([fixture.allowed]),
+        }),
+      ]),
+      blueprintSource: blueprintSourceOf({ read: rw([fixture.allowed]) }),
+    }),
+    (error) => error.code === 'REALM_DECLARATION_EXCEEDS_BLUEPRINT',
+    'an all-lane is not a narrowing of a restricted ceiling',
+  )
+
+  // --- A template the blueprint declares NO ceiling for is wider than the authority.
+  assert.throws(
+    () => row.a5sfRealmConfigOf({
+      a5sfMemberPolicies: declaration([managedMember('ghost-template', fixture)]),
+      blueprintSource: blueprintSourceOf({ read: rw([fixture.allowed]) }),
+    }),
+    (error) => error.code === 'REALM_DECLARATION_EXCEEDS_BLUEPRINT',
+    'a ceiling for an undeclared template must refuse',
+  )
+
+  // --- An unreadable blueprintSource cannot be reconciled ⇒ typed refusal, not a skip.
+  assert.throws(
+    () => row.a5sfRealmConfigOf({
+      a5sfMemberPolicies: declaration([managedMember('worker', fixture)]),
+      blueprintSource: 'not: [a valid blueprint',
+    }),
+    (error) => {
+      assert.equal(error.code, 'REALM_DECLARATION_INVALID')
+      assert.match(error.detail, /blueprintSource/)
+      return true
+    },
+    'an unparseable bound blueprint must refuse instead of implying "same team"',
+  )
+
+  // --- DIFFERENT team: not this Team's authority ⇒ not reconciled (both forms keep working).
+  const otherTeam = row.a5sfRealmConfigOf({
+    a5sfMemberPolicies: declaration([
+      memberDeclaration({
+        templateId: 'worker',
+        ceilingRead: rw([fixture.dir]),
+        restrictionRead: rw([fixture.allowed]),
+      }),
+    ]),
+    blueprintSource: blueprintSourceOf({ teamId: 'team.a5sf.other', read: rw([fixture.allowed]) }),
+  })
+  assert.notEqual(otherTeam.memberPolicies, undefined, 'another team\'s blueprint is not the same authority')
+
+  // --- ABSENT blueprintSource: host-free assembly keeps working (no reconciliation).
+  const noBlueprint = row.a5sfRealmConfigOf({
+    a5sfMemberPolicies: declaration([
+      memberDeclaration({ templateId: 'worker', ceilingRead: rw([fixture.dir]), restrictionRead: rw([fixture.allowed]) }),
+    ]),
+  })
+  assert.notEqual(noBlueprint.memberPolicies, undefined)
+
+  // The refusals happened before any provider call / mount.
+  assert.equal(providerReads, 0, 'a refused reconciliation performs ZERO provider calls')
+})
+
+// =============================================================================
+// PA10 — B3/B4: authorization + implementationOrigin + lane grammar are validated
+// =============================================================================
+
+test('PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted', async () => {
+  const fixture = makeFixture('pa10')
+  CLEANUP.push(fixture.dir)
+
+  const restrictionWith = (overrides) => ({
+    ...toolRestriction({ read: rw([fixture.allowed]) }),
+    ...overrides,
+  })
+  const configWith = (restriction) => ({
+    a5sfMemberPolicies: declaration([
+      memberDeclaration({
+        templateId: 'worker',
+        ceilingRead: rw([fixture.dir]),
+        toolRestrictions: [restriction],
+      }),
+    ]),
+  })
+
+  const refusals = [
+    {
+      label: 'authorization deny (B3: the realm cannot both serve and deny)',
+      config: configWith(restrictionWith({ authorization: 'deny' })),
+      detail: /authorization is "deny"/,
+    },
+    {
+      label: 'authorization outside the closed v4 enum (B3)',
+      config: configWith(restrictionWith({ authorization: 'maybe' })),
+      detail: /closed v4 vocabulary/,
+    },
+    {
+      label: 'implementationOrigin outside the closed v4 enum (B4, shipped validator)',
+      config: configWith(restrictionWith({
+        execution: { implementationOrigin: 'bogus-origin', executionBoundary: 'trusted-host' },
+      })),
+      detail: /implementationOrigin|production-governance vocabulary/,
+    },
+    {
+      label: 'scalar-shaped allow silently became DENY-ALL before B4 (projection filters non-arrays)',
+      config: configWith(restrictionWith({
+        io: {
+          read: { mode: 'restricted', allow: '/not-a-list', ask: [], deny: [] },
+          write: { mode: 'all', deny: [] },
+          network: { mode: 'allow' },
+        },
+      })),
+      detail: /toolBindings|allow|array/i,
+    },
+    {
+      // The object shape was ALREADY typed before this round (the mapping engine
+      // flattens leaves, so `allow.dir` is an unmapped field) — measured, not
+      // assumed: it refuses at projection, never silently deny-all.
+      label: 'object-shaped allow is refused at projection (never silently deny-all)',
+      config: configWith(restrictionWith({
+        io: {
+          read: { mode: 'restricted', allow: { dir: true }, ask: [], deny: [] },
+          write: { mode: 'all', deny: [] },
+          network: { mode: 'allow' },
+        },
+      })),
+      code: 'MEMBER_POLICY_UNAVAILABLE',
+      detail: /projected|unmapped\/source-field|allow\.dir/,
+    },
+  ]
+
+  for (const arm of refusals) {
+    assert.throws(
+      () => row.a5sfRealmConfigOf(arm.config),
+      (error) => {
+        assert.equal(error.code, arm.code ?? 'REALM_DECLARATION_INVALID', `${arm.label}: typed code`)
+        assert.equal(error.name, 'TeamServiceInstallError', `${arm.label}: the seam refusal idiom`)
+        assert.match(error.detail, arm.detail, `${arm.label}: names the defect`)
+        return true
+      },
+      `${arm.label} must refuse at row assembly`,
+    )
+  }
+})
+
+// =============================================================================
+// PA11 — B8: the effective policy revision covers the tool restrictions
+// =============================================================================
+
+test('PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings', async () => {
+  const fixture = makeFixture('pa11')
+  CLEANUP.push(fixture.dir)
+
+  const planFor = (restrictionRead) => assembly.parseProductRealmDeclaration(declaration([
+    memberDeclaration({
+      templateId: 'worker',
+      ceilingRead: rw([fixture.dir]),
+      restrictionRead,
+    }),
+  ]))
+  const narrow = planFor(rw([fixture.allowed]))
+  const wider = planFor(rw([fixture.dir]))
+
+  // Same ceilings, different restriction ⇒ different blueprint content identity
+  // ⇒ a different MemberPolicy revision. Before B8 the bindings were outside the
+  // synthetic document, so these two were byte-identical in every revision.
+  assert.notEqual(narrow.blueprint.contentHash, wider.blueprint.contentHash, 'the content hash binds the restriction')
+
+  const revisionOf = (plan) => {
+    const answer = assembly.createProductRealmProvider(plan).compiledFor({ instanceId: 'mi-pa11', templateId: 'worker' })
+    return {
+      member: answer.members[0].policy.value.revision,
+      effective: answer.bindings[0].effective.policyRevision,
+    }
+  }
+  const narrowRevisions = revisionOf(narrow)
+  const widerRevisions = revisionOf(wider)
+  assert.notEqual(narrowRevisions.member, widerRevisions.member, 'a restriction edit changes the policy revision')
+  assert.equal(narrowRevisions.effective, narrowRevisions.member, 'the effective lane carries that same revision')
+  assert.equal(widerRevisions.member, widerRevisions.effective)
+})

@@ -346,6 +346,32 @@ jobs:
         # fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
         run: node --test tests/world-factory/a5sf-native-route-c.test.mjs
 
+      - name: "a5sf PRODUCT ASSEMBLY (product-visible member-policy declaration — node:test, zero Host boots, host-free)"
+        # The confined Member realm was reachable only from evidence rows and test presets,
+        # so a World composed from the acceptance preset alone gave NO agent a confined face
+        # (measured by the search live round). This step pins the missing PRODUCT half:
+        # `config.a5sfMemberPolicies` is a product-visible declaration in the SAME closed v4
+        # vocabulary (memberIoCeilings[].io + toolBindings[] entries) that drives the SAME
+        # install/mount seams, compiled by the SAME compiler — a declared template gets its
+        # ceiling + binding realm with no evidence path and no `teamA5sfRealm` service, an
+        # undeclared template stays byte-identical (no mount, no fact, no tool-plane change),
+        # and every unexpressible face refuses typed BEFORE any call. The review-fix round
+        # this step carries: PA8 (a legal v4 `mode: all` + `deny` restriction is REFUSED at
+        # the realm with IO_READ_DENIED and zero provider reads — the projector used to
+        # collapse the shape to 'no-additional-narrowing' and DROP the deny, serving the
+        # denied file), PA9 (B2: the declared ceilings are reconciled with the row's own
+        # `config.blueprintSource` — a widening ceiling refuses
+        # REALM_DECLARATION_EXCEEDS_BLUEPRINT; another team's blueprint and an absent source
+        # are not reconciled), PA10 (B3/B4: `authorization` is validated against the shipped
+        # v4 table and `deny` is refused instead of mounted; the restriction entries ride the
+        # shipped `toolBindings` grammar, so a bogus implementationOrigin or a scalar-shaped
+        # `allow` is refused by the shipped validator instead of silently becoming deny-all),
+        # and PA11 (B8: the contentHash — hence the MemberPolicy revision — covers the
+        # bindings). The file path is a required token in dev/ci/eb3-ci-manifest.json;
+        # dropping it is CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and
+        # mkdtemp fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/world-factory/a5sf-product-assembly.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

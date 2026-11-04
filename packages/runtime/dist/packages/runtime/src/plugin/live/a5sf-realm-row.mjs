@@ -234,10 +234,20 @@ export function a5sfToolPlaneOf(realm) {
 /**
  * Read the row's a5sf wiring out of its config.
  *
- * ABSENT (`undefined`/`null` key) = the row is not a5sf-wired at all: returns
- * `undefined`, the legacy path. PRESENT but not a non-blank string = a
+ * ENABLEMENT: at least one ENABLING key present — `a5sfEvidencePath` (the
+ * evidence sink) OR `a5sfMemberPolicies` (the product declaration). ABSENT both
+ * (`undefined`/`null`) = the row is not a5sf-wired at all: returns `undefined`,
+ * the legacy path. PRESENT but not a non-blank string (evidence path) = a
  * configuration fault (fail loudly at row assembly, never a silently disabled
  * sandbox lane).
+ *
+ * `a5sfMemberPolicies` is parsed by the ONE product parser. When the row ALSO
+ * carries `config.blueprintSource` (the Team's bound blueprint), that source is
+ * passed as the parse context so the declared ceilings are reconciled with
+ * `memberIoCeilings[template]` (review B2): a declaration that exceeds the
+ * blueprint refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` instead of mounting.
+ * When `blueprintSource` parses to a different team, no reconciliation happens
+ * (it is not this Team's authority) and both declaration forms keep working.
  *
  * `a5sfNativeToolModules`, when present, is validated here too (route C): a
  * non-array, an empty array entry, or an entry that is neither a non-blank
@@ -247,8 +257,14 @@ export function a5sfToolPlaneOf(realm) {
  * unaffected).
  *
  * @param {object|undefined|null} config - the row config.
- * @returns {{ evidencePath: string, nativeToolModules?: readonly object[] } | undefined}
- *   the frozen wiring block.
+ * @returns {{
+ *   evidencePath?: string,
+ *   memberPolicies?: object,
+ *   nativeToolModules?: readonly object[],
+ * } | undefined} the frozen wiring block: `evidencePath` only when an evidence
+ *   sink is configured, `memberPolicies` only when the product declaration is
+ *   present (the parsed plan), `nativeToolModules` only when route C declares
+ *   modules. Keys are omitted, never `undefined`-valued.
  */
 export function a5sfRealmConfigOf(config) {
   const settings = config === undefined || config === null ? undefined : config
@@ -271,7 +287,13 @@ export function a5sfRealmConfigOf(config) {
   // parser (typed `TeamServiceInstallError` refusals), never by this row. It is
   // parsed even when no evidence path is configured: the declaration — not a
   // sink path — is what makes the realm REQUIRED for the Members it names.
-  const memberPolicies = hasPolicies ? parseProductRealmDeclaration(rawPolicies) : undefined
+  // `config.blueprintSource` rides along as the B2 reconciliation anchor; the
+  // parser ignores a blank/non-string value and a different team's blueprint.
+  const memberPolicies = hasPolicies
+    ? parseProductRealmDeclaration(rawPolicies, {
+      blueprintSource: settings === undefined ? undefined : settings.blueprintSource,
+    })
+    : undefined
 
   const declarations = expectedToolsDeclarationsOf(settings[A5SF_EXPECTED_TOOLS_KEY])
   const modules = nativeToolModulesOf(settings[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)

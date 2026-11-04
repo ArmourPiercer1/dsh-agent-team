@@ -46,7 +46,14 @@
  *     `NETWORK_UNCONFINED_REALM`; `network: restricted` is refused by the
  *     compiler (`IO_POLICY_UNSUPPORTED`) and surfaces as
  *     `MEMBER_POLICY_UNAVAILABLE` with the compiler's own code in the detail;
- *   - a malformed/ambiguous declaration -> `REALM_DECLARATION_INVALID`.
+ *   - a malformed/ambiguous declaration -> `REALM_DECLARATION_INVALID`;
+ *   - a ToolBinding authorization outside the closed v4 vocabulary, or an
+ *     `authorization: deny` the realm cannot honour -> `REALM_DECLARATION_INVALID`
+ *     (B3: `deny` is refused, never mounted as decoration, because dropping the
+ *     binding would leave the tool on the wider base/ceiling surface);
+ *   - a declared ceiling that exceeds the row's OWN bound blueprint ->
+ *     `REALM_DECLARATION_EXCEEDS_BLUEPRINT` (B2: a row-config edit may not widen
+ *     the ceiling without a new blueprint/authority revision).
  * A declaration that cannot be expressed is REFUSED, never silently mounted
  * as a narrower answer.
  *
@@ -83,7 +90,13 @@ export declare const A5SF_PRODUCT_REALM_SCHEMA: "a5sf-product-member-policies/1"
 export interface A5sfProductMemberDeclaration {
     /** The template this declaration manages (the MemberInstance's template). */
     readonly templateId: string;
-    /** The monotonic instance generation this ceiling is compiled for. */
+    /**
+     * The instance generation this ceiling is compiled for.
+     *
+     * DECLARED-NOT-BOUND (B5): it is a row-config number, not a generation read
+     * from the live MemberInstance row, so `MEMBER_GENERATION_STALE` can only
+     * compare it with what the caller passes — never with the host's truth.
+     */
     readonly instanceGeneration: number;
     /** The Member ceiling, in the v4 `memberIoCeilings[].io` shape. */
     readonly ceiling: V4MemberIoCeilingAuthoring['io'];
@@ -126,6 +139,17 @@ export interface A5sfProductMemberDeclaration {
  */
 export interface A5sfProductRealmDeclaration {
     readonly schema: typeof A5SF_PRODUCT_REALM_SCHEMA;
+    /**
+     * The Team this declaration manages.
+     *
+     * DECLARED, NOT BOUND (review finding B5, 2026-11-05): the compiler's
+     * `trustedMember.teamId` is this row-config value. It is NOT read back from
+     * the live TeamDomain, so a stale/wrong team id is not detected here — the
+     * one thing the row CAN check is the bound blueprint (see
+     * {@link A5sfProductRealmParseContext}); when `config.blueprintSource`
+     * parses to a different team, reconciliation is skipped by the owner ruling
+     * and this value stays purely declared.
+     */
     readonly teamId: string;
     /** The human revision stamped into the synthetic v4 document's identity. */
     readonly blueprintRevision: string;
@@ -139,6 +163,30 @@ export interface A5sfProductRealmDeclaration {
         readonly admitted: boolean;
     }>;
     readonly members: readonly A5sfProductMemberDeclaration[];
+}
+/**
+ * Optional parse context: the row's OWN boot anchor, when it has one.
+ *
+ * WHY IT EXISTS (review finding B2, coordinator ruling 2026-11-05): the
+ * declaration embeds a ceiling family, but `config.blueprintSource` is the
+ * Team's authority-bearing blueprint and the Alpha.4 authority revision is
+ * keyed to it. Without a reconciliation, a row-config edit could widen a
+ * ceiling the blueprint declares WITHOUT an authority revision. This guard
+ * makes that disagreement unrepresentable: when `blueprintSource` parses to the
+ * SAME team as the declaration, every declared ceiling must be a NARROWING of
+ * `memberIoCeilings[template]` on all three axes, or assembly refuses
+ * `REALM_DECLARATION_EXCEEDS_BLUEPRINT`.
+ *
+ * BOTH FORMS KEEP WORKING: no `blueprintSource` (host-free tests, a row that
+ * only carries the declaration) skips the guard; a `blueprintSource` for a
+ * DIFFERENT team is not the same Team's authority and is skipped (the ruling's
+ * scope). The guard is a static pre-mount check, not a second evaluator: it
+ * reads the shipped v4 document through the shipped `parseBlueprint` and the
+ * shipped locator algebra.
+ */
+export interface A5sfProductRealmParseContext {
+    /** The row's `config.blueprintSource`, when present (a non-blank string). */
+    readonly blueprintSource?: string;
 }
 /** One managed template, already validated and projected by the ONE lane. */
 export interface A5sfProductManagedMember {
@@ -179,12 +227,16 @@ export interface A5sfProductCompiledAnswer {
  *   - a non-record / wrong schema / unknown or missing field;
  *   - a blank team id or blueprint revision, a bad authority reference;
  *   - an empty Member list, a duplicate template, the reserved scaffold id;
- *   - any ceiling the shipped v4 validator refuses;
+ *   - any ceiling the shipped v4 validator refuses, and any restriction entry
+ *     the shipped v4 `toolBindings` grammar refuses (B4) plus a `deny`
+ *     authorization the realm cannot honour (B3);
  *   - any ToolBinding whose face this realm does not own
  *     (`SUBPROCESS_UNCONFINED_REALM` / `NETWORK_UNCONFINED_REALM`) or whose
- *     lanes cannot project (`MEMBER_POLICY_UNAVAILABLE`).
+ *     lanes cannot project (`MEMBER_POLICY_UNAVAILABLE`);
+ *   - a ceiling that exceeds the row's own bound blueprint
+ *     (`REALM_DECLARATION_EXCEEDS_BLUEPRINT`, B2).
  */
-export declare function parseProductRealmDeclaration(raw: unknown): A5sfProductRealmPlan;
+export declare function parseProductRealmDeclaration(raw: unknown, context?: A5sfProductRealmParseContext): A5sfProductRealmPlan;
 /**
  * Build the lazy `{ compiledFor }` provider from a validated plan.
  *
