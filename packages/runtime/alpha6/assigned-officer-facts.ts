@@ -36,11 +36,12 @@
  * - exactly ONE live (`RUNNING`) Member instance carries the Blueprint's Officer
  *   template in this team — zero or multiple Officers refuse (never "pick one");
  * - the frozen authority generation is present and equals the composition's
- *   CURRENT generation (generation `0`/absent is the service's "no generation"
- *   sentinel, never a generation);
+ *   CURRENT generation FOR THE OPERATION OWNER (not the Officer's). `0` is a
+ *   legal initial generation; absence (`undefined`) refuses;
  * - the actual OperationOwner resolves to a live member of THIS team whose
- *   durable template is exactly the leg's frozen `operationOwnerTemplateId`
- *   (the owner is derived exactly as the control service derives it);
+ *   durable template is exactly the leg's frozen `operationOwnerTemplateId`;
+ *   the owner is the leg's trusted SUBJECT instance (or legacy
+ *   `targetInstanceId`), never the Requester (a Leader proxy may ask);
  * - the frozen tool binding (`definitionIdentity`/owner/name) is complete;
  * - the composition's fixed Leader/Human-category classifier answers
  *   explicitly (no answer = refusal, never an implicit `false`).
@@ -189,13 +190,23 @@ export type AuthorityGenerationSource =
   | number
   | ((input: {
       readonly rootSessionId: string
-      readonly reviewerInstanceId: string
+      /**
+       * The OPERATION OWNER's instance — the Member whose tool call was
+       * frozen into the leg. This is deliberately NOT the reviewer: the PA
+       * plan's generation belongs to the member that executed the operation.
+       */
+      readonly operationOwnerInstanceId: string
     }) => Promise<number | undefined>)
 
-/** Read the current generation for the RESOLVED reviewer; a faulting read is a refusal. */
+/**
+ * Read the current generation for the OPERATION OWNER; a faulting read is a
+ * refusal. `0` is a LEGAL generation (the durable overlay's initial state for
+ * a member that never had an overlay row), not an absence sentinel; absence is
+ * `undefined`.
+ */
 async function resolveGeneration(
   source: AuthorityGenerationSource | undefined,
-  input: { readonly rootSessionId: string; readonly reviewerInstanceId: string },
+  input: { readonly rootSessionId: string; readonly operationOwnerInstanceId: string },
 ): Promise<number | undefined> {
   if (source === undefined) return undefined
   if (typeof source === 'number') return source
@@ -236,9 +247,11 @@ export interface AssignedOfficerFactsInput {
   readonly leg: AssignedOfficerLegLookup
   readonly transfer: AssignedOfficerTransferLookup
   /**
-   * The composition's CURRENT authority generation. The provider refuses when
-   * it is absent (or `0`, the service's "no generation" sentinel) or when it
-   * disagrees with the generation frozen on the leg.
+   * The composition's CURRENT authority generation for the OPERATION OWNER
+   * (the Member frozen into the leg's subject by PA). The provider refuses when
+   * it is absent or when it disagrees with the generation frozen on the leg.
+   * `0` is legal: it is the initial durable state of a member with no overlay
+   * row, and equality with the frozen leg is still required.
    */
   readonly authorityGeneration?: AuthorityGenerationSource
   readonly fixedLeaderOrHumanCategory: AssignedOfficerCategoryLookup
@@ -266,12 +279,21 @@ function nonEmpty(value: string | undefined): value is string {
 }
 
 function isGeneration(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 1
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0
 }
 
-/** The OperationOwner instance, derived exactly as the control service does. */
+/**
+ * The OperationOwner instance, derived from the TRUSTED operation identity —
+ * never from the Requester.
+ *
+ * `pa-control-bridge` writes the executing Member's instance id as the leg
+ * subject and freezes that member's `authorityGeneration`. A Requester may be
+ * the Leader (proxy ask) or a different instance of the same template, so
+ * Requester-first inference binds the wrong Member. A leg whose trusted
+ * identity is not an instance has no verifiable OperationOwner here: return
+ * empty and let the provider refuse.
+ */
 function operationOwnerInstanceId(leg: AssignedOfficerFactsLeg): string {
-  if (leg.requester.kind === 'instance') return leg.requester.instanceId
   if (leg.subject.kind === 'instance') return leg.subject.instanceId
   return leg.targetInstanceId ?? ''
 }
@@ -379,20 +401,21 @@ export function createAssignedOfficerFactsPort(
     if (resolved === null) return null
     const { leg } = resolved
 
-    // The generation must be present on BOTH sides and agree. Absent/0 is "no
-    // generation frozen", which is exactly the case the capability must not
-    // paper over.
+    // The generation is the OPERATION OWNER's, not the Officer's. Resolve the
+    // owner from the trusted subject first, then compare THAT member's current
+    // generation with the generation PA froze on the leg. The Officer's own
+    // generation is irrelevant to the operation's authority facts.
+    const ownerInstanceId = operationOwnerInstanceId(leg)
+    if (!nonEmpty(ownerInstanceId)) return null
+    if (!nonEmpty(leg.operationOwnerTemplateId)) return null
     const authorityGeneration = await resolveGeneration(input.authorityGeneration, {
       rootSessionId: root,
-      reviewerInstanceId: resolved.officer.instanceId,
+      operationOwnerInstanceId: ownerInstanceId,
     })
     if (!isGeneration(authorityGeneration)) return null
     if (!isGeneration(leg.authorityGeneration)) return null
     if (leg.authorityGeneration !== authorityGeneration) return null
 
-    const ownerInstanceId = operationOwnerInstanceId(leg)
-    if (!nonEmpty(ownerInstanceId)) return null
-    if (!nonEmpty(leg.operationOwnerTemplateId)) return null
     let owner: AssignedOfficerMemberSnapshot | undefined
     try {
       owner = await input.members.get(root, ownerInstanceId)

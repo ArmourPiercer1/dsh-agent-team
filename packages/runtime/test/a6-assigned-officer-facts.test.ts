@@ -22,6 +22,7 @@ import type {
   AssignedOfficerFactsPort,
   AssignedOfficerMemberLookup,
   AssignedOfficerParsedRouting,
+  AuthorityGenerationSource,
 } from '../alpha6/assigned-officer-facts.js'
 import { parseAlpha6Routing } from '../alpha6/composition.js'
 import { parseChildSessionId, parseInstanceId, parseTemplateId } from '../../contracts/src/index.js'
@@ -37,6 +38,8 @@ import {
 import type { P6T1World } from './p6t1-helpers.js'
 
 const WORKER = String(P6T4_SEEDS.worker.instanceId)
+const WORKER2 = String(P6T4_SEEDS.worker2.instanceId)
+const LEADER = String(P6T4_SEEDS.leader.instanceId)
 const OFFICER = 'inst-a6factsofficer'
 /** The frozen generation every leg below opens under (real, not defaulted). */
 const GENERATION = 4
@@ -193,7 +196,7 @@ function factsPort(
   mirror: ControlRowMirror,
   options: {
     readonly routing?: AssignedOfficerParsedRouting
-    readonly generation?: number
+    readonly generation?: AuthorityGenerationSource
     readonly classify?: () => boolean | null
   } = {},
 ): AssignedOfficerFactsPort {
@@ -228,11 +231,15 @@ async function makeLeg(
   correlation: string,
   options: {
     readonly requester?: string
+    readonly subjectInstance?: string
+    readonly subject?: ControlRequestRecord['subject']
     readonly ownerTemplate?: string
     readonly blueprint?: AssignedOfficerParsedRouting
+    readonly generation?: number
   } = {},
 ): Promise<ControlRequestRecord> {
   const requester = options.requester ?? WORKER
+  const subjectInstance = options.subjectInstance ?? requester
   const ownerTemplate = options.ownerTemplate ?? 'worker'
   const blueprint = options.blueprint ?? BASE_ROUTING
   const outcome = await service.requestApprovalLeg({
@@ -242,7 +249,7 @@ async function makeLeg(
     reviewAuthority: 'leader',
     requiredAuthorityAtCreation: 'leader',
     identity: {
-      subject: { kind: 'instance', instanceId: requester },
+      subject: options.subject ?? { kind: 'instance', instanceId: subjectInstance },
       beneficiaryAuthority: 'member',
       requestedEffect: 'ask',
       operationFingerprint: 'fp-a6-facts',
@@ -258,7 +265,7 @@ async function makeLeg(
     operationToolDefinitionIdentity: 'tool-def-write',
     operationToolOwner: 'dsh.fs',
     operationToolName: 'write',
-    authorityGeneration: GENERATION,
+    authorityGeneration: options.generation ?? GENERATION,
     blueprintContentHash: blueprint.blueprint.contentHash,
     blueprintRevision: blueprint.blueprint.revision,
     perEffectRequiredAuthorities: ['leader'],
@@ -289,7 +296,7 @@ function queryOf(leg: ControlRequestRecord): {
 }
 
 async function makeWorld(name: string): Promise<P6T1World> {
-  return createP6T4World(name, ['leader', 'worker'], {
+  return createP6T4World(name, ['leader', 'worker', 'worker2'], {
     blueprintSource: OFFICER_BLUEPRINT_SOURCE,
     seedMembers: [OFFICER_SEED],
   })
@@ -678,8 +685,8 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
         readControlState: (rootSessionId) => service.readControlState(rootSessionId),
       },
       members: memberLookup(world),
-      authorityGeneration: async ({ rootSessionId, reviewerInstanceId }) => {
-        if (rootSessionId !== P6T4_ROOT || reviewerInstanceId !== OFFICER) return undefined
+      authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => {
+        if (rootSessionId !== P6T4_ROOT || operationOwnerInstanceId !== WORKER) return undefined
         return GENERATION
       },
       fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
@@ -804,6 +811,126 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
       // The transfer row is exactly what the snapshot reports.
       const snapshot = await service.readControlState(P6T4_ROOT)
       expect(snapshot.transfers.some((row) => row.currentLegRequestId === leg.requestId)).toBe(true)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+})
+
+describe('A6 facts — OperationOwner identity and generation are the trusted op facts', () => {
+  it('reads the generation for the subject Member, never for the Leader requester or the Officer', async () => {
+    const world = await makeWorld('a6-facts-proxy-owner')
+    try {
+      const mirror = new ControlRowMirror()
+      const seen: string[] = []
+      const port = factsPort(world, mirror, {
+        generation: async ({ rootSessionId, operationOwnerInstanceId }) => {
+          if (rootSessionId !== P6T4_ROOT) return undefined
+          seen.push(operationOwnerInstanceId)
+          // The Officer's generation (7) must never be compared to the leg's 3.
+          return operationOwnerInstanceId === WORKER ? 3 : 7
+        },
+      })
+      const service = officerService(world, port)
+      // The Leader is the proxy requester; the Worker is the executing Member.
+      const leg = await makeLeg(service, 'corr-a6-facts-proxy', {
+        requester: LEADER,
+        subjectInstance: WORKER,
+        generation: 3,
+      })
+      await mirror.refresh(service)
+
+      expect(await port(queryOf(leg))).not.toBeNull()
+      expect(seen).toContain(WORKER)
+      expect(seen).not.toContain(OFFICER)
+
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({
+        authorityGeneration: 3,
+        operationOwnerInstanceId: WORKER,
+      })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('accepts the legal initial generation 0 when the frozen leg also carries 0', async () => {
+    const world = await makeWorld('a6-facts-generation-zero')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: 0 })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-facts-g0', { generation: 0 })
+      await mirror.refresh(service)
+
+      expect(await port(queryOf(leg))).not.toBeNull()
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability?.authorityGeneration).toBe(0)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('binds a same-template different instance to the subject, not the requester', async () => {
+    const world = await makeWorld('a6-facts-same-template')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, {
+        generation: async ({ operationOwnerInstanceId }) => (operationOwnerInstanceId === WORKER2 ? 5 : 99),
+      })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-facts-same-template', {
+        requester: WORKER,
+        subjectInstance: WORKER2,
+        generation: 5,
+      })
+      await mirror.refresh(service)
+
+      expect(await port(queryOf(leg))).not.toBeNull()
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({
+        authorityGeneration: 5,
+        operationOwnerInstanceId: WORKER2,
+      })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('refuses a leg whose trusted identity names no instance, even when the requester is an instance', async () => {
+    const world = await makeWorld('a6-facts-no-instance-subject')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-facts-no-instance', {
+        requester: WORKER,
+        subject: { kind: 'template', templateId: 'worker' },
+      })
+      await mirror.refresh(service)
+
+      expect(await port(queryOf(leg))).toBeNull()
     } finally {
       await destroyP6T1World(world)
     }

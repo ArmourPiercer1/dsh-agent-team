@@ -5,8 +5,9 @@
  * The durable permission overlay is the ONLY generation authority (A5-M1).
  * This module is deliberately the same law as the Host's single reader:
  *  - no overlay port, or no row for the member => `0` (the legal "never had
- *    an overlay" state, which the facts provider then REFUSES because a
- *    delegated reviewer must stand on a positive generation);
+ *    an overlay" state; `0` is a generation, not an absence sentinel — the
+ *    facts provider compares it for equality with the leg's frozen
+ *    generation, and absence is `undefined`);
  *  - a row whose `metadata.generation` is not a finite non-negative number
  *    => throw, never fold into 0 and never answer `undefined`-meant-zero;
  *  - otherwise the durable number verbatim.

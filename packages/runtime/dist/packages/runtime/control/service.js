@@ -2385,11 +2385,12 @@ export function createControlService(options) {
             ? manifest.perEffectRequired
             : (input.row.perEffectRequiredAuthorities ?? []);
         const authorityGeneration = input.row.authorityGeneration ?? manifest?.authorityGeneration ?? 0;
-        const operationOwnerInstanceId = input.row.requester.kind === 'instance'
-            ? input.row.requester.instanceId
-            : (input.row.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
-                ? input.row.subject.instanceId
-                : input.row.targetInstanceId ?? '');
+        // The trusted operation identity is the leg SUBJECT written by the PA
+        // bridge (the executing Member), or the legacy target projection. The
+        // Requester may be a Leader proxy and MUST NOT be used to infer ownership.
+        const operationOwnerInstanceId = input.row.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+            ? input.row.subject.instanceId
+            : (input.row.targetInstanceId ?? '');
         const facts = {
             reviewer: input.caller,
             reviewerMember: input.reviewerMember,

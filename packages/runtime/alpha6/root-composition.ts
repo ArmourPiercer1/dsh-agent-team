@@ -100,8 +100,8 @@ export function createAlpha6RootComposition(input: Alpha6RootCompositionInput): 
       list: (rootSessionId) =>
         rootSessionId === input.rootSessionId ? [...byId.values()] : [],
     },
-    authorityGeneration: async ({ rootSessionId, reviewerInstanceId }) =>
-      generation({ teamSessionId: rootSessionId, memberInstanceId: reviewerInstanceId }),
+    authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) =>
+      generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
 
@@ -184,8 +184,8 @@ export function createAlpha6LiveRootComposition(
       list: (rootSessionId) =>
         rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
     },
-    authorityGeneration: async ({ rootSessionId, reviewerInstanceId }) =>
-      generation({ teamSessionId: rootSessionId, memberInstanceId: reviewerInstanceId }),
+    authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) =>
+      generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
   return { mode: 'alpha6', ports }
