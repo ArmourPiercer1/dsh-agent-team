@@ -620,7 +620,7 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
         readControlState: (rootSessionId) => service.readControlState(rootSessionId),
       },
       members: memberLookup(world),
-      authorityGeneration: GENERATION,
+      authorityGeneration: async () => GENERATION,
       fixedLeaderOrHumanCategory: () => false,
     })
     service = createControlService({

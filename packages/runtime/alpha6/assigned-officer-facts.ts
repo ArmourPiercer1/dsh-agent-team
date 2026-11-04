@@ -185,6 +185,21 @@ export interface AssignedOfficerCategoryQuery {
  * the delegable set). The composition must answer from its own frozen activity
  * taxonomy; `null` = "cannot classify" = refusal.
  */
+export type AuthorityGenerationSource =
+  | number
+  | (() => Promise<number | undefined>)
+
+/** Read the current generation; a faulting/unanswerable read is a refusal. */
+async function resolveGeneration(source: AuthorityGenerationSource | undefined): Promise<number | undefined> {
+  if (source === undefined) return undefined
+  if (typeof source === 'number') return source
+  try {
+    return await source()
+  } catch {
+    return undefined
+  }
+}
+
 export type AssignedOfficerCategoryLookup = (
   query: AssignedOfficerCategoryQuery,
 ) => Promise<boolean | null> | boolean | null
@@ -202,7 +217,7 @@ export interface AssignedOfficerFactsInput {
    * it is absent (or `0`, the service's "no generation" sentinel) or when it
    * disagrees with the generation frozen on the leg.
    */
-  readonly authorityGeneration?: number
+  readonly authorityGeneration?: AuthorityGenerationSource
   readonly fixedLeaderOrHumanCategory: AssignedOfficerCategoryLookup
 }
 
@@ -344,9 +359,10 @@ export function createAssignedOfficerFactsPort(
     // The generation must be present on BOTH sides and agree. Absent/0 is "no
     // generation frozen", which is exactly the case the capability must not
     // paper over.
-    if (!isGeneration(input.authorityGeneration)) return null
+    const authorityGeneration = await resolveGeneration(input.authorityGeneration)
+    if (!isGeneration(authorityGeneration)) return null
     if (!isGeneration(leg.authorityGeneration)) return null
-    if (leg.authorityGeneration !== input.authorityGeneration) return null
+    if (leg.authorityGeneration !== authorityGeneration) return null
 
     const ownerInstanceId = operationOwnerInstanceId(leg)
     if (!nonEmpty(ownerInstanceId)) return null
