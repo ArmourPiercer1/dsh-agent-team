@@ -89,17 +89,17 @@
           "seq": 7,
           "name": "read",
           "args": {
-            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt"
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt"
           }
         },
         "result": {
           "seq": 12,
           "callId": "call-a5sfacc-read-a",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt</path>\n<type>file</type>\n<content>\n1: A5SF_ACC_A_u5a5sfacc-20261104T08-19-18Z\n\n(End of file - total 1 lines)\n</content>",
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt</path>\n<type>file</type>\n<content>\n1: A5SF_ACC_A_u5a5sfacc-20261104T08-41-30Z\n\n(End of file - total 1 lines)\n</content>",
           "tool": "read"
         },
-        "claim": "A5SF_ACC_A_u5a5sfacc-20261104T08-19-18Z",
+        "claim": "A5SF_ACC_A_u5a5sfacc-20261104T08-41-30Z",
         "allowFacts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -108,11 +108,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 1,
-            "observedAt": "2026-11-04T08:19:25.314Z"
+            "observedAt": "2026-11-04T08:41:50.952Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -121,11 +121,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "readText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.320Z"
+            "observedAt": "2026-11-04T08:41:50.958Z"
           }
         ],
         "bindingAllowFacts": [
@@ -136,11 +136,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 1,
-            "observedAt": "2026-11-04T08:19:25.314Z"
+            "observedAt": "2026-11-04T08:41:50.952Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -149,19 +149,19 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "readText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.320Z"
+            "observedAt": "2026-11-04T08:41:50.958Z"
           }
         ],
         "counterRows": [
           {
-            "at": "2026-11-04T08:19:25.322Z",
+            "at": "2026-11-04T08:41:50.960Z",
             "leg": "read-call",
             "method": "readText",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "instance": "fs-1",
             "isBase": false
           }
@@ -190,18 +190,18 @@
           "seq": 8,
           "name": "read",
           "args": {
-            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt"
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt"
           }
         },
         "result": {
           "seq": 12,
           "callId": "call-a5sfacc-read-b",
           "isError": true,
-          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane",
+          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane",
           "tool": "read"
         },
-        "claim": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z",
-        "writeContent": "A5SF_ACC_WRITE_u5a5sfacc-20261104T08-19-18Z\n",
+        "claim": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z",
+        "writeContent": "A5SF_ACC_WRITE_u5a5sfacc-20261104T08-41-30Z\n",
         "facts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -210,11 +210,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 3,
-            "observedAt": "2026-11-04T08:19:25.351Z"
+            "observedAt": "2026-11-04T08:41:50.990Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -223,11 +223,11 @@
             "toolBindingIdentity": null,
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "writeText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.470Z"
+            "observedAt": "2026-11-04T08:41:51.097Z"
           }
         ],
         "counterRows": []
@@ -265,7 +265,7 @@
         "bindingReadPathFacts": 1,
         "factsForB": 2,
         "counterRows": 0,
-        "observed": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        "observed": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
       }
     },
     "live:row3-read-c-refused-no-widening": {
@@ -275,17 +275,17 @@
           "seq": 9,
           "name": "read",
           "args": {
-            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt"
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt"
           }
         },
         "result": {
           "seq": 12,
           "callId": "call-a5sfacc-read-c",
           "isError": true,
-          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt' is outside every allow subtree of the lane",
+          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt' is outside every allow subtree of the lane",
           "tool": "read"
         },
-        "claim": "A5SF_ACC_C_u5a5sfacc-20261104T08-19-18Z",
+        "claim": "A5SF_ACC_C_u5a5sfacc-20261104T08-41-30Z",
         "denyFacts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -294,11 +294,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 4,
-            "observedAt": "2026-11-04T08:19:25.382Z"
+            "observedAt": "2026-11-04T08:41:51.013Z"
           }
         ],
         "bindingDenyFacts": [
@@ -309,16 +309,16 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 4,
-            "observedAt": "2026-11-04T08:19:25.382Z"
+            "observedAt": "2026-11-04T08:41:51.013Z"
           }
         ],
         "counterRows": [],
         "probeC": {
-          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
           "ceilingRead": "deny",
           "restrictionRead": "allow",
           "effectiveRead": "deny"
@@ -331,7 +331,7 @@
             "read": {
               "mode": "restricted",
               "allow": [
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace"
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace"
               ],
               "ask": [],
               "deny": []
@@ -339,7 +339,7 @@
             "write": {
               "mode": "restricted",
               "allow": [
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace"
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace"
               ],
               "ask": [],
               "deny": []
@@ -349,8 +349,8 @@
             "read": {
               "mode": "restricted",
               "allow": [
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow",
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside"
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow",
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside"
               ],
               "ask": [],
               "deny": []
@@ -361,7 +361,7 @@
             "read": {
               "mode": "restricted",
               "allow": [
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow"
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow"
               ],
               "ask": [],
               "deny": []
@@ -369,7 +369,7 @@
             "write": {
               "mode": "restricted",
               "allow": [
-                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace"
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace"
               ],
               "ask": [],
               "deny": []
@@ -377,19 +377,19 @@
           },
           "probePaths": [
             {
-              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
               "ceilingRead": "allow",
               "restrictionRead": "allow",
               "effectiveRead": "allow"
             },
             {
-              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
               "ceilingRead": "allow",
               "restrictionRead": "deny",
               "effectiveRead": "deny"
             },
             {
-              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+              "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
               "ceilingRead": "deny",
               "restrictionRead": "allow",
               "effectiveRead": "deny"
@@ -414,7 +414,7 @@
           "noWidenedAllow": true
         },
         "effectiveReadAllow": [
-          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow"
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow"
         ]
       }
     },
@@ -425,19 +425,19 @@
           "seq": 11,
           "name": "write",
           "args": {
-            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
-            "content": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-19-18Z\n"
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
+            "content": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-41-30Z\n"
           }
         },
         "result": {
           "seq": 12,
           "callId": "call-a5sfacc-write-w4a",
           "isError": false,
-          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
           "tool": "write"
         },
-        "expectedContent": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-19-18Z\n",
-        "disk": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-19-18Z\n",
+        "expectedContent": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-41-30Z\n",
+        "disk": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-41-30Z\n",
         "facts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -446,11 +446,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 5,
-            "observedAt": "2026-11-04T08:19:25.408Z"
+            "observedAt": "2026-11-04T08:41:51.038Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -459,11 +459,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "readText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 6,
-            "observedAt": "2026-11-04T08:19:25.410Z"
+            "observedAt": "2026-11-04T08:41:51.041Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -472,19 +472,19 @@
             "toolBindingIdentity": null,
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "writeText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 1,
-            "observedAt": "2026-11-04T08:19:25.438Z"
+            "observedAt": "2026-11-04T08:41:51.067Z"
           }
         ],
         "counterRows": [
           {
-            "at": "2026-11-04T08:19:25.440Z",
+            "at": "2026-11-04T08:41:51.069Z",
             "leg": "write-call",
             "method": "writeText",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "instance": "fs-3",
             "isBase": false
           }
@@ -503,35 +503,35 @@
         },
         "failed": [],
         "isError": false,
-        "disk": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-19-18Z\n",
-        "expectedContent": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-19-18Z\n",
-        "observed": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
+        "disk": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-41-30Z\n",
+        "expectedContent": "A5SF_ACC_WRITE_4A_u5a5sfacc-20261104T08-41-30Z\n",
+        "observed": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
         "writeFacts": 1,
         "ceilingFacts": 1,
         "readLaneWriteFacts": 0,
         "counterRows": 1
       }
     },
-    "live:row4b-write-b-refused-read-not-implied": {
+    "live:row4b-write-b-ceiling-allowed-read-not-implied": {
       "sample": {
         "call": {
           "callId": "call-a5sfacc-write-b",
           "seq": 12,
           "name": "write",
           "args": {
-            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
-            "content": "A5SF_ACC_WRITE_u5a5sfacc-20261104T08-19-18Z\n"
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
+            "content": "A5SF_ACC_WRITE_u5a5sfacc-20261104T08-41-30Z\n"
           }
         },
         "result": {
           "seq": 12,
           "callId": "call-a5sfacc-write-b",
           "isError": true,
-          "text": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt\": file has not been read — read the file, then retry",
+          "text": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt\": file has not been read — read the file, then retry",
           "tool": "write"
         },
-        "plantedContent": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z\n",
-        "disk": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z\n",
+        "plantedContent": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z\n",
+        "disk": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z\n",
         "facts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -540,11 +540,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 3,
-            "observedAt": "2026-11-04T08:19:25.351Z"
+            "observedAt": "2026-11-04T08:41:50.990Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -553,43 +553,42 @@
             "toolBindingIdentity": null,
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "writeText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.470Z"
+            "observedAt": "2026-11-04T08:41:51.097Z"
           }
         ],
         "counterRows": [
           {
-            "at": "2026-11-04T08:19:25.472Z",
+            "at": "2026-11-04T08:41:51.099Z",
             "leg": "write-call",
             "method": "writeText",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "instance": "fs-4",
             "isBase": false
           }
         ]
       },
-      "verdict": "REFUTED",
-      "reason": "ROW4B_CLAUSE_FAILED",
+      "verdict": "PROVEN",
+      "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
       "detail": {
+        "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
         "checks": {
           "isError": true,
-          "typedReadCouplingRefusal": false,
-          "noPlantedBytesReturned": true,
-          "diskUnchanged": true,
+          "ceilingWriteAllowed": true,
           "noReadLaneWriteAllow": true,
-          "noProviderWrite": false
+          "notTeamLaneRefusal": true,
+          "notReadCouplingRefusal": true,
+          "noPlantedBytesReturned": true,
+          "diskUnchanged": true
         },
-        "failed": [
-          "typedReadCouplingRefusal",
-          "noProviderWrite"
-        ],
+        "failed": [],
         "isError": true,
-        "disk": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z\n",
-        "plantedContent": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z\n",
-        "observed": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt\": file has not been read — read the file, then retry",
+        "disk": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z\n",
+        "plantedContent": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z\n",
+        "observed": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt\": file has not been read — read the file, then retry",
         "writeFacts": 1,
         "writeDecisions": [
           {
@@ -598,9 +597,10 @@
             "realm": "member"
           }
         ],
+        "ceilingWriteAllowFacts": 1,
         "readLaneWriteAllowFacts": 0,
         "counterRows": 1,
-        "reason": "ROW4B_CLAUSE_FAILED"
+        "providerWrote": true
       }
     },
     "live:row5-post-invalidation-refused-shadow-invalidated": {
@@ -627,9 +627,9 @@
           "toolName": "x_acceptance_late_unrelated",
           "registered": true,
           "calls": 1,
-          "registeredAt": "2026-11-04T08:19:27.216Z",
+          "registeredAt": "2026-11-04T08:41:52.848Z",
           "disposerType": "function",
-          "lastCallAt": "2026-11-04T08:19:27.216Z"
+          "lastCallAt": "2026-11-04T08:41:52.848Z"
         },
         "invalidationLine": "a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface",
         "postRead": {
@@ -658,7 +658,7 @@
             }
           }
         },
-        "forbiddenClaim": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z",
+        "forbiddenClaim": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z",
         "sinkDelta": 0,
         "counterDelta": 0
       },
@@ -724,7 +724,7 @@
             "body": {
               "ok": false,
               "error": {
-                "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+                "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
               }
             }
           },
@@ -733,7 +733,7 @@
             "body": {
               "ok": false,
               "error": {
-                "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+                "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
               }
             }
           }
@@ -745,7 +745,7 @@
             "dropped": true
           }
         },
-        "forbiddenClaim": "A5SF_ACC_B_u5a5sfacc-20261104T08-19-18Z",
+        "forbiddenClaim": "A5SF_ACC_B_u5a5sfacc-20261104T08-41-30Z",
         "facts": [
           {
             "schema": "a5sf-guard-consult/1",
@@ -754,11 +754,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 1,
-            "observedAt": "2026-11-04T08:19:25.314Z"
+            "observedAt": "2026-11-04T08:41:50.952Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -767,11 +767,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "readText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.320Z"
+            "observedAt": "2026-11-04T08:41:50.958Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -780,11 +780,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 3,
-            "observedAt": "2026-11-04T08:19:25.351Z"
+            "observedAt": "2026-11-04T08:41:50.990Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -793,11 +793,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
             "decision": "deny",
             "decidedBy": "IO_READ_DENIED",
             "sequence": 4,
-            "observedAt": "2026-11-04T08:19:25.382Z"
+            "observedAt": "2026-11-04T08:41:51.013Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -806,11 +806,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 5,
-            "observedAt": "2026-11-04T08:19:25.408Z"
+            "observedAt": "2026-11-04T08:41:51.038Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -819,11 +819,11 @@
             "toolBindingIdentity": "dsh.fs/read",
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "readText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 6,
-            "observedAt": "2026-11-04T08:19:25.410Z"
+            "observedAt": "2026-11-04T08:41:51.041Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -832,11 +832,11 @@
             "toolBindingIdentity": null,
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "writeText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 1,
-            "observedAt": "2026-11-04T08:19:25.438Z"
+            "observedAt": "2026-11-04T08:41:51.067Z"
           },
           {
             "schema": "a5sf-guard-consult/1",
@@ -845,47 +845,50 @@
             "toolBindingIdentity": null,
             "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
             "method": "writeText",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "decision": "allow",
             "decidedBy": "ALLOW",
             "sequence": 2,
-            "observedAt": "2026-11-04T08:19:25.470Z"
-          },
-          {
-            "schema": "a5sf-guard-consult/1",
-            "realm": "binding",
-            "memberIdentity": "inst-0b366g81a5yc",
-            "toolBindingIdentity": "dsh.fs/read",
-            "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
-            "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
-            "decision": "deny",
-            "decidedBy": "IO_READ_DENIED",
-            "sequence": 1,
-            "observedAt": "2026-11-04T08:19:27.332Z"
-          },
-          {
-            "schema": "a5sf-guard-consult/1",
-            "realm": "binding",
-            "memberIdentity": "inst-0b366g81a5yc",
-            "toolBindingIdentity": "dsh.fs/read",
-            "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
-            "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
-            "decision": "deny",
-            "decidedBy": "IO_READ_DENIED",
-            "sequence": 1,
-            "observedAt": "2026-11-04T08:19:27.385Z"
+            "observedAt": "2026-11-04T08:41:51.097Z"
           }
         ],
-        "stopInstant": "2026-11-04T08:19:27.285Z",
+        "probeFacts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "binding",
+            "memberIdentity": "inst-0b366g81a5yc",
+            "toolBindingIdentity": "dsh.fs/read",
+            "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 1,
+            "observedAt": "2026-11-04T08:41:52.953Z"
+          },
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "binding",
+            "memberIdentity": "inst-0b366g81a5yc",
+            "toolBindingIdentity": "dsh.fs/read",
+            "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 1,
+            "observedAt": "2026-11-04T08:41:53.000Z"
+          }
+        ],
+        "stopInstant": "2026-11-04T08:41:52.912Z",
         "sinkDelta": 2,
         "healthStatus": 200,
         "hostAlive": true
       },
-      "verdict": "REFUTED",
-      "reason": "ROW6_CLAUSE_FAILED",
+      "verdict": "PROVEN",
+      "reason": "NO_USABLE_UNCONSTRAINED_SHADOW",
       "detail": {
+        "reason": "NO_USABLE_UNCONSTRAINED_SHADOW",
         "checks": {
           "archivedLifecycle": true,
           "everyDispatchExplained": true,
@@ -894,13 +897,12 @@
           "noManagedDisposeFault": true,
           "noUnattributedRealmFault": true,
           "factsAreTimestamped": true,
-          "noFactAfterStop": false,
+          "noFactAfterStop": true,
+          "probeFactsAreRefusals": true,
           "hostHealthy": true,
           "hostAlive": true
         },
-        "failed": [
-          "noFactAfterStop"
-        ],
+        "failed": [],
         "identity": {
           "managed": [],
           "foreign": [],
@@ -919,23 +921,27 @@
           "status": 200,
           "ok": true
         },
-        "stopInstant": "2026-11-04T08:19:27.285Z",
-        "factsObserved": 10,
-        "factsAfterStop": [
+        "stopInstant": "2026-11-04T08:41:52.912Z",
+        "factsObserved": 8,
+        "factsAfterStop": [],
+        "factsWithoutObservedAt": 0,
+        "probeFactsObserved": 2,
+        "probeFacts": [
           {
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "realm": "binding",
-            "observedAt": "2026-11-04T08:19:27.332Z"
+            "decision": "deny",
+            "observedAt": "2026-11-04T08:41:52.953Z"
           },
           {
             "method": "stat",
-            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
             "realm": "binding",
-            "observedAt": "2026-11-04T08:19:27.385Z"
+            "decision": "deny",
+            "observedAt": "2026-11-04T08:41:53.000Z"
           }
         ],
-        "factsWithoutObservedAt": 0,
         "residencyDrop": {
           "sessionId": "session-team-child-6b1fff88913e06d268262394e2c47034",
           "dropped": true
@@ -953,8 +959,7 @@
           }
         ],
         "successes": 0,
-        "sinkDeltaObserved": 2,
-        "reason": "ROW6_CLAUSE_FAILED"
+        "sinkDeltaObserved": 2
       }
     }
   }

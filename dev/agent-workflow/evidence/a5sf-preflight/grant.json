@@ -1,10 +1,10 @@
 {
-  "grantId": "grant-a5sf-acceptance-0dec8f2d6144-b2",
-  "maxStarts": 5,
+  "grantId": "grant-a5sf-acceptance-44babbfcff20-b3",
+  "maxStarts": 8,
   "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20, as AMENDED: allocation item \"P2-01 live read (BL-14 / G2 live half)\" now holds 6 boots, three of them newly granted and dedicated to the post-preflight six-row acceptance. The preflight in evidence/a5sf-preflight/ must be green before the first of those three is spent; this driver is the one that preflight certifies. Prior P2-01 boots: a5sf-live-native (activation refused by the unscoped-ctx seam), a5sf-live-native2 (Loader compose abort on a composition defect), a5sf-live-native3 (confined native read proven, teardown seam open), a5sf-acceptance (6/6 NOT_REACHED: create-root/observe-root split). The pool reserve is NOT touched.",
   "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
-  "boundCommit": "0dec8f2d6144a2ccdf40f097ec30ee4ea8086473",
-  "note": "maxStarts = 3 prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = 5; the BL-14 gate counts shared-ledger rows, not spawns",
-  "bootSequence": 2,
+  "boundCommit": "44babbfcff2026b04395f2219a1c4a77565ff7af",
+  "note": "maxStarts = 6 prior shared-ledger row(s) + 1 pre-registration (intent) row + 1 boot = 8; the BL-14 gate counts shared-ledger rows, not spawns",
+  "bootSequence": 3,
   "dedicatedStarts": 3
 }

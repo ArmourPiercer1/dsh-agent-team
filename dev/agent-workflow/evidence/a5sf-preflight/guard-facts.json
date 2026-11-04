@@ -1,5 +1,5 @@
 {
-  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/a5sf-consult.jsonl",
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/a5sf-consult.jsonl",
   "sinkExists": true,
   "sinkBytes": 3519,
   "guardFacts": [
@@ -10,11 +10,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-04T08:19:25.314Z"
+      "observedAt": "2026-11-04T08:41:50.952Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -23,11 +23,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T08:19:25.320Z"
+      "observedAt": "2026-11-04T08:41:50.958Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -36,11 +36,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 3,
-      "observedAt": "2026-11-04T08:19:25.351Z"
+      "observedAt": "2026-11-04T08:41:50.990Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -49,11 +49,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 4,
-      "observedAt": "2026-11-04T08:19:25.382Z"
+      "observedAt": "2026-11-04T08:41:51.013Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -62,11 +62,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 5,
-      "observedAt": "2026-11-04T08:19:25.408Z"
+      "observedAt": "2026-11-04T08:41:51.038Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -75,11 +75,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 6,
-      "observedAt": "2026-11-04T08:19:25.410Z"
+      "observedAt": "2026-11-04T08:41:51.041Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -88,11 +88,11 @@
       "toolBindingIdentity": null,
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "writeText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-04T08:19:25.438Z"
+      "observedAt": "2026-11-04T08:41:51.067Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -101,11 +101,11 @@
       "toolBindingIdentity": null,
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "writeText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T08:19:25.470Z"
+      "observedAt": "2026-11-04T08:41:51.097Z"
     }
   ],
   "factsA": [
@@ -116,11 +116,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-04T08:19:25.314Z"
+      "observedAt": "2026-11-04T08:41:50.952Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -129,11 +129,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T08:19:25.320Z"
+      "observedAt": "2026-11-04T08:41:50.958Z"
     }
   ],
   "factsB": [
@@ -144,11 +144,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 3,
-      "observedAt": "2026-11-04T08:19:25.351Z"
+      "observedAt": "2026-11-04T08:41:50.990Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -157,11 +157,11 @@
       "toolBindingIdentity": null,
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "writeText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T08:19:25.470Z"
+      "observedAt": "2026-11-04T08:41:51.097Z"
     }
   ],
   "factsC": [
@@ -172,11 +172,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 4,
-      "observedAt": "2026-11-04T08:19:25.382Z"
+      "observedAt": "2026-11-04T08:41:51.013Z"
     }
   ],
   "bindingFacts": [
@@ -187,11 +187,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-04T08:19:25.314Z"
+      "observedAt": "2026-11-04T08:41:50.952Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -200,11 +200,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-04T08:19:25.320Z"
+      "observedAt": "2026-11-04T08:41:50.958Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -213,11 +213,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 3,
-      "observedAt": "2026-11-04T08:19:25.351Z"
+      "observedAt": "2026-11-04T08:41:50.990Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -226,11 +226,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/restriction-outside/c.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/restriction-outside/c.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 4,
-      "observedAt": "2026-11-04T08:19:25.382Z"
+      "observedAt": "2026-11-04T08:41:51.013Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -239,11 +239,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 5,
-      "observedAt": "2026-11-04T08:19:25.408Z"
+      "observedAt": "2026-11-04T08:41:51.038Z"
     },
     {
       "schema": "a5sf-guard-consult/1",
@@ -252,11 +252,11 @@
       "toolBindingIdentity": "dsh.fs/read",
       "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 6,
-      "observedAt": "2026-11-04T08:19:25.410Z"
+      "observedAt": "2026-11-04T08:41:51.041Z"
     }
   ]
 }

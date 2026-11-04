@@ -142,7 +142,7 @@
     "body": {
       "ok": false,
       "error": {
-        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
       }
     }
   },
@@ -337,7 +337,7 @@
     "body": {
       "ok": false,
       "error": {
-        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
       }
     }
   },
@@ -347,13 +347,13 @@
       "status": 200,
       "code": null,
       "ok": false,
-      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
     },
     {
       "status": 200,
       "code": null,
       "ok": false,
-      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt' is outside every allow subtree of the lane"
     }
   ],
   "healthAfterDrop": {
@@ -371,23 +371,51 @@
       "toolCount": 15
     }
   },
-  "stopInstant": "2026-11-04T08:19:27.285Z",
-  "archiveDispatchedAt": "2026-11-04T08:19:27.240Z",
-  "sinkFactsBefore": 8,
-  "sinkFactsAfter": 10,
+  "stopInstant": "2026-11-04T08:41:52.912Z",
+  "archiveDispatchedAt": "2026-11-04T08:41:52.869Z",
+  "sinkFactsAtStop": 8,
+  "probeFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "binding",
+      "memberIdentity": "inst-0b366g81a5yc",
+      "toolBindingIdentity": "dsh.fs/read",
+      "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
+      "method": "stat",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 1,
+      "observedAt": "2026-11-04T08:41:52.953Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "binding",
+      "memberIdentity": "inst-0b366g81a5yc",
+      "toolBindingIdentity": "dsh.fs/read",
+      "policyRevision": "a5sf-acceptance:inst-0b366g81a5yc:g1",
+      "method": "stat",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 1,
+      "observedAt": "2026-11-04T08:41:53.000Z"
+    }
+  ],
+  "sinkFactsAfterProbes": 10,
   "hostAlive": true,
   "seamsObserved": [
     "product archive lifecycle: team_archive_member dispatched through the row tool route (as the acceptance root/leader)",
     "product dispatch seam: POST /__p6t6/tool {as:<member child session>} — only a LIVE agent can be dispatched to; an archived member must answer NO_LIVE_AGENT (422)",
     "the product residency seam: POST /__p6t6/residency/drop {sessionId} — disposes the live agent handle, draining the setup disposers (incl. the a5sf realm)",
     "the row dispose-observation channel: GET /__p6t6/state .observations (classified against the CLOSED fault grammar and this Member's exact session id; the identity-less realm fault only inside this disposal window)",
-    "the a5sf sink: the fact count after teardown (no fact can appear for a scope that no longer runs)",
+    "the a5sf sink: the fact set AS OF THE STOP (captured before any probe) plus the probe delta; the row asserts no STOP-TIME fact follows the stop and every probe-added fact is a refusal",
     "the process seam: the Host child alive + the World teardown report (port released, home deleted)"
   ],
   "seamsNotReached": [
     "an in-process read of the DISPOSED scope's tool registry (tools.get(\"read\", <old agent>)) — no public HTTP route exposes a disposed scope, and this lane did not fork an infrastructure plugin for it"
   ],
-  "note": "PROVEN for the three asked properties as OBSERVED through the seams above: no dispatch path reaches the stopped Member (so no usable shadow, constrained or not), no MANAGED dispose fault was reported, no fact was written after the stop, and the Host/port/home teardown is clean. NOT claimed: that the disposed scope's definition registry is empty — that needs an in-process seam this lane did not add. The realm-dispose observation carries NO session identity in the product text; it is attributed by the disposal window + single-managed-realm rule and that residual gap is disclosed, not hidden.",
+  "note": "PROVEN for the asked properties as OBSERVED through the seams above: no dispatch path reaches the stopped Member with a success (so no usable shadow, constrained or not), no MANAGED dispose fault was reported, no STOP-TIME fact was written after the stop, every fact the row's own post-stop probes appended is a refusal, and the Host/port/home teardown is clean. NOT claimed: that the disposed scope's definition registry is empty — that needs an in-process seam this lane did not add. The realm-dispose observation carries NO session identity in the product text; it is attributed by the disposal window + single-managed-realm rule and that residual gap is disclosed, not hidden.",
   "processSeam": {
     "hostPid": null,
     "hostChildExitCode": null,
@@ -395,18 +423,18 @@
     "worldTeardown": {
       "host": {
         "wasRunning": true,
-        "pid": 84,
+        "pid": 35,
         "killed": true,
         "portFree": true
       },
-      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z",
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z",
       "releasedPorts": [
-        3182,
-        3491,
-        3182
+        3183,
+        3493,
+        3183
       ],
       "killedPids": [
-        84
+        35
       ],
       "notes": []
     },

@@ -1,6 +1,6 @@
 {
   "counterInstalled": {
-    "at": "2026-11-04T08:19:23.153Z",
+    "at": "2026-11-04T08:41:48.926Z",
     "leg": "counter-installed",
     "baseCtor": "SandboxedFileSystem",
     "baseInstance": "fs-0",
@@ -16,36 +16,36 @@
   },
   "readRows": [
     {
-      "at": "2026-11-04T08:19:25.322Z",
+      "at": "2026-11-04T08:41:50.960Z",
       "leg": "read-call",
       "method": "readText",
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/a.txt",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/a.txt",
       "instance": "fs-1",
       "isBase": false
     },
     {
-      "at": "2026-11-04T08:19:25.412Z",
+      "at": "2026-11-04T08:41:51.043Z",
       "leg": "read-call",
       "method": "readText",
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "instance": "fs-2",
       "isBase": false
     }
   ],
   "writeRows": [
     {
-      "at": "2026-11-04T08:19:25.440Z",
+      "at": "2026-11-04T08:41:51.069Z",
       "leg": "write-call",
       "method": "writeText",
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/allow/w4a.txt",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/allow/w4a.txt",
       "instance": "fs-3",
       "isBase": false
     },
     {
-      "at": "2026-11-04T08:19:25.472Z",
+      "at": "2026-11-04T08:41:51.099Z",
       "leg": "write-call",
       "method": "writeText",
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-19-18Z/workspace/axis/b.txt",
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T08-41-30Z/workspace/axis/b.txt",
       "instance": "fs-4",
       "isBase": false
     }

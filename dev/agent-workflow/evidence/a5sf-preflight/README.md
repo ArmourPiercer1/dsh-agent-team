@@ -1033,3 +1033,52 @@ post-stop; that the Host read-before-write policy (not a newly typed Team
 refusal) is still what refuses a write to an unread in-lane file; and that the
 b.txt write still reaches the confined provider (the counter is reported, not
 asserted). None of those can be settled host-free.
+
+## 13. THE SIX-ROW ACCEPTANCE PASSES — 2026-11-04T08:41Z (head `44babbfcf`, port 3182, 1 start)
+
+**`overall=PASS`, 8/8.** This is the first time the acceptance has completed on a live Host, and it
+completes on the **third** of the three dedicated P2-01 starts.
+
+| case | verdict | reason |
+|---|---|---|
+| composition precondition | PASS | `MEMBER_ACTIVATED_ONE_READ` |
+| row1 read A (ceiling ∧ restriction) | PASS | `READ_A_ALLOWED_AND_CONFINED` |
+| row2 read B (restriction denies) | PASS | `BINDING_DENY_ON_READ_PATH` |
+| row3 read C (ceiling denies) | PASS | `REFUSED_WITHOUT_WIDENING` |
+| row4a write in-lane | PASS | `CEILING_WRITE_IN_LANE_READABLE` |
+| row4b write B (read not implied) | PASS | `CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED` |
+| row5 post-invalidation | PASS | `SHADOW_INVALIDATED_AND_ADMISSION_REFUSED` |
+| row6 teardown | PASS | `NO_USABLE_UNCONSTRAINED_SHADOW` |
+
+The complete live sink is the exact eight facts the contract predicts, with the realm split the
+two-axis design requires:
+
+```
+binding  stat     allow  a.txt     binding  stat allow  w4a.txt
+binding  readText allow  a.txt     binding  readText allow w4a.txt
+binding  stat     deny   b.txt     member   writeText allow w4a.txt
+binding  stat     deny   c.txt     member   writeText allow b.txt
+```
+
+Every read-path consultation is on the **binding** realm and every write fact is on the **ceiling**
+realm; no write fact crossed into the read lane. Teardown: Host killed, port released, World home
+deleted, `portStillListening=false`, no orphan.
+
+### What is now PROVEN on a live Host
+
+1. **`EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction`** on the read axis: in-lane served, ceiling-denied
+   refused, restriction-denied refused, with the confined provider actually serving the allowed read.
+2. **The write axis is ceiling-bounded and does not leak into the read lane**, and a write the binding
+   lane cannot read is *allowed by the guard* — the read-before-write refusal belongs to the Host, not
+   to the Team lanes (§12.8.3 carries the open question of whether `write` should imply `read`).
+3. **P0 invalidation**: an invalidated managed shadow is condemned **by name**
+   (`A5SF_NATIVE_SHADOW_INVALIDATED`), no bytes, no guard fact, no provider call, and refused in-lane
+   too — measured live, not host-free.
+4. **The teardown boundary**: after the stop, dispatches may still be *consulted* by the guard and are
+   never *served* (`probeFactsAreRefusals`), and no managed realm fault is attributed to the disposal.
+
+### Budget
+
+Three dedicated P2-01 starts: 1 (4 PASS) → 2 (6 PASS) → **3 (8 PASS)**. Pool reserve untouched.
+The two failures of the earlier boots were defects in the questions (a method-name filter, an
+allowance the algebra never promised, a row that judged its own probes), each now pinned by a control.
