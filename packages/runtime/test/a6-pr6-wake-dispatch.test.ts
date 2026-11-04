@@ -22,7 +22,8 @@ function planReviewWakes(inputs: readonly ReviewRouteInput[]) { return planRaw(i
 import {
   dispatchReviewWakes,
   planFingerprint,
-  releaseReviewWake,
+  claimReviewWake,
+  releaseAndDeliverReviewWake,
   reviewWakeKeyFor,
 } from '../alpha6/wake-dispatch.js'
 import {
@@ -129,7 +130,7 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
     expect(result.held).toEqual([])
   })
 
-  it('leaves the latch running when turn ownership is deferred, then releases at the real boundary', async () => {
+  it('keeps Inbox acceptance queued, claims at the real turn, and drains the new-fingerprint wake on release', async () => {
     const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')])
     const coordinators = coordinatorsFor(plan)
     const port = recordingPort()
@@ -141,8 +142,11 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
       deliver: port.deliver,
       deferTurnEnd: true,
     })
-    expect(first.delivered[0]?.status).toBe('running')
+    expect(first.delivered[0]?.status).toBe('queued')
     expect(port.calls).toHaveLength(1)
+
+    expect(claimReviewWake(coordinators[0]!).outcome).toBe('applied')
+    expect(coordinators[0]?.state.status).toBe('running')
 
     const during = planReviewWakes([input('req-1'), input('req-2'), input('req-3'), input('req-4')])
     const second = await dispatchReviewWakes({
@@ -157,20 +161,16 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
     expect(coordinators[0]?.state.status).toBe('running')
     expect(port.calls).toHaveLength(1)
 
-    expect(releaseReviewWake(coordinators[0]!, {
-      kind: 'ready',
-      fingerprint: first.deliveries[0]?.workFingerprint ?? '',
-    }).outcome).toBe('applied')
-    const after = await dispatchReviewWakes({
-      plan: during,
-      rootSessionId: ROOT,
-      sessionGeneration: GENERATION,
-      coordinators,
-      deliver: port.deliver,
-      deferTurnEnd: true,
-    })
-    expect(after.delivered).toHaveLength(1)
+    // The dangerous case: release at a NEW fingerprint. No extra dispatch.
+    const released = await releaseAndDeliverReviewWake(
+      coordinators[0]!,
+      { kind: 'ready', fingerprint: planFingerprint(during.wakes[0]!) },
+      port.deliver,
+      OFFICER,
+    )
+    expect(released.deliveredWakeId).toBeDefined()
     expect(port.calls).toHaveLength(2)
+    expect(coordinators[0]?.state.status).toBe('queued')
   })
 
   it('is deterministic: the same plan yields the same key/fingerprint/wakeId and never re-wakes unchanged work', async () => {

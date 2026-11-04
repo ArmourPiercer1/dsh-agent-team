@@ -362,8 +362,16 @@ export async function dispatchReviewWakes(
       continue
     }
 
-    // The port accepted the wake: claim it, release it, and answer the ONE
-    // post-turn rescan with the same merged read so the latch settles idle.
+    if (deps.deferTurnEnd === true) {
+      // Inbox ACCEPTED is only `queued`: the recipient has not claimed or
+      // started a turn. The Host calls claimReviewWake() at the real boundary.
+      const accepted = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
+      deliveries.push(accepted)
+      delivered.push(accepted)
+      continue
+    }
+
+    // Non-deferred compatibility path: claim and release in one cycle.
     const started = coordinator.dispatch({ type: 'turn-start' })
     if (started.outcome === 'refused') {
       failures.push(
@@ -378,13 +386,6 @@ export async function dispatchReviewWakes(
       // Delivered to the port but the latch did not advance: surface both.
       deliveries.push(outcome(wake, key, fingerprint, coordinator, true, effect.wakeId))
       delivered.push(deliveries[deliveries.length - 1]!)
-      continue
-    }
-
-    if (deps.deferTurnEnd === true) {
-      const claimed = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
-      deliveries.push(claimed)
-      delivered.push(claimed)
       continue
     }
 
@@ -445,6 +446,10 @@ export async function dispatchReviewWakes(
  * post-delivery `turn-end`; the follow-up rescan uses the caller's fresh
  * authoritative fingerprint (not a stale one captured at delivery time).
  */
+export function claimReviewWake(coordinator: ReviewWakeCoordinator): ReviewWakeTransition {
+  return coordinator.dispatch({ type: 'turn-start' })
+}
+
 export function releaseReviewWake(
   coordinator: ReviewWakeCoordinator,
   work: { readonly kind: 'ready'; readonly fingerprint: string } | { readonly kind: 'no-ready-work' },
@@ -452,5 +457,35 @@ export function releaseReviewWake(
   const ended = coordinator.dispatch({ type: 'turn-end' })
   if (ended.outcome === 'refused') return ended
   if (!ended.effects.some((next) => next.kind === 'rescan')) return ended
-  return coordinator.dispatch({ type: 'scan-result', work })
+  const settled = coordinator.dispatch({ type: 'scan-result', work })
+  if (settled.outcome === 'applied'
+    && settled.effects.some((next) => next.kind === 'deliver-wake')) {
+    // A pending wake MUST have an owner: the caller either drains it with
+    // releaseAndDeliverReviewWake() or this throw stops a silent queued ghost.
+    throw new Error('review-wake: release produced a deliver-wake effect; call releaseAndDeliverReviewWake()')
+  }
+  return settled
+}
+
+/**
+ * Release the real turn AND drain the post-release `deliver-wake` effect.
+ * This is the only safe release for a NEW fingerprint: the coordinator is
+ * already `queued`, so no later dispatch would emit that effect again.
+ */
+export async function releaseAndDeliverReviewWake(
+  coordinator: ReviewWakeCoordinator,
+  work: { readonly kind: 'ready'; readonly fingerprint: string } | { readonly kind: 'no-ready-work' },
+  deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>,
+  targetSessionId: string,
+): Promise<{ readonly transition: ReviewWakeTransition; readonly deliveredWakeId?: string }> {
+  const ended = coordinator.dispatch({ type: 'turn-end' })
+  if (ended.outcome === 'refused') return { transition: ended }
+  if (!ended.effects.some((next) => next.kind === 'rescan')) return { transition: ended }
+  const settled = coordinator.dispatch({ type: 'scan-result', work })
+  const effect = settled.outcome === 'applied'
+    ? settled.effects.find((next): next is ReviewWakeDeliverEffect => next.kind === 'deliver-wake')
+    : undefined
+  if (effect === undefined) return { transition: settled }
+  await createReviewWakeDelivery(async (input) => deliver(input, targetSessionId))(effect)
+  return { transition: settled, deliveredWakeId: effect.wakeId }
 }
