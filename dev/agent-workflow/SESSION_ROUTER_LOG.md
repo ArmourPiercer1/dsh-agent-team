@@ -7557,3 +7557,31 @@ stderr 未留存，故只记风险不记判定。
 
 **预算**：owner 2026-11-05 批准再增 **4 次 P2-04 boot**（累计授予 10，已用 6）。第四次起的 start 需
 `lane-ruling.json` 新条目（go-no-go 拒绝编辑 `authorisedStarts`）。
+
+## 2026-11-05T15:00Z — BL-16 live 六行全 PASS（第 10 次 boot）；矩阵按 Q7 记 NEEDS_REVALIDATION，不记 current claim
+
+`P2-04` 第 10 次、也是最后一次 boot（head `c658d974d`，port 3182，`10 intents + 10 boots + 0 aborts`）
+在真 Host 上把**六行全部判绿**：in-lane 允许（`confined-exit code=0`、`stderr` 为空，并按 `#593` 在
+同一条 allow fact 上带出 `annotations`：该 lane 形态下 `.gitignore`/`.git/info/exclude` **关闭**）、
+越过 ceiling 与越过 restriction 两种都在**任何进程存在前**拒绝、取消后子进程以 143 终止、非法模式为
+tool error、archive 边界后工具面 **422 + 0 fact + 0 spawn**。
+
+**等级没有升到 `ENFORCE`/`yes`，这不是能力判断而是新鲜度判断**：权威 baseline `as20261102r1`
+（`17ce7043…`）早于本轮产品面（`#593` 改了 `subprocess.ts`、`#594` 改了 `agent-bindings.mjs`），
+Q7 不允许在该 baseline 上宣称 current claim。按 `read`/`write` 行已经采用的同一编码，M-06/M-07 记
+**`NEEDS_REVALIDATION` / `V@B=no`**，并在证据格写入上述六行事实与"baseline 重切后按 §1.1 复位为
+`ENFORCE`/`yes`、证据不删"。**宁可让机器读成"等重新断言"，也不把陈旧 baseline 上的实测写成当前已验证**——
+这与把 live 降级成 host-free 是两回事。
+
+**同样明确不做的四件事**：不把 `toolBindingIdentity=null` 说成已覆盖（install spec 无该字段）；不把 row 3
+的 **preset-expression** 收窄臂说成已测（它仍 `UNSUPPORTED`，六行 PASS 走的是 restriction lane）；不把
+binding-realm `subprocess` face 说成可用（BL-17 仍拒）；不把 row 6 的 typed code 说成线上可见（线上只有
+422 + message，code 只在产品内部）。
+
+**row 6 的线上形态**（记录一次，避免后来者误读）：`postStopGrep=422 postStopGlob=422 factsAtStop=7
+probeFacts=0 postStopCounterRows=0`，body 是纯字符串，含 "belongs to a ARCHIVED MemberInstance … Architecture
+§41.6/§30.2/§29.4"。判绿是因为派发被 typed refusal 挡下，不是因为环境巧合。
+
+**下一节点**：baseline 重切（P4/P5 的既有任务）会把 M-01/M-02/M-06/M-07 一起复位为 `V@B=yes`；在那之前
+矩阵的机器读法是"四行 live 已实测、待重新断言"。`grep`/`glob` 的 `P2-04` 预算 10/10 已用尽，任何进一步
+live 断言都需要新的 owner 分配。
