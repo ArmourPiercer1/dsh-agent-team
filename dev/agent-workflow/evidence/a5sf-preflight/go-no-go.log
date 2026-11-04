@@ -1,4 +1,4 @@
-PASS dry-run evidence exists and is green: {"checks":28,"failed":0}
+PASS dry-run evidence exists and is green: {"checks":29,"failed":0}
 PASS the PRODUCT tree matches the one the dry run measured: {"committed":"83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc","now":"83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc"}
 PASS the product tree has no uncommitted modifications: (clean)
 PASS branch is the preflight branch: task/a5sf-preflight-20261103

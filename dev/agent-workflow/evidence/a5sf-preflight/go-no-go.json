@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-acceptance-preflight/go-no-go/1",
   "branch": "task/a5sf-preflight-20261103",
-  "evidenceHeadAtDryRun": "9465c99250b6ab741db04dfc1f8389704154ac89",
+  "evidenceHeadAtDryRun": "483bfea4cf8e4901e4cddf755f9bdb6be4f7e149",
   "productTreeDigest": "83b89caad41fdf4d94373cb1b0011568a374aeb1e9fa2267acba39a49bb95fcc",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
@@ -15,7 +15,7 @@
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 28,
+        "checks": 29,
         "failed": 0
       }
     },

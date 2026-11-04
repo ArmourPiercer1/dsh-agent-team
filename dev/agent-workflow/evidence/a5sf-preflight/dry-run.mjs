@@ -118,6 +118,8 @@ check('driver: full teardown observations are persisted', !/observations\.slice\
   'teardown.json carries the entire observation array, no tail-N window')
 check('driver: declares expectedTools on the row', driverSource.includes('a5sfExpectedTools'),
   'the live attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping a preset read_image')
+check('driver: the boot-mode run-record bindings are exercised host-free', /function runBindings\(/.test(driverSource) && /bindings: runBindings\(head, grant\)/.test(driverSource) && /runBindings: runBindings\(/.test(driverSource),
+  'a broken binding literal (e.g. a missing import used only by those strings) must fail in --plan, not after a start is spent')
 check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', driverSource.includes('RUN_ABORTED_AFTER_HOST_REACHED') && /add\(id, hostReached \? 'FAIL' : 'NOT_REACHED'/.test(driverSource),
   'post-boot aborts are labelled UNJUDGED and FAIL; only pre-boot aborts are NOT_REACHED')
 const LIB = join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-acceptance-preflight.mjs')

@@ -1,0 +1,124 @@
+[2026-11-04T07:19:19.053Z] BOOT MODE — exactly ONE Host start. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight
+[2026-11-04T07:19:19.054Z] root identity (boot): {"ok":true,"root":"session-a5sf-acceptance-team","bootRoot":"session-a5sf-acceptance-root","rootsCoincide":false,"productionRowRootChecked":true,"directiveRootChecked":true,"toolRouteRootIsLabel":true}
+[2026-11-04T07:19:19.054Z] hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-04T07:19:19.057Z] HEAD=483bfea4cf8e4901e4cddf755f9bdb6be4f7e149
+[2026-11-04T07:19:19.058Z] pre-boot row identity check: {"ok":true,"rows":[{"rowId":"a5sf-acceptance-realm","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs","packageName":"dsh-agent-team","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/package.json","hasClientHalf":true},{"rowId":"dsh-agent-team","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js","packageName":"@dsh-agent-team/runtime","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json","hasClientHalf":false},{"rowId":"p6t6-team-tools","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktr
+[2026-11-04T07:19:19.058Z] grant materialised: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/grant.json maxStarts=2 boundCommit=483bfea4cf8e4901e4cddf755f9bdb6be4f7e149 item=P2-01 live read (BL-14 / G2 live half)
+[2026-11-04T07:27:34.205Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use
+[2026-11-04T07:27:34.207Z] root identity (plan): {"ok":true,"root":"session-a5sf-acceptance-team","bootRoot":"session-a5sf-acceptance-root","rootsCoincide":false,"productionRowRootChecked":true,"directiveRootChecked":true,"toolRouteRootIsLabel":true}
+[2026-11-04T07:27:34.218Z] HEAD=483bfea4cf8e4901e4cddf755f9bdb6be4f7e149 pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-04T07:27:34.218Z] host tool-fs module: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js exists=true
+[2026-11-04T07:27:34.218Z] host tools lib: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js exists=true
+[2026-11-04T07:27:34.219Z] attachments provider composition: mounted=true evidence=[{"file":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml","line":138,"text":"- id: attachment-local"},{"file":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml","line":139,"text":"name: '@deepseek-ai/dsh-attachment-local'"}]
+[2026-11-04T07:27:34.278Z] blueprint ingest: anchor={"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"} main={"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"}
+[2026-11-04T07:27:34.343Z] patch layer bytes=6163; rows=a5sf-acceptance-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-acceptance-base
+[2026-11-04T07:27:34.343Z] ---- patch layer ----
+# a5sf six-row acceptance boot: two-axis realm provider row + production Team row
+# with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.
+- insert:
+    - id: "a5sf-acceptance-realm"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs"
+      config:
+        allowRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace"
+        restrictionReadAllow:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside"
+        bindingIdentity: "dsh.fs/read"
+        laneReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/lane-report.json"
+        laneProbePaths:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow/a.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/b.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside/c.txt"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/a5sf-provider-counter.jsonl"
+        lateToolRoute: "/__a5sf/late-tool"
+        lateToolName: "x_acceptance_late_unrelated"
+        lateToolReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/late-tool-report.json"
+        hostToolsModule: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js"
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-a5sf-acceptance-root"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5sf.acceptance.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf six-row acceptance team. A5SF_ACC_DISC is the discovery marker.\"\nmembers:\n  - templateId: worker\n    persona: \"You are the a5sf acceptance worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/blueprints"
+        rootPresetId: "a5sf-acceptance-base"
+        memberPresetId: "a5sf-acceptance-base"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "a5sf-acceptance-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/root-binding/harness/seam.mjs"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/a5sf-consult.jsonl"
+        a5sfNativeToolModules:
+          - "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js"
+        a5sfExpectedTools:
+          file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:
+            - "read"
+            - "write"
+            - "edit"
+            - "read_image"
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-acceptance-base"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-acceptance-base"
+        name: "a5sf acceptance base"
+        description: "a5sf six-row acceptance boot preset (a5sfacc) = smoke + tool-fs-search"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+---- end patch ----
+[2026-11-04T07:27:34.345Z] provider row module: name=a5sf-acceptance-realm-provider apply=function inject=[]
+[2026-11-04T07:27:34.345Z] row paths: {"workspace":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace","a":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow/a.txt"},"b":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/b.txt"},"c":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside/c.txt"},"restrictionReadAllow":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow","/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside"]}
+[2026-11-04T07:27:34.345Z] pre-boot row identity check: {"ok":true,"rows":[{"rowId":"a5sf-acceptance-realm","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/dev/agent-workflow/evidence/a5sf-preflight/a5sf-realm-provider-row.mjs","packageName":"dsh-agent-team","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/package.json","hasClientHalf":true},{"rowId":"dsh-agent-team","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/dist/packages/runtime/src/plugin/host.js","packageName":"@dsh-agent-team/runtime","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/runtime/package.json","hasClientHalf":false},{"rowId":"p6t6-team-tools","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/harness/plugin.mjs","packageName":"@dsh-agent-team/tools","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/packages/tools/package.json","hasClientHalf":false}]}
+[2026-11-04T07:27:34.346Z] lane algebra: ceiling=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace"] restriction=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow","/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside"] effective=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow"]
+[2026-11-04T07:27:34.346Z] lane dispositions: [{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/allow/a.txt","ceiling":"allow","restriction":"allow","effective":"allow"},{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/workspace/axis/b.txt","ceiling":"allow","restriction":"deny","effective":"deny"},{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z/restriction-outside/c.txt","ceiling":"deny","restriction":"allow","effective":"deny"}]
+[2026-11-04T07:27:34.346Z] plan world torn down: homeDeleted=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T07-27-34Z releasedPorts=[]

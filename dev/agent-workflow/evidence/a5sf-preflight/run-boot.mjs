@@ -75,7 +75,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import {
@@ -660,6 +660,28 @@ function attachmentsProviderComposition() {
   }
 }
 
+// The run-record bindings are built HERE, outside boot(), for one reason: a defect in this
+// literal (a typo, a missing import used only by these strings) used to be reachable only in
+// boot mode — which is how an attempt was once lost to `ReferenceError: relative is not defined`
+// at line 799 with the Host never started. `--plan` now calls this too, so the whole literal is
+// exercised host-free and a broken record cannot cost a start.
+function runBindings(head, grant) {
+  return {
+    teamSha: head,
+    hostSha: TEST_USE_BASELINE_SHA,
+    hostTree: HOST_TREE,
+    line: LINE,
+    sink: 'world-home a5sf-consult.jsonl (copy: consultations.jsonl)',
+    grantId: grant.grantId,
+    allocationItem: grant.allocationItem,
+    providerComposition: `test row ${relative(REPO_ROOT, EVIDENCE_ROW)} (no product provider exists at this base; byte-identical to the #575 composition row)`,
+    laneAlgebra: 'packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets (the product algebra; the lane INPUTS are fixtures)',
+    providerCounter: 'installed by the SAME evidence row (config.counterPath): the shipped host fs has no counter; in-memory prototype wrap, pass-through',
+    lateToolTrigger: 'test-composition HTTP route in the same evidence row: registers ONE unrelated tool through the public tools.register seam on demand (the invalidation it triggers is the product behaviour)',
+    worldReuse: 'dev/agent-workflow/evidence/a5sf-live-native3/run-boot.mjs world/heater, with the corrections documented in the README',
+  }
+}
+
 async function planOnly() {
   log(`PLAN MODE — no gate, no ledger row, no spawn. repo=${REPO_ROOT} hostTree=${HOST_TREE}`)
   assertCaseListMatchesContract()
@@ -689,6 +711,12 @@ async function planOnly() {
     roots: ROOTS,
     rootWiring: wiring,
     expectedTools: { module: pathToFileURL(HOST_TOOL_FS).href, names: ['read', 'write', 'edit', 'read_image'] },
+    // Exercise the boot-mode record literal host-free (see runBindings): a broken binding
+    // string must fail here, not after a start has been spent.
+    runBindings: runBindings(head === null ? 'plan-probe' : String(head), {
+      grantId: 'plan-probe',
+      allocationItem: 'P2-01 live read (BL-14 / G2 live half)',
+    }),
     blueprints: { anchor, main },
     world: null,
   }
@@ -788,20 +816,7 @@ async function boot() {
     runId,
     suite: 'a5sf-acceptance',
     selectedCases: CASES,
-    bindings: {
-      teamSha: head,
-      hostSha: TEST_USE_BASELINE_SHA,
-      hostTree: HOST_TREE,
-      line: LINE,
-      sink: 'world-home a5sf-consult.jsonl (copy: consultations.jsonl)',
-      grantId: grant.grantId,
-      allocationItem: grant.allocationItem,
-      providerComposition: `test row ${relative(REPO_ROOT, EVIDENCE_ROW)} (no product provider exists at this base; byte-identical to the #575 composition row)`,
-      laneAlgebra: 'packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets (the product algebra; the lane INPUTS are fixtures)',
-      providerCounter: 'installed by the SAME evidence row (config.counterPath): the shipped host fs has no counter; in-memory prototype wrap, pass-through',
-      lateToolTrigger: 'test-composition HTTP route in the same evidence row: registers ONE unrelated tool through the public tools.register seam on demand (the invalidation it triggers is the product behaviour)',
-      worldReuse: 'dev/agent-workflow/evidence/a5sf-live-native3/run-boot.mjs world/heater, with the corrections documented in the README',
-    },
+    bindings: runBindings(head, grant),
     ledgerPath: LEDGER_PATH,
   })
 
