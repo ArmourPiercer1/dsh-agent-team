@@ -104,7 +104,7 @@ PROSE packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts :: L10=v4
 PROSE packages/domain/test/t1-capability-schema.test.ts :: L43=v1
 PROSE packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L7=v2
 PROSE packages/runtime/test/a4f1-row-version-not-document-version.test.ts :: L9=v2
-PROSE packages/testkit/test/a4p7-blueprint-version-clean.test.ts :: L645=v99
+PROSE packages/testkit/test/a4p7-blueprint-version-clean.test.ts :: L646=v99
 PROSE packages/tools/harness/t12-vertical.mjs :: L1852=v2
 RESULT dirty(8 files, 19 sites)
 RESULT unknown(0 files, 0 sites)
