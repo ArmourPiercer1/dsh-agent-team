@@ -510,6 +510,19 @@ second policy evaluator).
    suite uses a deterministic fake for the refusal/exit matrix, so a future change in
    `rg`'s argv could pass the unit suite and fail the probe (which is why both exist).
 
+### 6.3.1 The frozen binding-realm surface gained one key, deliberately
+
+`tests/world-factory/a5sf-p2-seam.test.mjs` pins the binding realm object by its exact key set.
+This round adds `faces` to that set (`{fs:'confined', subprocess:null}` on a binding realm), so the
+pin was updated in the same commit — not silently, and not by loosening the assertion: the key list is
+still an exact `deepEqual`, the object is still `Object.isFrozen`, and the new `faces` answer is asserted
+by value. The reason the field is **required** rather than optional is the failure this round exists to
+close: an optional "did I mount it?" answer can be omitted, and an omitted answer is precisely how a
+module ends up resolving the inherited base service. A realm that cannot answer does not typecheck.
+
+Measured after the change: `node --test tests/world-factory/a5sf-*.test.mjs` → **156/156**, including
+`a5sf-p2-seam.test.mjs` 14/14 (A1's frozen-shape pin on all three observer paths).
+
 ### 6.4 The fork for the owner, after review round 2
 (A) — a general confined `ctx.subprocess` — is still the only shape the seam can
 express without a second evaluator, but it is now (A) + a **declared admission
