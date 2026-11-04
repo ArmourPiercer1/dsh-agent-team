@@ -109,10 +109,16 @@ export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
  *     what that module's ownership probe observed (a one-shot `apply` consumed
  *     by the probe, or a conditional registration that vanished), so a tool
  *     would stay on the unguarded preset definition while the name set matched.
+ *   - `A5SF_EXPECTED_TOOLS_UNSHADOWED` — a module entry DECLARED `expectedTools`
+ *     and the settled attach did not forward one or more of them (the provider
+ *     was absent, or the composition's two planes disagree), so the declared
+ *     managed names would fall back to whatever preset definition is visible.
+ *     Opt-in: an entry WITHOUT `expectedTools` keeps the pre-declaration
+ *     behaviour exactly.
  */
 export class A5sfNativeAssemblyError extends TypeError {
   /**
-   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED'} code
+   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED' | 'A5SF_EXPECTED_TOOLS_UNSHADOWED'} code
    * @param {string} detail
    */
   constructor(code, detail) {
@@ -197,6 +203,38 @@ export function a5sfRealmConfigOf(config) {
 }
 
 /**
+ * Validate one entry's OPTIONAL `expectedTools` declaration.
+ *
+ * `undefined` = undeclared (pre-declaration behaviour). Anything else must be a
+ * non-empty array of non-blank, unique strings: an empty declaration would read
+ * as "this module provides nothing", which is a contradiction, not an opt-out.
+ *
+ * @param {unknown} raw
+ * @param {string} where - the config path, for the fault message.
+ * @returns {readonly string[] | undefined}
+ */
+function expectedToolsOf(raw, where) {
+  if (raw === undefined) return undefined
+  if (!Array.isArray(raw)) {
+    throw new TypeError(`agent-bindings: ${where}.expectedTools must be an array of non-blank tool names when present`)
+  }
+  if (raw.length === 0) {
+    throw new TypeError(`agent-bindings: ${where}.expectedTools must not be empty (omit the key to declare nothing)`)
+  }
+  const seen = new Set()
+  for (const name of raw) {
+    if (typeof name !== 'string' || name.trim() === '') {
+      throw new TypeError(`agent-bindings: ${where}.expectedTools must contain only non-blank tool-name strings`)
+    }
+    if (seen.has(name)) {
+      throw new TypeError(`agent-bindings: ${where}.expectedTools lists ${JSON.stringify(name)} more than once`)
+    }
+    seen.add(name)
+  }
+  return Object.freeze([...raw])
+}
+
+/**
  * Validate the native-tool-module list (route C). `undefined`/`null` = the
  * module is not requested at all: the pre-route-C mount, byte-identical.
  *
@@ -226,7 +264,18 @@ function nativeToolModulesOf(raw) {
     if (pluginConfig !== undefined && (pluginConfig === null || typeof pluginConfig !== 'object' || Array.isArray(pluginConfig))) {
       throw new TypeError(`agent-bindings: ${where}.config must be a plain object when present`)
     }
-    return Object.freeze({ url, ...(pluginConfig === undefined ? {} : { config: pluginConfig }) })
+    // OPT-IN DECLARATION (event-driven shape, 2026-11-03). `expectedTools` states
+    // which tools the composition BELIEVES this module provides. It grants
+    // nothing and authorizes nothing: its only power is to make a module that
+    // forwards NONE of the declared names fail closed at assembly time
+    // instead of leaving the name on an unguarded preset definition. Absent =
+    // the pre-declaration behaviour, byte-identical.
+    const expectedTools = expectedToolsOf(entry.expectedTools, where)
+    return Object.freeze({
+      url,
+      ...(pluginConfig === undefined ? {} : { config: pluginConfig }),
+      ...(expectedTools === undefined ? {} : { expectedTools }),
+    })
   }))
 }
 
@@ -398,7 +447,11 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     if (imported === null || (typeof imported !== 'object' && typeof imported !== 'function')) {
       throw new TypeError(`agent-bindings: ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)} did not evaluate to a Cordis plugin module`)
     }
-    return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
+    return Object.freeze({
+      module: imported,
+      ...(spec.config === undefined ? {} : { config: spec.config }),
+      ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
+    })
   }))
   const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
@@ -450,6 +503,26 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
       + ` (${unreproduced.map((entry) => `${entry.moduleName} observed ${JSON.stringify(entry.missing)}`).join('; ')});`
       + ' a one-shot/conditional `apply` consumed by the probe would leave those tools on the unguarded preset definition'
       + ' while the surface name set stayed equal — refusing the attach (fail closed)',
+    )
+  }
+  // OPT-IN DECLARATION (event-driven shape, 2026-11-03): an entry that names its
+  // `expectedTools` must actually SHADOW every declared name by the settle
+  // boundary. A module that registers nothing (provider absent, or an
+  // event-driven registration that never fired) is accepted by the seam — it
+  // reports no evidence — so without this the declared name silently falls back
+  // to whatever PRESET definition the composition mounted for it, with zero guard
+  // facts. The declaration GRANTS NOTHING: it declares what the composition
+  // believes and turns a mismatch into a typed refusal. Undeclared entries keep
+  // the old behaviour exactly (the merged C1/C3/A7 contracts).
+  const unshadowedExpected = unshadowedExpectedTools(nativeToolModules, expansion, fibers)
+  if (unshadowedExpected.length > 0) {
+    await releaseAttach()
+    throw new A5sfNativeAssemblyError(
+      'A5SF_EXPECTED_TOOLS_UNSHADOWED',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} declared expectedTools that the settled attach did not shadow`
+      + ` (${unshadowedExpected.map((entry) => `${entry.moduleName} expected ${JSON.stringify(entry.expected)} but the attach forwarded ${JSON.stringify(entry.forwarded)}`).join('; ')});`
+      + ' a declared managed name that no routed fiber forwards executes on whatever PRESET definition is visible, with zero'
+      + ' guard facts — refusing the attach (fail closed)',
     )
   }
   if (coverage.length > 0) {
@@ -652,6 +725,46 @@ function unreproducedObservations(expansion, fibers) {
     }
   }
   return unreproduced
+}
+
+/**
+ * Per-module OPT-IN declaration check: which declared `expectedTools` the
+ * settled attach did not SHADOW (forwarded by one of that module's fibers).
+ *
+ * `expectedTools` is a declaration of what the composition believes the module
+ * provides — not an allowlist and not a second authority. Its only effect is to
+ * make "the module forwarded nothing / something else" a typed refusal instead
+ * of a silently accepted zero-shadow attach.
+ *
+ * @param {readonly {module?: {name?: string}, expectedTools?: readonly string[]}[]} nativeToolModules
+ * @param {{ mountCounts: Uint32Array }} expansion
+ * @param {readonly object[]} fibers - the fibers the real mount returned, in mount order.
+ * @returns {{ moduleName: string, expected: string[], forwarded: string[] }[]}
+ */
+function unshadowedExpectedTools(nativeToolModules, expansion, fibers) {
+  const failures = []
+  let cursor = 0
+  for (const [index, module] of nativeToolModules.entries()) {
+    const count = expansion.mountCounts[index]
+    const moduleFibers = fibers.slice(cursor, cursor + count)
+    cursor += count
+    const declared = module.expectedTools
+    if (declared === undefined) continue
+    const forwarded = new Set()
+    for (const fiber of moduleFibers) {
+      const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+      for (const name of routing?.forwarded ?? []) forwarded.add(name)
+    }
+    const missing = declared.filter((name) => !forwarded.has(name))
+    if (missing.length > 0) {
+      failures.push({
+        moduleName: module.module?.name ?? `#${String(index)}`,
+        expected: [...declared],
+        forwarded: [...forwarded],
+      })
+    }
+  }
+  return failures
 }
 
 /**

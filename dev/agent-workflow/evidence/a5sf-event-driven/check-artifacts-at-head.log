@@ -1,0 +1,7 @@
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/armourpiercer/projects/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1916 drift=1 sites=1
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  C content-drift (git add): packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=stale compared=1916 drift=1
+[check-artifacts-at-head] HEAD does NOT carry its own build — the 1 listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.
