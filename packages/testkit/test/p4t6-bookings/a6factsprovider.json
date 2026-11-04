@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6FACTSPROVIDER",
+  "paths": [
+    "packages/runtime/alpha6/assigned-officer-facts.ts",
+    "packages/runtime/test/a6-assigned-officer-facts.test.ts"
+  ],
+  "expectedDelta": { "from": 1432, "to": 1434 },
+  "reason": "Alpha.6 composition-owned assigned-Officer facts provider: the provider module resolves the unique live Officer from the durable member table and the frozen v5 Blueprint, proves the durable leg/case/transfer/generation/OperationOwner/tool facts, and feeds BOTH trusted control-service ports (currentReviewerForTransfer + reviewCallFactsForAssignedOfficer); its dedicated spec exercises the real durable world end to end. No denylist vocabulary, no schema change.",
+  "tieNote": "MEASURED on this tree: the unbooked scanner run read `expected 1432 to be 1434`; exactly these two paths."
+}
