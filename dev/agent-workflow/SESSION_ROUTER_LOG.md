@@ -7389,3 +7389,41 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   5. **优先级收紧为：真实 FS 六项验收 → 失效窗口收口 → Search/Process 的 OS 强制 → 扩大 P3**（采纳，与既有 backlog 顺序一致）。
   6. **不重做 Alpha.5 架构**（一致，无需动作）。
 - **未采纳/修正的点**：审查称"审查认为关闭 E8 必须拒绝所有结算后表面新增从而破坏 E3-fold"——那是开发 lane 的表述，不是唯一方案；本轮的冻结式修复不触碰注册语义，E3-fold 保持。审查对 `grep/glob` 的定位（原生预设平面既存缺口、非本路线引入）与 #579 的 SEARCH-0 实测一致，采纳其"接 OS 受限 subprocess 而非过滤 argv"的结论。
+
+## 2026-11-04T09:45Z — Alpha.5 六行验收在真实 Host 上全绿（8/8），PR #581 合并（`6f510350f`）
+
+**结果**：`overall=PASS`，8/8。这是本仓库第一次在真实 Host 上完成 BL-14 六行验收。三个专用
+P2-01 start 全部花在这条 driver 上，池储备未动：4 PASS（`1ee898c33`）→ 6 PASS（`0dec8f2d6`）→
+**8 PASS**（`44babbfcf`，端口 3182，单次 Host start，teardown 干净：进程已杀、端口已释放、
+home 已删、`portStillListening=false`）。
+
+**通过的证据形状**（原始 sink，8 条 fact）：读路径全部落在 **binding realm**
+（`stat`/`readText` allow on a.txt 与 w4a.txt；`stat` deny on b.txt 与 c.txt），写 fact 全部落在
+**ceiling realm**（`writeText` allow on w4a.txt 与 b.txt），没有任何 write fact 越入读 lane。
+
+live 证明的性质：读轴两轴上界（lane 内由 confined provider 实际服务、restriction 拒绝、ceiling
+拒绝）；写轴仅由 ceiling 界定且不渗入读 lane；P0 失效按**名**拒绝
+（`A5SF_NATIVE_SHADOW_INVALIDATED`，无字节、无 fact、无 provider 调用、in-lane 亦拒）；停止后
+派发可被咨询但绝不被服务（`probeFactsAreRefusals`）。
+
+**三次失败都是"问题问错了"，不是执行体错了**（各自已有负控钉住，11/11 behaved）：row2 数方法名
+而非判定；row4 断言了代数从未承诺的许可（拆分 4a/4b）；row6 在派发自身探针之后重读 sink，把
+自己的激励当成产品泄漏。另外三个 boot 路径缺陷（缺 import、`homePin` use-before-define、
+`oracleSamples` 越作用域）各自差点花掉一次 start，现由 `no-undef` + `no-use-before-define`
+静态门 + TDZ 探针自检覆盖。
+
+**用户裁决（2026-11-04，写入 README §12.8.3 RULING）**：原生 `write` 要求先 `read`，它是原生
+工具，**保持这一点**；Team 代数**不加** write⇒read 耦合；只写不读/读被拒权限下的 team 行为由
+用户后续处理（登记为 **BL-38 owner-owned DEFERRED**）。因此 4b 的拒绝归因于**原生工具自身契约**，
+不冒充 Team lane 的性质。
+
+**口径（避免过度声称）**：`read`/`write`/`edit` 仍为 **ENFORCE-PARTIAL**，`V@B=yes` 只表示
+"binding realm 上的约束已在真实 Host 上验证"，**不**表示矩阵 ⑤ 列全部最低验收项已覆盖
+（>10MiB 中间窗口、流式、双 Member 并发、原子替换/版本校验均未验）。
+
+**门的教训（已入 driver）**：`gate | tail && cmd` 会吞掉拒绝退出码，导致 boot 2 在 go-no-go
+为 NO-GO 时仍被执行（结果可信但流程错误）；此后一律 `set -o pipefail` 并显式判 exit。崩溃的
+boot 也不再覆盖上一次运行的证据（archive-before-start），且 pre-Host abort 会自行追加
+`budget-abort` 行对账（invariant：`bootRows === plannedStarts - aborts`）。
+
+**预算**：P2-01 6 个 start 中已用 3（全部为专用），池储备 0 消耗。
