@@ -373,6 +373,7 @@ import { createLiveResidencyOverlay } from './s6-live-overlay.js'
 import { computeTeamLiveToken } from './live-token.js'
 import { resolveSessionReadState } from './team-read-state.js'
 import { createServerPrincipalDerivation } from './s6-principal.js'
+import { isAbsolute } from 'node:path'
 import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js'
 import type {
   S6CatalogMigrationState,
@@ -2492,12 +2493,23 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // between "decided to deliver" and "Inbox accepted" is unrecoverable and the
   // single-flight latch silently degrades to in-memory. A missing path is a
   // configuration refusal, never a quiet memory-only mode.
-  if (alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath !== 'string') {
+  if (alpha6Wiring.mode === 'alpha6'
+    && (typeof config.alpha6WakeIntentPath !== 'string'
+      || config.alpha6WakeIntentPath.length === 0
+      || !isAbsolute(config.alpha6WakeIntentPath))) {
     throw new TeamPluginError(
       'TEAM_PLUGIN_CONFIG_INVALID',
-      'alpha6ReviewRouting is enabled but no durable wake-intent path is configured; ' +
+      'alpha6ReviewRouting is enabled but no ABSOLUTE non-empty durable wake-intent path is configured; ' +
         'the Team refuses to boot without crash-safe single-flight state',
       { rootSessionId: rootSid, reason: 'alpha6-wake-intent-path-missing' },
+    )
+  }
+  if (alpha6Wiring.mode === 'alpha6' && live.reviewWakeInbox === undefined) {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      'alpha6ReviewRouting is enabled but live.reviewWakeInbox is absent; ' +
+        'a Team without native Inbox recovery must not boot as durable',
+      { rootSessionId: rootSid, reason: 'alpha6-review-wake-inbox-missing' },
     )
   }
   const alpha6WakeIntents =
@@ -2569,6 +2581,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       ? async (targetSessionId: string): Promise<void> => {
           const coordinator = alpha6WakeBySession.get(targetSessionId)
           if (coordinator === undefined || coordinator.state.status !== 'running') return
+          try {
           // The FRESH authoritative read answering the post-turn rescan: the
           // same facts port and the same reviewer resolution as the notifier.
           const current = controlRef.current
@@ -2617,6 +2630,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             throw new Error(
               `Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`,
             )
+          }
+          } catch {
+            // A pre-read failure must not leave the single-flight latch
+            // `running` forever (later plans only poll, and no turn can end
+            // again). Release it; the next durable notification re-wakes.
+            coordinator.dispatch({ type: 'turn-end' })
           }
         }
       : undefined

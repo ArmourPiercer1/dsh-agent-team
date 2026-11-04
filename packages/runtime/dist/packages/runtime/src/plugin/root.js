@@ -171,6 +171,7 @@ import { createLiveResidencyOverlay } from './s6-live-overlay.js';
 import { computeTeamLiveToken } from './live-token.js';
 import { resolveSessionReadState } from './team-read-state.js';
 import { createServerPrincipalDerivation } from './s6-principal.js';
+import { isAbsolute } from 'node:path';
 import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js';
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from './types.js';
@@ -1719,9 +1720,16 @@ export function createTeamProductionRoot(params) {
     // between "decided to deliver" and "Inbox accepted" is unrecoverable and the
     // single-flight latch silently degrades to in-memory. A missing path is a
     // configuration refusal, never a quiet memory-only mode.
-    if (alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath !== 'string') {
-        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but no durable wake-intent path is configured; ' +
+    if (alpha6Wiring.mode === 'alpha6'
+        && (typeof config.alpha6WakeIntentPath !== 'string'
+            || config.alpha6WakeIntentPath.length === 0
+            || !isAbsolute(config.alpha6WakeIntentPath))) {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but no ABSOLUTE non-empty durable wake-intent path is configured; ' +
             'the Team refuses to boot without crash-safe single-flight state', { rootSessionId: rootSid, reason: 'alpha6-wake-intent-path-missing' });
+    }
+    if (alpha6Wiring.mode === 'alpha6' && live.reviewWakeInbox === undefined) {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but live.reviewWakeInbox is absent; ' +
+            'a Team without native Inbox recovery must not boot as durable', { rootSessionId: rootSid, reason: 'alpha6-review-wake-inbox-missing' });
     }
     const alpha6WakeIntents = alpha6Wiring.mode === 'alpha6'
         ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
@@ -1784,51 +1792,59 @@ export function createTeamProductionRoot(params) {
             const coordinator = alpha6WakeBySession.get(targetSessionId);
             if (coordinator === undefined || coordinator.state.status !== 'running')
                 return;
-            // The FRESH authoritative read answering the post-turn rescan: the
-            // same facts port and the same reviewer resolution as the notifier.
-            const current = controlRef.current;
-            const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
-            const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
-            const fresh = await collectAlpha6DelegableLegs({
-                rootSessionId: rootSid,
-                reviewerInstanceId,
-                readRequests: async () => requests,
-                reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
-                resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
-                // The SAME recipient truth as the notifier: the turn-end rescan
-                // must not re-deliver a Leader/held leg to the Officer.
-                ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
-            });
-            const freshWake = {
-                reviewerInstanceId,
-                targetSessionId,
-                templateId: alpha6Wiring.officerTemplateId,
-                routeRole: 'officer',
-                currentLegIds: fresh.map((entry) => entry.requestId),
-            };
-            const work = fresh.length === 0
-                ? { kind: 'no-ready-work' }
-                : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
-            const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
-            const result = await releaseLatch(coordinator, work, {
-                ...(intent === undefined ? {} : { intent }),
-                ...(live.reviewWakeInbox === undefined
-                    ? {}
-                    : { inbox: live.reviewWakeInbox(targetSessionId) }),
-                deliver: async (delivery) => {
-                    if (live.deliverReviewWake === undefined) {
-                        throw new Error('Alpha.6 wake seam disappeared after boot');
-                    }
-                    await live.deliverReviewWake({
-                        rootSessionId: rootSid,
-                        targetSessionId,
-                        wakeId: delivery.wakeId,
-                        text: renderLatchWake(delivery),
-                    });
-                },
-            });
-            if (result.failures.length > 0) {
-                throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+            try {
+                // The FRESH authoritative read answering the post-turn rescan: the
+                // same facts port and the same reviewer resolution as the notifier.
+                const current = controlRef.current;
+                const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
+                const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
+                const fresh = await collectAlpha6DelegableLegs({
+                    rootSessionId: rootSid,
+                    reviewerInstanceId,
+                    readRequests: async () => requests,
+                    reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                    resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                    // The SAME recipient truth as the notifier: the turn-end rescan
+                    // must not re-deliver a Leader/held leg to the Officer.
+                    ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+                });
+                const freshWake = {
+                    reviewerInstanceId,
+                    targetSessionId,
+                    templateId: alpha6Wiring.officerTemplateId,
+                    routeRole: 'officer',
+                    currentLegIds: fresh.map((entry) => entry.requestId),
+                };
+                const work = fresh.length === 0
+                    ? { kind: 'no-ready-work' }
+                    : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
+                const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
+                const result = await releaseLatch(coordinator, work, {
+                    ...(intent === undefined ? {} : { intent }),
+                    ...(live.reviewWakeInbox === undefined
+                        ? {}
+                        : { inbox: live.reviewWakeInbox(targetSessionId) }),
+                    deliver: async (delivery) => {
+                        if (live.deliverReviewWake === undefined) {
+                            throw new Error('Alpha.6 wake seam disappeared after boot');
+                        }
+                        await live.deliverReviewWake({
+                            rootSessionId: rootSid,
+                            targetSessionId,
+                            wakeId: delivery.wakeId,
+                            text: renderLatchWake(delivery),
+                        });
+                    },
+                });
+                if (result.failures.length > 0) {
+                    throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+                }
+            }
+            catch {
+                // A pre-read failure must not leave the single-flight latch
+                // `running` forever (later plans only poll, and no turn can end
+                // again). Release it; the next durable notification re-wakes.
+                coordinator.dispatch({ type: 'turn-end' });
             }
         }
         : undefined;

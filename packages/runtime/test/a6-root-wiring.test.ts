@@ -211,6 +211,7 @@ describe('A6 root wiring — production entry opt-in', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
       const live: any = createStubBindings({ config, teamToolsRef, domain })
       if (withWake) live.deliverReviewWake = async (): Promise<void> => undefined
+      live.reviewWakeInbox = () => ({ has: (): boolean => true })
       return createTeamProductionRoot({
         config,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
@@ -293,6 +294,9 @@ describe('A6 root wiring — production entry opt-in', () => {
     live.deliverReviewWake = async (input: { targetSessionId: string; wakeId: string; text: string }) => {
       wakes.push(input)
     }
+    live.reviewWakeInbox = (targetSessionId: string) => ({
+      has: (wakeId: string): boolean => wakes.some((w) => w.targetSessionId === targetSessionId && w.wakeId === wakeId),
+    })
     const root = createTeamProductionRoot({
       config,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
