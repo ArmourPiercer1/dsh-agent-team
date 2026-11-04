@@ -68,7 +68,9 @@ the base commit):
 
 ### (1) Reachability through the routed mount — what the partition contains, whether a settle window is entered, surface, preset reachability
 
-E1 (`E1-absent-provider-same-config`), real module on both planes, provider absent:
+**E1b** (`E1b-absent-provider-same-config-allowEmpty`) — the real module on both planes,
+provider absent, the composition opting out of the empty-frontier refusal. (The DEFAULT
+refuses this shape: `E1`, `A5SF_MANAGED_FRONTIER_EMPTY`; see (2).)
 
 ```
 mounted=true elapsedMs=7 preset=[] after=[]
@@ -80,7 +82,8 @@ dispatch before provider: {"isError":true,"text":"Error: unknown tool \"subagent
 providerStarts=0 guardFacts=0 invalidation=null
 ```
 
-So: the mount IS reachable and the router DOES run the module's `apply`; the module
+So: the mount IS reachable and the router DOES run the module's `apply`; with the opt-out
+the module
 registers nothing, `observed` and `forwarded` stay empty; the settle window is entered but
 has no descendant fiber to wait for (it is a no-op here); the model-visible surface is
 unchanged; and the tool is simply **unavailable** (`UNKNOWN_TOOL`), not unguarded. The
@@ -393,7 +396,7 @@ All logs in this directory.
 | `pnpm -s typecheck` | EXIT=0 | `typecheck.log` |
 | `pnpm -s build` | EXIT=0 | `build.log` |
 | `pnpm -s lint` | pre-existing repo-wide debt (129 errors in untouched files); **zero findings in the files this lane touched** | `lint.log` |
-| `pnpm ci:local --base origin/master` | `verdict=fail steps=6 failed=1` — one 5000 ms load timeout in an UNRELATED lane; **the failing file's identity is load-dependent and unstable** (see §8), passes alone in 668 ms | `ci-local.log`, `ci-local-red-isolation.log` |
+| `pnpm ci:local --base origin/master` | `verdict=fail steps=6 failed=1 coverage=determined files=2 wall=228.3s` — ONE unrelated, timing-sensitive assertion (`alpha5-glob-backend` X3: `settlement.kind` 'completed' vs 'cancelled' under a saturated box); **the failing file's identity is load-dependent and unstable** (see §8); the whole file passes alone (53/53, fresh state) | `ci-local.log`, `ci-local-red-isolation.log` |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok` (1916 compared, drift 0) | `check-artifacts-committed.log` |
 | `node scripts/check-artifacts-at-head.mjs` | `verdict=ok` — HEAD carries its own build | `check-artifacts-at-head.log` |
 | `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | pass, added=22 at this head, findings=0 (the file count is a property of the HEAD, re-measured here — an older log quoted 17) | `eb3-evidence-guard.log` |
@@ -405,28 +408,29 @@ All logs in this directory.
 ## 8. `pnpm ci:local --base origin/master` — verbatim
 
 ```
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=229.5s
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=228.3s
 ```
 
 The one failure is NOT in this lane's files and is load-induced:
 
 ```
- FAIL  packages/runtime/test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)
-Error: Test timed out in 5000ms.
-...
+ FAIL  packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB X — CHANNEL AUDIT: ... > X3 the timeout arm settles cancelled and spills nothing
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+Expected: "cancelled"
+Received: "completed"
+ ❯ packages/runtime/test/alpha5-glob-backend.test.ts:988:36
  Test Files  1 failed | 482 passed (483)
       Tests  1 failed | 5992 passed (5993)
-✘ vitest (selected) (216.3s)
+✘ vitest (selected) (228.3s)
 ```
 
-It ran concurrently with `alpha5-glob-backend-adversarial.test.ts` (215 s, including a
-176 s confined-rg race loop) and a 54 s glob suite. In isolation
+It ran concurrently with `alpha5-glob-backend-adversarial.test.ts` (203 s, including a
+168 s confined-rg race loop) on the same box. In isolation, on fresh scratch state
 (`ci-local-red-isolation.log`):
 
 ```
  Test Files  1 passed (1)
-      Tests  8 passed (8)
- ✓ self-typechecks with strict settings (...)  661ms
+      Tests  53 passed (53)
 EXIT=0
 ```
 
@@ -435,10 +439,15 @@ invocation, the failing block, both step verdicts and the final verdict verbatim
 transcript exceeds the evidence bound; re-run `pnpm ci:local --base origin/master` to
 reproduce it).
 
-**C4 (review 2026-11-03) — the flake's identity is NOT stable.** This lane's run timed out
-in `a5p4-lane-hygiene.test.ts > self-typechecks with strict settings`; the reviewer's runs
-timed out in `a5g6-install-face-render` and `alpha5-glob-backend` (×3) — different files,
-same class (a 5000 ms per-test timeout hit while a 200 s+ suite saturates the box). So
+**C4 (review 2026-11-03) — the flake's identity is NOT stable.** Across this lane's runs the
+FAILING TEST moved every time, on the same unchanged source: `a5p4-lane-hygiene.test.ts >
+self-typechecks with strict settings` (5000 ms timeout, 229.5 s run), then
+`a5g6-install-face-render` (5000 ms timeout) + a stale-scratch-world suite error, then
+`alpha5-glob-backend.test.ts > A5-GLOB X3` (`settlement.kind` 'completed' vs 'cancelled',
+228.3 s run) — and the reviewer saw `a5g6-install-face-render` and `alpha5-glob-backend`
+(×3). Different files, different symptom shapes, one class: a timing-sensitive assertion or
+timeout hit while a ~220 s suite with a 203 s adversarial test saturates the box (that test
+alone can take 200 s). So
 "which file" is load-dependent and must NOT be read as a property of that file: the
 reproducible fact is the class (one timeout under load, green in isolation), not the name.
 The isolation evidence below is for THIS run's file only.
