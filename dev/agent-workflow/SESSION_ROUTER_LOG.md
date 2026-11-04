@@ -7427,3 +7427,51 @@ boot 也不再覆盖上一次运行的证据（archive-before-start），且 pre
 `budget-abort` 行对账（invariant：`bootRows === plannedStarts - aborts`）。
 
 **预算**：P2-01 6 个 start 中已用 3（全部为专用），池储备 0 消耗。
+
+## 2026-11-04T16:10Z — BL-16/BL-17（P2-03 Search）纵向接入：#586 合并（`a2c56fb84`）
+
+**范围**：把原生 `grep`/`glob` 从"越界执行零 fact（SEARCH-0）"推到"越界在任何进程存在前拒绝"，
+并把"绑定 realm 没有受限进程面就静默继承基础服务"改成**组合期 typed 拒绝**。等级仍为
+**ENFORCE-PARTIAL / V@B=no，仅 host-free**——本轮**没有 boot**，P2-01 专用 start 未再消耗。
+
+**机制（两层，准入在前）**：声明读根（`--` 之后的 operand，否则 `cwd`）经既有
+`evaluateLocatorAccess` 对编译后的 `EffectiveIo` 判定，**在任何进程之前**拒绝（`spawns=0->0`、
+`providerCalls=0->0`、恰一条 deny fact）；内核（`compileExecutionProfile` + Landlock）作为第二层
+纵深防御。没有第二个策略求值器，没有 upstream patch，没有新依赖。18 臂（真 pinned
+`dsh-tool-fs-search`、真 `rg`、真 Landlock）复跑与 receipt 一致。
+
+**一个必须写下来的错误（我方的，不是外部的）**：初版把内核边界写成"lane 之外一律拒绝"，实测为
+`lane ∪ /bin,/usr,/lib,/lib64,programDir ∪ /etc,/proc`——`sh -c 'cat /etc/passwd'` 当时真的成功、
+且无 fact。这是**声称与实测相反**，由独立复审发现，现已按实测改写并由 PIN-ETC/PIN-SYMLINK/
+PIN-HARDLINK/PIN-CAPS 四臂钉住（不再靠文字描述）。随后 shell/解释器类 argv 被**按准入关闭**，
+不是披露：未知二进制与 shell 类一律 typed 拒绝、零进程。
+
+**第二个同类错误**：`rg` 契约曾允许 `-f/--file=` 读未声明文件却发 `ALLOW` fact，且 `--no-config`
+位置无关（`--` 之后同名文件即可满足条件，配 `RIPGREP_CONFIG_PATH` 的 `--pre` 可执行）。现为
+**shipped shapes 的 allow-list** ＋ `--no-config` 必须为首个参数且在首个 `--` 之前 ＋ `argv[0]`
+realpath 落在 effective write lane 即拒。审查者自己的绕过探针复跑全部 `rejected … facts=1 … out=""`。
+
+**绑定 realm 缺口（外部架构审查提出，成立）**：confined `subprocess` 只挂 Member realm，
+binding realm 只隔离 `fs`，故带更窄 ToolRestriction 的 `grep` 会解析到继承的 base subprocess。
+现改为 `RealmServiceFaces` **必需**：realm 必须回答 `{fs, subprocess}`，"没说"不过类型；无 face 的
+realm 上挂载 `subprocess` 消费者 → `SUBPROCESS_UNCONFINED_REALM`，**在任何 fiber/tool/service
+查询之前**。控制 U1（零 fiber、base tripwire 计数不变、`grep` 定义身份不变）、U1b（产品行一致）、
+U2（同一模块在 Member realm 正常执行，证明拒绝针对 realm）、U3（更窄 restriction 在准入层拒绝）。
+
+**记录面随同一轮修正**：BL-39 升为显式后端加固任务（逐项枚举/收窄 `/etc`+`/proc`，区分可信宿主
+例外）；矩阵明写"BL-39 审计落地前 OS profile 不是全局读白名单"；新增 **BL-41 常设设计规则**：
+静态 argv 校验只是固定原生适配器的纵深防御，Bash/Python/LSP/MCP 的边界必须来自其消费边界的 OS
+confinement，BL-17 不得克隆 `rg` allow-list。
+
+**CI 抓到的四个真遗漏（全部修掉，不是重试换绿）**：提交的 `dist` 过期（`drift=20`→重建，`drift=0`）；
+矩阵证据路径裸名/ M-07 缺 tested SHA（state-freshness Q5）；census 人口律 `1431 vs 1428`（按契约
+**只加 booking 文件、不动套件**，`1428→1432`，20/20）；`a5sf-p2-seam` 的冻结 key 集因新增 `faces`
+而红——**没放松断言**（仍精确 `deepEqual`、仍 frozen、新回答按值断言），并在 README §6.3.1 写明
+该字段为何"必需"。
+
+**未覆盖（不得外推）**：无 boot，故生产 preset/glue 是否供给 `subprocess` face、live `grep`/`glob`
+surface 是否中性均未实测；内核 allowance 含 `/etc`+`/proc`；预先存在 in-lane hardlink 会被服务并记
+`ALLOW`；B3 按 realpath 非字节 hash 且不看 `spec.env`；`toolBindingIdentity` 恒 `null`。
+
+**下一节点（按外部意见重排）**：Search 的真实 Host 纵切（正向/越界拒读/取消/错误传播）→ 生产装配
+试用 → BL-39 后端加固 → TrustRegistry 成为装配权威 → 旧 Family 按 freeze→parity→switch→delete。
