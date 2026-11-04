@@ -656,9 +656,9 @@ export async function releaseReviewWake(
         workFingerprint: effect.workFingerprint,
       })
       await options.deliver(effect)
-      await options.intent?.markAccepted(effect.wakeId)
-      delivered.push(effect.wakeId)
     } catch (error) {
+      // The message never reached the Inbox: clearing the intent and moving
+      // the latch to delivery-failed is safe (nothing was delivered).
       await clearIntent(options.intent, effect.wakeId)
       const failed = coordinator.dispatch({
         type: 'delivery-failed',
@@ -676,7 +676,17 @@ export async function releaseReviewWake(
           wakeId: effect.wakeId,
         })
       }
+      continue
     }
+    try {
+      await options.intent?.markAccepted(effect.wakeId)
+    } catch {
+      // The Inbox is the truth: the message WAS delivered. Clearing the intent
+      // or dispatching delivery-failed here would re-deliver on the next scan
+      // and duplicate the wake. Leave the queued row for Inbox-truthful
+      // recovery adoption (window c) and count the delivery as done.
+    }
+    delivered.push(effect.wakeId)
   }
 
   return releaseSnapshot(coordinator, transition, effects, delivered, withdrawn, failures)

@@ -448,6 +448,54 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect((await store.read())?.workFingerprint).toBe(movedFingerprint)
   })
 
+  it('a post-delivery markAccepted failure never re-delivers the released wake', async () => {
+    const firstPlan = planFor('req-m1')
+    const coordinator = coordinatorFor(firstPlan)
+    const store = new FakeIntentStore()
+    const failingMark = Object.create(store) as FakeIntentStore
+    failingMark.markAccepted = async () => { throw new Error('intent store unavailable after delivery') }
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    await dispatchReviewWakes({
+      plan: firstPlan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: failingMark,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(claimReviewWake(coordinator).outcome).toBe('applied')
+
+    const movedPlan = planFor('req-m1', 'req-m2')
+    const released = await releaseReviewWake(
+      coordinator,
+      { kind: 'ready', fingerprint: planFingerprint(movedPlan.wakes[0]!) },
+      { deliver: port.deliverEffect, intent: failingMark, inbox },
+    )
+
+    expect(released.delivered).toHaveLength(1)
+    expect(released.failures).toEqual([])
+    expect(inbox.messages.size).toBe(2)
+    // The delivered row is still queued (the accepted mark failed); the next
+    // dispatch must suppress, not re-deliver.
+    expect((await failingMark.read())?.status).toBe('queued')
+    const again = await dispatchReviewWakes({
+      plan: movedPlan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: failingMark,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(port.calls).toHaveLength(2)
+  })
+
   it('an EMPTY plan revokes a stale queued wake through no-ready-work and clears its Inbox row', async () => {
     const plan = planFor('req-e1')
     const coordinator = coordinatorFor(plan)
