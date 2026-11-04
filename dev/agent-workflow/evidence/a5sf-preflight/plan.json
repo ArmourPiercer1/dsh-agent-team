@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-acceptance-preflight/plan/1",
-  "at": "2026-11-04T05:28:53.707Z",
-  "head": "93b007cd2f496877e70abec4ee5aec25f9be4753",
+  "at": "2026-11-04T05:33:28.433Z",
+  "head": "8b76db8b901a2d30b991294f0b00251c12e0da79",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use",
   "toolFsModule": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
@@ -58,18 +58,18 @@
     }
   },
   "world": {
-    "id": "u5a5sfacc-20261104T05-28-53Z",
-    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z",
-    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace",
+    "id": "u5a5sfacc-20261104T05-33-28Z",
+    "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z",
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace",
     "patchFile": null,
     "teardown": {
-      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z",
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z",
       "releasedPorts": []
     }
   },
   "patch": {
     "bytes": 6163,
-    "sha256": "642df7e1e032b9cf0a5804d2fb098e8342539d1af49e598e599707df85ad90fa",
+    "sha256": "a9512618cb4687d50cf0c3a3ff32a6871c2b4c0e1479732a8c69e6c86d75f64e",
     "rows": [
       "a5sf-acceptance-realm",
       "dsh-agent-team",
@@ -108,30 +108,30 @@
   },
   "lane": {
     "ceilingReadAllow": [
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace"
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace"
     ],
     "restrictionReadAllow": [
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace/axis/allow",
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/restriction-outside"
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace/axis/allow",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/restriction-outside"
     ],
     "effectiveReadAllow": [
-      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace/axis/allow"
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace/axis/allow"
     ],
     "dispositions": [
       {
-        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace/axis/allow/a.txt",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace/axis/allow/a.txt",
         "ceiling": "allow",
         "restriction": "allow",
         "effective": "allow"
       },
       {
-        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/workspace/axis/b.txt",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/workspace/axis/b.txt",
         "ceiling": "allow",
         "restriction": "deny",
         "effective": "deny"
       },
       {
-        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-28-53Z/restriction-outside/c.txt",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-preflight/tests/homes/u5a5sfacc-20261104T05-33-28Z/restriction-outside/c.txt",
         "ceiling": "deny",
         "restriction": "allow",
         "effective": "deny"

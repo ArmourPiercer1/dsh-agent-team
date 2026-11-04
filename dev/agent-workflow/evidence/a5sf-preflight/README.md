@@ -8,9 +8,11 @@ live data — that is what the boot is for.
 - base: `origin/master` @ `6fbe33c01` (fetched, verified)
 - branch: `task/a5sf-preflight-20261103` (worktree `.worktrees/a5sf-preflight`)
 - head: the commit that introduces this directory (`git log -1 --format=%H -- dev/agent-workflow/evidence/a5sf-preflight`).
-  `dry-run.json.head` / `.workingTreeClean` record the tree the committed run executed
-  on — it is necessarily the parent (or the same) commit, because the run is itself part
-  of the evidence. The go/no-go gate re-runs it **at the exact commit to be booted** (§6 #1).
+  `dry-run.json.head` / `.productTreeClean` record the tree the committed run executed
+  on — `head` is necessarily the parent (or the same) commit, because the run is itself
+  part of the evidence, and `productTreeClean` ignores this directory (its own outputs)
+  while refusing a dirty product tree. The go/no-go gate re-runs it **at the exact commit
+  to be booted** (§6 #1).
 - `packages/runtime/src/plugin/live/agent-bindings.mjs` sha256
   `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b` — **byte-identical
   to `origin/master`** (CORE PATCH BUDGET = 0; asserted by `dry-run.mjs`, check
@@ -205,7 +207,7 @@ single command that re-checks all of them (run in the worktree; exit 0 required)
 
 | # | precondition | confirming command / measurement | expected |
 | --- | --- | --- | --- |
-| 1 | worktree is clean and on the certified commit | `git status --porcelain` ; `git rev-parse HEAD` ; `dry-run.json.head` | empty; the dry run you are about to trust was run at this HEAD (`workingTreeClean:true`) |
+| 1 | worktree is clean and on the certified commit | `git status --porcelain` (product paths) ; `git rev-parse HEAD` ; `dry-run.json.head` | empty; `dry-run.json.productTreeClean:true`; re-run the dry run at the HEAD you are about to boot |
 | 2 | base still contains nothing newer that touches this lane | `git fetch origin && git log --oneline HEAD..origin/master -- tests/world-factory packages/runtime/src/plugin/live` | empty, or merge forward and re-run `RE-VERIFY` |
 | 3 | `agent-bindings.mjs` untouched | `sha256sum packages/runtime/src/plugin/live/agent-bindings.mjs` | `df9b46af…6464b` |
 | 4 | shared oracle + all static checks + mount compatibility | `node dev/agent-workflow/evidence/a5sf-preflight/dry-run.mjs` | exit **0**, `goNoGo=true`, 21/21 |

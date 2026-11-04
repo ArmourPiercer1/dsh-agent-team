@@ -188,8 +188,11 @@ check('mount: no attachments + undeclared -> MOUNTED with read_image absent (the
 const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT, encoding: 'utf8' })
 report.head = head.status === 0 ? String(head.stdout).trim() : null
 report.base = String(spawnSync('git', ['rev-parse', 'origin/master'], { cwd: REPO_ROOT, encoding: 'utf8' }).stdout ?? '').trim() || null
-report.gitStatusPorcelain = String(spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: REPO_ROOT, encoding: 'utf8' }).stdout ?? '').trim()
-report.workingTreeClean = report.gitStatusPorcelain === ''
+// The PRODUCT tree (everything outside this evidence directory): a dirty product
+// tree means the run certified different bytes than the ones a boot would execute.
+// The evidence files themselves are the run's output, so they are excluded.
+report.productStatusPorcelain = String(spawnSync('git', ['status', '--porcelain', '--untracked-files=no', '--', ':!dev/agent-workflow/evidence'], { cwd: REPO_ROOT, encoding: 'utf8' }).stdout ?? '').trim()
+report.productTreeClean = report.productStatusPorcelain === ''
 report.pinnedHost = (() => { try { return readFileSync(join(REPO_ROOT, 'tests', 'paths.mjs'), 'utf8').match(/TEST_USE_BASELINE_SHA\s*=\s*'([0-9a-f]+)'/)?.[1] ?? null } catch { return null } })()
 report.goNoGo = checks.every((entry) => entry.ok === true)
 writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n')
