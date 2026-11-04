@@ -147,8 +147,16 @@ export function createAlpha6RootControlNotifier(ports: {
   const notifier: ControlRequestNotificationPort = {
     async notifyLeaderRequest(request: ControlRequestRecord): Promise<void> {
       if (request.approvalCaseId === undefined || request.legOrdinal === undefined) {
+        // A case-less leader-approval row is the plain C1 Leader ask (the
+        // team_request_control tool and the non-case pre-execute branch still
+        // mint them). It has no review route to compute, but its legal
+        // recipient is the Leader — never a silent throw.
+        if (request.kind === 'leader-approval' && ports.notifyLeader !== undefined) {
+          await ports.notifyLeader(request)
+          return
+        }
         throw new Error(
-          `Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity`,
+          `Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity and no Leader notification seam`,
         )
       }
       if (ports.route !== undefined) {

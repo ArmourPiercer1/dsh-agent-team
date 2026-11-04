@@ -1795,6 +1795,9 @@ export function createTeamProductionRoot(params) {
                 readRequests: async () => requests,
                 reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
                 resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                // The SAME recipient truth as the notifier: the turn-end rescan
+                // must not re-deliver a Leader/held leg to the Officer.
+                ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
             });
             const freshWake = {
                 reviewerInstanceId,

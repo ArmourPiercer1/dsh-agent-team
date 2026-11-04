@@ -399,6 +399,9 @@ describe('A6 root router — recipient comes from the SHARED router, never "the 
     whenOfficerUnavailable: 'hold' as const,
   }
   const leader = { instanceId: 'inst-leader', templateId: 'leader', childSessionId: 'session-root', lifecycle: 'RUNNING', rootSessionId: root }
+  // The REAL production Leader row (contracts-v2 LeaderInstanceRecord): no
+  // lifecycle, no childSessionId. It must still be a legal Leader target.
+  const productionLeader = { instanceId: 'inst-leader', templateId: 'leader', rootSessionId: root }
   const officer = { instanceId: 'inst-officer', templateId: 'officer', childSessionId: 'session-officer', lifecycle: 'RUNNING', rootSessionId: root }
   const worker = { instanceId: 'inst-worker', templateId: 'worker', childSessionId: 'session-worker', lifecycle: 'RUNNING', rootSessionId: root }
   const baseRow = {
@@ -446,6 +449,14 @@ describe('A6 root router — recipient comes from the SHARED router, never "the 
 
   it('routes the Officer self-ask to the Leader', async () => {
     const route = await (await makeRouter([{ ...baseRow, operationOwnerTemplateId: 'officer' }], [leader, officer, worker])).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('routes a self-ask to the production v2 Leader row (no lifecycle/childSessionId)', async () => {
+    const route = await (await makeRouter(
+      [{ ...baseRow, operationOwnerTemplateId: 'officer' }],
+      [productionLeader, officer, worker],
+    )).route('req-1')
     expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
   })
 

@@ -379,6 +379,7 @@ export async function dispatchReviewWakes(
       continue
     }
 
+    let accepted = false
     try {
       // Crash window (a)/(b): the intent is durable BEFORE the Inbox call, so
       // "decided but not delivered" is visible to recovery and can be
@@ -389,9 +390,7 @@ export async function dispatchReviewWakes(
         workFingerprint: effect.workFingerprint,
       })
       await deliver(effect)
-      // Crash window (c): the Inbox has the message, but the local mark may be
-      // lost. Recovery adopts from the Inbox truth, not from this call.
-      await deps.intent?.markAccepted(effect.wakeId)
+      accepted = true
     } catch (error) {
       // A port failure is the reducer's `delivery-failed`: it releases
       // `queued`, resets the baseline and is never a claimed success. The
@@ -422,6 +421,26 @@ export async function dispatchReviewWakes(
       }
       deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
       continue
+    }
+    if (accepted) {
+      try {
+        // Crash window (c): the Inbox has the message, but the local mark may
+        // be lost. Recovery adopts from the Inbox truth, not from this call.
+        await deps.intent?.markAccepted(effect.wakeId)
+      } catch (error) {
+        // The Inbox ALREADY accepted the wake. A local mark failure must not
+        // be reported as a delivery failure (that would release `queued` and
+        // let the next plan deliver the same wakeId again). Keep the durable
+        // intent `queued`; boot recovery reconciles it from the Inbox truth.
+        failures.push({
+          sessionId: wake.reviewerInstanceId,
+          scope: 'delivery',
+          message: `wake accepted by the Inbox but markAccepted failed: ${error instanceof Error ? error.message : String(error)}`,
+          wakeId: effect.wakeId,
+        })
+        deliveries.push(outcome(wake, key, fingerprint, coordinator, true, effect.wakeId))
+        continue
+      }
     }
 
     // Inbox acceptance is QUEUED, never claimed: the wake sits in the native
