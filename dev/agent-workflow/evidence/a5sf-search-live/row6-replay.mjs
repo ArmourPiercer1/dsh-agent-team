@@ -30,15 +30,36 @@ import { judgeRow6, SEARCH_CASE_IDS } from '../../../../tests/world-factory/lib/
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROW6 = SEARCH_CASE_IDS.row6
+<<<<<<< HEAD
+=======
+// The two archived runs predate the 2026-11-05 wording fix that renamed the
+// row to `...-archive-boundary-...` (the temporal bound is the archive commit,
+// not world.teardown()). The archived bytes are history and are NOT rewritten:
+// look the old id up as a legacy alias.
+const LEGACY_ROW6 = 'live:search-row6-teardown-no-callable-shadow'
+const row6Id = (cases) => {
+  const id = Object.keys(cases ?? {}).find((key) => key === ROW6)
+    ?? Object.keys(cases ?? {}).find((key) => key === LEGACY_ROW6)
+  return id
+}
+>>>>>>> origin/master
 const json = (path) => JSON.parse(readFileSync(path, 'utf8'))
 
 function replay(dir) {
   const record = json(join(dir, 'run-record.json'))
   const teardown = json(join(dir, 'teardown.json'))
   const oracle = json(join(dir, 'oracle-samples.json'))
+<<<<<<< HEAD
   const row6Case = record.cases.find((c) => c.id === ROW6)
   if (row6Case === undefined) throw new Error(`${dir}: run record has no row 6`)
   const archivedSample = oracle.cases[ROW6]?.sample
+=======
+  const runId = row6Id(Object.fromEntries((record.cases ?? []).map((c) => [c.id, c])))
+  const row6Case = record.cases.find((c) => c.id === runId)
+  if (row6Case === undefined) throw new Error(`${dir}: run record has no row 6`)
+  const oracleId = row6Id(oracle.cases)
+  const archivedSample = oracle.cases[oracleId]?.sample
+>>>>>>> origin/master
   if (archivedSample === undefined) throw new Error(`${dir}: no archived oracle sample for row 6`)
 
   const member = archivedSample.member

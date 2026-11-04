@@ -1,0 +1,422 @@
+{
+  "schema": "a5sf-search-live/rejudge-attempt6/1",
+  "at": "2026-11-04T19:47:41.205Z",
+  "what": "offline re-judgement of the 2026-11-04T19:17Z run (attempt 6) from the harvested channels only; no Host was booted",
+  "abortedAt": "cancellation-window",
+  "inputs": {
+    "facts": 7,
+    "counterRows": 29,
+    "counterRowsAfterControl": 10,
+    "laneReport": "present",
+    "archivedRunRecord": "overall=FAIL",
+    "archivedOracleSamples": {
+      "schema": "a5sf-search-live/oracle-samples/1",
+      "note": "the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.",
+      "roots": {
+        "bootRoot": "session-a5sf-acceptance-root",
+        "teamRoot": "session-a5sf-acceptance-team",
+        "createRoot": "session-a5sf-acceptance-team",
+        "stateQueryRoot": "session-a5sf-acceptance-team",
+        "toolRouteRoot": "session-a5sf-acceptance-team",
+        "toolRouteRootIsLabel": true,
+        "archiveRoot": "session-a5sf-acceptance-team",
+        "oracleRoot": "session-a5sf-acceptance-team",
+        "directiveRoot": "session-a5sf-acceptance-team"
+      },
+      "cases": {},
+      "negativeControl": {
+        "sample": {
+          "result": {
+            "source": "model",
+            "isError": false,
+            "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T19-07-58Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T19-07-58Z"
+          },
+          "forbidden": [
+            "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T19-07-58Z",
+            "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T19-07-58Z"
+          ],
+          "guardFactsBeforeRealm": [],
+          "baseSpawns": [
+            {
+              "at": "2026-11-04T19:08:17.919Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "rev-parse",
+                "--show-toplevel",
+                "--absolute-git-dir",
+                "--git-path",
+                "objects"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:08:17.956Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "add",
+                "--all",
+                "--ignore-errors"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:08:18.012Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "write-tree"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:08:18.049Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+                "--no-config",
+                "--json",
+                "--regexp=A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T19-07-58Z",
+                "--",
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/inside"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:08:18.096Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "add",
+                "--all",
+                "--ignore-errors"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:08:18.143Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "write-tree"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:10:18.641Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "add",
+                "--all",
+                "--ignore-errors"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:10:18.695Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "write-tree"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:10:18.725Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+                "--no-config",
+                "--json",
+                "--regexp=A5SF_SEARCH_OUTSIDE",
+                "--",
+                "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:10:18.766Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "add",
+                "--all",
+                "--ignore-errors"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            },
+            {
+              "at": "2026-11-04T19:10:18.817Z",
+              "leg": "base-spawn",
+              "argv": [
+                "/usr/bin/git",
+                "write-tree"
+              ],
+              "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+              "instance": false
+            }
+          ],
+          "confinedSpawns": [],
+          "controlDone": false
+        },
+        "verdict": {
+          "verdict": "PROVEN",
+          "reason": "UNCONFINED_CONTROL_LEAKS",
+          "failed": [],
+          "checks": {
+            "controlSucceeded": true,
+            "controlLeaked": true,
+            "unconfinedRanOnTheInheritedService": true,
+            "noConfinedProcess": true,
+            "noGuardFactBeforeRealm": true
+          },
+          "detail": {
+            "result": {
+              "isError": false,
+              "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T19-07-58Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T19-07-58Z"
+            },
+            "leakedTokens": [
+              "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T19-07-58Z",
+              "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T19-07-58Z"
+            ],
+            "baseSpawns": 11,
+            "confinedSpawns": 0,
+            "guardFactsBeforeRealm": 0,
+            "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+          }
+        }
+      }
+    },
+    "derivedPaths": {
+      "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/inside/needle.txt",
+      "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/inside",
+      "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/outside-restriction.txt",
+      "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside/secret.txt",
+      "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside",
+      "outsideGlobFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside-glob/secret.txt",
+      "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/ceiling-outside-glob",
+      "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/blocking.fifo",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace"
+    },
+    "needle": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T19-07-58Z",
+    "invalidPattern": "A5SF_(",
+    "fileName": "needle.txt"
+  },
+  "rows": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_GREP_RESULT_ROW1",
+      "missing": [
+        "result"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 1,
+        "counterRows": 2,
+        "confinedExits": [
+          2
+        ],
+        "laneReport": "absent",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_GREP_RESULT_ROW2",
+      "missing": [
+        "result"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 1,
+        "counterRows": 0,
+        "confinedExits": [],
+        "laneReport": "absent",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_GREP_RESULT_ROW3",
+      "missing": [
+        "result"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 1,
+        "counterRows": 0,
+        "confinedExits": [],
+        "laneReport": "present",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_GREP_CALL_ROW4",
+      "missing": [
+        "confinedSpawn",
+        "interrupt"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 1,
+        "counterRows": 0,
+        "confinedExits": [],
+        "laneReport": "absent",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_GREP_RESULT_ROW5",
+      "missing": [
+        "result"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 1,
+        "counterRows": 2,
+        "confinedExits": [
+          2
+        ],
+        "laneReport": "absent",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    },
+    {
+      "id": "live:search-row6-teardown-no-callable-shadow",
+      "archivedVerdict": "FAIL",
+      "archivedReason": "DRIVER_ABORTED_AT_cancellation-window",
+      "rejudgedVerdict": "NOT_REACHED",
+      "status": "driver-aborted",
+      "reason": "NO_SAMPLE",
+      "missing": [
+        "sample"
+      ],
+      "sampleComplete": false,
+      "judgeVerdict": "NOT_REACHED",
+      "evidenceOnDisk": {
+        "facts": 0,
+        "counterRows": 0,
+        "confinedExits": [],
+        "laneReport": "absent",
+        "toolResult": "absent — the mock transcript was never persisted, and the World home was deleted by teardown"
+      }
+    }
+  ],
+  "summary": {
+    "judgeableOffline": 0,
+    "neverObserved": 6,
+    "caseVerdictsRejudged": 6,
+    "archivedCaseFailures": 6,
+    "archivedFailuresThatWereNeverObserved": 6,
+    "runVerdict": "FAIL (the driver aborted after reaching the Host)",
+    "caseVerdictsWithdrawn": "every archived FAIL was a driver-level abort, not an observation: the case verdict is NOT_REACHED + status driver-aborted",
+    "headline": "attempt 6 is NOT re-judgeable from disk for any row; the correct record is 6 × NOT_REACHED (driver-aborted) plus a FAIL run, and the reason is a missing channel, not a missing fact"
+  },
+  "row3": {
+    "decided": true,
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T19-07-58Z/workspace/lane/outside-restriction.txt",
+    "recorded": {
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny"
+    },
+    "recomputed": {
+      "ceiling": "allow",
+      "restriction": "deny",
+      "effective": "deny"
+    },
+    "recomputedMatchesRecord": true,
+    "bindingSource": "restriction",
+    "control": {
+      "why": "widening the restriction to the ceiling turns the same effective answer into `allow`, so the restriction input is load-bearing",
+      "widenedRestrictionEffective": "allow"
+    },
+    "conclusion": "GENUINE RESTRICTION-LANE REFUSAL: the ceiling ADMITS workspace/lane/outside-restriction.txt and only the tool restriction denies it. The earlier UNSUPPORTED note was over-pessimistic and must be corrected."
+  },
+  "row1Risk": {
+    "confinedExits": [
+      2
+    ],
+    "escrow": "the module maps any exit ∉ {0,1} to SearchError(SEARCH_FAILED) — index.js:201 → the tool result is `isError: true` → row 1 clause `resultNotError` fails",
+    "reading": "REFUTATION RISK on row 1; not a verdict, because the tool result was never persisted",
+    "discriminators": {
+      "sameBinarySameCwdSameTree": "row 5 (exit 2) and row 6/glob (exit 0) share the binary, the cwd and the operand tree",
+      "onlyDifference": "the in-lane grep has no `--no-ignore`, so ripgrep discovers ignore/git metadata in the ANCESTORS of the search root — `lane/`, `workspace/`, the World home — and the restriction admits only `lane/inside`",
+      "whyUnproven": "stderr was never persisted, so whether the exit came from a denial during ancestor discovery or from the operand traversal cannot be told from what survived",
+      "cheapFollowUp": "a host-free `rg` run against a fixture whose search root has a `.gitignore` one level outside an admissible set would separate the two; the FIFO section of dry-run.mjs already owns that kind of measurement"
+    }
+  },
+  "namedGaps": [
+    {
+      "channel": "mock-requests.json",
+      "owner": "run-boot.mjs",
+      "state": "absent for attempt 6, written from now on",
+      "consequence": "no row judge can compare tool-result bytes, so rows 1/2/3/5 cannot be judged offline"
+    },
+    {
+      "channel": "row 4 confined spawn + interrupt",
+      "owner": "run-boot.mjs",
+      "state": "the abort WAS the missing spawn",
+      "consequence": "row 4 has no window to judge and stays NOT_REACHED"
+    },
+    {
+      "channel": "teardown trace",
+      "owner": "run-boot.mjs",
+      "state": "never reached",
+      "consequence": "row 6 cannot be judged at all"
+    },
+    {
+      "channel": "stderr of the in-lane grep",
+      "owner": "run-boot.mjs persisted argv/exit but not stderr",
+      "state": "absent",
+      "consequence": "row 1 keeps a refutation RISK whose cause cannot be named"
+    }
+  ],
+  "corrections": [
+    {
+      "where": "dev/agent-workflow/evidence/a5sf-search-live/README.md §5 (row 3)",
+      "from": "UNSUPPORTED — the restriction could not be separated from the ceiling",
+      "to": "SUPPORTED — the lane report written by the aborted run records ceilingRead=allow, restrictionRead=deny, effectiveRead=deny for workspace/lane/outside-restriction.txt; the product algebra re-run over the report's inputs reproduces it and a widened restriction flips the answer, so the deny is restriction-lane",
+      "why": "an over-pessimistic record is its own inaccuracy, and this one is now measurable from the run's own artifact"
+    }
+  ]
+}

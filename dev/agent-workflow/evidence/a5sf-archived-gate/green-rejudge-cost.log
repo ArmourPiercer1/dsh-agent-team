@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-archived-gate/dev/agent-workflow/evidence/a5sf-archived-gate
+
+ ✓ row6-rejudge.test.mjs (1 test) 1940ms
+     ✓ archived bytes stay REFUTED; the fixed seam produces the refusal; the judge flips to PROVEN  1939ms
+ ✓ row6-durable-read.test.mjs (3 tests) 1970ms
+     ✓ steady state: 100 ensureLiveAgent calls on a live member add ZERO durable reads  1935ms
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  06:03:46
+   Duration  2.38s (transform 3.40s, setup 0ms, import 636ms, tests 3.91s, environment 0ms)

@@ -144,9 +144,11 @@ check('driver: no second root literal', !driverSource.includes("'session-a5sf-ac
 check('driver: imports the shared root identity + the shared oracle', /P2_01_ACCEPTANCE_ROOTS/u.test(driverSource)
   && /assertAcceptanceRootWiring/u.test(driverSource)
   && /judgeSearchRow/u.test(driverSource)
-  && /toRunVerdict/u.test(driverSource)
+  && /judgeCase/u.test(driverSource)
+  && /sampleCompleteness/u.test(driverSource)
+  && /summarizeRun/u.test(driverSource)
   && /judgeNegativeControl/u.test(driverSource),
-  'root identity, six-row dispatch, verdict mapping and the control all come from the shared modules')
+  'root identity, six-row dispatch, per-case status, run fold and the control all come from the shared modules')
 check('driver: the case list IS the contract list', /const CASES = Object\.freeze\(\[\.\.\.SEARCH_CASES\]\)/u.test(driverSource)
   && /assertCaseListMatchesContract/u.test(driverSource),
   'a drifted/renamed id throws before the grant, not after a spent start')
@@ -163,9 +165,24 @@ check('driver: the full guard-fact stream is persisted', /writeFileSync\(join\(H
 check('driver: declares expectedTools for BOTH native modules', /a5sfExpectedTools:\s*\{/u.test(driverSource)
   && /grep', 'glob'/u.test(driverSource),
   'the attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping the preset search')
-check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', /DRIVER_ABORTED_AT_/u.test(driverSource)
-  && /if \(hostReached\) \{/u.test(driverSource),
-  'a live regression must never be laundered into NOT_REACHED')
+// THE PARTIAL-RUN LAW (2026-11-05). The old rule here was "an abort after the
+// Host is reached is a FAIL, never NOT_REACHED" — true about the RUN, but it was
+// implemented by fail-closing every case, so the 2026-11-04T19:17Z abort threw
+// away seven facts that had already been measured. The law that survives is
+// "never launder a missing observation into a pass"; the one that does not is
+// "discard observations you actually made".
+check('driver: an aborted run JUDGES what it measured and still reports the RUN as FAIL',
+  /sampleCompleteness\(/u.test(driverSource)
+  && /judgeCase\(/u.test(driverSource)
+  && /abortedAt: abortStage/u.test(driverSource)
+  && /record\.markAborted\(/u.test(driverSource)
+  && /summarizeRun\(/u.test(driverSource)
+  && /judgeSettledRows\('delegate-dispatch'\)/u.test(driverSource),
+  'complete samples keep their case verdict after an abort (a case PASS is not a run PASS); incomplete ones are NOT_REACHED + driver-aborted; the run is FAIL + partial, and the settled rows are judged BEFORE the cancellation window')
+check('driver: a case is never fail-closed to FAIL merely because the run aborted',
+  !/add\(id, 'FAIL', \{ reason: `DRIVER_ABORTED_AT_/u.test(driverSource)
+  && /if \(record\.getCase\(id\) !== undefined\) continue/u.test(driverSource),
+  'the 2026-11-04 loop assigned FAIL/DRIVER_ABORTED to every row with no sample — discarding the rows that had one')
 check('driver: the start budget is the RULING FILE, not a constant the driver may raise', /readRuling\(\)/u.test(driverSource)
   && /bootSequence > ruling\.starts/u.test(driverSource)
   && /DEDICATED_ALLOCATION_EXHAUSTED/u.test(driverSource)
@@ -200,8 +217,9 @@ check('driver: the leader DENIES grep/glob (the coverage gate refuses them unman
 // F1's cause was swallowed twice because the instrument's record lived inside
 // the World home that teardown deletes; the probe now persists the counter and
 // the fact sink OUT of the home before team.create and again on the abort path.
-check('driver: the leader grep probe runs BEFORE team.create and persists its channels outside the home',
+check('driver: the leader grep probe runs FIRST — before the control and before team.create — and persists its channels outside the home',
   /MK_PROBE/u.test(driverSource)
+  && driverSource.indexOf("abortStage = 'leader-grep-probe'") < driverSource.indexOf("abortStage = 'negative-control'")
   && driverSource.indexOf("abortStage = 'leader-grep-probe'") < driverSource.indexOf("abortStage = 'surface'")
   && /LEADER_GREP_PROBE_FAILED/u.test(driverSource)
   && /persistRunChannels/u.test(driverSource)
@@ -209,14 +227,45 @@ check('driver: the leader grep probe runs BEFORE team.create and persists its ch
   'a base-spawn failure must reach the artifact with its Node cause, and the counter/sink must survive teardown')
 {
   const ruling = JSON.parse(readFileSync(join(HERE, 'lane-ruling.json'), 'utf8'))
-  check('ruling: every authorised start is a NAMED ruling, and the pool is spent after this lane',
-    ruling.authorisedStarts === 3
-      && ruling.rulings.length === 3
-      && ruling.rulings.reduce((n, r) => n + r.starts, 0) === 3
-      && ruling.rulings[2].by.includes('last P2-04 start')
-      && ruling.remainingAfterThisLane === 0,
-    'three starts, three named authorisations (task instruction, retry, last start); no fourth')
+  const pool = JSON.parse(readFileSync(join(REPO_ROOT, 'dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json'), 'utf8'))
+  const p204 = (pool?.allocation ?? []).find((item) => String(item?.item ?? '').startsWith('P2-04')) ?? null
+  const poolBoots = Number(p204?.boots ?? 0)
+  const namedStarts = ruling.rulings.reduce((n, r) => n + Number(r?.starts ?? 0), 0)
+  check('ruling: every authorised start is a NAMED ruling, and the pool allocates exactly that many',
+    namedStarts === poolBoots
+      && ruling.rulings.length >= 3
+      && Number(ruling.authorisedStarts) >= 1
+      && Number(ruling.authorisedStarts) <= namedStarts
+      && ruling.rulings.every((r) => String(r.by ?? '').length > 0 && String(r.reason ?? '').length > 0),
+    'the NAMED entries are the authorisation and must equal the pool item; authorisedStarts is the frozen ORIGINAL allocation and may never exceed them (a re-grant is appended, never an edit of the frozen number) — a start without a named ruling is a self-authorisation')
 }
+check('driver: the control counts only ITS OWN operand and the member-install abort carries the delegate answer',
+  /rowPaths\.outsideDir/u.test(driverSource)
+  && /delegate-artifact\.json/u.test(driverSource)
+  && /teamCalls/u.test(driverSource)
+  && /MEMBER_INSTALL_NO_WORKER/u.test(driverSource),
+  'the probe turn runs first, so a name-only control count answers without its grep (NOT_REACHED at 18:53Z); and no-Member-appeared must carry what team_delegate answered')
+check('driver: the cancellation is dispatched CONCURRENTLY with team.create',
+  /const createPromise = remoteCall\(/u.test(driverSource)
+  && /const cancelWatch = \(async \(\) => \{/u.test(driverSource)
+  && driverSource.indexOf('const createPromise') < driverSource.indexOf('const created = await createPromise')
+  && /const cancelEarly = await cancelWatch/u.test(driverSource),
+  'attempt 7 died here: team.create blocks until the leader turn (and therefore the member FIFO grep) settles, so a cancel issued after it returns is always too late — the child was already gone at exit 143')
+check('row artifact: the confined exit row carries the payload stderr',
+  /stderrChunks/u.test(providerSource) && /stderr: Buffer\.concat\(stderrChunks\)/u.test(providerSource) && /handleStderr\.on\('data'/u.test(providerSource),
+  'row 1 can fail as a real REFUTED verdict (an in-lane grep exiting 2); without the payload stderr the reason dies with the World home')
+check('driver: the search module is mounted WITH the config its schema requires',
+  /sampleOverCapGlobResults: false/u.test(driverSource)
+  && /\{ url: pathToFileURL\(HOST_TOOL_FS_SEARCH\)\.href, config:/u.test(driverSource),
+  'a bare string entry mounts tool-fs-search with an empty config and the realm install is refused with SERVICE_MOUNT_FAILED (captured 2026-11-04T19:05Z)')
+check('driver: the mock sequences on TOOL RESULTS, not assistant tool_use echoes',
+  /function resultIdsOf/u.test(driverSource)
+  && !/const greps = countAssistantToolUses\(req, 'grep'\)/u.test(driverSource),
+  'this harness does not echo the assistant tool_use block, so a tool_use counter never advances: every turn re-issued its call and burned 120 s')
+// The FIFO's PLACEMENT is checked by the product algebra in §5b, from the paths
+// `--plan` actually composed. A text match cannot decide it: attempt 6's
+// `fifo: join(laneDir, 'blocking.fifo')` was a well-formed path, one directory
+// outside the restriction, and it cost the run its cancellation window.
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)
@@ -315,6 +364,82 @@ check('lane: the inside-ceiling / outside-restriction operand is denied ONLY bec
   { ceiling: dCeiling.denyInside, restriction: dRestriction.denyInside, effective: dEffective.denyInside })
 check('lane: the intersection NEVER widens (no allow the ceiling denies)', [IN, DENY_INSIDE_CEILING, OUTSIDE].every((locator) => !(pathRules.matchLocator(effective, locator) === 'allow' && pathRules.matchLocator(ceiling, locator) === 'deny')),
   'the upper-bound law EffectiveIo ⊆ Ceiling is checked on the three operands')
+
+// ── 5b. the cancellation FIFO must be INSIDE the effective read lane ────────
+// Attempt 6 (2026-11-04T19:17Z) put the FIFO at `lane/blocking.fifo`: inside the
+// ceiling, OUTSIDE the narrower tool restriction, so the guard refused it at
+// admission (`deny IO_READ_DENIED`), no confined spawn ever opened the window,
+// and the run aborted after 240 s with four rows already measured. This check
+// reads the paths `--plan` composed and lets the PRODUCT algebra decide.
+const planPaths = JSON.parse(readFileSync(join(HERE, 'plan-paths.json'), 'utf8'))
+const planCeiling = lane('restricted', planPaths.ceilingReadAllow)
+const planRestriction = lane('restricted', planPaths.restrictionReadAllow)
+const planEffective = pathRules.intersectPathRuleSets(planCeiling, planRestriction)
+const fifoDisposition = {
+  fifo: planPaths.fifo,
+  ceiling: pathRules.matchLocator(planCeiling, planPaths.fifo),
+  restriction: pathRules.matchLocator(planRestriction, planPaths.fifo),
+  effective: pathRules.matchLocator(planEffective, planPaths.fifo),
+}
+report.fifoDisposition = fifoDisposition
+check('driver: the cancellation FIFO is ADMITTED by the effective read lane',
+  fifoDisposition.ceiling === 'allow' && fifoDisposition.restriction === 'allow' && fifoDisposition.effective === 'allow',
+  fifoDisposition)
+// And the SAME inputs must REFUSE the attempt-6 operand, or the check above
+// would be green for "any FIFO anywhere" and prove nothing.
+const attempt6Fifo = join(planPaths.ceilingReadAllow[0], 'lane', 'blocking.fifo')
+const attempt6FifoDisposition = {
+  fifo: attempt6Fifo,
+  ceiling: pathRules.matchLocator(planCeiling, attempt6Fifo),
+  restriction: pathRules.matchLocator(planRestriction, attempt6Fifo),
+  effective: pathRules.matchLocator(planEffective, attempt6Fifo),
+}
+report.attempt6FifoDisposition = attempt6FifoDisposition
+check('lane: the attempt-6 FIFO placement (lane/blocking.fifo) is DENIED by the effective lane',
+  attempt6FifoDisposition.ceiling === 'allow' && attempt6FifoDisposition.effective === 'deny',
+  attempt6FifoDisposition)
+
+// The partial-run oracle, exercised as a RUN (not only as the six static judges):
+// a complete sample that passed, a complete sample that was contradicted, and an
+// incomplete one, all after an abort. `negative-controls.mjs` breaks each of the
+// three properties and requires THIS script to go red.
+const partialProbe = await (async () => {
+  const module = await import(pathToFileURL(join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-search-live.mjs')).href)
+  const root = '/w/lane'
+  const factOne = {
+    schema: 'a5sf-guard-consult/1', realm: 'member', memberIdentity: 'm', toolBindingIdentity: null,
+    policyRevision: 'r', method: module.SUBPROCESS_GUARD_METHOD, locator: root, decision: 'allow',
+    decidedBy: 'ALLOW', observedAt: '2026-11-05T00:00:00.000Z',
+  }
+  const spawnRow = { leg: 'confined-spawn', argv: ['/rg', '--no-config', '--json', '--regexp=A5SF_SEARCH_NEEDLE', '--', root], cwd: '/w', at: '2026-11-05T00:00:00.000Z' }
+  const complete = {
+    result: { source: 'model', isError: false, text: `Found 1 match in ${root}/needle.txt\n${root}/needle.txt:1:A5SF_SEARCH_NEEDLE` },
+    facts: [factOne], records: [spawnRow], declaredRoot: root, needle: 'A5SF_SEARCH_NEEDLE', fileName: 'needle.txt',
+  }
+  const wrongBytes = { ...complete, result: { source: 'model', isError: false, text: 'No matches found' } }
+  const incomplete = { ...complete, result: null }
+  const passCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, complete, { abortedAt: 'cancellation-window' })
+  const incompleteCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, incomplete, { abortedAt: 'cancellation-window' })
+  const wrongCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, wrongBytes, { abortedAt: 'cancellation-window' })
+  const runFold = module.summarizeRun([passCase, incompleteCase], { abortedAt: 'cancellation-window' })
+  return { passCase, incompleteCase, wrongCase, runFold }
+})()
+report.partialRun = partialProbe
+check('partial run: a COMPLETE sample after a later abort is judged PASS at CASE level',
+  partialProbe.passCase.verdict === 'PASS' && partialProbe.passCase.status === 'judged' && partialProbe.passCase.sampleComplete === true,
+  { verdict: partialProbe.passCase.verdict, status: partialProbe.passCase.status })
+check('partial run: an INCOMPLETE sample after an abort is NOT_REACHED + driver-aborted (never PASS)',
+  partialProbe.incompleteCase.verdict === 'NOT_REACHED' && partialProbe.incompleteCase.status === 'driver-aborted'
+  && partialProbe.incompleteCase.missing.includes('result') && partialProbe.passCase.verdict !== 'NOT_REACHED',
+  { verdict: partialProbe.incompleteCase.verdict, status: partialProbe.incompleteCase.status, missing: partialProbe.incompleteCase.missing })
+check('partial run: a COMPLETE sample with the WRONG bytes is FAIL, never PASS',
+  partialProbe.wrongCase.verdict === 'FAIL' && partialProbe.wrongCase.status === 'judged' && partialProbe.wrongCase.sampleComplete === true,
+  { verdict: partialProbe.wrongCase.verdict, status: partialProbe.wrongCase.status })
+check('partial run: the RUN is FAIL + partial even though one case PASSED',
+  partialProbe.runFold.overall === 'FAIL' && partialProbe.runFold.partial === true
+  && partialProbe.runFold.passed.length === 1 && partialProbe.runFold.neverObserved.length === 1
+  && partialProbe.runFold.judged.length === 1,
+  partialProbe.runFold)
 
 // ── 6. the product seam the rows depend on ─────────────────────────────────
 const teamServices = join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src')

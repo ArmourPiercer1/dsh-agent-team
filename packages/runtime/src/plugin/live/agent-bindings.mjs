@@ -1199,6 +1199,59 @@ export function createAgentBindings(deps) {
     return resolveOwningTeamRoot(domain, rootSid, sessionId)
   }
 
+  /**
+   * The DURABLE-LIFECYCLE gate at every resurrection seam (row 6 / BL-16).
+   *
+   * The frozen Architecture is the authority, not residency:
+   *   - §41.6: the ONLY edge out of ARCHIVED is Restore; a cold resume
+   *     follows a NEW follow-up in SETTLED, never a resume while ARCHIVED;
+   *   - §30.2: Restore returns ARCHIVED → SETTLED and must NOT
+   *     create/resume live Agent residency merely for restore;
+   *   - §29.4: ARCHIVED leaves the active work set while retaining the
+   *     child Session/transcript and the restore capability.
+   * The archive quiesce drops process-local residency (`quiesce.ts` step 5 →
+   * `residency.dropResidency`), so residency cannot answer this question: a
+   * later `ensureLiveAgent`/boot resume would simply materialize the durable
+   * session again (the measured row-6 defect). The durable MemberInstance row
+   * is read here instead, at the seam, before any resume.
+   *
+   * Scope: every Member, permission-governed or not — "the durable lifecycle
+   * binds every resurrection seam, for every Member" (the ruling). The leader
+   * / team-root path is untouched: a root owns itself and has no
+   * MemberInstance row (archive/dispose never address it).
+   *
+   * Cost: this read is NOT on the steady-state tool path — `ensureLiveAgent`
+   * returns the resident handle before `ensureLiveAgentOnce` runs, so a live
+   * Agent pays nothing. The read happens once per COLD RESUME (and once per
+   * member per boot), which already loads the session; `list()` is the
+   * in-memory durable-domain snapshot (`StorageKvTable.get` reads memory), so
+   * no new durable I/O is added. `memberRows` lets the boot loop reuse the
+   * list it already holds.
+   *
+   * @param {string} sessionId - the session a seam is about to resurrect.
+   * @param {string|undefined} teamRoot - its owning team root (undefined =
+   *   unowned: that seam keeps its own fail-closed error).
+   * @param {object[]} [memberRows] - the already-read rows of `teamRoot`.
+   * @returns {Error|null} the typed refusal, or null when the resume may run.
+   */
+  function memberResumeRefusal(sessionId, teamRoot, memberRows) {
+    const sid = String(sessionId)
+    if (teamRoot === undefined || teamRoot === null || String(teamRoot) === sid) return null
+    const rows = memberRows !== undefined
+      ? memberRows
+      : domain.repositories.memberInstances.list(String(teamRoot))
+    const row = rows.find((member) => String(member?.childSessionId) === sid)
+    const state = String(row?.lifecycle ?? '')
+    if (state !== 'ARCHIVED' && state !== 'DISPOSED') return null
+    const refusal = new Error(
+      `agent-bindings: session '${sid}' belongs to a ${state} MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)`,
+    )
+    refusal.code = state === 'ARCHIVED'
+      ? 'PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED'
+      : 'PERMISSION_LIFECYCLE_EXECUTION_TERMINAL'
+    return refusal
+  }
+
   // ── C1 (restart-recovery, guide §6.1): the ownership-guarded activation wrappers ──
   // GOAL (guide §6.1/§6.2): no BARE agents.create / agents.resume calls
   // in the production body — every Team create/resume goes through these
@@ -4387,6 +4440,14 @@ export function createAgentBindings(deps) {
     if (teamRoot === undefined) {
       throw new Error(`agent-bindings: session '${sid}' has no owning Team root — no Team agent to resume`)
     }
+    // SEAM 1 of 2 — the DURABLE LIFECYCLE GATE (row 6): an ARCHIVED /
+    // DISPOSED Member is inert until an explicit restore returns it to
+    // SETTLED. Refuse here, BEFORE the resume closure is even built: the
+    // archived session must not be re-materialized and its tools must not be
+    // re-mounted (the typed code is the product vocabulary; `executeTool`
+    // re-labels it NO_LIVE_AGENT at the route, the message keeps the cause).
+    const refusal = memberResumeRefusal(sid, teamRoot)
+    if (refusal !== null) throw refusal
     const resume = () =>
       resumeTeamAgent({
         sessionId: sid,
@@ -4962,6 +5023,19 @@ export function createAgentBindings(deps) {
           const child = childRaw
           if (seen.has(child)) continue
           seen.add(child)
+          // SEAM 2 of 2 — the SAME durable-lifecycle gate: a restart must not
+          // re-bind an ARCHIVED / DISPOSED member (the boot loop iterates
+          // every durable row, so without this check a restart silently
+          // makes the archived Member live again). Skip BEFORE
+          // ensureMaterialized/resumeTeamAgent; the already-read `members`
+          // list is reused (no second durable scan).
+          const refusal = memberResumeRefusal(child, rootSid, members)
+          if (refusal !== null) {
+            observations.push(
+              `agent-bindings: boot resume skipped ${String(refusal.code)} member '${child}' — the durable lifecycle forbids the re-bind (Architecture §41.6/§30.2/§29.4)`,
+            )
+            continue
+          }
           resumingSessions.add(child)
           let handle
           try {
