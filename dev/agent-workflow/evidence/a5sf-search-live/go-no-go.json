@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live2-20261105",
-  "evidenceHeadAtDryRun": "510452e76d17f690fa3c3728588c22f372d2e5b0",
+  "evidenceHeadAtDryRun": "dbc626b436fb19d5dee61fa0c3ad603dc24115cb",
   "productTreeDigest": "a69199ed1b2b9c149c4704ab674779500788f3c0591433b7d18a34351be36e51",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
@@ -106,10 +106,10 @@
     },
     {
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
-      "ok": false,
+      "ok": true,
       "detail": {
-        "planHead": "510452e76d17f690fa3c3728588c22f372d2e5b0",
-        "head": "6ba86ab1f52366c007378a302c4e4fb9fb135b03",
+        "planHead": "dbc626b436fb19d5dee61fa0c3ad603dc24115cb",
+        "head": "dbc626b436fb19d5dee61fa0c3ad603dc24115cb",
         "patchBytes": 6514,
         "patchSha256": "6d64408836f2ab9300b442d162d7a13c32cc94555a08413a86ccfaeab23ed6a5"
       }

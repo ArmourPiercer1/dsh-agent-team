@@ -63,7 +63,7 @@ import {
   tcpConnectProbe,
 } from '../../../../tests/world-factory/lib/world-factory.mjs'
 import {
-  createRunRecord, formatSummary, overallVerdict, readAuthorityBinding,
+  createRunRecord, formatSummary, readAuthorityBinding,
 } from '../../../../tests/world-factory/lib/run-record.mjs'
 import { TEST_USE_BASELINE_SHA } from '../../../../tests/paths.mjs'
 import { createA5sfHarness } from '../../../../tests/world-factory/lib/a5sf-harness.mjs'
@@ -76,7 +76,8 @@ import {
   classifyDisposeFaults, P2_01_ACCEPTANCE_ROOTS, assertAcceptanceRootWiring,
 } from '../../../../tests/world-factory/lib/a5sf-acceptance-preflight.mjs'
 import {
-  SEARCH_CASES, SEARCH_CASE_IDS, judgeNegativeControl, judgeSearchRow, toRunVerdict,
+  SEARCH_CASES, SEARCH_CASE_IDS, judgeCase, judgeNegativeControl, judgeSearchRow,
+  sampleCompleteness, summarizeRun,
 } from '../../../../tests/world-factory/lib/a5sf-search-live.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -157,6 +158,7 @@ const CALL_IDS = Object.freeze({
 const PLAN_ONLY = process.argv.includes('--plan')
 const RULING_PATH = join(dirname(fileURLToPath(import.meta.url)), 'lane-ruling.json')
 const PLAN_ROWS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'plan-rows.json')
+const PLAN_PATHS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'plan-paths.json')
 
 /**
  * The handoff, in ONE place so `--plan` and `boot()` cannot diverge.
@@ -834,6 +836,30 @@ async function planOnly() {
     },
   }
   writeFileSync(PLAN_ROWS_PATH, JSON.stringify(planRows, null, 2) + '\n')
+  // THE LANE INPUTS, as the boot will compose them. Not a decision: the dry run
+  // runs `rowPathsOf` (this function) inside `--plan`, so the artifact carries
+  // the SAME paths `boot()` will hand to the row, and the dry run checks the
+  // FIFO's position against the product algebra itself. A FIFO one directory
+  // outside the restriction (`lane/blocking.fifo`) passed every text-level check
+  // and cost the 2026-11-04T19:17Z run 240 s and all six rows.
+  const planPaths = {
+    schema: 'a5sf-search-live/plan-paths/1',
+    at: new Date().toISOString(),
+    head,
+    /** The ceiling READ allow list the row compiles from `allowRoot`. */
+    ceilingReadAllow: [dry.paths.workspace],
+    /** The narrower tool restriction the row compiles from config. */
+    restrictionReadAllow: [...dry.paths.restrictionReadAllow],
+    inLaneDir: dry.paths.inLaneDir,
+    inLaneFile: dry.paths.inLaneFile,
+    restrictedFile: dry.paths.restrictedFile,
+    outsideFile: dry.paths.outsideFile,
+    outsideGlobFile: dry.paths.outsideGlobFile,
+    /** The cancellation operand: it must be ADMITTED by the effective lane. */
+    fifo: dry.paths.fifo,
+  }
+  writeFileSync(PLAN_PATHS_PATH, JSON.stringify(planPaths, null, 2) + '\n')
+  log(`plan paths: ${JSON.stringify({ ceilingReadAllow: planPaths.ceilingReadAllow, restrictionReadAllow: planPaths.restrictionReadAllow, fifo: planPaths.fifo })}`)
   log(`plan rows: ${JSON.stringify({ emittedRowIds, worldRowIds, identityHolds: planRows.identityHolds, healthProbeRowPresent: planRows.healthProbeRowPresent, allFourRowsPresent: planRows.allFourRowsPresent, handoff: planRows.handoff })}`)
   if (planRows.identityHolds !== true) throw new Error(`the emitted rows and the rows handed to the World DIFFER: emitted=${JSON.stringify(emittedRowIds)} world=${JSON.stringify(worldRowIds)} — this is the 2026-11-04 defect`)
   if (planRows.healthProbeRowPresent !== true || planRows.allFourRowsPresent !== true) throw new Error(`the World would not compose the health probe and the four evidence rows: ${JSON.stringify(worldRowIds)}`)
@@ -958,9 +984,127 @@ async function boot() {
   let abortStage = 'pre-boot'
   let abortStageDetail = 'fixtures / rows / grant / policy before any Host exists'
   /** What the catch can still inspect: set as soon as each path exists. */
-  const stageCtx = { rows: null, paths: null, counterPath: null, laneReportPath: null, sinkPath: null, composedProfile: null, member: null }
+  const stageCtx = {
+    rows: null, paths: null, counterPath: null, laneReportPath: null, sinkPath: null,
+    composedProfile: null, member: null,
+    /** The evidence the ABORT path must be able to re-judge from: the lane
+     *  inputs, the counter slice that excludes the pre-realm control, the
+     *  cancellation answer and the claims. Without these, an abort can only
+     *  report "nothing was measured" — which is what the 2026-11-04T19:17Z run
+     *  did with seven facts in hand. */
+    claims: null, counterPrefixEnd: null, cancelCall: null,
+    /** Set once the sink/counter transcript copier exists, so the abort path
+     *  uses it instead of a second, drifting copy implementation. */
+    persistRunChannels: null,
+  }
   const oracleSamples = {}
   const negativeControl = { sample: null, verdict: null }
+
+  // ── THE PARTIAL-RUN MACHINERY ───────────────────────────────────────────
+  // The sample builders live in ONE place so the success path and the ABORT
+  // path cannot drift: an abort that rebuilt samples its own way would be a
+  // second oracle. `settledSamples()` reads only what exists at the call site
+  // (sink facts, counter rows, lane report, mock transcript), and the judges
+  // decide the rest.
+  const readSinkFacts = () => {
+    try { return parseJsonl(stageCtx.sinkPath).filter((f) => f?.schema === 'a5sf-guard-consult/1') } catch { return [] }
+  }
+  const readCounterRows = () => {
+    try {
+      const all = parseJsonl(stageCtx.counterPath)
+      const from = stageCtx.counterPrefixEnd === null ? 0 : stageCtx.counterPrefixEnd
+      return all.slice(from)
+    } catch { return [] }
+  }
+  const readLaneReport = () => {
+    try { return stageCtx.laneReportPath !== null && existsSync(stageCtx.laneReportPath) ? readJson(stageCtx.laneReportPath) : null } catch { return null }
+  }
+  const settledSamples = ({ requests = [], includeFifo = false } = {}) => {
+    const allFacts = readSinkFacts()
+    const allRecords = readCounterRows()
+    const laneReport = readLaneReport()
+    const claimsNow = stageCtx.claims
+    const p = stageCtx.paths
+    if (p === null || claimsNow === null) return {}
+    const resultOf = (callId) => toolResultFor(requests, callId)
+    const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')
+    const recordsFor = (operand) => allRecords.filter((row) => (row?.argv ?? []).some((a) => normPath(a) === normPath(operand)))
+    const factsFor = (operand) => allFacts.filter((f) => normPath(f?.locator) === normPath(operand))
+    const samples = {
+      [SEARCH_CASE_IDS.row1]: {
+        result: resultOf(CALL_IDS.grepIn),
+        facts: factsFor(p.inLaneDir),
+        records: recordsFor(p.inLaneDir),
+        declaredRoot: p.inLaneDir,
+        needle: claimsNow.needle,
+        fileName: 'needle.txt',
+      },
+      [SEARCH_CASE_IDS.row2]: {
+        result: resultOf(CALL_IDS.grepOutsideCeiling),
+        facts: factsFor(p.outsideDir),
+        records: recordsFor(p.outsideDir),
+        declaredRoot: p.outsideDir,
+        forbidden: [claimsNow.outsideClaim, claimsNow.outsideSecond],
+      },
+      [SEARCH_CASE_IDS.row3]: {
+        result: resultOf(CALL_IDS.grepOutsideRestriction),
+        facts: factsFor(p.restrictedFile),
+        records: recordsFor(p.restrictedFile),
+        declaredRoot: p.restrictedFile,
+        forbidden: [claimsNow.restrictedClaim],
+        laneReport,
+      },
+      [SEARCH_CASE_IDS.row5]: {
+        result: resultOf(CALL_IDS.grepInvalid),
+        facts: factsFor(p.invalidDir),
+        records: recordsFor(p.invalidDir),
+        declaredRoot: p.invalidDir,
+        pattern: 'A5SF_(',
+      },
+    }
+    if (includeFifo) {
+      samples[SEARCH_CASE_IDS.row4] = {
+        result: resultOf(CALL_IDS.grepFifo),
+        facts: factsFor(p.fifo),
+        records: recordsFor(p.fifo),
+        declaredRoot: p.fifo,
+        needle: claimsNow.needle,
+        interrupt: stageCtx.cancelCall === null ? null : { status: stageCtx.cancelCall.status, ok: stageCtx.cancelCall.status === 200 && stageCtx.cancelCall.body?.ok === true },
+        transcriptAfterCall: '',
+      }
+    }
+    return samples
+  }
+  /**
+   * Judge every SETTLED row whose sample is COMPLETE, and nothing else. An
+   * incomplete sample is NOT frozen here: its call may still be in flight, and
+   * freezing "not reached" would be its own inaccuracy. Only the abort path
+   * (which knows the run stopped) is allowed to turn incompleteness into
+   * NOT_REACHED.
+   */
+  const judgeSettledRows = (stage, { includeFifo = false } = {}) => {
+    const requests = world?.mock?.requests ?? []
+    const samples = settledSamples({ requests, includeFifo })
+    const judgedNow = []
+    for (const [id, sample] of Object.entries(samples)) {
+      if (oracleSamples[id] !== undefined) continue
+      const completeness = sampleCompleteness(id, sample)
+      if (completeness.complete !== true) continue
+      const judged = judgeCase(id, sample, { stage })
+      oracleSamples[id] = { sample, ...judged, judgedAtStage: stage }
+      add(id, judged.verdict, {
+        status: judged.status,
+        reason: judged.reason,
+        failed: judged.failed,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: stage,
+      })
+      judgedNow.push(`${id}=${judged.verdict}`)
+    }
+    log(`judged ${String(judgedNow.length)} settled row(s) at ${stage}${judgedNow.length === 0 ? '' : `: ${judgedNow.join(' ')}`}`)
+    return judgedNow
+  }
 
   try {
     world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
@@ -984,6 +1128,7 @@ async function boot() {
       restrictedPattern: 'A5SF_SEARCH_RESTRICTION',
       fifoPattern: 'A5SF_SEARCH_FIFO',
     }
+    stageCtx.claims = claims
     const sinkPath = join(world.home, 'a5sf-consult.jsonl')
     stageCtx.rows = rows
     stageCtx.paths = paths
@@ -1120,9 +1265,17 @@ async function boot() {
           out[name] = `${String(bytes.length)} bytes`
         } catch (error) { out[name] = `copy failed: ${String(error?.message ?? error)}` }
       }
+      // THE THIRD CHANNEL: the mock transcript. It carries the TOOL RESULTS —
+      // the bytes every row judge compares against — and it lived only in this
+      // process's memory until now. That is exactly why attempt 6's seven facts
+      // could not be re-judged offline: the sink and the counter were copied out,
+      // the results were not.
+      out['mock-requests.json'] = writeMockTranscript(world, label)
       log(`run channels persisted (${label}): ${JSON.stringify(out)}`)
       return out
     }
+    stageCtx.persistRunChannels = persistRunChannels
+
     const counterPrefixEndAtProbe = parseJsonl(counterPath).length
     abortStage = 'leader-grep-probe'
     abortStageDetail = 'the anchor leader must be able to grep the in-lane file through the base subprocess face; a failure here makes the negative control vacuous'
@@ -1178,6 +1331,10 @@ async function boot() {
       controlDone,
     }
     const counterPrefixEnd = parseJsonl(counterPath).length
+    // The abort path slices the counter at the same boundary: everything before
+    // this index belongs to the leader probe / the unconfined control and must
+    // never be counted as a Member row's process.
+    stageCtx.counterPrefixEnd = counterPrefixEnd
     const control = judgeNegativeControl(controlSample)
     negativeControl.sample = controlSample
     negativeControl.verdict = control
@@ -1283,6 +1440,13 @@ async function boot() {
     if (!dispatched) {
       throw new Error(`DELEGATE_DISPATCH_NEVER_REACHED_MEMBER: a worker instance exists (${String(member?.instanceId ?? '')}) but no request ever carried the team-work envelope within 120s (laneReport=${existsSync(laneReportPath) ? 'present' : 'MISSING'}). The broken handoff is leader -> member dispatch`)
     }
+    // Judge the settled rows AS SOON AS their evidence is complete — before the
+    // cancellation window, which is where the 2026-11-04T19:17Z run died with
+    // four rows already measured. A complete sample is judged by the normal
+    // judge whatever happens next; an incomplete one is left alone (its call may
+    // still be in flight) and is only resolved by the abort path or the end.
+    persistRunChannels('member turn dispatched')
+    judgeSettledRows('delegate-dispatch')
 
     // The FIFO call must be in flight before the cancel is dispatched. Poll the
     // confined-provider record for the exact operand, then cancel through the
@@ -1311,8 +1475,15 @@ async function boot() {
     }
     const fifoExited = await waitFor(() => parseJsonl(counterPath).some((row) => row?.leg === 'confined-exit' && (row?.argv ?? []).some((a) => String(a).endsWith('/blocking.fifo'))), 60_000)
     log(`fifo call terminated=${String(fifoExited)}`)
+    // The cancellation answer is evidence for row 4, and it must survive an
+    // abort in the row-6/teardown stages, so it is parked where the abort path
+    // can read it.
+    stageCtx.cancelCall = cancelCall
     const chainOk = await waitFor(() => replySeen(DONE_L1), 240_000)
     log(`leader chain closed (${DONE_L1})=${String(chainOk)}`)
+    // A row whose result arrived late (after the dispatch flush) is judged here,
+    // still before anything that could throw in row 6 / teardown.
+    judgeSettledRows('post-cancel')
     await new Promise((r) => setTimeout(r, 1500))
 
     // ── evidence collection: results, facts, and the counter ────────────────
@@ -1347,7 +1518,7 @@ async function boot() {
       log(`  fact ${String(fact.method)} ${String(fact.decision)} ${String(fact.decidedBy)} realm=${String(fact.realm)} binding=${String(fact.toolBindingIdentity)} locator=${String(fact.locator)} at=${String(fact.observedAt)}`)
     }
 
-    // ── rows 1, 2, 3, 5 ─────────────────────────────────────────────────────
+    // ── rows 1, 2, 3, 5 + row 4 (the cancelled search) ─────────────────────
     const resultOf = (callId) => toolResultFor(requests, callId)
     const normPath = (value) => String(value ?? '').replace(/\/+$/u, '')
     // EXACT locator match: every call has its OWN operand (see rowPathsOf), so a
@@ -1355,55 +1526,23 @@ async function boot() {
     const recordsFor = (operand) => recordsAll.filter((row) => (row?.argv ?? []).some((a) => normPath(a) === normPath(operand)))
     const factsFor = (operand) => factsAll.filter((f) => normPath(f?.locator) === normPath(operand))
 
-    const row1Sample = {
-      result: resultOf(CALL_IDS.grepIn),
-      facts: factsFor(paths.inLaneDir),
-      records: recordsFor(paths.inLaneDir),
-      declaredRoot: paths.inLaneDir,
-      needle: claims.needle,
-      fileName: 'needle.txt',
+    // The SAME builders the abort path uses (settledSamples), so the two paths
+    // cannot drift into two oracles. Rows already judged at dispatch keep that
+    // verdict: re-judging identical evidence would only invite a different answer.
+    const settled = settledSamples({ requests, includeFifo: true })
+    for (const id of [SEARCH_CASE_IDS.row1, SEARCH_CASE_IDS.row2, SEARCH_CASE_IDS.row3, SEARCH_CASE_IDS.row5, SEARCH_CASE_IDS.row4]) {
+      if (oracleSamples[id] !== undefined) continue
+      const judged = judgeCase(id, settled[id], { stage: 'evidence-collection' })
+      oracleSamples[id] = { sample: settled[id], ...judged, judgedAtStage: 'evidence-collection' }
+      add(id, judged.verdict, {
+        status: judged.status,
+        reason: judged.reason,
+        failed: judged.failed,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: 'evidence-collection',
+      })
     }
-    oracleSamples[SEARCH_CASE_IDS.row1] = { sample: row1Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row1, row1Sample) }
-
-    const row2Sample = {
-      result: resultOf(CALL_IDS.grepOutsideCeiling),
-      facts: factsFor(paths.outsideDir),
-      records: recordsFor(paths.outsideDir),
-      declaredRoot: paths.outsideDir,
-      forbidden: [claims.outsideClaim, claims.outsideSecond],
-    }
-    oracleSamples[SEARCH_CASE_IDS.row2] = { sample: row2Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row2, row2Sample) }
-
-    const row3Sample = {
-      result: resultOf(CALL_IDS.grepOutsideRestriction),
-      facts: factsFor(paths.restrictedFile),
-      records: recordsFor(paths.restrictedFile),
-      declaredRoot: paths.restrictedFile,
-      forbidden: [claims.restrictedClaim],
-      laneReport,
-    }
-    oracleSamples[SEARCH_CASE_IDS.row3] = { sample: row3Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row3, row3Sample) }
-
-    const row5Sample = {
-      result: resultOf(CALL_IDS.grepInvalid),
-      facts: factsFor(paths.invalidDir),
-      records: recordsFor(paths.invalidDir),
-      declaredRoot: paths.invalidDir,
-      pattern: 'A5SF_(',
-    }
-    oracleSamples[SEARCH_CASE_IDS.row5] = { sample: row5Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row5, row5Sample) }
-
-    // ── row 4 (the cancelled search) ────────────────────────────────────────
-    const row4Sample = {
-      result: resultOf(CALL_IDS.grepFifo),
-      facts: factsFor(paths.fifo),
-      records: recordsFor(paths.fifo),
-      declaredRoot: paths.fifo,
-      needle: claims.needle,
-      interrupt: cancelCall === null ? null : { status: cancelCall.status, ok: cancelCall.status === 200 && cancelCall.body?.ok === true },
-      transcriptAfterCall: '',
-    }
-    oracleSamples[SEARCH_CASE_IDS.row4] = { sample: row4Sample, ...judgeSearchRow(SEARCH_CASE_IDS.row4, row4Sample) }
 
     // ── M-07: the SAME face for `glob` (not one of the six rows; reported
     //    alongside them so M-07 is never promoted on grep evidence alone) ──
@@ -1503,7 +1642,12 @@ async function boot() {
       confinedSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'confined-spawn'),
       baseSpawnsAfterStop: postStopSpawns.filter((r) => r?.leg === 'base-spawn'),
     }
-    oracleSamples[SEARCH_CASE_IDS.row6] = { sample: { ...row6Sample, observations: observations.length, membersAfter: membersAfter.length }, ...judgeSearchRow(SEARCH_CASE_IDS.row6, row6Sample) }
+    const row6Judged = judgeCase(SEARCH_CASE_IDS.row6, row6Sample, { stage: 'teardown' })
+    oracleSamples[SEARCH_CASE_IDS.row6] = {
+      sample: { ...row6Sample, observations: observations.length, membersAfter: membersAfter.length },
+      ...row6Judged,
+      judgedAtStage: 'teardown',
+    }
 
     const teardownEvidence = {
       archive: archiveCall === null ? null : { status: archiveCall.status, body: archiveCall.body },
@@ -1530,18 +1674,36 @@ async function boot() {
     }, null, 2) + '\n')
 
     // ── the verdicts ───────────────────────────────────────────────────────
+    // Rows judged earlier (at dispatch / evidence-collection / teardown) are
+    // already in the record; only a row nothing ever observed is resolved here.
     for (const id of CASES) {
+      if (record.getCase(id) !== undefined) continue
       const judged = oracleSamples[id]
       if (judged === undefined) {
-        add(id, 'NOT_REACHED', { reason: 'NO_SAMPLE' })
+        const unresolved = judgeCase(id, null, { stage: 'verdict-fold' })
+        add(id, unresolved.verdict, {
+          status: unresolved.status,
+          reason: unresolved.reason,
+          missing: unresolved.missing,
+          sampleComplete: false,
+          judgedAtStage: 'verdict-fold',
+        })
         continue
       }
-      add(id, toRunVerdict(judged.verdict), {
+      add(id, judged.verdict, {
+        status: judged.status,
         reason: judged.reason,
         failed: judged.failed,
         detail: judged.detail,
+        sampleComplete: judged.sampleComplete,
+        missing: judged.missing,
+        judgedAtStage: judged.judgedAtStage,
       })
     }
+    // The RUN-level fold: on a completed run this is the worst case verdict; an
+    // abort below overrides it to FAIL via `record.markAborted()`.
+    const runFold = summarizeRun([...CASES].map((id) => record.getCase(id)).filter(Boolean), { abortedAt: null })
+    record.record.runVerdict = runFold
     // The negative control is NOT a Member row: it is reported, never folded in.
     record.record.negativeControl = {
       verdict: negativeControl.verdict?.verdict ?? null,
@@ -1589,16 +1751,55 @@ async function boot() {
     } catch { /* best-effort */ }
     log(`stage probe: ${JSON.stringify(probe).slice(0, 900)}`)
     try {
-      for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
-        if (source !== null && existsSync(source)) writeFileSync(join(HERE, name), readFileSync(source))
+      if (stageCtx.persistRunChannels !== null) {
+        stageCtx.persistRunChannels('abort path, before teardown deletes the home')
+      } else {
+        for (const [name, source] of [['search-counter.jsonl', stageCtx.counterPath], ['consultations.jsonl', stageCtx.sinkPath]]) {
+          if (source !== null && existsSync(source)) writeFileSync(join(HERE, name), readFileSync(source))
+        }
+        const transcript = writeMockTranscript(world, `abort path (${abortStage})`)
+        log(`run channels persisted (abort path, before teardown deletes the home): mock-requests.json=${transcript}`)
       }
-      log('run channels persisted (abort path, before teardown deletes the home)')
     } catch (copyError) { log(`run channel copy failed: ${String(copyError?.message ?? copyError)}`) }
     if (hostReached) {
-      // A live regression must never be laundered into NOT_REACHED.
-      for (const id of CASES) {
-        if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}`, stage: abortStage, stageDetail: abortStageDetail, error: redact(String(error?.message ?? error)).slice(0, 300) })
+      // ── JUDGE WHAT WAS MEASURED, AND ONLY WHAT WAS MEASURED ────────────────
+      // The 2026-11-04T19:17Z run measured seven live guard facts in 400 ms and
+      // then aborted in the cancellation window. The old loop here turned all six
+      // rows into `FAIL / DRIVER_ABORTED`, discarding every observation it had
+      // made. The rule that must survive is "never launder a MISSING observation
+      // into a pass"; the rule that must not is "discard observations you made".
+      // So: a COMPLETE sample is judged by the row's normal judge and keeps its
+      // real verdict (a PASS is a CASE verdict); an INCOMPLETE one is NOT_REACHED
+      // with status `driver-aborted`; and the RUN is FAIL + partial, always.
+      const abortDetail = redact(String(error?.message ?? error))
+      record.markAborted({ stage: abortStage, detail: abortStageDetail, error: abortDetail.slice(0, 300) })
+      log(`abort: run verdict FAIL (partial=true, stage=${abortStage}); re-judging what was measured`)
+      try {
+        judgeSettledRows(`abort:${abortStage}`, { includeFifo: true })
+      } catch (judgeError) {
+        log(`abort re-judge failed (the run is still FAIL and partial): ${redact(String(judgeError?.message ?? judgeError))}`)
       }
+      let rebuilt = {}
+      try { rebuilt = settledSamples({ requests: world?.mock?.requests ?? [], includeFifo: true }) } catch { rebuilt = {} }
+      for (const id of CASES) {
+        if (record.getCase(id) !== undefined) continue
+        const sample = rebuilt[id] ?? null
+        const judged = judgeCase(id, sample, { abortedAt: abortStage, stage: `abort:${abortStage}` })
+        oracleSamples[id] = { sample, ...judged, judgedAtStage: `abort:${abortStage}` }
+        add(id, judged.verdict, {
+          status: judged.status,
+          reason: judged.reason,
+          missing: judged.missing,
+          sampleComplete: judged.sampleComplete,
+          abortedAt: abortStage,
+          stage: abortStage,
+          stageDetail: abortStageDetail,
+          error: abortDetail.slice(0, 300),
+          judgedAtStage: `abort:${abortStage}`,
+        })
+      }
+      record.record.runVerdict = summarizeRun([...CASES].map((id) => record.getCase(id)).filter(Boolean), { abortedAt: abortStage })
+      record.record.abortDetail = abortStageDetail
     } else {
       throw error
     }
@@ -1613,8 +1814,10 @@ async function boot() {
     try {
       writeFileSync(join(HERE, 'oracle-samples.json'), JSON.stringify({
         schema: 'a5sf-search-live/oracle-samples/1',
-        note: 'the exact sample object handed to each judge, plus the judge output. Re-running the judge over the sample reproduces the verdict without a Host.',
+        note: 'the exact sample object handed to each judge, plus the judge output and WHY (status/reason/missing). Re-running the judge over the sample reproduces the verdict without a Host; a sample with `missing` non-empty is NOT judgeable and can never be a pass.',
         roots: ROOTS,
+        partial: record.isAborted(),
+        abortedAt: record.isAborted() ? abortStage : null,
         cases: oracleSamples,
         negativeControl,
       }, null, 2) + '\n')
@@ -1624,7 +1827,7 @@ async function boot() {
     const finalized = record.finalize()
     writeFileSync(join(HERE, 'run-record.json'), JSON.stringify(finalized, null, 2) + '\n')
     log(formatSummary(finalized))
-    log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(overallVerdict(finalized.cases))} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
+    log(`bootsSpent=${String(lease.bootsSpent())} overall=${String(finalized.overall)} partial=${String(finalized.partial === true)} failure=${failure === null ? 'none' : redact(String(failure.message)).slice(0, 400)}`)
   }
 
   // An abort must reconcile itself: the intent row is spent even when no start is.
@@ -1661,8 +1864,41 @@ async function boot() {
 // small helpers that reference the world only through arguments
 // ─────────────────────────────────────────────────────────────────────────────
 
-function toolResultFor(requests, callId) {
-  for (const req of requests) {
+/**
+ * Persist the mock transcript — the ONLY channel that carries the tool-result
+ * bytes a row judge compares against. Teardown deletes the World home, and the
+ * transcript otherwise lives in this process's memory only: attempt 6's sink and
+ * counter were copied out, its results were not, and the seven facts it measured
+ * became un-re-judgeable the moment the driver was certain it had failed.
+ *
+ * Capped by request COUNT only, so the file has a bound; this is a test
+ * transcript, not a model context, and writing it adds no token to any prompt.
+ *
+ * @param {{mock?: {requests?: object[]}}|null} world
+ * @param {string} label why it was written (stage name)
+ * @returns {string} a one-line status for the caller's log
+ */
+function writeMockTranscript(world, label) {
+  try {
+    const requests = (world?.mock?.requests ?? []).slice(-60).map((r) => ({
+      seq: r?.seq ?? null,
+      reply: r?.reply ?? null,
+      messages: messagesOf(r),
+    }))
+    writeFileSync(join(HERE, 'mock-requests.json'), JSON.stringify({
+      schema: 'a5sf-search-live/mock-requests/1',
+      at: new Date().toISOString(),
+      label,
+      note: 'the model-visible transcript the tool-result bytes live in; written OUTSIDE the World home so teardown cannot swallow it',
+      requests,
+    }, null, 2) + '\n')
+    return `${String(requests.length)} request(s)`
+  } catch (error) {
+    return `write failed: ${String(error?.message ?? error)}`
+  }
+}
+
+function toolResultFor(requests, callId) {  for (const req of requests) {
     for (const m of messagesOf(req)) {
       for (const b of Array.isArray(m?.content) ? m.content : []) {
         const id = b?.type === 'tool_result' ? (b?.tool_use_id ?? b?.call_use_id ?? null) : (m?.role === 'tool' ? m?.tool_call_id : null)

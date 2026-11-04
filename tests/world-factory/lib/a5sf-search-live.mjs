@@ -38,6 +38,7 @@
  * @module tests/world-factory/lib/a5sf-search-live
  */
 import { classifyDisposeFaults } from './a5sf-acceptance-preflight.mjs'
+import { overallVerdict } from './run-record.mjs'
 
 /** The one fact schema the Member realm's guard transport emits. */
 export const GUARD_FACT_SCHEMA = 'a5sf-guard-consult/1'
@@ -574,6 +575,166 @@ export function judgeSearchRow(caseId, sample = {}) {
     case SEARCH_CASE_IDS.row6: return judgeRow6(sample)
     default: throw new Error(`no search-live judge for ${JSON.stringify(caseId)} (known: ${SEARCH_CASES.join(', ')})`)
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// the PARTIAL-RUN contract: judge what was measured, and say why
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * WHY a case has the verdict it has. The verdict alone cannot distinguish
+ * "the product answered wrongly" from "this lane never got there", and the
+ * 2026-11-04T19:17Z run paid for that: seven real facts were measured in
+ * 400 ms, the run then aborted in the cancellation window, and the driver
+ * turned every row into `FAIL / DRIVER_ABORTED` — throwing away observations
+ * it had actually made. The correction is NOT "call a missing observation a
+ * pass"; it is to keep the two statements separate:
+ *
+ *   judged          a COMPLETE sample was handed to the row's normal judge, so
+ *                   the verdict is the judge's (PASS or FAIL), whatever the run
+ *                   did afterwards;
+ *   not-reached     the judge ran and its reachability predicate said no: the
+ *                   observable was never produced (never a pass);
+ *   driver-aborted  the run aborted before this case's evidence channel could
+ *                   be complete; the absence belongs to the instrument, not to
+ *                   the product, and the case is still NOT_REACHED.
+ */
+export const CASE_STATUS = Object.freeze({
+  JUDGED: 'judged',
+  NOT_REACHED: 'not-reached',
+  DRIVER_ABORTED: 'driver-aborted',
+})
+
+/**
+ * The evidence channels a row's claim needs BEFORE any judge has something to
+ * judge. This is deliberately NOT "would the judge pass": a complete sample may
+ * still refute the row (that is a FAIL, and it must be reported as one). What it
+ * excludes is the absent-observable class, which may never become a PASS.
+ *
+ * Keep this in step with the reachability branch of the matching judge: the two
+ * are tested together (see `a5sf-search-live.test.mjs`, "partial run" arms), so a
+ * judge that starts needing a new channel fails host-free, not after a boot.
+ *
+ * @param {string} caseId one of {@link SEARCH_CASES}
+ * @param {object|null} sample the sample the driver collected (may be null)
+ * @returns {{complete: boolean, missing: string[]}}
+ */
+export function sampleCompleteness(caseId, sample = null) {
+  const missing = []
+  if (sample === null || sample === undefined) return Object.freeze({ complete: false, missing: Object.freeze(['sample']) })
+  const present = (key) => sample[key] !== null && sample[key] !== undefined
+  switch (caseId) {
+    case SEARCH_CASE_IDS.row1:
+      if (!present('result')) missing.push('result')
+      break
+    case SEARCH_CASE_IDS.row2:
+      if (!present('result')) missing.push('result')
+      break
+    case SEARCH_CASE_IDS.row3:
+      if (!present('result')) missing.push('result')
+      if (!Array.isArray(sample.laneReport?.probePaths)) missing.push('laneReport')
+      else if (!sample.laneReport.probePaths.some((entry) => norm(entry?.locator) === norm(sample.declaredRoot))) missing.push('laneReportProbe')
+      break
+    case SEARCH_CASE_IDS.row4:
+      if (spawnRecords(sample.records).filter((row) => argvHas(row, sample.declaredRoot)).length === 0) missing.push('confinedSpawn')
+      if (!present('interrupt')) missing.push('interrupt')
+      break
+    case SEARCH_CASE_IDS.row5:
+      if (!present('result')) missing.push('result')
+      break
+    case SEARCH_CASE_IDS.row6:
+      if (isBlank(sample.member?.childSessionId)) missing.push('member')
+      if (!present('archive')) missing.push('archive')
+      if (!Array.isArray(sample.postStopDispatches) || sample.postStopDispatches.length === 0) missing.push('postStopDispatch')
+      if (!Number.isFinite(Date.parse(String(sample.stopInstant ?? '')))) missing.push('stopInstant')
+      break
+    default:
+      throw new Error(`no search-live completeness rule for ${JSON.stringify(caseId)} (known: ${SEARCH_CASES.join(', ')})`)
+  }
+  return Object.freeze({ complete: missing.length === 0, missing: Object.freeze(missing) })
+}
+
+/**
+ * Judge ONE case and record WHY, under either a completed or an aborted run.
+ *
+ * The three laws this encodes (each pinned by an arm in the suite):
+ *   1. a COMPLETE sample after a later abort is still judged by the normal
+ *      judge, and a PROVEN row reports PASS at the CASE level (the RUN stays
+ *      FAIL — see {@link summarizeRun});
+ *   2. an INCOMPLETE sample after an abort is NOT_REACHED, never PASS, and its
+ *      status says `driver-aborted` because the absence is the instrument's;
+ *   3. a COMPLETE sample with the WRONG bytes is FAIL, never PASS.
+ *
+ * @param {string} caseId one of {@link SEARCH_CASES}
+ * @param {object|null} sample the evidence sample (or null when none was built)
+ * @param {{abortedAt?: string|null, stage?: string|null}} [at] where/whether the run aborted
+ */
+export function judgeCase(caseId, sample = null, at = {}) {
+  const abortedAt = at.abortedAt ?? null
+  const stage = at.stage ?? null
+  const completeness = sampleCompleteness(caseId, sample)
+  if (!completeness.complete) {
+    // An incomplete sample may still tell us the judge's own reachability answer
+    // ("no call", "no lane report", …); it can never tell us the row passed.
+    const judged = sample === null ? notReached('NO_SAMPLE') : judgeSearchRow(caseId, sample)
+    return Object.freeze({
+      id: caseId,
+      verdict: 'NOT_REACHED',
+      status: abortedAt === null ? CASE_STATUS.NOT_REACHED : CASE_STATUS.DRIVER_ABORTED,
+      reason: judged.verdict === 'NOT_REACHED' ? judged.reason : 'INCOMPLETE_SAMPLE',
+      judgeVerdict: judged.verdict,
+      failed: Object.freeze([...(judged.failed ?? [])]),
+      sampleComplete: false,
+      missing: completeness.missing,
+      abortedAt,
+      stage,
+      detail: { ...(judged.detail ?? {}), incompleteSample: true, missing: completeness.missing },
+    })
+  }
+  const judged = judgeSearchRow(caseId, sample)
+  return Object.freeze({
+    id: caseId,
+    verdict: toRunVerdict(judged.verdict),
+    status: judged.verdict === 'NOT_REACHED'
+      ? (abortedAt === null ? CASE_STATUS.NOT_REACHED : CASE_STATUS.DRIVER_ABORTED)
+      : CASE_STATUS.JUDGED,
+    reason: judged.reason,
+    judgeVerdict: judged.verdict,
+    failed: Object.freeze([...(judged.failed ?? [])]),
+    sampleComplete: true,
+    missing: Object.freeze([]),
+    abortedAt,
+    stage,
+    detail: judged.detail ?? {},
+  })
+}
+
+/**
+ * The RUN-level fold. A case-level PASS is a statement about that CASE; it is
+ * never a statement about the run. An aborted run is `FAIL` — unconditionally,
+ * even when every case it did observe passed — and it says `partial: true` plus
+ * which cases were never observed, so a reader cannot mistake a partial record
+ * for a complete one.
+ *
+ * @param {object[]} cases case records from {@link judgeCase}
+ * @param {{abortedAt?: string|null}} [at]
+ */
+export function summarizeRun(cases, at = {}) {
+  const abortedAt = at.abortedAt ?? null
+  const list = Array.isArray(cases) ? cases : []
+  const folded = overallVerdict(list)
+  const neverObserved = list.filter((entry) => entry.verdict === 'NOT_REACHED').map((entry) => entry.id)
+  return Object.freeze({
+    overall: abortedAt === null ? folded : 'FAIL',
+    partial: abortedAt !== null,
+    abortedAt,
+    judged: list.filter((entry) => entry.status === CASE_STATUS.JUDGED).map((entry) => entry.id),
+    passed: list.filter((entry) => entry.verdict === 'PASS').map((entry) => entry.id),
+    neverObserved,
+    note: abortedAt === null
+      ? 'the run completed; overall is the worst case verdict'
+      : 'the run aborted, so it is FAIL even where a complete sample passed: a case PASS is not a run PASS, and a NOT_REACHED case is never a pass',
+  })
 }
 
 /**

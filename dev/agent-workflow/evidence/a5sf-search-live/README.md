@@ -28,10 +28,10 @@ admission — a fixture defect, fixed here. No grade is promoted: `M-06`/`M-07` 
 
 | | |
 |---|---|
-| **Proven host-free (0 boots)** | 45 `node:test` arms on the six judges (`tests/world-factory/a5sf-search-live.test.mjs`), 47 dry-run checks (`dry-run.mjs`), 9 mutation controls (`negative-controls.mjs`), plus the `--plan` handoff identity. All green at the commit this file lands on. |
-| **Proven live (3 boots)** | The World **composition** carries the rows it is given (attempts 2 and 3: all six `presentRowIds`, `missingRowIds=[]`), the p6t6 health route answers in 0.3–3 s, the anchor preset exposes a **24-tool surface including `grep` and `glob`**, and — attempt 3 — the evidence row's base spawn **launched the packaged `rg`** on the control's operand inside a real World with **no `base-spawn-failed` row** (F1 closed in the World's own composition). |
-| **NOT proven: the six rows** | 0/6 judged. Attempt 2 recorded `6/6 FAIL, reason=DRIVER_ABORTED_AT_team-create` — the fail-closed encoding, not a product verdict. No Member, no realm install, no confined `rg` process, no fact. Attempt 3 reached the control's spawn and was killed before its result was read. |
-| **NOT proven: the negative control** | Attempt 2 **ran it and it REFUTED** because the evidence row's own wrapper had called `spawn(undefined)` (F1, withdrawn — see §4). Attempt 3 **launched** the control's `rg` correctly but was killed before the tool result was recorded, so the leak is still unjudged. |
+| **Proven host-free (0 boots)** | 52 `node:test` arms on the six judges + the partial-run contract (`tests/world-factory/a5sf-search-live.test.mjs`), 59 dry-run checks (`dry-run.mjs`), 14 mutation controls (`negative-controls.mjs`), the `--plan` handoff identity, and the offline re-judgement of attempt 6 (`rejudge-attempt6.mjs`). All green at the commit this file lands on. |
+| **Proven live (6 boots)** | The World **composition** carries the rows it is given (attempts 2 and 3: all six `presentRowIds`, `missingRowIds=[]`), the p6t6 health route answers in 0.3–3 s, the anchor preset exposes a **24-tool surface including `grep` and `glob`**, the evidence row's base spawn launches the packaged `rg` (attempt 3), the anchor's **unconfined control leaks both out-of-lane tokens** (attempt 5, PROVEN), and — attempt 6 — the **Member realm installs and serves three confined `rg` processes** plus seven guard facts (§3c). |
+| **Measured but not judged: the six rows** | 0/6 judged. Attempt 6 observed the guard facts, spawns and exits for rows 1/2/3/5, then aborted in `cancellation-window`; the result *bytes* were never persisted, so no row has a complete sample (`rejudge-attempt6.json`). The old record's `6/6 FAIL` was a driver-level bulk assignment, not six refutations (§3d); the correct case status is `NOT_REACHED` + `driver-aborted`, and the run is `FAIL` + `partial`. |
+| **NOT proven: the negative control** | ~~refuted~~ — **PROVEN** in attempt 5 (§3c): one base spawn, both out-of-lane secrets in the result, zero confined spawns. |
 | **Grade that follows** | `grep`/`glob`: `ENFORCE-PARTIAL`, `V@B=no`, `tested` unchanged. The host-free half of BL-16 (`evidence/a5sf-bl16-grep/`) still stands on its own evidence. |
 
 ## 2. Attempt 1: a driver defect, and the net that now guards it
@@ -189,8 +189,22 @@ cancellation stage — which waits for the FIFO grep to be *admitted* — found 
 a denial instead. The FIFO was at `lane/blocking.fifo`, i.e. inside the ceiling but
 **outside** the tool restriction (`lane/inside`), so the guard correctly refused it.
 The window needs an ADMITTED search that then blocks. The fixture now places the FIFO
-inside the effective lane (`lane/inside/blocking.fifo`), which is the one-line change
-this round hands over.
+inside the effective lane (`lane/inside/blocking.fifo`).
+
+The run's own lane report names the cause, which is why this is a measurement and not
+a hypothesis (`stage-diagnosis.json`, `probe.laneReport.probePaths[4]`):
+
+```
+locator …/workspace/lane/blocking.fifo
+  ceilingRead: allow        ← inside the ceiling
+  restrictionRead: deny     ← outside lane/inside
+  effectiveRead: deny       ← so the guard refuses it at admission
+```
+
+**What attempt 6 got wrong about its own record** (corrected in §3d): the driver
+judged nothing and then wrote all six rows as `FAIL / DRIVER_ABORTED_AT_cancellation-window`.
+The run *is* a FAIL, but the rows were not refuted — they were never observed. The
+record now distinguishes the two.
 
 ### The three instrument defects this round found and fixed
 
@@ -206,6 +220,118 @@ this round hands over.
    requires `sampleOverCapGlobResults`; a bare string entry mounts with `{}` and the
    realm install is refused. The row now passes `{ sampleOverCapGlobResults: false }`
    (deterministic head for an over-cap page).
+
+## 3d. The 2026-11-05 correction round: judge what was measured (no boot)
+
+Attempt 6's driver measured seven facts and then discarded them. Not by crashing —
+by **deciding**. This round fixes that, and it fixes it without spending a start
+(pool 6/6, no Host booted; everything below is host-free).
+
+### The single line that threw the observations away
+
+The success path judged rows **only in the final verdict loop**, after the
+cancellation window:
+
+```js
+// old run-boot.mjs, end of boot(): the first and only judging site
+if (oracleSamples[id] === undefined) add(id, 'NOT_REACHED', { reason: 'NO_SAMPLE' })
+```
+
+and the abort path then fail-closed every row that had no sample —
+
+```js
+// old abort path
+for (const id of CASES) {
+  if (oracleSamples[id] === undefined) add(id, 'FAIL', { reason: `DRIVER_ABORTED_AT_${abortStage}` })
+}
+```
+
+Because `oracleSamples` was populated *downstream* of `cancellation-window`, the
+abort found it empty and turned six rows into `FAIL`. The guard against laundering a
+missing observation into a pass ("a live regression must never be NOT_REACHED") was
+implemented as a bulk `FAIL`, which is the opposite error: it asserted a refutation
+that had never been observed. Four rows had live facts at that moment; the driver
+dropped them on the floor.
+
+### The law that replaces it
+
+| about | rule |
+|---|---|
+| a **case** | judged only from a COMPLETE sample, by that row's own judge; an incomplete sample is `NOT_REACHED` |
+| a **case after an abort** | a complete sample keeps its real verdict (a PASS is a *case* PASS); an incomplete one is `NOT_REACHED` with `status: driver-aborted` |
+| the **run** | an abort after the Host was reached is `FAIL`, `partial: true`, with the aborting stage recorded — a case PASS can never lift it |
+| the record | names `judgedCases` and `neverObserved` separately, so no reader can mistake "not looked at" for "looked at and refuted" |
+
+Machine-checkable statuses (`CASE_STATUS` in `tests/world-factory/lib/a5sf-search-live.mjs`):
+`judged` / `not-reached` / `driver-aborted`. `sampleCompleteness(caseId, sample)` names
+the missing channel per row (`result`, `laneReport`, `laneReportProbe`, `confinedSpawn`,
+`interrupt`, `memberChildSessionId`, …), and `judgeCase` is the only judging entry.
+
+**Three pinned cases** (`a5sf-search-live.test.mjs`, 52 arms) — and each one has a
+mutation control that turns it RED (`negative-controls.mjs` 8–11):
+
+| sample, after an abort | case verdict | must never be |
+|---|---|---|
+| complete, correct bytes | `PASS`, `status=judged` | — |
+| incomplete (`result` null) | `NOT_REACHED`, `status=driver-aborted` | `PASS` |
+| complete, wrong bytes | `FAIL`, `status=judged` | `PASS` |
+
+and the run fold: `PASS` + `NOT_REACHED` cases under an abort ⇒ `overall: FAIL`,
+`partial: true`. On a completed run the same pair folds to `NOT_REACHED` — the run
+verdict is the worst case, the abort is the only thing that makes it `FAIL`.
+
+### The driver now judges as it goes
+
+Judging happens at **every point where a sample becomes complete**, not once at the
+end: after the member turn is dispatched (`delegate-dispatch`), after each row's
+evidence arrives (`evidence-collection`), after teardown (`teardown`), and again on
+the abort path (`abort:<stage>`). `judgeSettledRows()` skips incomplete samples rather
+than freezing their incompleteness, so a later flush can still judge them. The abort
+path re-judges from the channels that exist, records `markAborted({stage, detail,
+error})`, and writes the same `oracle-samples.json` (now with `partial`, `abortedAt`
+and each sample's `missing` list) so the next failure is re-judgeable offline.
+
+The **third channel** is now persisted: `mock-requests.json` carries the model-visible
+transcript, i.e. the tool-result bytes every row judge compares against. Attempt 6's
+sink and counter were copied out; its results were not, and that single omission is
+why the run below cannot be re-judged.
+
+### Offline re-judgement of attempt 6 (`rejudge-attempt6.mjs` → `rejudge-attempt6.json`)
+
+| row | archived | re-judged | status | on disk | named gap |
+|---|---|---|---|---|---|
+| 1 in-lane grep | FAIL | **NOT_REACHED** | driver-aborted | 1 fact, 1 spawn, exit **2** | `result` |
+| 2 ceiling deny | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, 1 spawn, 0 exits | `result` |
+| 3 restriction deny | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, lane report | `result` |
+| 4 cancel on FIFO | FAIL | **NOT_REACHED** | driver-aborted | 1 deny fact, **0 spawns** | `confinedSpawn`, `interrupt` |
+| 5 invalid pattern | FAIL | **NOT_REACHED** | driver-aborted | 1 fact, 1 spawn, exit 2 | `result` |
+| 6 teardown | FAIL | **NOT_REACHED** | driver-aborted | nothing | `sample` |
+
+`judgeable offline: 0 of 6`. The archived record's six `FAIL`s are all withdrawn as
+*case* verdicts — it claimed six refutations and made zero observations. The **run**
+stays FAIL, because the driver aborted after reaching the Host.
+
+**The one row with a refutation signal is row 1**, and it is reported as a risk, not a
+verdict: its in-lane `grep` exited **2**, and the pinned module maps any exit ∉ {0,1}
+to `SearchError(SEARCH_FAILED)` (`tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js:201`),
+i.e. `isError: true`, which would fail row 1's `resultNotError` clause. The same
+binary, cwd and tree produced exit 0 for the `--no-ignore` glob and exit 2 for the
+invalid pattern (correct), so the discriminating difference for row 1 is the missing
+`--no-ignore`: ripgrep then discovers ignore/git metadata in the **ancestors** of the
+search root (`lane/`, `workspace/`, the World home), and the restriction admits only
+`lane/inside`. `stderr` was never persisted, so the cause cannot be named from what
+survived — that is the named gap, and the smallest next measurement in this lane.
+
+### Row 4's window, and the gate that would have caught the placement
+
+The FIFO moved to `lane/inside/blocking.fifo`, and the dry run now decides its
+placement with the **product algebra**, not a regex: it reads `plan-paths.json`
+(written by `--plan`, so the paths the boot will actually compose), builds
+ceiling/restriction/effective from the product `path-rules`, and requires
+`matchLocator(effective, fifo) === 'allow'`. The same inputs must return `deny` for
+the attempt-6 operand (`<ceiling>/lane/blocking.fifo`), so the check cannot be green
+for "any FIFO anywhere". A mutation control rewrites the placement to
+`join(inLane, '..', 'blocking.fifo')` and requires the dry run RED.
 
 ## 4. The two live findings
 
@@ -275,16 +401,37 @@ preset alone cannot produce a confined search on any agent.
 
 ## 5. Row 3, and the realm
 
-Row 3 (a binding restriction narrower than the ceiling) stays **`UNSUPPORTED` for
-preset-expression**. A binding realm has no `subprocess` face today (BL-17 refuses
-the module with `SUBPROCESS_UNCONFINED_REALM`), so the two-axis restriction is
-composed from lane inputs with the **product** algebra
-(`intersectPathRuleSets`/`matchLocator` from `dist`) and `judgeRow3` records
-`presetExpressesBindingRestriction:false` + `presetLimit`. The lane report in
-attempt 2 shows the composition it would have used (ceiling = the workspace,
-restriction = the in-lane subtree, effective = the intersection). The live fact
-would be `realm='member'`, `toolBindingIdentity=null`; that stays a recorded gap,
-never an asserted pass.
+**Row 3 is now `SUPPORTED` as a genuine restriction-lane refusal, and remains
+`UNSUPPORTED` only for *preset-expression*.** Those are two different claims and the
+earlier note ran them together.
+
+What attempt 6 measured (`stage-diagnosis.json` → `probe.laneReport.probePaths[1]`),
+for the exact restricted file:
+
+```
+locator …/workspace/lane/outside-restriction.txt
+  ceilingRead: allow        ← the workspace ceiling ADMITS it
+  restrictionRead: deny     ← only the narrower tool restriction denies it
+  effectiveRead: deny
+```
+
+`rejudge-attempt6.mjs` re-runs the **product** algebra (`intersectPathRuleSets` /
+`matchLocator` from `dist`) over the report's *recorded* allow lists and reproduces
+the same triple (`recomputedMatchesRecord: true`); widening the restriction to the
+ceiling flips the effective answer to `allow`. So the deny is **not** ceiling-derived:
+it is the two-axis restriction doing the work. The earlier `UNSUPPORTED` note was
+over-pessimistic, and an over-pessimistic record is its own inaccuracy — the
+correction is recorded in `rejudge-attempt6.json#corrections`.
+
+What stays `UNSUPPORTED` is only this: a **binding realm** has no `subprocess` face
+today (BL-17 refuses the module with `SUBPROCESS_UNCONFINED_REALM`), so the
+restriction is *composed by the evidence fixture* with the product algebra rather
+than expressed by the preset. `judgeRow3` records
+`presetExpressesBindingRestriction: false` + `presetLimit` in the verdict, so no
+reader can mistake the fixture's composition for a preset capability. The live fact
+is `realm='member'`, `toolBindingIdentity=null`. The matrix/backlog note should read:
+*row 3 deny = restriction-lane (measured); preset-expression of a binding restriction
+= unsupported (unchanged)*.
 
 ## 6. The budget, honestly
 
@@ -357,8 +504,11 @@ PASS handoff: the driver CALLS the handoff before harness.boot( (independent sou
 |---|---|
 | `run-boot.mjs` | the driver (`--plan` host-free; boot mode is the one shot). `handOverRows`, the ruling-based budget, the stage taxonomy, the composed-profile probe. |
 | `a5sf-search-realm-provider-row.mjs` | the evidence row: composes ceiling ∩ restriction with the product algebra, `compiledFor()` returns the confined `subprocess` face, counts installs/spawns at the prototype boundary, writes the lane report. |
-| `dry-run.mjs` | 47 host-free checks: driver, row, product seam, premises, dist provenance, handoff, budget 0. |
-| `negative-controls.mjs` | 9 mutation controls (break the property, require RED, restore bytes, verify sha256, restore the committed dry-run artifacts the mutated runs overwrite). |
+| `dry-run.mjs` | 59 host-free checks: driver, row, product seam, premises, dist provenance, handoff, budget 0, the partial-run cases, and the FIFO's placement decided by the product algebra. |
+| `negative-controls.mjs` | 14 mutation controls (break the property, require RED, restore bytes, verify sha256, restore the committed dry-run artifacts the mutated runs overwrite), including one per partial-run law and one for the attempt-6 FIFO placement. |
+| `rejudge-attempt6.mjs` / `.json` | offline re-judgement of the 2026-11-04T19:17Z run from the harvested channels only: per-row verdict, `missing` channels, named gaps, the row-1 refutation risk, and the row-3 attribution cross-check. No Host. |
+| `mock-requests.json` | the mock transcript (tool-result bytes) persisted OUTSIDE the World home; written at dispatch, at each settled row and on the abort path. Absent for attempt 6 — that absence is why it cannot be re-judged. |
+| `plan-paths.json` | the paths `--plan` composed (ceiling/restriction allow lists, in-lane dir/file, the restricted and outside operands, the FIFO); the FIFO placement check reads it. |
 | `go-no-go.mjs` | the boot authorisation gate (dry run, controls, handoff identity, digest, clean tree, branch, ledger invariant, pool, ruling, pinned host). |
 | `lane-ruling.json` | the two authorised starts, each with `by` + `reason`; the driver and the gate both read it. |
 | `plan-rows.json` | the handoff proof: `emittedRowIds` vs `worldRowIds`, ordered identity, health-probe row. |
@@ -375,22 +525,27 @@ is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 
 ## 9. What is NOT proven (complete list)
 
-1. **All six live rows** — unmeasured, though the Member half is now *reached*: the
-   guard facts, the confined spawns and the denies for rows 1/2/3/5 were all observed
-   live on 2026-11-04T19:13Z (§3c); what is missing is the *judging*, which the
-   cancellation fixture aborted.
+1. **All six live rows** — unmeasured. The Member half is *reached*: the guard facts,
+   the confined spawns and the denies for rows 1/2/3/5 were observed live on
+   2026-11-04T19:13Z (§3c); what is missing is the *complete sample* for any row, so no
+   row can be judged (§3d). Row 1 additionally carries a measured refutation signal
+   (its in-lane `grep` exited 2) that must not be read as a pass.
 2. ~~The negative control~~ — **PROVEN** on 2026-11-05 (§3c): the unconfined search
    leaks both out-of-lane tokens.
 3. ~~F1's exact cause~~ — **resolved and withdrawn** (`165059eea`): the lane's own
    wrapper called `spawn(undefined)`.
 4. **The leader-deny fix (F2)** — verified host-free against the real gate, not yet
    observed live.
-4b. **The leader grep probe (last-start condition 2)** — implemented and gated, but
-   never executed: the kill came during the control turn, one turn earlier.
-5. **The fact realm for search** — would be `member` with `toolBindingIdentity:null`.
-6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED`.
-7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`,
-   but the end-to-end timing is unmeasured.
+4b. **The leader grep probe (last-start condition 2)** — implemented and gated; it has
+   not run since the kill came during the control turn of attempt 3 (attempt 6 ran it
+   green: `probe-leader-grep.json`).
+5. **The fact realm for search** — observed: `member` with `toolBindingIdentity:null`
+   (all seven attempt-6 facts).
+6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED` (the *deny itself*
+   is now supported as restriction-lane: §5).
+7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`, and
+   the operand is now inside the effective lane; the end-to-end timing is still
+   unmeasured.
 8. **`>cap` clipping, streaming mid-read cancel, atomic replace/version conflict** —
    out of scope, untouched. **M-07 `glob`** — equally unmeasured.
 
@@ -554,8 +709,21 @@ each one is backed by a specific loss here.
 7. **A cancellation fixture must be ADMITTED before it can block.** A FIFO inside the
    ceiling but outside the tool restriction is refused at admission (`IO_READ_DENIED`)
    and the window never opens; the blocking operand has to sit inside the effective
-   read lane.
+   read lane. This is now checked by the product algebra over `plan-paths.json`, and
+   the check is pinned by a mutation that restores the attempt-6 placement (§3d).
+8. **An abort must judge what it measured, and only that.** The rule that must
+   survive is "never launder a missing observation into a pass". The over-correction
+   that must not is "discard the observations you made": attempt 6 measured seven
+   facts, then fail-closed six rows to `FAIL`, asserting refutations it had never
+   observed (§3d). A run verdict and a case verdict are different claims; an aborted
+   run is `FAIL` + `partial`, its judged cases keep their own verdicts, and every
+   unobserved case is `NOT_REACHED` with a named missing channel.
+9. **Persist the bytes, not just the decisions.** The sink (facts) and the counter
+   (spawns/exits) survived attempt 6; the mock transcript (the tool results) did not,
+   and without it no row is judgeable. `mock-requests.json` is written outside the
+   World home at dispatch, at each settled row and on the abort path — the same lesson
+   as rule 4's counter, one channel further out.
 
-Two smaller ones, already enforced: a fail-closed verdict (`DRIVER_ABORTED_AT_*`) is
-`FAIL`, never `NOT_REACHED`, once a Host was reached; and an instrument records and
-rethrows, it never decides.
+Two smaller ones, already enforced: an instrument records and rethrows, it never
+decides; and a driver that reports a *run* verdict must never do so by bulk-assigning
+*case* verdicts it did not measure.

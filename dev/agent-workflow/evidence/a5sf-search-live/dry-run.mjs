@@ -144,9 +144,11 @@ check('driver: no second root literal', !driverSource.includes("'session-a5sf-ac
 check('driver: imports the shared root identity + the shared oracle', /P2_01_ACCEPTANCE_ROOTS/u.test(driverSource)
   && /assertAcceptanceRootWiring/u.test(driverSource)
   && /judgeSearchRow/u.test(driverSource)
-  && /toRunVerdict/u.test(driverSource)
+  && /judgeCase/u.test(driverSource)
+  && /sampleCompleteness/u.test(driverSource)
+  && /summarizeRun/u.test(driverSource)
   && /judgeNegativeControl/u.test(driverSource),
-  'root identity, six-row dispatch, verdict mapping and the control all come from the shared modules')
+  'root identity, six-row dispatch, per-case status, run fold and the control all come from the shared modules')
 check('driver: the case list IS the contract list', /const CASES = Object\.freeze\(\[\.\.\.SEARCH_CASES\]\)/u.test(driverSource)
   && /assertCaseListMatchesContract/u.test(driverSource),
   'a drifted/renamed id throws before the grant, not after a spent start')
@@ -163,9 +165,24 @@ check('driver: the full guard-fact stream is persisted', /writeFileSync\(join\(H
 check('driver: declares expectedTools for BOTH native modules', /a5sfExpectedTools:\s*\{/u.test(driverSource)
   && /grep', 'glob'/u.test(driverSource),
   'the attach refuses (A5SF_EXPECTED_TOOLS_UNSHADOWED) instead of silently keeping the preset search')
-check('driver: an abort after the Host is reached is a FAIL, never NOT_REACHED', /DRIVER_ABORTED_AT_/u.test(driverSource)
-  && /if \(hostReached\) \{/u.test(driverSource),
-  'a live regression must never be laundered into NOT_REACHED')
+// THE PARTIAL-RUN LAW (2026-11-05). The old rule here was "an abort after the
+// Host is reached is a FAIL, never NOT_REACHED" — true about the RUN, but it was
+// implemented by fail-closing every case, so the 2026-11-04T19:17Z abort threw
+// away seven facts that had already been measured. The law that survives is
+// "never launder a missing observation into a pass"; the one that does not is
+// "discard observations you actually made".
+check('driver: an aborted run JUDGES what it measured and still reports the RUN as FAIL',
+  /sampleCompleteness\(/u.test(driverSource)
+  && /judgeCase\(/u.test(driverSource)
+  && /abortedAt: abortStage/u.test(driverSource)
+  && /record\.markAborted\(/u.test(driverSource)
+  && /summarizeRun\(/u.test(driverSource)
+  && /judgeSettledRows\('delegate-dispatch'\)/u.test(driverSource),
+  'complete samples keep their case verdict after an abort (a case PASS is not a run PASS); incomplete ones are NOT_REACHED + driver-aborted; the run is FAIL + partial, and the settled rows are judged BEFORE the cancellation window')
+check('driver: a case is never fail-closed to FAIL merely because the run aborted',
+  !/add\(id, 'FAIL', \{ reason: `DRIVER_ABORTED_AT_/u.test(driverSource)
+  && /if \(record\.getCase\(id\) !== undefined\) continue/u.test(driverSource),
+  'the 2026-11-04 loop assigned FAIL/DRIVER_ABORTED to every row with no sample — discarding the rows that had one')
 check('driver: the start budget is the RULING FILE, not a constant the driver may raise', /readRuling\(\)/u.test(driverSource)
   && /bootSequence > ruling\.starts/u.test(driverSource)
   && /DEDICATED_ALLOCATION_EXHAUSTED/u.test(driverSource)
@@ -234,9 +251,10 @@ check('driver: the mock sequences on TOOL RESULTS, not assistant tool_use echoes
   /function resultIdsOf/u.test(driverSource)
   && !/const greps = countAssistantToolUses\(req, 'grep'\)/u.test(driverSource),
   'this harness does not echo the assistant tool_use block, so a tool_use counter never advances: every turn re-issued its call and burned 120 s')
-check('driver: the cancellation FIFO sits INSIDE the effective read lane',
-  /fifo: join\(inLane, 'blocking\.fifo'\)/u.test(driverSource),
-  'a FIFO at lane/blocking.fifo is refused by the restriction (deny IO_READ_DENIED), so no confined spawn ever opens the window: the operand must be admitted')
+// The FIFO's PLACEMENT is checked by the product algebra in §5b, from the paths
+// `--plan` actually composed. A text match cannot decide it: attempt 6's
+// `fifo: join(laneDir, 'blocking.fifo')` was a well-formed path, one directory
+// outside the restriction, and it cost the run its cancellation window.
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)
@@ -335,6 +353,82 @@ check('lane: the inside-ceiling / outside-restriction operand is denied ONLY bec
   { ceiling: dCeiling.denyInside, restriction: dRestriction.denyInside, effective: dEffective.denyInside })
 check('lane: the intersection NEVER widens (no allow the ceiling denies)', [IN, DENY_INSIDE_CEILING, OUTSIDE].every((locator) => !(pathRules.matchLocator(effective, locator) === 'allow' && pathRules.matchLocator(ceiling, locator) === 'deny')),
   'the upper-bound law EffectiveIo ⊆ Ceiling is checked on the three operands')
+
+// ── 5b. the cancellation FIFO must be INSIDE the effective read lane ────────
+// Attempt 6 (2026-11-04T19:17Z) put the FIFO at `lane/blocking.fifo`: inside the
+// ceiling, OUTSIDE the narrower tool restriction, so the guard refused it at
+// admission (`deny IO_READ_DENIED`), no confined spawn ever opened the window,
+// and the run aborted after 240 s with four rows already measured. This check
+// reads the paths `--plan` composed and lets the PRODUCT algebra decide.
+const planPaths = JSON.parse(readFileSync(join(HERE, 'plan-paths.json'), 'utf8'))
+const planCeiling = lane('restricted', planPaths.ceilingReadAllow)
+const planRestriction = lane('restricted', planPaths.restrictionReadAllow)
+const planEffective = pathRules.intersectPathRuleSets(planCeiling, planRestriction)
+const fifoDisposition = {
+  fifo: planPaths.fifo,
+  ceiling: pathRules.matchLocator(planCeiling, planPaths.fifo),
+  restriction: pathRules.matchLocator(planRestriction, planPaths.fifo),
+  effective: pathRules.matchLocator(planEffective, planPaths.fifo),
+}
+report.fifoDisposition = fifoDisposition
+check('driver: the cancellation FIFO is ADMITTED by the effective read lane',
+  fifoDisposition.ceiling === 'allow' && fifoDisposition.restriction === 'allow' && fifoDisposition.effective === 'allow',
+  fifoDisposition)
+// And the SAME inputs must REFUSE the attempt-6 operand, or the check above
+// would be green for "any FIFO anywhere" and prove nothing.
+const attempt6Fifo = join(planPaths.ceilingReadAllow[0], 'lane', 'blocking.fifo')
+const attempt6FifoDisposition = {
+  fifo: attempt6Fifo,
+  ceiling: pathRules.matchLocator(planCeiling, attempt6Fifo),
+  restriction: pathRules.matchLocator(planRestriction, attempt6Fifo),
+  effective: pathRules.matchLocator(planEffective, attempt6Fifo),
+}
+report.attempt6FifoDisposition = attempt6FifoDisposition
+check('lane: the attempt-6 FIFO placement (lane/blocking.fifo) is DENIED by the effective lane',
+  attempt6FifoDisposition.ceiling === 'allow' && attempt6FifoDisposition.effective === 'deny',
+  attempt6FifoDisposition)
+
+// The partial-run oracle, exercised as a RUN (not only as the six static judges):
+// a complete sample that passed, a complete sample that was contradicted, and an
+// incomplete one, all after an abort. `negative-controls.mjs` breaks each of the
+// three properties and requires THIS script to go red.
+const partialProbe = await (async () => {
+  const module = await import(pathToFileURL(join(REPO_ROOT, 'tests', 'world-factory', 'lib', 'a5sf-search-live.mjs')).href)
+  const root = '/w/lane'
+  const factOne = {
+    schema: 'a5sf-guard-consult/1', realm: 'member', memberIdentity: 'm', toolBindingIdentity: null,
+    policyRevision: 'r', method: module.SUBPROCESS_GUARD_METHOD, locator: root, decision: 'allow',
+    decidedBy: 'ALLOW', observedAt: '2026-11-05T00:00:00.000Z',
+  }
+  const spawnRow = { leg: 'confined-spawn', argv: ['/rg', '--no-config', '--json', '--regexp=A5SF_SEARCH_NEEDLE', '--', root], cwd: '/w', at: '2026-11-05T00:00:00.000Z' }
+  const complete = {
+    result: { source: 'model', isError: false, text: `Found 1 match in ${root}/needle.txt\n${root}/needle.txt:1:A5SF_SEARCH_NEEDLE` },
+    facts: [factOne], records: [spawnRow], declaredRoot: root, needle: 'A5SF_SEARCH_NEEDLE', fileName: 'needle.txt',
+  }
+  const wrongBytes = { ...complete, result: { source: 'model', isError: false, text: 'No matches found' } }
+  const incomplete = { ...complete, result: null }
+  const passCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, complete, { abortedAt: 'cancellation-window' })
+  const incompleteCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, incomplete, { abortedAt: 'cancellation-window' })
+  const wrongCase = module.judgeCase(module.SEARCH_CASE_IDS.row1, wrongBytes, { abortedAt: 'cancellation-window' })
+  const runFold = module.summarizeRun([passCase, incompleteCase], { abortedAt: 'cancellation-window' })
+  return { passCase, incompleteCase, wrongCase, runFold }
+})()
+report.partialRun = partialProbe
+check('partial run: a COMPLETE sample after a later abort is judged PASS at CASE level',
+  partialProbe.passCase.verdict === 'PASS' && partialProbe.passCase.status === 'judged' && partialProbe.passCase.sampleComplete === true,
+  { verdict: partialProbe.passCase.verdict, status: partialProbe.passCase.status })
+check('partial run: an INCOMPLETE sample after an abort is NOT_REACHED + driver-aborted (never PASS)',
+  partialProbe.incompleteCase.verdict === 'NOT_REACHED' && partialProbe.incompleteCase.status === 'driver-aborted'
+  && partialProbe.incompleteCase.missing.includes('result') && partialProbe.passCase.verdict !== 'NOT_REACHED',
+  { verdict: partialProbe.incompleteCase.verdict, status: partialProbe.incompleteCase.status, missing: partialProbe.incompleteCase.missing })
+check('partial run: a COMPLETE sample with the WRONG bytes is FAIL, never PASS',
+  partialProbe.wrongCase.verdict === 'FAIL' && partialProbe.wrongCase.status === 'judged' && partialProbe.wrongCase.sampleComplete === true,
+  { verdict: partialProbe.wrongCase.verdict, status: partialProbe.wrongCase.status })
+check('partial run: the RUN is FAIL + partial even though one case PASSED',
+  partialProbe.runFold.overall === 'FAIL' && partialProbe.runFold.partial === true
+  && partialProbe.runFold.passed.length === 1 && partialProbe.runFold.neverObserved.length === 1
+  && partialProbe.runFold.judged.length === 1,
+  partialProbe.runFold)
 
 // ── 6. the product seam the rows depend on ─────────────────────────────────
 const teamServices = join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src')

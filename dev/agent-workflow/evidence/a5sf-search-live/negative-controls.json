@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/negative-controls/1",
-  "at": "2026-11-04T18:50:38.522Z",
+  "at": "2026-11-04T19:44:26.110Z",
   "controls": [
     {
       "id": "oracle: row 2 must REFUTE a refusal that still created a process",
@@ -54,7 +54,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T18:50:32.101Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 49 failed: driver: declares expectedTools for BOTH native modules"
+        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: declares expectedTools for BOTH native modules, the product tree has no uncommitted modification"
       }
     },
     {
@@ -65,7 +65,7 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T18:50:35.376Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 1 of 49 failed: driver: the cancellation trigger is the SHIPPED client route"
+        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: the cancellation trigger is the SHIPPED client route, the product tree has no uncommitted modification"
       }
     },
     {
@@ -76,7 +76,62 @@
         "exit": 1,
         "expected": "non-zero (the check must fail on the broken property)",
         "checkNamed": true,
-        "tail": "[2026-11-04T18:50:38.500Z] CHECK PASS the product tree has no uncommitted modification: (clean) | DRY RUN RED — 3 of 49 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle"
+        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 4 of 59 failed: driver: the composed rows are GIVEN to the World (not only emitted), driver --plan is green, boot path: no undefined identifiers / use-before-define in the driver, row, oracle, the product tree has no uncommitted modification"
+      }
+    },
+    {
+      "id": "partial run: an INCOMPLETE sample after an abort must NOT become PASS",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "partial run: a COMPLETE sample after an abort must KEEP its judged status",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "partial run: a COMPLETE sample with the WRONG bytes must NOT become PASS",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "partial run: the RUN must stay FAIL on an abort even when its cases passed",
+      "ok": true,
+      "detail": {
+        "file": "tests/world-factory/lib/a5sf-search-live.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": "    diff: 'simple' |   }"
+      }
+    },
+    {
+      "id": "row 4: a FIFO one directory OUTSIDE the restriction must be RED (attempt 6 placement)",
+      "ok": true,
+      "detail": {
+        "file": "dev/agent-workflow/evidence/a5sf-search-live/run-boot.mjs",
+        "exit": 1,
+        "expected": "non-zero (the check must fail on the broken property)",
+        "checkNamed": true,
+        "tail": " M tests/world-factory/lib/run-record.mjs | DRY RUN RED — 2 of 59 failed: driver: the cancellation FIFO is ADMITTED by the effective read lane, the product tree has no uncommitted modification"
       }
     },
     {
