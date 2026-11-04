@@ -1,9 +1,9 @@
 {
   "schema": "a5sf-search-live/plan-rows/1",
-  "at": "2026-11-04T16:47:33.047Z",
-  "head": "219e6fad0131c91f63c5473d60febc5bdd6a76e3",
-  "patchBytes": 6419,
-  "patchSha256": "078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a",
+  "at": "2026-11-04T17:09:25.895Z",
+  "head": "b4130da0c56599ce3a0c5349555205ac5963b689",
+  "patchBytes": 6531,
+  "patchSha256": "3faca51aadb00357629c98e5bbd9e3e44ca2ce1af03c94683c78d09beee197da",
   "emittedRowIds": [
     "a5sf-search-realm",
     "dsh-agent-team",

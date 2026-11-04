@@ -196,6 +196,27 @@ check('driver: the leader DENIES grep/glob (the coverage gate refuses them unman
   && /!LEADER_MANAGED_TOOL_NAMES\.includes\(n\)/u.test(driverSource)
   && /TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED|known-sensitive-unmanaged/u.test(driverSource),
   'the retry refused team.create on exactly this; the Member still gets grep/glob through its realm')
+// CONDITION 2 of the LAST-start ruling: the cheap pre-team.create artifact.
+// F1's cause was swallowed twice because the instrument's record lived inside
+// the World home that teardown deletes; the probe now persists the counter and
+// the fact sink OUT of the home before team.create and again on the abort path.
+check('driver: the leader grep probe runs BEFORE team.create and persists its channels outside the home',
+  /MK_PROBE/u.test(driverSource)
+  && driverSource.indexOf("abortStage = 'leader-grep-probe'") < driverSource.indexOf("abortStage = 'surface'")
+  && /LEADER_GREP_PROBE_FAILED/u.test(driverSource)
+  && /persistRunChannels/u.test(driverSource)
+  && /probe-leader-grep\.json/u.test(driverSource),
+  'a base-spawn failure must reach the artifact with its Node cause, and the counter/sink must survive teardown')
+{
+  const ruling = JSON.parse(readFileSync(join(HERE, 'lane-ruling.json'), 'utf8'))
+  check('ruling: every authorised start is a NAMED ruling, and the pool is spent after this lane',
+    ruling.authorisedStarts === 3
+      && ruling.rulings.length === 3
+      && ruling.rulings.reduce((n, r) => n + r.starts, 0) === 3
+      && ruling.rulings[2].by.includes('last P2-04 start')
+      && ruling.remainingAfterThisLane === 0,
+    'three starts, three named authorisations (task instruction, retry, last start); no fourth')
+}
 check('driver: the abort stage distinguishes composition / member-install / delegate-dispatch / cancellation-window',
   ['composition', 'member-install', 'delegate-dispatch', 'cancellation-window'].every((stage) => new RegExp(`abortStage = '${stage}'`, 'u').test(driverSource))
   && /COMPOSITION_ROWS_MISSING/u.test(driverSource)

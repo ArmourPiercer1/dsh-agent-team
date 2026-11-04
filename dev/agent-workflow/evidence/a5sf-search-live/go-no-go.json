@@ -1,8 +1,8 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live-20261104",
-  "evidenceHeadAtDryRun": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
-  "productTreeDigest": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7",
+  "evidenceHeadAtDryRun": "165059eea4ab70eed728a8c48957692932f10aea",
+  "productTreeDigest": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-04 grep (BL-16)",
@@ -11,8 +11,8 @@
     "remaining": 1
   },
   "ruling": {
-    "authorisedStarts": 2,
-    "entries": 2,
+    "authorisedStarts": 3,
+    "entries": 3,
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/lane-ruling.json"
   },
   "handoff": {
@@ -29,7 +29,7 @@
       "preset-a5sf-search-base"
     ],
     "identityHolds": true,
-    "patchSha256": "078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a"
+    "patchSha256": "3faca51aadb00357629c98e5bbd9e3e44ca2ce1af03c94683c78d09beee197da"
   },
   "ledger": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
@@ -44,13 +44,13 @@
     "bootsInPool": 3,
     "remaining": 1
   },
-  "go": false,
+  "go": true,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
       "ok": true,
       "detail": {
-        "checks": 47,
+        "checks": 49,
         "failed": 0
       }
     },
@@ -99,8 +99,8 @@
       "id": "handoff: the driver CALLS the handoff before harness.boot( (independent source read)",
       "ok": true,
       "detail": {
-        "handoffIndex": 8625,
-        "bootIndex": 37804,
+        "handoffIndex": 8736,
+        "bootIndex": 38593,
         "call": "handOverRows(world, rows)"
       }
     },
@@ -108,18 +108,18 @@
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
       "ok": true,
       "detail": {
-        "planHead": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
-        "head": "098f445f51eed45ff599f6d1067b3ce3203e9cb9",
-        "patchBytes": 6419,
-        "patchSha256": "078f8eaff69c4a6ed83d6bb0fd897e1d70b5cdfc3130f445af4970a3df38521a"
+        "planHead": "165059eea4ab70eed728a8c48957692932f10aea",
+        "head": "165059eea4ab70eed728a8c48957692932f10aea",
+        "patchBytes": 6531,
+        "patchSha256": "3faca51aadb00357629c98e5bbd9e3e44ca2ce1af03c94683c78d09beee197da"
       }
     },
     {
       "id": "the PRODUCT tree matches the one the dry run measured",
       "ok": true,
       "detail": {
-        "committed": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7",
-        "now": "24d3edfbc7a9af8fe7b11df7b38f2f5225421ae2fe9425a87f06aaf753877ae7"
+        "committed": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237",
+        "now": "614b28b19c74248616a46f1e5eb3e7deb9385a7f76961a83118346a65507e237"
       }
     },
     {
@@ -182,8 +182,8 @@
       "id": "budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason)",
       "ok": true,
       "detail": {
-        "authorisedStarts": 2,
-        "entries": 2,
+        "authorisedStarts": 3,
+        "entries": 3,
         "rulings": [
           {
             "starts": 1,
@@ -192,14 +192,18 @@
           {
             "starts": 1,
             "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+          },
+          {
+            "starts": 1,
+            "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374 (last P2-04 start)"
           }
         ]
       }
     },
     {
       "id": "budget: this start is authorised by the rulings and is NOT a third",
-      "ok": false,
-      "detail": "authorised=2 spent=2 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+      "ok": true,
+      "detail": "authorised=3 spent=2 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
     },
     {
       "id": "pinned host tree is at the pinned commit and clean",

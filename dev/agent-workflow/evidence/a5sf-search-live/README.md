@@ -1,13 +1,16 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status: 2 of the lane's 3 pooled `P2-04` starts are SPENT, and 0 of 6 rows are
-judged. Both attempts died for reasons that are now named. No grade is promoted:
-`M-06`/`M-07` keep `ENFORCE-PARTIAL`, `V@B=no`, and their `tested` value.**
+**Status: all 3 pooled `P2-04` starts are SPENT, and 0 of 6 rows are judged. No
+grade is promoted: `M-06`/`M-07` keep `ENFORCE-PARTIAL`, `V@B=no`, and their
+`tested` value. The third start was destroyed by the lane's own launch method
+(`nohup … &` inside a foreground call, killed at the first tool turn) — not by the
+product, and not by driver logic. §3b records it as such.**
 
 | attempt | when | port | got to | died at |
 |---|---|---|---|---|
 | 1 | 15:36:59–15:39:18Z | 3183 | Host booted, authenticated, health never answered | **composition** — the driver emitted the four World rows but never gave them to the World |
 | 2 | 15:56:53–16:00:00Z | 3182 | composition verified, health 200 in 3 s, surface 24 tools, negative control ran | **team-create** — the product's permission coverage gate refused `grep`/`glob` on the leader |
+| 3 | 17:04:45–17:05:05Z | 3183 | composition verified, health 200 in 0.3 s, **the control's `rg` launched** | **killed** — the driver's own process group, 230 ms after the discovery turn |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
 - branch: `task/a5sf-search-live-20261104`; draft PR #588
@@ -21,9 +24,9 @@ judged. Both attempts died for reasons that are now named. No grade is promoted:
 | | |
 |---|---|
 | **Proven host-free (0 boots)** | 45 `node:test` arms on the six judges (`tests/world-factory/a5sf-search-live.test.mjs`), 47 dry-run checks (`dry-run.mjs`), 9 mutation controls (`negative-controls.mjs`), plus the `--plan` handoff identity. All green at the commit this file lands on. |
-| **Proven live (2 boots)** | The World **composition** now carries the rows it is given (attempt 2: `presentRowIds=[u5-canary, u6-fs-probe-host, a5sf-search-realm, dsh-agent-team, p6t6-team-tools, preset-a5sf-search-base]`, `missingRowIds=[]`), the p6t6 health route answers in 3 s, and the anchor preset exposes a **24-tool surface including `grep` and `glob`**. |
-| **NOT proven: the six rows** | 0/6 judged. Attempt 2 recorded `6/6 FAIL, reason=DRIVER_ABORTED_AT_team-create` — the fail-closed encoding, not a product verdict. No Member, no realm install, no `rg` process, no fact. |
-| **NOT proven: the negative control** | Attempt 2 **ran it and it REFUTED** (§4): the unconfined path could not launch ripgrep at all, so the control is vacuous until that is fixed. |
+| **Proven live (3 boots)** | The World **composition** carries the rows it is given (attempts 2 and 3: all six `presentRowIds`, `missingRowIds=[]`), the p6t6 health route answers in 0.3–3 s, the anchor preset exposes a **24-tool surface including `grep` and `glob`**, and — attempt 3 — the evidence row's base spawn **launched the packaged `rg`** on the control's operand inside a real World with **no `base-spawn-failed` row** (F1 closed in the World's own composition). |
+| **NOT proven: the six rows** | 0/6 judged. Attempt 2 recorded `6/6 FAIL, reason=DRIVER_ABORTED_AT_team-create` — the fail-closed encoding, not a product verdict. No Member, no realm install, no confined `rg` process, no fact. Attempt 3 reached the control's spawn and was killed before its result was read. |
+| **NOT proven: the negative control** | Attempt 2 **ran it and it REFUTED** because the evidence row's own wrapper had called `spawn(undefined)` (F1, withdrawn — see §4). Attempt 3 **launched** the control's `rg` correctly but was killed before the tool result was recorded, so the leak is still unjudged. |
 | **Grade that follows** | `grep`/`glob`: `ENFORCE-PARTIAL`, `V@B=no`, `tested` unchanged. The host-free half of BL-16 (`evidence/a5sf-bl16-grep/`) still stands on its own evidence. |
 
 ## 2. Attempt 1: a driver defect, and the net that now guards it
@@ -75,9 +78,71 @@ RED on exactly that check, then restores the bytes and verifies the sha256.
 `install-*=0`), `laneReport` (present: the evidence row applied and computed the
 two-axis lane), `member: null`, `mockRequests`, `memberTurnSeen: false`.
 
+## 3b. Attempt 3: the last start, killed at the control
+
+This is the run the last-start ruling bought. It is recorded here in full because
+its loss is **the lane's own**, and because it still produced the one artifact the
+ruling asked for that we did not already have: proof, inside the World, that the
+base spawn launches `rg` after the F1 fix.
+
+```
+17:04:45.249Z  budget intent appended (plannedStarts=1)
+17:04:51.680Z  boot row appended (lease bootsSpent=1); mock on 3493
+17:05:03.869Z  instrumentation installed (fs + base subprocess counters)
+17:05:04.318Z  composed profile: six rows, missingRowIds=[]
+17:05:04.405Z  BOOTED port=3183
+17:05:04.750Z  p6t6 health=true hostAlive=true
+17:05:04.769Z  discovery prompt status=200
+17:05:04.800Z  base-spawn  git add --all --ignore-errors      (workspace-changes)
+17:05:04.873Z  base-spawn  rg --json --regexp=A5SF_SEARCH_OUTSIDE -- <ceiling-outside>
+17:05:04.950Z  base-spawn  git write-tree
+17:05:05Z      KILLED — mock down, host down, teardown never ran, home left behind
+```
+
+`attempt-3-counter.jsonl` is the raw artifact (8 rows: 2 installs, 5 `base-spawn`,
+**0 `base-spawn-failed`**). `attempt-3-lane-report.json` is the row's two-axis lane
+report. The composed profile was archived by the driver; the home was harvested and
+then deleted; port 3183 is closed; no orphan.
+
+**What killed it:** the driver was started as `nohup node … &` inside a foreground
+shell call. When that call returned, the harness tore down the call's process group
+and took the driver, the mock and the Host with it, 230 ms after the first turn.
+The correct launch is the harness's own background-job mechanism. This is the
+**second self-inflicted instrument defect** of this lane (the first was the
+`original.apply(this, spec)` wrapper behind F1), and both are recorded as such: an
+instrument that is not itself tested — for correctness *and* for how it is run — is
+not an instrument.
+
+**What it still proves:** through the evidence row, in a real World, the packaged
+`rg` was launched on the control's operand with no failure row. Attempt 2's counter
+had no such line and the tool errored; attempt 3 has the line and no failure. F1 is
+therefore closed **in the composition under test**, not only host-free.
+
+**What it does not prove:** the control's result (the tool result went to the mock
+and died with it; the on-disk session transcript holds only the session header), any
+of the six rows, the leader grep probe (the kill came during the control turn), the
+fact realm, row 3's binding restriction, cancellation. No abort row is claimed: the
+boot really happened, so the intent's `1 = 1 − 0` stands and the start is honestly
+counted as spent.
+
 ## 4. The two live findings
 
-### F1 — the unconfined base `subprocess` cannot launch the packaged `rg` in a World
+### F1 — WITHDRAWN: it was the lane's own instrumentation, not a product finding
+
+> `165059eea` captured the cause host-free. `a5sf-search-realm-provider-row.mjs` did
+> `return original.apply(this, spec)`; `apply` takes an array-like argument list, so
+> the pinned service ran as `spawn(undefined)` and `validateSubprocessSpec` threw on
+> `spec.graceMs`. `search-core` turns any synchronous launch throw into
+> `"grep could not start its search command (ripgrep launch failed)"`. The fix
+> (`original.call(this, spec)`, plus a `base-spawn-failed` row that records the Node
+> cause before rethrowing) is evidence-layer only. `f1-cause.mjs` reproduces the
+> World's exact failure pre-fix (5/5 arms, `F1-ROW-SPAWN` RED before / GREEN after),
+> and attempt 3 observed the same spawn succeed inside a real World.
+
+The original text is kept below as the record of what was believed at the time; it
+is **not** a product finding.
+
+#### (as recorded after attempt 2) the unconfined base `subprocess` cannot launch the packaged `rg` in a World
 
 Negative control result, verbatim:
 
@@ -108,15 +173,18 @@ cannot launch `rg`, the Member's `grep` cannot either, so BL-16's live half is
 blocked on this independently of any confinement question — and the negative control
 that makes row 2 discriminating cannot run until it is fixed.
 
-### F2 — the acceptance preset exposes `grep`/`glob` to the leader, where they are unmanaged
+### F2 — the acceptance preset exposes `grep`/`glob` to the leader, where they are unmanaged (VERIFIED host-free)
 
 The native attach that makes `grep`/`glob` "managed" runs on a **Member** realm.
 The leader is the root session and has no realm, so the same tools are
 `known-sensitive-unmanaged` on its surface and the product's permission coverage
 gate refuses `team.create`. That gate is behaving correctly; the composition is
 wrong. The driver now denies `grep`/`glob` on the leader (`LEADER_MANAGED_TOOL_NAMES`)
-while the Member still receives them through its realm. **Unvalidated**: it needs a
-start, and none is authorised.
+while the Member still receives them through its realm. **Verified host-free** by
+`f2-deny-unit.mjs` (4/4) against the real `evaluatePermissionCoverage` gate and the
+World's own recorded 24-tool surface: the computed deny passes on 20 tools, and a
+mutation control that re-admits `grep`/`glob` reproduces the World's refusal prefix
+character for character. Not yet observed live (attempt 3 died before `team.create`).
 
 This is also the composition-surface answer the external review asked for, now
 measured rather than read: the preset supplies the *plugin*, the evidence row
@@ -138,28 +206,42 @@ never an asserted pass.
 
 ## 6. The budget, honestly
 
-`lane-ruling.json` holds two named rulings (1 start: the original task; 1 start: the
-coordinator's retry after the instrument defect). `run-ledger.jsonl` holds 2 intents
-and 2 boot rows; the invariant `bootRows === plannedStarts − aborts` holds per run
-(`1 = 1 − 0` twice). Pool item `P2-04 grep (BL-16)`: 3 allocated, **2 spent, 1
-remaining — not this lane's**. `go-no-go.mjs` now prints:
+`lane-ruling.json` holds three named rulings (the original task; the coordinator's
+retry after the handoff defect; the coordinator's last-start ruling after F1 was
+diagnosed). `run-ledger.jsonl` holds 3 intents and 3 boot rows; the invariant
+`bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` three times). Pool
+item `P2-04 grep (BL-16)`: **3 allocated, 3 spent, 0 remaining**. `go-no-go.mjs`
+now prints:
 
 ```
+PASS budget: the lane ruling is well-formed (entries sum to authorisedStarts, each names by + reason):
+     {"authorisedStarts":3,"entries":3}
 PASS budget: this start is authorised by the rulings and is NOT a third:
-     authorised=2 spent=2 — a further start needs a NEW ruling entry appended to
+     authorised=3 spent=2 — a further start needs a NEW ruling entry appended to
      lane-ruling.json, not an edit to authorisedStarts
-REFUSE the same check when a third is asked  →  NO-GO
+REFUSE the same check after the third boot  →  NO-GO  (spent=3, remaining=0)
 ```
 
 ### The cost line the retry ruling asked for
 
-**This vertical has spent 2 of 3 starts, and the composed-profile gap was invisible
-to a green `--plan`.** The reusable lesson for every later live lane (P3-00
+**This vertical has spent 3 of 3 starts and judged 0 of 6 rows.** The first was lost
+to a defect in the handoff the gate could not see, the second proved the composition
+and then hit a real composition gap (F2) plus a defect in the lane's own instrument
+(F1, withdrawn), and the third was destroyed by how the driver was launched. Three
+starts, zero judged rows, and every loss is attributable — which is the only thing
+that makes the spend defensible.
+
+The composed-profile gap was invisible to a green `--plan`. The reusable lesson for every later live lane (P3-00
 inventory will hit the same handoff): *a host-free gate must run the handoff, not
 just render it* — emit-and-pray passes every text-level check. Concretely: the plan
 artifact must compare the rows the runtime will actually compose against the rows
 the patch text names, by identity and in order; and the boot must read the composed
 profile before it waits on health.
+
+Attempt 3's lesson is about the instrument's **operating discipline**: a driver that
+takes 90 s to boot and one second to kill must be started as a background job that
+outlives the call which starts it. Nothing in the code was wrong; the run was killed
+by the shell.
 
 Attempt 2's second lesson: **stage attribution earns its keep.** The generic
 `post-boot` of attempt 1 became, in attempt 2, `composition` → verified in 3 s,
@@ -170,12 +252,12 @@ records what the world looked like. Two starts bought two named handoffs, not tw
 ## 7. Gates, verbatim (current)
 
 ```
-DRY RUN GREEN — 47 checks, head=098f445f51eed45ff599f6d1067b3ce3203e9cb9 digest=24d3edfb…
+DRY RUN GREEN — 49 checks, head=165059eea4ab70eed728a8c48957692932f10aea digest=614b28b1…
 NEGATIVE CONTROLS GREEN — 9 controls, every guarded check went RED on the broken property and the bytes were restored
 ```
 
-`go-no-go.go-before-boot.json` (archived, attempt 1) and
-`go-no-go.retry-go.json` (archived, attempt 2) are the two `GO` authorisations.
+`go-no-go.go-before-boot.json` (attempt 1), `go-no-go.retry-go.json` (attempt 2) and
+`go-no-go.last-start-go.json` (attempt 3) are the three `GO` authorisations.
 `go-no-go.json` (current) is the post-spend refusal. Both `GO`s are quoted in
 `go-no-go.retry-go.log` / `go-no-go.go-before-boot.log`, including:
 
@@ -200,6 +282,8 @@ PASS handoff: the driver CALLS the handoff before harness.boot( (independent sou
 | `plan-rows.json` | the handoff proof: `emittedRowIds` vs `worldRowIds`, ordered identity, health-probe row. |
 | `attempt-1-defect.json`, `attempt-1-composed-profile.patch.yml`, `attempt-1-instance.log` | the spent first attempt: defect, proof, host console. |
 | `stage-diagnosis.json` | the attempt-2 stage probe (stage, rows, composed profile, counter legs, lane report, member state). |
+| `attempt-3-killed.json`, `attempt-3-counter.jsonl`, `attempt-3-lane-report.json`, `attempt-3-home-cordis.patch.yml` | the spent last start: the timeline, the raw counter rows that show `rg` launched with no failure row, the lane report, and the World's input patch. |
+| `f1-cause.mjs`, `f1-cause.red.log`, `f2-deny-unit.mjs`, `f2-deny.json` | `165059eea`: F1's cause captured host-free (5 arms, `F1-ROW-SPAWN` RED→GREEN) and F2 verified against the real coverage gate (4 arms). |
 | `run.log`, `run-record.json`, `run-ledger.jsonl`, `grant.json`, `negative-control.json` | append-only run log, the 6/6 FAIL record, the budget ledger, the grant, the control result. |
 | `logs/…`, `runs/…` | per-world console/profile and the previous-run archive. |
 
@@ -212,9 +296,12 @@ is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 1. **All six live rows** — unmeasured.
 2. **The negative control** — ran and REFUTED because of F1; it is vacuous until the
    base spawn can launch `rg`.
-3. **F1's exact cause** — narrowed to `validateSubprocessSpec`/`spawnSubprocess`,
-   not isolated.
-4. **The leader-deny fix (F2)** — applied, unvalidated.
+3. ~~F1's exact cause~~ — **resolved and withdrawn** (`165059eea`): the lane's own
+   wrapper called `spawn(undefined)`.
+4. **The leader-deny fix (F2)** — verified host-free against the real gate, not yet
+   observed live.
+4b. **The leader grep probe (last-start condition 2)** — implemented and gated, but
+   never executed: the kill came during the control turn, one turn earlier.
 5. **The fact realm for search** — would be `member` with `toolBindingIdentity:null`.
 6. **Preset-expression of the two-axis restriction** — `UNSUPPORTED`.
 7. **Cancellation semantics** — the FIFO window is proven for the *packaged* `rg`,
@@ -222,16 +309,28 @@ is gated by `go-no-go.mjs` and by `lane-ruling.json`.
 8. **`>cap` clipping, streaming mid-read cancel, atomic replace/version conflict** —
    out of scope, untouched. **M-07 `glob`** — equally unmeasured.
 
-## 10. The one handoff I would test next
+## 10. The handoff that is left, and who may run it
 
-If another start existed, I would not touch the blueprint or the rows: I would boot
-the same composition and, **before** `team.create`, call `grep` from the anchor
-leader again and capture the `SearchError.cause` on the host side — the plugin's own
-error object, not the message — by adding a host-side log sink for the tool result
-(the cause is what F1 needs, and it costs no new mechanism). In parallel, the
-leader-deny fix (F2) is already in the tree, so `team.create` should reach the
-member-install stage and the stage probe would then tell us whether the realm, the
-dispatch, or the cancellation window breaks next.
+The pool is spent, so this is a handoff to whoever buys the next start, not a plan
+this lane can execute. The composition, the rows, the driver, the gate and both
+fixes are in the tree and green host-free; the composition has been proven live
+three times. What has never been reached is the **member-install → delegate-dispatch
+→ confined consult** chain, because attempt 2 stopped at `team-create` and attempt 3
+was killed one turn earlier.
+
+So the next person should run **the same tree, unchanged**, with exactly two
+additions, both already implemented here:
+
+1. start the driver as a **harness background job** (never `nohup … &` inside a
+   foreground call — §3b);
+2. let the leader grep probe (condition 2 of the last-start ruling) run: it is one
+   unconfined `grep` on the in-lane fixture before `team.create`, and it writes
+   `probe-leader-grep.json` with the counter rows for that operand.
+
+The first new stage after that is `member-install`. The stage taxonomy already
+discriminates it (`member-install`, `delegate-dispatch`, `cancellation-window`), each
+with its own error code, so if it breaks the report will name the handoff rather
+than say `post-boot`.
 
 ## 11. F1 closed (host-free): the cause was our own counter, and F2's deny is verified
 
@@ -326,3 +425,39 @@ whether the Member's confined `grep` is served by the confined face (one
 followed by the cancellation window on the FIFO. The one instrumentation to add
 before the next start is nothing new: `base-spawn-failed` now covers the F1 class, and
 the ledger's `confined-spawn` rows already discriminate the confined face.
+
+## 12. What the next lane must know
+
+Four rules this vertical earned by losing three starts. They are written for whoever
+builds the next live acceptance lane (P3-00 inventory will hit the same handoff), and
+each one is backed by a specific loss here.
+
+1. **A host-free gate must RUN the handoff, not render it.** Attempt 1's `--plan`
+   was green because it judged the *emitted patch text*; the World booted a bare
+   profile because the rows never reached `world.u6Fs.rows`. Emit-and-pray passes
+   every text-level check. The gate must execute the same function the boot executes.
+2. **The plan artifact must compare composed rows to named rows by identity and in
+   order.** A length check would have passed attempt 1. `plan-rows.json` now carries
+   `emittedRowIds` and `worldRowIds`, and both the plan and the boot authorisation
+   compare them element by element; a mutation control that drops the handoff turns
+   the gate RED.
+3. **The boot must read the composed profile before it waits on health.** The
+   profile file is the only evidence of what the runtime actually mounted; polling
+   health first turns a composition defect into a 120 s timeout with no diagnosis.
+   The driver now reads `composed-profile-*.patch.yml` and refuses on a missing row
+   id before it asks the Host anything.
+4. **A driver that instruments a service must be tested for the instrumentation
+   itself — and for how it is run.** F1 was self-inflicted: `original.apply(this,
+   spec)` called the service as `spawn(undefined)`, and the resulting TypeError was
+   reported for two rounds as a product launch failure. `F1-ROW-SPAWN` now asserts a
+   real spawn *through the evidence row* (RED before the fix, GREEN after), and
+   `F1-MUTATION` proves the pre-fix code still reproduces the exact wrong text. The
+   operating half of the same rule: attempt 3 was killed at 230 ms by the shell that
+   launched it, so a long-running driver must be started as a background job that
+   outlives the call — and it must copy its counter and fact sink **out of the World
+   home before teardown**, because the home is deleted and that is what swallowed
+   F1's cause twice.
+
+Two smaller ones, already enforced: a fail-closed verdict (`DRIVER_ABORTED_AT_*`) is
+`FAIL`, never `NOT_REACHED`, once a Host was reached; and an instrument records and
+rethrows, it never decides.

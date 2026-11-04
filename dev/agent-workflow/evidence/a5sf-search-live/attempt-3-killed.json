@@ -1,0 +1,149 @@
+{
+  "schema": "a5sf-search-live/attempt-3-killed/1",
+  "runId": "a5sf-search-2026-11-04T17-04-45-216Z",
+  "grant": "grant-a5sf-search-165059eeaf96-b3",
+  "worldId": "u5a5sfsrch-20261104T17-04-45Z",
+  "port": 3183,
+  "authorisation": "lane-ruling.json ruling 3 (coordinator, last P2-04 start)",
+  "outcome": "KILLED \u2014 not a product failure, not a driver logic failure: the driver process group was killed at 2026-11-04T17:05:05Z, ~230 ms after the discovery prompt, when the shell command that had launched it with `nohup \u2026 &` returned. No row was judged; no abort row is claimed (the boot row is real).",
+  "timeline": [
+    "17:04:45.249Z budget intent appended (plannedStarts=1)",
+    "17:04:51.680Z boot row appended (lease bootsSpent=1), mock started on 3493",
+    "17:04:51.675Z ledger mtime",
+    "17:05:03.869Z instrumentation installed (fs + base subprocess counters)",
+    "17:05:04.318Z composed profile: all six rows present, missingRowIds=[]",
+    "17:05:04.405Z BOOTED port=3183",
+    "17:05:04.493Z authenticated",
+    "17:05:04.750Z p6t6 health=true hostAlive=true",
+    "17:05:04.769Z discovery prompt status=200",
+    "17:05:04.800Z base-spawn git add --all (workspace-changes; the F1 collateral)",
+    "17:05:04.873Z base-spawn rg --json --regexp=A5SF_SEARCH_OUTSIDE -- <ceiling-outside>  \u2190 THE NEGATIVE CONTROL'S GREP LAUNCHED",
+    "17:05:04.950Z base-spawn git write-tree",
+    "17:05:05Z (approx) process group killed \u2014 mock down, host down, teardown never ran, home left behind"
+  ],
+  "what_this_proves": [
+    "the composition handoff holds for the third consecutive run (six rows, health 200 in 0.3 s)",
+    "F1 is closed IN THE WORLD'S OWN COMPOSITION: through the evidence row, the base spawn launched the packaged rg on the control's operand, and there is NO base-spawn-failed row \u2014 attempt 2's exact counter line was absent and the tool errored; this run has the spawn and no failure row",
+    "the collateral F1 damage is gone too: git rev-parse / git add / git write-tree all spawned",
+    "the lane report still computes the two-axis search lane (schema a5sf-tool-binding-lane-report/1, kind search, bindingIdentity dsh.search/grep)"
+  ],
+  "what_this_does_NOT_prove": [
+    "the control's RESULT (leak / success) \u2014 the tool result was delivered to the mock, which died with the driver; the session transcript on disk holds only the session header",
+    "any of the six rows; no Member was ever created",
+    "the leader grep probe (condition 2) \u2014 the kill happened during the control turn, before the probe turn",
+    "the fact realm (no realm install happened), row 3's binding restriction, cancellation"
+  ],
+  "cause": "operator/process-control defect: the driver must be started as a harness BACKGROUND JOB (run_in_background) so it outlives the call that starts it; `nohup \u2026 &` inside a foreground call inherits a process group the harness tears down on return. This is the second self-inflicted instrument defect this lane has recorded (the first was the `original.apply(this, spec)` wrapper, F1).",
+  "counter_evidence": {
+    "rg_spawns": [
+      {
+        "at": "2026-11-04T17:05:04.873Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+          "--no-config",
+          "--json",
+          "--regexp=A5SF_SEARCH_OUTSIDE",
+          "--",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/ceiling-outside"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      }
+    ],
+    "base_spawn_failed": [],
+    "counts": {
+      "rows": 8,
+      "rg": 1,
+      "failed": 0
+    }
+  },
+  "lane_report": {
+    "schema": "a5sf-tool-binding-lane-report/1",
+    "kind": "search",
+    "computedBy": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets / matchLocator (the emitted product algebra; compileEffectiveIo is not in the host emitted set at this base)",
+    "bindingIdentity": "dsh.search/grep",
+    "ceiling": {
+      "read": {
+        "mode": "restricted",
+        "allow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace"
+        ],
+        "ask": [],
+        "deny": []
+      },
+      "write": {
+        "mode": "restricted",
+        "allow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace"
+        ],
+        "ask": [],
+        "deny": []
+      }
+    },
+    "restriction": {
+      "read": {
+        "mode": "restricted",
+        "allow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace/lane/inside"
+        ],
+        "ask": [],
+        "deny": []
+      },
+      "write": "no-additional-narrowing"
+    },
+    "effective": {
+      "read": {
+        "mode": "restricted",
+        "allow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace/lane/inside"
+        ],
+        "ask": [],
+        "deny": []
+      },
+      "write": {
+        "mode": "restricted",
+        "allow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace"
+        ],
+        "ask": [],
+        "deny": []
+      }
+    },
+    "probePaths": [
+      {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace/lane/inside/needle.txt",
+        "ceilingRead": "allow",
+        "restrictionRead": "allow",
+        "effectiveRead": "allow"
+      },
+      {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace/lane/outside-restriction.txt",
+        "ceilingRead": "allow",
+        "restrictionRead": "deny",
+        "effectiveRead": "deny"
+      },
+      {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/ceiling-outside/secret.txt",
+        "ceilingRead": "deny",
+        "restrictionRead": "deny",
+        "effectiveRead": "deny"
+      },
+      {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/ceiling-outside-glob/secret.txt",
+        "ceilingRead": "deny",
+        "restrictionRead": "deny",
+        "effectiveRead": "deny"
+      },
+      {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live/tests/homes/u5a5sfsrch-20261104T17-04-45Z/workspace/lane/blocking.fifo",
+        "ceilingRead": "allow",
+        "restrictionRead": "deny",
+        "effectiveRead": "deny"
+      }
+    ],
+    "note": "the CEILING and RESTRICTION inputs are test-composition fixtures (no product v3->compiled lane bridge at this base); the intersection and the dispositions are the product functions, called here. The confined `subprocess` face is a MEMBER-realm face (BL-17 refuses a binding-realm one), so its facts carry realm=member and toolBindingIdentity=null."
+  },
+  "cleanup": "home deleted after harvesting attempt-3-counter.jsonl / attempt-3-lane-report.json / attempt-3-home-cordis.patch.yml; port 3183 closed; no orphan process; the composed profile was already archived by the driver under logs/u5a5sfsrch-20261104T17-04-45Z/",
+  "ledger": "3 intents, 3 boot rows, 0 aborts; invariant 1 = 1 - 0 per run; P2-04 pool 3/3 spent; a fourth start would need a NEW ruling entry (go-no-go refuses)"
+}

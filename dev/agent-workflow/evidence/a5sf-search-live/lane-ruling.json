@@ -3,7 +3,7 @@
   "lane": "task/a5sf-search-live-20261104",
   "allocationItem": "P2-04 grep (BL-16)",
   "poolAllocated": 3,
-  "authorisedStarts": 2,
+  "authorisedStarts": 3,
   "rulings": [
     {
       "starts": 1,
@@ -22,8 +22,21 @@
         "stage attribution must distinguish composition vs member-install vs delegate-dispatch, so an abort teaches WHICH handoff is broken",
         "if this attempt aborts before any row is judged: stop and report; do NOT ask for a third start"
       ]
+    },
+    {
+      "starts": 1,
+      "by": "coordinator ruling, agent session-76eeddd5-4e2e-472f-a3ba-750a70c8a374 (last P2-04 start)",
+      "at": "2026-11-04T00:00:00Z",
+      "reason": "LAST START AUTHORISED for one attempt on the current tree (which also carries 165059eea: F1's cause fixed at the evidence layer, F2 verified with a mutation control). After this attempt the pool is fully spent whether or not rows are judged. Rationale: F1 was the thing that made the negative control vacuous and would have broken any Member grep; F1-ROW-SPAWN now reproduces the World's exact failure pre-fix and a real rg match post-fix, boot-free. This is the first attempt where the two known blockers are closed and the remaining unknown is a specific, nameable handoff.",
+      "conditions": [
+        "run go-no-go.mjs and let it say GO; refuse to boot on any refusal other than already-spent starts",
+        "before team.create, call grep from the anchor leader and capture the tool result (base-spawn-failed rows make the cause attributable), and make a host-side log sink survive teardown",
+        "expect member-install next; if it aborts the stage attribution must name the handoff",
+        "judge honestly; promote nothing unmeasured; row 3 stays UNSUPPORTED for preset-expression",
+        "if it aborts before any row: stop, report, no fourth request"
+      ]
     }
   ],
-  "note": "The driver and go-no-go both read this file: a start is allowed only while the shared ledger's boot rows for this lane are fewer than `authorisedStarts`. A third boot requires a NEW ruling appended here — editing `authorisedStarts` upward without a ruling entry is a self-authorisation and is called out in the README.",
-  "remainingAfterThisLane": 1
+  "note": "The driver and go-no-go both read this file: a start is allowed only while the shared ledger's boot rows for this lane are fewer than `authorisedStarts`. A third boot requires a NEW ruling appended here \u2014 editing `authorisedStarts` upward without a ruling entry is a self-authorisation and is called out in the README.",
+  "remainingAfterThisLane": 0
 }
