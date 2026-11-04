@@ -136,6 +136,7 @@
  * dump in the evidence dir); 1 = fatal (environment/boot/row).
  */
 
+import { createHash } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
@@ -158,6 +159,11 @@ const FLAG_KEEP = args.includes('--keep')
 // path present, live wake seam present), then stop after L0. The model
 // scenario below is the legacy Leader-approval arc, not the Officer arc.
 const ALPHA6_BOOT_ONLY = process.env['C1_ALPHA6_BOOT_ONLY'] === '1'
+// Real-Host ARC-A probe: mount the governed tool plane with the bash TAKEOVER
+// spelling (`bash@bash`). The legacy C1 blueprint asks `bash`, and the
+// non-takeover native name is refused at the binding gate by design; the same
+// blueprint is plane-shaped once the row mounts the shell takeover.
+const PLANE_TAKEOVER = process.env['C1_PLANE_TAKEOVER'] === '1'
 
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
@@ -486,7 +492,23 @@ function yamlEmitItem(item, indent) {
   return [`${pad}- ${firstLines[0].slice((indent + 1) * 2)}`, ...firstLines.slice(1), ...rest]
 }
 
+function planeLauncherSha() {
+  return createHash('sha256').update(readFileSync(join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py'))).digest('hex')
+}
+
 function teamRowConfig() {
+  const launcher = join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py')
+  const planeRealmId = `c1-plane-realm-${RUN_STAMP}`
+  const plane = PLANE_TAKEOVER
+    ? {
+        realmId: planeRealmId,
+        names: { bash: 'bash' },
+        confinedProvider: {
+          trustRoot: `sha256:${planeLauncherSha().slice(0, 16)}#${launcher}`,
+          assembly: { launcherPath: launcher, launcherSha256: planeLauncherSha(), minAbiVersion: 3 },
+        },
+      }
+    : undefined
   return {
     rootSessionId: ROOT,
     bootPhase: 'create',
@@ -508,6 +530,7 @@ function teamRowConfig() {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
     glueUrl: GLUE_URL,
     seamUrl: SEAM_URL,
+    ...(plane === undefined ? {} : { teamToolPlane: plane }),
     ...(ALPHA6_BOOT_ONLY
       ? {
           alpha6ReviewRouting: true,
@@ -619,11 +642,13 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '        - tool: bash',
     '          resource:',
     '            kind: any',
-    '      deny:',
-    '        - tool: read',
-    '          resource:',
-    '            kind: subtree',
-    '            path: runtime',
+    ...(PLANE_TAKEOVER ? ['      deny: []'] : [
+      '      deny:',
+      '        - tool: read',
+      '          resource:',
+      '            kind: subtree',
+      '            path: runtime',
+    ]),
   ]
   const workerBlock = [
     'members:',
@@ -650,11 +675,13 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '          - tool: bash',
     '            resource:',
     '              kind: any',
-    '        deny:',
-    '          - tool: read',
-    '            resource:',
-    '              kind: subtree',
-    '              path: runtime',
+    ...(PLANE_TAKEOVER ? ['        deny: []'] : [
+      '        deny:',
+      '          - tool: read',
+      '          resource:',
+      '            kind: subtree',
+      '            path: runtime',
+    ]),
   ]
   const teamEnvelope = [
     'teamEnvelope:',
@@ -841,6 +868,11 @@ async function bootHost({ port, home, mockPort, instanceLog }) {
 }
 
 // ── mock decide policy (C1: leaders, members, notification turns) ──────────
+
+/** The plane's shell row is CLOSED: it names `timeout`, not the native `timeoutMs`. */
+function bashArgs(command) {
+  return PLANE_TAKEOVER ? { command, timeout: 30_000 } : { command, timeoutMs: 30_000 }
+}
 
 function toolCall(name, argumentsObj) {
   return { kind: 'tool-call', toolCalls: [{ id: `call-c1-${Math.random().toString(36).slice(2, 10)}`, name, arguments: argumentsObj }] }
@@ -1030,8 +1062,8 @@ function makeDecide() {
     // (3) member chains.
     if (lastUser.includes(MK_XMEM)) {
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_X_ALLOW, timeoutMs: 30000 })
-        case 1: return toolCall('bash', { command: CMD_X_DENY, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_X_ALLOW))
+        case 1: return toolCall('bash', bashArgs(CMD_X_DENY))
         case 2: return { kind: 'text', content: 'C1_XMEM_DONE' }
         default: return { kind: 'text', content: `C1_XMEM_FALLTHROUGH tools=${tools}` }
       }
@@ -1040,14 +1072,14 @@ function makeDecide() {
       // ONE bash: it is blocked at the control wait until the recovered
       // allow arrives (S4); then it executes and the turn ends.
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_Z, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_Z))
         case 1: return { kind: 'text', content: 'C1_ZMEM_DONE' }
         default: return { kind: 'text', content: `C1_ZMEM_FALLTHROUGH tools=${tools}` }
       }
     }
     if (lastUser.includes(MK_YMEM)) {
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_Y, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_Y))
         case 1: return { kind: 'text', content: 'C1_YMEM_DONE' }
         default: return { kind: 'text', content: `C1_YMEM_FALLTHROUGH tools=${tools}` }
       }
