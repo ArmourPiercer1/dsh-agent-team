@@ -167,7 +167,7 @@ GREP-EXIT1 (no match is not an error): result="No matches found"
 GREP-EXIT2 (invalid pattern is a failure): result="Error: grep pattern rejected by ripgrep: rg: regex parse error: …"
 GLOB-IN (in-lane): result="<inside>/quiet.txt\n<inside>/needle.txt" facts=[member/null/member-bl16-probe/spawn/allow/ALLOW/<inside>]
 GLOB-OUT (out-of-lane, refused): spawns=0->0 facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED/<outside>]
-SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged): spawns=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//bin/sh] bytes=""
+SHELL-DENY (shell body refused at ADMISSION: one deny fact, spawns unchanged): spawns=0->0 providerCalls=0->0 denial=IO_READ_DENIED facts=[member/null/member-bl16-probe/spawn/deny/IO_READ_DENIED//bin/sh] bytes=""
 KERNEL (raw provider: out-of-lane refused, in-lane served): facts=0 stdout="cat: <outside>/secret.txt: Permission denied\nRC=1\nINSIDE-NEEDLE\n"
 PIN-ETC (raw provider: direct /etc, /usr and /proc reads SUCCEED, zero guard facts): kernelRead=/etc/passwd+/usr/lib/os-release+/proc/self/status SUCCEEDED facts=0 … stdout="root:x:0:0:root:/root:/bSEP\nPRETTY_NAME=\"Ubuntu 26.0SEP\nName:\thead\nUmask:\t0022\n…"
 PIN-CAPS (raw provider: write-file yes; mkdir/symlink/execve DENIED; in-lane hardlink ALLOWED): mkdir=DENIED writeFile=ALLOWED symlink=DENIED(symInLane+symToEtc) hardlinkInLane=ALLOWED inLaneExecve=DENIED …

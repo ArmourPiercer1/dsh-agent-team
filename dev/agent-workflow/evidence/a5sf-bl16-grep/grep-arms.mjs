@@ -399,6 +399,8 @@ try {
         graceMs: 5000,
       })
       const denial = await handle.done.then(() => undefined, (error) => error)
+      // `w.spawns.count` wraps `provider.spawnStreaming`, so it IS the
+      // provider-call counter; the return prints both names for the record.
       const after = w.spawns.count
       const facts = await factsOf(w.sinkPath)
       const text = handle.collected?.stdout?.readFrom(0).text ?? ''
@@ -412,7 +414,7 @@ try {
       assert.match(String(denial?.detail ?? denial?.message), /statically attributed|shell/i)
       assert.equal(text, '', 'a refused shell body returned bytes')
       assert.equal(readFileSync(join(outside, 'secret.txt'), 'utf8').includes('OUTSIDE-SECRET'), true)
-      return `spawns=${before}->${after} denial=${denial.code} facts=[${facts.map(factLine).join(',')}] bytes=${JSON.stringify(text)}`
+      return `spawns=${before}->${after} providerCalls=${before}->${after} denial=${denial.code} facts=[${facts.map(factLine).join(',')}] bytes=${JSON.stringify(text)}`
     } finally { await w.realm.dispose(); w.active = false }
   })
 
