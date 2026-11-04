@@ -7517,3 +7517,43 @@ profile 再等 health；仪器本身以及**仪的运行方式**都要被测试�
 **下一节点**：剩余未知是一条可命名链路 `member-install → 受限 face 供给 → delegate-dispatch → 受限
 consult`（及 FIFO 取消窗口）。下一次 start 需要新的 owner 分配；在获得分配前转做无需 boot 的
 P3-00 静态来源导出与生产装配（`teamA5sfRealm`）host-free 部分。
+
+## 2026-11-05T04:30Z — 生产装配落地（#590）与 Search 修正轮：投影层不变量缺陷、0/6 离线复判、row 3 更正
+
+**#590 合并 `b9ac0424f`**（`WIRED-PRODUCT-SEAM`，非工具验收）。产品配置现在真的能挂载受限 Member
+realm：`a5sfMemberPolicies` 用**既有 v4 词汇**书写，经 shipped `parseBlueprintV4` /
+`compileMemberPolicy` / `projectToolIoRestriction` / `compileEffectiveIo` 编译，走既有
+`mountMemberA5sfRealm → mountA5sfRealm → installMemberIoProviders`/`installToolBindingRealm`。未声明
+ceiling 的 Member 行为不变（同一 root/config 的判别对：声明者挂载并对越界读给
+`IO_READ_DENIED`+0 provider 读；未声明者不挂载、不加 fact，同一次越界读由 base provider 服务）。
+
+**这次复审抓到的是机制级缺陷，不是 seam 缺陷**：v4 合法 lane `{mode:'all', deny:[…]}`（mode-all
+形态**必须**带 deny）被 `projectToolIoRestriction` 折叠成 `'no-additional-narrowing'`，**deny 被丢**，
+于是挂载后的 realm 在读写两轴上都服务被声明的 deny 路径。因为该形态无法绕过 deny 写出，**任何**使用
+它的调用方都在投影层越过了交集不变量——矩阵宣称的不变量此前在投影层是可破的。已修：只有 all-lane
+的 deny 为空才是 identity，否则投影为带 deny 的 mode-all rule set，由既有的
+`intersectPathRuleSets`/`matchLocator` 绑定；两层回归臂先 RED 后 GREEN。
+
+其余复审项已闭环：声明必须逐轴**收窄**于 `config.blueprintSource`（新 `REALM_DECLARATION_EXCEEDS_
+BLUEPRINT`，使"配置加宽权威"不可表达；owner 的嵌入/派生决策现在只关乎重复，不再关乎加宽通道）；
+`authorization` 按 shipped 枚举校验且 `deny` **拒绝**（理由：realm 不能既服务又拒绝，而降绑定会让工具
+留在更宽的面）；`toolRestrictions` 走 shipped `toolBindings` 语法；identity 改为"声明而非绑定"；新套件
+进 CI；contentHash 覆盖 bindings。复审的一条主张**未能复现**（object 形 `allow` 本已拒绝，真正的隐式
+deny-all 是 scalar 形）——按未能复现记录，不做对称式"修复"。
+
+**#591（Search live）修正轮，0 boot，pool 保持 6/6**：查出丢弃第 6 次实测的那一行——abort 路径
+`if (oracleSamples[id] === undefined) add(id,'FAIL',…)`，而 `oracleSamples` 只在 `cancellation-window`
+之后的 `evidence-collection` 填充，所以该条件**按构造**恒真，六行 FAIL 是在零观测处断言的；正确直觉
+（不得把缺失洗成 pass）被实现成了反向错误。现区分 run 级与 case 级：完整样本照常判、不完整只能是
+`NOT_REACHED`、run 中止仍 `FAIL` 且标 `partial`；三个 pinned 臂 + 变异控制钉住边界。**离线复判第 6 次：
+0/6 可判**（`rejudge-attempt6.json`），六行的旧 FAIL 撤回。
+
+**row 3 更正**：第 6 次的 lane report 记录 `ceilingRead=allow / restrictionRead=deny /
+effectiveRead=deny`，产品代数同输入复算一致、放宽 restriction 即翻 `allow`——**那是一次真正的两轴
+restriction 拒绝，不是 ceiling 派生**。旧记录"预置无法表达 binding 收窄"过度悲观；`UNSUPPORTED` 仅
+保留给"预置表达 binding 限缩"这一不同主张。同时 row 1 留一条**实测的否证风险**：in-lane grep exit 2，
+而 pinned 模块把 exit∉{0,1} 映射为 `SearchError`，差别指向 rg 在搜索根的**祖先**做 ignore/git discovery；
+stderr 未留存，故只记风险不记判定。
+
+**预算**：owner 2026-11-05 批准再增 **4 次 P2-04 boot**（累计授予 10，已用 6）。第四次起的 start 需
+`lane-ruling.json` 新条目（go-no-go 拒绝编辑 `authorisedStarts`）。
