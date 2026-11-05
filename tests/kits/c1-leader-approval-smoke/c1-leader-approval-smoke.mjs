@@ -303,6 +303,7 @@ const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
 // must route the self-ask to the Leader (never back to the Officer).
 const A6_RECIPIENTS = process.env['C1_A6_RECIPIENTS'] === '1'
 const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
+const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1132,6 +1133,30 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     return false
   }
 
+  let humanEscalation = null
+  let humanLeg = null
+  let humanDecision = null
+  let humanConsumption = null
+  if (A6_HUMAN) {
+    const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
+    while (Date.now() < deadline) {
+      const current = readControlLedger(CREATE_ROOT_A6)
+      humanLeg = current.requests.find((r) => r.reviewAuthority === 'human-user'
+        && !current.decisions.some((d) => d.requestId === r.requestId)) ?? null
+      humanEscalation = humanLeg === null ? null : current.escalations.find((e) => e.approvalCaseId === humanLeg.approvalCaseId) ?? null
+      if (humanLeg !== null) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    if (humanLeg !== null) {
+      const response = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: humanLeg.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6 human final approval',
+      }, 'c1a6h', 4)
+      writeEvidence('a6-human-response.json', response.body ?? response)
+    }
+  }
   const memberDone = await waitForMock(
     mock,
     (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6MEM)
@@ -1155,7 +1180,11 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
   const execText = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
   const executed = execText.includes(SUM_A6_ALLOW)
   const ledger = readControlLedger(CREATE_ROOT_A6)
-  const pending = ledger.requests.filter((r) => r.status === 'pending')
+  if (A6_HUMAN && humanLeg !== null) {
+    humanDecision = ledger.decisions.filter((d) => d.requestId === humanLeg.requestId).at(-1) ?? null
+    humanConsumption = ledger.consumptions.find((c) => c.requestId === humanLeg.requestId) ?? null
+  }
+  const pending = ledger.requests.filter((r) => !ledger.decisions.some((d) => d.requestId === r.requestId))
   const toolRequests = ledger.requests.filter((r) => r.toolName !== undefined)
   log(`A6: wakes=${wakes.length} leaderWakes=${leaderWakes.length} resolves=${resolveCalls.length} executed=${String(executed)} requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.length}`)
 
@@ -1167,6 +1196,15 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     `file=${FILE_A6_ALLOW} text=${JSON.stringify(execText.slice(0, 300))}`)
   check('A6-5', 'the Leader was not woken for a leg routed to the Officer', wakes.length > 0 && leaderWakes.length === 0,
     `wakes=${wakes.length} leaderWakes=${leaderWakes.length}`)
+  if (A6_HUMAN) {
+    const humanOk = humanEscalation !== null && humanLeg !== null && executed
+      && humanDecision?.decision === 'allow'
+      && (humanDecision?.decider?.kind === 'human' || humanDecision?.decider?.role === 'human')
+      && humanConsumption !== undefined
+    check('A6-9', 'Officer escalated to the human leg; human allow executed the call once', humanOk,
+      `escalation=${JSON.stringify(humanEscalation)} humanLeg=${JSON.stringify(humanLeg)} decision=${JSON.stringify(humanDecision)} consumed=${humanConsumption !== undefined} executed=${String(executed)}`)
+    writeEvidence('a6-human.json', { escalation: humanEscalation, humanLeg, decision: humanDecision, consumption: humanConsumption, executed, execText })
+  }
   check('A6-6', 'every durable request at the end is settled (no lost pending leg)', pending.length === 0,
     `requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.map((r) => r.requestId).join(',')}`)
 
@@ -1215,6 +1253,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
 
 let mockWakeSeq = 0
 let a6HandoffPhase = false
+let a6HumanPhase = A6_HUMAN
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
@@ -1256,7 +1295,7 @@ function makeDecide() {
           rootSessionId: CREATE_ROOT_A6,
           requestToken: `c1-a6-res-${String(mockWakeSeq++)}`,
           requestId: named !== '' ? named : first,
-          decision: a6HandoffPhase ? 'handoff' : 'allow',
+          decision: a6HumanPhase ? 'escalate' : a6HandoffPhase ? 'handoff' : 'allow',
         })
       }
       return { kind: 'text', content: 'C1_A6_OFFICER_DONE' }
@@ -1572,7 +1611,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
  * {factType, rootSessionId, payload, ...}. Read-only.
  */
 function readControlLedger(root) {
-  const out = { requests: [], decisions: [], consumptions: [], transfers: [], error: null }
+  const out = { requests: [], decisions: [], consumptions: [], transfers: [], escalations: [], error: null }
   try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const ledger = parsed?.tables?.ledger
@@ -1584,13 +1623,15 @@ function readControlLedger(root) {
       if (String(entry?.rootSessionId) !== root) continue
       const payload = entry?.payload ?? {}
       if (entry.factType === 'control-request-recorded') {
-        out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, createdAt: entry.createdAt })
+        out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, approvalCaseId: payload.approvalCaseId, legOrdinal: payload.legOrdinal, reviewAuthority: payload.reviewAuthority, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-decision-recorded') {
         out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-allow-consumed') {
         out.consumptions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-current-leg-transferred') {
         out.transfers.push({ sequence: Number(k), factType: entry.factType, ...payload })
+      } else if (entry.factType === 'control-escalation-recorded') {
+        out.escalations.push({ sequence: Number(k), factType: entry.factType, ...payload })
       }
     }
   } catch (error) {

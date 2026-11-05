@@ -34,8 +34,8 @@
 | 10 | Leader exception routing | **NOT_REACHED** | the E2E kit declares `leaderExceptions: []`; no real exception leg was exercised |
 | 11 | Officer self-review | **PASS** | real Host `a6-recipients-r6` / `r12`: Officer's own PA leg `ctrl-1lc9fk11mqfnfy168muob00k` decided by Leader seq 19, consumed seq 20, command executed; see `recipients.md` |
 | 12 | Handoff successor notification / production `reviewEvents` consumer | **PASS** | clean real Host `a6-handoff-only-r6`: transfer seq 22 → Leader decision seq 23 → execution once. The missing production `reviewEvents` consumer was the defect; fixed in `fd7a5d6c1`; `recipients.md` |
-| 13 | Human Escalation recipient | **NOT_REACHED** | both decisions were agent decisions (Leader legacy notification and Officer); no human recipient |
-| 14 | Human final approval, original-call validity, Stop/cancel/timeout non-revival | **NOT_REACHED** | no Human ask, no Stop/cancel mid-wait |
+| 13 | Human Escalation recipient / final approval | **PASS** | clean real Host `a6-human-r8`: Officer escalate seq 12, human leg seq 13 (`reviewAuthority:'human-user'`), human allow seq 14 (`decider.kind:'human'`), consumed seq 15, command executed once; see `human.md` |
+| 14 | Execution-time revalidation, Stop/cancel/timeout non-revival | **PARTIAL** | human final approval itself PASS (row 13); no Stop/cancel/timeout injection yet, so non-revival is NOT_REACHED |
 | 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **BLOCKED / PARTIAL** | deliver/claim/turn-end release observed; but a wake after a direct prompt to the same Officer session (`a6-recipients-r22`) reports `followup` → running yet produces no model turn. No crash-window/Sticky Stop injection yet |
 | 16 | Duplicate-approval elimination | **NOT_IMPLEMENTED** | evidence collected; recommendation only (see duplicate report) |
 
