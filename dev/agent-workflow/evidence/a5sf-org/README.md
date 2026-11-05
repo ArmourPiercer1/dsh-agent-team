@@ -183,6 +183,9 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
 - 任何矩阵等级 / `V@B`：0 处改动；主矩阵 9 格结构未动（Q5 解析器仍通过）。
 - Q7 / CI 门 / `dev/ci/eb3-ci-manifest.json` / `.github/**`：0 改动（新增套件未登记进 CI，
   是**已知的后续项**：登记需要改 workflow，属 ROUTER_RULES §10.8 的 stop condition，不在本 PR）。
-- Authority 指针与快照：0 改动（§4-Q1 未裁定前不动）。
+- Authority 指针与快照：0 改动（§4-Q1 未裁定前不动）。**派生视图** `dev/engineering/current-state.json` 由
+  `node scripts/docs-sync.mjs --write` 重新生成：唯一变化 `baseline_is_ancestor_of_head: true → false`，
+  与该树的事实一致（候选 `1484fa4ee` 不在本分支祖先链上），也是 CI `docs:sync --check` 的硬要求；
+  视图不反向裁定权威，六字段仍由指针+快照唯一决定。
 - 预算：**0 次 Host boot**（本 PR 全程 host-free）；剩余 3 次仍按 BL-17、BL-18、一次重试保留。
 - 已存在、与本 PR 无关的红：`state-freshness` 的 `Q4`（见 §4-Q1），本 PR 前后同一 finding、同一文案。
