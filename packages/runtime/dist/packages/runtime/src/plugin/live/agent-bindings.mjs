@@ -1219,6 +1219,20 @@ export function createAgentBindings(deps) {
   }
 
   /**
+   * THE one durable MEMBER-ROW ENUMERATION of a boot (SEAM 4, the boot-race
+   * fix): the boot resume loop reads the whole member set once here, and the
+   * post-loop sweep re-enumerates it once here. Naming the read is what keeps
+   * the budget checkable — `boot-seam-arms.test.mjs` BS3 counts the calls and
+   * requires TWO for any member count, so a future per-member re-read breaks
+   * the test instead of silently rotting the property.
+   * @param {string} teamRoot the boot root whose member rows are enumerated.
+   * @returns {object[]} the durable rows (the open domain's in-memory view).
+   */
+  function listMemberRows(teamRoot) {
+    return domain.repositories.memberInstances.list(String(teamRoot))
+  }
+
+  /**
    * The DURABLE-LIFECYCLE gate at every resurrection seam (row 6 / BL-16).
    *
    * The frozen Architecture is the authority, not residency:
@@ -5128,7 +5142,7 @@ export function createAgentBindings(deps) {
       } else {
         // Resume phase: re-bind every bound member child (the leader's is
         // the root, already resumed; dedupe by child session id).
-        const members = domain.repositories.memberInstances.list(rootSid)
+        const members = listMemberRows(rootSid)
         const seen = new Set([rootSid])
         for (const member of members) {
           // T12-V18 (parent final directive; literal form of the T12-V17/T12-V10
@@ -5175,8 +5189,75 @@ export function createAgentBindings(deps) {
           } finally {
             resumingSessions.delete(child)
           }
+          // SEAM 5 — the POST-RESUME IN-MEMORY ADMISSION CHECK (the boot
+          // interleaving). SEAM 2 read the durable row before the resume and
+          // saw SETTLED; the archive's QUIESCE can start while the resume is
+          // in flight and its step 5 releases residency while the durable row
+          // is still SETTLED — no durable read can see that window (that is
+          // why the durable sweep below cannot cover it). The admission close
+          // is the in-process half of the boundary and costs no durable read;
+          // a handle published here would be a resident Agent for a member
+          // that is being archived in this very process. No await between this
+          // check and `liveAgents.set`: a close can only land before or after
+          // this block, never inside it.
+          const midProcedureRefusal = admissionCloseRefusal(child)
+          if (midProcedureRefusal !== null) {
+            try {
+              await handle.dispose()
+            } catch (error) {
+              observations.push(
+                `agent-bindings: resumed agent dispose failed after a closed-admission boot refusal for '${child}': ${error instanceof Error ? error.message : String(error)}`,
+              )
+            }
+            observations.push(
+              `agent-bindings: boot resume skipped ${String(midProcedureRefusal.code)} member '${child}' — a lifecycle quiesce is in progress in this process (Architecture §30.1)`,
+            )
+            continue
+          }
           liveAgents.set(child, handle)
           await sessionPersistence.ensureMaterialized(handle.agent.session)
+        }
+        // SEAM 4 — the POST-LOOP DURABLE SWEEP (the boot race). The loop read
+        // the member set ONCE (that is the boot contract: one enumeration for
+        // the whole set, never per member). A member whose resume was in
+        // flight when the archive committed is still in `liveAgents` here, and
+        // `ensureLiveAgent` would serve it from the fast path forever without
+        // ever consulting the durable gate again. ONE extra enumeration of the
+        // same set — independent of member count — finds those rows and drops
+        // their handles through the same typed refusal path as SEAM 3.
+        //
+        // The eviction DECISIONS are all taken from that one snapshot with no
+        // await in between, before any handle is disposed: a dispose await
+        // would otherwise let a second member's commit land between the
+        // decision and the act. A commit landing after this snapshot needs no
+        // sweep — the archive's own post-commit residency re-drop
+        // (`archive.ts`/`dispose.ts` fix (a)) removes a handle that was
+        // published before the commit.
+        const afterBoot = listMemberRows(rootSid)
+        const sweptRefusals = []
+        for (const member of afterBoot) {
+          const sweptChild = member?.childSessionId
+          if (typeof sweptChild !== 'string' || sweptChild.length === 0) continue
+          if (!liveAgents.has(sweptChild)) continue
+          const sweptRefusal = memberResumeRefusal(sweptChild, rootSid, afterBoot)
+          if (sweptRefusal === null) continue
+          sweptRefusals.push({ child: sweptChild, refusal: sweptRefusal })
+        }
+        for (const { child: sweptChild, refusal: sweptRefusal } of sweptRefusals) {
+          const sweptHandle = liveAgents.get(sweptChild)
+          // Evict BEFORE the dispose await: a dispatch must never be served
+          // the handle this sweep has already condemned.
+          liveAgents.delete(sweptChild)
+          try {
+            await sweptHandle.dispose()
+          } catch (error) {
+            observations.push(
+              `agent-bindings: resumed agent dispose failed after a durable lifecycle refusal for '${sweptChild}': ${error instanceof Error ? error.message : String(error)}`,
+            )
+          }
+          observations.push(
+            `agent-bindings: boot resume dropped ${String(sweptRefusal.code)} member '${sweptChild}' — the durable lifecycle forbids the re-bind (Architecture §41.6/§30.2/§29.4)`,
+          )
         }
       }
     })()

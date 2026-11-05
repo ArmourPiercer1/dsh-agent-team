@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-seam/dev/agent-workflow/evidence/a5sf-boot-seam
+
+ ✓ boot-seam-arms.test.mjs (3 tests) 1047ms
+     ✓ BS1 BOOT RACE: the ARCHIVED commit lands while the resume is in flight -> not resident, 422, 0 executions  1018ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  12:12:07
+   Duration  1.99s (transform 1.44s, setup 0ms, import 855ms, tests 1.05s, environment 0ms)
