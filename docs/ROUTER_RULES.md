@@ -40,6 +40,36 @@
 
 ---
 
+## 0.1 能力面角色与所有权（2026-11-06 owner 指令）
+
+开发按**能力面**（capability face）组织，不按“每个工具一条流水线”。三个角色，互不兼任：
+
+| 角色 | 拥有什么 | 不得做什么 |
+|---|---|---|
+| **Capability Implementer** | 一个能力面的产品实现 + 该面的 C1 测试 + 自己的证据目录 | 不得触碰共享 Host 装配、产品入口、Authority、Member 生命周期；不得改等级/`V@B`；不得改 Q7/CI |
+| **Integration Owner** | 集成轨（`master`）、候选轨的冻结与启动、**唯一**可改共享 Host 装配/产品入口/Authority/Member 生命周期的人 | 不得代做面实现；不得在没有 PASS preflight 时花一次 start |
+| **Acceptance-Reviewer** | 独立判定 A/B/C 三层，复跑探针与负控，产出 verdict | 不得是同一 PR 的实现者；不得改矩阵等级（等级是 owner 资产的编辑权） |
+
+**规则（本阶段全部 PR 适用）：**
+
+1. **共享文件单一所有权**：`install.ts` / `mount.ts` / `index.ts` / `product-assembly.ts` /
+   产品行（`a5sf-realm-row.mjs`）/ 产品入口 / Authority 指针与快照 / Member 生命周期文件，
+   **只有 Integration Owner** 可写。每个共享文件在同一批次内**只有一个 owner**，写在当期计划的
+   下一批任务表里；两个任务同时声明同一共享文件 = 未分配，不是并行。
+2. **新能力面先设计最小正/负测试，再做首个产品实现**。一个面的 A 层（面 × 权限轴安全性）至少要有
+   一条 allow 臂与一条 deny 臂的**契约测试**在首个产品提交之前存在并被评审；没有它，产品代码不得
+   合入。理由：面的共享边界一旦写错，所有骑在其上的工具一起错，事后补测买不回已经花掉的 boot。
+3. **面内独占**：一个批次内一个面一个 implementer；跨面的改动归 Integration Owner，不得由一个面的
+   implementer 顺手改另一个面的共享边界。
+4. **boot 与 preflight**：只有 Integration Owner 授权 start；start 之前必须有一段
+   `scripts/a5sf-preflight.mjs` 的 PASS（零 boot，见计划 §8 T-01）。没有 bundle 的 driver 运行
+   视为 driver 缺陷，不是“环境问题”。
+5. **三层与两类证据**：A = 面 × 轴安全矩阵，B = 逐工具契约，C = 冻结候选跨面真 Host。`C1` = host-free，
+   `C2` = live；两者互补、不可互替。判定口径见 `ALPHA5-SANDBOX-BACKLOG.md` §0.1 与
+   `current-implementation-plan.md` §7。
+
+---
+
 # 1. 模型路由
 
 > **【2026-10-07 已废止钉死路由，见 §0.2】** 本节保留为历史记录。现行规则：执行与审查均使用当次会话由 harness 指派的模型；不再钉死模型标识，不再做启动时路由核验；审查独立性由"独立会话、未参与实现、互不可见"保证。
