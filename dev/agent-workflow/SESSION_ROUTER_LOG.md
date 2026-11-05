@@ -7760,3 +7760,25 @@ residency re-drop` 间隙（句柄在 commit 之前已发布，drop 之前仍在
 句柄已被 drop。**但**若某个 root 不接 `AdmissionClosePort`（pre-#598 形状），boot 期间下发**可以执行**（BS5 实测
 200/1）；跨进程提交（archived-gate risk 1）是唯一仍可执行的窗口，靠 single-writer-per-domain 纪律而非本 seam 保证。
 PR #600（draft），首行 `BOOT-PUBLISH`。
+
+## 2026-11-05T20:10Z — A5-DUAL-PLANE-01 关闭：ask 车道在准入侧 fail-closed（不发明审批流程）
+
+BL-33 的三平面证明给出否证而非通过：`ask` 覆盖、落在 allow 子树内的 locator，预 Alpha.5 准入与独立 oracle 都说
+`ask`，而**实际被 consult** 的准入说 `allow`——读到字节、写到盘、无审批请求、无审批消费。根因是守卫从不读 ask
+车道，且设计中的消费 seam `resolveAskClassCall` 全仓无生产调用方。**这是 fail-open，必须先堵。**
+
+**可达性先行**：shipped 配置里**没有任何** Alpha.5 ask 车道声明（只有 v4 语法与测试夹具），所以缺陷是**潜伏**而非
+活的线上 fail-open；修复是防御性的，但方向不可妥协——一条无法被消费的车道被静默升级成 allow，等于把"我们还没做"
+变成"这不适用"。
+
+**修法（最小）**：`laneCoversAsk` + `evaluateLocatorAccess` 两处检查（授权字符串与 provider 解析后的身份，因此
+allow 名字的符号链接指向被 ask 的文件同样被拒），新 typed 码 `IO_ASK_REQUIRES_APPROVAL` 纳入两个封闭集，并在
+guard fact 里报告 lane=`ask`。**不接** `resolveAskClassCall`：真正的一次性审批（消费一次、持久 Bash 排空、
+取消 ≠ 确认终止）是 BL-30 的设计。
+
+**结果**：42 例 37 AGREE / 5 条引用例外 / **0 DISAGREE**；拒绝路径断言恰好一条 guard fact、零 base-provider 读、
+零写、盘上字节不变、无审批请求。**投影不丢车道已实测**（DP-PROJ 走真实投影链路，declared ask locator 在 member
+lane 与 effective-intersection lane 中都保留）——这是本轮刻意补的，因为此前同类缺陷正是投影把 deny 折叠掉。
+
+**记录的两条边界（不是本车道的 fail-open）**：无编译 realm 的 Member 没有 Alpha.5 车道、故不存在 ask 决策；
+`MANAGED_FS_METHODS` 之外的方法不被受限子类覆盖、故不携带任何车道决策。
