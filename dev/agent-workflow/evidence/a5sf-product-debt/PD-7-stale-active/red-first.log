@@ -1,0 +1,40 @@
+✔ P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own (219.139916ms)
+✔ P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing (0.26942ms)
+✔ P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING) (0.161055ms)
+✔ P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once (6.111991ms)
+✔ P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field) (0.435514ms)
+✔ P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams (2.188203ms)
+✔ P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain (0.286542ms)
+✔ P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns (1.825947ms)
+✔ P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs (4.741596ms)
+✔ P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING) (7.242852ms)
+✔ P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted) (3.452076ms)
+✔ P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt (0.227842ms)
+✔ P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill (0.165313ms)
+✖ P5-STALE-DOMAIN-REPORTS-STALE: after the revision moves, list() reports the same refusal the command gate gives (stale), and the PTY stays live (0.399536ms)
+✔ P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed (1.565775ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 311.517502
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pty-contract.test.mjs:272:5
+✖ P5-STALE-DOMAIN-REPORTS-STALE: after the revision moves, list() reports the same refusal the command gate gives (stale), and the PTY stays live (0.399536ms)
+  AssertionError [ERR_ASSERTION]: PD-7: list() must not report a refused domain as active
+      at armStaleDomainReportsStale (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd7/tests/world-factory/a5sf-pty-contract.test.mjs:679:12)
+      at async withRegistry (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd7/tests/world-factory/a5sf-pty-contract.test.mjs:237:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'active',
+    expected: 'active',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

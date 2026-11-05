@@ -169,6 +169,12 @@ const CASES = [
     run: armKillOneNotTheOther,
   },
   {
+    title: 'P5-STALE-DOMAIN-REPORTS-STALE: after the revision moves, list() reports the same refusal the command gate gives (stale), and the PTY stays live',
+    label: 'p5-stale-report',
+    kind: 'registry',
+    run: armStaleDomainReportsStale,
+  },
+  {
     title: 'P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed',
     label: 'p5-host',
     kind: 'host',
@@ -618,7 +624,7 @@ async function armKillOneNotTheOther(harness) {
   assert.equal(siblingRefusal.code, 'REVISION_STALE', 'B\'s commands are refused under the new revision...')
   const siblingRow = harness.registry.list().find((row) => row.domainId === sibling.result.value.domainId)
   assert.ok(siblingRow !== undefined, '...but B is still registered')
-  assert.equal(siblingRow.status, 'active', 'FINDING: a stale-but-live domain is reported active in list()')
+  assert.equal(siblingRow.status, 'stale', 'PD-7: a superseded-but-live domain reports the state its command gate enforces')
   assert.deepEqual(harness.recordFor('b').kills, [], '...and its PTY is still open (no owner-side kill until shutdown/revoke)')
 
   // There is no per-domain kill on the registry: the only single-terminal kill is
@@ -628,6 +634,57 @@ async function armKillOneNotTheOther(harness) {
   assert.deepEqual([...revoked].sort(), [replacement.result.value.domainId, sibling.result.value.domainId].sort(), 'revoke(member) is member-scoped: it kills BOTH')
   assert.deepEqual(harness.recordFor('b').kills, ['SIGKILL'])
   assert.deepEqual(harness.recordFor('a-2').kills, ['SIGKILL'])
+}
+
+/**
+ * PD-7 (F4): the REPORTED state must equal the ENFORCED state.
+ *
+ * Nothing here re-acquires after the revision moves, so the domain kept in the
+ * registry is exactly the "stale-but-live" object the register describes: the
+ * PTY is open, `assertCurrent` refuses every command with `REVISION_STALE`, and
+ * `list()` used to keep saying `active`. The assertion is not "stale sounds
+ * nicer" — it is that the two answers about the SAME domain cannot disagree.
+ */
+async function armStaleDomainReportsStale(harness) {
+  const first = await harness.acquire('bind-a', { backend: 'pty', label: 'a-1' })
+  const sibling = await harness.acquire('bind-b', { backend: 'pipe', label: 'b' })
+  assert.equal(first.result.ok, true)
+  assert.equal(sibling.result.ok, true)
+
+  // CONTROL: while the revision is current, list() says active and the gate
+  // accepts. A fix that merely reports everything stale would fail here.
+  for (const acquired of [first, sibling]) {
+    const row = harness.registry.list().find((candidate) => candidate.domainId === acquired.result.value.domainId)
+    assert.ok(row !== undefined)
+    assert.equal(row.status, 'active', 'a domain created under the current revision is reported active')
+    assert.equal(harness.registry.assertCurrent(acquired.result.value.domainId).ok, true)
+  }
+
+  // Tighten the policy WITHOUT re-acquiring: both domains are now superseded
+  // and still live (nothing was killed), which is the PD-7 shape.
+  harness.setRevision('rev-2')
+
+  for (const acquired of [first, sibling]) {
+    const { domainId } = acquired.result.value
+    const gate = harness.registry.assertCurrent(domainId)
+    const row = harness.registry.list().find((candidate) => candidate.domainId === domainId)
+    assert.ok(row !== undefined, `${domainId} is still registered (the registry has no per-domain kill)`)
+
+    // The enforced answer: the command gate refuses the shell outright.
+    assert.equal(gate.ok, false, 'the command gate refuses a domain created under a superseded revision')
+    assert.equal(gate.code, 'REVISION_STALE', 'the refusal code is the state machine\'s own word for a superseded revision')
+
+    // The reported answer must be the same answer in the status vocabulary:
+    // REVISION_STALE -> 'stale'. BEFORE the fix this is 'active' (the defect).
+    assert.notEqual(row.status, 'active', 'PD-7: list() must not report a refused domain as active')
+    assert.equal(row.status, 'stale', 'list() reports the state the command gate enforces')
+    assert.equal(gate.ok, row.status === 'active', 'the reported state and the enforced state agree for the same domain')
+  }
+
+  // The stale domains are LIVE, not terminated: the report changed, not the process.
+  assert.deepEqual(harness.recordFor('a-1').kills, [], 'the superseded shell was not killed by a bare revision move')
+  assert.deepEqual(harness.recordFor('b').kills, [], 'the sibling shell is still open')
+  assert.equal(harness.registry.list().length, 2, 'both stale domains remain registered until revoke/shutdown')
 }
 
 async function armHostTwoSessionsFenced(world) {

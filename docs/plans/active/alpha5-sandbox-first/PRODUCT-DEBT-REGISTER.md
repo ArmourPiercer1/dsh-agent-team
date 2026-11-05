@@ -29,7 +29,7 @@
 | PD-4 (P5) | Subprocess | The confined child drops upstream's proxy overlay | behavioural divergence | semantics |
 | PD-5 (GAP-FS-CONTRACT-1) | FS | Routed `read_image` cannot resolve `fs` and is dead | behavioural divergence | semantics |
 | PD-6 (GAP-SUB-CONTRACT-1) | Subprocess | The shipped transient shell cannot ride the confined face | behavioural divergence | semantics |
-| PD-7 (F4) | Shell-PTY | A stale-but-live shell is reported `active` | evidence-quality | correctness |
+| PD-7 (F4) | Shell-PTY | A stale-but-live shell is reported `active` **(FIXED)** | evidence-quality | correctness |
 | PD-8 (F1) | Shell-PTY | The shutdown receipt cannot tell an exit from a kill | evidence-quality | semantics |
 | PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1's "write" and "read" are a command gate and an audit | evidence-quality | correctness |
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | Every real `web_search` fact records a malformed marker | evidence-quality | semantics |
@@ -191,9 +191,12 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 ### PD-7 (F4) — a stale-but-live shell is reported `active`
 
 - **source**: `F4` in [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §4
-- **true today**: after the policy revision moves, a shell that is not re-acquired stays in
-  `list()` as `status: 'active'` while `assertCurrent` refuses every command with
-  `REVISION_STALE`; only `killDomain` writes `status`, and the registry has no per-domain kill.
+- **true today**: **fixed.** Before this fix, after the policy revision moved, a shell that was
+  not re-acquired stayed in `list()` as `status: 'active'` while `assertCurrent` refused every
+  command with `REVISION_STALE`; only `killDomain` wrote `status`, and the registry has no
+  per-domain kill. The cause was that `status` is creation-time bookkeeping
+  (`terminal.ts#L209`) and `list()` returned the stored domains verbatim, never asking the
+  command gate.
 - **not true**: that `active` in `list()` means the shell may run commands, and that the status
   surface reports the state the command gate enforces.
 - **security consequence**: **evidence-quality** — the product's own state report is false for a
@@ -201,14 +204,17 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   changes: commands are refused and the product face has no write channel (PD-9).
 - **current backstop**: `assertCurrent` refuses commands on a stale domain with a typed code; the
   PTY is still open, but nothing can be commanded through the registry.
-- **smallest honest fix**: report the state the gate already enforces (`list()` returns `stale` for
-  a superseded domain) — ~1–5 lines plus the arm's expected status. Correctness only: `'stale'` is
-  already in the status set and nothing consumes `list()` today.
-- **proof**: `P5-KILL-ONE-NOT-THE-OTHER` changes its asserted status for the non-re-acquired
-  binding from `active` to `stale`; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay
-  green.
+- **smallest honest fix**: **landed.** `assertCurrent` is now one closure function that both the
+  command gate and `list()` call, and a refused domain is projected as `stale`; the stored
+  `status` is not mutated by a read and no authority changed. Correctness only: `'stale'` was
+  already in the status set.
+- **proof**: `P5-STALE-DOMAIN-REPORTS-STALE` is the guarding arm (a stale-but-live domain; the
+  reported status must equal the gate's answer, with a current-revision control);
+  `P5-KILL-ONE-NOT-THE-OTHER` changes its asserted status for the non-re-acquired binding from
+  `active` to `stale`; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay green.
 - **blocked by**: nothing; a host-free arm carries it; not the boot budget.
-- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L232-L246` contains `assertCurrent(domainId: string) {` ; `packages/runtime/team-sandbox/src/terminal.ts#L269-L270` contains `list(): readonly TerminalDomain[]`
+- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L236` contains `function assertCurrent(domainId: string)` ; `packages/runtime/team-sandbox/src/terminal.ts#L269-L270` contains `list(): readonly TerminalDomain[]`
+- **status**: FIXED — branch `task/a5sf-pd7-20261107`, fix commit `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (draft PR #619, first line `PD-7-FIX`). Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
 
 ### PD-8 (F1) — the shutdown receipt cannot tell an exit from a kill
 

@@ -227,25 +227,25 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
     return task
   }
 
+  /**
+   * The ONE currency predicate: the command gate and `list()` both answer from
+   * this function, so the reported state cannot drift from the enforced one.
+   * PD-7 was that drift: `list()` said `active` while this function refused
+   * the same domain with `REVISION_STALE`.
+   */
+  function assertCurrent(domainId: string): { ok: true; revision: string } | TerminalRefusal {
+    const domain = [...domains.values()].find((candidate) => candidate.domainId === domainId)
+    if (domain === undefined) return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `domain '${domainId}' does not exist (terminated or never created)` })
+    if (domain.status !== 'active') return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `domain '${domainId}' is ${domain.status}: ${dead.get(domainId) ?? 'no reason recorded'}` })
+    const current = options.currentRevision(domain.owner.identity)
+    if (current === undefined) return Object.freeze({ ok: false, code: 'REVISION_UNKNOWN' as const, detail: `no current revision for '${domain.owner.identity.memberInstanceId}'` })
+    if (current !== domain.policyRevision) return Object.freeze({ ok: false, code: 'REVISION_STALE' as const, detail: `domain '${domainId}' was created under '${domain.policyRevision}', current is '${current}'; the shell is stale` })
+    return Object.freeze({ ok: true, revision: domain.policyRevision })
+  }
+
   return Object.freeze({
     acquire,
-    assertCurrent(domainId: string) {
-      const domain = [...domains.values()].find((candidate) => candidate.domainId === domainId)
-      if (domain === undefined) {
-        return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `domain '${domainId}' does not exist (terminated or never created)` })
-      }
-      if (domain.status !== 'active') {
-        return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `domain '${domainId}' is ${domain.status}: ${dead.get(domainId) ?? 'no reason recorded'}` })
-      }
-      const current = options.currentRevision(domain.owner.identity)
-      if (current === undefined) {
-        return Object.freeze({ ok: false, code: 'REVISION_UNKNOWN' as const, detail: `no current revision for '${domain.owner.identity.memberInstanceId}'` })
-      }
-      if (current !== domain.policyRevision) {
-        return Object.freeze({ ok: false, code: 'REVISION_STALE' as const, detail: `domain '${domainId}' was created under '${domain.policyRevision}', current is '${current}'; the shell is stale` })
-      }
-      return Object.freeze({ ok: true, revision: domain.policyRevision })
-    },
+    assertCurrent,
     async revoke(memberInstanceId?: string, reason = 'revoked'): Promise<readonly string[]> {
       // Mark revocation BEFORE the first await: an `acquire` interleaving with
       // the kill loop must already observe the member as revoked, otherwise it
@@ -267,7 +267,7 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
       return Object.freeze(killed)
     },
     list(): readonly TerminalDomain[] {
-      return Object.freeze([...domains.values()])
+      return Object.freeze([...domains.values()].map((domain) => (assertCurrent(domain.domainId).ok ? domain : reportedDomain(domain))))
     },
     async shutdown(): Promise<TerminalShutdownReceipt> {
       const rows: TerminalShutdownReceipt['domains'][number][] = []
@@ -287,4 +287,13 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
       return Object.freeze({ domains: Object.freeze(rows) })
     },
   })
+}
+
+/**
+ * The status `list()` reports: the command gate's answer translated into the
+ * status vocabulary (`REVISION_STALE`/`REVISION_UNKNOWN` -> `stale`). A domain
+ * that is already stale/terminated keeps its own status.
+ */
+function reportedDomain(domain: TerminalDomain): TerminalDomain {
+  return domain.status === 'active' ? Object.freeze({ ...domain, status: 'stale' as const }) : domain
 }

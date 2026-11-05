@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd7/packages/runtime
+
+ ✓ test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  07:28:50
+   Duration  144ms (transform 25ms, setup 0ms, import 33ms, tests 6ms, environment 0ms)
+
