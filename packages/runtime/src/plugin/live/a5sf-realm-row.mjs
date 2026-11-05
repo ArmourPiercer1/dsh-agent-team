@@ -147,6 +147,36 @@ export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
 export const A5SF_EXPECTED_TOOLS_KEY = 'a5sfExpectedTools'
 
 /**
+ * BL-18 LIVE-HALF UNBLOCK (2026-11-06) — the row-config key that CARRIES the
+ * confined `web` face when the compiled provider answer does not.
+ *
+ * WHY IT EXISTS. §8 of `evidence/a5sf-web/README.md` marked five of eight live
+ * steps `BLOCKED` on one fact: `a5sf-realm-row.mjs` forwarded
+ * `compiled.subprocess` but not `compiled.web`, and no row config key carried a
+ * confined web provider — so no product-shaped composition could hang a
+ * deny-lane measurement on anything. This key is the CONFIG half of the
+ * unblock; the compiled-answer half (`compiled.web`) mirrors `subprocess`.
+ *
+ * SHAPE: a module specifier string, or `{ url, config? }` — the SAME forms
+ * `a5sfNativeToolModules` accepts, for the same reason: the row is plain JS and
+ * must not guess where the composition's transport lives. The module must
+ * export `createConfinedWebFace` (or a default function) answering the SAME
+ * `{ effective, provider }` object the compiled answer carries
+ * (`provider.fetch` required, `provider.search` optional, plus the optional
+ * `realmId`/`memberScope`/`providerClass`). The factory receives
+ * `{ member, members, config }` and is an ordinary caller of the ONE two-axis
+ * compiler (P1-02) — the row never intersects a lane, never reads a blueprint
+ * and never evaluates the network axis.
+ *
+ * ONE SOURCE PER REALM: a compiled answer that ALSO carries `web` is a fork and
+ * refuses (`REALM_DECLARATION_INVALID`), the same ambiguity law the
+ * declaration-vs-service pair already obeys. A configured factory that answers
+ * no face refuses with the typed `NETWORK_UNCONFINED_REALM`, never a silent
+ * omission that would leave `web_fetch` on the inherited host service.
+ */
+export const A5SF_WEB_FACE_KEY = 'a5sfWebFace'
+
+/**
  * Typed refusal of the native ASSEMBLY path (assembly gaps 1 and 2, 2026-11-03).
  *
  * A `TypeError` subclass with a stable `code`, so a caller can tell these
@@ -274,25 +304,46 @@ export function a5sfToolPlaneOf(realm) {
  * pre-route-C block is byte-identical (its readers and their pinned tests are
  * unaffected).
  *
+ * `a5sfWebFace` (BL-18 live-half unblock) is validated the same way and rides
+ * the block as `webFace` when present. It is NOT an enabling key: alone, with
+ * no realm to mount, it is a configuration fault (see above).
+ *
  * @param {object|undefined|null} config - the row config.
  * @returns {{
  *   evidencePath?: string,
  *   memberPolicies?: object,
  *   nativeToolModules?: readonly object[],
+ *   webFace?: { url: string, config?: object },
  * } | undefined} the frozen wiring block: `evidencePath` only when an evidence
  *   sink is configured, `memberPolicies` only when the product declaration (or
  *   the derived path) is present (the parsed plan), `nativeToolModules` only
- *   when route C declares modules. Keys are omitted, never `undefined`-valued.
+ *   when route C declares modules, `webFace` only when the row config carries
+ *   a confined web face factory. Keys are omitted, never `undefined`-valued.
  */
 export function a5sfRealmConfigOf(config) {
   const settings = config === undefined || config === null ? undefined : config
   const rawEvidence = settings === undefined ? undefined : settings[A5SF_EVIDENCE_PATH_KEY]
   const rawPolicies = settings === undefined ? undefined : settings[A5SF_MEMBER_POLICIES_KEY]
   const rawAuthority = settings === undefined ? undefined : settings[A5SF_MEMBER_AUTHORITY_KEY]
+  const rawWebFace = settings === undefined ? undefined : settings[A5SF_WEB_FACE_KEY]
   const hasEvidence = rawEvidence !== undefined && rawEvidence !== null
   const hasPolicies = rawPolicies !== undefined && rawPolicies !== null
   const hasAuthority = rawAuthority !== undefined && rawAuthority !== null
-  if (!hasEvidence && !hasPolicies && !hasAuthority) return undefined
+  const hasWebFace = rawWebFace !== undefined && rawWebFace !== null
+  if (!hasEvidence && !hasPolicies && !hasAuthority) {
+    // FAIL CLOSED ON A LONE PROVIDER: a web face configured for a row that is
+    // not a5sf-wired would be silently ignored — and "silently ignored
+    // confinement" is the exact class this lane refuses. It is a config fault,
+    // not an ordinary unconfigured row.
+    if (hasWebFace) {
+      throw new TypeError(
+        `agent-bindings: config.${A5SF_WEB_FACE_KEY} is present but the row is not a5sf-wired`
+        + ` (needs config.${A5SF_EVIDENCE_PATH_KEY}, config.${A5SF_MEMBER_POLICIES_KEY} or`
+        + ` config.${A5SF_MEMBER_AUTHORITY_KEY}); a configured web face without a realm would never mount`,
+      )
+    }
+    return undefined
+  }
 
   let evidencePath
   if (hasEvidence) {
@@ -344,6 +395,7 @@ export function a5sfRealmConfigOf(config) {
 
   const declarations = expectedToolsDeclarationsOf(settings[A5SF_EXPECTED_TOOLS_KEY])
   const modules = nativeToolModulesOf(settings[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)
+  const webFace = webFaceSpecOf(rawWebFace)
   if (declarations !== undefined) {
     // A declaration keyed by a specifier NO entry names is a typo that would
     // silently declare nothing — the exact hole this map exists to close.
@@ -360,6 +412,7 @@ export function a5sfRealmConfigOf(config) {
     ...(evidencePath === undefined ? {} : { evidencePath }),
     ...(memberPolicies === undefined ? {} : { memberPolicies }),
     ...(modules === undefined ? {} : { nativeToolModules: modules }),
+    ...(webFace === undefined ? {} : { webFace }),
   })
 }
 
@@ -498,6 +551,129 @@ function nativeToolModulesOf(raw, declarations) {
 }
 
 /**
+ * Validate the OPTIONAL `a5sfWebFace` module spec (BL-18 live-half unblock).
+ *
+ * Same forms as a `a5sfNativeToolModules` entry, for the same discipline: the
+ * ROW COMPOSITION names a module the host can load, and this glue never guesses
+ * a provider path. `undefined`/`null` = the key is absent (the compiled answer
+ * is then the only web-face source, byte-identical to the pre-unblock row).
+ *
+ * @param {unknown} raw - the config value.
+ * @returns {{ url: string, config?: object } | undefined} a frozen spec.
+ */
+function webFaceSpecOf(raw) {
+  if (raw === undefined || raw === null) return undefined
+  const where = `config.${A5SF_WEB_FACE_KEY}`
+  if (typeof raw === 'string') {
+    if (raw.trim() === '') throw new TypeError(`agent-bindings: ${where} must be a non-blank module specifier`)
+    return Object.freeze({ url: raw })
+  }
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new TypeError(`agent-bindings: ${where} must be a module specifier string or { url, config? }`)
+  }
+  const url = raw.url
+  if (typeof url !== 'string' || url.trim() === '') {
+    throw new TypeError(`agent-bindings: ${where}.url must be a non-blank module specifier`)
+  }
+  const pluginConfig = raw.config
+  if (pluginConfig !== undefined && (pluginConfig === null || typeof pluginConfig !== 'object' || Array.isArray(pluginConfig))) {
+    throw new TypeError(`agent-bindings: ${where}.config must be a plain object when present`)
+  }
+  return Object.freeze({
+    url,
+    ...(pluginConfig === undefined ? {} : { config: pluginConfig }),
+  })
+}
+
+/**
+ * THE composition-time presence check of a confined web face (fail closed).
+ *
+ * A declared web face that cannot mount must REFUSE, never be dropped: a
+ * dropped face leaves the native `web_fetch`/`web_search` row on the INHERITED
+ * host `ctx.web` — the real HTTP provider and the process-wide proxy dispatch —
+ * with zero guard facts. That silent fallback is precisely what makes
+ * "affected but ungoverned" invisible, so it is a typed refusal here.
+ *
+ * The shape is the SAME `{ effective, provider }` object the subprocess face
+ * carries (`provider.fetch` required, `provider.search` optional). The
+ * `effective.network.access` check is a TOTAL-SHAPE check, not a second
+ * decision: the guard in `web.ts` reads that field, and an object without it
+ * would silently read as "not deny" — that is the fail-open shape this rejects.
+ *
+ * @param {unknown} web - the declared face.
+ * @param {string} where - the diagnostic path of the declaration.
+ * @returns {object} the same face, narrowed.
+ */
+function assertConfinedWebFace(web, where) {
+  const effective = web?.effective
+  const provider = web?.provider
+  const access = effective?.network?.access
+  const shapeOk = typeof web === 'object' && web !== null
+    && typeof effective === 'object' && effective !== null
+    && (access === 'allow' || access === 'deny')
+    && typeof provider === 'object' && provider !== null
+    && typeof provider.fetch === 'function'
+  if (!shapeOk) {
+    throw new TeamServiceInstallError(
+      'NETWORK_UNCONFINED_REALM',
+      `${where} carries no mountable confined web face (needs { effective.network.access, provider.fetch });`
+      + ' a declared web face that cannot mount must refuse rather than leave the native web_fetch/web_search row on'
+      + ' the inherited, unconfined host web service',
+      where,
+    )
+  }
+  return web
+}
+
+/**
+ * Build the confined web face from the row config's factory (BL-18).
+ *
+ * ONE SOURCE PER REALM: the caller refuses when the compiled answer already
+ * carries `web`. The factory is a COMPOSITION module — it owns the transport
+ * and calls the ONE two-axis compiler for the effective lane it answers. This function only imports, calls and validates; it never combines
+ * lanes, never reads a blueprint and never decides a permission.
+ *
+ * @param {{ url: string, config?: object }} spec - the validated `a5sfWebFace`.
+ * @param {{ members: readonly object[] }} compiled - the compiled realm answer.
+ * @returns {Promise<object>} the face to forward to `mountA5sfRealm`.
+ */
+async function webFaceFromConfig(spec, compiled) {
+  const where = `config.${A5SF_WEB_FACE_KEY} (${spec.url})`
+  let imported
+  try {
+    imported = await import(moduleSpecifierOf(spec.url))
+  } catch (error) {
+    throw new TypeError(
+      `agent-bindings: cannot load ${A5SF_WEB_FACE_KEY} entry ${JSON.stringify(spec.url)}: `
+      + `${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+  const factory = typeof imported?.createConfinedWebFace === 'function'
+    ? imported.createConfinedWebFace
+    : typeof imported?.default === 'function' ? imported.default : undefined
+  if (factory === undefined) {
+    throw new TypeError(
+      `agent-bindings: ${A5SF_WEB_FACE_KEY} entry ${JSON.stringify(spec.url)} must export a`
+      + ' `createConfinedWebFace({ member, members, config })` function (or a default function)',
+    )
+  }
+  const face = await factory(Object.freeze({
+    member: compiled.members[0],
+    members: compiled.members,
+    ...(spec.config === undefined ? {} : { config: spec.config }),
+  }))
+  if (face === undefined || face === null) {
+    throw new TeamServiceInstallError(
+      'NETWORK_UNCONFINED_REALM',
+      `${where} answered no confined web face; a configured web face that cannot mount must refuse rather than`
+      + ' leave the native web_fetch/web_search row on the inherited, unconfined host web service',
+      where,
+    )
+  }
+  return assertConfinedWebFace(face, where)
+}
+
+/**
  * The Member AGENT's model-visible tool names, read from the ONE registry.
  *
  * WHY a separate reader: the route-C re-mount must be SURFACE-NEUTRAL. A
@@ -549,10 +725,18 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
  * `a5sfEvidencePath`, no observer is installed at all (the installer's
  * default-preserving path).
  *
+ * BL-18 LIVE-HALF UNBLOCK (2026-11-06) — the confined `web` face has the SAME
+ * two carriers as the process face: the COMPILED answer
+ * (`compiledFor` -> `compiled.web = { effective, provider.fetch/search }`,
+ * mirroring `compiled.subprocess`) and, when the compiled answer does not carry
+ * one, the row-config factory `a5sfWebFace` (see A5SF_WEB_FACE_KEY). Exactly
+ * ONE may answer; a declared face that cannot mount refuses with the typed
+ * `NETWORK_UNCONFINED_REALM` before any scope exists.
+ *
  * @param {object} input
  * @param {object} input.root - the Cordis Context the realm installs into (the
  *   agent scope the live setup received).
- * @param {{ evidencePath?: string, memberPolicies?: object } | undefined} input.a5sfConfig
+ * @param {{ evidencePath?: string, memberPolicies?: object, webFace?: { url: string, config?: object } } | undefined} input.a5sfConfig
  *   - the block `a5sfRealmConfigOf` returned.
  * @param {Function | undefined} input.provider - the row's LAZY provider
  *   accessor (`() => { compiledFor } | undefined`, the glue's
@@ -616,6 +800,25 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     }
   }
 
+  // BL-18 (2026-11-06, live-half unblock): the OPTIONAL confined `web` face.
+  // The CONFIG half may carry it (`a5sfConfig.webFace`, a composition factory —
+  // see A5SF_WEB_FACE_KEY); the COMPILED half carries it exactly as
+  // `subprocess` does (`compiled.web = { effective, provider.fetch/search }`).
+  // ONE source per realm: both present is a fork, not a preference.
+  let web = compiled.web
+  if (web !== undefined) assertConfinedWebFace(web, 'a5sfRealmProvider.compiledFor answered a `web` face')
+  if (a5sfConfig.webFace !== undefined) {
+    if (web !== undefined) {
+      throw new TeamServiceInstallError(
+        'REALM_DECLARATION_INVALID',
+        `the compiled realm answer carries a \`web\` face AND config.${A5SF_WEB_FACE_KEY} configures one;`
+        + ' two web-face sources for one Member realm is a fork — keep exactly one',
+        A5SF_WEB_FACE_KEY,
+      )
+    }
+    web = await webFaceFromConfig(a5sfConfig.webFace, compiled)
+  }
+
   // The row's configured path, never a derived or hardcoded one. The sink owns
   // no counter/ledger: one fact per consultation, in call order. PRODUCT MODE
   // without a sink is the DEFAULT-PRESERVING install path: `onGuardConsult` is
@@ -630,6 +833,7 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
     ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
+    ...(web === undefined ? {} : { web }),
     ...(sink === undefined ? {} : { onGuardConsult: (fact) => sink.record(fact) }),
   }
   // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C

@@ -1,0 +1,18 @@
+✔ ROW-FACE-FORWARDED: the product row forwards compiled.web, so the realm answers faces.web !== null (9.473645ms)
+✔ ROW-DENY: network deny, driven through the product row, refuses BEFORE the provider: 0 fetch/DNS/connect/proxy, one typed fact (16.451418ms)
+✔ ROW-ALLOW: network allow reaches the provider EXACTLY once with the declared URL and one ALLOW fact (7.673597ms)
+✔ ROW-ABSENCE-TYPED: a declared compiled.web with no provider refuses typed at composition time (never a silent host fallback) (2.278634ms)
+✔ ROW-CONFIG-FACE: the row config key a5sfWebFace carries a factory, and the config half of the row mounts the confined face (9.539171ms)
+✔ ROW-CONFIG-ABSENCE: a config factory that supplies no provider refuses typed; a blank specifier is a config fault (3.589035ms)
+✔ ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two web-face sources is a fork) (1.808023ms)
+✔ ROW-NO-FACE: a realm that declares no web face is unchanged — web: null and the real tool-web module is refused typed (2.547452ms)
+✔ ROW-PRODUCT-DECLARATION: the shipped product declaration path + a5sfWebFace mounts the confined face with NO teamA5sfRealm service (19.392957ms)
+✔ ROW-NO-SECOND-COMPILER: the row never compiles a lane, never intersects one and never evaluates a network decision (0.484317ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 365.205499
