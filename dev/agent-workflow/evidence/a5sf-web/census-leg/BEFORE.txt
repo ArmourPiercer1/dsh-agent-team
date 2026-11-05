@@ -1,0 +1,56 @@
+# BL-18 census-leg divergence — BEFORE (CI red on b1cb21d87)
+
+## The gate that ran (run 42017915427, job 127213143103, head 0caa51c2d merge tree)
+$ node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 90000 --store-dir "$DSH_CI_STORE_DIR" --transcript-dir "$RUNNER_TEMP/census-transcripts"
+
+DSH-CI-LEG leg=census verdict=fail seconds=682.3
+  detail: roots: nine (packages/*/test) via the root vitest config; baseline ... nine-root-u7-1-old-reds.md = 0 titled reds + 0 collection files;
+  captured 668f/8824l, 668f/8824l vs baseline-declared 626 / 7936; 2 captures, identical identity sets;
+  COUNTS ALSO MOVED (668f/8824l, 668f/8824l vs the baseline document's own 626 / 7936)
+  — and the identity set moved too, so the set, not the counts, is what this verdict is drawn from —
+  NEW RED(S) 1: TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy NAMED MOUNTS ONLY:
+  every production reference to the lane is a booked row with one pinned public-face edge
+
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=682.3
+
+## The failing assertion, verbatim from the uploaded capture (census-capture-1.txt line 9286)
+   FAIL  packages/runtime/test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge
+  AssertionError: unnamed production consumers of the confined provider lane: runtime/team-services/src/web.ts: expected [ 'runtime/team-services/src/web.ts' ] to deeply equal []
+  
+  - Expected
+  + Received
+  
+  - []
+  + [
+  +   "runtime/team-services/src/web.ts",
+  + ]
+  
+   ❯ packages/runtime/test/a5p4-lane-hygiene.test.ts:299:106
+      297|     // THE TEETH, unchanged: a reference with no booked name is a red,…
+      298|     // when the list was empty.
+      299|     expect(unnamed, `unnamed production consumers of the confined prov…
+         |                                                                                                          ^
+      300|     // Each booked name, on the tree that carries it, is pinned to ONE…
+      301|     // the public face — the shape of the mount is part of the booking.
+  
+  ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+## The suite totals of that capture (line 8411-8412) — ONE red, 667 files / 8823 tests green
+   Test Files  1 failed | 667 passed (668)
+        Tests  1 failed | 8823 passed (8824)
+
+## The booked census suite that DID pass in CI (line 7 of the same capture)
+   ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 15ms
+
+## Local reproduction on this worktree (the SAME assertion, before the booking)
+$ node_modules/.bin/vitest run packages/runtime/test/a5p4-lane-hygiene.test.ts
+  AssertionError: unnamed production consumers of the confined provider lane: runtime/team-services/src/web.ts:
+    expected [ 'runtime/team-services/src/web.ts' ] to deeply equal []
+
+## Why my local p4t6 replica disagreed
+$ vitest run test/p4t6-session-event-scan.test.ts   # 20/20 — a DIFFERENT instrument
+  The census is the root vitest config over nine roots (packages/*/test), two captures, compared as an
+  IDENTITY SET against dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md.
+  p4t6 answers "is every scanned .ts booked in the file census". a5p4-lane-hygiene answers "is every
+  production reference to the confined-provider lane a booked row with one pinned public-face edge".
+  The new file passed the first and broke the second. Running one suite is not running the gate.

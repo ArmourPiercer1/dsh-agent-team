@@ -69,6 +69,7 @@ The faces already had ONE compiler: `compileEffectiveIo` (ceiling ∩ tool restr
 | mutation controls | `node dev/agent-workflow/evidence/a5sf-web/mutation-controls.mjs` | **control: PASS**, 3/3 `RED-AS-REQUIRED` (`mutation-controls.json`) |
 | runtime vitest groups | `vitest run test/a5sf-*.test.ts test/a5g6-install-face-render.test.ts test/a3p4-permission-lifecycle-e2e.test.ts test/p7t3-lifecycle-fact.test.ts` (from `packages/runtime`) | **16 files, 234/234 pass** |
 | p4t6 census | `vitest run test/p4t6-session-event-scan.test.ts` (from `packages/testkit`) | **20/20 pass** with `a5sfweb.json`; unbooked run reads `scanner counts 1434, ledger derives 983 + 450 = 1433` (`.scratch/p4t6-unbooked.log`) |
+| **the census leg itself** | `node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 90000 --store-dir <repo>/.pnpm-store --transcript-dir .scratch/census-transcripts` | **the identity CI named is GREEN after the booking in §3.2**; the leg's remaining local reds are load-induced timeouts in files this branch does not touch (three consecutive runs produced three *different* unrelated reds; none of them `a5p4`, and CI's two captures on `b1cb21d87` were identical). Logs: `census-leg/BEFORE.txt`, `census-leg/AFTER.txt` |
 | whitespace | `git diff --check` | **rc 0** |
 | artifact gate (index) | `node scripts/check-artifacts-committed.mjs` | see §3.1 |
 | artifact gate (head) | `node scripts/check-artifacts-at-head.mjs` | see §3.1 / `artifacts-head.verdict.txt` |
@@ -89,6 +90,56 @@ surface, so `pnpm -r build` was run and the rebuilt `packages/runtime/dist/**` (
 working tree matches the index; `check-artifacts-at-head.mjs` (which materialises the commit,
 builds it and compares) is the answer to "does the commit carry its own build" — its verdict for
 the final commit is in `artifacts-head.verdict.txt` next to this file.
+
+### 3.2 The census leg: the one identity CI named, and why my local replica missed it
+
+CI on `b1cb21d87` (run 42017915427, job 127213143103) failed `ci-census / census-runtime` with
+**exactly one** new identity:
+
+```
+NEW RED(S) 1: TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy
+  NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge
+AssertionError: unnamed production consumers of the confined provider lane:
+  runtime/team-services/src/web.ts: expected [ 'runtime/team-services/src/web.ts' ] to deeply equal []
+```
+
+**It was mine, and it was a real omission — of a different ledger than the one I had booked.**
+`web.ts` carries exactly one edge into the confined-provider lane:
+
+```ts
+import type { ProviderResult } from '../../sandbox-provider/index.js'
+```
+
+(a type-only import, because the ONE probe it calls — BL-17's `probeNetworkDenial`, imported from
+`./subprocess.js` — answers that shape). The p4t6 booking I added covers a *file census*
+("is every scanned `.ts` booked"), which is why the p4t6 suite was 20/20 in CI. The a5p4 ledger
+covers a different question: *"is every production reference to the lane a named mount with one
+pinned public-face edge"*. The new file passed the first and broke the second. **Two ledgers, two
+questions; my local replica ran one suite, the gate runs nine roots and grades them as an identity
+set.** That is the whole divergence — a new red identity, not a count disagreement. The counts did
+move too (`668f/8824l` vs the baseline document's `626/7936`), and the gate says so out loud while
+still drawing the verdict from the set: `compareCensus` fails only on `added`.
+
+**The correction is a booking, not a code change** — the ledger's own `types-only` shape, the same
+one the BL-16 `subprocess` face beside it uses:
+
+```ts
+{
+  file: 'runtime/team-services/src/web.ts',
+  lane: 'bl-18 — Member realm confined web face (types-only; provider instance injected)',
+  edge: "import type { ProviderResult } from '../../sandbox-provider/index.js'",
+  kind: 'types-only',
+}
+```
+
+Local state after it (`census-leg/AFTER.txt`): the `a5p4` identity is gone, the p4t6 suite is
+still green, no collection-error files from this branch. Three consecutive census-leg runs on this
+worktree produced three *different* remaining reds — `alpha5-glob-backend` X3 and
+`alpha5-search-backend` P11 (`expect(...).toBe('cancelled')` against a `timeoutMs: 1` backend),
+and `a5-read-slice-window` ("Hook timed out in 10000ms" in `beforeAll`) — each in a file this
+branch does not touch, each green in isolation here, each a timeout race that CI's two identical
+captures never saw. They are load on this box, not regression, and they are disclosed rather than
+argued away: the census of record is the CI run on the pushed head.
 
 ## 4. The 12 arms, RED → GREEN
 
@@ -231,43 +282,57 @@ change either behaviour.
 
 ## 8. NOT proven (the live half) — one-shot acceptance checklist
 
-None of the following was run this round: no Host boot, no real fetch, no DNS, no proxy. A future
-operator **with boot authorisation** runs these IN ORDER; each is one command, and each must be
-recorded with its exact output before BL-18 can claim the row. Use a world DSH_HOME under
-`tests/homes/<world>` per `docs/TEST_METHODS.md` §7 and the port `3180` family; never touch the
-stable instance (`:3080`).
+Nothing in this section was run this round: no Host boot, no real fetch, no DNS, no proxy.
 
-1. **Boot** the pinned runtime with a world `DSH_HOME` and a governed Member whose row config
-   supplies a confined web face and re-mounts the pinned `@deepseek-ai/dsh-tool-web` module.
-   Confirm from the boot log that the realm reports `faces.web !== null` and that the module
-   attached (no `NETWORK_UNCONFINED_REALM` at composition time).
-2. **Deny lane, pre-connection (the row's core claim).** With `network: deny` in the compiled
-   lane, have the Member call `web_fetch` for a host that would answer, while capturing the
-   process's syscalls:
-   `strace -f -e trace=connect,sendto,sendmsg,socket -o /tmp/bl18-deny.strace <host pid>`.
-   Expected: the tool returns the typed refusal, exactly one `web:fetch` fact with
-   `decidedBy=NETWORK_UNCONFINED_REALM`, and **zero** `connect`/`sendto`/`socket` lines for the
-   target host in the trace. This is the only step that upgrades §5's provider-counter claim to
-   a kernel-observed fact.
-3. **Deny lane, redirect shape.** Run the same call against a live local HTTP server whose only
-   response is `302 Location: http://127.0.0.1:<port>/allowed-looking`. Expected: the same
-   refusal and **no** request line in the server's access log (the redirect was never fetched,
-   because the first connection never happened).
-4. **Deny lane, proxy env.** Re-run step 2 with `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` pointed at
-   a local logging proxy. Expected: the same refusal and **no** proxy log entry — the proxy is
-   downstream of the call that was never made.
-5. **Allow lane, exactly one call.** With `network: allow`, call `web_fetch` against a local HTTP
-   server. Expected: one request line in the server log for the declared URL, the body in the
-   model-facing result, one ALLOW fact carrying both `WEB_NETWORK_RESIDUALS`, and the record of
-   which redirect/proxy dimensions the host provider actually exercised (same-origin hop count,
-   proxy route if any).
-6. **Ordinary DSH unaffected.** In a world with **no** Alpha.5 realm, call `web_fetch` and record
-   the same URL/body/status as step 5, plus the absence of any `a5sf-guard-consult` fact. The
-   two results must be identical apart from the admission fact.
-7. **Second call path.** Repeat step 2 with `web_search`. Expected: the same pre-provider
-   refusal, zero connections, one `web:search` deny fact.
-8. **Cross-generation.** Revoke the Member's policy revision while a `web_fetch` is in flight and
-   record that the call is refused/aborted rather than completing under the old lane.
+**Read this before spending a boot slot.** Steps are marked `RUNNABLE` or `BLOCKED` — the
+`BLOCKED` ones cannot be executed on this tree *as it stands*, and the reason is not the
+operator's environment: **no product composition supplies a confined web provider, and
+`packages/runtime/src/plugin/live/a5sf-realm-row.mjs` forwards the compiled `subprocess` face but
+has no `web` forwarding**, so there is no row config key, no service and no constructor that would
+put a web face on a Member. The unblocking change is named under each blocked step; it is the
+BL-18 product-wiring follow-up, not something these commands can work around. Do not improvise a
+mount and then record it as a live row: a bespoke harness proves the harness, not the product.
+
+Common preconditions (verbatim from `.github/workflows/census-runtime.yml`; that file is the
+authority if this drifts):
+
+```bash
+# 0. the pinned pristine host, if this checkout has none (TEST_METHODS §2)
+SHA=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.TEST_USE_BASELINE_SHA))")
+VER=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.DSH_BASELINE_VERSION))")
+CH=$(node -e "import('./tests/paths.mjs').then((m) => console.log(m.CLIENT_COMMIT_HASH))")
+mkdir -p tests/deepseek-harness-test-use
+git -C tests/deepseek-harness-test-use init -q .
+git -C tests/deepseek-harness-test-use remote add origin https://github.com/ArmourPiercer1/deepseek-harness
+git -C tests/deepseek-harness-test-use fetch -q --depth 1 --no-tags origin "$SHA"
+git -C tests/deepseek-harness-test-use checkout -q --detach FETCH_HEAD
+cd tests/deepseek-harness-test-use
+pnpm install --ignore-scripts --store-dir "$PWD/../../.pnpm-store"
+ESBUILD_WORKER_THREADS=1 DSH_CLIENT_COMMIT_HASH="$CH" pnpm run build
+test -f apps/cli/lib/bin.js && echo "host build ok"
+cd ../..
+
+# 1. build THIS repo — the census leg and a live host both REFUSE an unbuilt checkout
+CI=true pnpm install --frozen-lockfile --store-dir "$PWD/.pnpm-store"
+pnpm run build
+pnpm build:composition
+```
+
+| # | Step | Runnable today? | Exact command / state |
+| --- | --- | --- | --- |
+| 1 | **Host boots** with a world `DSH_HOME`, pinned runtime | **RUNNABLE** | `DSH_HOME=$PWD/tests/homes/bl18-live node tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3181 --no-open` — success = the line `dsh web: http://127.0.0.1:3181/?token=...` appears (TEST_METHODS §2 health check 1). Never `:3080`. |
+| 2 | **Ordinary DSH unaffected (live)** — no Alpha.5 realm, `web_fetch` still fetches | **RUNNABLE** (step 1 host) | In that world's tool plane call `web_fetch` on a URL you control (a local server: `python3 -m http.server 3491`), then `grep` the world's tool-call log for the returned body and confirm **no** `a5sf-guard-consult` fact exists for it. Record the body byte-length and the absence of the fact. |
+| 3 | **Deny lane, pre-connection (the row's core claim)** — `network: deny`, `web_fetch`, kernel-observed zero connections | **BLOCKED** | Needs a `web` face on the Member. Unblock = forward a compiled web face in `a5sf-realm-row.mjs` (mirror the existing `compiled.subprocess` block: shape `{ effective, provider }` with `provider.fetch`/`provider.search`, mounted by `mountA5sfRealm`), plus a provider constructor the row can call. Then: `strace -f -e trace=connect,sendto,sendmsg,socket -o .scratch/bl18-deny.strace -p <host pid>` **before** the call, call `web_fetch`, stop the trace, and require (a) the typed `NETWORK_UNCONFINED_REALM` refusal, (b) exactly one `web:fetch` fact, (c) **zero** `connect`/`sendto`/`sendmsg`/`socket` lines for the target host/port. This is the only step that upgrades §5's provider-counter claim to a kernel-observed fact. |
+| 4 | **Deny lane, redirect shape** — a `302` to an allowed-looking host is never followed | **BLOCKED** (same unblock) | Start a local server whose only response is `302 Location: http://127.0.0.1:3491/allowed-looking`, re-run step 3, and require the same refusal plus **no** request line in the server's access log. |
+| 5 | **Deny lane, proxy env** — a proxy cannot be consulted before a request exists | **BLOCKED** (same unblock) | Re-run step 3 with `HTTP_PROXY=http://127.0.0.1:3492 HTTPS_PROXY=… ALL_PROXY=…` pointed at a logging proxy (`python3 -m http.server 3492` is enough to log nothing), and require the same refusal and **no** proxy log entry. |
+| 6 | **Allow lane, exactly one call, residuals visible** — `network: allow` | **BLOCKED** (same unblock) | Local server on `3491`, call `web_fetch` for `http://127.0.0.1:3491/legal/page`, require exactly one request line, the body in the model-facing result, one ALLOW fact carrying `WEB_REDIRECT_UNMEDIATED_ON_ALLOW` + `WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW`, and record which redirect/proxy dimensions the host provider actually exercised (hop count, proxy route). |
+| 7 | **Second call path** — `web_search` on the same face | **BLOCKED** (same unblock) | Repeat step 3 with `web_search`: same pre-provider refusal, zero connections, one `web:search` fact. |
+| 8 | **Cross-generation** — revoke the Member's policy revision mid-flight | **BLOCKED** (same unblock + a control surface) | Revoke while a `web_fetch` is in flight; record that the call is refused/aborted rather than completing under the old lane. |
+
+What a green step 3–7 would NOT prove, even after the wiring lands: that the *model* sees the
+confined tool rather than a shadow of it (step 3's fact stream is the evidence for that, not the
+tool's output), that a redirect chain across origins is safe under `allow` (it is not mediated —
+§6), and that a non-`ctx.web` transport is confined (it is not — §6 R1/R2).
 
 ## 9. Honest intermediate state (why BL-18 is still NOT DONE)
 
@@ -276,7 +341,11 @@ stable instance (`:3080`).
   role, the residual disclosure, ordinary-fetch invariance) is proven host-free and
   mutation-controlled.
 * The live half (real egress, real DNS, redirect chain, proxy env, a booted Member's tool
-  surface, cross-generation behaviour) is **unproven**; §8 is the checklist, not a result.
+  surface, cross-generation behaviour) is **unproven**; §8 is the checklist, not a result, and
+  five of its eight steps are marked `BLOCKED` on the product wiring rather than on the operator.
+* The **census leg** (nine roots, two captures, identity-set graded) is green for the identity this
+  branch introduced: the `a5p4` NAMED MOUNTS red is fixed by the `types-only` booking in §3.2. The
+  leg was red in CI before that booking and is the reason this README grew §3.2.
 * The product composition is deliberately left unwired: no `web` provider is supplied, so a
   governed Member's model-visible `web_fetch` is still the inherited host tool. Saying otherwise
   would be the exact silent-widening failure this seam exists to refuse.
