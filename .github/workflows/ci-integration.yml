@@ -378,6 +378,27 @@ jobs:
         # mkdtemp fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
         run: node --test tests/world-factory/a5sf-product-assembly.test.mjs
 
+      - name: "a5sf FS face layer B (per-native-tool contract — node:test, zero Host boots, host-free)"
+        # Layer B pins the TOOL contract INSIDE an admitted call — not the lane (layer A) and
+        # not a live Host (layer C). The real pinned `@deepseek-ai/dsh-tool-fs`, the real
+        # `LocalFileSystem` and the real `fs-observation-policy` run through the product
+        # route-C seam. Four properties, each asserted as ORDER + IDENTITY: the edit version
+        # guard (stale edit = one typed FS_STALE_VERSION, zero bytes, exactly one editText
+        # call; a fresh edit still writes), the >10 MiB boundary (streamText once, readText
+        # zero, byte-capped window with the exact continuation footer, past-window bytes
+        # absent; a small file buffers), read_image's attachment identity/ordering (exactly
+        # one attachment with the file's real metadata after stat -> readBytes; a refused
+        # image is one stat deny with zero reads and zero attachment bytes) and
+        # abort-before-publication (FS_ABORTED, byte-identical target, no staging residue,
+        # never reported as success). Six mutation controls — version guard dropped, stat
+        # size under-reported, write signal dropped, silent attachment store, post-fix
+        # composition — each red exactly their own arm, so a green run cannot be vacuous
+        # (`dev/agent-workflow/evidence/a5sf-fs-face/mutations.mjs`). The file path is a
+        # required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree at run time.
+        run: node --test tests/world-factory/a5sf-fs-contract.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

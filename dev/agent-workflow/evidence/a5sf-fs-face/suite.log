@@ -1,0 +1,17 @@
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (284.471333ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (28.573376ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (67.255066ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (17.438254ms)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (17.126924ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (17.787104ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (16.551235ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (22.341877ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (21.555559ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 559.807445
