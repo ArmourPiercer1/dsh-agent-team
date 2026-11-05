@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-race-fix
+
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 1355ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests) 1866ms
+
+ Test Files  2 passed (2)
+      Tests  46 passed (46)
+   Start at  10:10:55
+   Duration  2.32s (transform 590ms, setup 0ms, import 708ms, tests 3.22s, environment 0ms)

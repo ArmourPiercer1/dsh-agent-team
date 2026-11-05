@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-race-fix/dev/agent-workflow/evidence/a5sf-archived-gate
+
+ ❯ archive-race-arms.test.mjs (4 tests | 3 failed) 1067ms
+     ✓ RO1 SEQUENTIAL (product order): archive completes, then dispatch -> 422, 0 executions, not resident  1004ms
+     × RO2 RACE: a dispatch issued inside the drop->commit window -> 422, 0 executions, not resident 8ms
+     × RO3 RESUME AFTER THE COMMIT: an in-flight resume resolving after ARCHIVED -> 422, no handle 3ms
+     × RO4 HANDLE SURVIVES THE COMMIT: a resume completing inside the window is dropped AFTER the commit 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  archive-race-arms.test.mjs > the archive boundary at the product order > RO2 RACE: a dispatch issued inside the drop->commit window -> 422, 0 executions, not resident
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ archive-race-arms.test.mjs:227:28
+    225|       expect(row.lifecycle).toBe('ARCHIVED')
+    226|
+    227|       expect(reply.status).toBe(422)
+       |                            ^
+    228|       expect(toolExecutions() - executionsBefore).toBe(0)
+    229|       expect(world.agents.resumes.length - resumesBefore).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  archive-race-arms.test.mjs > the archive boundary at the product order > RO3 RESUME AFTER THE COMMIT: an in-flight resume resolving after ARCHIVED -> 422, no handle
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ archive-race-arms.test.mjs:260:28
+    258|       const reply = await dispatch
+    259|
+    260|       expect(reply.status).toBe(422)
+       |                            ^
+    261|       expect(toolExecutions() - executionsBefore).toBe(0)
+    262|       expect(world.binding.hasLive(CHILD)).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  archive-race-arms.test.mjs > the archive boundary at the product order > RO4 HANDLE SURVIVES THE COMMIT: a resume completing inside the window is dropped AFTER the commit
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ archive-race-arms.test.mjs:295:44
+    293|       await archive
+    294|       expect(row.lifecycle).toBe('ARCHIVED')
+    295|       expect(world.binding.hasLive(CHILD)).toBe(false)
+       |                                            ^
+    296|
+    297|       const executionsBefore = toolExecutions()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  10:00:20
+   Duration  2.02s (transform 1.45s, setup 0ms, import 872ms, tests 1.07s, environment 0ms)

@@ -52,9 +52,10 @@ import type {
   LifecyclePorts,
   LifecycleStepName,
   LifecycleTarget,
+  QuiesceOutcome,
 } from './types.js'
 import { commitDurable, loadMember, rejectIllegalState } from './resolve.js'
-import { quiesceMember } from './quiesce.js'
+import { dropResidencyAfterCommit, quiesceMember, reopenAdmission } from './quiesce.js'
 
 /**
  * The dry-run plan of one archive: the SETTLED intermediate record when
@@ -113,40 +114,57 @@ export async function archiveMember(
 
   // Quiesce FIRST (Architecture §30.1): the five live steps complete
   // before any durable commit — or the procedure aborts with zero writes.
-  const outcome = await quiesceMember(ports, target, member)
-  const steps: LifecycleStepName[] = [...outcome.steps]
+  //
+  // The admission closed by step 1 is REOPENED on every exit (the close is
+  // the in-process half of the boundary; the durable lifecycle is the
+  // authority once the transition commits or the procedure aborts).
+  let outcome: QuiesceOutcome
+  try {
+    outcome = await quiesceMember(ports, target, member)
+    const steps: LifecycleStepName[] = [...outcome.steps]
 
-  // The durable commits (the exact probed transitions, verbatim).
-  if (plan.settled !== undefined) {
+    // The durable commits (the exact probed transitions, verbatim).
+    if (plan.settled !== undefined) {
+      await commitDurable(
+        ports,
+        target,
+        member.lifecycle,
+        LIFECYCLE_OPERATIONS.SETTLE,
+        plan.settled.lifecycle,
+        member.activityVersion,
+        LIFECYCLE_STEP_NAMES.COMMIT_SETTLE,
+      )
+      steps.push(LIFECYCLE_STEP_NAMES.COMMIT_SETTLE)
+    }
+    const base = plan.settled ?? member
+    const archived = applyLifecycleOperation(base, LIFECYCLE_OPERATIONS.ARCHIVE)
     await commitDurable(
       ports,
       target,
-      member.lifecycle,
-      LIFECYCLE_OPERATIONS.SETTLE,
-      plan.settled.lifecycle,
-      member.activityVersion,
-      LIFECYCLE_STEP_NAMES.COMMIT_SETTLE,
+      base.lifecycle,
+      LIFECYCLE_OPERATIONS.ARCHIVE,
+      archived.lifecycle,
+      base.activityVersion,
+      LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE,
     )
-    steps.push(LIFECYCLE_STEP_NAMES.COMMIT_SETTLE)
-  }
-  const base = plan.settled ?? member
-  const archived = applyLifecycleOperation(base, LIFECYCLE_OPERATIONS.ARCHIVE)
-  await commitDurable(
-    ports,
-    target,
-    base.lifecycle,
-    LIFECYCLE_OPERATIONS.ARCHIVE,
-    archived.lifecycle,
-    base.activityVersion,
-    LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE,
-  )
-  steps.push(LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE)
+    steps.push(LIFECYCLE_STEP_NAMES.COMMIT_ARCHIVE)
 
-  return {
-    member: archived,
-    steps: Object.freeze(steps),
-    settledCommitted: plan.settled !== undefined,
-    drained: outcome.drained,
-    residencyDropped: outcome.residencyDropped,
+    // THE TRANSACTION ENDS WITH RESIDENCY DROPPED (row 6, fix (a)). Step 5
+    // dropped the handle before the commit; a dispatch in that window could
+    // legally cold-resume the still-SETTLED member and the new handle would
+    // survive the commit (ensureLiveAgent serves a resident handle before the
+    // durable gate). Re-run the idempotent drop now that the durable state is
+    // ARCHIVED, so the procedure's end state cannot carry a live handle.
+    dropResidencyAfterCommit(ports, member.childSessionId)
+
+    return {
+      member: archived,
+      steps: Object.freeze(steps),
+      settledCommitted: plan.settled !== undefined,
+      drained: outcome.drained,
+      residencyDropped: outcome.residencyDropped,
+    }
+  } finally {
+    await reopenAdmission(ports, target)
   }
 }

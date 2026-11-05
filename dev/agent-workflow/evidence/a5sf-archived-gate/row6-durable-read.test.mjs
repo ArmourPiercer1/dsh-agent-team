@@ -93,7 +93,7 @@ describe('row 6 gate — durable-read cost', () => {
     }
   })
 
-  it('cold resume: the gate costs exactly ONE extra in-memory list (2 total incl. ownership)', async () => {
+  it('cold resume: the gate costs exactly TWO in-memory lists — before AND after the resume (3 total incl. ownership)', async () => {
     const world = await worldWith([
       { instanceId: 'inst-cost', childSessionId: CHILD, templateId: 'tpl-t12a', lifecycle: 'SETTLED' },
     ])
@@ -107,10 +107,14 @@ describe('row 6 gate — durable-read cost', () => {
       } finally {
         recorder.restore()
       }
-      // The gate's OWN read is exactly one per cold resume. The other reads
-      // (ownership resolver + consumption/instance resolution) pre-date it.
-      expect(recorder.gateCalls(), `cold resume gate list() calls: ${JSON.stringify(recorder.calls)}`).toBe(1)
-      expect(recorder.calls.length, `cold resume total list() calls: ${JSON.stringify(recorder.calls)}`).toBe(4)
+      // The gate's OWN reads: SEAM 1 (before the resume) and SEAM 3 (after it,
+      // immediately before liveAgents.set — row 6, 2026-11-05). The second read
+      // is the price of the race fix: the archive's durable commit can land
+      // while the resume is in flight, and only a re-read after the resume can
+      // see it. The other reads (ownership resolver + consumption/instance
+      // resolution) pre-date the gate.
+      expect(recorder.gateCalls(), `cold resume gate list() calls: ${JSON.stringify(recorder.calls)}`).toBe(2)
+      expect(recorder.calls.length, `cold resume total list() calls: ${JSON.stringify(recorder.calls)}`).toBe(5)
     } finally {
       await world.binding.close().catch(() => undefined)
     }

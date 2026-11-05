@@ -18,6 +18,20 @@ brief). The diagnosis evidence commit `d75a03c38` is cherry-picked (evidence onl
 | `green-rejudge-cost.log` | both arms above, green |
 | `full-suite.log`, `build.log` | the full suite from the repo root, and the dist rebuild |
 
+**2026-11-05 RACE ROUND (this branch — read §4b first).** An independent adversarial review measured a
+**BLOCKING** hole the round above did not cover: the product order is quiesce-then-commit, so a dispatch issued
+in the drop→commit window cold-resumed the member and the live handle survived the commit. §4.2's replay had the
+two effects reversed, which is why the first round's arms never saw it. This branch fixes it with three coupled
+changes — (a) a post-commit residency re-drop in `archive.ts`/`dispose.ts`, (b) a post-resume durable re-read
+immediately before `liveAgents.set` (SEAM 3), (c) the per-member admission close implemented for real (it was a
+production no-op) and reopened on every procedure exit — and adds `archive-race-arms.test.mjs` +
+`race-mutation-control.mjs`. New artifacts: `race-red-before.log`, `race-green-after.log`,
+`race-mutation-control.{mjs,json}`, `a5sf-race-vitest.config.mjs`, `archive-race-arms.test.mjs`,
+`race-full-runtime.log`, `race-build.log`. **Glue sha256 is now
+`d3945eff6960ef8adc811a38f2a2f447a6a9a359122622e7f80ddfbad125287f`** (§5). The row-6 grade is unchanged
+(`ENFORCE-PARTIAL` / `V@B=yes`): this is a mechanism repair, not new tool acceptance, and no live re-measurement
+was performed.
+
 ---
 
 ## 1. The ruling, and its textual basis
@@ -125,10 +139,12 @@ independently necessary, and neither mutant moves the other's legs.
    the same five clauses (`everyDispatchExplained`, `noSuccessAfterStop`, `noCallableShadow`,
    `probeFactsAreRefusals`, `noProcessAfterStop`). Nothing was rewritten.
 2. **The same stimulus against the fixed product is the refusal:** the archived member row is replayed in a
-   host-free world (the REAL glue through the t12a bridge): go live while `SETTLED`, commit the durable
-   `ARCHIVED` row, drop residency (the quiesce step), then dispatch the archived `grep` and `glob` probes
-   through `live.executeTool` (the same public seam `/__p6t6/tool` calls). Both replies are the route's exact
-   **422** mapping; the in-process code is `PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED`; measured deltas after the
+   host-free world (the REAL glue through the t12a bridge): go live while `SETTLED`, run the **quiesce step-5
+   residency release FIRST**, then **commit the durable `ARCHIVED` row** — the product order
+   (`quiesce.ts:143` → `archive.ts:141-151`), corrected 2026-11-05; the earlier draft had the two effects
+   reversed (safe-but-not-product, see §4b) — then dispatch the archived `grep` and `glob` probes through
+   `live.executeTool` (the same public seam `/__p6t6/tool` calls). Both replies are the route's exact **422**
+   mapping; the in-process code is `PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED`; measured deltas after the
    boundary: `resumes 0`, `creates 0`, `toolExecutions 0`.
 3. **The judge flips:** keeping every archived field verbatim (member, archive reply, `membersAfter`,
    `stopInstant`, the seven pre-boundary facts, observations, teardown process seam) and replacing only the
@@ -149,18 +165,87 @@ weakened); the naming assertion in `tests/world-factory/a5sf-search-live.test.mj
 `row6-replay.mjs` keeps the legacy id as an alias so the archived bytes stay readable. Recorded here as
 required.
 
+## 4b. The archive RACE, and the three fixes that close it (2026-11-05, BLOCKING review finding)
+
+**The defect.** §4.2's replay is SEQUENTIAL: it drops residency and *then* commits, so the refusal it measures is
+the durable gate's. The product order is the same two effects, but they are two separate awaits
+(`quiesce.ts:143` inside `quiesceMember`, then `archive.ts:141-151`), and between them the durable row still
+reads `SETTLED` while no live handle exists. A dispatch in that interval is therefore *legal* for every check
+the first fix installed: SEAM 1 reads `SETTLED`, the resume succeeds, the handle joins `liveAgents`, and
+`ensureLiveAgent` returns a resident handle from `liveAgents` BEFORE the durable gate is ever consulted
+(`agent-bindings.mjs:4461-4477`) — so the handle outlives the commit, for the rest of the process. The earlier
+re-judge certified only the narrower (sequential, post-commit) claim, and its README + `row6-rejudge` modelled
+the reversed order, which is exactly why the hole was invisible: no arm ever dispatched inside the window.
+
+**Measured before the fix** (`archive-race-arms.test.mjs`, host-free, real glue + real
+`createLifecycleService`): `RO1` sequential arm **PASSED** (the claim that already held), `RO2` dispatch inside
+the drop→commit window **200 OK**, `RO3` resume resolving after the commit **200 OK + resident**, `RO4` handle
+survives the commit **`resident true`** — `3 failed | 1 passed` (`race-red-before.log`). After the fix
+`4 passed (4)` (`race-green-after.log`): all four arms refuse with **422**, zero tool executions,
+`resident=false`.
+
+**The three fixes (each one alone leaves a hole, per the mutation control below):**
+
+- **(a) post-commit residency re-drop** — `archive.ts` / `dispose.ts` re-run the idempotent
+  `residency.dropResidency(childSessionId)` AFTER the durable commit, so a handle that cold-resumed inside the
+  window is dropped before the procedure returns. A port fault there is swallowed on purpose: the transition is
+  already committed and reporting a failed archive for a committed one would be a lie; the durable gate refuses
+  the member either way.
+- **(b) post-resume durable re-read (SEAM 3)** — in `ensureLiveAgentOnce`, after `resume()` resolves and
+  immediately before `liveAgents.set`, the durable lifecycle is read again; `ARCHIVED`/`DISPOSED` disposes the
+  just-resumed handle and throws the same typed refusal
+  (`PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED`/`_TERMINAL`). No `await` separates that read from the `set`, so a
+  commit cannot land between them; a commit landing after the set is (a)'s job. Cost: **one extra in-memory
+  `list()` per cold resume** (SEAM 1 + SEAM 3 = 2 gate reads; `row6-durable-read.test.mjs` measures `2` gate /
+  `5` total).
+- **(c) the per-member admission close, implemented for real** — the production `admission.closeNewWork` was a
+  no-op (`root.ts:2164`), so nothing closed the window in-process. The glue now keeps a process-local
+  `newWorkClosed` map keyed by child session id: `ensureLiveAgent` consults it at entry (before the `liveAgents`
+  fast path) and `executeTool` consults it once more immediately before `tools.execute` (a dispatch admitted
+  before the close must not execute a tool after it). The lifecycle procedure reopens it on EVERY exit
+  (`quiesce.ts reopenAdmission`, via `try/finally` in `archive.ts`/`dispose.ts`; optional `reopenNewWork` on
+  `AdmissionClosePort`), so (i) an aborted archive does not brick a still-`SETTLED` member and (ii) after a
+  committed archive the durable gate is the authority — no double refusal, and Restore needs no admission
+  contact. Why (a)+(b) alone are NOT enough: a dispatch that enters the window and finishes its resume before
+  the commit is legitimately executable at that instant (the durable row still says `SETTLED`), so it would run
+  a tool — the row-6 requirement is `422` / zero executions, which only an admission close can deliver.
+
+**Mutation control** (`race-mutation-control.mjs`: literal single-occurrence edits, sha256 compared before/after
+restore of every touched file, and "no RED" is a control failure):
+
+| mutant | edit | expected RED | observed |
+|---|---|---|---|
+| **R-M1** (a) removed | the post-commit re-drop in both files | `RO4` | `RO4 failed`; RO1/RO2/RO3 passed |
+| **R-M2** (b) removed | `lateRefusal` := `null` | `RO3` | `RO3 failed`; RO1/RO2/RO4 passed |
+| **R-M3** (c) removed | both admission consults := `null` | `RO2` (and RO4's racing dispatch is no longer refused) | `RO2, RO4 failed`; RO1/RO3 passed |
+
+**What is still true after this fix** — the honest answer to *"can a dispatch concurrent with an archive still
+produce a live, tool-bearing handle on this process?"*: **not through `ensureLiveAgent` / `executeTool`**. Those
+two doors are closed for every dispatch that reaches them while the procedure is open, and both variants
+("resume inside the window", "resume after the commit") end `422` with zero executions. The paths that remain
+uncovered are the ones that write `liveAgents` WITHOUT those two doors: the **boot resume loop**
+(`agent-bindings.mjs:5166-5179`; its `liveAgents.set` does not consult the close) and the **child-factory create**
+path (§7 risk 2). A boot that races an archive in the same process can still land a resident handle for an
+archived member until some later drop. The boot loop is not reachable from a tool dispatch (it is row start), so
+the row-6 tool claim holds — but the general in-process invariant does not extend to it, and that is booked as a
+named residual (§7 risk 2) rather than claimed fixed.
+
 ## 5. Protected glue digest and identity
 
 `packages/runtime/src/plugin/live/agent-bindings.mjs` **is** the protected glue, and this fix genuinely edits it
-(that is where both seams are). The sha256 changes:
+(that is where the durable gate, the post-resume re-read and the admission close live). The sha256 changes:
 
-- before (origin/master): `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b`
-- after: `6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8`
+- before (origin/master `b17cb939b`): `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b`
+- after the first (row-6 gate) change: `6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8`
+- after the 2026-11-05 race fix: `d3945eff6960ef8adc811a38f2a2f447a6a9a359122622e7f80ddfbad125287f`
 
-This is legitimate and minimal: the delta is the shared helper (~30 lines), the two call-site blocks, and
-comments — no unrelated refactor, no control/**, tool-dispatch/admission, governance-center or
-pa-mount-registry file moves. It is required because the frozen Architecture (§41.6/§30.2/§29.4) forbids the
-current behaviour. The ARC-A L1 digest ledger
+This is legitimate and minimal: the delta is (1) the shared `memberResumeRefusal` helper, (2) its two call sites
+(SEAM 1 in `ensureLiveAgentOnce`, SEAM 2 in the boot loop), (3) the race fix — the `newWorkClosed` state,
+`closeAdmission`/`reopenAdmission` (exposed on the binding surface), the `admissionCloseRefusal` helper, the
+entry consult in `ensureLiveAgent`, the last-moment consult in `executeTool`, and SEAM 3 right before
+`liveAgents.set` — plus comments. No unrelated refactor, no control/**, tool-dispatch/admission,
+governance-center or pa-mount-registry file moves. It is required because the frozen Architecture
+(§41.6/§30.2/§29.4) forbids the current behaviour. The ARC-A L1 digest ledger
 (`dev/agent-workflow/ledgers/arc-a-protected-center.json`) books the new digest as a **named
 center-interface** override with the PR/branch and the reason (a family addition may not add one; this is a
 product contract change to the protected row assembly, reviewed as such). `dist` was rebuilt in this commit:
@@ -170,21 +255,42 @@ product contract change to the protected row assembly, reviewed as such). `dist`
 
 ## 6. Gates (verbatim)
 
-| gate | result |
+The **2026-11-05 race round** (this branch) first; the archived-gate round's original numbers follow, unchanged
+where they still hold.
+
+| gate (race round) | result |
 |---|---|
+| race arms, RED before the fix (`a5sf-race-vitest.config.mjs`) | `3 failed | 1 passed` — `race-red-before.log` |
+| race arms, GREEN after the fix | `4 passed (4)` — `race-green-after.log` |
+| `race-mutation-control.mjs` (removes (a), (b), (c) one at a time) | `M1: RO4 failed` / `M2: RO3 failed` / `M3: RO2,RO4 failed`, every other leg green → `mutation control PASS`; sha256 restored per file (`race-mutation-control.json`) |
+| row-6 gate config (`a5sf-gate-vitest.config.mjs`) | `4 passed (4)` (rejudge + durable-read; cold-resume gate reads now `2`, total `5`) |
+| deny-fact (A) RED → GREEN (`a5sf-confined-subprocess.test.ts`) | RED `1 failed | 35 passed` (exact received annotations in `a5sf-rg-ancestors/deny-annotation-red.log`) → GREEN `36 passed (36)` + `a5sf-bl16-grep-realm` `10 passed (10)` (`deny-annotation-green.log`) |
+| runtime a5sf + lifecycle + glue suites (39 files: `a5sf-*`, `p5t6-*`, `a3p4-*`, `t12a-*`, `p8s5*`, `p8s7r2-*`, `a5ptc-*`) | `501 passed (501)` |
 | `node --test tests/world-factory/a5sf-*.test.mjs` | `tests 219 / pass 219 / fail 0` |
-| runtime a5sf suites (13 files) | `195 passed (195)` |
 | `tsc -p packages/runtime/tsconfig.json --noEmit` | rc 0 |
 | `pnpm -r run typecheck` | rc 0 (9 workspace projects) |
-| eslint on the touched paths | `0 errors` (6 evidence/test files are intentionally ignored by the repo config) |
+| eslint on the touched paths | `0 errors` |
 | `pnpm run build` + `place-dist-glue` + `build-client-composition` | rc 0; 101 placements; glue emitted byte-identical (same sha256) |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=1960 glue=101` |
-| `node scripts/check-artifacts-at-head.mjs` (committed tree, scratch build) | `verdict=ok compared=1960 drift=0` — "HEAD carries its own build" |
-| `packages/testkit/test/a4p7-merge-gate.test.ts` (35 static+driven legs) | `35 passed (35)` with a writable `DSH_ARTIFACT_CHECK_STORE_DIR` |
-| full suite from the repo root | `8820/8821`; the one failure is `a5g6-install-face-render` hitting its 5 s timeout under 668-file parallel load — it passes alone in 750 ms (5/5), and `a5mcp-native-trust-filter` (also a 5 s timeout in an earlier run) passes alone 7/7 |
+| `node scripts/check-artifacts-at-head.mjs` (committed tree, scratch build) | `verdict=ok compared=1960 drift=0` |
+| full runtime suite (`vitest run packages/runtime/test`) | `6001 passed | 1 failed` — the one failure is `a5g6-install-face-render` hitting its 5 s timeout under 482-file parallel load; it passes alone `5 passed (5)` in 785 ms, and `a5mcp-native-trust-filter` / `alpha5-glob-backend` (5 s timeouts in a heavier earlier run) both passed in this run |
 | `git diff --check origin/master...HEAD` | rc 0 |
 
-Two environment notes, so a later reader does not mistake them for product failures: (a) `check-artifacts-at-head` needs a **writable** pnpm store; this worktree's `node_modules/.modules.yaml` still names a deleted lane scratch, so the gate was run with `DSH_ARTIFACT_CHECK_STORE_DIR=$PWD/.scratch/pnpm-store` (a store the gate itself warms); (b) the evidence vitest configs live outside `packages/**` and are deliberately not in the product suite.
+| gate (archived-gate round, 2026-11-04) | result |
+|---|---|
+| runtime a5sf suites (13 files) | `195 passed (195)` |
+| `packages/testkit/test/a4p7-merge-gate.test.ts` (35 static+driven legs) | `35 passed (35)` with a writable `DSH_ARTIFACT_CHECK_STORE_DIR` |
+| full suite from the repo root | `8820/8821`; the one failure is `a5g6-install-face-render` hitting its 5 s timeout under 668-file parallel load — it passes alone in 750 ms (5/5) |
+
+Three environment notes, so a later reader does not mistake them for product failures: (a) `check-artifacts-at-head`
+needs a **writable** pnpm store; this worktree's `node_modules/.modules.yaml` still names a deleted lane scratch,
+so the gate is run with `DSH_ARTIFACT_CHECK_STORE_DIR=$PWD/.scratch/pnpm-store` (a store the gate itself warms);
+(b) the evidence vitest configs live outside `packages/**` and are deliberately not in the product suite;
+(c) this worktree needed the repo's gitignored test wiring before any suite would run — `packages/*/node_modules`
+and `tests/deepseek-harness-test-use` are symlinks to the main checkout (same precedent as
+`.worktrees/a5sf-archived-gate`), otherwise 4 files fail to resolve `@deepseek-ai/cordis` and
+`a5sf-tool-axis` cannot find the pinned baseline checkout. Those are wiring, not code changes, and they are
+gitignored.
 
 ## 7. Residual risks
 
@@ -194,28 +300,44 @@ Two environment notes, so a later reader does not mistake them for product failu
    reopened/reloaded, and the gate would allow the cold resume. Symmetrically, a restore committed elsewhere can
    look `ARCHIVED` here and produce a temporary false refusal. The single-writer-per-domain discipline is what
    makes this safe today; a multi-writer deployment needs a transition notification or a revisioned reload.
-2. **The child factory is the one remaining in-process resume seam.** `childFactory.createChildSession`
-   (`agent-bindings.mjs:~4879`) still cold-resumes a durable child session when one exists, without the
-   lifecycle read. It is reachable only if a create flow asks for the **same instance id** as an archived
-   member (the public `team_create_member` allocates a fresh instance id, so it is not reachable through the
-   current tools). This is the answer to "the one thing that could still resurrect an archived Member after
-   this change" **inside this process**; the cross-process stale-view case is the environmental one. A
-   defence-in-depth follow-up can route the factory through the same helper once an instance-id-reuse flow
-   exists.
+   SEAM 3 does **not** narrow this case (it re-reads the same in-memory snapshot, which is what makes it able to
+   see a *local* commit at all), and the admission close (§4b (c)) is process-local by construction.
+2. **Two in-process resume seams still write `liveAgents` outside the two guarded doors.** Both are row-start
+   paths, not tool dispatches, so they do not weaken the row-6 tool claim — but they are why §4b's answer is
+   "not through `ensureLiveAgent`/`executeTool`" rather than "nowhere in the process":
+   (a) **the boot resume loop** (`agent-bindings.mjs:5166-5179`): SEAM 2 refuses an already-`ARCHIVED` row, but
+   it reads the rows ONCE for the whole loop and its `liveAgents.set` has no post-resume re-read, so a commit
+   landing while a member's boot resume is in flight can still deposit a resident handle (dropped only by a
+   later residency release). Adding SEAM 3 there is mechanical, but it costs one `list()` per boot member — the
+   property this lane measured as "one list for the whole member set" — so it was left as a named residual
+   rather than spent silently.
+   (b) **the child factory** (`childFactory.createChildSession`, `agent-bindings.mjs:~4879`): it cold-resumes a
+   durable child session without the lifecycle read. Reachable only if a create flow asks for the **same
+   instance id** as an archived member (the public `team_create_member` allocates a fresh instance id, so not
+   reachable through the current tools). A defence-in-depth follow-up can route the factory through the same
+   helper once an instance-id-reuse flow exists.
 3. **A queued follow-up that targets an archived Member.** Delivery goes through
    `sessionInput.submitAttributedInput → ensureLiveAgent`, so the gate refuses it (422 / typed refusal). That is
    the frozen semantics — `ARCHIVED` cannot receive new Team work (§29.5/§41.6) — but the coordinator's intent
    then stays pending for recovery until an explicit restore. A restore makes the same follow-up deliverable;
    no work is silently lost, but there is no automatic "deliver after restore" leg here.
-4. **Cost.** Two in-memory `list` scans per cold resume (ownership + gate) and zero new reads at boot or in
-   steady state; a cold resume already pays the session load, so this is not on the tool hot path. If a future
-   seam calls the gate on a per-call path, it must cache per `(sessionId, lifecycle revision)` **with** a
-   cross-process invalidation channel (see risk 1), not a bare memo.
+4. **Cost.** THREE in-memory `list` scans per cold resume as of the race fix: ownership, SEAM 1 (gate before the
+   resume), SEAM 3 (gate after it) — `row6-durable-read.test.mjs` measures `2` gate / `5` total `list()` calls,
+   up from `1` / `4`. Steady state adds **zero** reads (a resident handle returns before the gate), and boot
+   adds none (the boot loop reuses the rows it already listed). A cold resume already pays the session load, so
+   this is not on the tool hot path; but if a future seam calls the gate on a per-call path it must cache per
+   `(sessionId, lifecycle revision)` **with** a cross-process invalidation channel (see risk 1), not a bare memo.
 5. **Wire status contract.** The route still maps every ensure-live failure to `NO_LIVE_AGENT`/422. The typed
-   code survives in-process and in the message, but a remote caller cannot distinguish "no live agent" from
-   "archived". Preserving the code on the wire is a separate, user-visible contract change and was left alone.
+   codes survive in-process and in the message (`PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED`/`_TERMINAL`, and the
+   race fix's glue-level `LIFECYCLE_ADMISSION_CLOSED`, deliberately NOT added to the frozen
+   `PERMISSION_LIFECYCLE_ERROR_CODES` vocabulary — that vocabulary describes durable-state refusals, and this
+   one is a transient in-process procedure), but a remote caller cannot distinguish "no live agent" from
+   "archived" or "quiescing". Preserving the code on the wire is a separate, user-visible contract change and
+   was left alone.
 
 ---
 
 *Host-free only. No Host boot, no merge, no settle; `:3080` and the stable development instance were not
-touched. The reserved search-ledger start remains unspent for a live row-6 re-measurement.*
+touched. The reserved search-ledger start remains unspent for a live row-6 re-measurement. The 2026-11-05 race
+round likewise ran host-free (real glue + real `createLifecycleService`, no Host); what it changes is the
+mechanism, not the row's acceptance grade.*

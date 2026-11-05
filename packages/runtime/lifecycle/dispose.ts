@@ -48,9 +48,10 @@ import type {
   LifecyclePorts,
   LifecycleStepName,
   LifecycleTarget,
+  QuiesceOutcome,
 } from './types.js'
 import { commitDurable, loadMember, rejectIllegalState } from './resolve.js'
-import { quiesceMember } from './quiesce.js'
+import { dropResidencyAfterCommit, quiesceMember, reopenAdmission } from './quiesce.js'
 
 /**
  * Dispose one member: close admission → interrupt → drain descendants →
@@ -82,26 +83,41 @@ export async function disposeMember(
 
   // Quiesce FIRST (Architecture §30.4): the five live steps complete
   // before the single commit — or the procedure aborts with zero writes.
-  const outcome = await quiesceMember(ports, target, member)
-  const steps: LifecycleStepName[] = [...outcome.steps, LIFECYCLE_STEP_NAMES.COMMIT_DISPOSE]
+  //
+  // The admission closed by step 1 is REOPENED on every exit (the close is
+  // the in-process half of the boundary; the durable lifecycle is the
+  // authority once the transition commits or the procedure aborts).
+  let outcome: QuiesceOutcome
+  try {
+    outcome = await quiesceMember(ports, target, member)
+    const steps: LifecycleStepName[] = [...outcome.steps, LIFECYCLE_STEP_NAMES.COMMIT_DISPOSE]
 
-  // The single durable commit (the exact probed transition). The record
-  // and its bindings stay on the durable medium (历史不删除): only the
-  // lifecycle field moves to the terminal state.
-  await commitDurable(
-    ports,
-    target,
-    member.lifecycle,
-    LIFECYCLE_OPERATIONS.DISPOSE,
-    probed.lifecycle,
-    member.activityVersion,
-    LIFECYCLE_STEP_NAMES.COMMIT_DISPOSE,
-  )
+    // The single durable commit (the exact probed transition). The record
+    // and its bindings stay on the durable medium (历史不删除): only the
+    // lifecycle field moves to the terminal state.
+    await commitDurable(
+      ports,
+      target,
+      member.lifecycle,
+      LIFECYCLE_OPERATIONS.DISPOSE,
+      probed.lifecycle,
+      member.activityVersion,
+      LIFECYCLE_STEP_NAMES.COMMIT_DISPOSE,
+    )
 
-  return {
-    member: probed,
-    steps: Object.freeze(steps),
-    drained: outcome.drained,
-    residencyDropped: outcome.residencyDropped,
+    // THE TRANSACTION ENDS WITH RESIDENCY DROPPED (row 6, fix (a)): a dispatch
+    // in the drop→commit window could legally cold-resume the still-SETTLED
+    // member and the handle would survive the commit. Re-run the idempotent
+    // drop now that the durable state is terminal.
+    dropResidencyAfterCommit(ports, member.childSessionId)
+
+    return {
+      member: probed,
+      steps: Object.freeze(steps),
+      drained: outcome.drained,
+      residencyDropped: outcome.residencyDropped,
+    }
+  } finally {
+    await reopenAdmission(ports, target)
   }
 }

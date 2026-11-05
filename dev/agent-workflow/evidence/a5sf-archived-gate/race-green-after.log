@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-race-fix/dev/agent-workflow/evidence/a5sf-archived-gate
+
+ ✓ archive-race-arms.test.mjs (4 tests) 1052ms
+     ✓ RO1 SEQUENTIAL (product order): archive completes, then dispatch -> 422, 0 executions, not resident  995ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  10:15:49
+   Duration  2.02s (transform 1.45s, setup 0ms, import 886ms, tests 1.05s, environment 0ms)

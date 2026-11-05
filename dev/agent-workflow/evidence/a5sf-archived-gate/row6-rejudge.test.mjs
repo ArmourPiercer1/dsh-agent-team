@@ -144,12 +144,16 @@ async function fixedSeamReplies(loaded) {
     // The Member is live in SETTLED before the archive boundary (the pre-archive state).
     const handle = await world.binding.ensureLiveAgent(child)
     const toolExecutions = handle.agent.ctx.toolExecutions
-    // The durable ARCHIVED commit + the archive quiesce's residency release
-    // (quiesce.ts step 5 -> residency.dropResidency; the exact two effects the
-    // archived run recorded).
+    // The two effects of the REAL procedure, in the REAL order: the quiesce
+    // releases residency FIRST (quiesce.ts step 5 -> residency.dropResidency)
+    // and the durable ARCHIVED commit lands AFTER it (archive.ts:116-143).
+    // The interval between them is the drop→commit window: the durable row
+    // still reads SETTLED there, which is why THIS sequential replay is a
+    // narrower claim than the concurrent one — `archive-race-arms.test.mjs`
+    // RO2/RO4 replay a dispatch issued inside that window.
+    await world.binding.dropResidency(child)
     const rows = world.domain.repositories.memberInstances.list(root)
     rows[0].lifecycle = 'ARCHIVED'
-    await world.binding.dropResidency(child)
     const before = {
       resumes: world.agents.resumes.length,
       creates: world.agents.creates.length,

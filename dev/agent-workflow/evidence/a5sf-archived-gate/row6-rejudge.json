@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-archived-gate/row6-rejudge/1",
-  "generatedAt": "2026-11-04T22:03:48.891Z",
+  "generatedAt": "2026-11-05T02:07:37.909Z",
   "judge": "tests/world-factory/lib/a5sf-search-live.mjs#judgeRow6 (unmodified)",
   "rowId": "live:search-row6-archive-boundary-no-callable-shadow",
   "legacyRowId": "live:search-row6-teardown-no-callable-shadow",

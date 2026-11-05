@@ -190,6 +190,8 @@ export interface P7T3LiveCall {
 export class P7T3AdmissionFake implements AdmissionClosePort {
   readonly clock: P7T3Clock
   readonly calls: P7T3LiveCall[] = []
+  /** The procedure's reopen calls (row 6): one per started operation. */
+  readonly reopenCalls: P7T3LiveCall[] = []
   /** G7 probe: the live-surface `resume` call (must stay 0 for Restore). */
   resumeAgentCalls = 0
   /** G7 probe: the live-surface `create` call (must stay 0 for Restore). */
@@ -219,6 +221,17 @@ export class P7T3AdmissionFake implements AdmissionClosePort {
       this.failNext = undefined
       throw fault
     }
+  }
+
+  /**
+   * The procedure's reopen (the counterpart of step 1; row 6, 2026-11-05).
+   * Recorded separately from `calls` so the existing close-call counts keep
+   * meaning "the close step ran once", while the pairing (close → … →
+   * reopen, on success AND on abort) is assertable.
+   */
+  async reopenNewWork(target: LifecycleTarget): Promise<void> {
+    const seq = this.clock.tick('admission.reopen', `${target.rootSessionId}/${target.instanceId}`)
+    this.reopenCalls.push({ seq, detail: `${target.rootSessionId}/${target.instanceId}` })
   }
 }
 
