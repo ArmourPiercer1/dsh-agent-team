@@ -7863,6 +7863,89 @@ coordinator 的三个假设都不成立：没有 suite-total 失败（`eb3-tool-
 `ci-integration` 7 个 eb3 脚本 rc=0 + graph-parse/state-freshness pass；仅改 2 个文档文件，产品路径 0 改动。
 重新建立 claim 需在新树再 boot 一次（fixture 拆分已在位），花费记在 5-start 池（已用 `2/5`）。
 
+## 2026-11-06T14:55Z — A5SF-ORG：按能力面重组 + 三层验收 + 共享零 boot 预检（PR #610，两笔提交）
+
+**owner 指令**：按能力面（而非逐工具流水线）组织开发；验收三层（A 面×轴共享安全矩阵 / B 逐工具契约 /
+C 冻结候选跨面真 Host）；集成轨与候选轨分离；不放松 Q7、CI、Authority 与任何安全不变量；不重建架构；
+优先改既有文件；用共享零 boot 预检减少无效启动；审查 subprocess/Shell-PTY/Web adapter 是否重复上游设施。
+**预算：0 次 Host 启动**（P2-04 池仍 `2/5`；剩余 3 次按 BL-17 live、BL-18 live、一次重试保留）。
+
+**交付（两笔提交，一个 PR）**：
+- `0f43dcab0` docs：backlog 按 face 重排（新 §0.1 = 六个面 + cross-face 桶、A/B/C 定义、41 BL + BR 的
+  C1/C2/need-boot 台账；44 条旧行**逐字保留**，脚本校验每条旧行在新文件中字节存在；无改号、无删除）。
+  plan 新增 §7（集成轨 vs 候选轨、冻结规则 = “候选内修复即重新冻结”、Q7 成本 = 冻结窗口产品合并数 ×
+  live 行数、§7.3 记录当前轨道冲突为 owner 决策）与 §8（9 个任务，每共享文件一个 owner，C1/C2 与
+  boot 需求；3 次剩余启动正好对应 BL-17、BL-18、一次 FS/Search 重验）。matrix 新增 §1.1.1（M-01..M-21
+  行→面归属 + 每行证据满足的层；`†` = `#606` 撤回 current claim 的四行；**主矩阵仍 9 格，⑧/⑨ 未动**）。
+  ROUTER_RULES 新增 §0.1（三角色、共享 Host 装配独占、新面先设计正/负测试、boot 前置 preflight PASS）。
+- `b66740ca4` test：扩展既有 `tests/world-factory/lib/a5sf-acceptance-preflight.mjs`（非新 harness）——
+  13 条 check：assembly.usable（dist face / 原生模块存在 / **boot 前** emitted==world 行身份 / 健康行）、
+  identity.*（同一 `assertAcceptanceRootWiring` + blueprint + Member/ToolBinding + authority 观察）、
+  native.module-config（BL-16 attempt 4/5）、policy.paths（allow 在 lane 外、deny 在 lane 内、deny 落在
+  OS runtime allowance 内、轴归因错；write/network 按各自 lane 判定）、policy.fifo（BL-16 attempt 6）、
+  **cases.isolation（allocation #1 的别名缺陷）**、collector.shape、wiring.candidate/grant/run-record。
+  `scripts/a5sf-preflight.mjs` 一条 `DSH-A5SF-PREFLIGHT {json}` 行，exit 0/1/2；`--run-dir` 缺 bundle 时
+  **拒绝**而不是从运行输出反推。
+
+**负控（指令要求的那一条）**：干净 bundle **PASS 13/13**；故意别名两案 **FAIL 12/13**，且**唯一**红
+check = `cases.isolation`，恰带 `CASE_LOCATOR_ALIASED` + `CASE_GUARD_KEY_ALIASED`（可归因，非连带）。
+测试 D1–D15（共 44 条，全绿），每个 check family 一条变异控制；原始 verdict 落
+`dev/agent-workflow/evidence/a5sf-org/`。
+
+**adapter 审查结论**（`evidence/a5sf-org/README.md` §2，均带 file:line）：`web.ts` 不重复任何网络客户端
+（每次 fetch = 一次注入 provider 调用，guard 在 provider 行之前）；terminal 面是注入 `PtyPort` 的纯状态机
+（今天无重复，前向风险已写：接线时若自实现 TERM→KILL/进程组回收即与 `LocalTerminalHandle` 重复）；
+输出收集器是**故意更窄**的 tail-only 变体（无 spill 文件 = 不产生未声明 lane 外写）；**唯一具体提案 P-1**：
+`confinedChildEnvironment` 漏掉上游公开 `scrubbedParentEnv()` 的代理叠加，受限子进程可能绕过父进程代理
+归一化——环境保真度分歧、非 lane 放宽，只提案不改（触碰 `packages/**`）。
+
+**指标**（只读既有记录，measured/estimated 逐项标源）：≥12 次启动中 **4 次无可用 verdict，全部为仪器
+缺陷**（composition handoff、空 config、缺 `sampleOverCapGlobResults`、FIFO 在 lane 外、两案共用 locator）；
+`#606` 造成 **1 次候选重验**（28 条产品路径、4 行撤回）；未完成 BL **27 条**（25 可执行；BL-38 DEFERRED、
+BL-41 standing rule）；CI 失败归因**不可完整重建**（无 CI 日志归档）——记为记录缺口本身。
+
+**门**：`doc-checks` pass；`git diff --check` clean；`ci-pr-gate` 的 graph-parse / kit-home-guard / install /
+blueprint-fence / typecheck / lint-identities / artifacts-at-head **全 pass**；`state-freshness` 仍因
+**既有** `Q4`（baseline 指向候选、非 HEAD 祖先）红，本分支前后同一 finding、同一文案，**未移动指针**，
+裁决选项写为 evidence README §4-Q1。未登记 `dev/ci/eb3-ci-manifest.json`（需改 workflow，属 stop condition）。
+
+## 2026-11-06T16:40Z — #610 并入 master 后解冲突：面结构 + #608 行 + #611 裁定文本（head `5927b688e`，0 boot）
+
+**合并基线** `52a95fe0b`（`#609` ancestry 修复 + `#608` web 面行）。**冲突只有一处**：
+`ALPHA5-SANDBOX-BACKLOG.md`（面结构 vs master 的改动）。**先核对了前提，结论与冲突报告不同**：
+master 相对 merge base `e78bfd8af` **只改了 1 行**（BL-18 的 `#608` 接线轮状态），`BL-42`、§0 的
+2026-11-06 裁决块、BL-39 的归属更正**都不在 master 上**——它们在 **#611**（`task/a5sf-ruling-20261106`，
+`gh pr view 611` = OPEN）。因此裁定文本**从 #611 分支逐字取**，不自编；#611 合并时两侧字节一致，
+冲突至多是位置；若 #611 被拒，BL-42 = 一行 + 三处引用，删除成本明确。
+
+**取舍**：保留面结构（§0.1 六面 + A/B/C + C1/C2 台账 + 按面分节 + §8 阶段索引）；BL-18 取 master；
+BL-39、§0 五条裁决、BL-42 取 #611；BL-42 放 **Shell-PTY 的 P2 表**（唯一具名阻塞消费者 = BL-17），
+并在 **Cross-face 桶**登记为跨面阻塞（同时挡 Bash/CLI、第三方 CLI、external execution），**不复制行**；
+Shell-PTY 面注补四条硬边界（fail-closed、拒绝启动≠验收、web deny≠子进程隔离、BL-42 前只能验拒绝路径）。
+44 条旧行逐字保留（脚本校验），无改号无删除。面表 45 行（44+BL-42）、台账 43 行（41 BL + BR + BL-42），
+无重复 id。派生视图由 `docs-sync --write` 重生（`baseline_is_ancestor_of_head` 已回到 `true`）。
+
+**合并形状披露**：`81ff35a84` 是**内容为空的 merge commit**（结果未入 index 就提交了），
+解析内容全在 `5927b688e`（第二父 = `52a95fe0b`，ancestry 为真，满足 #611 §7.3「真 merge 不 squash」）。
+无 force-push、无改写。
+
+**预检（本轮最值钱的东西）**：新增 `--host-root`——pristine host 是 gitignored，worktree 永远没有它，
+而所有 live driver 都在 worktree 里跑；没有该旗标时 `assembly.usable` 红在**检出布局**而非**计划**。
+旗标只重定向 `tests/deepseek-harness-test-use/` 前缀，映射后仍不存在依旧红，实际根打印在 `inputs`。
+D16/D17 双向钉住（46 条测试）。三份原始 verdict：干净 **PASS 13/13**（`--repo .`）、别名
+**FAIL 12/13**（唯一红 `cases.isolation`，恰 `CASE_LOCATOR_ALIASED`+`CASE_GUARD_KEY_ALIASED`）、
+不给 host **FAIL 12/13**（仅 `ASSEMBLY_HOST_MODULE_MISSING`，fail-closed 演示）。13 条 check 逐条做了
+承重审计（evidence README §7），点名两个缺口：**G-1** network 归因（缺第 14 条 check，BL-42 接线前做）、
+**G-2** `wiring.run-record` 的 `productTreeProof` 分支在当前「都在 baseline 上跑」的事实下零覆盖。
+
+**CI（head `5927b688e`）**：`ci-required` **六层全绿**（fast/integration/product/security/census + grading）、
+`pr-gate` **success**、`candidate-protection` success；唯一红 = `pr-settlement-gate`
+（`NO_SETTLEMENT_CANDIDATE`，按指令不 settle，协调者补）。先前三条红 = 同一个 candidate pin
+（`#609` 修好），第四条 `docs:sync` 视图 = 本 PR 自己（`bf1e90d28` 修好）。
+
+**未改**：Authority 指针/快照、任何等级与 `V@B`、Q7/CI 门、`packages/**`（0 行）、`.github/**`。
+**未折入**：#611 的 `current-implementation-plan.md` §7（它声明了未实现的 `verifiedFor` 机制 +
+需要改 `scripts/ci-pr-gate.mjs`），已在 evidence README §4-Q4 记为文档合并顺序的 owner 决定。
 ## 2026-11-06 — OWNER RULINGS：候选轨道独立冻结 + v1 不要求完整网络隔离后端
 
 （会话日历 2026-11-06；真实 UTC 2026-11-05。两条均为 owner 裁决，原文约束照录，实施不扩权。）
@@ -7936,3 +8019,36 @@ allow 路径回归；Web service-level denial ≠ subprocess network isolation�
 加入 `verifiedFor` 解析、`candidateRefProvider` 与 `V@B=yes`+`verifiedFor` 的 named 拒绝，同时保持
 Q7 的 master 分支、`claimedRows` 判级、`V@B` 语义与既有行等级**逐字节不变**？在该 PR 落地前，
 候选行只能以文字注释存在，负控测试是对现有 gate 的锁定，不是对候选 claim 的机器执法。
+
+## 2026-11-06T17:25Z — #611 合入后第二次解冲突：plan §7 撞名、规则与 §7.6 对齐、补回第一轮漏掉的 42 行（0 boot）
+
+**背景**：第一处冲突解完后 `#611` 合入 master（`819b06d9b`），同一批文件再次冲突。**先验证再动手**：
+BL-18/BL-39/BL-42 三行与 master **逐字相同**（脚本比对）——第一轮"从 #611 分支逐字取"的选择成立，
+没有制造分叉。
+
+**1. 一处真实丢失（第一轮缺陷，已补回）**：机械校验"master 的每一行都必须出现在新文件里"时发现
+**42 行散文被漏掉**：旧 §2 尾部的「2026-11-03 外部独立审查裁决」（6 条）+ 三段「P2 统一前置」
+（含 PR #590 的 B1–B8）。它们不属于任何单一能力面，第一轮按面切分时无处安放就掉了。现在作为
+**§0.2 历史裁决与 P2 统一前置**整段逐字移入（`>` 块与缩进未动）。校验后 master 只剩 6 个阶段标题不在
+新文件中——被面标题取代（§8 阶段索引保留按阶段读法）。
+
+**2. plan 的 §7 撞名**：#611 的 `## 7. Candidate track` 是已合入的规范机制 → 我的组织性章节顺延为
+**§8**（8.1 规则 / 8.2 Q7 成本 / 8.3 当前状态），任务表顺延为 **§9**；`docs/ROUTER_RULES.md` §0.1 的
+两处引用同步（「计划 §9 T-01」「§7/§8」）。
+
+**3. 与 §7.6 冲突的规则改为引用（重要）**：我的 §8.1 规则 2/3 原写"冻结时发布以候选 head 为 baseline
+的新快照、接受候选时移动指针"，而 #611 §7.6 已裁定**指针不移动**、候选身份由清单 + `verifiedFor` 承载。
+两套机制并存会让下一轮读者无法判断该信哪条 → 规则 2/3 改写为"冻结写候选清单、不发布移动 baseline 的
+快照；候选不移动指针"，并引用 §7.1/§7.6；**`T-02 RECUT-BASELINE` 标为 DROPPED**（Q4 已由 `#609` 关闭，
+而它要做的动作正是 §7.6 禁止的）。
+
+**4. 两处过期断言（我自己写的散文，非裁定行）**：backlog 面注释/台账的"`#608` 未完成、CI 转绿前不得当作
+已存在" → "`#608` 已合入（`52a95fe0b`），web face 转发已存在，**live 半场仍未测**"；plan §9 的"#608 续写
+未完成、红 CI" → "#608 本身已绿，续写（默认产品 preset 纳入 web face）未完成"。
+
+**遗留真实空白**：#611 §7.5 的 `verifiedFor` **没有 gate 侧读取**（`scripts/ci-pr-gate.mjs` 未改），
+行级候选 claim 目前只是声明——#611 的后续项，改 gate 属 CI 面，不在本 PR 范围。
+
+**门（本地）**：`doc-checks` 0、`docs-sync --check` 0、`state-freshness` pass（`round 58 = newest record`，
+drift 35 paths、claimed 0）、46 条 node:test 全绿、预检干净 PASS 13/13 / 别名 FAIL 12/13（唯一红
+`cases.isolation`）。**0 boot**。

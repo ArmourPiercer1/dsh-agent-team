@@ -113,6 +113,54 @@ baseline..HEAD 另有 36 个 Q7 路径（`#598`/`#599`/`#600` 的 `lifecycle/arc
 **诚实上限仍然成立**：任一行的 ⑤ 覆盖都未满（大文件窗口、流式、原子替换、版本冲突未验收），
 `DONE`/`LIVE-CONFIRMED` 仍不得出现在任何一行。
 
+### 1.1.1 行 → 能力面归属，与“本行证据满足哪一层”（2026-11-06，**不改任何 ⑧/⑨**）
+
+主矩阵是 9 格定点表（`q5:main-begin/end` 之间的解析器要求每行恰好 9 格），因此**不在主矩阵加
+`face` 列**——行归属放在这里，一张表钉死。层定义见 `ALPHA5-SANDBOX-BACKLOG.md` §0.1.2：
+**A** = 面 × 权限轴共享安全矩阵；**B** = 逐工具契约；**C** = 冻结候选跨面真 Host。
+
+记法：`A` = 该行被用于面级共享边界矩阵的某条臂（allow / deny / ceiling / 双 Member 不串权）；
+`B` = 行级契约（该工具自身行为、错误形状、exit/展示）；`C` = 在冻结候选上的跨面实测；
+`†` = 该证据的 **current claim** 已被 Q7 撤回（`#606` 后 `1484fa4ee..HEAD` 28 条产品路径），
+证据与结论保留、不作为当前断言；`—` = 没有验收证据，只有披露（`NOT_WIRED`/`UNSUPPORTED` 行）。
+
+| 行 | 工具 | Face | 本行证据满足的层 | 说明 |
+|---|---|---|---|---|
+| M-01 | read | FS Provider | `A+B+C†` | A：read 轴 in-lane / restriction / ceiling 三臂；B：`readText` 拒绝形状与展示；C：allocation #4 row2 = `BINDING_DENY_ON_READ_PATH` |
+| M-02 | write | FS Provider | `A+B+C†` | A：write 轴 in-lane / 越过 binding read lane 的写；B：read-before-write 契约（**非 Team lane**）；C：allocation #4 row4a/4b |
+| M-03 | edit | FS Provider | `B` | 仅 host-free（EDIT-1/EDIT-2）；live 从未运行 |
+| M-04 | read_image | FS Provider | `B` | 仅 host-free；`BOUNDED-DEFER`（延迟注册 + attachments） |
+| M-05 | str_replace_editor | FS Provider | `—` | 机制级 inventory；宿主是否提供未定 |
+| M-06 | grep | Subprocess | `A+B+C†` | A：argv 归属 + 声明 root + 准入层 fail-closed；B：exit 0/1/2、非法模式、流、取消；C：allocation #4 |
+| M-07 | glob | Subprocess | `A+B+C†` | 同上（同一 confined `subprocess` face） |
+| M-08 | bash persistent | Shell-PTY | `B` | 领域状态机 21 臂 + shell-class 准入；**live 零覆盖** |
+| M-09 | bash transient | Shell-PTY | `B` | OS runner 机制级；本行契约 live 未跑 |
+| M-10 | pwsh | Shell-PTY | `—` | 本机无 Windows 后端（`NOT_WIRED`，`ENV_BLOCK`） |
+| M-11 | run_code / PTC | External execution | `—` | 无 routed-native 接入面（BL-19，T-06） |
+| M-12 | lsp | External execution | `—` | 无产品接线；启动位置未 trace |
+| M-13 | terminal_* | Shell-PTY | `B` | `TERMINALS_LEGACY_PTY_REFUSED` + 端口注入状态机 |
+| M-14 | web_fetch | Web | `B` | deny 车道 provider 之前拒绝；live 因行不转发 `web` face 而不可达（T-04） |
+| M-15 | web_search | Web | `B` | 同上 |
+| M-16 | third-party CLI | Subprocess | `A+B` | A：通用 argv/stdio/cwd 的 OS confinement；`PROBE-GATED` |
+| M-17 | stdio MCP | External execution | `—` | `NOT_WIRED` |
+| M-18 | remote MCP / HTTP / SSH | External execution | `—` | `UNSUPPORTED` + `TRUSTED_DELEGATION` 披露 |
+| M-19 | state tools | Non-data-plane | `—` | 无数据面 I/O，不另设上限（若读写文件须重新归面） |
+| M-20 | present / skill / attachment | Non-data-plane | `B` | 来源能力分开；已知不受管 I/O 标 `CONDITIONAL` |
+| M-21 | unknown in-process JS | Non-data-plane | `—` | `UNSUPPORTED`（`TRUSTED_ONLY`），不提供伪保证 |
+
+**两处必须说清的缺口（不是新发现，是这次归属让它们可见）：**
+
+1. **A 层目前以测试臂存在，没有以矩阵文档存在。** `a5sf-member-policy.test.ts`、`a5sf-product-assembly.test.mjs`
+   （PA5/PA8）、`a5sf-bl16-grep-realm.test.ts` 里的臂就是 A 层的内容，但它们没有被组织成“每面 × 每轴
+   一张 allow/deny/refuse-before-side-effect 表”。把臂整理成表是**文档工作，不需要 boot**；
+   T-06/T-07/T-08 以及本表 §0.1 的补全属于下一批。
+2. **External execution 面与 Non-data-plane 面在 B 层是空的**（除 M-20）。这不是“验收失败”，
+   是“没有产品可验收”；把它们记为 `—` 而不是 `NO`，是为了不把“未接线”读成“已限制”。
+
+**本小节不改变任何 ⑧ 等级或 ⑨ `V@B`**：`M-01`/`M-02`/`M-06`/`M-07` 仍是
+`ENFORCE-PARTIAL` / `V@B=no`（`#606` 之后），`M-10`/`M-11`/`M-12`/`M-17`/`M-19`/`M-21` 仍是不接线/
+不支持，其余不动。`†` 标记的四行与 §1.1 正文的撤回说明是同一件事的两种写法。
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->
