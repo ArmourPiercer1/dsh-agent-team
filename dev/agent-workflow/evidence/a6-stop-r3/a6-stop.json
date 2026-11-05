@@ -1,0 +1,66 @@
+{
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-f8al2l3gdc",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "lateAllow": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-9abwrt6y9c",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_DECIDED",
+        "message": "ControlService: request 'ctrl-1yhummg0nhfgjb0w7l6qe1kk' already carries a durable decision (the first decision is authoritative)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_DECIDED",
+            "message": "ControlService: request 'ctrl-1yhummg0nhfgjb0w7l6qe1kk' already carries a durable decision (the first decision is authoritative)",
+            "details": {
+              "rootSessionId": "session-c1-smoke-a6-2026-11-05T19-19-59",
+              "requestId": "ctrl-1yhummg0nhfgjb0w7l6qe1kk"
+            }
+          }
+        }
+      }
+    }
+  },
+  "humanLeg": {
+    "sequence": 13,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-1yhummg0nhfgjb0w7l6qe1kk",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-154hgzf09cif",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T19-19-59:inst-154hgzf09cif:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-154hgzf09cif-bash:hexec:1ff372be-f082-400a-a6c5-996084eb7237-1",
+    "approvalCaseId": "case-0i8helo15r4yun1gjq0qa1pk",
+    "legOrdinal": 2,
+    "reviewAuthority": "human-user",
+    "createdAt": "2026-11-05T19:20:23.442Z"
+  },
+  "lateDecision": {
+    "sequence": 14,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-1yhummg0nhfgjb0w7l6qe1kk",
+    "decision": "allow",
+    "decider": {
+      "humanId": "session-c1-smoke-a6-2026-11-05T19-19-59",
+      "kind": "human"
+    },
+    "createdAt": "2026-11-05T19:20:23.501Z"
+  },
+  "lateConsumption": null,
+  "fileAfter": "",
+  "revived": false
+}
