@@ -94,8 +94,16 @@ export interface PathIdentityResolver {
 }
 /** The default resolver: the real filesystem (`node:fs/promises`). */
 export declare const NODE_PATH_IDENTITY_RESOLVER: PathIdentityResolver;
-/** Closed refusal vocabulary for one authored locator decision. */
-export declare const PATH_GUARD_REFUSAL_CODES: readonly ["PATH_NOT_ALLOWED", "PATH_EXPLICITLY_DENIED", "PATH_SYMLINK_ESCAPE", "PATH_NOT_FOUND", "PATH_RESOLUTION_UNSUPPORTED"];
+/**
+ * Closed refusal vocabulary for one authored locator decision.
+ *
+ * `IO_ASK_REQUIRES_APPROVAL` is the ONE non-`PATH_*` member, on purpose: it is
+ * the token the Service layer (`TEAM_IO_DENIAL_CODES`) already speaks, and the
+ * confined Provider re-raises it verbatim, so a rename on this side would hide
+ * the reason from the tool layer and from the guard fact
+ * (`a5sf-guard-consult/1.decidedBy`).
+ */
+export declare const PATH_GUARD_REFUSAL_CODES: readonly ["PATH_NOT_ALLOWED", "PATH_EXPLICITLY_DENIED", "PATH_SYMLINK_ESCAPE", "PATH_NOT_FOUND", "PATH_RESOLUTION_UNSUPPORTED", "IO_ASK_REQUIRES_APPROVAL"];
 export type PathGuardRefusalCode = (typeof PATH_GUARD_REFUSAL_CODES)[number];
 /** Whether the caller intends to read or write the locator. */
 export type PathGuardAccess = 'read' | 'write';
@@ -116,7 +124,11 @@ export interface PathGuardAllowed {
     readonly symlink: boolean;
 }
 export interface PathGuardRefused {
-    readonly decision: 'deny' | 'unsupported';
+    /**
+     * `ask` is a REFUSAL at admission even though it is a decision of the lane
+     * algebra: the call did not run and nothing was consumed.
+     */
+    readonly decision: 'deny' | 'ask' | 'unsupported';
     readonly code: PathGuardRefusalCode;
     readonly detail: string;
 }
@@ -124,16 +136,23 @@ export type PathGuardDecision = PathGuardAllowed | PathGuardRefused;
 /**
  * Decide one authored locator against one lane using Provider-resolved identity.
  *
- * Order (fail-closed):
- *  1. the AUTHORED locator must be inside the lane (pure containment);
+ * Order (fail-closed, the lane algebra's own precedence `deny > ask > allow`):
+ *  1. the AUTHORED locator is decided first: an explicit deny subtree is
+ *     `PATH_EXPLICITLY_DENIED`; a locator the lane ASKS for is
+ *     `IO_ASK_REQUIRES_APPROVAL` (a REFUSAL at admission — see that code's
+ *     note: `ask` has no production approval consumer, so letting the allow
+ *     that also covers it stand in would be silent auto-approval); anything
+ *     outside every allow subtree is `PATH_NOT_ALLOWED`;
  *  2. resolve it through the resolver; a non-existent read target is `deny`
  *     (`PATH_NOT_FOUND`), a non-existent write target is allowed to resolve
  *     through its PARENT (so a write may create a file);
- *  3. the RESOLVED path must still be inside the lane. When it is not, an
- *     aliased/symlinked resolution is `PATH_SYMLINK_ESCAPE`, otherwise
- *     `PATH_NOT_ALLOWED`; a resolved path inside an explicit deny is
- *     `PATH_EXPLICITLY_DENIED`. A symlink that resolves INSIDE the subtree is
- *     allowed.
+ *  3. the RESOLVED path is the one the decision is taken on: an explicit deny
+ *     is `PATH_EXPLICITLY_DENIED`, an `ask`-covered resolution is
+ *     `IO_ASK_REQUIRES_APPROVAL` (this is the symlink-alias case: an allowed
+ *     authored name that lands on an asked-for file), and a resolution outside
+ *     the lane is `PATH_SYMLINK_ESCAPE` (when a symlink really is on the
+ *     authored path) or `PATH_NOT_ALLOWED`. A symlink that resolves INSIDE an
+ *     allowed, non-asked subtree is allowed.
  *
  * No inode identity is consulted, so a legal hardlink is decided purely by the
  * name used: allowed through the allowed name, refused through an outside one.

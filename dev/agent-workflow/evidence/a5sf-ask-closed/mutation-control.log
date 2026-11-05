@@ -1,0 +1,285 @@
+▶ DP1 the same-call three-way comparison over the whole declared case space
+  ✔ read-binding-subtree-allow-in-lane — inside ceiling and restriction; read through the binding realm (22.881225ms)
+  ✔ read-binding-subtree-deny-outside-restriction — inside the ceiling, outside the tool restriction — the restriction binds (5.741932ms)
+  ✔ read-binding-subtree-deny-outside-ceiling — restriction wider than ceiling locally: the legacy tool rule allows, the ceiling refuses (5.773159ms)
+  ✔ read-binding-mode-all-deny-outside-ceiling — `any` (mode-all) tool restriction wider than the ceiling; the ceiling refuses (4.142765ms)
+  ✔ read-binding-subtree-deny-explicit — explicit deny subtree wins in both planes (4.618121ms)
+  ✖ read-binding-subtree-ask-under-allow — authored ask INSIDE an allow subtree: refused at admission (IO_ASK_REQUIRES_APPROVAL) because no approval consumer exists (5.376849ms)
+  ✖ read-binding-subtree-allow-symlink-into-ask — the ask locator is reached through an in-lane SYMLINK: the resolved identity is ask-covered, so admission refuses the alias (5.970245ms)
+  ✖ read-binding-subtree-ask-narrower-subtree — ask declared on a NARROWER subtree: a descendant target is ask-covered in all three planes and refused at admission (4.163493ms)
+  ✔ read-binding-subtree-ask-unrelated-locator — an ask rule that covers NO part of the call: the lane keeps it, the call is still an ordinary allow (4.578798ms)
+  ✔ read-binding-subtree-ask-only — ask-only locator outside the allow: the intersection drops the ask (fail-closed deny) while the legacy tool rule asks (3.218132ms)
+  ✔ read-binding-subtree-allow-symlink-inside — leaf symlink that resolves INSIDE the lane is allowed (realpath in-lane) (5.248837ms)
+  ✔ read-binding-subtree-deny-symlink-parent — symlinked PARENT directory: authored in-lane, resolves outside — denied (3.038743ms)
+  ✔ read-binding-subtree-deny-symlink-leaf — leaf symlink resolving outside: denied by resolved identity (3.070673ms)
+  ✔ read-binding-subtree-deny-dangling-symlink — dangling leaf symlink: plane 1 fails closed on canonicalization, the guard refuses the link (4.068433ms)
+  ✔ read-binding-subtree-allow-hardlink — in-lane NAME of an out-of-lane inode: path-based law allows it (ADR D5, disclosed) (4.018678ms)
+  ✔ read-binding-subtree-deny-hardlink-alias — the OUT-OF-LANE name of the same inode is denied: the decision is on the path (3.35987ms)
+  ✔ read-binding-subtree-deny-dotdot — `..` escape: authored containment passes, resolved identity leaves the lane (3.290029ms)
+  ✔ read-binding-subtree-allow-dotdot-inside — `..` that still resolves inside: allowed (not a blanket `..` refusal) (3.737234ms)
+  ✔ read-member-subtree-allow-in-lane — no restriction declared: the Member realm enforces the ceiling only (2.95333ms)
+  ✔ read-member-subtree-deny-outside — outside the ceiling (2.588019ms)
+  ✔ read-member-subtree-deny-explicit — explicit deny subtree (2.484944ms)
+  ✖ read-member-subtree-ask-under-allow — ask inside an allow subtree in the MEMBER realm (no tool restriction mounted): refused, same code as the binding realm (3.272908ms)
+  ✔ read-member-exact-allow — `exact` legacy rule on the file itself; the Alpha.5 lane names the same file (3.687852ms)
+  ✔ read-member-exact-deny-sibling — exact addresses ONE file identity; a sibling is not covered by either plane (2.581788ms)
+  ✔ read-member-any-allow — `any` whole-tool allow (mode all) (2.609829ms)
+  ✔ read-member-any-deny — `any` whole-tool allow with an explicit deny subtree: deny wins (2.929338ms)
+  ✔ write-binding-subtree-allow-existing — existing target: write lane allows and the read prerequisite passes (3.847363ms)
+  ✔ write-binding-subtree-deny-outside-restriction — outside the write restriction, inside the ceiling (3.672162ms)
+  ✔ write-binding-subtree-allow-new-leaf — new leaf: no read-before-write prerequisite (nothing to read) (3.658243ms)
+  ✔ write-binding-mode-all-deny-outside-ceiling — `any` write restriction wider than the ceiling; the ceiling refuses (2.949326ms)
+  ✖ write-binding-subtree-ask-under-allow — authored ask inside an allow subtree on the write axis: refused at admission, zero writes, disk unchanged (3.794904ms)
+  ✖ write-binding-subtree-allow-symlink-into-ask — ask via an in-lane SYMLINK on the write axis: resolved identity is ask-covered, refusal before the write (5.08141ms)
+  ✔ write-member-subtree-allow-existing — ceiling-only write with the read prerequisite satisfied by the ceiling read lane (3.543708ms)
+  ✖ write-member-subtree-ask-under-allow — ask inside an allow subtree on the write axis in the MEMBER realm: refused, zero writes, disk unchanged (3.095059ms)
+  ✔ write-member-subtree-deny-outside — outside the ceiling write lane (2.882237ms)
+  ✔ write-member-subtree-deny-read-prerequisite — inside the write lane, outside the SAME realm read lane: IO_WRITE_REQUIRES_READ (3.432188ms)
+  ✔ write-member-subtree-allow-while-binding-read-restricted — THE 2026-11-04 SHAPE: a read-only binding does not constrain a member-realm write (write bounded by the ceiling) (3.416017ms)
+  ✔ write-member-subtree-deny-symlink-parent — new leaf under a symlinked parent that resolves outside: refused before create (3.166405ms)
+  ✔ write-member-subtree-allow-hardlink — in-lane hardlink name: the write lands on the shared inode through the allowed name (disclosed) (3.217351ms)
+  ✔ write-member-exact-allow — exact write rule on the file itself (4.737067ms)
+  ✔ write-member-any-allow — `any` whole-tool write allow (mode all) (2.89417ms)
+  ✔ write-member-any-deny — `any` whole-tool write allow with an explicit deny subtree: deny wins (2.637654ms)
+✖ DP1 the same-call three-way comparison over the whole declared case space (179.143717ms)
+✖ DP-SUM the three-way table, case-space coverage and the overall P4-05A answer (0.320888ms)
+✖ DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero bytes, zero writes, zero tool runs (0.271344ms)
+✔ DP-PROJ the REAL product projection RETAINS the ask lane at admission (read, not assumed) (8.42535ms)
+✔ MUT-1 a ceiling WIDENED in the fixture flips only plane 2 -> DISAGREE, plane 2 is the outlier, the bytes leak (7.418904ms)
+✔ MUT-2 a ceiling NARROWED in the fixture flips only plane 2 -> DISAGREE, the effect is refused (2.595174ms)
+✔ MUT-3 the EX-1 triple WITHOUT the case declaring EX-1 is a DISAGREE (the registry is not amnesty) (2.786185ms)
+✔ MUT-4 deleting the oracle write⇒read step flips the oracle alone -> the exception triple no longer matches (2.905211ms)
+✔ MUT-5 treating the read-only binding as binding a member-realm write flips the oracle alone (2026-11-04 ruling is load-bearing) (4.196184ms)
+✔ B2 the double-authority guard: a declaration wider than the bound blueprint refuses before any realm exists (4.123817ms)
+✔ FENCE the independent oracle imports only node: modules and names neither plane (0.299286ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 43
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 457.819659
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ read-binding-subtree-ask-under-allow — authored ask INSIDE an allow subtree: refused at admission (IO_ASK_REQUIRES_APPROVAL) because no approval consumer exists (5.376849ms)
+  AssertionError [ERR_ASSERTION]: read-binding-subtree-ask-under-allow: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ read-binding-subtree-allow-symlink-into-ask — the ask locator is reached through an in-lane SYMLINK: the resolved identity is ask-covered, so admission refuses the alias (5.970245ms)
+  AssertionError [ERR_ASSERTION]: read-binding-subtree-allow-symlink-into-ask: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ read-binding-subtree-ask-narrower-subtree — ask declared on a NARROWER subtree: a descendant target is ask-covered in all three planes and refused at admission (4.163493ms)
+  AssertionError [ERR_ASSERTION]: read-binding-subtree-ask-narrower-subtree: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ read-member-subtree-ask-under-allow — ask inside an allow subtree in the MEMBER realm (no tool restriction mounted): refused, same code as the binding realm (3.272908ms)
+  AssertionError [ERR_ASSERTION]: read-member-subtree-ask-under-allow: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ write-binding-subtree-ask-under-allow — authored ask inside an allow subtree on the write axis: refused at admission, zero writes, disk unchanged (3.794904ms)
+  AssertionError [ERR_ASSERTION]: write-binding-subtree-ask-under-allow: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ write-binding-subtree-allow-symlink-into-ask — ask via an in-lane SYMLINK on the write axis: resolved identity is ask-covered, refusal before the write (5.08141ms)
+  AssertionError [ERR_ASSERTION]: write-binding-subtree-allow-symlink-into-ask: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:444:13
+✖ write-member-subtree-ask-under-allow — ask inside an allow subtree on the write axis in the MEMBER realm: refused, zero writes, disk unchanged (3.095059ms)
+  AssertionError [ERR_ASSERTION]: write-member-subtree-ask-under-allow: the reviewed expected triple
+  + actual - expected
+  
+    {
+      plane1: 'ask',
+  +   plane2: 'allow',
+  -   plane2: 'ask',
+      plane3: 'ask'
+    }
+  
+      at evaluateCase (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:409:12)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:445:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:444:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { plane1: 'ask', plane2: 'allow', plane3: 'ask' },
+    expected: { plane1: 'ask', plane2: 'ask', plane3: 'ask' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:452:1
+✖ DP-SUM the three-way table, case-space coverage and the overall P4-05A answer (0.320888ms)
+  AssertionError [ERR_ASSERTION]: every case produced a result
+  
+  35 !== 42
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:453:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 35,
+    expected: 42,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-dual-plane.test.mjs:517:1
+✖ DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero bytes, zero writes, zero tool runs (0.271344ms)
+  AssertionError [ERR_ASSERTION]: the previously fail-open case 'read-binding-subtree-ask-under-allow' must now be refused
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-ask-closed/tests/world-factory/a5sf-dual-plane.test.mjs:527:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

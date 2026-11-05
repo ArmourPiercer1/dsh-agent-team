@@ -37,7 +37,7 @@
 
 import { basename, dirname, join, resolve as resolvePath, sep } from 'node:path'
 import { lstat as nodeLstat, realpath as nodeRealpath } from 'node:fs/promises'
-import { laneCoversDeny, locatorWithinRuleSet } from './path-rules.js'
+import { laneCoversAsk, laneCoversDeny, locatorWithinRuleSet } from './path-rules.js'
 import type { PathRuleSet } from './types.js'
 
 // ---------------------------------------------------------------------------
@@ -180,13 +180,31 @@ export const NODE_PATH_IDENTITY_RESOLVER: PathIdentityResolver = Object.freeze({
   lstat: (path: string): Promise<PathIdentity> => nodeLstat(path),
 })
 
-/** Closed refusal vocabulary for one authored locator decision. */
+/**
+ * Closed refusal vocabulary for one authored locator decision.
+ *
+ * `IO_ASK_REQUIRES_APPROVAL` is the ONE non-`PATH_*` member, on purpose: it is
+ * the token the Service layer (`TEAM_IO_DENIAL_CODES`) already speaks, and the
+ * confined Provider re-raises it verbatim, so a rename on this side would hide
+ * the reason from the tool layer and from the guard fact
+ * (`a5sf-guard-consult/1.decidedBy`).
+ */
 export const PATH_GUARD_REFUSAL_CODES = [
   'PATH_NOT_ALLOWED',
   'PATH_EXPLICITLY_DENIED',
   'PATH_SYMLINK_ESCAPE',
   'PATH_NOT_FOUND',
   'PATH_RESOLUTION_UNSUPPORTED',
+  /**
+   * A5-DUAL-PLANE-01 (2026-11-05): the lane's effective disposition for this
+   * locator is `ask`. `ask` is a DECISION of the lane algebra, not a gap in it,
+   * but admission has no approval consumer — `resolveAskClassCall` is the
+   * designed consumption seam and has NO production caller (BL-30 owns it).
+   * An ask that cannot be consumed must REFUSE, because the alternative is
+   * silent auto-approval: the call would run with bytes read / file changed and
+   * no approval ever requested or recorded.
+   */
+  'IO_ASK_REQUIRES_APPROVAL',
 ] as const
 
 export type PathGuardRefusalCode = (typeof PATH_GUARD_REFUSAL_CODES)[number]
@@ -213,7 +231,11 @@ export interface PathGuardAllowed {
 }
 
 export interface PathGuardRefused {
-  readonly decision: 'deny' | 'unsupported'
+  /**
+   * `ask` is a REFUSAL at admission even though it is a decision of the lane
+   * algebra: the call did not run and nothing was consumed.
+   */
+  readonly decision: 'deny' | 'ask' | 'unsupported'
   readonly code: PathGuardRefusalCode
   readonly detail: string
 }
@@ -221,7 +243,7 @@ export interface PathGuardRefused {
 export type PathGuardDecision = PathGuardAllowed | PathGuardRefused
 
 function refusePath(
-  decision: 'deny' | 'unsupported',
+  decision: 'deny' | 'ask' | 'unsupported',
   code: PathGuardRefusalCode,
   detail: string,
 ): PathGuardRefused {
@@ -253,16 +275,23 @@ function isNotFound(error: unknown): boolean {
 /**
  * Decide one authored locator against one lane using Provider-resolved identity.
  *
- * Order (fail-closed):
- *  1. the AUTHORED locator must be inside the lane (pure containment);
+ * Order (fail-closed, the lane algebra's own precedence `deny > ask > allow`):
+ *  1. the AUTHORED locator is decided first: an explicit deny subtree is
+ *     `PATH_EXPLICITLY_DENIED`; a locator the lane ASKS for is
+ *     `IO_ASK_REQUIRES_APPROVAL` (a REFUSAL at admission — see that code's
+ *     note: `ask` has no production approval consumer, so letting the allow
+ *     that also covers it stand in would be silent auto-approval); anything
+ *     outside every allow subtree is `PATH_NOT_ALLOWED`;
  *  2. resolve it through the resolver; a non-existent read target is `deny`
  *     (`PATH_NOT_FOUND`), a non-existent write target is allowed to resolve
  *     through its PARENT (so a write may create a file);
- *  3. the RESOLVED path must still be inside the lane. When it is not, an
- *     aliased/symlinked resolution is `PATH_SYMLINK_ESCAPE`, otherwise
- *     `PATH_NOT_ALLOWED`; a resolved path inside an explicit deny is
- *     `PATH_EXPLICITLY_DENIED`. A symlink that resolves INSIDE the subtree is
- *     allowed.
+ *  3. the RESOLVED path is the one the decision is taken on: an explicit deny
+ *     is `PATH_EXPLICITLY_DENIED`, an `ask`-covered resolution is
+ *     `IO_ASK_REQUIRES_APPROVAL` (this is the symlink-alias case: an allowed
+ *     authored name that lands on an asked-for file), and a resolution outside
+ *     the lane is `PATH_SYMLINK_ESCAPE` (when a symlink really is on the
+ *     authored path) or `PATH_NOT_ALLOWED`. A symlink that resolves INSIDE an
+ *     allowed, non-asked subtree is allowed.
  *
  * No inode identity is consulted, so a legal hardlink is decided purely by the
  * name used: allowed through the allowed name, refused through an outside one.
@@ -275,6 +304,16 @@ export async function evaluateLocatorAccess(input: PathGuardInput): Promise<Path
   // 1. authored-string decision: never resolve a location the lane refuses.
   if (laneCoversDeny(input.lane, locator)) {
     return refusePath('deny', 'PATH_EXPLICITLY_DENIED', `authored locator '${locator}' is inside an explicit deny subtree`)
+  }
+  // `ask` outranks the allow that (by construction) also covers this locator.
+  // This is the A5-DUAL-PLANE-01 arm: without it the allow stands in for an
+  // approval that was never requested, let alone consumed.
+  if (laneCoversAsk(input.lane, locator)) {
+    return refusePath(
+      'ask',
+      'IO_ASK_REQUIRES_APPROVAL',
+      `authored locator '${locator}' has the disposition 'ask', but this admission plane has no approval consumer (resolveAskClassCall has no production caller); refusing rather than auto-approving`,
+    )
   }
   if (!locatorWithinRuleSet(input.lane, locator)) {
     return refusePath('deny', 'PATH_NOT_ALLOWED', `authored locator '${locator}' is outside every allow subtree of the lane`)
@@ -335,6 +374,17 @@ export async function evaluateLocatorAccess(input: PathGuardInput): Promise<Path
       'deny',
       aliased ? 'PATH_SYMLINK_ESCAPE' : 'PATH_EXPLICITLY_DENIED',
       `'${locator}' resolves to '${resolved}', which is inside an explicit deny subtree`,
+    )
+  }
+  // The RESOLVED identity can be ask-covered even when the authored name is
+  // not (an in-lane symlink onto an asked-for file). Asking about the authored
+  // name alone would let the alias through — the symlink case of
+  // A5-DUAL-PLANE-01.
+  if (laneCoversAsk(input.lane, resolved)) {
+    return refusePath(
+      'ask',
+      'IO_ASK_REQUIRES_APPROVAL',
+      `'${locator}' resolves to '${resolved}', which has the disposition 'ask'; this admission plane has no approval consumer, so the alias is refused rather than auto-approved`,
     )
   }
   if (!locatorWithinRuleSet(input.lane, resolved)) {

@@ -17,8 +17,17 @@
  * provider-resolved real path, so a symlink that escapes the authorized subtree
  * is refused even though its authored name is inside.
  *
+ * `ask` IS A REFUSAL HERE (A5-DUAL-PLANE-01, 2026-11-05): the compiled lane can
+ * carry the disposition `ask`, and this plane owns no approval consumer
+ * (`resolveAskClassCall` is the designed seam and has no production caller), so
+ * an ask-covered locator — authored or reached through an alias — throws the
+ * typed `IO_ASK_REQUIRES_APPROVAL` BEFORE `super.<method>` runs. Refusing is the
+ * fail-closed interim state; the alternative would be to treat the allow that
+ * also covers the locator as an approval that was never requested or consumed.
+ * Wiring real one-shot approval is BL-30's design, deliberately not done here.
+ *
  * WHAT IT DOES NOT DO: it does not resolve or read anything itself (every
- * operation is `super.<method>`), does not know about tools or approvals, and
+ * operation is `super.<method>`), does not REQUEST or CONSUME approvals, and
  * does not weaken the host Provider — a refusal is raised BEFORE the operation,
  * a permitted call behaves byte-for-byte like the base Provider.
  *

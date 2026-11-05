@@ -338,7 +338,8 @@ export declare function laneSafeSearchArgv(spec: {
  * SAME `FsGuard` shape the confined `fs` Provider uses, so one
  * `observeGuard` wrapper serves both and no second decision vocabulary exists:
  * the read lane decides, and the refusal is the existing `IO_READ_DENIED` /
- * `IO_POLICY_UNSUPPORTED`.
+ * `IO_POLICY_UNSUPPORTED` / `IO_ASK_REQUIRES_APPROVAL` (the `ask` lane has no
+ * approval consumer here either — A5-DUAL-PLANE-01).
  */
 export declare function createMemberSubprocessGuard(policy: Pick<EffectiveIoPolicy, 'memberIdentity' | 'read'>, resolver?: PathIdentityResolver): FsGuard;
 /**

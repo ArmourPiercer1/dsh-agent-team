@@ -543,14 +543,17 @@ export async function laneSafeSearchArgv(spec, readLane, resolver = NODE_PATH_ID
  * SAME `FsGuard` shape the confined `fs` Provider uses, so one
  * `observeGuard` wrapper serves both and no second decision vocabulary exists:
  * the read lane decides, and the refusal is the existing `IO_READ_DENIED` /
- * `IO_POLICY_UNSUPPORTED`.
+ * `IO_POLICY_UNSUPPORTED` / `IO_ASK_REQUIRES_APPROVAL` (the `ask` lane has no
+ * approval consumer here either — A5-DUAL-PLANE-01).
  */
 export function createMemberSubprocessGuard(policy, resolver = NODE_PATH_IDENTITY_RESOLVER) {
     return async function subprocessGuard(method, hostPath) {
         const lane = policy.read;
         const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: 'read', resolver });
         if (decision.decision !== 'allow') {
-            throw new TeamIoDenial(decision.decision === 'deny' ? 'IO_READ_DENIED' : 'IO_POLICY_UNSUPPORTED', decision.detail, { memberIdentity: policy.memberIdentity, method, target: hostPath });
+            throw new TeamIoDenial(decision.decision === 'deny'
+                ? 'IO_READ_DENIED'
+                : decision.decision === 'ask' ? 'IO_ASK_REQUIRES_APPROVAL' : 'IO_POLICY_UNSUPPORTED', decision.detail, { memberIdentity: policy.memberIdentity, method, target: hostPath });
         }
     };
 }

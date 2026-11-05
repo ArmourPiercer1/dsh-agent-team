@@ -1,5 +1,12 @@
 # BL-33 / P4-05A — 双平面同调用一致性与实际消费（C1，host-free）
 
+> **2026-11-05 UPDATE — A5-DUAL-PLANE-01 CLOSED (interim, fail-closed).** The three DISAGREE cases below are
+> the historical measurement, not the current state. Admission now REFUSES an `ask`-covered locator with the
+> typed `IO_ASK_REQUIRES_APPROVAL` (authored AND resolved identity, both realms, both axes, fs + subprocess
+> faces); no approval flow was invented and `resolveAskClassCall` stays unwired (BL-30). The BL-33 harness was
+> extended to 42 cases → **37 AGREE / 5 cited EXCEPTION / 0 DISAGREE**, `allow 15 / ask 7 / deny 20`, overall
+> `ALIGNED_WITH_CITED_EXCEPTIONS`. Evidence + gates: `dev/agent-workflow/evidence/a5sf-ask-closed/`.
+
 **状态：IN-PROGRESS，不是 DONE。** 三平面对齐在 37 个案例中的 34 个成立（29 全等 + 5 条具名且引用的例外），
 **3 个案例是未裁决的分歧**：`ask` 覆盖的 locator 被 Provider 实际准入为 `allow`，没有审批请求、没有审批消费。
 **BL-33 不能标记 DONE**（见 §5、§10）。

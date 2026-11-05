@@ -1,0 +1,90 @@
+▶ DP1 the same-call three-way comparison over the whole declared case space
+  ✔ read-binding-subtree-allow-in-lane — inside ceiling and restriction; read through the binding realm (21.871106ms)
+  ✔ read-binding-subtree-deny-outside-restriction — inside the ceiling, outside the tool restriction — the restriction binds (6.58637ms)
+  ✔ read-binding-subtree-deny-outside-ceiling — restriction wider than ceiling locally: the legacy tool rule allows, the ceiling refuses (6.00634ms)
+  ✔ read-binding-mode-all-deny-outside-ceiling — `any` (mode-all) tool restriction wider than the ceiling; the ceiling refuses (4.235229ms)
+  ✔ read-binding-subtree-deny-explicit — explicit deny subtree wins in both planes (5.06603ms)
+  ✔ read-binding-subtree-ask-under-allow — authored ask INSIDE an allow subtree: refused at admission (IO_ASK_REQUIRES_APPROVAL) because no approval consumer exists (4.544334ms)
+  ✔ read-binding-subtree-allow-symlink-into-ask — the ask locator is reached through an in-lane SYMLINK: the resolved identity is ask-covered, so admission refuses the alias (5.28243ms)
+  ✔ read-binding-subtree-ask-narrower-subtree — ask declared on a NARROWER subtree: a descendant target is ask-covered in all three planes and refused at admission (3.714442ms)
+  ✔ read-binding-subtree-ask-unrelated-locator — an ask rule that covers NO part of the call: the lane keeps it, the call is still an ordinary allow (4.271506ms)
+  ✔ read-binding-subtree-ask-only — ask-only locator outside the allow: the intersection drops the ask (fail-closed deny) while the legacy tool rule asks (3.270502ms)
+  ✔ read-binding-subtree-allow-symlink-inside — leaf symlink that resolves INSIDE the lane is allowed (realpath in-lane) (4.768196ms)
+  ✔ read-binding-subtree-deny-symlink-parent — symlinked PARENT directory: authored in-lane, resolves outside — denied (3.066926ms)
+  ✔ read-binding-subtree-deny-symlink-leaf — leaf symlink resolving outside: denied by resolved identity (3.033032ms)
+  ✔ read-binding-subtree-deny-dangling-symlink — dangling leaf symlink: plane 1 fails closed on canonicalization, the guard refuses the link (3.634ms)
+  ✔ read-binding-subtree-allow-hardlink — in-lane NAME of an out-of-lane inode: path-based law allows it (ADR D5, disclosed) (4.674759ms)
+  ✔ read-binding-subtree-deny-hardlink-alias — the OUT-OF-LANE name of the same inode is denied: the decision is on the path (3.609304ms)
+  ✔ read-binding-subtree-deny-dotdot — `..` escape: authored containment passes, resolved identity leaves the lane (3.37572ms)
+  ✔ read-binding-subtree-allow-dotdot-inside — `..` that still resolves inside: allowed (not a blanket `..` refusal) (3.081344ms)
+  ✔ read-member-subtree-allow-in-lane — no restriction declared: the Member realm enforces the ceiling only (3.691318ms)
+  ✔ read-member-subtree-deny-outside — outside the ceiling (2.771299ms)
+  ✔ read-member-subtree-deny-explicit — explicit deny subtree (2.748703ms)
+  ✔ read-member-subtree-ask-under-allow — ask inside an allow subtree in the MEMBER realm (no tool restriction mounted): refused, same code as the binding realm (2.836781ms)
+  ✔ read-member-exact-allow — `exact` legacy rule on the file itself; the Alpha.5 lane names the same file (2.538605ms)
+  ✔ read-member-exact-deny-sibling — exact addresses ONE file identity; a sibling is not covered by either plane (3.19601ms)
+  ✔ read-member-any-allow — `any` whole-tool allow (mode all) (2.50351ms)
+  ✔ read-member-any-deny — `any` whole-tool allow with an explicit deny subtree: deny wins (2.863ms)
+  ✔ write-binding-subtree-allow-existing — existing target: write lane allows and the read prerequisite passes (4.095373ms)
+  ✔ write-binding-subtree-deny-outside-restriction — outside the write restriction, inside the ceiling (3.775387ms)
+  ✔ write-binding-subtree-allow-new-leaf — new leaf: no read-before-write prerequisite (nothing to read) (3.413251ms)
+  ✔ write-binding-mode-all-deny-outside-ceiling — `any` write restriction wider than the ceiling; the ceiling refuses (2.837093ms)
+  ✔ write-binding-subtree-ask-under-allow — authored ask inside an allow subtree on the write axis: refused at admission, zero writes, disk unchanged (3.074581ms)
+  ✔ write-binding-subtree-allow-symlink-into-ask — ask via an in-lane SYMLINK on the write axis: resolved identity is ask-covered, refusal before the write (4.471054ms)
+  ✔ write-member-subtree-allow-existing — ceiling-only write with the read prerequisite satisfied by the ceiling read lane (3.493945ms)
+  ✔ write-member-subtree-ask-under-allow — ask inside an allow subtree on the write axis in the MEMBER realm: refused, zero writes, disk unchanged (2.691025ms)
+  ✔ write-member-subtree-deny-outside — outside the ceiling write lane (2.486196ms)
+  ✔ write-member-subtree-deny-read-prerequisite — inside the write lane, outside the SAME realm read lane: IO_WRITE_REQUIRES_READ (3.125758ms)
+  ✔ write-member-subtree-allow-while-binding-read-restricted — THE 2026-11-04 SHAPE: a read-only binding does not constrain a member-realm write (write bounded by the ceiling) (4.425709ms)
+  ✔ write-member-subtree-deny-symlink-parent — new leaf under a symlinked parent that resolves outside: refused before create (3.171734ms)
+  ✔ write-member-subtree-allow-hardlink — in-lane hardlink name: the write lands on the shared inode through the allowed name (disclosed) (3.383607ms)
+  ✔ write-member-exact-allow — exact write rule on the file itself (3.49663ms)
+  ✔ write-member-any-allow — `any` whole-tool write allow (mode all) (4.025791ms)
+
+# BL-33 / P4-05A three-way table (42 cases)
+
+| verdict | count |
+| --- | --- |
+| AGREE | 37 |
+| EXCEPTION | 5 |
+| DISAGREE | 0 |
+| **total** | **42** |
+
+| admitted outcome (plane 2) | count |
+| --- | --- |
+| allow | 15 |
+| ask | 7 |
+| deny | 20 |
+
+| exception | count |
+| --- | --- |
+| EX-1-CEILING-OUTRANKS-TOOL-ADMISSION | 3 |
+| EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION | 1 |
+| EX-2-ADMISSION-READ-BEFORE-WRITE | 1 |
+
+overall = ALIGNED_WITH_CITED_EXCEPTIONS
+EXCEPTION read-binding-subtree-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION read-binding-mode-all-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION read-binding-subtree-ask-only -> EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION
+EXCEPTION write-binding-mode-all-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION write-member-subtree-deny-read-prerequisite -> EX-2-ADMISSION-READ-BEFORE-WRITE
+  ✔ write-member-any-deny — `any` whole-tool write allow with an explicit deny subtree: deny wins (2.572541ms)
+✔ DP1 the same-call three-way comparison over the whole declared case space (175.552495ms)
+✔ DP-SUM the three-way table, case-space coverage and the overall P4-05A answer (0.786249ms)
+✔ DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero bytes, zero writes, zero tool runs (0.196412ms)
+✔ DP-PROJ the REAL product projection RETAINS the ask lane at admission (read, not assumed) (8.286007ms)
+✔ MUT-1 a ceiling WIDENED in the fixture flips only plane 2 -> DISAGREE, plane 2 is the outlier, the bytes leak (7.074042ms)
+✔ MUT-2 a ceiling NARROWED in the fixture flips only plane 2 -> DISAGREE, the effect is refused (2.869262ms)
+✔ MUT-3 the EX-1 triple WITHOUT the case declaring EX-1 is a DISAGREE (the registry is not amnesty) (3.256886ms)
+✔ MUT-4 deleting the oracle write⇒read step flips the oracle alone -> the exception triple no longer matches (3.476241ms)
+✔ MUT-5 treating the read-only binding as binding a member-realm write flips the oracle alone (2026-11-04 ruling is load-bearing) (3.917287ms)
+✔ B2 the double-authority guard: a declaration wider than the bound blueprint refuses before any realm exists (3.461173ms)
+✔ FENCE the independent oracle imports only node: modules and names neither plane (0.348189ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 452.590214

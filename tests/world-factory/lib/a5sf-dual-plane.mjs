@@ -114,7 +114,9 @@ export const EXCEPTIONS = Object.freeze({
       'The compiled effective lane is the intersection, and the intersection KEEPS an ask only where the permission side still allows '
       + 'it. Plane 1 is handed the authored tool rule alone and answers ask. This is the FAIL-CLOSED direction (deny, not allow): it '
       + 'cannot widen anything, but it does mean an author-declared ask for a location outside the allow subtree is never offered as an '
-      + 'approval. The over-permit direction of the same gap is the OPEN DISAGREE on `read/write-binding-subtree-ask-under-allow`.',
+      + 'approval. The over-permit direction of the same gap (the ask INSIDE the allow) was the open A5-DUAL-PLANE-01 divergence; '
+      + '2026-11-05 admission now refuses it with `IO_ASK_REQUIRES_APPROVAL`, so that direction is no longer an open DISAGREE. '
+      + 'This exception is unchanged: the ask is GONE from the compiled lane here, so the refusal is the ordinary deny.',
   }),
 })
 
@@ -513,8 +515,11 @@ export const DUAL_PLANE_CASES = Object.freeze([
     ceiling: { read: rd([inLane], ['$B/lane/inside/ask.txt']), write: all() },
     restriction: { tool: 'read', read: rd([inLane], ['$B/lane/inside/ask.txt']), write: all() },
     target: '$B/lane/inside/ask.txt',
-    expect: { plane1: 'ask', plane2: 'allow', plane3: 'ask', verdict: 'DISAGREE' },
-    note: 'authored ask INSIDE an allow subtree: the legacy plane asks, the guarded provider allows — the ask lane is not consumed at admission',
+    // A5-DUAL-PLANE-01 (2026-11-05): was `ask/allow/ask` DISAGREE — the guarded
+    // provider used to auto-approve this. Admission now refuses the ask with
+    // IO_ASK_REQUIRES_APPROVAL, and the fact reports the ASK lane it decided on.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'authored ask INSIDE an allow subtree: refused at admission (IO_ASK_REQUIRES_APPROVAL) because no approval consumer exists',
   },
   {
     id: 'read-binding-subtree-allow-symlink-into-ask',
@@ -524,8 +529,36 @@ export const DUAL_PLANE_CASES = Object.freeze([
     ceiling: { read: rd([inLane], ['$B/lane/inside/ask.txt']), write: all() },
     restriction: { tool: 'read', read: rd([inLane], ['$B/lane/inside/ask.txt']), write: all() },
     target: '$B/lane/inside/link-ask',
-    expect: { plane1: 'ask', plane2: 'allow', plane3: 'ask', verdict: 'DISAGREE' },
-    note: 'the ask locator is reached through an in-lane SYMLINK: the legacy plane canonicalizes to the ask path and asks, the guarded provider ignores ask and admits the alias',
+    // A5-DUAL-PLANE-01: the alias is decided on the RESOLVED identity, so the
+    // ask is seen even though the authored name is a plain allow.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'the ask locator is reached through an in-lane SYMLINK: the resolved identity is ask-covered, so admission refuses the alias',
+  },
+  {
+    id: 'read-binding-subtree-ask-narrower-subtree',
+    axis: 'read',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    ceiling: { read: rd([inLane], ['$B/lane/inside/askdir']), write: all() },
+    restriction: { tool: 'read', read: rd([inLane], ['$B/lane/inside/askdir']), write: all() },
+    target: '$B/lane/inside/askdir/deep/ask.txt',
+    // A5-DUAL-PLANE-01 shape: the ask is a SUBTREE narrower than the allow, not
+    // one exact file, and the target is a DESCENDANT of it.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'ask declared on a NARROWER subtree: a descendant target is ask-covered in all three planes and refused at admission',
+  },
+  {
+    id: 'read-binding-subtree-ask-unrelated-locator',
+    axis: 'read',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    ceiling: { read: rd([inLane], ['$B/lane/other/other.txt']), write: all() },
+    restriction: { tool: 'read', read: rd([inLane], ['$B/lane/other/other.txt']), write: all() },
+    target: '$B/lane/inside/ok.txt',
+    // The ask survives the intersection (it is inside the allow subtree), yet it
+    // does not COVER the called locator: it must therefore affect nothing.
+    expect: { plane1: 'allow', plane2: 'allow', plane3: 'allow', verdict: 'AGREE' },
+    note: 'an ask rule that covers NO part of the call: the lane keeps it, the call is still an ordinary allow',
   },
   {
     id: 'read-binding-subtree-ask-only',
@@ -659,6 +692,18 @@ export const DUAL_PLANE_CASES = Object.freeze([
     note: 'explicit deny subtree',
   },
   {
+    id: 'read-member-subtree-ask-under-allow',
+    axis: 'read',
+    realm: 'member',
+    resourceKind: 'subtree',
+    ceiling: { read: rd([inLane], ['$B/lane/inside/ask.txt']), write: all() },
+    target: '$B/lane/inside/ask.txt',
+    // A5-DUAL-PLANE-01 shape: the SAME ask must refuse in the Member realm too
+    // (the ceiling realm compiles and admits through the SAME guard).
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'ask inside an allow subtree in the MEMBER realm (no tool restriction mounted): refused, same code as the binding realm',
+  },
+  {
     id: 'read-member-exact-allow',
     axis: 'read',
     realm: 'member',
@@ -757,8 +802,25 @@ export const DUAL_PLANE_CASES = Object.freeze([
     restriction: { tool: 'write', read: all(), write: rd([inLane], ['$B/lane/inside/ask.txt']) },
     target: '$B/lane/inside/ask.txt',
     content: 'BL-33 write ask under allow\n',
-    expect: { plane1: 'ask', plane2: 'allow', plane3: 'ask', verdict: 'DISAGREE' },
-    note: 'authored ask inside an allow subtree on the write axis: the guarded provider allows',
+    // A5-DUAL-PLANE-01: was `ask/allow/ask` DISAGREE — the write used to land.
+    // The refusal happens BEFORE the base Provider, so the disk keeps ASK\n.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'authored ask inside an allow subtree on the write axis: refused at admission, zero writes, disk unchanged',
+  },
+  {
+    id: 'write-binding-subtree-allow-symlink-into-ask',
+    axis: 'write',
+    realm: 'binding',
+    resourceKind: 'subtree',
+    ceiling: { read: rd([inLane]), write: rd([inLane], ['$B/lane/inside/ask.txt']) },
+    restriction: { tool: 'write', read: all(), write: rd([inLane], ['$B/lane/inside/ask.txt']) },
+    target: '$B/lane/inside/link-ask',
+    content: 'BL-33 write ask via symlink\n',
+    // A5-DUAL-PLANE-01: the WRITE axis reached through the in-lane symlink. The
+    // authored name is a plain allow; the resolved identity is ask-covered, so
+    // the refusal must be taken on the resolution, not on the authored string.
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'ask via an in-lane SYMLINK on the write axis: resolved identity is ask-covered, refusal before the write',
   },
 
   // --- WRITE × member realm -------------------------------------------------
@@ -772,6 +834,19 @@ export const DUAL_PLANE_CASES = Object.freeze([
     content: 'BL-33 write-member allow\n',
     expect: { plane1: 'allow', plane2: 'allow', plane3: 'allow', verdict: 'AGREE' },
     note: 'ceiling-only write with the read prerequisite satisfied by the ceiling read lane',
+  },
+  {
+    id: 'write-member-subtree-ask-under-allow',
+    axis: 'write',
+    realm: 'member',
+    resourceKind: 'subtree',
+    // Both lanes allow the directory (so the read prerequisite, if it were
+    // reached, would pass); only the WRITE lane asks for the target.
+    ceiling: { read: rd([inLane]), write: rd([inLane], ['$B/lane/inside/ask.txt']) },
+    target: '$B/lane/inside/ask.txt',
+    content: 'BL-33 write-member ask\n',
+    expect: { plane1: 'ask', plane2: 'ask', plane3: 'ask', verdict: 'AGREE' },
+    note: 'ask inside an allow subtree on the write axis in the MEMBER realm: refused, zero writes, disk unchanged',
   },
   {
     id: 'write-member-subtree-deny-outside',

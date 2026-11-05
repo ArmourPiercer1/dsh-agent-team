@@ -90,6 +90,26 @@ export function laneCoversDeny(lane, locator) {
     return lane.deny.some((denied) => keyCovers(toLocatorKey(denied), key));
 }
 /**
+ * Does the lane `ask` for this location (subtree-aware)?
+ *
+ * `ask` is a DECLARED disposition — precedence `deny > ask > allow` — never a
+ * grant, so this predicate is what lets the admission plane SEE it. It is
+ * deliberately separate from {@link locatorWithinRuleSet}: that predicate
+ * answers "is this inside an allow subtree", which is ALSO true for a locator
+ * an `ask` covers (the compiler keeps an ask only where the intersection still
+ * allows that location). Reading only the allow/deny halves
+ * (A5-DUAL-PLANE-01) silently promoted such a locator to `allow`, i.e. it
+ * auto-approved a call whose declared disposition is "requires approval".
+ *
+ * PURE, like the rest of this module: authored-string containment only; the
+ * resolved (symlink/hardlink) identity is re-tested by
+ * `provider-capabilities.ts` on the canonical path.
+ */
+export function laneCoversAsk(lane, locator) {
+    const key = toLocatorKey(locator);
+    return lane.ask.some((asked) => keyCovers(toLocatorKey(asked), key));
+}
+/**
  * Decide ONE authored locator against ONE lane.
  *
  * Precedence is strict and fail-closed: an explicit (subtree) deny wins, then
