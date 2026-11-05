@@ -304,6 +304,7 @@ const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
 const A6_RECIPIENTS = process.env['C1_A6_RECIPIENTS'] === '1'
 const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
+const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -809,7 +810,9 @@ function savedBlueprintA6Yaml(denyList) {
       '  officerTemplateId: officer',
       '  ordinaryToolApprovals:',
       '    default: officer',
-      '    leaderExceptions: []',
+      ...(A6_EXCEPTION
+        ? ['    leaderExceptions:', '      - memberTemplateId: worker', '        tool:', '          owner: dsh-agent-team', '          name: bash']
+        : ['    leaderExceptions: []']),
       '  whenOfficerUnavailable: hold',
       'metadata: {}',
     ].join('\n'),
@@ -1170,7 +1173,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     const bodyText = JSON.stringify(r.body ?? '')
     return bodyText.includes('You are the A6 leader')
   })
-  const resolveCalls = wakes.flatMap((r) => replyToolNames(r)).filter((n) => n === 'team_resolve_control')
+  const notifications = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-control')
+    && lastUserTextOf(r).includes(CREATE_ROOT_A6))
+  const resolveCalls = [...wakes, ...notifications].flatMap((r) => replyToolNames(r)).filter((n) => n === 'team_resolve_control')
   const memberReq = mock.requests.find((r) =>
     lastUserTextOf(r).includes(MK_A6MEM)
       && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_MEMBER_DONE')
@@ -1188,14 +1193,33 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
   const toolRequests = ledger.requests.filter((r) => r.toolName !== undefined)
   log(`A6: wakes=${wakes.length} leaderWakes=${leaderWakes.length} resolves=${resolveCalls.length} executed=${String(executed)} requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.length}`)
 
-  check('A6-2', 'the Member ask produced a model-visible Officer review wake', wakes.length > 0,
-    `wakes=${wakes.length} requests=${mock.requests.length}`)
-  check('A6-3', 'the Officer resolved through team_resolve_control', resolveCalls.length > 0,
+  check('A6-2', A6_EXCEPTION
+    ? 'the declared Leader exception produced a model-visible Leader notification, not an Officer wake'
+    : 'the Member ask produced a model-visible Officer review wake',
+  A6_EXCEPTION ? notifications.length > 0 && wakes.length === 0 : wakes.length > 0,
+  `wakes=${wakes.length} notifications=${notifications.length} requests=${mock.requests.length}`)
+  check('A6-3', A6_EXCEPTION
+    ? 'the Leader resolved the exception leg through team_resolve_control'
+    : 'the Officer resolved through team_resolve_control', resolveCalls.length > 0,
     `resolveCalls=${resolveCalls.length} wakeTools=${wakes.map((r) => replyToolNames(r).join(',')).join(' | ').slice(0, 500)}`)
-  check('A6-4', 'the original Member command executed after the Officer allow', executed,
+  check('A6-4', A6_EXCEPTION
+    ? 'the original Member command executed after the Leader exception allow'
+    : 'the original Member command executed after the Officer allow', executed,
     `file=${FILE_A6_ALLOW} text=${JSON.stringify(execText.slice(0, 300))}`)
-  check('A6-5', 'the Leader was not woken for a leg routed to the Officer', wakes.length > 0 && leaderWakes.length === 0,
-    `wakes=${wakes.length} leaderWakes=${leaderWakes.length}`)
+  check('A6-5', A6_EXCEPTION
+    ? 'the Leader exception reached the Leader and no Officer review wake was created'
+    : 'the Leader was not woken for a leg routed to the Officer',
+  A6_EXCEPTION ? notifications.length > 0 && wakes.length === 0 : wakes.length > 0 && leaderWakes.length === 0,
+  `wakes=${wakes.length} leaderWakes=${leaderWakes.length} notifications=${notifications.length}`)
+  let exceptionOk = true
+  if (A6_EXCEPTION) {
+    const paRequest = ledger.requests.find((r) => r.actionName === 'team-tool-execute')
+    const paDecision = paRequest === undefined ? undefined : ledger.decisions.filter((d) => d.requestId === paRequest.requestId).at(-1)
+    exceptionOk = paRequest !== undefined && paDecision?.decision === 'allow' && paDecision?.decider?.role === 'leader'
+    check('A6-10', 'the PA leg of a declared Leader exception was decided by the Leader, never the Officer', exceptionOk,
+      `pa=${JSON.stringify(paRequest)} decision=${JSON.stringify(paDecision)} executed=${String(executed)}`)
+    writeEvidence('a6-leader-exception.json', { paRequest, paDecision, notifications: notifications.length, wakes: wakes.length, executed, execText })
+  }
   if (A6_HUMAN) {
     const humanOk = humanEscalation !== null && humanLeg !== null && executed
       && humanDecision?.decision === 'allow'
@@ -1246,7 +1270,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     selfReview: selfReview === null ? null : { ...selfReview, ledger: undefined },
     handoff: handoff === null ? null : { ...handoff, ledger: undefined },
   })
-  return wakes.length > 0 && resolveCalls.length > 0 && executed && pending.length === 0
+  return exceptionOk && (A6_EXCEPTION || wakes.length > 0) && resolveCalls.length > 0 && executed && pending.length === 0
     && (selfReview === null || selfReview.ok)
     && (handoff === null || handoff.ok)
 }
