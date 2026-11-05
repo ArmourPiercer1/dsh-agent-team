@@ -1,0 +1,53 @@
+# Reachability probe — A5-DUAL-PLANE-01 (2026-11-05)
+
+## (1) shipped config declaring an Alpha.5 io lane at all (memberIoCeilings / a5sfMemberPolicies)
+$ git grep -n "memberIoCeilings|a5sfMemberPolicies" -- *.yml *.yaml *.json
+.github/workflows/ci-integration.yml:353:        # `config.a5sfMemberPolicies` is a product-visible declaration in the SAME closed v4
+.github/workflows/ci-integration.yml:354:        # vocabulary (memberIoCeilings[].io + toolBindings[] entries) that drives the SAME
+dev/ci/eb3-ci-manifest.json:312:          "why": "Alpha.5 PRODUCT ASSEMBLY (2026-11-05): the confined Member realm was reachable only from evidence rows and test presets, so a World composed from the acceptance preset alone gave NO agent a confined face (measured by the search live round). This leg pins the product-visible declaration `config.a5sfMemberPolicies` and the SAME install/mount seams driven from it: a declared template gets its ceiling + binding realm with no evidence path and no `teamA5sfRealm` service, an undeclared template stays byte-identical, the compiled INTERSECTION is what binds in both directions, and every unexpressible face refuses typed before any call (SUBPROCESS_UNCONFINED_REALM / NETWORK_UNCONFINED_REALM / REALM_DECLARATION_INVALID / REALM_DECLARATION_EXCEEDS_BLUEPRINT). The fix round this leg carries (review findings B1-B8) adds: PA8 (a legal v4 `mode: all` + `deny` restriction is refused at the realm with IO_READ_DENIED and zero provider reads - the projector used to collapse it to 'no-additional-narrowing' and DROP the deny), PA9 (B2: the declaration is reconciled with `config.blueprintSource` for the same team - a widening ceiling refuses REALM_DECLARATION_EXCEEDS_BLUEPRINT, another team's blueprint and an absent source are not reconciled), PA10 (B3/B4: `authorization` is validated against the shipped v4 table and `deny` is refused instead of mounted; the restriction family rides the shipped `toolBindings` grammar so a bogus implementationOrigin or a scalar allow is refused, not silently deny-all), and PA11 (B8: the contentHash, hence the MemberPolicy revision, covers the bindings). Like the #394/#529/R2/R3/R4/BL-14/P2/F1/route-C legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the product assembly's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+
+## (2) non-empty ask lane in shipped SOURCE (not tests)
+$ git grep -n "ask: ..." -- packages/domain/blueprint/src packages/runtime/src packages/tools/src cordis.patch.yml opshome
+opshome/.dsh/blueprints/main.yaml:32:      ask: []
+opshome/.dsh/blueprints/main.yaml:65:        ask: []
+opshome/.dsh/storages/team_domain.json:87:      "team.u7as.main@1": "{\"blueprintId\":\"team.u7as.main\",\"contentHash\":\"sha256:d15cd24ddc669cd4d0f042aaf21382b26b85930d70f9e07a71ea4cdc765dfe24\",\"frozenAt\":\"2026-10-30T12:22:38.102Z\",\"revision\":\"1\",\"schemaVersion\":2,\"source\":\"---\\nschemaVersion: 3\\nblueprintId: team.u7as.main\\nrevision: \\\"1\\\"\\nleader:\\n  templateId: leader\\n  persona: \\\"You are the leader of the u7as assembly team. U7AS_L1_20261030t12-22-33z starts your chain; when the user sends U7AS_GOAL_20261030t12-22-33z, create the goal, read it back, then create the one asworker member and delegate its script exactly as instructed.\\\"\\n  capabilities:\\n    teamTools:\\n      kind: allow\\n      items:\\n        - team_list_members\\n        - team_create_member\\n        - team_delegate\\n        - team_collect\\n    builtinToolDeny:\\n      - edit\\n      - glob\\n      - grep\\n      - read\\n      - read_image\\n      - write\\n    skills:\\n      kind: allow\\n      items: []\\n    mcp:\\n      kind: allow\\n      items: []\\n    permissions:\\n      default: ask\\n      allow: []\\n      ask: []\\n      deny: []\\nteamEnvelope:\\n  allow:\\n    - create-member\\n    - assign-task\\n    - send-message\\n    - report-progress\\n    - request-control\\n  deny: []\\nmembers:\\n  - templateId: asworker\\n    displayName: \\\"u7as agent-state worker\\\"\\n    persona: \\\"You are a worker of the u7as assembly team (agent-state lane). Follow the delegated script exactly, one tool call at a time.\\\"\\n    capabilities:\\n      teamTools:\\n        kind: deny\\n      builtinToolDeny:\\n        - edit\\n        - glob\\n        - grep\\n        - read\\n        - read_image\\n        - write\\n      skills:\\n        kind: allow\\n        items: []\\n      mcp:\\n        kind: allow\\n        items: []\\n      permissions:\\n        default: ask\\n        allow: []\\n        ask: []\\n        deny: []\\nmemberEnvelopes:\\n  - templateId: asworker\\n    envelope:\\n      allow:\\n        - send-message\\n        - report-progress\\n        - request-control\\n      deny: []\\npermissionMutationEnvelope:\\n  rules: []\\nteamHardEnvelope:\\n  rules: []\\npolicyStates: []\\nmetadata: {}\\n---\\n\"}"
+
+## (3) every non-empty ask lane in the whole tracked tree (all test fixtures)
+$ git grep -nE "ask: .?" -- packages tests
+packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts:295:            toolBindings: [{ owner: 'o', name: 'n', authorization: 'ask', io: { read: { mode: 'all', ask: ['./big'], deny: [] }, write: { mode: 'all', deny: [] }, network: { mode: 'deny', default: 'deny' } }, execution: { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host' } }],
+packages/runtime/test/a5sf-approval-takeover.test.ts:122:          ask: ['/work/a/p1.txt', '/work/a/p2.txt'],
+packages/runtime/test/a5sf-member-policy.test.ts:346:        io: { read: rw('restricted', { allow: ['/work/a'], ask: ['/work/a/pending'] }), write: rw('restricted', { allow: [] }), network: net('deny') },
+tests/world-factory/a5sf-evidence.test.mjs:137:  io: { read: rw({ allow: ['/work/a'], ask: ['/work/a/asked'] }), write: rw({ allow: [] }), network: NET_DENY },
+
+## (4) production callers of the designed consumption seam resolveAskClassCall
+$ git grep -n "resolveAskClassCall" -- packages
+packages/runtime/dist/packages/runtime/member-io-policy/src/approval-takeover.d.ts:136:export declare function resolveAskClassCall(input: ResolveAskClassCallInput): Promise<ApprovalTakeoverResult>;
+packages/runtime/dist/packages/runtime/member-io-policy/src/approval-takeover.js:114:export async function resolveAskClassCall(input) {
+packages/runtime/dist/packages/runtime/member-io-policy/src/index.d.ts:22:export { APPROVAL_TAKEOVER_REFUSAL_CODES, APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES, resolveAskClassCall, } from './approval-takeover.js';
+packages/runtime/dist/packages/runtime/member-io-policy/src/index.js:20:export { APPROVAL_TAKEOVER_REFUSAL_CODES, APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES, resolveAskClassCall, } from './approval-takeover.js';
+packages/runtime/dist/packages/runtime/member-io-policy/src/provider-capabilities.js:141:     * but admission has no approval consumer — `resolveAskClassCall` is the
+packages/runtime/dist/packages/runtime/member-io-policy/src/provider-capabilities.js:210:        return refusePath('ask', 'IO_ASK_REQUIRES_APPROVAL', `authored locator '${locator}' has the disposition 'ask', but this admission plane has no approval consumer (resolveAskClassCall has no production caller); refusing rather than auto-approving`);
+packages/runtime/dist/packages/runtime/team-services/src/fs.d.ts:22: * (`resolveAskClassCall` is the designed seam and has no production caller), so
+packages/runtime/dist/packages/runtime/team-services/src/fs.js:22: * (`resolveAskClassCall` is the designed seam and has no production caller), so
+packages/runtime/dist/packages/runtime/team-services/src/types.js:28:     * the designed consumption seam (`resolveAskClassCall`) has no production
+packages/runtime/member-io-policy/src/approval-takeover.ts:206:export async function resolveAskClassCall(
+packages/runtime/member-io-policy/src/index.ts:61:  resolveAskClassCall,
+packages/runtime/member-io-policy/src/provider-capabilities.ts:201:   * but admission has no approval consumer — `resolveAskClassCall` is the
+packages/runtime/member-io-policy/src/provider-capabilities.ts:315:      `authored locator '${locator}' has the disposition 'ask', but this admission plane has no approval consumer (resolveAskClassCall has no production caller); refusing rather than auto-approving`,
+packages/runtime/team-services/src/fs.ts:22: * (`resolveAskClassCall` is the designed seam and has no production caller), so
+packages/runtime/team-services/src/types.ts:34:   * the designed consumption seam (`resolveAskClassCall`) has no production
+packages/runtime/test/a5sf-approval-takeover.test.ts:49:  resolveAskClassCall,
+packages/runtime/test/a5sf-approval-takeover.test.ts:225:): ReturnType<typeof resolveAskClassCall> {
+packages/runtime/test/a5sf-approval-takeover.test.ts:226:  return resolveAskClassCall({ expectedRootSessionId: ROOT, ...input })
+
+## (5) the v4 grammar DECLARES the disposition (not a shipped value)
+$ git grep -n "BLUEPRINT_V4_AUTHORIZATIONS" -- packages/domain
+packages/domain/blueprint/src/blueprint-v4.ts:103:export const BLUEPRINT_V4_AUTHORIZATIONS = ['allow', 'ask', 'deny'] as const
+packages/domain/blueprint/src/blueprint-v4.ts:164:export type V4Authorization = (typeof BLUEPRINT_V4_AUTHORIZATIONS)[number]
+packages/domain/blueprint/src/blueprint-v4.ts:442:  } else if (typeof auth !== 'string' || !BLUEPRINT_V4_AUTHORIZATIONS.includes(auth as V4Authorization)) {
+packages/domain/blueprint/src/blueprint-v4.ts:447:      legalValues: [...BLUEPRINT_V4_AUTHORIZATIONS],
+packages/domain/blueprint/src/index.ts:125:  BLUEPRINT_V4_AUTHORIZATIONS,
+packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts:37:  BLUEPRINT_V4_AUTHORIZATIONS,
+packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts:210:    expect([...BLUEPRINT_V4_AUTHORIZATIONS]).toEqual(['allow', 'ask', 'deny'])
+packages/domain/test/a5sr3-default-deny-mapping.test.ts:29:  BLUEPRINT_V4_AUTHORIZATIONS,
+packages/domain/test/a5sr3-default-deny-mapping.test.ts:174:    expect([...BLUEPRINT_V4_AUTHORIZATIONS]).toEqual(['allow', 'ask', 'deny'])

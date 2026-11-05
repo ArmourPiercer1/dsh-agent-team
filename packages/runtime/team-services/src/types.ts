@@ -28,6 +28,22 @@ export const TEAM_IO_DENIAL_CODES = [
   'IO_WRITE_DENIED',
   'IO_WRITE_REQUIRES_READ',
   'IO_POLICY_UNSUPPORTED',
+  /**
+   * A5-DUAL-PLANE-01 (2026-11-05): the compiled lane's effective disposition
+   * for the target is `ask`, and this admission plane cannot CONSUME an ask —
+   * the designed consumption seam (`resolveAskClassCall`) has no production
+   * caller, and one-shot approval plus its drain/cancel semantics belong to
+   * BL-30. Refusing is the honest interim state: the alternative is silent
+   * auto-approval of a call whose declared disposition is "requires approval".
+   *
+   * A code of its own (rather than `IO_POLICY_UNSUPPORTED`) because the two
+   * refusals are different facts: `IO_POLICY_UNSUPPORTED` means admission
+   * could not be PROVEN (resolver fault / unsupported provider), while this
+   * one means admission was proven and the answer is `ask`. Observability maps
+   * both to the `ask` lane, but the tool layer, the fact and the audit trail
+   * must be able to tell them apart.
+   */
+  'IO_ASK_REQUIRES_APPROVAL',
 ] as const
 
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number]

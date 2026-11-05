@@ -23,7 +23,18 @@
  *          follows plane 2; both deliverables (allow) and refusals (deny/ask)
  *          are exercised.
  *   DP-SUM  the three-way table counts, the overall verdict, and the rule that
- *          every DECLARED exception was exercised at least once.
+ *          every DECLARED exception was exercised at least once. A5-DUAL-PLANE-01
+ *          (2026-11-05) adds: `ask` must now APPEAR in the admitted-decision
+ *          table (it was 0 before the fix) and both axes × both realms must
+ *          produce a refused ask call.
+ *   DP-REFUSE the typed refusal of the ask lane: exactly ONE guard fact with
+ *          `decision: 'ask'` / `decidedBy: 'IO_ASK_REQUIRES_APPROVAL'`, zero
+ *          bytes through the base Provider, zero writes, unchanged bytes on
+ *          disk, and no over-refusal (allow still allows, deny keeps its code).
+ *   DP-PROJ the REAL product projection (`a5sfRealmConfigOf` →
+ *          `createProductRealmProvider`) still CARRIES the ask locator in the
+ *          lane the guard consumes — measured, because this vertical already
+ *          shipped a projector that flattened a rule set and dropped a lane.
  *   MUT-1/2 a ceiling mutated in the fixture (widened / narrowed) flips ONLY
  *           plane 2, and the harness reports DISAGREE with plane 2 as the
  *           outlier — the comparison cannot pass vacuously, and the fact really
@@ -179,6 +190,7 @@ after(() => {
  *
  *   lane/inside/ok.txt        OK            lane/other/other.txt   OTHER
  *   lane/inside/ask.txt       ASK           lane/blocked/deny.txt  DENY
+ *   lane/inside/askdir/deep/ask.txt ASK-DEEP  (ask on a NARROWER subtree)
  *   lane/inside/alias.txt     HARDLINK → outside/secret.txt
  *   lane/inside/link-in       SYMLINK  → lane/inside/ok.txt
  *   lane/inside/link-ask      SYMLINK  → lane/inside/ask.txt
@@ -188,11 +200,12 @@ after(() => {
  *   outside/secret.txt        SECRET
  */
 function buildFixture(base) {
-  for (const sub of ['lane/inside', 'lane/other', 'lane/blocked', 'lane/new', 'outside']) {
+  for (const sub of ['lane/inside', 'lane/inside/askdir/deep', 'lane/other', 'lane/blocked', 'lane/new', 'outside']) {
     mkdirSync(join(base, sub), { recursive: true })
   }
   writeFileSync(join(base, 'lane/inside/ok.txt'), 'OK\n', 'utf8')
   writeFileSync(join(base, 'lane/inside/ask.txt'), 'ASK\n', 'utf8')
+  writeFileSync(join(base, 'lane/inside/askdir/deep/ask.txt'), 'ASK-DEEP\n', 'utf8')
   writeFileSync(join(base, 'lane/other/other.txt'), 'OTHER\n', 'utf8')
   writeFileSync(join(base, 'lane/blocked/deny.txt'), 'DENY\n', 'utf8')
   writeFileSync(join(base, 'outside/secret.txt'), 'SECRET\n', 'utf8')
@@ -412,6 +425,10 @@ async function evaluateCase(spec) {
       exceptionIds,
       fact,
       calls: admission.calls,
+      // A5-DUAL-PLANE-01: the bytes-on-disk witness the refusal arms assert.
+      before,
+      diskAfter: beforeOf(target),
+      errorCode: admission.error?.code,
     }
   } finally {
     await admission.realm.dispose()
@@ -452,6 +469,24 @@ test('DP-SUM the three-way table, case-space coverage and the overall P4-05A ans
     )
   }
   assert.ok(summary.byOutcome.allow > 0 && summary.byOutcome.deny > 0)
+  // A5-DUAL-PLANE-01 (2026-11-05): before the fix the admission seam produced
+  // ask=0 over the whole case space — `ask` could NEVER become the admitted
+  // decision. The lane is now visible at admission, so refused ask calls are
+  // counted under the `ask` lane they decided on, and the count is not allowed
+  // to collapse back to zero.
+  assert.ok(
+    summary.byOutcome.ask >= 3,
+    `the admitted-decision table must contain ask decisions (got ${summary.byOutcome.ask}); an ask-blind admission seam reports 0`,
+  )
+  // Both realms and both axes must produce at least one REFUSED ask call.
+  for (const axis of ['read', 'write']) {
+    for (const realm of ['member', 'binding']) {
+      assert.ok(
+        RESULTS.some((entry) => entry.axis === axis && entry.realm === realm && entry.fact.decision === 'ask'),
+        `the ask lane must be exercised on the ${axis} axis in the ${realm} realm`,
+      )
+    }
+  }
 
   // Every DECLARED exception must have been exercised, and the direction of the
   // split must be the cited one (compareThreeWay already enforces the triple).
@@ -474,6 +509,109 @@ test('DP-SUM the three-way table, case-space coverage and the overall P4-05A ans
   for (const entry of summary.exceptions) console.log(`EXCEPTION ${entry.id} -> ${entry.exception}`)
   for (const entry of summary.disagreements) {
     console.log(`DISAGREE  ${entry.id} -> ${JSON.stringify(entry.decisions)} outlier=${entry.mismatch} decidedBy=${entry.decidedBy}`)
+  }
+})
+
+// --- DP-REFUSE / DP-PROJ: A5-DUAL-PLANE-01 (fail closed, lane visible) ------
+
+test('DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero bytes, zero writes, zero tool runs', async () => {
+  const refusals = RESULTS.filter((entry) => entry.fact.decision === 'ask')
+  // The three original DISAGREE cases MUST be among them — this is the arm that
+  // goes red the moment the ask handling is removed (mutation control).
+  const refusedIds = refusals.map((entry) => entry.id)
+  for (const id of [
+    'read-binding-subtree-ask-under-allow',
+    'read-binding-subtree-allow-symlink-into-ask',
+    'write-binding-subtree-ask-under-allow',
+  ]) {
+    assert.ok(refusedIds.includes(id), `the previously fail-open case '${id}' must now be refused`)
+  }
+
+  for (const entry of refusals) {
+    assert.equal(entry.fact.decision, 'ask', `${entry.id}: the fact reports the lane the guard decided on`)
+    assert.equal(entry.fact.decidedBy, 'IO_ASK_REQUIRES_APPROVAL', `${entry.id}: the typed refusal code`)
+    assert.equal(entry.errorCode, 'IO_ASK_REQUIRES_APPROVAL', `${entry.id}: the thrown refusal carries the same code`)
+    assert.equal(
+      entry.fact.sequence,
+      1,
+      `${entry.id}: exactly ONE guard consultation — no approval request is attempted on the refusal path`,
+    )
+    assert.equal(entry.calls.read, 0, `${entry.id}: zero bytes read through the base Provider`)
+    assert.equal(entry.calls.write, 0, `${entry.id}: zero writes through the base Provider`)
+    assert.equal(entry.diskAfter, entry.before, `${entry.id}: the bytes on disk are unchanged`)
+    assert.equal(entry.comparison.verdict, 'AGREE', `${entry.id}: the refusal agrees with planes 1 and 3`)
+  }
+
+  // No over-refusal: an ordinary `allow` still reaches the Provider, an ordinary
+  // `deny` still refuses, and neither acquires the ask code.
+  const allowCase = RESULTS.find((entry) => entry.id === 'read-binding-subtree-allow-in-lane')
+  assert.equal(allowCase.fact.decision, 'allow')
+  assert.equal(allowCase.calls.read, 1, 'a plain allow still serves the call')
+  const denyCase = RESULTS.find((entry) => entry.id === 'read-binding-subtree-deny-explicit')
+  assert.equal(denyCase.fact.decision, 'deny')
+  assert.equal(denyCase.fact.decidedBy, 'IO_READ_DENIED', 'a deny keeps its own code — it is not relabelled ask')
+  assert.equal(denyCase.calls.read, 0)
+})
+
+test('DP-PROJ the REAL product projection RETAINS the ask lane at admission (read, not assumed)', async () => {
+  // The earlier defect in this vertical was a projector that FLATTENED a rule
+  // set and silently dropped a lane (product-assembly B1, the deny-drop). This
+  // arm reads the ACTUAL projection the admission plane consumes:
+  // `a5sfRealmConfigOf` -> `createProductRealmProvider` -> `compileMemberPolicy`
+  // (Member realm) / `compileEffectiveIo` (binding realm), and asserts the ask
+  // locator is still there next to the allow that also covers it.
+  const ids = [
+    'read-binding-subtree-ask-under-allow',
+    'read-binding-subtree-allow-symlink-into-ask',
+    'write-binding-subtree-ask-under-allow',
+    'read-binding-subtree-ask-narrower-subtree',
+    'read-binding-subtree-ask-unrelated-locator',
+    'read-member-subtree-ask-under-allow',
+    'write-member-subtree-ask-under-allow',
+  ]
+  for (const id of ids) {
+    const spec = caseById(id)
+    const base = mkdtempSync(join(tmpdir(), `a5sf-bl33-proj-${id}-`))
+    FIXTURES.push(base)
+    buildFixture(base)
+    const materialized = materializeCase(spec, base)
+    const declaredAsk = materialized.ceiling[materialized.axis].ask
+    assert.ok(declaredAsk.length > 0, `${id}: the case declares an ask locator`)
+
+    const config = row.a5sfRealmConfigOf({ a5sfMemberPolicies: declarationFor(materialized) })
+    assert.notEqual(config, undefined)
+    const compiled = assembly.createProductRealmProvider(config.memberPolicies).compiledFor({
+      sessionId: 'session-proj',
+      instanceId: 'mi-bl33',
+      teamRootSessionId: 'session-root-bl33',
+      templateId: TEMPLATE,
+      bindPath: 'fresh-member',
+    })
+    assert.notEqual(compiled, undefined)
+
+    const memberLane = compiled.members[0].policy.value[materialized.axis]
+    let admissionLane = memberLane
+    if (materialized.realm === 'binding') {
+      const binding = compiled.bindings.find((entry) => entry.toolBindingIdentity === BINDING_TOOL[materialized.axis])
+      assert.notEqual(binding, undefined, `${id}: the binding realm is compiled`)
+      admissionLane = binding.effective[materialized.axis]
+      // The binding lane is the compiled INTERSECTION; the ask survives it.
+      assert.ok(
+        binding.effective[materialized.axis].ask.length > 0,
+        `${id}: the EFFECTIVE lane (ceiling ∩ restriction) still carries an ask — the projection does not flatten it`,
+      )
+    }
+    assert.ok(
+      admissionLane.ask.includes(declaredAsk[0]),
+      `${id}: the lane the guard consumes carries the declared ask locator '${declaredAsk[0]}'`,
+    )
+    assert.ok(
+      admissionLane.allow.some((allowed) => declaredAsk[0].startsWith(allowed)),
+      `${id}: the ask sits INSIDE an allow subtree — exactly the shape that used to be auto-approved`,
+    )
+    // And the unrelated ask case proves the lane is carried without refusing a
+    // call it does not cover.
+    if (id.includes('unrelated')) assert.equal(spec.expect.plane2, 'allow')
   }
 })
 

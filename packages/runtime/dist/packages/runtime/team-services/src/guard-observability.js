@@ -75,7 +75,7 @@ export class GuardConsultTransportError extends Error {
 }
 /** Map a guard refusal code to the lane it reports (see the type's doc). */
 function laneOfRefusal(code) {
-    return code === 'IO_POLICY_UNSUPPORTED' ? 'ask' : 'deny';
+    return code === 'IO_POLICY_UNSUPPORTED' || code === 'IO_ASK_REQUIRES_APPROVAL' ? 'ask' : 'deny';
 }
 /**
  * Wrap ONE guard so every consultation is reported to `observer` before the

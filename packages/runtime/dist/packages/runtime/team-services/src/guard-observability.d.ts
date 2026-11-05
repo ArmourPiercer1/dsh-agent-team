@@ -46,7 +46,11 @@ export type GuardConsultRealm = 'member' | 'binding';
  * The lane the guard's own typed outcome maps to. Two values are direct
  * (`allow`, `*_DENIED` ⇒ `deny`); `IO_POLICY_UNSUPPORTED` is the guard's
  * "cannot prove admission" refusal and is the `ask` lane, the same mapping the
- * R3 chain recorder uses (`tests/world-factory/lib/a5sf-evidence.mjs`). It is a
+ * R3 chain recorder uses (`tests/world-factory/lib/a5sf-evidence.mjs`). So is
+ * `IO_ASK_REQUIRES_APPROVAL` (A5-DUAL-PLANE-01): the guard PROVED the lane's
+ * disposition is `ask` and refused because no approval can be consumed here —
+ * the fact must report `ask` (not `deny`) so the three-way comparison sees the
+ * lane the author declared while the effect still shows a refusal. It is a
  * MAPPING of the guard's own code, not a new decision.
  */
 export type GuardConsultDecision = 'allow' | 'deny' | 'ask';
