@@ -2,11 +2,11 @@
 
 ## Final recipient-probe HEAD
 
-- HEAD: `f2d74da4a` (product fix `fd7a5d6c1` + recipient/refusal probes + review-comment correction and rebuilt maps)
+- HEAD: `60b1dd700` (product fix `fd7a5d6c1` + recipient/refusal/Stop/crash probes + fence re-record)
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `tests/deepseek-harness-test-use` -> main checkout symlink,
   `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS**, 0 skip, 299.6 s
+- Result: **9/9 PASS**, 0 skip, 304.3 s
 - Census: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`, identity set identical
   to the published baseline, 0 new reds, 0 collection errors
 
@@ -17,7 +17,11 @@ The first attempts at the human-, exception- and Stop-probe HEADs were 8/9 on
 census because two gate runs overlapped; each isolated rerun is the 9/9 above.
 The review-comment HEAD first failed artifacts-at-head (the manual dist comment
 had stale source maps) and census; after a real runtime rebuild and map commit,
-`f2d74da4a` is 9/9. The first attempt at `1135f381b`
+`f2d74da4a` is 9/9. The crash probe then moved the C1 v5 identities to
+L615/L804/L1379/L2010; `a6-crash-r4` proves a post-write SIGKILL, restart and
+fail-closed human resolution. The fence baseline was re-recorded for the moved
+identities and four stale `a6-assigned-officer-facts` entries; `60b1dd700` is
+9/9 with no resolved identities. The first attempt at `1135f381b`
 was 8/9 only on the blueprint fence: the handoff probe
 shifted one v5 identity from L1815 to L1819. The fence baseline was re-recorded in the open
 (same source/fixture) at `5b7381a34`, whose full gate is the 9/9 above. No assertion was

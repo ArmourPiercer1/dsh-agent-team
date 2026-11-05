@@ -1,7 +1,6 @@
 # Crash window and post-restart reconciliation
 
-Run: `a6-crash-r4`, product `f2d74da4a` plus the kit probe (committed as
-`6cf0b4e8d`), real
+Run: `a6-crash-r4`, kit probe committed as `6cf0b4e8d`, gated with the product at `60b1dd700`, real
 Host `:3698`, root `session-c1-smoke-a6-2026-11-05T20-30-08`.
 Raw logs and durable extract: `dev/agent-workflow/evidence/a6-crash-r4/`.
 
