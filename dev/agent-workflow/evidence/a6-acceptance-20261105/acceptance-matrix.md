@@ -41,13 +41,13 @@
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on code HEAD `c26a9a00`; the evidence
+Full local gate **9/9 PASS, zero skips** on final HEAD `b4d4d21e`; the evidence
 commit that records this result changes docs/evidence only. `gate.md` records the
 exact SHA and outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
 
-Census result on the passing second attempt: **677 files / 8828 legs**, `COUNTS MOVED, SET DID NOT`,
+Census result on the passing final run: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`,
 0 new reds / 0 collection errors. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
 census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 and
 `alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
