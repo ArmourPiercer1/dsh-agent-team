@@ -1,0 +1,72 @@
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (266.368496ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (27.010777ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (63.640021ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (16.928568ms)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (16.704685ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (17.016323ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (16.060276ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (22.768896ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (21.871256ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (19.466533ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (17.725817ms)
+✖ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (24.153145ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (27.911511ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (25.559428ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (17.850033ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (22.123945ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (20.372418ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (18.400444ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (14.285365ms)
+✖ FSB-IMG-4b under the PRODUCT route the same gate is UNREACHABLE — GAP-FS-CONTRACT-1 pinned with a distinct code, zero route resolutions (15.436503ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 18
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 762.720663
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-fs-contract.test.mjs:320:5
+✖ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (24.153145ms)
+  AssertionError [ERR_ASSERTION]: the remediated write produced no provider error
+  + actual - expected
+  
+  + [
+  +   {
+  +     code: 'FS_NOT_OBSERVED',
+  +     message: 'cannot overwrite existing "/tmp/a5sf-fs-contract-create-unobserved-d12u5l/inside/observe/unread.txt" without reading it first',
+  +     op: 'writeText'
+  +   }
+  + ]
+  - []
+  
+      at armOverwriteUnobservedExisting (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-contract2/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1252:10)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-contract2/tests/world-factory/a5sf-fs-contract.test.mjs:312:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ { op: 'writeText', code: 'FS_NOT_OBSERVED', message: 'cannot overwrite existing "/tmp/a5sf-fs-contract-create-unobserved-d12u5l/inside/observe/unread.txt" without reading it first' } ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-fs-contract.test.mjs:320:5
+✖ FSB-IMG-4b under the PRODUCT route the same gate is UNREACHABLE — GAP-FS-CONTRACT-1 pinned with a distinct code, zero route resolutions (15.436503ms)
+  AssertionError [ERR_ASSERTION]: GAP-FS-CONTRACT-1: the routed deferred child cannot resolve ctx.fs (mount.ts ROUTED_SERVICE_NAMES omits 'fs')
+      at armImageRouteGateUnreachable (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-contract2/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1668:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-contract2/tests/world-factory/a5sf-fs-contract.test.mjs:312:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Error: cannot read "/tmp/a5sf-fs-contract-image-route-gate-gap-OfH5ZI/inside/pixel.png" as an image: model "mock-model" does not declare image input; switch to an image-capable model to read images',
+    expected: /cannot get property "fs" without inject/u,
+    operator: 'match',
+    diff: 'simple'
+  }

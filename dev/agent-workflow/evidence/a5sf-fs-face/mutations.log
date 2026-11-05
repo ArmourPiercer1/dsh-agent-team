@@ -1,13 +1,36 @@
 PASS baseline: red=[] expected=[]
 PASS M1-drop-version-guard: red=[edit-stale] expected=[edit-stale]
        red  edit-stale: the model-facing reason names the staleness
-PASS M2-underreport-stat-size: red=[read-boundary] expected=[read-boundary]
+PASS M2-underreport-stat-size: red=[read-abort, read-boundary] expected=[read-abort, read-boundary]
        red  read-boundary: the tool STREAMED (streamText exactly once, readText zero) after one stat
+       red  read-abort: the abort really fired while the stream was open
 PASS M3-drop-write-signal: red=[write-abort] expected=[write-abort]
        red  write-abort: the target is byte-identical (no partial write)
 PASS M4-silent-attachment: red=[image-allowed] expected=[image-allowed]
        red  image-allowed: EXACTLY ONE attachment
+PASS M5-force-replace-if-version: red=[create-new] expected=[create-new]
+       red  create-new: a create in the write lane must succeed: Error: cannot write "/tmp/a5sf-fs-contract-mut-create-new-5GuqT5/inside/created-new.txt": file no longer exists — re-read the file, then retry
+PASS M6-widen-read-lane: red=[create-outside-read] expected=[create-outside-read]
+       red  create-outside-read: the typed reason is the write⇒read gate, not the lane
+PASS M7-drop-write-intent: red=[create-unobserved] expected=[create-unobserved]
+       red  create-unobserved: an unobserved overwrite must be refused
+PASS M8-widen-binding-edit: red=[bind-edit] expected=[bind-edit]
+       red  bind-edit: a path the binding excludes must be refused
+PASS M9-widen-binding-write: red=[bind-write] expected=[bind-write]
+       red  bind-write: a path the binding excludes must be refused
+PASS M10-widen-binding-read-image: red=[bind-image] expected=[bind-image]
+       red  bind-image: a path the binding excludes must be refused
+PASS M11-force-replace-all: red=[edit-ambiguous] expected=[edit-ambiguous]
+       red  edit-ambiguous: a multi-match edit without replace_all must be refused
+PASS M12-drop-replace-all: red=[edit-ambiguous, edit-replace-all] expected=[edit-ambiguous, edit-replace-all]
+       red  edit-ambiguous: the replace_all edit must succeed after the refused one: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-ambiguous-Tp7CGW/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+       red  edit-replace-all: replace_all must succeed: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-replace-all-eRxPBq/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+PASS M13-silent-stream-abort: red=[read-abort] expected=[read-abort]
+       red  read-abort: the typed abort reason reaches the caller
+PASS M14-text-only-route-claims-image: red=[image-route-gate, image-route-gate-gap] expected=[image-route-gate, image-route-gate-gap]
+       red  image-route-gate: a text-only route must be refused
+       red  image-route-gate-gap: the TOOL route gate refused (TEXT-ONLY-GATE) — not the composition
 PASS D-post-gap-1-composition: red=[image-route-c] expected=[image-route-c]
        red  image-route-c: the routed read_image fails closed today
 
-MUTATION-CONTROLS-PASS (6 controls, 9 arms each)
+MUTATION-CONTROLS-PASS (16 controls, 20 arms each)

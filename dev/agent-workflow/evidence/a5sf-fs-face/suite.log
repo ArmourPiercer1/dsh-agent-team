@@ -1,17 +1,28 @@
-✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (284.471333ms)
-✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (28.573376ms)
-✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (67.255066ms)
-✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (17.438254ms)
-✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (17.126924ms)
-✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (17.787104ms)
-✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (16.551235ms)
-✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (22.341877ms)
-✔ FSB-ABORT-2 control: the same write without an abort publishes (21.555559ms)
-ℹ tests 9
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (292.743494ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (28.197141ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (64.582695ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (17.025272ms)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (16.924351ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (17.182468ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (15.742354ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (22.118313ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (22.606369ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (20.021894ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (17.939041ms)
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (22.325297ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (26.043005ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (25.663947ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (17.258432ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (23.891329ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (19.984545ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (18.964031ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (14.523004ms)
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures) (14.694931ms)
+ℹ tests 20
 ℹ suites 0
-ℹ pass 9
+ℹ pass 20
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 559.807445
+ℹ duration_ms 794.755002

@@ -24,8 +24,8 @@
  *   host present, an entry missing -> HARD FAILURE (`A5SF-FS-CONTRACT-HOST-INCOMPLETE`):
  *                                     a partial/older host is a pin violation,
  *                                     not an absence.
- *   host present and complete      -> the nine arms RUN and their assertions are
- *                                     the ones in the lib (unchanged).
+ *   host present and complete      -> every arm in `CASES` RUNS and its assertions
+ *                                     are the ones in the lib (unchanged).
  *
  * `A5SF_REQUIRE_PINNED_HOST=1` turns the refusal into a hard failure, for a lane
  * that is SUPPOSED to provision the host (the `census-runtime` idiom: a gate that
@@ -60,6 +60,12 @@
  *                the staging dir, is one `FS_ABORTED`, and is never reported as
  *                success. The CONTROL (FSB-ABORT-2) publishes the same write.
  *
+ * INCREMENT 2 (2026-11-07) closes the five properties §8 of the evidence README
+ * named as "neither layer proves": the `createIfAbsent` create path (FSB-CREATE-1
+ * …3), `edit`/`write`/`read_image` under a BINDING realm (FSB-BIND-*), the
+ * multi-match/`replace_all` edit contract (FSB-EDIT-MULTI-*), cancellation of a
+ * STREAMED read (FSB-READ-ABORT), and `read_image`'s route gate (FSB-IMG-4a/4b).
+ *
  * NOT DUPLICATING LAYER A: no arm here asserts "the lane refused an out-of-lane
  * path" as its conclusion. FSB-IMG-3 uses the lane's refusal only as the
  * ORDERING witness for the attachment/provider side effects it owns. The
@@ -75,15 +81,27 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DSH_BASELINE_VERSION, TEST_USE_BASELINE_SHA } from '../paths.mjs'
 import {
+  armBindingEdit,
+  armBindingReadImage,
+  armBindingWrite,
+  armCreateNewFile,
+  armEditAmbiguous,
   armEditFreshControl,
+  armEditReplaceAll,
   armEditStaleConflict,
+  armImageRouteGateTextOnly,
+  armImageRouteGateUnderProductRoute,
+  armOverwriteOutsideReadLane,
+  armOverwriteUnobservedExisting,
   armReadImageAllowed,
   armReadImageDenied,
   armReadImageRouteCRefusal,
   armReadSmallControl,
+  armReadStreamAbort,
   armReadStreamBoundary,
   armWriteAbort,
   armWriteControl,
+  FS_CONTRACT_BINDINGS,
   fsContractHostLayout,
   makeFsContractWorld,
 } from './lib/a5sf-fs-contract-world.mjs'
@@ -155,6 +173,82 @@ const CASES = [
     label: 'write-control',
     options: { composition: 'route-c' },
     run: armWriteControl,
+  },
+  // ---- increment 2: the five properties the previous round named --------------
+  {
+    title: 'FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read',
+    label: 'create-new',
+    options: { composition: 'route-c', laneRoots: { read: ['observe'], write: ['inside'] } },
+    run: armCreateNewFile,
+  },
+  {
+    title: 'FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls',
+    label: 'create-outside-read',
+    options: { composition: 'route-c', laneRoots: { read: ['observe'], write: ['inside'] } },
+    run: armOverwriteOutsideReadLane,
+  },
+  {
+    title: 'FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes',
+    label: 'create-unobserved',
+    options: { composition: 'route-c' },
+    run: armOverwriteUnobservedExisting,
+  },
+  {
+    title: 'FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes',
+    label: 'bind-edit',
+    options: {
+      composition: 'route-c',
+      bindings: [{ toolBindingIdentity: FS_CONTRACT_BINDINGS.edit, read: ['bound'], write: ['bound'] }],
+    },
+    run: armBindingEdit,
+  },
+  {
+    title: 'FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes',
+    label: 'bind-write',
+    options: {
+      composition: 'route-c',
+      bindings: [{ toolBindingIdentity: FS_CONTRACT_BINDINGS.write, read: ['bound'], write: ['bound'] }],
+    },
+    run: armBindingWrite,
+  },
+  {
+    title: 'FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads',
+    label: 'bind-image',
+    options: {
+      composition: 'binding-post-gap-1',
+      bindings: [{ toolBindingIdentity: FS_CONTRACT_BINDINGS.readImage, read: ['bound'], write: ['bound'] }],
+    },
+    run: armBindingReadImage,
+  },
+  {
+    title: 'FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all',
+    label: 'edit-ambiguous',
+    options: { composition: 'route-c' },
+    run: armEditAmbiguous,
+  },
+  {
+    title: 'FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write)',
+    label: 'edit-replace-all',
+    options: { composition: 'route-c' },
+    run: armEditReplaceAll,
+  },
+  {
+    title: 'FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor',
+    label: 'read-abort',
+    options: { composition: 'route-c' },
+    run: armReadStreamAbort,
+  },
+  {
+    title: 'FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes',
+    label: 'image-route-gate',
+    options: { composition: 'post-gap-1', llmModalities: ['text'] },
+    run: armImageRouteGateTextOnly,
+  },
+  {
+    title: 'FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures)',
+    label: 'image-route-gate-gap',
+    options: { composition: 'route-c', llmModalities: ['text'] },
+    run: armImageRouteGateUnderProductRoute,
   },
 ]
 
