@@ -60,6 +60,14 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **proof**: `P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY` flips from a finding arm to a refusal
   assertion (post-revoke `acquire` → `DOMAIN_REVOKED`, 0 port calls); `P1-NO-COMMAND-AFTER-KILL`
   and `P5-KILL-ONE-NOT-THE-OTHER` stay green.
+- **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs)
+  is the executable pin (`KNOWN-DEFECT PD-1:` — no live domain at revoke, acquire afterwards,
+  prove the acquired domain is usable, plus the WITH-domain contrast and this row's coupling). The
+  arm is **deliberately green today**: it asserts the escape still succeeds and prints
+  `PD1-ESCAPE-REPRODUCED`. When PD-1 is fixed it turns **red on purpose**, with a message that
+  names this row and says the register needs updating; it also reds if this row is deleted or
+  downgraded from `governance hole`. Mechanism and negative control:
+  [PD-1-revocation-escape](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-1-revocation-escape/README.md).
 - **blocked by**: an owner API ruling (where the generation comes from); not the boot budget.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L249-L258` contains `async revoke(memberInstanceId?: string` ; `packages/runtime/team-sandbox/src/terminal.ts#L168-L169` contains `revokedMembers.has(memberKey(identity))`
 

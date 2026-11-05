@@ -1,0 +1,12 @@
+PD1-ESCAPE-REPRODUCED
+✔ KNOWN-DEFECT PD-1: a member that owns NO live shell at revoke time can acquire one afterwards (the escape) (66.890134ms)
+✔ KNOWN-DEFECT PD-1: the same member WITH a live shell at revoke time IS blocked afterwards (contrast) (0.254953ms)
+✔ KNOWN-DEFECT PD-1: the register still records PD-1 as a governance hole and names this arm (0.434924ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.298351
