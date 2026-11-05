@@ -124,7 +124,7 @@
 | BL-30 | P4-04 一次性审批与撤权（并发仅一次扩权、持久 Bash 排空、取消 ≠ 确认终止） | READY（原记 BLOCKED（依赖 BL-09/BL-11，二者已 DONE）） |
 | BL-31 | P4-05 绑定/运行时更新（HMR/源摘要/同名替换/Realm/重启/cold resume，无未受控 fallback） | BLOCKED（依赖 G3） |
 | BL-32 | P4-06 Host 兼容（非 Team read/bash/web 不受影响、`spillStore` 回归） | BLOCKED（依赖 G3） |
-| BL-33 | P4-05A 双平面同调用一致性与实际消费（Alpha.4 → Provider consulted → 独立 oracle 全对齐） | | IN-PROGRESS（C1 已落：37 例 29 AGREE / 5 引用例外 / **3 DISAGREE**；开放分歧 `A5-DUAL-PLANE-01`：`ask` 覆盖 locator 被 Provider allow、无审批消费；证据 `dev/agent-workflow/evidence/a5sf-p4-05a/`） ；原记 BLOCKED（依赖 BL-11，已 DONE） |
+| BL-33 | P4-05A 双平面同调用一致性与实际消费（Alpha.4 → Provider consulted → 独立 oracle 全对齐） | IN-PROGRESS（C1 已落：37 例 29 AGREE / 5 引用例外 / **3 DISAGREE**；开放分歧 `A5-DUAL-PLANE-01`：`ask` 覆盖 locator 被 Provider allow、无审批消费；证据 `dev/agent-workflow/evidence/a5sf-p4-05a/`） ；原记 BLOCKED（依赖 BL-11，已 DONE） |
 | BL-34 | P4-07 性能与运行资源（p50/p95/p99、RSS、CPU、启动次数；无自定阈值假保证） | BLOCKED（依赖 G3） |
 
 ## 5. P5 — 对抗、故障与发布验收（G5）
