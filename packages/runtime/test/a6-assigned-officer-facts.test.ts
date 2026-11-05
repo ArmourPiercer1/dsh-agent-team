@@ -770,22 +770,50 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
     })).resolves.toEqual({ instanceId: 'inst-a6-created-officer' })
   })
 
-  it('refuses a root when routingForRoot explicitly answers null', async () => {
+  it('refuses a root when routingForRoot explicitly answers null (even if the boot policy would resolve)', async () => {
+    // A LEG-BEARING fixture: the leg is valid under BASE_ROUTING and the
+    // boot root's live Officer is present. The pre-fix `?? input.routing`
+    // would therefore resolve that Officer; the explicit null must refuse.
+    const bootLeg = {
+      rootSessionId: P6T4_ROOT,
+      requestId: 'ctrl-a6-null-leg',
+      kind: 'leader-approval',
+      requester: { kind: 'instance', instanceId: WORKER },
+      subject: { kind: 'instance', instanceId: WORKER },
+      approvalCaseId: 'case-a6-null-leg',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+      requestedEffect: 'allow',
+      operationOwnerTemplateId: 'worker',
+      operationToolDefinitionIdentity: 'tool-def-a6-null',
+      operationToolOwner: 'dsh-agent-team',
+      operationToolName: 'bash',
+      authorityGeneration: 0,
+      blueprintContentHash: BASE_ROUTING.blueprint.contentHash,
+      blueprintRevision: BASE_ROUTING.blueprint.revision,
+    } as never
+    const bootOfficer = {
+      rootSessionId: P6T4_ROOT,
+      instanceId: OFFICER,
+      templateId: BASE_ROUTING.routing.officerTemplateId,
+      childSessionId: 'session-a6-null-officer',
+      lifecycle: 'SETTLED',
+    } as never
     const ports = createAlpha6ControlPorts({
       rootSessionId: P6T4_ROOT,
       routing: BASE_ROUTING,
       routingForRoot: () => null,
-      control: { readControlState: async () => ({ requests: [], transfers: [] } as never) },
+      control: { readControlState: async () => ({ requests: [bootLeg], transfers: [] } as never) },
       members: {
-        get: () => undefined,
-        list: () => [],
+        get: (root, instanceId) => root === P6T4_ROOT && instanceId === OFFICER ? bootOfficer : undefined,
+        list: (root) => root === P6T4_ROOT ? [bootOfficer] : [],
       },
       fixedLeaderOrHumanCategory: () => false,
     })
     await expect(ports.currentReviewerForTransfer({
-      rootSessionId: 'root-a6-unresolvable',
-      approvalCaseId: 'case-a6-unresolvable',
-      currentLegRequestId: 'ctrl-a6-unresolvable',
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: 'case-a6-null-leg',
+      currentLegRequestId: 'ctrl-a6-null-leg',
       legOrdinal: 1,
     })).resolves.toBeNull()
   })
