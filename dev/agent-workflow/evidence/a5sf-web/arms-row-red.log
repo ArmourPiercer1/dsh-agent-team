@@ -1,0 +1,148 @@
+✖ ROW-FACE-FORWARDED: the product row forwards compiled.web, so the realm answers faces.web !== null (9.14327ms)
+✖ ROW-DENY: network deny, driven through the product row, refuses BEFORE the provider: 0 fetch/DNS/connect/proxy, one typed fact (5.217248ms)
+✖ ROW-ALLOW: network allow reaches the provider EXACTLY once with the declared URL and one ALLOW fact (3.52816ms)
+✖ ROW-ABSENCE-TYPED: a declared compiled.web with no provider refuses typed at composition time (never a silent host fallback) (2.595955ms)
+✖ ROW-CONFIG-FACE: the row config key a5sfWebFace carries a factory, and the config half of the row mounts the confined face (3.571782ms)
+✖ ROW-CONFIG-ABSENCE: a config factory that supplies no provider refuses typed; a blank specifier is a config fault (2.8055ms)
+✖ ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two web-face sources is a fork) (2.421856ms)
+✔ ROW-NO-FACE: a realm that declares no web face is unchanged — web: null and the real tool-web module is refused typed (3.133413ms)
+✖ ROW-PRODUCT-DECLARATION: the shipped product declaration path + a5sfWebFace mounts the confined face with NO teamA5sfRealm service (15.066675ms)
+✖ ROW-NO-SECOND-COMPILER: the row never compiles a lane, never intersects one and never evaluates a network decision (0.4597ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 1
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 350.2278
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-web-row.test.mjs:216:1
+✖ ROW-FACE-FORWARDED: the product row forwards compiled.web, so the realm answers faces.web !== null (9.14327ms)
+  AssertionError [ERR_ASSERTION]: compiled.web reached installMemberIoProviders (faces.web is a mounted face, not null)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:221:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:233:1
+✖ ROW-DENY: network deny, driven through the product row, refuses BEFORE the provider: 0 fetch/DNS/connect/proxy, one typed fact (5.217248ms)
+  Error [TeamServiceInstallError]: NETWORK_UNCONFINED_REALM: native tool module 'tool-web (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js)' injects `web`, but the Member ceiling realm 'member-bl18-web' mounts no confined web face; refusing at composition time instead of letting the module resolve the inherited, unconfined host web service (the real HTTP provider plus the process-wide proxy dispatcher, with zero guard facts). A realm that must host a web consumer has to install a confined web face on its own isolated scope
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/packages/runtime/team-services/src/mount.ts:1470:15)
+      at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:725:30)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:236:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'NETWORK_UNCONFINED_REALM',
+    reveal: 'members',
+    detail: "native tool module 'tool-web (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js)' injects `web`, but the Member ceiling realm 'member-bl18-web' mounts no confined web face; refusing at composition time instead of letting the module resolve the inherited, unconfined host web service (the real HTTP provider plus the process-wide proxy dispatcher, with zero guard facts). A realm that must host a web consumer has to install a confined web face on its own isolated scope"
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:263:1
+✖ ROW-ALLOW: network allow reaches the provider EXACTLY once with the declared URL and one ALLOW fact (3.52816ms)
+  Error [TeamServiceInstallError]: NETWORK_UNCONFINED_REALM: native tool module 'tool-web (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js)' injects `web`, but the Member ceiling realm 'member-bl18-web' mounts no confined web face; refusing at composition time instead of letting the module resolve the inherited, unconfined host web service (the real HTTP provider plus the process-wide proxy dispatcher, with zero guard facts). A realm that must host a web consumer has to install a confined web face on its own isolated scope
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/packages/runtime/team-services/src/mount.ts:1470:15)
+      at Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:725:30)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:266:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'NETWORK_UNCONFINED_REALM',
+    reveal: 'members',
+    detail: "native tool module 'tool-web (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js)' injects `web`, but the Member ceiling realm 'member-bl18-web' mounts no confined web face; refusing at composition time instead of letting the module resolve the inherited, unconfined host web service (the real HTTP provider plus the process-wide proxy dispatcher, with zero guard facts). A realm that must host a web consumer has to install a confined web face on its own isolated scope"
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:288:1
+✖ ROW-ABSENCE-TYPED: a declared compiled.web with no provider refuses typed at composition time (never a silent host fallback) (2.595955ms)
+  AssertionError [ERR_ASSERTION]: a declared web face that cannot mount must refuse, not mount without it
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:290:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:347:1
+✖ ROW-CONFIG-FACE: the row config key a5sfWebFace carries a factory, and the config half of the row mounts the confined face (3.571782ms)
+  AssertionError [ERR_ASSERTION]: the config factory supplied the face
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:357:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:368:1
+✖ ROW-CONFIG-ABSENCE: a config factory that supplies no provider refuses typed; a blank specifier is a config fault (2.8055ms)
+  AssertionError [ERR_ASSERTION]: a factory that supplies no provider must refuse, not mount a half face
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:373:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:382:1
+✖ ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two web-face sources is a fork) (2.421856ms)
+  AssertionError [ERR_ASSERTION]: both sources present must refuse
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:389:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:447:1
+✖ ROW-PRODUCT-DECLARATION: the shipped product declaration path + a5sfWebFace mounts the confined face with NO teamA5sfRealm service (15.066675ms)
+  AssertionError [ERR_ASSERTION]: the config factory supplied the confined face
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:491:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web-row.test.mjs:507:1
+✖ ROW-NO-SECOND-COMPILER: the row never compiles a lane, never intersects one and never evaluates a network decision (0.4597ms)
+  AssertionError [ERR_ASSERTION]: the config key is a plain module specifier carrier
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/tests/world-factory/a5sf-web-row.test.mjs:514:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '/**\n * Alpha.5 P2 WIRING — the PRODUCT-ROW call site of the a5sf realm mount.\n *\n * WHY THIS MODULE EXISTS: PR #548 shipped the mechanism — `mountA5sfRealm`\n * (`packages/runtime/team-services/src/mount.ts`) plus the guard-consultation\n * transport (`guard-observability.ts`) — but nothing in the product row called\n * it, and the emit did not carry the lane. The live glue\n * (`agent-bindings.mjs`, plain JS, never emitted by tsc) is the ONE place a\n * booted row assembles a Member, so this module is the thin, EXPORTED helper\n * that call site uses. It is deliberately NOT a second mount path: it builds a\n * file sink, hands the sink\'s `record` to `mountA5sfRealm` as\n * `onGuardConsult`, and returns the mounted realm untouched. Every decision,\n * every refusal and every rollback stays in the seam that owns it.\n *\n * DEFAULT-PRESERVING (the law this module adds):\n *   ENABLED  IFF the row config carries a non-blank `a5sfEvidencePath`\n *            (evidence round) OR a product declaration `a5sfMemberPolicies`\n *            (2026-11-05 — the PRODUCT path; see `product-assembly.ts`).\n *   Otherwise this module returns `undefined` WITHOUT creating a sink, calling\n *   the provider, touching the filesystem or mounting anything — the legacy\n *   path is byte-identical (no observer, no mount, no file writes).\n *\n *   With a product declaration, `a5sfEvidencePath` is an OPTIONAL observation\n *   sink only: the declaration itself makes the realm REQUIRED. That is the\n *   correction the external review asked for — an evidence file path must\n *   never be the only switch that turns a security face on.\n *\n * The evidence path ALWAYS comes from row configuration (the run/evidence\n * config the caller boots with); it is never derived here and never hardcoded.\n *\n * WHAT THE PROVIDER IS, AND WHY IT IS INJECTED: the compiled objects\n * (`CompileResult<MemberPolicy>` ceilings + `EffectiveIoPolicy` binding lanes)\n * are policy compilation output. This glue must never compile or re-evaluate a\n * lane (that would be a second compiler and a second authority decision), so\n * the row\'s composition supplies them through a plain provider:\n *\n *   a5sfRealmProvider = () => ({\n *     compiledFor({ sessionId, instanceId, teamRootSessionId, templateId, bindPath })\n *       => { members, bindings?, providerClass? } | undefined | Promise<…>\n *   })\n *\n * (a LAZY accessor — it is never called while the row is unconfigured).\n *\n * `undefined` from `compiledFor` = this Member has no compiled realm (no mount).\n * A malformed provider answer throws (a declared wiring that cannot mount is a\n * configuration fault, never a silent no-op).\n *\n * FAIL-CLOSED TRANSPORT: the sink is the seam\'s own\n * `createGuardConsultFileSink`; a write failure rejects, `observeGuard` turns\n * that into `GUARD_OBSERVATION_FAILED`, and the consulted call is REFUSED\n * before the base Provider runs. This module adds no catch and no downgrade.\n *\n * F1 (effective half, dated 2026-11-03) — WHAT IS BOUND AND WHAT IS NOT.\n * The realm\'s isolated Provider lives on `installation.members[i].ctx`\n * (`install.ts:182`); the Context handed to the mount keeps the BASE provider.\n * `a5sfToolPlaneOf` below is the ONE naming of the scope the product row\'s TOOL\n * PLANE is placed on: the live Member setup mounts its tool registrations and\n * the governed tool plane through `toolPlane.ctx`, and routes the permission\n * adapter\'s per-call fs seam through `toolPlane.fs` — so a TOOL-SHAPED\n * definition (one whose body resolves the fs provider from the ctx it runs on,\n * as the shipped tool packages do) is consulted by the confined guard and\n * writes one `a5sf-guard-consult/1` fact, while the agent ctx itself keeps the\n * base provider (a LEADER or a non-tool consumer is untouched). This is NOT a\n * claim about the native preset tools — see STILL OPEN below.\n *\n * STILL OPEN, stated so it cannot be read as done: the upstream agent-preset\n * registry EAGERLY activates a preset at registration and mounts every preset\n * plugin under its OWN `createScope(registryCtx, generationKey)` fiber\n * (`@deepseek-ai/dsh-agent-preset-registry` activate()/mountPreset()), i.e.\n * BEFORE any agent ctx exists and never below it. No Context handed to\n * `agentPresets.mount()` can therefore change which `fs` a preset tool body\n * resolves — the native `read`/`write`/`edit` rows stay on the base provider\n * until the P3 native takeover (BL-22) places them on this plane. Measured:\n * `dev/agent-workflow/evidence/a5sf-f1-ctx/` (§3 topology measurement) and the\n * BEFORE/AFTER probe `probe-f1-tool-plane.mjs` over the committed dist.\n *\n * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row\n */\nimport { isAbsolute } from \'node:path\'\nimport { pathToFileURL } from \'node:url\'\nimport { scopeOf } from \'@deepseek-ai/dsh-scope\'\nimport { createGuardConsultFileSink } from \'../../../team-services/src/guard-observability.js\'\nimport { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from \'../../../team-services/src/mount.js\'\nimport {\n  A5SF_MEMBER_AUTHORITY_KEY,\n  A5SF_MEMBER_POLICIES_KEY,\n  createProductRealmProvider,\n  deriveProductRealmPlan,\n  parseProductRealmDeclaration,\n} from \'../../../team-services/src/product-assembly.js\'\nimport { TeamServiceInstallError } from \'../../../team-services/src/types.js\'\n\n/** The row-config key carrying the JSONL evidence path (JSON-safe string). */\nexport const A5SF_EVIDENCE_PATH_KEY = \'a5sfEvidencePath\'\n\n/**\n * The row-config key carrying the PRODUCT declaration that gives declared\n * Members their compiled realm (2026-11-05).\n *\n * RE-EXPORTED from `team-services/src/product-assembly.ts` (one token, one\n * parser, one compiler): this plain-JS row only forwards it. See that module\n * for the declaration shape, the refusal vocabulary and the faces the seam\n * does not own.\n *\n * ENABLEMENT LAW: the realm is enabled by `a5sfEvidencePath` (evidence round,\n * an observation SINK), by this PRODUCT declaration, or by the DERIVED path\'s\n * `a5sfMemberAuthority` (see below). A declaration also accepts\n * `a5sfEvidencePath` as an optional sink, but the sink is never what turns\n * enforcement on.\n *\n * POLICY-SOURCE FIX (2026-11-05): a declaration is now the EXCEPTION path and\n * REQUIRES `config.blueprintSource`; a row that omits the declaration and sets\n * `a5sfMemberAuthority` derives the Member ceilings from that same blueprint.\n */\nexport { A5SF_MEMBER_POLICIES_KEY, A5SF_MEMBER_AUTHORITY_KEY }\n\n/**\n * The row-config key carrying the NATIVE tool modules to re-mount inside each\n * Member\'s isolated `fs` scope (route C, 2026-11-03).\n *\n * Each entry is either a module specifier string or `{ url, config? }`:\n *   - `file:` URL, or an absolute filesystem path (converted with\n *     `pathToFileURL`), or any specifier `import()` resolves FROM THIS MODULE.\n *   - The ROW COMPOSITION owns resolution (the same discipline as\n *     `a5sfRealmProvider`): the host knows where its own `@deepseek-ai/dsh-tool-fs`\n *     lives; this glue must not guess a host install path.\n */\nexport const A5SF_NATIVE_TOOL_MODULES_KEY = \'a5sfNativeToolModules\'\n\n/**\n * OPTIONAL top-level declaration map, the SECOND way to declare\n * `expectedTools` (2026-11-03 review, condition C2/C6).\n *\n * WHY it exists: the per-entry form lives on the OBJECT entry\n * (`{ url, config?, expectedTools? }`), so a STRING entry — the form most\n * fixtures and the shortest honest composition use — could not declare at all.\n * A mitigation reachable only on a form nobody uses is not a mitigation.\n *\n * Shape: `{ "<module specifier>": ["tool", ...] }`, keyed by the SAME specifier\n * the entry uses (`entry.url` after validation). Same semantics as the\n * per-entry key: it declares, it does not authorize; the declared names must be\n * forwarded by that module\'s settled fibers or the attach is refused. When both\n * forms are present the union is required (a composition may split a list).\n * Unknown keys are a configuration fault: a typo that silently declares nothing\n * would recreate the hole.\n */\nexport const A5SF_EXPECTED_TOOLS_KEY = \'a5sfExpectedTools\'\n\n/**\n * Typed refusal of the native ASSEMBLY path (assembly gaps 1 and 2, 2026-11-03).\n *\n * A `TypeError` subclass with a stable `code`, so a caller can tell these\n * fail-closed assembly refusals apart from configuration faults without string\n * matching the message:\n *   - `A5SF_COVERAGE_UNDEFINED` — the composition declared managed native\n *     modules but the tools row cannot answer definition identity (`get`), so\n *     coverage would be silently skipped.\n *   - `A5SF_BINDING_OWNER_UNRESOLVED` — a mounted ToolBinding names a tool that\n *     NO configured native module registers.\n *   - `A5SF_BINDING_OWNER_AMBIGUOUS` — MORE than one configured module registers\n *     that tool, so assigning the binding would be a guess.\n *   - `A5SF_MODULE_OBSERVATION_UNREPRODUCED` — the REAL mount did not reproduce\n *     what that module\'s ownership probe observed (a one-shot `apply` consumed\n *     by the probe, or a conditional registration that vanished), so a tool\n *     would stay on the unguarded preset definition while the name set matched.\n *   - `A5SF_EXPECTED_TOOLS_UNSHADOWED` — a module entry DECLARED `expectedTools`\n *     and the settled attach did not forward one or more of them (the provider\n *     was absent, or the composition\'s two planes disagree), so the declared\n *     managed names would fall back to whatever preset definition is visible.\n *     Opt-in: an entry WITHOUT `expectedTools` keeps the pre-declaration\n *     behaviour exactly. ONE narrow exception (E8, 2026-11-03): an entry that\n *     ALSO carries `allowEmpty: true` and forwarded NOTHING may declare names —\n *     the empty frontier is acknowledged explicitly and those names are\n *     recorded as ACKNOWLEDGED (`NativeAttachRecord.acknowledgedNames`), never\n *     as verified. A partial frontier is still refused.\n *   - `A5SF_MANAGED_FRONTIER_EMPTY` — a module entry that CARRIES a `config`\n *     (i.e. the composition con'... 54788 more characters,
+    expected: /A5SF_WEB_FACE_KEY = 'a5sfWebFace'/,
+    operator: 'match',
+    diff: 'simple'
+  }

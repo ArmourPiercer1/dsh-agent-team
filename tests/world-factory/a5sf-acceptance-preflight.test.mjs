@@ -24,7 +24,9 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
@@ -1091,4 +1093,52 @@ test('D15 a run directory without a preflight bundle is REFUSED, never reconstru
   const verdict = JSON.parse(run.stdout.trim().slice('DSH-A5SF-PREFLIGHT '.length))
   assert.equal(verdict.verdict, 'FAIL')
   assert.deepEqual(verdict.findings.map((f) => f.code), ['PREFLIGHT_BUNDLE_MISSING'])
+})
+
+/**
+ * THE `--host-root` REDIRECTION, AND WHY IT IS NOT A WAIVER.
+ *
+ * `tests/deepseek-harness-test-use` is gitignored, so a fresh worktree never has
+ * it while every live driver runs in a worktree. The flag points the check at a
+ * pristine checkout; it must not turn `assembly.usable` into a rubber stamp.
+ * Three runs, same bundle: (1) no host anywhere -> FAIL, (2) redirected at a root
+ * that really holds the modules -> PASS 13/13, (3) redirected at an EMPTY root ->
+ * still FAIL. (3) is the one that would catch a "just pass it" implementation.
+ */
+test('D16 --host-root redirects the pristine-checkout prefix and grades the same modules there', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const repo = fileURLToPath(new URL('../..', import.meta.url))
+  const root = mkdtempSync(join(tmpdir(), 'a5sf-preflight-host-'))
+  const host = join(root, 'host')
+  try {
+    for (const rel of CLEAN.assembly.hostModules.map((m) => m.path)) {
+      const abs = join(host, rel.slice('tests/deepseek-harness-test-use/'.length))
+      mkdirSync(dirname(abs), { recursive: true })
+      mkdirSync(abs, { recursive: true })
+    }
+    const withHost = spawnSync(process.execPath, [cli, '--bundle', fileURLToPath(CLEAN_FIXTURE), '--repo', repo, '--host-root', host], { encoding: 'utf8' })
+    const verdict = JSON.parse(withHost.stdout.trim().slice('DSH-A5SF-PREFLIGHT '.length))
+    assert.equal(verdict.verdict, 'PASS', JSON.stringify(verdict.findings))
+    assert.equal(verdict.summary, 'PASS 13/13 checks')
+    assert.equal(verdict.inputs.hostPrefixRemapped, true)
+    assert.equal(verdict.inputs.hostRoot, host)
+    assert.equal(withHost.status, 0)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('D17 an empty --host-root still fails assembly.usable: the flag redirects the lookup, it does not waive it', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const repo = fileURLToPath(new URL('../..', import.meta.url))
+  const root = mkdtempSync(join(tmpdir(), 'a5sf-preflight-empty-'))
+  try {
+    const run = spawnSync(process.execPath, [cli, '--bundle', fileURLToPath(CLEAN_FIXTURE), '--repo', repo, '--host-root', root], { encoding: 'utf8' })
+    assert.equal(run.status, 1)
+    const verdict = JSON.parse(run.stdout.trim().slice('DSH-A5SF-PREFLIGHT '.length))
+    assert.equal(verdict.verdict, 'FAIL')
+    assert.deepEqual(verdict.findings.map((f) => f.code), ['ASSEMBLY_HOST_MODULE_MISSING', 'ASSEMBLY_HOST_MODULE_MISSING'])
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })

@@ -20,6 +20,18 @@
  *   node scripts/a5sf-preflight.mjs --bundle <file.json>
  *   node scripts/a5sf-preflight.mjs --run-dir <evidence-dir>
  *   node scripts/a5sf-preflight.mjs --bundle <file.json> --repo <checkout>
+ *   node scripts/a5sf-preflight.mjs --bundle <f.json> --repo . --host-root <pristine-host>
+ *
+ * WHY `--host-root` EXISTS. The pristine upstream checkout
+ * (`tests/deepseek-harness-test-use`) is gitignored, so a fresh worktree NEVER
+ * contains it, while every live driver runs in a worktree. Without this flag the
+ * CLI grades `assembly.usable` against a tree that cannot have the host and
+ * therefore fails every plan — a check that fires on the checkout layout instead
+ * of on the plan. The flag redirects ONLY the `tests/deepseek-harness-test-use/`
+ * prefix of a declared host-module path to the pristine checkout; every other
+ * path is still probed against `--repo`, and a path that is absent under the
+ * redirected root still fails `ASSEMBLY_HOST_MODULE_MISSING`. Nothing is
+ * skipped, and the root actually used is printed in the verdict's `inputs`.
  *
  * The bundle schema is `a5sf-zero-boot-preflight/1`; a driver writes it as
  * `<evidence-dir>/preflight-bundle.json` BEFORE it spends a start. A run
@@ -43,23 +55,25 @@ import { runZeroBootPreflight, ZERO_BOOT_PREFLIGHT_SCHEMA } from '../tests/world
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DEFAULT_REPO = resolve(HERE, '..')
+const HOST_PREFIX = 'tests/deepseek-harness-test-use'
 
 function usage(message) {
   return {
     schema: ZERO_BOOT_PREFLIGHT_SCHEMA,
     verdict: 'FAIL',
     error: `USAGE: ${message}`,
-    usage: 'node scripts/a5sf-preflight.mjs --bundle <file.json> | --run-dir <evidence-dir> [--repo <checkout>]',
+    usage: 'node scripts/a5sf-preflight.mjs --bundle <file.json> | --run-dir <evidence-dir> [--repo <checkout>] [--host-root <pristine-host>]',
   }
 }
 
 function parseArgs(argv) {
-  const opts = { bundle: null, runDir: null, repo: DEFAULT_REPO, pretty: false }
+  const opts = { bundle: null, runDir: null, repo: DEFAULT_REPO, hostRoot: null, pretty: false }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--bundle') opts.bundle = argv[(i += 1)]
     else if (a === '--run-dir') opts.runDir = argv[(i += 1)]
     else if (a === '--repo') opts.repo = argv[(i += 1)]
+    else if (a === '--host-root') opts.hostRoot = argv[(i += 1)]
     else if (a === '--pretty') opts.pretty = true
     else return { error: `unknown argument ${JSON.stringify(a)}` }
   }
@@ -111,14 +125,30 @@ function main(argv) {
     return 2
   }
   const repo = resolve(opts.repo)
+  const hostRoot = opts.hostRoot === null ? null : resolve(opts.hostRoot)
   // The probe is the ONE fact the pure checks cannot see: whether the declared
   // native modules and build artifacts exist in THIS checkout. Declared
   // existence is accepted only when the caller passes `--repo` with no path...
   // it is always passed (default = this checkout), so a fixture can only prove
   // the check, never the build.
-  const fileExists = (rel) => existsSync(resolve(repo, rel))
+  //
+  // `--host-root` remaps the gitignored pristine-checkout prefix and nothing
+  // else. It is a redirection of WHERE that subtree is looked up, not a waiver:
+  // the remapped path must still exist, and every non-host path is unchanged.
+  const fileExists = (rel) => {
+    const clean = String(rel).replace(/^\.\//, '')
+    if (hostRoot !== null && (clean === HOST_PREFIX || clean.startsWith(`${HOST_PREFIX}/`))) {
+      const rest = clean === HOST_PREFIX ? '' : clean.slice(HOST_PREFIX.length + 1)
+      return existsSync(resolve(hostRoot, rest))
+    }
+    return existsSync(resolve(repo, clean))
+  }
   const result = runZeroBootPreflight(bundle, { fileExists })
-  emit(result, { pretty: opts.pretty })
+  // `runZeroBootPreflight` returns a frozen verdict; the probe inputs are
+  // appended here so a reader can tell WHICH roots produced the answer (the
+  // result itself stays immutable).
+  const graded = { ...result, inputs: { repo, hostRoot, hostPrefixRemapped: hostRoot !== null } }
+  emit(graded, { pretty: opts.pretty })
   return result.verdict === 'PASS' ? 0 : 1
 }
 

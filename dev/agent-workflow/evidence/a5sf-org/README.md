@@ -8,7 +8,8 @@
 | 文件 | 是什么 |
 |---|---|
 | `README.md` | 本文件：重组说明、adapter 审查、**实测指标**、以及“没有改什么” |
-| `preflight-clean.log` / `preflight-aliased.log` | 共享零 boot 预检在干净 bundle 与别名 bundle 上的原始输出（各一行机器可读 verdict） |
+| `preflight-clean.log` / `preflight-aliased.log` | 共享零 boot 预检在干净 bundle 与别名 bundle 上的原始输出（各一行机器可读 verdict）；`--repo` = 本分支 worktree，`--host-root` 只重定向 gitignore 的 pristine host |
+| `preflight-nohost-failclosed.log` | 同一个干净 bundle、**不给** `--host-root`：`assembly.usable` 红（`ASSEMBLY_HOST_MODULE_MISSING`）——证明该 check 不是装饰 |
 | `preflight-negative-control.json` | 负控结果的结构化记录（哪条 check 红、红的 code、为什么可归因） |
 
 指标只在 §3 一处（不另存副本，避免两份数字漂移）。
@@ -159,23 +160,23 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
 
 ## 4. 需要 owner 决定的问题（只列真正需要裁定的）
 
-**Q1（Authority／安全边界）**：候选运行期间，`current-authority.json` 该指向谁？
-- (a) 指向候选 head（现状）：候选的 `V@B=yes` 可成立，但 `master` 的 `state-freshness` 结构性红，
-  集成轨无法合并；且 `#606` 这种合并会让候选证据立刻失效。
-- (b) 指向集成 head（候选只发布快照、不移动指针）：`master` 保持绿，集成轨连续；候选的 C2 证据只能
-  记在 run record + 证据目录，**矩阵不得出现 `V@B=yes`**，直到候选被接受、指针随接受移动。
-- (c) 冻结期间禁止任何合并：最干净，但一次冻结至少要停掉文档 PR，代价是集成停摆。
-  **这不是排期问题**：它决定“`V@B=yes` 在仓库里到底断言什么”，所以只能 owner 裁。
+**Q1（原「指针指向哪一侧」）已由 #609 关闭**：`#609` 用**真 merge**（非 squash）把候选 `1484fa4ee`
+并入 master 历史，`git merge-base --is-ancestor` 随之为真，`state-freshness` 的 `Q4` 转绿，
+派生视图 `baseline_is_ancestor_of_head` 也回到 `true`。**本 PR 未移动指针、未改快照**，只是不再
+被这个结构性红拖住。剩下的候选轨政策问题属于 #611（两轨 claim 方案），不是本 PR 的裁定。
 
-**Q2（产品语义／安全边界）**：§2.2 的 P-1——受限子进程当前**丢掉父进程的代理归一化**。是否接受
-“Team 受限子进程与非受限子进程的代理行为可以不同”这一现状？若不接受，P-1 需要一次产品 PR
-（单文件 + 一条臂），由 Capability Implementer 执行。
+**Q2（产品语义）**：受限子进程的代理行为是否可以与不受限子进程不同？（§2.2 提案 P-1）。若不接受，
+需要一笔单文件产品 PR。
 
-**Q3（安全边界）**：External execution 面（LSP/MCP/PTC）目前**没有任何面级安全矩阵**，矩阵四行是
-`—`。是否要求“该面在接线前必须先有 A 层最小矩阵（一正一负）”，还是允许先接线后补？我按 owner 指令
-写成了“先设计测试再实现”（ROUTER_RULES §0.1 规则 2），若 owner 不同意，需要改的是那句话。
+**Q3（安全边界）**：external execution 面（LSP/MCP/PTC）连 A 层矩阵都还没有。是否维持本轮的规则
+「接线前先给出该面的最小正/负测试」？若允许先接线，那么 A 层就只剩下事后补写，这会与 owner
+「测试先于实现」的裁决相反。
 
----
+**Q4（文档合并顺序，新增）**：#611（候选轨机制，`verifiedFor` 字段 + gate provider）目前**未合并**，
+它给 `current-implementation-plan.md` 也加了一个 §7。本 PR 的 §7 是同名的组织性章节。两者不能
+同时以 §7 存在：建议 #611 先合、再由我把它的 §7.1–7.5 收进我的 §7 之下（或反过来）。本 PR
+**没有**折入 #611 的 plan 章节，因为它声明了一个**尚未实现**的机制（`scripts/ci-pr-gate.mjs` 未改），
+折进来就是文档声称机制存在。
 
 ## 5. 没有改什么（可核验）
 
@@ -208,3 +209,75 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
 该 pin 早于本分支（`#607` 合并后 master 自身的 `pr-gate` 也是 failure，run `42039830042`），因此归因是
 **既有状态 + owner 未决的 §4-Q1**，不是本 PR 的内容。**没有任何一条失败可以靠改本 PR 的文档修掉**；
 能修的两条（`docs:sync` 视图、引用行号）已经修在 `bf1e90d28`。
+
+## 6. master 合并与冲突解决（head 见文末；合并基线 `52a95fe0b`）
+
+### 6.1 冲突实际是什么（先纠正一处前提）
+
+合入 `origin/master` `52a95fe0b` 时，`ALPHA5-SANDBOX-BACKLOG.md` 冲突。**实测 master 相对 merge base
+`e78bfd8af` 只改了 1 行**（`git diff --stat` → `1 insertion(+), 1 deletion(-)`），那一行是 **BL-18**
+的 `#608` 接线轮状态文本。**master 上没有 BL-42，也没有 2026-11-06 的 §0 裁决块**：
+
+- `git grep -n BL-42 origin/master -- docs dev` → 无匹配；
+- `git diff e78bfd8af..52a95fe0b -- …/ALPHA5-SANDBOX-BACKLOG.md` → 仅 BL-18 一行；
+- `BL-39` 在 master 与 merge base 上**逐字相同**（它的 `/etc`+`/proc` 归属文本早于本分支）。
+
+BL-42、§0 裁决块与 BL-39 的归属更正都在 **#611**（`task/a5sf-ruling-20261106`，`gh pr view 611` =
+`OPEN`）。因此「master 已带 #611 的裁定」不成立；本轮按指令**从 #611 的分支逐字取文本**折入，而不是
+自己编一条 BL-42——这样 #611 合并时两侧字节一致，冲突至多是位置。
+
+### 6.2 逐项取舍
+
+| 区域 | 取自 | 处理 |
+|---|---|---|
+| 文件整体结构（§0.1 六面 + A/B/C + C1/C2 台账 + 按面的分节） | 本分支 | 保留（这是本 PR 的目的） |
+| `BL-18` 状态文本 | **master**（`#608`） | 逐字替换本分支的同名行 |
+| `BL-39` 行 | **#611** | 逐字替换；归属更正为「`/etc`+`/proc` 文件读取例外收窄，**不是**网络隔离」 |
+| `§0` 2026-11-06 owner 裁决（5 条） | **#611** | 逐字插入在 2026-11-03 裁决之后（旧 7 条一字未动） |
+| `BL-42` 行 | **#611** | 逐字插入 **Shell-PTY 的 P2 表**（唯一具名阻塞消费者 = BL-17），不在别处复制 |
+| §0.1.1 面登记 Shell-PTY 的条目列 | 本分支 | 追加 `BL-42` |
+| §0.1.3 台账 | 本分支 | `BL-39` 说明改为归属更正后的措辞；新增 `BL-42` 行并标 **cross-face 阻塞** |
+| §3 Shell-PTY 面注 | 本分支 | 新增四条硬边界（fail-closed、拒绝启动≠验收、web deny≠子进程隔离、BL-42 前只能验拒绝路径） |
+| §7 Cross-face 桶 | 本分支 | 新增「跨面阻塞」段：BL-42 同时阻塞 Bash/CLI、第三方 CLI、external execution；**行不复制** |
+| 其余 44 条旧行 | 原样 | 逐字保留（脚本校验：每条旧行在新文件中逐字存在） |
+
+### 6.3 合并提交的形状（披露，非隐瞒）
+
+`81ff35a84` 是一个 **内容为空的 merge commit**：`git show --stat` 无文件，tree 仍等于合入前的本分支。
+原因是合并在**结果未入 index** 时就被提交。它的第二父存在，所以 **ancestry 是真的**（#611 §7.3 的
+「真 merge，不 squash」要求满足）；**合并内容全部落在紧随其后的解析提交里**。没有 force-push、
+没有改写已推送历史——空 merge 保留在原位，只在报告里点名，避免读者以为合并丢了东西。
+
+## 7. 13 条 check 的承重审计（合并树上重跑）
+
+合并后重跑：干净 bundle **PASS 13/13**（`--repo .` + `--host-root` 指向 pristine host）；
+别名 bundle **FAIL 12/13**，唯一红 check = `cases.isolation`，恰带 `CASE_LOCATOR_ALIASED` +
+`CASE_GUARD_KEY_ALIASED`；**不给** `--host-root` 时干净 bundle **FAIL 12/13**（仅
+`ASSEMBLY_HOST_MODULE_MISSING`）。46 条 node:test 全绿（D1–D17）。
+
+| check | 承重？ | 它真的能抓到的缺陷（合并树上仍可发生） |
+|---|---|---|
+| `assembly.usable` | **是**（本轮亲自演示） | 声明了原生模块但 checkout 里没有 → 世界根本不可组合；本轮在 worktree 里就是这个红的（host 是 gitignored，worktree 永远没有） |
+| `identity.roots` | 是 | `#575` 的 create-root ≠ observe-root（真实历史缺陷，D5 复刻） |
+| `identity.blueprints` / `.member-tool-binding` | 是 | blueprint 无 id、Member 无 binding → 组合期才炸 |
+| `identity.authority` | **弱**（伪造防火墙） | 只抓「bundle 自称观察的 snapshot ≠ 指针六字段」。它不检测产品缺陷；保留是因为它让「证据与权威错配」在 boot 前变成一条红，而不是事后解释 |
+| `native.module-config` | 是 | BL-16 attempt 4/5 的真空 config 与缺 key（各花过一次启动） |
+| `policy.paths`（read/write） | 是 | allow 在 lane 外、deny 在 lane 内、deny 落在 OS runtime allowance 内（`#598-600` 类） |
+| `policy.paths`（network） | **部分** | 只抓「bundle 的 network 期望与 lane 冲突」。**抓不到**本轮裁决明令禁止的推论「Web service-level deny ⇒ 任意子进程已隔离」——见 §7.1 缺口 G-1 |
+| `policy.fifo` | 是 | BL-16 attempt 6（FIFO 在 lane 外） |
+| `cases.isolation` | 是（本 PR 的核心） | 两案共用 locator / 共用 guard key（candidate-1 allocation #1 的真实缺陷；D2/D3） |
+| `collector.shape` | 是 | 空 corpus、return-shape 缺键、无 terminate/archive → 行不可判 |
+| `wiring.candidate` / `wiring.grant` | 是 | sha 形状错、grant 不绑该 commit、maxStarts 不够覆盖 |
+| `wiring.run-record` | **条件性** | 它的 `productTreeProof` 分支只在 `teamSha ≠ baseline` 时才有意义；当前候选运行都在 baseline 上（`teamSha === candidate.head`），该分支**事实上是死的**。留着是因为一旦出现「在 baseline 之外树上跑」的批次，它立刻变成唯一的拦截点 |
+| `LEDGER_ARITHMETIC` | 是 | `plannedStarts` 与实际 boot 行不等（预算纪律） |
+| `BUNDLE_SCHEMA` | 是 | 版本错配的 bundle 被拒，而不是被当新版解释 |
+
+### 7.1 两个具名缺口（保留红/保留弱，而不是假装绿）
+
+- **G-1（network 归因）**：`policy.paths` 的 network 轴不检查**归因来源**。裁决要求的「Web
+  service-level deny 不得被推广为子进程网络隔离」需要第 14 条 check：当 bundle 的 `networkAccess`
+  为 `deny` 且 `networkProbe*` 的来源是 web-provider 时，若任何 case 走 subprocess/shell lane，
+  必须红（新 code `POLICY_NETWORK_ATTRIBUTION_UNPROVEN`）。**未实现**：它属于 BL-42 接线前的
+  工作，且需要新 fixture + 正负两条控制，本轮不夹带。
+- **G-2（`wiring.run-record` 的死分支）**：如上表。要么在 BL-17/BL-18 live 时故意在一棵
+  non-baseline 树上跑一次以激活它，要么在 live 之后删掉该分支——**现在是零覆盖**。

@@ -41,7 +41,7 @@
     "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
     "baseline_collected": "2026-11-05T12:16:56Z",
     "baseline_exists": true,
-    "baseline_is_ancestor_of_head": false,
+    "baseline_is_ancestor_of_head": true,
     "note": "source = snapshot resolved by dev/engineering/current-authority.json (recorded strings); this view never decides authority itself"
   },
   "authority_source_binding": {
