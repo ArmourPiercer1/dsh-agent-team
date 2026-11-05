@@ -2856,6 +2856,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           rootSessionId: rootSid,
           routing: alpha6Wiring.routing,
           leaderTemplateId: blueprint.leader.templateId,
+          routingForRoot: alpha6Wiring.routingForRoot,
           control: {
             readControlState: async (rootSessionId) => {
               const current = controlRef.current
@@ -2864,11 +2865,11 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             },
           },
           members: { list: (rootSessionId) => repos.memberInstances.list(rootSessionId) },
-          fixedLeaderOrHumanCategory: ({ kind }) =>
+          fixedLeaderOrHumanCategory: ({ kind, rootSessionId, routing }) =>
             createAlpha6CategoryLookup()({
-              rootSessionId: rootSid,
+              rootSessionId: rootSessionId ?? rootSid,
               leg: { kind } as never,
-              routing: alpha6Wiring.routing,
+              routing: routing ?? alpha6Wiring.routing,
             }),
         })
       : undefined

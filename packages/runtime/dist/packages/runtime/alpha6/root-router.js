@@ -93,10 +93,21 @@ function legFactsOf(row, fixedLeaderOrHumanCategory) {
     };
 }
 export function createAlpha6RootRouter(input) {
-    const policy = blueprintReviewPolicyFrom(input.routing);
     return {
         async route(requestId, rootSessionId) {
             const rootSessionIdForRead = rootSessionId ?? input.rootSessionId;
+            const rootRouting = input.routingForRoot === undefined
+                ? { routing: input.routing, leaderTemplateId: input.leaderTemplateId }
+                : input.routingForRoot(rootSessionIdForRead);
+            if (rootRouting === null) {
+                return {
+                    kind: 'hold',
+                    holdReason: 'config-invalid',
+                    reason: `no frozen v5 review routing is resolvable for root '${rootSessionIdForRead}'`,
+                    currentLegId: requestId,
+                };
+            }
+            const policy = blueprintReviewPolicyFrom(rootRouting.routing);
             let state;
             try {
                 state = await input.control.readControlState(rootSessionIdForRead);
@@ -109,15 +120,19 @@ export function createAlpha6RootRouter(input) {
                 return null;
             }
             const members = await input.members.list(rootSessionIdForRead);
-            const categoryAnswer = await input.fixedLeaderOrHumanCategory({ kind: row.kind });
+            const categoryAnswer = await input.fixedLeaderOrHumanCategory({
+                kind: row.kind,
+                rootSessionId: rootSessionIdForRead,
+                routing: rootRouting.routing,
+            });
             const category = categoryAnswer === true ? true : categoryAnswer === false ? false : null;
             const currentLeg = legFactsOf(row, category);
             const transfer = transferOf(state.transfers.find((candidate) => candidate.currentLegRequestId === requestId));
             return routeReview({
                 policy,
                 currentLeg,
-                currentOfficer: officerStateOf(members, input.routing.officerTemplateId, input.leaderTemplateId),
-                leader: leaderTargetOf(members, input.leaderTemplateId),
+                currentOfficer: officerStateOf(members, rootRouting.routing.officerTemplateId, rootRouting.leaderTemplateId),
+                leader: leaderTargetOf(members, rootRouting.leaderTemplateId),
                 transfer,
             });
         },

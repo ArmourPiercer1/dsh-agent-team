@@ -81,6 +81,7 @@ export type Alpha6LiveRootComposition = {
     readonly ports: Alpha6ControlPorts;
     readonly officerTemplateId: string;
     readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting;
+    readonly routingForRoot: (rootSessionId: string) => import('./root-router.js').Alpha6RootRouting | null;
 };
 export interface Alpha6LiveRootCompositionInput {
     readonly enabled: boolean;
@@ -125,6 +126,8 @@ export type Alpha6RootWiring = {
     readonly ports: Alpha6ControlPorts;
     readonly officerTemplateId: string;
     readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting;
+    /** Per-root frozen v5 policy for the router; null refuses that root. */
+    readonly routingForRoot: (rootSessionId: string) => import('./root-router.js').Alpha6RootRouting | null;
 };
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
 export type Alpha6RootWiringLiveInput = Omit<Alpha6LiveRootCompositionInput, 'enabled'>;

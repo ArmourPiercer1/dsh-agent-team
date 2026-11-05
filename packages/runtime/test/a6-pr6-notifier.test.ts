@@ -291,6 +291,56 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     expect(deliver).not.toHaveBeenCalled()
   })
 
+  it('never lets an authored hold become a Leader decision', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => ({ kind: 'hold', holdReason: 'officer-availability-unconfirmed', reason: 'policy says hold' }),
+      notifyLeader,
+    })
+    const held = {
+      ...request,
+      requestId: 'req-route-held',
+      approvalCaseId: 'case-route-held',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+      operationToolOwner: 'dsh-agent-team',
+      operationToolName: 'bash',
+      perEffectRequiredAuthorities: ['leader'],
+    } as ControlRequestRecord
+    await expect(notifier.notifyLeaderRequest(held)).rejects.toThrow(/is hold/)
+    expect(notifyLeader).not.toHaveBeenCalled()
+    expect(deliver).not.toHaveBeenCalled()
+  })
+
+  it('delivers an UNROUTABLE legacy guard row to the Leader, not an A6 ordinary ask', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => ({ kind: 'unroutable', reason: 'not a delegable ordinary tool ask' }),
+      notifyLeader,
+    })
+    const legacy = {
+      ...request,
+      requestId: 'req-route-legacy',
+      approvalCaseId: 'case-route-legacy',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+      actionName: 'parameter-permission',
+    } as ControlRequestRecord
+    await notifier.notifyLeaderRequest(legacy)
+    expect(notifyLeader).toHaveBeenCalledTimes(1)
+    expect(deliver).not.toHaveBeenCalled()
+  })
+
   it('delivers a CASE-LESS leader-approval row to the Leader instead of throwing', async () => {
     const deliver = vi.fn(async () => {})
     const notifyLeader = vi.fn(async () => {})
@@ -354,6 +404,56 @@ describe('A6 root router — real idle Officer liveness', () => {
       })
     })
   }
+
+  it('uses the CHILD root policy when its officerTemplateId differs from the boot policy', async () => {
+    const childRouting: ReviewRouting = {
+      ...routing,
+      officerTemplateId: 'child-officer',
+    }
+    const router = createAlpha6RootRouter({
+      rootSessionId: 'root-a6-router',
+      routing,
+      leaderTemplateId: 'leader',
+      routingForRoot: (root) => root === 'root-child'
+        ? { routing: childRouting, leaderTemplateId: 'leader' }
+        : { routing, leaderTemplateId: 'leader' },
+      control: {
+        readControlState: async () => ({ requests: [leg], transfers: [] } as never),
+      },
+      members: {
+        list: (root) => root === 'root-child'
+          ? [
+              { instanceId: 'inst-child-officer', templateId: 'child-officer', childSessionId: 'child-session', lifecycle: 'SETTLED', rootSessionId: 'root-child' },
+              { instanceId: 'inst-leader', templateId: 'leader' },
+            ]
+          : [
+              { instanceId: 'inst-boot-officer', templateId: 'officer', childSessionId: 'boot-session', lifecycle: 'SETTLED', rootSessionId: 'root-a6-router' },
+              { instanceId: 'inst-leader', templateId: 'leader' },
+            ],
+      },
+      fixedLeaderOrHumanCategory: () => false,
+    })
+    await expect(router.route('ctrl-a6-router-1', 'root-child')).resolves.toMatchObject({
+      kind: 'recipient',
+      target: { kind: 'instance', instanceId: 'inst-child-officer', routeRole: 'officer' },
+    })
+  })
+
+  it('holds when the child root has no resolvable frozen policy', async () => {
+    const router = createAlpha6RootRouter({
+      rootSessionId: 'root-a6-router',
+      routing,
+      leaderTemplateId: 'leader',
+      routingForRoot: () => null,
+      control: { readControlState: async () => ({ requests: [leg], transfers: [] } as never) },
+      members: { list: () => [] },
+      fixedLeaderOrHumanCategory: () => false,
+    })
+    await expect(router.route('ctrl-a6-router-1', 'root-child')).resolves.toMatchObject({
+      kind: 'hold',
+      holdReason: 'config-invalid',
+    })
+  })
 
   it('holds when the only Officer is ARCHIVED', async () => {
     await expect(routerWith('ARCHIVED').route('ctrl-a6-router-1')).resolves.toMatchObject({ kind: 'hold' })
