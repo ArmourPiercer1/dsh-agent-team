@@ -81,7 +81,7 @@ per-resume consumption reads. That is the expensive way to buy a property one ex
 
 **The interleaving question, answered explicitly.** An in-memory admission check *cannot* replace the
 sweep, and that is the reason both exist. The archive procedure is `close admission → … → release
-residency → commit → post-commit re-drop → (finally) reopen admission`. A boot resume that resolves
+residency → commit → post-commit residency re-drop → (finally) reopen admission`. A boot resume that resolves
 **after** the commit AND after that `finally` sees an **open** admission flag (it is cleared) and a
 **durable ARCHIVED** row — only a durable read can refuse it. Symmetrically, a boot resume that resolves
 **inside** the window (after `close`, before the commit) sees a closed admission flag but a durable
@@ -196,7 +196,7 @@ narrower than the publish window that BS4 found and this round's successor close
 no member whose durable row is ARCHIVED can be *published* by the boot loop when the lifecycle wires
 `AdmissionClosePort` — a marker recorded at the procedure's `reopenAdmission` forces one durable
 confirmation at the publish seam (SEAM 6) and the publish is refused. The window below (the archive's own
-`commit → post-commit re-drop`) remains a **residency-observation** window and cannot execute.
+`commit → post-commit residency re-drop`) remains a **residency-observation** window and cannot execute.
 
 The window is the archive procedure's own **commit → post-commit residency re-drop** interval, and it is
 reachable only through *ordering*, not through staleness:
@@ -211,7 +211,7 @@ lifecycle wires `AdmissionClosePort` (production `root.ts` does, since #598):
 
 - commit **before** the sweep's enumeration → SEAM 6 refuses the publish at `reopenAdmission`'s marker (BS4),
   and the sweep evicts anything an unwired configuration published (BS5);
-- resume resolving **inside** the quiesce→commit window → the in-memory admission check never publishes
+- resume resolving **inside** the `quiesce → commit` window → the in-memory admission check never publishes
   the handle (BS2);
 - resume resolving **after the procedure already returned** (its `finally` reopened admission, the row is
   `ARCHIVED`) → this round's hole; SEAM 6's marker + one durable read refuse the publish (BS4). Before
