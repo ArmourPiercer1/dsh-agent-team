@@ -91,7 +91,7 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
 
 | 块 | 位置 | 分类 | verdict |
 |---|---|---|---|
-| `createWebNetworkGuard`（lane + `probeNetworkDenial`） | `:150-172` | 权限约束 | **no change** |
+| `createWebNetworkGuard`（lane + `probeNetworkDenial`） | `:148-172` | 权限约束 | **no change** |
 | `createConfinedWebClass`（继承宿主类身份、替换 `fetch`/`search`） | `:182-232` | Provider-OS 装配 | **no change** |
 | `declaredUrlOf` | `:240-250` | 仅公共接口适配 | **no change**（soft-fail：形状变了只降低 locator 精度，**从不放行**） |
 
