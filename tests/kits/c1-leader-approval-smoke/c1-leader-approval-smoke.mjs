@@ -305,6 +305,7 @@ const A6_RECIPIENTS = process.env['C1_A6_RECIPIENTS'] === '1'
 const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
+const A6_STOP = process.env['C1_A6_STOP'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -410,6 +411,19 @@ async function apiPrompt(origin, cookie, sessionId, text, tag = 'c1') {
       },
     }),
   }, 240_000)
+}
+
+async function apiCancel(origin, cookie, sessionId, tag = 'c1cancel') {
+  return fetchJson(`${origin}/api/session/cancel`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({
+      type: 'client-request',
+      rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`,
+      method: 'session/cancel',
+      payload: { args: { request: { sessionId } } },
+    }),
+  }, 30_000)
 }
 
 async function p6t6State(port) {
@@ -1140,7 +1154,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
   let humanLeg = null
   let humanDecision = null
   let humanConsumption = null
-  if (A6_HUMAN) {
+  if (A6_HUMAN || A6_STOP) {
     const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
     while (Date.now() < deadline) {
       const current = readControlLedger(CREATE_ROOT_A6)
@@ -1158,6 +1172,43 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
         note: 'c1 smoke A6 human final approval',
       }, 'c1a6h', 4)
       writeEvidence('a6-human-response.json', response.body ?? response)
+    }
+    if (A6_STOP) {
+      const worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'worker' && row.label === 'w-a6')
+      const cancel = worker === undefined
+        ? { status: 0, body: { error: 'no member child session' } }
+        : await apiCancel(booted.origin, booted.cookie, worker.childSessionId, 'c1a6stop')
+      writeEvidence('a6-stop-cancel.json', cancel.body ?? cancel)
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      const afterCancel = readControlLedger(CREATE_ROOT_A6)
+      const late = humanLeg === null ? null : await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: humanLeg.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: a late allow after Stop must not revive the call',
+      }, 'c1a6stop', 4)
+      writeEvidence('a6-stop-late-allow.json', late.body ?? late)
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const lateDecision = humanLeg === null ? null : final.decisions.filter((d) => d.requestId === humanLeg.requestId).at(-1) ?? null
+      const lateConsumption = humanLeg === null ? null : final.consumptions.find((c) => c.requestId === humanLeg.requestId) ?? null
+      const fileAfter = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
+      const revived = fileAfter.includes(SUM_A6_ALLOW) || lateConsumption !== null
+      const cancelOk = (cancel.status === 200 && (cancel.body?.result?.ok === true || cancel.body?.result?.accepted === true))
+      check('A6-11', 'session/cancel is admitted after the human allow, before the allow is consumed/executed', cancelOk,
+        `status=${cancel.status} body=${JSON.stringify(cancel.body ?? cancel).slice(0, 500)} afterCancelPending=${afterCancel.requests.filter((r) => !afterCancel.decisions.some((d) => d.requestId === r.requestId)).length}`)
+      check('A6-12', 'Stop before consumption prevents execution; a second allow is rejected as already decided', !revived,
+        `lateStatus=${late?.status} lateDecision=${JSON.stringify(lateDecision)} consumed=${lateConsumption !== null} file=${JSON.stringify(fileAfter.slice(0, 200))}`)
+      writeEvidence('a6-stop.json', {
+        cancel: cancel.body ?? cancel,
+        lateAllow: late?.body ?? late,
+        humanLeg,
+        lateDecision,
+        lateConsumption,
+        fileAfter,
+        revived,
+      })
+      return cancelOk && !revived
     }
   }
   const memberDone = await waitForMock(
@@ -1277,7 +1328,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
 
 let mockWakeSeq = 0
 let a6HandoffPhase = false
-let a6HumanPhase = A6_HUMAN
+let a6HumanPhase = A6_HUMAN || A6_STOP
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
