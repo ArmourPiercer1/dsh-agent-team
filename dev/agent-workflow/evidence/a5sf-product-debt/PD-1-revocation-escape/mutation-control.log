@@ -1,0 +1,12 @@
+PASS baseline: the pin is green on the real source (escape still exists): exit=0 expected=green
+     token PD1-ESCAPE-REPRODUCED: 1 occurrence(s)
+MUTATED packages/runtime/team-sandbox/src/terminal.ts: a2a24fcd7c0737882ced1b7eefa3d4b1de03b819121da2ab91c462a85911ee3b -> ef9ec2ca0d51d84111d3c558ecfc0290b53e55452477c023e53e5878918dc833
+PASS mutation: the same arm in control mode is GREEN (escape impossible): exit=0 expected=green
+     token PD1-ESCAPE-CLOSED: 1 occurrence(s)
+     PD1-CONTROL-REFUSAL code=DOMAIN_REVOKED allocations=0 domains=0
+PASS mutation: the pin in default mode REDS with the register handover message: exit=1 expected=red
+     RED-MESSAGE: AssertionError [ERR_ASSERTION]: PD-1 NO LONGER ESCAPES — this RED is the arm doing its job, not a regression. PD-1 in docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md (row "PD-1 (F3) — revocation does not bind a Member that owns no shell yet") is now FIXED in the code: a Member that owned no live domain at revoke time is refused when it acquires afterwards. The register needs updating (re-classify or remove the governance-hole row, retire or invert this KNOWN-DEFECT pin, and keep the WITH-domain contrast case green).
+RESTORED packages/runtime/team-sandbox/src/terminal.ts: sha256=a2a24fcd7c0737882ced1b7eefa3d4b1de03b819121da2ab91c462a85911ee3b bytes-identical=yes git-diff=clean
+PASS restored: the pin is green again on the original bytes: exit=0 expected=green
+     token PD1-ESCAPE-REPRODUCED: 1 occurrence(s)
+PD1-MUTATION-CONTROL-PASS
