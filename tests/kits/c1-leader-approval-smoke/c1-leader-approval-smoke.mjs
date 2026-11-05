@@ -306,7 +306,7 @@ const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
-const A6_CRASH = ['1', 'allow', 'consume'].includes(String(process.env['C1_A6_CRASH']))
+const A6_CRASH = ['1', 'allow', 'consume', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1152,7 +1152,58 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   }
 
   if (A6_CRASH) {
-    const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow' : process.env['C1_A6_CRASH'] === 'consume' ? 'consume' : 'request'
+    const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow'
+      : process.env['C1_A6_CRASH'] === 'consume' ? 'consume'
+        : process.env['C1_A6_CRASH'] === 'before' ? 'before' : 'request'
+    if (crashMode === 'before') {
+      const watchDeadline = Date.now() + 60_000
+      let sawAdmission = false
+      while (Date.now() < watchDeadline && host.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8')
+        if (text.includes('a5-admission: event=admission-requires-approval')) { sawAdmission = true; break }
+        await new Promise((resolve) => setTimeout(resolve, 20))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const durable = readControlLedger(CREATE_ROOT_A6)
+      const afterRestart = { booted: null, error: null }
+      try {
+        const offset = statSync(booted.instanceLog).size
+        const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+        const patchText = readFileSync(patchPath, 'utf8')
+        if (!patchText.includes('bootPhase: "create-or-open"')) {
+          writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+        }
+        const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+        let parsed = null
+        const bootDeadline = Date.now() + 120_000
+        while (Date.now() < bootDeadline && h2.alive()) {
+          const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+          const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+          if (matches.length > 0) { parsed = matches.at(-1); break }
+          await new Promise((resolve) => setTimeout(resolve, 200))
+        }
+        if (parsed === null) throw new Error('no restart boot URL')
+        const origin2 = `http://127.0.0.1:${parsed[1]}`
+        let cookie2 = null
+        for (let attempt = 0; attempt < 60; attempt += 1) {
+          try { cookie2 = await authenticate(origin2, parsed[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+        }
+        if (cookie2 === null) throw new Error('restart auth failed')
+        afterRestart.booted = { origin: origin2, cookie: cookie2, host: h2 }
+      } catch (error) { afterRestart.error = String(error?.message ?? error) }
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const revived = existsSync(FILE_A6_ALLOW)
+      const pa = final.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+      const phantom = pa !== null && final.decisions.every((d) => d.requestId !== pa.requestId) && final.consumptions.every((c) => c.requestId !== pa.requestId)
+      check('A6-17', 'a Host crash at the first admission leaves no execution and no phantom PA request/consumption after restart',
+        sawAdmission && !revived && !phantom,
+        `admission=${String(sawAdmission)} restart=${afterRestart.error ?? 'ok'} pa=${String(pa?.requestId)} revoked=${String(revived)} phantom=${String(phantom)} requests=${String(final.requests.length)} decisions=${String(final.decisions.length)} consumptions=${String(final.consumptions.length)}`)
+      writeEvidence('a6-crash.json', { mode: crashMode, durable, restart: { error: afterRestart.error }, pa, final, revived, phantom })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+      return sawAdmission && !revived && !phantom && afterRestart.error === null
+    }
     let pa = null
     let decided = null
     let consumed = null

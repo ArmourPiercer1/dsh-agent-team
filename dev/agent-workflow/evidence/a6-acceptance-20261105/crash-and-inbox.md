@@ -73,3 +73,19 @@ Root `session-c1-smoke-a6-2026-11-05T21-10-25`, real Host `:3704`.
 nothing reconciles or replays it. The post-restart ledger therefore contains an
 allow that has been spent without its tool result — an at-most-once, not
 at-least-once, recovery.
+
+## Before the PA request write (run `a6-crash-before-r1`)
+
+Root `session-c1-smoke-a6-2026-11-05T21-21-30`, real Host `:3706`.
+
+1. The probe watched for the first `admission-requires-approval` line (the
+   Guard leg's admission) and killed the Host immediately, before the Plane PA
+   leg was recorded: `exited=true`, no PA request existed yet.
+2. `create-or-open` restart succeeded.
+3. After restart the ledger had one request (the Guard leg), one decision and
+   one consumption; **no PA request**, no workspace file, no execution.
+
+`A6-17` PASS: the crash leaves no phantom PA request and no consumption without
+a request. The Guard leg that was already written remains settled normally.
+This is the "before write" window for the Plane PA leg, not a claim about a
+crash before the Guard request.

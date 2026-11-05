@@ -20,6 +20,7 @@ No master merge, no un-draft, no production switch.
 | Crash after PA allow, before consumption: no duplicate consumption/execution | PASS (no duplicate) | `a6-crash-allow-r1`, A6-15 |
 | Reconcile the orphaned allow after that crash | **FAIL** | same run: allow seq 11, `consAfter=0`, no file; the approved call is lost |
 | Crash after the allow is consumed, before the result: no duplicate consumption/execution | PASS (no duplicate) | `a6-crash-consume-r2`, A6-16 |
+| Crash before the PA request write: no phantom request/consumption/execution | PASS | `a6-crash-before-r1`, A6-17 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
 
 Full local gate: 9/9, census 677/8830, identity set identical to
@@ -40,8 +41,7 @@ Full local gate: 9/9, census 677/8830, identity set identical to
   an unconsumed allow, and the after-consume window leaves a spent allow with no
   execution; neither is replayed/resumed. This is safe against duplicates but
   loses the approved call (availability gap).
-- **Sticky Stop, before-write / after-consume windows, native Inbox
-  reconciliation**: not injected.
+- **Sticky Stop, native Inbox reconciliation**: not injected.
 - **Sink unit test**: not added; the E2E plus the code argument are the evidence.
 
 ## Decision
