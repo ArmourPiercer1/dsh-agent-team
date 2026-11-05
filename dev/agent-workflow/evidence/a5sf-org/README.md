@@ -189,3 +189,22 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
   视图不反向裁定权威，六字段仍由指针+快照唯一决定。
 - 预算：**0 次 Host boot**（本 PR 全程 host-free）；剩余 3 次仍按 BL-17、BL-18、一次重试保留。
 - 已存在、与本 PR 无关的红：`state-freshness` 的 `Q4`（见 §4-Q1），本 PR 前后同一 finding、同一文案。
+
+### 5.1 CI 实测（PR #610，head `bf1e90d28`）
+
+| 层 | 结论 | 归因 |
+|---|---|---|
+| `candidate-protection` | success | — |
+| `synthesize-merge-tree` | success | — |
+| `ci-fast` | **success**（在 `bf1e90d28` 修掉 `docs:sync --check` 的 `STALE_GENERATED_VIEW` 之后） | 修复项：派生视图 |
+| `ci-security` | success | — |
+| `ci-integration` | failure — step `Gate legs — graph-parse + state-freshness` | **Authority pin**：`Q4` baseline 非 HEAD 祖先 |
+| `ci-product` | failure — step `Gate — the eight host-free legs` | 同上（该 step 含 `state-freshness`） |
+| `ci-census` | failure — step `Precheck — the authority's two git pins are present and HEAD-ancestors` | 同上，**显式点名同一个 pin** |
+| `pr-gate` | failure — `docs:sync --check`（首次推送）→ 修后 step `Authority docs checks` 待复评；本地 `docs-sync --check` + `docs-probe --base e78bfd8af` 均 `blocking=0` | 已修；其余为同一 pin |
+| `pr-settlement-gate` | failure — `NO_SETTLEMENT_CANDIDATE` | **按 owner 指令“do not settle”，这是期望结果**，不补 settlement |
+
+三条失败 job 的失败 step 全部落在同一个事实上：`git merge-base --is-ancestor 1484fa4ee HEAD` 为假。
+该 pin 早于本分支（`#607` 合并后 master 自身的 `pr-gate` 也是 failure，run `42039830042`），因此归因是
+**既有状态 + owner 未决的 §4-Q1**，不是本 PR 的内容。**没有任何一条失败可以靠改本 PR 的文档修掉**；
+能修的两条（`docs:sync` 视图、引用行号）已经修在 `bf1e90d28`。
