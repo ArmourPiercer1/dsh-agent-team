@@ -7650,3 +7650,54 @@ node scripts/ci-pr-gate.mjs                   → DSH-CI-VERDICT fail pass=5 fai
 **仍不覆盖（具名残余，未宣称修复）**：boot resume loop 的 `liveAgents.set` 无 post-resume 复核（修它会让每次 boot
 多一次 list，破坏"整个成员集一次 list"的实测属性）；child factory 的实例 id 复用路径（公开工具分配新 id，当前不可达）；
 跨进程提交不可见（内存快照 + 进程内 admission close）。
+
+## 2026-11-05（真实 UTC 04:18Z）— BOOT-SEAM：boot resume 的具名残余前向关闭（PR #599，draft）
+
+**任务**：关闭上一轮 `#598` 具名登记、当时明确未修的那一条残余 —— boot resume loop 的
+`liveAgents.set` 无 post-resume 复核。**无 Host boot、无 merge、无 settle**；host-free 臂（t12a bridge）+
+真 glue + 真 `createLifecycleService`；`CORE PATCH BUDGET = 0`；`:3080` 未触碰。分支
+`task/a5sf-boot-seam-20261105` @ `origin/master` `61554ae1d`，worktree `.worktrees/a5sf-boot-seam`。
+
+**残余（实测，非描述）**：boot 的 resume 循环只读一次成员行（SEAM 2 复用），随后对每个成员
+`await resumeTeamAgent` → `liveAgents.set`，**没有** resume 之后的复核。归档的 durable ARCHIVED 提交在该
+resume in-flight 期间落地时，循环会把一个"此刻已 ARCHIVED"的成员句柄放进 `liveAgents`；而
+`ensureLiveAgent` 在查任何门之前就从 `liveAgents` 早返回，于是该句柄被永久服务 —— 与 row 6 / 归档竞态
+同一形态的复活洞（只是 seam 在 boot，不在 tool dispatch）。RED（未打补丁）：
+`BS1 residentAfterBoot=true, status=200, toolExecutions=1`；`BS2 residentWhileQuiesced=true`；
+`BS3 member-set enumerations 0`；`3 failed (3)`。
+
+**设计（保预算，两块）**：
+- **SEAM 5（内存、零 durable 读）**：`resumeTeamAgent` 返回后、`liveAgents.set` 之前（两者之间无 await）
+  查既有 `admissionCloseRefusal(child)`；本进程内有 lifecycle quiesce 在进行就 dispose + 跳过该成员。
+  这是 durable 读**看不见**的一半：quiesce→commit 窗口内 durable 行仍是 SETTLED。
+- **SEAM 4（一次 durable 扫描）**：循环结束后**枚举一次**成员集（命名 helper `listMemberRows(rootSid)`，
+  循环自己的读也走它），在该快照上**同步**做出全部驱逐判定（判定与动作之间无 await），然后先
+  `liveAgents.delete` 再 dispose，走与 SEAM 3 相同的 typed 拒绝路径。这是内存标记**看不见**的一半：
+  过程 finally 重开 admission 之后，只有 durable 行能否决。
+
+**预算重新定价并断言**：由"整个成员集一次 list"变为"一次枚举 + 至多一次扫描" = **2**（与成员数无关）。
+实测：1 成员 boot = 2 次成员集枚举 / 5 次 list()；2 成员 boot = 2 / 8（每成员 +3 是**既有**的冷启动
+consumption 读，不属成员集预算）。future per-member 重读会让 BS3 变红而不是让属性静默腐烂。
+**否决方案**：per-member 重读能关同一窗口，但每次冷 boot 多 N 次枚举，且直接破坏上述属性。
+
+**证据** `dev/agent-workflow/evidence/a5sf-boot-seam/`：BS1 归档提交在 resume in-flight 期间落地 /
+BS2 resume 在 quiesce→commit 窗口内返回 / BS3 预算，`RED 3 failed (3)` → `GREEN 3 passed (3)`；
+`mutation-control.mjs` 单独拆扫描（只 BS1 红）或单独拆内存 admission 检查（只 BS2 红），
+sha256 校验恢复，`ALL-MUTANTS-RED-AS-REQUIRED`。门：`node --test tests/world-factory/a5sf-*.test.mjs`
+219/219；runtime a5sf+lifecycle+glue `40 files / 522 passed`（同滤镜下上一轮 39 文件 501 完整复现，
+多出的是 `packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts` 21 腿）；p7t3 `31 passed`；
+`tsc` rc 0；`pnpm -r typecheck` rc 0；eslint 0 errors；ARC-A `25 passed`；
+`pnpm run build` + `place-dist-glue`（101 处，glue 字节同一）+ `build-client-composition` rc 0；
+`check-artifacts-committed` `ok 1960 glue=101`；`check-artifacts-at-head` `ok 1960 drift=0`；
+`git diff --check origin/master...HEAD` rc 0。
+
+**保护胶水**：`agent-bindings.mjs` sha256 `d3945eff…` → `9cdb5513…`（+82/−1），在
+`dev/agent-workflow/ledgers/arc-a-protected-center.json` 登记为 **NAMED center-interface** 覆盖；
+无 archive/dispose/quiesce 语义改动，无 permission plane / lifecycle service 合同改动，
+无 control/**、tool-dispatch/admission、governance-center、pa-mount-registry 移动。PR #599（draft），
+首行 `BOOT-SEAM`。
+
+**仍未关闭（具名，未宣称修复）**：本改动之后，boot 仍可能在一个区间内带着"已 ARCHIVED 成员"的常驻句柄
+返回 —— 归档自身的 **durable commit → post-commit residency re-drop** 间隙（扫描快照落在仍 SETTLED 时、
+随后提交落地、`boot()` 在 re-drop 之前 resolve）。其余顺序均已关闭。要关它需要让驻留释放与 durable
+commit **原子化**（发布栅栏或生命周期合同变更），属于另一个决策，按范围纪律停在此处并报告。

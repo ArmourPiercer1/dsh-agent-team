@@ -1,0 +1,11 @@
+
+M1-post-loop-durable-sweep: RED-AS-REQUIRED
+  observed={"BS1":"failed","BS2":"passed","BS3":"passed"}
+  expected failed=["BS1"] passed=["BS2","BS3"]
+
+M2-post-resume-admission-check: RED-AS-REQUIRED
+  observed={"BS1":"passed","BS2":"failed","BS3":"passed"}
+  expected failed=["BS2"] passed=["BS1","BS3"]
+
+restored packages/runtime/src/plugin/live/agent-bindings.mjs sha256=9cdb5513826d0d41a67dc08c404aa718fb3dac5a512003a2a4310e9e250645a6
+verdict: ALL-MUTANTS-RED-AS-REQUIRED

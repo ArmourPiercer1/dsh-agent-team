@@ -1,0 +1,61 @@
+{
+ "control": "a5sf-boot-seam mutation control",
+ "sourceSha256": {
+  "packages/runtime/src/plugin/live/agent-bindings.mjs": "9cdb5513826d0d41a67dc08c404aa718fb3dac5a512003a2a4310e9e250645a6"
+ },
+ "outcomes": [
+  {
+   "mutant": "M1-post-loop-durable-sweep",
+   "description": "remove the post-loop durable sweep (the eviction decision never fires)",
+   "mutatedFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "499a9898a980e4ea9cfa14b6759f652139f21ea5598188fb3c0132f4e135d138"
+   },
+   "restoredFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "9cdb5513826d0d41a67dc08c404aa718fb3dac5a512003a2a4310e9e250645a6"
+   },
+   "vitestExitCode": 1,
+   "observed": {
+    "BS1": "failed",
+    "BS2": "passed",
+    "BS3": "passed"
+   },
+   "expected": {
+    "failed": [
+     "BS1"
+    ],
+    "passed": [
+     "BS2",
+     "BS3"
+    ]
+   },
+   "verdict": "RED-AS-REQUIRED"
+  },
+  {
+   "mutant": "M2-post-resume-admission-check",
+   "description": "remove the post-resume in-memory admission check in the boot loop",
+   "mutatedFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "5d2aaf78e1176f08a7cb535583c2a30c3479062b608623e5b651683284743658"
+   },
+   "restoredFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "9cdb5513826d0d41a67dc08c404aa718fb3dac5a512003a2a4310e9e250645a6"
+   },
+   "vitestExitCode": 1,
+   "observed": {
+    "BS1": "passed",
+    "BS2": "failed",
+    "BS3": "passed"
+   },
+   "expected": {
+    "failed": [
+     "BS2"
+    ],
+    "passed": [
+     "BS1",
+     "BS3"
+    ]
+   },
+   "verdict": "RED-AS-REQUIRED"
+  }
+ ],
+ "verdict": "ALL-MUTANTS-RED-AS-REQUIRED"
+}
