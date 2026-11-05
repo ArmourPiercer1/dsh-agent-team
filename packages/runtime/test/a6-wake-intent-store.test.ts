@@ -9,7 +9,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createFileWakeIntentStore } from '../alpha6/wake-intent-store.js'
 import { createFileWakeIntentDirectory } from '../alpha6/wake-intent-directory.js'
-import { recoverReviewWake } from '../alpha6/wake-intent.js'
+import { pruneAbsentReviewWakeRow, recoverReviewWake } from '../alpha6/wake-intent.js'
 import { createReviewWakeCoordinator } from '../review-wake/index.js'
 
 const KEY = {
@@ -98,13 +98,17 @@ describe('A6 file intent store + recovery', () => {
     expect((await store.read())?.status).toBe('accepted')
   })
 
-  it('discards a queued row whose Inbox message is gone', async () => {
+  it('reports absent without clearing a row whose Inbox message is gone', async () => {
     const store = createFileWakeIntentStore({ filePath: file })
     await store.persistQueued({ key: KEY, wakeId: 'wake-gone', workFingerprint: 'fp-1' })
     const coordinator = createReviewWakeCoordinator(KEY)
     const adopted = await recoverReviewWake(coordinator, store, { has: () => false })
     expect(adopted.adopted).toBe(false)
-    await expect(store.read()).resolves.toBeNull()
+    expect(adopted.reason).toBe('absent')
+    // The caller re-plans and overwrites this stale row. Recovery must not
+    // await a clear here: that window could delete a row a concurrent
+    // dispatch just persisted.
+    await expect(store.read()).resolves.not.toBeNull()
   })
 })
 
@@ -142,6 +146,23 @@ describe('A6 sharded wake-intent directory', () => {
 })
 
 describe('A6 file wake-intent store — concurrent writers', () => {
+  it('serializes markAccepted/clear/persist: a newer row is never clobbered by an older accepted mark', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'a6-wake-intent-mix-'))
+    try {
+      const store = createFileWakeIntentStore({ filePath: join(dir, 'intent.json') })
+      await store.persistQueued({ key: KEY, wakeId: 'wake-1', workFingerprint: 'fp-1' })
+      await Promise.all([
+        store.markAccepted('wake-1'),
+        store.clear('wake-1'),
+        store.persistQueued({ key: KEY, wakeId: 'wake-2', workFingerprint: 'fp-2' }),
+      ])
+      const row = await store.read()
+      expect(row).toMatchObject({ wakeId: 'wake-2', workFingerprint: 'fp-2', status: 'queued' })
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
   it('never shares a temp file: 24 concurrent persists settle with one intact row', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'a6-wake-intent-race-'))
     try {
@@ -157,5 +178,76 @@ describe('A6 file wake-intent store — concurrent writers', () => {
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
+  })
+})
+
+
+describe('A6 stale-row prune (post-plan, under the caller held latch lock)', () => {
+  const makeStore = () => {
+    const cleared: string[] = []
+    return {
+      cleared,
+      store: {
+        persistQueued: () => {},
+        markAccepted: () => {},
+        clear: (wakeId?: string) => {
+          if (wakeId !== undefined) cleared.push(wakeId)
+        },
+        read: () => null,
+      },
+    }
+  }
+
+  it('clears only on a positive absent probe, passing the exact wake id', async () => {
+    const { cleared, store } = makeStore()
+    const result = await pruneAbsentReviewWakeRow({ store, wakeId: 'wake-stale', inbox: { has: () => false } })
+    expect(result).toBe('cleared')
+    expect(cleared).toEqual(['wake-stale'])
+  })
+
+  it('keeps the row while the Inbox still holds the message', async () => {
+    const { cleared, store } = makeStore()
+    const result = await pruneAbsentReviewWakeRow({ store, wakeId: 'wake-live', inbox: { has: () => true } })
+    expect(result).toBe('kept')
+    expect(cleared).toEqual([])
+  })
+
+  it('keeps the row when the Inbox probe throws (unreadable is not absent)', async () => {
+    const { cleared, store } = makeStore()
+    const result = await pruneAbsentReviewWakeRow({
+      store,
+      wakeId: 'wake-unknown',
+      inbox: { has: () => { throw new Error('native inbox unavailable') } },
+    })
+    expect(result).toBe('unreadable')
+    expect(cleared).toEqual([])
+  })
+
+  it('keeps the row when an async probe rejects', async () => {
+    const { cleared, store } = makeStore()
+    const result = await pruneAbsentReviewWakeRow({
+      store,
+      wakeId: 'wake-reject',
+      inbox: { has: async () => { throw new Error('live agent materialization failed') } },
+    })
+    expect(result).toBe('unreadable')
+    expect(cleared).toEqual([])
+  })
+
+  it('reports a failed clear instead of aborting the caller (no throw)', async () => {
+    const cleared: string[] = []
+    const store = {
+      persistQueued: () => {},
+      markAccepted: () => {},
+      clear: async (wakeId?: string) => {
+        if (wakeId !== undefined) cleared.push(wakeId)
+        throw new Error('EACCES: intent directory not writable')
+      },
+      read: () => null,
+    }
+    await expect(
+      pruneAbsentReviewWakeRow({ store, wakeId: 'wake-clear-fail', inbox: { has: () => false } }),
+    ).resolves.toBe('clear-failed')
+    expect(cleared).toEqual(['wake-clear-fail'])
   })
 })

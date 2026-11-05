@@ -288,4 +288,21 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     expect(notifyLeader).toHaveBeenCalledTimes(1)
     expect(deliver).not.toHaveBeenCalled()
   })
+
+  it('delivers a CASE-LESS leader-approval row to the Leader instead of throwing', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => null,
+      notifyLeader,
+    })
+    const caseLess = { ...request, requestId: 'req-route-plain', approvalCaseId: undefined, legOrdinal: undefined, kind: 'leader-approval' as const }
+    await notifier.notifyLeaderRequest(caseLess as ControlRequestRecord)
+    expect(notifyLeader).toHaveBeenCalledTimes(1)
+    expect(deliver).not.toHaveBeenCalled()
+  })
 })

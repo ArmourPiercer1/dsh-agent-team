@@ -1164,7 +1164,7 @@ export interface TeamAgentBindings {
    */
   readonly reviewWakeInbox?: (targetSessionId: string) => {
     readonly has: (wakeId: string) => boolean | Promise<boolean>
-    readonly remove?: (wakeId: string) => void | Promise<void>
+    readonly remove?: (wakeId: string) => void | boolean | Promise<void | boolean>
   }
   /** The P8-S4B request boundary (re-apply the durable truth). */
   readonly prepareAgentForRequest: (sessionId: string) => Promise<void>

@@ -123,6 +123,7 @@ function identityFor(plan: ReturnType<typeof planFor>): {
 /** A fake DURABLE store: one row per latch key, async API like disk. */
 class FakeIntentStore implements ReviewWakeIntentStore {
   readonly rows = new Map<string, PersistedReviewWakeIntent>()
+  readonly events: string[] = []
   persistCalls = 0
   acceptedCalls = 0
   clearCalls = 0
@@ -133,6 +134,7 @@ class FakeIntentStore implements ReviewWakeIntentStore {
 
   async persistQueued(intent: ReviewWakeQueuedIntent): Promise<void> {
     this.persistCalls += 1
+    this.events.push(`persist:${intent.wakeId}`)
     this.rows.set(FakeIntentStore.keyOf(intent.key), {
       ...intent,
       status: 'queued',
@@ -148,6 +150,7 @@ class FakeIntentStore implements ReviewWakeIntentStore {
 
   async clear(wakeId?: string): Promise<void> {
     this.clearCalls += 1
+    this.events.push(`clear:${String(wakeId)}`)
     if (wakeId === undefined) {
       this.rows.clear()
       return
@@ -172,6 +175,7 @@ class FakeInbox implements ReviewWakeInboxPort {
   readonly messages = new Map<string, string>()
 
   has(wakeId: string): boolean {
+    if (this.unreadable) throw new Error('native Inbox unreadable')
     return this.messages.has(wakeId)
   }
 
@@ -182,6 +186,13 @@ class FakeInbox implements ReviewWakeInboxPort {
   accept(wakeId: string): void {
     this.messages.set(wakeId, `[team-review-wake wakeId=${wakeId}]`)
   }
+
+  /** The real Host claim splices the message out before `inbox/claimed`. */
+  claim(wakeId: string): boolean {
+    return this.messages.delete(wakeId)
+  }
+
+  unreadable = false
 }
 
 interface Harness {
@@ -263,8 +274,11 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     const recovered = await recoverReviewWake(coordinator, store, inbox)
     expect(recovered.adopted).toBe(false)
     expect(coordinator.state.status).toBe('idle')
-    // The undelivered intent is gone, not adopted as a phantom queued wake.
-    expect(store.size).toBe(0)
+    // Recovery reports `absent` without an awaited clear (the clear window
+    // could delete a row a concurrent dispatch just persisted); the next plan
+    // overwrites the stale row.
+    expect(recovered.reason).toBe('absent')
+    expect(store.size).toBe(1)
 
     const port = harness(inbox)
     const result = await dispatchReviewWakes({
@@ -321,7 +335,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(coordinator.state.status).toBe('queued')
   })
 
-  it('window (d): claimed/running then crash — recovery adopts queued and never re-delivers', async () => {
+  it('window (d): a claimed turn that crashed has no Inbox message — recovery discards and re-delivers once', async () => {
     const plan = planFor('req-d1', 'req-d2', 'req-d3')
     const identity = identityFor(plan)
     const store = new FakeIntentStore()
@@ -342,13 +356,15 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(claimReviewWake(beforeCrash).outcome).toBe('applied')
     expect(beforeCrash.state.status).toBe('running')
     expect(port.calls).toEqual([identity.wakeId])
+    // The real Host claim consumes the message before a turn can run.
+    expect(inbox.claim(identity.wakeId)).toBe(true)
 
-    // Crash: the running latch is lost, only the durable intent + real Inbox
-    // survive.
+    // Crash: the running latch is lost, and there is no message left to
+    // adopt. Recovery discards the stale intent; boot re-plan re-delivers.
     const afterCrash = coordinatorFor(plan)
-    expect((await recoverReviewWake(afterCrash, store, inbox)).adopted).toBe(true)
-    expect(afterCrash.state.status).toBe('queued')
-    expect(afterCrash.state.wakeId).toBe(identity.wakeId)
+    expect((await recoverReviewWake(afterCrash, store, inbox)).adopted).toBe(false)
+    expect(afterCrash.state.status).toBe('idle')
+    expect(store.size).toBe(1)
 
     const replay = await dispatchReviewWakes({
       plan,
@@ -359,9 +375,64 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
       inbox,
       deliver: port.deliver,
     })
-    expect(replay.delivered).toHaveLength(0)
-    expect(port.calls).toHaveLength(1)
+    expect(replay.delivered).toHaveLength(1)
+    expect(port.calls).toHaveLength(2)
     expect(inbox.messages.size).toBe(1)
+  })
+
+  it('recovery keeps the row and never adopts when the Inbox is unreadable', async () => {
+    const plan = planFor('req-unreadable-recover')
+    const identity = identityFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const coordinator = coordinatorFor(plan)
+    await store.persistQueued({
+      key: identity.key,
+      wakeId: identity.wakeId,
+      workFingerprint: identity.fingerprint,
+    })
+    inbox.accept(identity.wakeId)
+    inbox.unreadable = true
+
+    const recovered = await recoverReviewWake(coordinator, store, inbox)
+    expect(recovered.adopted).toBe(false)
+    expect(recovered.reason).toBe('unreadable')
+    expect(store.size).toBe(1)
+    expect(coordinator.state.status).toBe('idle')
+  })
+
+  it('recovery never clobbers a coordinator a concurrent dispatch moved', async () => {
+    const plan = planFor('req-recover-race')
+    const identity = identityFor(plan)
+    const store = new FakeIntentStore()
+    const coordinator = coordinatorFor(plan)
+    await store.persistQueued({
+      key: identity.key,
+      wakeId: identity.wakeId,
+      workFingerprint: identity.fingerprint,
+    })
+
+    let signalStarted: () => void = () => {}
+    const started = new Promise<void>((resolve) => { signalStarted = resolve })
+    let releaseProbe: () => void = () => {}
+    const probe = new Promise<void>((resolve) => { releaseProbe = resolve })
+    const recovering = recoverReviewWake(coordinator, store, {
+      has: async () => { signalStarted(); await probe; return true },
+    })
+    await started
+    const concurrent = coordinator.dispatch({
+      type: 'scan-result',
+      work: { kind: 'ready', fingerprint: identity.fingerprint },
+    })
+    expect(concurrent.outcome).toBe('applied')
+    expect(coordinator.state.status).toBe('queued')
+    releaseProbe()
+
+    const recovered = await recovering
+    expect(recovered.reason).toBe('busy')
+    expect(coordinator.state.status).toBe('queued')
+    expect(coordinator.state.wakeId).toBe(identity.wakeId)
+    expect(store.size).toBe(1)
   })
 
   it('recover does not adopt a queued intent absent from the Inbox', async () => {
@@ -382,7 +453,7 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(recovered.wakeId).toBeNull()
     expect(coordinator.state.status).toBe('idle')
     expect(coordinator.state.wakeId).toBeNull()
-    expect(store.size).toBe(0)
+    expect(store.size).toBe(1)
   })
 
   it('sticky Stop outranks a persisted queued wake and withdraws the Inbox row', async () => {
@@ -446,6 +517,223 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(released.wakeId).not.toBe(first.delivered[0]?.wakeId)
     expect((await store.read())?.wakeId).toBe(released.wakeId)
     expect((await store.read())?.workFingerprint).toBe(movedFingerprint)
+    // The fresh row is durable BEFORE the released row disappears (a crash
+    // between them must leave a row boot recovery can enumerate).
+    expect(store.events.indexOf(`persist:${String(released.wakeId)}`)).toBeGreaterThanOrEqual(0)
+    expect(store.events.indexOf(`persist:${String(released.wakeId)}`))
+      .toBeLessThan(store.events.indexOf(`clear:${String(first.delivered[0]?.wakeId)}`))
+  })
+
+  it('release and dispatch never duplicate when a delivery is still in flight', async () => {
+    const first = planFor('req-r1')
+    const second = planFor('req-r2')
+    const secondIdentity = identityFor(second)
+    const coordinator = coordinatorFor(first)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    await dispatchReviewWakes({
+      plan: first,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    expect(claimReviewWake(coordinator).outcome).toBe('applied')
+    expect(inbox.claim(identityFor(first).wakeId)).toBe(true)
+
+    let signalStarted: () => void = () => {}
+    const started = new Promise<void>((resolve) => { signalStarted = resolve })
+    let releaseGate: () => void = () => {}
+    const gate = new Promise<void>((resolve) => { releaseGate = resolve })
+    const deliver = async (delivery: { wakeId: string }): Promise<void> => {
+      if (delivery.wakeId === secondIdentity.wakeId) {
+        signalStarted()
+        await gate
+      }
+      inbox.accept(delivery.wakeId)
+    }
+
+    const releasing = releaseReviewWake(
+      coordinator,
+      { kind: 'ready', fingerprint: planFingerprint(second.wakes[0]!) },
+      { deliver, intent: store, inbox },
+    )
+    await started
+    const concurrent = await dispatchReviewWakes({
+      plan: second,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver,
+    })
+    expect(concurrent.delivered).toHaveLength(0)
+    releaseGate()
+    await releasing
+    expect(inbox.messages.size).toBe(1)
+    expect(inbox.messages.has(secondIdentity.wakeId)).toBe(true)
+  })
+
+  it('an unreadable Inbox is not evidence of absence', async () => {
+    const plan = planFor('req-unreadable')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+    await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+
+    inbox.unreadable = true
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(inbox.messages.size).toBe(1)
+    expect(coordinator.state.status).toBe('queued')
+  })
+
+  it('a queued wake whose native message disappeared is released and re-delivered once', async () => {
+    const plan = planFor('req-q1')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    const first = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(first.delivered).toHaveLength(1)
+    const firstWakeId = first.delivered[0]?.wakeId
+    if (typeof firstWakeId !== 'string') throw new Error('the first delivery has no wake id')
+    inbox.remove(firstWakeId)
+
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(1)
+    expect(again.failures).toEqual([])
+    expect(port.calls).toHaveLength(2)
+    expect(inbox.messages.size).toBe(1)
+  })
+
+  it('a transport throw AFTER Inbox acceptance is not a delivery failure', async () => {
+    const plan = planFor('req-post')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const calls: string[] = []
+
+    const result = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: async (delivery) => {
+        calls.push(delivery.wakeId)
+        inbox.accept(delivery.wakeId)
+        throw new Error('transport lost the acknowledgement')
+      },
+      deferTurnEnd: true,
+    })
+
+    expect(result.failures).toEqual([])
+    expect(result.delivered).toHaveLength(1)
+    expect(inbox.messages.size).toBe(1)
+    expect((await store.read())?.status).toBe('accepted')
+    const again = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: async (delivery) => { calls.push(delivery.wakeId); inbox.accept(delivery.wakeId) },
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(calls).toHaveLength(1)
+  })
+
+  it('a post-delivery markAccepted failure never re-delivers the released wake', async () => {
+    const firstPlan = planFor('req-m1')
+    const coordinator = coordinatorFor(firstPlan)
+    const store = new FakeIntentStore()
+    const failingMark = Object.create(store) as FakeIntentStore
+    failingMark.markAccepted = async () => { throw new Error('intent store unavailable after delivery') }
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+
+    await dispatchReviewWakes({
+      plan: firstPlan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: failingMark,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(claimReviewWake(coordinator).outcome).toBe('applied')
+
+    const movedPlan = planFor('req-m1', 'req-m2')
+    const released = await releaseReviewWake(
+      coordinator,
+      { kind: 'ready', fingerprint: planFingerprint(movedPlan.wakes[0]!) },
+      { deliver: port.deliverEffect, intent: failingMark, inbox },
+    )
+
+    expect(released.delivered).toHaveLength(1)
+    expect(released.failures).toEqual([])
+    expect(inbox.messages.size).toBe(2)
+    // The delivered row is still queued (the accepted mark failed); the next
+    // dispatch must suppress, not re-deliver.
+    expect((await failingMark.read())?.status).toBe('queued')
+    const again = await dispatchReviewWakes({
+      plan: movedPlan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: failingMark,
+      inbox,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(again.delivered).toHaveLength(0)
+    expect(port.calls).toHaveLength(2)
   })
 
   it('an EMPTY plan revokes a stale queued wake through no-ready-work and clears its Inbox row', async () => {
@@ -486,6 +774,37 @@ describe('A6 wake persistence — Inbox acceptance is queued, recovery is Inbox-
     expect(store.size).toBe(0)
     // No extra wake was delivered by the reconcile.
     expect(port.calls).toHaveLength(1)
+  })
+
+  it('a refused Inbox remove keeps the intent instead of clearing a still-claimable message', async () => {
+    const plan = planFor('req-refuse')
+    const coordinator = coordinatorFor(plan)
+    const store = new FakeIntentStore()
+    const inbox = new FakeInbox()
+    const port = harness(inbox)
+    await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+    inbox.remove = () => false
+
+    await dispatchReviewWakes({
+      plan: EMPTY_PLAN,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators: [coordinator],
+      intent: store,
+      inbox,
+      deliver: port.deliver,
+    })
+
+    expect(store.size).toBe(1)
+    expect(inbox.messages.size).toBe(1)
   })
 
   it('reconcileReviewWakes is exposed as the no-ready-work revocation for absent latches', async () => {

@@ -3131,9 +3131,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // route from it, never the world from it).
   try {
     await builtRoot.boot()
-    // Alpha.6 (opt-in only): adopt a persisted queued latch ONLY when the
-    // native Inbox still holds its message (boot-time crash recovery).
-    await builtRoot.alpha6RecoverWakeLatches?.()
     // pre-alpha3 PR4 (round 4): WARM the authority documents at this async
     // boundary — AFTER the boot effect (the durable TeamSession row exists
     // from here on; the only entry that could reach `mutatePermission`
@@ -3180,6 +3177,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       )
     }
     teamRuntimeReadiness = 'ready'
+    // Alpha.6 (opt-in only): crash recovery is a LIVENESS step, not a boot
+    // precondition. It runs after readiness (its re-plan may start a
+    // recipient turn) and a fault is logged loud but never bricks the world;
+    // the durable pending list / GUI remain the recovery path.
+    try {
+      await builtRoot.alpha6RecoverWakeLatches?.()
+    } catch (error: unknown) {
+      console.error(
+        `[dsh-agent-team] Alpha.6 wake recovery failed after readiness (${
+          error instanceof Error ? error.message : String(error)
+        }) — the Team stays booted; pending control rows and the GUI remain the recovery path`,
+      )
+    }
   } catch (error) {
     teamRuntimeReadiness = 'failed'
     throw error

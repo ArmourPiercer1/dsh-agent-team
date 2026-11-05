@@ -5400,11 +5400,23 @@ export function createAgentBindings(deps) {
     }
     return {
       async has(wakeId) {
-        return (await pending()).some((message) => matches(message, String(wakeId)))
+        const live = await handle()
+        if (live === undefined) {
+          // An unreadable Inbox is NOT evidence of absence. Callers must keep
+          // the queued row and retry rather than release + duplicate.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const messages = [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+        return messages.some((message) => matches(message, String(wakeId)))
       },
       async remove(wakeId) {
         const live = await handle()
-        if (live === undefined) return false
+        if (live === undefined) {
+          // Same contract as `has`: unreadable is not evidence the message is
+          // gone. Keep the intent instead of reporting a refusal that the
+          // caller would mistake for an absent message.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
         const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
         if (message === undefined) return false
         return live.agent.inbox.remove(message.id)

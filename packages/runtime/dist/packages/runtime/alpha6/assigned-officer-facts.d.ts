@@ -74,9 +74,14 @@ export interface AssignedOfficerMemberSnapshot {
     /** Present on durable rows; when present it must equal the team root. */
     readonly rootSessionId?: string;
     readonly templateId: string;
-    readonly childSessionId: string;
+    /**
+     * Present on contracts-v1 member rows. ABSENT on the production contracts-v2
+     * LeaderInstanceRecord (the Leader row carries neither childSessionId nor
+     * lifecycle); consumers must not require it for Leader identity.
+     */
+    readonly childSessionId?: string;
     /** The contracts lifecycle spelling; only `RUNNING` is a live reviewer. */
-    readonly lifecycle: string;
+    readonly lifecycle?: string;
 }
 /** The durable member reads this provider consults. */
 export interface AssignedOfficerMemberLookup {

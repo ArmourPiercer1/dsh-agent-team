@@ -30,6 +30,30 @@ function isRow(value) {
         typeof row['workFingerprint'] === 'string' &&
         (row['status'] === 'queued' || row['status'] === 'accepted'));
 }
+/**
+ * Per-file mutation gate. The notifier dispatch and the turn-end release are
+ * fire-and-forget siblings in ONE Host process; without this, their
+ * read-modify-write pairs (markAccepted / clear / persistQueued) can clobber a
+ * newer row. Cross-process writers remain excluded by the single-writer
+ * worktree contract (atomic rename still prevents torn rows).
+ */
+const mutationTails = new Map();
+async function withMutationGate(file, run) {
+    const previous = mutationTails.get(file) ?? Promise.resolve();
+    let release;
+    const gate = new Promise((resolve) => { release = resolve; });
+    const tail = previous.catch(() => undefined).then(() => gate);
+    mutationTails.set(file, tail);
+    await previous.catch(() => undefined);
+    try {
+        return await run();
+    }
+    finally {
+        release();
+        if (mutationTails.get(file) === tail)
+            mutationTails.delete(file);
+    }
+}
 export function createFileWakeIntentStore(options) {
     const file = options.filePath;
     async function write(row) {
@@ -44,27 +68,31 @@ export function createFileWakeIntentStore(options) {
     }
     return {
         async persistQueued(intent) {
-            await write({ ...intent, status: 'queued' });
+            await withMutationGate(file, async () => write({ ...intent, status: 'queued' }));
         },
         async markAccepted(wakeId) {
-            const row = await readRow();
-            if (row === null || row.wakeId !== wakeId)
-                return;
-            await write({ ...row, status: 'accepted' });
+            await withMutationGate(file, async () => {
+                const row = await readRow();
+                if (row === null || row.wakeId !== wakeId)
+                    return;
+                await write({ ...row, status: 'accepted' });
+            });
         },
         async clear(wakeId) {
-            if (wakeId !== undefined) {
-                const row = await readRow();
-                if (row !== null && row.wakeId !== wakeId)
-                    return;
-            }
-            try {
-                await unlink(file);
-            }
-            catch (error) {
-                if (error.code !== 'ENOENT')
-                    throw error;
-            }
+            await withMutationGate(file, async () => {
+                if (wakeId !== undefined) {
+                    const row = await readRow();
+                    if (row !== null && row.wakeId !== wakeId)
+                        return;
+                }
+                try {
+                    await unlink(file);
+                }
+                catch (error) {
+                    if (error.code !== 'ENOENT')
+                        throw error;
+                }
+            });
         },
         async read() {
             return readRow();

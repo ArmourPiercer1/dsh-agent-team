@@ -55,7 +55,6 @@ export { recoverReviewWake as recoverLatch } from './wake-intent.js';
 export { claimReviewWake as claimLatch, createReviewWakeCoordinator as createLatchCoordinator, dispatchReviewWakes as dispatchLatch, planFingerprint as latchFingerprint, releaseReviewWake as releaseLatch, reviewWakeKeyFor as latchKeyFor, renderReviewWake as renderLatchWake, } from './wake-dispatch.js';
 /** The marker every review-wake message carries (the Host filters on it). */
 export declare const ALPHA6_WAKE_MARKER = "[team-review-wake";
-/** One dispatch cycle's dependency set. */
 export interface WakeDispatchDeps {
     /** The router-first plan; held/human entries are surfaced, never dispatched. */
     readonly plan: WakePlan;

@@ -107,6 +107,7 @@ import { createControlService, createLeaderControlNotifier } from '../../control
 import { createAlpha6RootWiring } from '../../alpha6/root-composition.js';
 import { collectAlpha6DelegableLegs, createAlpha6RootControlNotifier, } from '../../alpha6/notifier.js';
 import { createFileWakeIntentDirectory } from '../../alpha6/wake-intent-directory.js';
+import { pruneAbsentReviewWakeRow } from '../../alpha6/wake-intent.js';
 import { createAlpha6RootRouter } from '../../alpha6/root-router.js';
 import { createAlpha6CategoryLookup } from '../../alpha6/assigned-officer-facts.js';
 import { claimLatch, createLatchCoordinator, dispatchLatch, latchFingerprint, latchKeyFor, recoverLatch, releaseLatch, renderLatchWake, } from '../../alpha6/wake-dispatch.js';
@@ -171,6 +172,7 @@ import { createLiveResidencyOverlay } from './s6-live-overlay.js';
 import { computeTeamLiveToken } from './live-token.js';
 import { resolveSessionReadState } from './team-read-state.js';
 import { createServerPrincipalDerivation } from './s6-principal.js';
+import { isAbsolute } from 'node:path';
 import { createS6RemoteSurfaces, governanceStartRefusal } from './s6-remote.js';
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from './types.js';
@@ -1683,6 +1685,9 @@ export function createTeamProductionRoot(params) {
         blueprintSource: config.blueprintSource,
         rootSessionId: rootSid,
         leaderTemplateId: blueprint.leader.templateId,
+        // The SAME durable overlay the Alpha.5 authority plane reads. Dropping it
+        // made every frozen leg generation > 0 unresolvable by the Officer.
+        ...(permissionOverlay === undefined ? {} : { permissionOverlay }),
         // The LIVE member view: production creates members AFTER the control
         // service exists, so a snapshot would be empty/stale. The composition
         // re-resolves the unique RUNNING Officer on every query.
@@ -1719,15 +1724,48 @@ export function createTeamProductionRoot(params) {
     // between "decided to deliver" and "Inbox accepted" is unrecoverable and the
     // single-flight latch silently degrades to in-memory. A missing path is a
     // configuration refusal, never a quiet memory-only mode.
-    if (alpha6Wiring.mode === 'alpha6' && typeof config.alpha6WakeIntentPath !== 'string') {
-        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but no durable wake-intent path is configured; ' +
+    if (alpha6Wiring.mode === 'alpha6'
+        && (typeof config.alpha6WakeIntentPath !== 'string'
+            || config.alpha6WakeIntentPath.length === 0
+            || !isAbsolute(config.alpha6WakeIntentPath))) {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but no ABSOLUTE non-empty durable wake-intent path is configured; ' +
             'the Team refuses to boot without crash-safe single-flight state', { rootSessionId: rootSid, reason: 'alpha6-wake-intent-path-missing' });
+    }
+    if (alpha6Wiring.mode === 'alpha6' && live.reviewWakeInbox === undefined) {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but live.reviewWakeInbox is absent; ' +
+            'a Team without native Inbox recovery must not boot as durable', { rootSessionId: rootSid, reason: 'alpha6-review-wake-inbox-missing' });
     }
     const alpha6WakeIntents = alpha6Wiring.mode === 'alpha6'
         ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
         : undefined;
     const alpha6WakeCoordinators = new Map();
     const alpha6WakeBySession = new Map();
+    /**
+     * Process-local serialization for ONE latch. Boot recovery (after readiness)
+     * and a concurrent readiness-gated dispatch otherwise interleave at every
+     * await (recovery probe, store.clear), which can clobber a queued latch or
+     * delete the row of a message that was just delivered. Cross-process is
+     * excluded by the single-writer contract.
+     */
+    const alpha6WakeLocks = new Map();
+    const withAlpha6WakeLock = async (mapKey, fn) => {
+        const prior = alpha6WakeLocks.get(mapKey) ?? Promise.resolve();
+        let release = () => { };
+        const gate = new Promise((resolve) => { release = resolve; });
+        const tail = prior.then(() => gate);
+        alpha6WakeLocks.set(mapKey, tail);
+        await prior;
+        try {
+            return await fn();
+        }
+        finally {
+            release();
+            // Prune an idle latch key: if no later waiter replaced the tail, the map
+            // must not retain one settled promise per latch for the process lifetime.
+            if (alpha6WakeLocks.get(mapKey) === tail)
+                alpha6WakeLocks.delete(mapKey);
+        }
+    };
     const alpha6DispatchWake = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
         ? async (input) => {
             const wake = {
@@ -1737,38 +1775,41 @@ export function createTeamProductionRoot(params) {
                 routeRole: 'officer',
                 currentLegIds: input.currentLegIds,
             };
-            const key = latchKeyFor(wake, rootSid, 0);
+            const key = latchKeyFor(wake, rootSid, config.generation);
             const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`;
-            let coordinator = alpha6WakeCoordinators.get(mapKey);
-            if (coordinator === undefined) {
-                coordinator = createLatchCoordinator(key);
-                alpha6WakeCoordinators.set(mapKey, coordinator);
-            }
-            alpha6WakeBySession.set(input.targetSessionId, coordinator);
-            const intent = alpha6WakeIntents?.forKey(key);
-            const result = await dispatchLatch({
-                plan: { wakes: [wake], humanLegIds: [], held: [] },
-                rootSessionId: rootSid,
-                coordinators: [coordinator],
-                ...(intent === undefined ? {} : { intent }),
-                ...(live.reviewWakeInbox === undefined
-                    ? {}
-                    : { inbox: live.reviewWakeInbox(input.targetSessionId) }),
-                deliver: async (delivery, targetSessionId) => {
-                    if (live.deliverReviewWake === undefined) {
-                        throw new Error('Alpha.6 wake seam disappeared after boot');
-                    }
-                    await live.deliverReviewWake({
-                        rootSessionId: rootSid,
-                        targetSessionId,
-                        wakeId: delivery.wakeId,
-                        text: delivery.text,
-                    });
-                },
+            return withAlpha6WakeLock(mapKey, async () => {
+                let coordinator = alpha6WakeCoordinators.get(mapKey);
+                if (coordinator === undefined) {
+                    coordinator = createLatchCoordinator(key);
+                    alpha6WakeCoordinators.set(mapKey, coordinator);
+                }
+                alpha6WakeBySession.set(input.targetSessionId, coordinator);
+                const intent = alpha6WakeIntents?.forKey(key);
+                const result = await dispatchLatch({
+                    plan: { wakes: [wake], humanLegIds: [], held: [] },
+                    rootSessionId: rootSid,
+                    sessionGeneration: config.generation,
+                    coordinators: [coordinator],
+                    ...(intent === undefined ? {} : { intent }),
+                    ...(live.reviewWakeInbox === undefined
+                        ? {}
+                        : { inbox: live.reviewWakeInbox(input.targetSessionId) }),
+                    deliver: async (delivery, targetSessionId) => {
+                        if (live.deliverReviewWake === undefined) {
+                            throw new Error('Alpha.6 wake seam disappeared after boot');
+                        }
+                        await live.deliverReviewWake({
+                            rootSessionId: rootSid,
+                            targetSessionId,
+                            wakeId: delivery.wakeId,
+                            text: delivery.text,
+                        });
+                    },
+                });
+                if (result.failures.length > 0) {
+                    throw new Error(`Alpha.6 wake dispatch failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+                }
             });
-            if (result.failures.length > 0) {
-                throw new Error(`Alpha.6 wake dispatch failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
-            }
         }
         : undefined;
     const alpha6ReviewWakeTurnStart = alpha6Wiring.mode === 'alpha6'
@@ -1784,49 +1825,87 @@ export function createTeamProductionRoot(params) {
             const coordinator = alpha6WakeBySession.get(targetSessionId);
             if (coordinator === undefined || coordinator.state.status !== 'running')
                 return;
-            // The FRESH authoritative read answering the post-turn rescan: the
-            // same facts port and the same reviewer resolution as the notifier.
-            const current = controlRef.current;
-            const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
-            const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
-            const fresh = await collectAlpha6DelegableLegs({
-                rootSessionId: rootSid,
-                reviewerInstanceId,
-                readRequests: async () => requests,
-                reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
-                resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
-            });
-            const freshWake = {
-                reviewerInstanceId,
-                targetSessionId,
-                templateId: alpha6Wiring.officerTemplateId,
-                routeRole: 'officer',
-                currentLegIds: fresh.map((entry) => entry.requestId),
+            const releasedWakeId = coordinator.state.wakeId;
+            const readAndRelease = async () => {
+                // The FRESH authoritative read answering the post-turn rescan: the
+                // same facts port and the same reviewer resolution as the notifier.
+                const current = controlRef.current;
+                const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
+                const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
+                const fresh = await collectAlpha6DelegableLegs({
+                    rootSessionId: rootSid,
+                    reviewerInstanceId,
+                    readRequests: async () => requests,
+                    reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                    resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                    // The SAME recipient truth as the notifier: the turn-end rescan
+                    // must not re-deliver a Leader/held leg to the Officer.
+                    ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+                });
+                const freshWake = {
+                    reviewerInstanceId,
+                    targetSessionId,
+                    templateId: alpha6Wiring.officerTemplateId,
+                    routeRole: 'officer',
+                    currentLegIds: fresh.map((entry) => entry.requestId),
+                };
+                const work = fresh.length === 0
+                    ? { kind: 'no-ready-work' }
+                    : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
+                const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
+                const result = await releaseLatch(coordinator, work, {
+                    ...(intent === undefined ? {} : { intent }),
+                    ...(live.reviewWakeInbox === undefined
+                        ? {}
+                        : { inbox: live.reviewWakeInbox(targetSessionId) }),
+                    deliver: async (delivery) => {
+                        if (live.deliverReviewWake === undefined) {
+                            throw new Error('Alpha.6 wake seam disappeared after boot');
+                        }
+                        await live.deliverReviewWake({
+                            rootSessionId: rootSid,
+                            targetSessionId,
+                            wakeId: delivery.wakeId,
+                            text: renderLatchWake(delivery),
+                        });
+                    },
+                });
+                if (result.failures.length > 0) {
+                    throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+                }
             };
-            const work = fresh.length === 0
-                ? { kind: 'no-ready-work' }
-                : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
-            const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
-            const result = await releaseLatch(coordinator, work, {
-                ...(intent === undefined ? {} : { intent }),
-                ...(live.reviewWakeInbox === undefined
-                    ? {}
-                    : { inbox: live.reviewWakeInbox(targetSessionId) }),
-                deliver: async (delivery) => {
-                    if (live.deliverReviewWake === undefined) {
-                        throw new Error('Alpha.6 wake seam disappeared after boot');
-                    }
-                    await live.deliverReviewWake({
-                        rootSessionId: rootSid,
-                        targetSessionId,
-                        wakeId: delivery.wakeId,
-                        text: renderLatchWake(delivery),
-                    });
-                },
-            });
-            if (result.failures.length > 0) {
-                throw new Error(`Alpha.6 wake release failed: ${result.failures.map((failure) => failure.message).join('; ')}`);
+            // One retry is deliberate: the failing step is usually the FRESH
+            // control read, and a transient fault must not discard the post-turn
+            // rescan (turn-end clears `dirty`, so nothing else would re-read).
+            let lastError;
+            for (let attempt = 0; attempt < 2; attempt += 1) {
+                try {
+                    await readAndRelease();
+                    return;
+                }
+                catch (error) {
+                    lastError = error;
+                    if (coordinator.state.status !== 'running')
+                        break;
+                }
             }
+            // The retry also failed. The single-flight latch must not stay
+            // `running` (later plans only poll and no turn can end again), so
+            // release it and drop the consumed message's intent row so boot
+            // recovery does not adopt a wake whose turn already ended.
+            if (coordinator.state.status === 'running')
+                coordinator.dispatch({ type: 'turn-end' });
+            if (releasedWakeId !== null && alpha6WakeIntents !== undefined) {
+                try {
+                    await alpha6WakeIntents.forKey(coordinator.state.key).clear(releasedWakeId);
+                }
+                catch { /* the release above is still the liveness fix */ }
+            }
+            params.onNotificationFailure?.({
+                requestId: releasedWakeId ?? 'alpha6-review-wake',
+                kind: 'review-wake-turn-end',
+                error: lastError,
+            });
         }
         : undefined;
     const alpha6RecoverWakeLatches = alpha6Wiring.mode === 'alpha6' &&
@@ -1836,17 +1915,143 @@ export function createTeamProductionRoot(params) {
             // ONE row per latch: adopt each independently; a row whose native
             // Inbox message is gone is discarded by the recovery protocol.
             for (const intent of await alpha6WakeIntents.list()) {
+                // A shared intent path may carry another Team's rows. Never adopt
+                // or clear them from this root.
+                if (intent.key.rootSessionId !== rootSid)
+                    continue;
+                if (intent.key.sessionGeneration !== config.generation) {
+                    // A generation bump invalidates the old latch identity. Withdraw
+                    // its native message (when the member is still bound) and clear
+                    // the row; keep it if the Inbox cannot confirm the withdrawal.
+                    const staleMember = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                    const staleSessionId = staleMember?.childSessionId;
+                    let removable = true;
+                    if (typeof staleSessionId === 'string' && staleSessionId.length > 0) {
+                        const inbox = live.reviewWakeInbox?.(staleSessionId);
+                        if (inbox?.remove === undefined) {
+                            removable = false;
+                        }
+                        else {
+                            try {
+                                const removed = await inbox.remove(intent.wakeId);
+                                if (removed === false) {
+                                    // The message was not withdrawn. Clear only when the
+                                    // Inbox positively says it is already absent; an
+                                    // unreadable probe keeps the row for a later boot.
+                                    removable = (await inbox.has(intent.wakeId)) === false;
+                                }
+                            }
+                            catch {
+                                removable = false;
+                            }
+                        }
+                    }
+                    if (removable) {
+                        try {
+                            await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                        }
+                        catch (error) {
+                            params.onNotificationFailure?.({
+                                requestId: intent.wakeId,
+                                kind: 'review-wake-stale-generation',
+                                error,
+                            });
+                        }
+                    }
+                    continue;
+                }
                 const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
                 const targetSessionId = member?.childSessionId;
-                if (typeof targetSessionId !== 'string' || targetSessionId.length === 0)
+                if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
+                    // No child session means no native Inbox can ever hold this
+                    // latch. Clearing the stale row is the only terminal answer;
+                    // leaving it would be re-read (and skipped) on every boot.
+                    try {
+                        await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                    }
+                    catch (error) {
+                        params.onNotificationFailure?.({
+                            requestId: intent.wakeId,
+                            kind: 'review-wake-orphan-intent',
+                            error,
+                        });
+                    }
                     continue;
-                const coordinator = createLatchCoordinator(intent.key);
-                const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
-                if (!recovered.adopted)
-                    continue;
+                }
                 const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
-                alpha6WakeCoordinators.set(mapKey, coordinator);
-                alpha6WakeBySession.set(targetSessionId, coordinator);
+                let rebuild = false;
+                await withAlpha6WakeLock(mapKey, async () => {
+                    // A concurrent readiness-gated dispatch may already own this
+                    // latch. Its coordinator is authoritative; never recover over it.
+                    if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId))
+                        return;
+                    const coordinator = createLatchCoordinator(intent.key);
+                    // Register BEFORE the first await: recovery now runs after
+                    // readiness. The lock is what makes the registration + probe +
+                    // clear atomic against a concurrent dispatch (which takes the
+                    // same lock), so the probe cannot resolve onto a latch the
+                    // dispatch already moved.
+                    alpha6WakeCoordinators.set(mapKey, coordinator);
+                    alpha6WakeBySession.set(targetSessionId, coordinator);
+                    const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
+                    // Only a row the protocol actually discarded may be rebuilt. An
+                    // unreadable Inbox, a concurrent state change, a refusal or a
+                    // sticky Stop must keep the registered coordinator and row.
+                    if (recovered.reason !== 'absent' && recovered.reason !== 'mismatch')
+                        return;
+                    if (alpha6WakeCoordinators.get(mapKey) === coordinator)
+                        alpha6WakeCoordinators.delete(mapKey);
+                    if (alpha6WakeBySession.get(targetSessionId) === coordinator)
+                        alpha6WakeBySession.delete(targetSessionId);
+                    rebuild = true;
+                });
+                if (!rebuild)
+                    continue;
+                // Windows (b)/(d): the native message is gone (claimed and consumed
+                // by a crashed turn, or never delivered). Rebuild the wake from the
+                // durable ledger in THIS boot; dispatch re-converges with any
+                // concurrent notification through the same map + in-flight guard.
+                // A sticky Stop outranks re-waking.
+                let rebuiltWork = false;
+                if (!alpha6WakeCoordinators.has(mapKey) && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
+                    const current = controlRef.current;
+                    const requests = (await current.readControlState(rootSid)).requests;
+                    const fresh = await collectAlpha6DelegableLegs({
+                        rootSessionId: rootSid,
+                        reviewerInstanceId: intent.key.reviewerInstanceId,
+                        readRequests: async () => requests,
+                        reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                        resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                        ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
+                    });
+                    if (fresh.length > 0) {
+                        await alpha6DispatchWake({
+                            reviewerInstanceId: intent.key.reviewerInstanceId,
+                            targetSessionId,
+                            currentLegIds: fresh.map((entry) => entry.requestId),
+                        });
+                        rebuiltWork = true;
+                    }
+                }
+                if (!rebuiltWork) {
+                    // No fresh work and no live coordinator: drop the stale absent
+                    // row, but only after the Inbox positively confirms the message
+                    // is gone. Unreadable keeps it for the next boot; a concurrent
+                    // dispatch that delivered meanwhile is seen as a registered
+                    // coordinator and keeps its fresh row.
+                    await withAlpha6WakeLock(mapKey, async () => {
+                        if (alpha6WakeCoordinators.has(mapKey) || alpha6WakeBySession.has(targetSessionId))
+                            return;
+                        const inbox = live.reviewWakeInbox?.(targetSessionId);
+                        if (inbox === undefined)
+                            return;
+                        await pruneAbsentReviewWakeRow({
+                            store: alpha6WakeIntents.forKey(intent.key),
+                            wakeId: intent.wakeId,
+                            inbox,
+                        });
+                    });
+                }
             }
         }
         : undefined;

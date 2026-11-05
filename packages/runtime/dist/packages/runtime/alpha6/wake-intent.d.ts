@@ -30,6 +30,19 @@
  * @module @dsh-agent-team/runtime/alpha6/wake-intent
  */
 import type { ReviewWakeCoordinator, ReviewWakeKey, ReviewWakeTransition } from '../review-wake/index.js';
+/**
+ * Drop a stale row after a plan found no fresh work for it. The caller MUST
+ * hold the same per-latch lock that serializes dispatch, and must already have
+ * checked that no coordinator/session registration exists. The Inbox is the
+ * authority: only a positive `false` clears; an unreadable probe or a live
+ * message keeps the row. `store.clear(wakeId)` is itself row-conditional, so a
+ * concurrent replacement with a different wakeId is never deleted.
+ */
+export declare function pruneAbsentReviewWakeRow(input: {
+    readonly store: ReviewWakeIntentStore;
+    readonly wakeId: string;
+    readonly inbox: Pick<ReviewWakeInboxPort, 'has'>;
+}): Promise<'cleared' | 'kept' | 'unreadable' | 'clear-failed'>;
 /** What the reducer decided to deliver, before any Host call. */
 export interface ReviewWakeQueuedIntent {
     readonly key: ReviewWakeKey;
@@ -63,13 +76,17 @@ export interface ReviewWakeIntentStore {
  */
 export interface ReviewWakeInboxPort {
     has(wakeId: string): boolean | Promise<boolean>;
-    remove?(wakeId: string): void | Promise<void>;
+    remove?(wakeId: string): void | boolean | Promise<void | boolean>;
 }
 /** One recovery outcome. `transition` is the reducer's answer (never effects). */
 export interface ReviewWakeRecoverResult {
     /** True only when the latch is now `queued` for an existing Inbox message. */
     readonly adopted: boolean;
     readonly wakeId: string | null;
+    /** Why recovery ended this way. The caller MUST NOT re-plan on `unreadable`,
+     *  `busy`, `refused` or `stopped`: a live/concurrent latch or a durable row
+     *  may still exist. Only `absent`/`mismatch` may be rebuilt at boot. */
+    readonly reason: 'adopted' | 'absent' | 'mismatch' | 'unreadable' | 'stopped' | 'refused' | 'busy';
     readonly transition: ReviewWakeTransition;
 }
 /**

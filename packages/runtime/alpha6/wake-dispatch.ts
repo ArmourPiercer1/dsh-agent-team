@@ -83,6 +83,14 @@ export {
 export const ALPHA6_WAKE_MARKER = '[team-review-wake'
 
 /** One dispatch cycle's dependency set. */
+/**
+ * Wake ids whose persist/deliver/mark is in flight in THIS process. A queued
+ * reducer state is published before the async delivery completes, so a second
+ * notification arriving in that window would otherwise see "queued but not in
+ * the Inbox" and release a delivery that is merely still starting.
+ */
+const inFlightWakeIds = new Set<string>()
+
 export interface WakeDispatchDeps {
   /** The router-first plan; held/human entries are surfaced, never dispatched. */
   readonly plan: WakePlan
@@ -358,6 +366,11 @@ export async function dispatchReviewWakes(
       continue
     }
 
+    // A queued latch whose native message disappeared (interrupt/cancel,
+    // session clear, a non-throwing remove) is otherwise a permanent wedge:
+    // every later plan takes this same branch and no turn can claim it.
+    const queuedWakeId = coordinator.state.status === 'queued' ? coordinator.state.wakeId : null
+
     // The merged authoritative read answering the poll/activation rescan.
     const scanned = coordinator.dispatch({
       type: 'scan-result',
@@ -371,7 +384,26 @@ export async function dispatchReviewWakes(
       continue
     }
 
-    const effect = deliverEffect(scanned)
+    let effect = deliverEffect(scanned)
+    if (effect === undefined && queuedWakeId !== null && deps.inbox !== undefined) {
+      let present = true
+      try {
+        present = await deps.inbox.has(queuedWakeId)
+      } catch {
+        // An unreadable Inbox is not evidence of absence: do not release on it.
+        present = true
+      }
+      if (!present && !inFlightWakeIds.has(queuedWakeId)) {
+        const released = coordinator.dispatch({ type: 'delivery-failed', wakeId: queuedWakeId })
+        if (released.outcome === 'applied') {
+          const rescanned = coordinator.dispatch({
+            type: 'scan-result',
+            work: { kind: 'ready', fingerprint },
+          })
+          if (rescanned.outcome === 'applied') effect = deliverEffect(rescanned)
+        }
+      }
+    }
     if (effect === undefined) {
       // Queued (one wake already outstanding) or idle at the same fingerprint
       // (pending-but-unchanged, bounded suppression). No second delivery.
@@ -379,6 +411,8 @@ export async function dispatchReviewWakes(
       continue
     }
 
+    inFlightWakeIds.add(effect.wakeId)
+    let accepted = false
     try {
       // Crash window (a)/(b): the intent is durable BEFORE the Inbox call, so
       // "decided but not delivered" is visible to recovery and can be
@@ -389,10 +423,40 @@ export async function dispatchReviewWakes(
         workFingerprint: effect.workFingerprint,
       })
       await deliver(effect)
-      // Crash window (c): the Inbox has the message, but the local mark may be
-      // lost. Recovery adopts from the Inbox truth, not from this call.
-      await deps.intent?.markAccepted(effect.wakeId)
+      accepted = true
     } catch (error) {
+      // A transport can throw AFTER the native Inbox accepted the message.
+      // Treating that as "never delivered" would clear the intent and release
+      // the latch, and the next deterministic scan would deliver a duplicate.
+      let landed: boolean | null = false
+      if (deps.inbox !== undefined) {
+        try {
+          landed = await deps.inbox.has(effect.wakeId)
+        } catch {
+          landed = null
+        }
+      }
+      if (landed === null) {
+        // Unreadable Inbox: absence is unproven. Keep the queued row and retry
+        // on the next plan instead of clearing and duplicating.
+        inFlightWakeIds.delete(effect.wakeId)
+        failures.push({
+          sessionId: wake.reviewerInstanceId,
+          scope: 'delivery',
+          message: 'the native Inbox was unreadable after the delivery failed',
+          wakeId: effect.wakeId,
+        })
+        deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
+        continue
+      }
+      if (landed) {
+        try { await deps.intent?.markAccepted(effect.wakeId) } catch { /* Inbox is truth */ }
+        inFlightWakeIds.delete(effect.wakeId)
+        const entry = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
+        deliveries.push(entry)
+        delivered.push(entry)
+        continue
+      }
       // A port failure is the reducer's `delivery-failed`: it releases
       // `queued`, resets the baseline and is never a claimed success. The
       // intent row goes too: there is no delivered wake to recover.
@@ -420,13 +484,36 @@ export async function dispatchReviewWakes(
           wakeId: effect.wakeId,
         })
       }
+      inFlightWakeIds.delete(effect.wakeId)
       deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
       continue
+    }
+    if (accepted) {
+      try {
+        // Crash window (c): the Inbox has the message, but the local mark may
+        // be lost. Recovery adopts from the Inbox truth, not from this call.
+        await deps.intent?.markAccepted(effect.wakeId)
+      } catch (error) {
+        // The Inbox ALREADY accepted the wake. A local mark failure must not
+        // be reported as a delivery failure (that would release `queued` and
+        // let the next plan deliver the same wakeId again). Keep the durable
+        // intent `queued`; boot recovery reconciles it from the Inbox truth.
+        failures.push({
+          sessionId: wake.reviewerInstanceId,
+          scope: 'delivery',
+          message: `wake accepted by the Inbox but markAccepted failed: ${error instanceof Error ? error.message : String(error)}`,
+          wakeId: effect.wakeId,
+        })
+        inFlightWakeIds.delete(effect.wakeId)
+        deliveries.push(outcome(wake, key, fingerprint, coordinator, true, effect.wakeId))
+        continue
+      }
     }
 
     // Inbox acceptance is QUEUED, never claimed: the wake sits in the native
     // Inbox until the Host starts a turn. The dispatcher does not synthesize
     // `turn-start`/`turn-end`; `claimReviewWake`/`releaseReviewWake` own them.
+    inFlightWakeIds.delete(effect.wakeId)
     const entry = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
     deliveries.push(entry)
     delivered.push(entry)
@@ -602,15 +689,18 @@ export async function releaseReviewWake(
     effects.push(...transition.effects)
   }
 
-  // The released turn's Inbox message was consumed at the turn boundary.
-  if (releasedWakeId !== null) await clearIntent(options.intent, releasedWakeId)
-
   // Drain EVERY effect. `rescan` was answered above; `deliver-wake` and
   // `withdraw-wake` are consumed here.
   for (const effect of effects) {
     if (effect.kind === 'withdraw-wake') {
       try {
-        await options.inbox?.remove?.(effect.wakeId)
+        if (options.inbox?.remove === undefined) {
+          throw new Error('review-wake: withdraw-wake requires an Inbox remove port')
+        }
+        const removed = await options.inbox.remove(effect.wakeId)
+        if (removed === false) {
+          throw new Error('review-wake: the native Inbox refused the withdraw')
+        }
         await options.intent?.clear(effect.wakeId)
         withdrawn.push(effect.wakeId)
       } catch (error) {
@@ -630,6 +720,7 @@ export async function releaseReviewWake(
         'review-wake: release emitted a deliver-wake effect but no delivery port was supplied',
       )
     }
+    inFlightWakeIds.add(effect.wakeId)
     try {
       await options.intent?.persistQueued({
         key: effect.key,
@@ -637,9 +728,35 @@ export async function releaseReviewWake(
         workFingerprint: effect.workFingerprint,
       })
       await options.deliver(effect)
-      await options.intent?.markAccepted(effect.wakeId)
-      delivered.push(effect.wakeId)
     } catch (error) {
+      let landed: boolean | null = false
+      if (options.inbox !== undefined) {
+        try {
+          landed = await options.inbox.has(effect.wakeId)
+        } catch {
+          landed = null
+        }
+      }
+      if (landed === null) {
+        // The Inbox is unreadable, so absence is unproven. Keep the queued row
+        // and let a later plan retry; releasing here would duplicate.
+        inFlightWakeIds.delete(effect.wakeId)
+        failures.push({
+          scope: 'delivery',
+          message: 'the native Inbox was unreadable after the release delivery failed',
+          wakeId: effect.wakeId,
+        })
+        continue
+      }
+      if (landed) {
+        try { await options.intent?.markAccepted(effect.wakeId) } catch { /* Inbox is truth */ }
+        inFlightWakeIds.delete(effect.wakeId)
+        delivered.push(effect.wakeId)
+        continue
+      }
+      // The message never reached the Inbox: clearing the intent and moving
+      // the latch to delivery-failed is safe (nothing was delivered).
+      inFlightWakeIds.delete(effect.wakeId)
       await clearIntent(options.intent, effect.wakeId)
       const failed = coordinator.dispatch({
         type: 'delivery-failed',
@@ -657,8 +774,24 @@ export async function releaseReviewWake(
           wakeId: effect.wakeId,
         })
       }
+      continue
     }
+    try {
+      await options.intent?.markAccepted(effect.wakeId)
+    } catch {
+      // The Inbox is the truth: the message WAS delivered. Clearing the intent
+      // or dispatching delivery-failed here would re-deliver on the next scan
+      // and duplicate the wake. Leave the queued row for Inbox-truthful
+      // recovery adoption (window c) and count the delivery as done.
+    }
+    inFlightWakeIds.delete(effect.wakeId)
+    delivered.push(effect.wakeId)
   }
+
+  // Clear the released turn's consumed Inbox message LAST: a fresh intent must
+  // be durable before its predecessor disappears, or a crash in between
+  // leaves a queued latch with no row for boot recovery to enumerate.
+  if (releasedWakeId !== null) await clearIntent(options.intent, releasedWakeId)
 
   return releaseSnapshot(coordinator, transition, effects, delivered, withdrawn, failures)
 }
@@ -733,7 +866,13 @@ export async function reconcileReviewWakes(
     )
     for (const effect of withdrawals) {
       try {
-        await deps.inbox?.remove?.(effect.wakeId)
+        if (deps.inbox?.remove === undefined) {
+          throw new Error('review-wake: withdraw-wake requires an Inbox remove port')
+        }
+        const removed = await deps.inbox.remove(effect.wakeId)
+        if (removed === false) {
+          throw new Error('review-wake: the native Inbox refused the withdraw')
+        }
         await deps.intent?.clear(effect.wakeId)
         wakeIds.push(effect.wakeId)
       } catch (error) {

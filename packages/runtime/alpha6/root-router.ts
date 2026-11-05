@@ -69,12 +69,18 @@ function leaderTargetOf(
   members: readonly AssignedOfficerMemberSnapshot[],
   leaderTemplateId: string,
 ): ReviewLeaderTarget | null {
+  // The production Leader row is the contracts-v2 LeaderInstanceRecord: it
+  // has NO lifecycle and NO childSessionId (fresh-root.ts mints it that way).
+  // Identity is template + instance, and an EXPLICIT terminal lifecycle is the
+  // only thing that disqualifies it. Requiring RUNNING here made every Leader
+  // route degrade to hold('leader-unavailable') on a real boot.
   const leader = members.find(
     (member) =>
       member.templateId === leaderTemplateId &&
-      member.lifecycle === 'RUNNING' &&
       typeof member.instanceId === 'string' &&
-      member.instanceId.length > 0,
+      member.instanceId.length > 0 &&
+      member.lifecycle !== 'ARCHIVED' &&
+      member.lifecycle !== 'DISPOSED',
   )
   return leader === undefined
     ? null

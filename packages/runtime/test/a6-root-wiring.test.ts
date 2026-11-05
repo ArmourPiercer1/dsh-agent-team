@@ -211,6 +211,7 @@ describe('A6 root wiring — production entry opt-in', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the P8-S5A stub glue double
       const live: any = createStubBindings({ config, teamToolsRef, domain })
       if (withWake) live.deliverReviewWake = async (): Promise<void> => undefined
+      live.reviewWakeInbox = () => ({ has: (): boolean => true })
       return createTeamProductionRoot({
         config,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
@@ -293,6 +294,9 @@ describe('A6 root wiring — production entry opt-in', () => {
     live.deliverReviewWake = async (input: { targetSessionId: string; wakeId: string; text: string }) => {
       wakes.push(input)
     }
+    live.reviewWakeInbox = (targetSessionId: string) => ({
+      has: (wakeId: string): boolean => wakes.some((w) => w.targetSessionId === targetSessionId && w.wakeId === wakeId),
+    })
     const root = createTeamProductionRoot({
       config,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the real TeamDomain satisfies the structural port
@@ -305,6 +309,11 @@ describe('A6 root wiring — production entry opt-in', () => {
       legacyInspect: (() => { throw new Error('legacy inspect unused') }) as never,
       fsContainsKeys: () => true,
       permissionPlaneRef: { current: undefined },
+      // A frozen leg generation > 0 resolves ONLY through the forwarded live
+      // overlay; without it the facts port answers null and no wake is ever
+      // routed (the generation-0 fixture used to hide exactly that).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- latest-only overlay double
+      permissionOverlay: { latest: async () => ({ metadata: { generation: 1 } }) } as any,
       onNotificationFailure: (failure) => {
         notificationFailures.push(failure.error)
       },
@@ -349,7 +358,7 @@ describe('A6 root wiring — production entry opt-in', () => {
         operationToolOwner: 'a6-root',
         operationToolName: 'team_bash',
         perEffectRequiredAuthorities: ['leader'],
-        authorityGeneration: 0,
+        authorityGeneration: 1,
         blueprintContentHash: parsedBlueprint.contentHash,
         blueprintRevision: parsedBlueprint.revision,
       })
@@ -399,6 +408,9 @@ describe('A6 root router — recipient comes from the SHARED router, never "the 
     whenOfficerUnavailable: 'hold' as const,
   }
   const leader = { instanceId: 'inst-leader', templateId: 'leader', childSessionId: 'session-root', lifecycle: 'RUNNING', rootSessionId: root }
+  // The REAL production Leader row (contracts-v2 LeaderInstanceRecord): no
+  // lifecycle, no childSessionId. It must still be a legal Leader target.
+  const productionLeader = { instanceId: 'inst-leader', templateId: 'leader', rootSessionId: root }
   const officer = { instanceId: 'inst-officer', templateId: 'officer', childSessionId: 'session-officer', lifecycle: 'RUNNING', rootSessionId: root }
   const worker = { instanceId: 'inst-worker', templateId: 'worker', childSessionId: 'session-worker', lifecycle: 'RUNNING', rootSessionId: root }
   const baseRow = {
@@ -446,6 +458,14 @@ describe('A6 root router — recipient comes from the SHARED router, never "the 
 
   it('routes the Officer self-ask to the Leader', async () => {
     const route = await (await makeRouter([{ ...baseRow, operationOwnerTemplateId: 'officer' }], [leader, officer, worker])).route('req-1')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('routes a self-ask to the production v2 Leader row (no lifecycle/childSessionId)', async () => {
+    const route = await (await makeRouter(
+      [{ ...baseRow, operationOwnerTemplateId: 'officer' }],
+      [productionLeader, officer, worker],
+    )).route('req-1')
     expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
   })
 

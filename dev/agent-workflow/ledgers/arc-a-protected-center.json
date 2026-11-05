@@ -232,6 +232,12 @@
       "sha256": "b013c35117574afcddabc5eb6a47d26237e80ad50de253a52f6c16ad011cc723",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
       "reason": "Named Alpha.6 center-interface addition: the live Inbox probe (materialises the target session for durable recovery) and the opt-in v5 PA case-leg selection (freezes the trusted owner template and bound Blueprint identity; v4/default stays on the legacy requestControl path). No new authority, decision or durable write."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "abd425cc74c7d59038cef4ee89dfd8200b0b808c73aa8e6eb094af35a509a840",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft)",
+      "reason": "Same PR, review-wake liveness correction: has()/remove() now throw when the target session cannot be materialised, so an unreadable native Inbox is never mistaken for an absent message (which previously released the latch, cleared a live intent row and re-delivered a duplicate wake). No new authority, decision or durable write."
     }
   ]
 }
