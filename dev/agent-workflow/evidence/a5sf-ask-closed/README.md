@@ -180,6 +180,13 @@ the baseline count grows by `42 + 11 − (37 + 9)` = 7 net test entries and no e
 | `matchLocator` (exported algebra) | n/a | still answers `'ask'`; **no production caller** in `packages/**/src` (only tests) — a future consumer that ignored it would reintroduce this class, which is why the admission chokepoint, not the helper, is the enforced seam |
 | a Member with no compiled realm | no lane exists | base Provider; **no ask decision exists** — pre-existing unmanaged path, out of this lane |
 
+Boundary, stated rather than implied: the answer covers the CLOSED managed surface (`MANAGED_FS_METHODS` plus
+the subprocess guard). A `ctx.fs` method OUTSIDE that set is not overridden by the confined subclass, so it
+carries no lane decision at all — that is a pre-existing capability-coverage property of the install seam
+(`requireProviderCapabilities` refuses a missing needed method and never treats an extra one as a managed
+capability), not an `ask` decision that was granted. It is not widened by this fix and is not a fail-open of the
+ask lane.
+
 Until BL-30 wires real one-shot approval consumption, `ask` **always** refuses. That is the intended interim
 state: an author who wants per-call approval gets a typed refusal, never a silent allow.
 
