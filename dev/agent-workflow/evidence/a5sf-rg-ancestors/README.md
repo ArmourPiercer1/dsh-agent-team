@@ -91,7 +91,8 @@ async admission, after the declared argv passed the allow-list):
    - `.git` found but **denied** (e.g. an explicit `deny`) → not contained;
    - the next ancestor is **outside the lane** → not contained;
    - reached `/` through allowed paths → nothing above to read; contained.
-   A FILE operand is skipped (measured: `rg` does no parent discovery for a file).
+   A FILE operand is skipped (verified by the reviewer with the packaged `rg`: no
+   parent discovery happens for a file operand, so no flags are needed).
 3. If any root is not contained, add **both** flags after `--no-config` (before
    the first `--`, so the operand list is unchanged):
    `--no-ignore-parent --no-ignore-vcs`.
@@ -106,12 +107,24 @@ argv and ordinary `.gitignore` semantics — there is no global semantic change.
 
 | Lane shape | argv | `.gitignore` / `.git/info/exclude` |
 | --- | --- | --- |
-| Lane includes the worktree root, or a `.git` inside the lane | unchanged | applied exactly as before |
+| Lane includes the worktree root **and** its `.git` is ALLOWED (the ordinary checkout) | unchanged | applied exactly as before |
 | Lane admits only the search root (the live row-1 shape) | `+ --no-ignore-parent --no-ignore-vcs` | **NOT applied**: files a `.gitignore` would hide under the search root ARE searched; parent ignore files are not read; `.git` is not read |
 
 The second row is a deliberate, disclosed trade: a usable search with fewer
 ignore rules beats a search that cannot run. `.ignore` files under the root still
 apply (only VCS/parent discovery is disabled).
+
+**Correction (2026-11-05): the first row used to read "…or a `.git` inside the
+lane", which contradicted the bullet above it.** A `.git` that the lane
+*contains but denies* is not "inside" for containment purposes: the walk stops
+at it and both flags are added (the second row's argv), exactly as the
+`denied` bullet says. That branch is, however, **unreachable through the
+Blueprint compiler**: `compileExecutionProfile` refuses a deny nested inside an
+allowed subtree (`team-sandbox/src/profile.ts:100` — "the OS backend has no
+negative rules, so this profile cannot be expressed without widening"), so a
+`deny: [<root>/.git]` under an allowed `<root>` is rejected at compile time and
+never reaches the walk. It stays implemented (and unit-tested) because the walk
+must be sound for a hand-built profile too; it is not a live lane shape.
 
 ### The disclosure (explicit, on the same fact)
 
@@ -130,6 +143,34 @@ annotations: [
 A fact without annotations is byte-identical to the previous schema (the key is
 absent, not `undefined`), so old sinks and the `a5sf-service-install` round-trip
 are unchanged.
+
+### What the disclosure may NOT say: the deny fact carried an execution claim (fixed 2026-11-05)
+
+The annotations above describe **the invocation that ran** ("rg ran with
+`--no-ignore-parent --no-ignore-vcs` … `.git` was not read"). `observeGuard`
+attached them to **every** fact the call produced, including a `deny` — and a
+deny is decided *before* the confined Provider is called, so no process exists.
+The independent review's reproduction: a **denied directory search root** (an
+absolute root outside the Member's lane) is refused at admission with one typed
+`IO_READ_DENIED` deny fact and **zero spawns**, yet the fact carried both
+annotations above, i.e. it claimed a search ran while nothing ran. The
+`.git`-file operand case does not even reach here (`A2`: also zero spawns, but
+that arm's root is a file, so it was the wrong witness for the claim).
+
+Fix (`guard-observability.ts`): annotations are attached only when
+`decision === 'allow'`. A deny (or `ask`) fact is the refusal itself and now
+carries no `annotations` key at all — byte-identical to the pre-annotation
+schema. The allow path is unchanged (same fact, same two strings, same order).
+
+Red → green, on the denied **directory** root (`a5sf-confined-subprocess.test.ts`,
+arm "a DENIED directory search root: the deny fact carries NO execution claim"):
+
+- RED (pre-fix expression restored): `expected [ …(2) ] to be undefined`, received
+  exactly the two annotation strings quoted above — with `spawnCalls 0`.
+- GREEN: `1 failed | 35 passed` → `36 passed (36)`; the same arm asserts one
+  fact, `decision: 'deny'`, `decidedBy: 'IO_READ_DENIED'`, `annotations`
+  undefined, `spawnCalls 0`. `a5sf-bl16-grep-realm` (10) also passes.
+- Logs: `deny-annotation-red.log`, `deny-annotation-green.log` (same directory).
 
 ## 4. Why `.git` confidentiality is unchanged
 
@@ -286,9 +327,9 @@ re-judge still requires a fresh start ruling; this round spent none (no boot).
    vary with the host's `HOME` configuration when `HOME` happens to be in the
    lane; in the confined Member lane it is outside and not applied.
 4. **A file operand is not walked.** `rg` does no parent discovery for a file
-   argument (measured), so no flags are added; if a future `rg` version changes
-   that, the file case would fail again. The suite's file-operand arm pins the
-   current measurement.
+   argument (verified by the reviewer against the packaged `rg`), so no flags are
+   added; if a future `rg` version changes that, the file case would fail again.
+   The suite's file-operand arm pins the current measurement.
 5. **The annotation is evidence transport, not a UI surface.** The Member's tool
    text is produced by the pinned upstream module and does not mention the
    flags; the recorded answer lives in the guard fact and the `confined-spawn`

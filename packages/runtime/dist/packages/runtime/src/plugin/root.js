@@ -1450,12 +1450,20 @@ export function createTeamProductionRoot(params) {
     const lifecyclePorts = {
         teamDomain: domain,
         commit: lifecycleCommit,
-        // The frozen boot world never disposes a team; the old harness wiring
-        // closed new work admission as a no-op (no in-process admission state
-        // exists in the S5A world — the compatibility authority is the gate).
+        // The per-member ADMISSION CLOSE (row 6, 2026-11-05): the in-process half
+        // of the archive/dispose boundary. The old wiring was a no-op, which left
+        // the drop→commit window open — the durable row still reads SETTLED while
+        // the quiesce has already dropped residency, so a dispatch could cold-
+        // resume the member and the handle survived the commit. `live` now keeps a
+        // process-local close that `ensureLiveAgent` / `executeTool` consult; the
+        // procedure reopens it on every exit (quiesce.ts), the durable lifecycle
+        // being the authority after the commit.
         admission: {
-            closeNewWork: async (_target) => {
-                // no-op (boot world: no live admission state to close)
+            closeNewWork: async (target) => {
+                live.closeAdmission(target);
+            },
+            reopenNewWork: async (target) => {
+                live.reopenAdmission(target);
             },
         },
         activity: {

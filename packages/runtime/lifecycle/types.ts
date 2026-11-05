@@ -122,6 +122,22 @@ export interface AdmissionClosePort {
    * @param target - the composite member identity.
    */
   closeNewWork(target: LifecycleTarget): Promise<void>
+  /**
+   * REOPEN new-work admission for one member — the counterpart of
+   * {@link closeNewWork}, run by Archive/Dispose on EVERY exit (committed,
+   * aborted, or faulted). Optional: the mock-first port of earlier waves had
+   * no reopen, and the production close is process-local, so an absent method
+   * is a no-op.
+   *
+   * Why the PROCEDURE owns the lifetime: the close must cover exactly the
+   * window between step 1 and the durable commit. After a successful commit
+   * the DURABLE lifecycle is the authority (an ARCHIVED/DISPOSED member is
+   * refused by the glue's durable gate / the P6 work-accepting gate); after a
+   * FAILED operation the member is still SETTLED and leaving the close set
+   * would brick it in-process. Neither outcome may keep the close.
+   * @param target - the composite member identity.
+   */
+  reopenNewWork?(target: LifecycleTarget): Promise<void>
 }
 
 /**

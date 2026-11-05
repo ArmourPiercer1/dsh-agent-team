@@ -7630,3 +7630,23 @@ node scripts/ci-pr-gate.mjs                   → DSH-CI-VERDICT fail pass=5 fai
     skip: census（NOT RUN — opt-in; --full 才跑）
 ```
 `install` / `typecheck` / `artifacts-at-head` 在本环境是 **not-run 型失败**（缺 `node_modules` 且 pnpm store 打不开），不是产品面失败；治理相关腿（Q5/Q6/Q7、phase 合同、矩阵 law）全部 pass，`drift 0 path(s)`。
+
+## 2026-11-05T22:30Z — BL-16 归档边界：独立审查发现并发窗口（BLOCKING），前向修复并收回声明
+
+**审查（host-free、未 boot）**：#593 HELD（A1/A2/A4 全部攻击面拒绝；A3 为 MEDIUM：**deny fact 也带"rg 已运行"注解**，
+而零进程）；#594 **BLOCKING**：真实产品顺序是 quiesce→`dropResidency`→**然后**commit ARCHIVED，而证据臂写的是
+**反序**（先 commit 再 drop）。于是 drop→commit 窗口内的下发看到 SETTLED、正常冷启动、handle 活过提交；此后
+`ensureLiveAgent` 从 `liveAgents` 早返回，**再也不查门**。实测 `{racing:200, afterCommit:200, resumes:2, resident:true}`。
+
+**这是"声明强于臂"第三次出现**（F1、row 1、row 6），且三次同一形态：臂写的是我们**以为**的顺序，不是产品顺序。
+规则升级：**任何"边界"断言必须先读产品调用序再构造臂；反序即无效臂**（写入 `a5sf-archived-gate/README.md` §4.2）。
+
+**修复（不 revert，前向）**：(a) 提交后再做一次幂等 `dropResidency`，让事务以"驻留已释放"收尾；(b) resume 返回后、
+`liveAgents.set` **之前**重读 durable lifecycle（中间无 await），若已 ARCHIVED/DISPOSED 就 dispose + 抛 typed 拒绝；
+(c) 把 `admission.closeNewWork` 真正实现（原先产品是 no-op），在 `ensureLiveAgent` 入口与 `executeTool` 执行前各查一次，
+并在**每次退出**时 reopen（中止的归档不得把仍 SETTLED 的成员锁死）。三条各有独立变异控制：拆 (a) 只 RO4 红，
+拆 (b) 只 RO3 红，拆 (c) 红 RO2+RO4。证据 `archive-race-arms.test.mjs` RO1–RO4：RED 3 failed|1 passed → GREEN 4/4。
+
+**仍不覆盖（具名残余，未宣称修复）**：boot resume loop 的 `liveAgents.set` 无 post-resume 复核（修它会让每次 boot
+多一次 list，破坏"整个成员集一次 list"的实测属性）；child factory 的实例 id 复用路径（公开工具分配新 id，当前不可达）；
+跨进程提交不可见（内存快照 + 进程内 admission close）。

@@ -68,6 +68,9 @@ const a1 = await (async () => {
         durable.childSessionId === result.member.childSessionId &&
         durable.createdAt === P7T3_FIXTURE.createdAt,
       clockKinds: world.clock.kinds(),
+      postCommitDropSeq: world.residency.dropCalls[1]?.seq ?? -1,
+      commitSeq: world.commit.calls[1]?.seq ?? -1,
+      admissionReopens: world.admission.reopenCalls.length,
       commitOps: world.commit.calls.map((c) => `${c.operation}:${c.from}->${c.to}`),
       residencyAfter: world.residency.hasResidency(result.member.childSessionId),
       admissionCalls: world.admission.calls.length,
@@ -96,7 +99,15 @@ it('A1 archive RUNNING: settle-then-archive, quiesce first, +2 activity, durable
     'residency.drop',
     'commit',
     'commit',
+    // Row 6 (2026-11-05): the procedure ENDS with residency dropped — the
+    // post-commit re-drop closes the handle a dispatch could have cold-resumed
+    // in the drop→commit window — and with admission reopened (the close is a
+    // procedure-scoped window, not a durable state).
+    'residency.drop',
+    'admission.reopen',
   ])
+  expect(a1.postCommitDropSeq).toBeGreaterThan(a1.commitSeq)
+  expect(a1.admissionReopens).toBe(1)
   expect(a1.commitOps).toEqual(['SETTLE:RUNNING->SETTLED', 'ARCHIVE:SETTLED->ARCHIVED'])
   expect(a1.admissionCalls).toBe(1)
   expect(a1.interruptCalls).toBe(1)
@@ -155,6 +166,7 @@ const a3 = await (async () => {
       commitCalls: world.commit.calls.length,
       residencyIntact: world.residency.hasResidency(durable?.childSessionId ?? 'none'),
       admissionCalls: world.admission.calls.length,
+      admissionReopens: world.admission.reopenCalls.length,
       interruptCalls: world.activity.calls.length,
       drainCalls: world.descendants.calls.length,
       dropCalls: world.residency.dropCalls.length,
@@ -174,6 +186,10 @@ it('A3 archive with non-quiescent drain: NOT_QUIESCENT, zero writes, residency N
   expect(a3.commitCalls).toBe(0)
   expect(a3.residencyIntact).toBe(true)
   expect(a3.admissionCalls).toBe(1)
+  // The close is procedure-scoped: an ABORTED archive must reopen admission,
+  // otherwise a still-RUNNING member would be unreachable for the rest of the
+  // process (row 6, 2026-11-05).
+  expect(a3.admissionReopens).toBe(1)
   expect(a3.interruptCalls).toBe(1)
   expect(a3.drainCalls).toBe(1)
   expect(a3.dropCalls).toBe(0)

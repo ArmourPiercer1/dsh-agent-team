@@ -7,7 +7,10 @@
  *   full quiescence sequence — close admission, interrupt, DRAIN
  *   DESCENDANTS, WAIT QUIESCENCE — BEFORE releasing residency and before
  *   any commit; the member settles then archives, +2 activity, residency
- *   dropped;
+ *   dropped. The transaction then ENDS with the row-6 post-commit
+ *   residency re-drop and the admission reopen (2026-11-05); both are
+ *   asserted by global-clock SEQUENCE, not merely by presence, because the
+ *   defect this closes lives entirely in the ordering;
  * - criterion 5 (Restore does not create/resume Agent): restoring an
  *   ARCHIVED member commits exactly ONE durable step
  *   (`COMMIT_RESTORE`, ARCHIVED -> SETTLED, +1 activity) with ZERO live
@@ -104,6 +107,14 @@ const s4 = await (async () => {
       interruptCalls: world.activity.calls.length,
       drainCalls: world.descendants.calls.length,
       dropCalls: world.residency.dropCalls.length,
+      // Row 6 (2026-11-05): the ORDERING evidence, not just the step set — the
+      // global clock assigns one monotonic seq to every effect, so these prove
+      // WHEN the post-commit re-drop and the reopen ran. `seq` is -1 only if the
+      // call is absent, which the assertions below then fail on by length.
+      dropSeqs: world.residency.dropCalls.map((call) => call.seq),
+      firstCommitSeq: world.commit.calls[0]?.seq ?? -1,
+      lastCommitSeq: world.commit.calls[world.commit.calls.length - 1]?.seq ?? -1,
+      reopenSeqs: world.admission.reopenCalls.map((call) => call.seq),
       viewIdentical: viewJson(viewAfter) === viewJson(home.viewBefore),
       homeIdentical: JSON.stringify(homeTreeSnapshot(home.tree)) === JSON.stringify(home.homeBefore),
     }
@@ -182,12 +193,40 @@ describe('P7-T7 G7 criterion 4: lifecycle quiescence (integrated, P7-T3 real ser
       'residency.drop',
       'commit',
       'commit',
+      // Row 6 (2026-11-05): the transaction ENDS with the handle dropped
+      // (the drop→commit window cannot carry a live handle past ARCHIVED)
+      // and with admission reopened (the close is procedure-scoped).
+      'residency.drop',
+      'admission.reopen',
     ])
     expect(s4.commitOps).toEqual(['SETTLE:RUNNING->SETTLED', 'ARCHIVE:SETTLED->ARCHIVED'])
     expect(s4.admissionCalls).toBe(1)
     expect(s4.interruptCalls).toBe(1)
     expect(s4.drainCalls).toBe(1)
-    expect(s4.dropCalls).toBe(1)
+    // Two drops: step 5 (before the commits) and the row-6 re-drop (after
+    // the last commit). The second is a no-op on the fake's map, which is
+    // exactly why the SEQ assertion below — not the return value — is the
+    // load-bearing one.
+    expect(s4.dropCalls).toBe(2)
+  })
+  it('row 6: the post-commit re-drop and the admission reopen are ORDERED, not merely present', () => {
+    // A step-set assertion says the effects happened. It does not say WHEN,
+    // and the defect this closes lives entirely in the WHEN: a drop that
+    // runs before the commit leaves the drop→commit window open. So this is
+    // a global-clock seq assertion, and it goes red if the re-drop moves
+    // back before the last durable commit.
+    expect(s4.dropSeqs).toHaveLength(2)
+    expect(s4.reopenSeqs).toHaveLength(1)
+    const firstCommitSeq = s4.firstCommitSeq
+    const lastCommitSeq = s4.lastCommitSeq
+    const preCommitDropSeq = s4.dropSeqs[0] ?? -1
+    const postCommitDropSeq = s4.dropSeqs[1] ?? -1
+    // Step 5 still releases residency BEFORE any durable commit.
+    expect(preCommitDropSeq).toBeLessThan(firstCommitSeq)
+    // The re-drop follows the LAST durable commit (ARCHIVE->ARCHIVED)...
+    expect(postCommitDropSeq).toBeGreaterThan(lastCommitSeq)
+    // ...and the reopen closes the procedure after BOTH drops.
+    expect(s4.reopenSeqs[0] ?? -1).toBeGreaterThan(postCommitDropSeq)
   })
   it('read-only isolation: the legacy home and the reader view are untouched', () => {
     expect(s4.viewIdentical).toBe(true)

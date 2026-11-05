@@ -1,0 +1,103 @@
+{
+  "schema": "a5sf-archived-gate/race-mutation-control/1",
+  "generatedAt": "2026-11-05T02:03:15.724Z",
+  "sources": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "packages/runtime/lifecycle/archive.ts",
+    "packages/runtime/lifecycle/dispose.ts"
+  ],
+  "originalSourceSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "c83b735f393b8434f8be48423cec3fbfe1fd042e04515f91d7fd3acfbd75389a",
+    "packages/runtime/lifecycle/archive.ts": "bc8aefb7f98f58a02796527ac5ecc978da7cae1900365131d31b1cc7458cfd11",
+    "packages/runtime/lifecycle/dispose.ts": "6d393934c2f22d5e42da766cb78d02d01e7a126fc6d2c25ed0d2ece28c0f9594"
+  },
+  "control": "PASS",
+  "outcomes": [
+    {
+      "mutant": "M1-fix-a-post-commit-re-drop",
+      "description": "remove the post-commit residency re-drop (archive.ts + dispose.ts)",
+      "mutatedFileSha256": {
+        "packages/runtime/lifecycle/archive.ts": "1030934cdec864472ef4514f56b1f67f94d40bc8e818eecd7f179f4d87726c04",
+        "packages/runtime/lifecycle/dispose.ts": "30087b8ba0ba210abef3d10729d8fea816c427cc62e2a4dfb864cc95c7ee97d7"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/lifecycle/archive.ts": "bc8aefb7f98f58a02796527ac5ecc978da7cae1900365131d31b1cc7458cfd11",
+        "packages/runtime/lifecycle/dispose.ts": "6d393934c2f22d5e42da766cb78d02d01e7a126fc6d2c25ed0d2ece28c0f9594"
+      },
+      "vitestExitCode": 1,
+      "observed": {
+        "RO1": "passed",
+        "RO2": "passed",
+        "RO3": "passed",
+        "RO4": "failed"
+      },
+      "expected": {
+        "failed": [
+          "RO4"
+        ],
+        "passed": [
+          "RO1",
+          "RO2",
+          "RO3"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M2-fix-b-post-resume-re-read",
+      "description": "remove the post-resume durable re-read (ensureLiveAgentOnce)",
+      "mutatedFileSha256": {
+        "packages/runtime/src/plugin/live/agent-bindings.mjs": "301b01c7362e238b620bc5693fc53faeb85a1712dc424e413baf7b10890bbd39"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/src/plugin/live/agent-bindings.mjs": "c83b735f393b8434f8be48423cec3fbfe1fd042e04515f91d7fd3acfbd75389a"
+      },
+      "vitestExitCode": 1,
+      "observed": {
+        "RO1": "passed",
+        "RO2": "passed",
+        "RO3": "failed",
+        "RO4": "passed"
+      },
+      "expected": {
+        "failed": [
+          "RO3"
+        ],
+        "passed": [
+          "RO1",
+          "RO2",
+          "RO4"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M3-fix-c-admission-close-consults",
+      "description": "remove the admission-close consults (ensureLiveAgent + executeTool)",
+      "mutatedFileSha256": {
+        "packages/runtime/src/plugin/live/agent-bindings.mjs": "4c45c4f0b6d5306868dddb53bfa0e600b1a403e77ef272997ec7d44fab5b8864"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/src/plugin/live/agent-bindings.mjs": "c83b735f393b8434f8be48423cec3fbfe1fd042e04515f91d7fd3acfbd75389a"
+      },
+      "vitestExitCode": 1,
+      "observed": {
+        "RO1": "passed",
+        "RO2": "failed",
+        "RO3": "passed",
+        "RO4": "failed"
+      },
+      "expected": {
+        "failed": [
+          "RO2",
+          "RO4"
+        ],
+        "passed": [
+          "RO1",
+          "RO3"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ]
+}

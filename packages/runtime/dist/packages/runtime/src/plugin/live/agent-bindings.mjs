@@ -956,6 +956,25 @@ export function createAgentBindings(deps) {
   /** @type {Map<string, object>} live agent handles keyed by session id. */
   const liveAgents = new Map()
   /**
+   * @type {Map<string, {instanceId: string, rootSessionId: string}>} the
+   * per-member ADMISSION CLOSE (the archive/dispose race close, row 6).
+   *
+   * The lifecycle Archive/Dispose procedure is: close admission → interrupt →
+   * drain → wait quiescence → release residency → COMMIT the durable
+   * transition (quiesce.ts:143-152; archive.ts:141-151). Its quiesce drops
+   * residency BEFORE the commit, so the drop→commit window is a real interval
+   * in which the durable row still reads SETTLED and a dispatch would be
+   * legally cold-resumed — the in-process half of that window is what this map
+   * closes (DevPlan §20.3 step 1: "no new work may be admitted"). Keyed by the
+   * member's child session id, the same key `liveAgents` uses.
+   *
+   * Lifetime = the procedure, not the durable state: the procedure's caller
+   * reopens it on EVERY exit (quiesce.ts `reopenAdmission`), and the durable
+   * lifecycle gate (SEAM 1) then refuses the ARCHIVED/DISPOSED member. A
+   * restore is a durable transition that happens while nothing is closed.
+   */
+  const newWorkClosed = new Map()
+  /**
    * @type {boolean} the row-stop (close) lifecycle gate — set at the VERY
    * START of close() (before any snapshot/dispose work) and never cleared.
    * The closing gate protects ensureLiveAgent and work-completion delivery
@@ -1250,6 +1269,80 @@ export function createAgentBindings(deps) {
       ? 'PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED'
       : 'PERMISSION_LIFECYCLE_EXECUTION_TERMINAL'
     return refusal
+  }
+
+  /**
+   * Is new-work admission CLOSED for this session (a lifecycle quiesce is in
+   * progress)? The in-process half of the archive/dispose boundary.
+   *
+   * Ordering (why this exists on top of the durable gate): the durable gate
+   * reads the row, and during the drop→commit window the row still says
+   * SETTLED — the durable write has not happened yet. Refusing a dispatch
+   * there is not the durable transition's job; it is the admission close's
+   * (DevPlan §20.3 step 1, Architecture §30.1). Without it a dispatch can
+   * cold-resume inside the window and the handle then outlives the commit
+   * (`liveAgents` is consulted before the durable gate).
+   *
+   * The typed code is deliberately NOT a member of the frozen
+   * `PERMISSION_LIFECYCLE_ERROR_CODES` vocabulary: that vocabulary describes
+   * overlay/mutation refusals over a durable lifecycle state, and this refusal
+   * is about a transient in-process procedure. `executeTool` maps it to the
+   * route's NO_LIVE_AGENT/422 like every other ensure-live refusal.
+   * @param {string} sessionId - the session a live handle would be made for.
+   * @returns {Error|null} the typed refusal, or null when admission is open.
+   */
+  function admissionCloseRefusal(sessionId) {
+    const sid = String(sessionId)
+    const closed = newWorkClosed.get(sid)
+    if (closed === undefined) return null
+    const refusal = new Error(
+      `agent-bindings: new-work admission is CLOSED for session '${sid}' — instance '${closed.instanceId}' of team '${closed.rootSessionId}' is being archived/disposed in this process (close-admission → interrupt → drain → quiesce → release residency → commit; Architecture §30.1), so no live handle may be created or used until the transition has committed`,
+    )
+    refusal.code = 'LIFECYCLE_ADMISSION_CLOSED'
+    return refusal
+  }
+
+  /**
+   * Close new-work admission for one member (the real in-process binding of
+   * the lifecycle `AdmissionClosePort` step 1; the production root wires it as
+   * `admission.closeNewWork`). The child session is resolved from the DURABLE
+   * row — never from the request — so the close lands on exactly the key
+   * `liveAgents` uses.
+   * @param {{rootSessionId?: unknown, instanceId?: unknown}} target
+   * @returns {boolean} whether a live key was closed (false = no durable row).
+   */
+  function closeAdmission(target) {
+    const instanceId = String(target?.instanceId ?? '')
+    const rootSessionId = target?.rootSessionId
+    if (instanceId === '' || rootSessionId === undefined || rootSessionId === null) return false
+    const row = domain.repositories.memberInstances
+      .list(String(rootSessionId))
+      .find((member) => String(member?.instanceId) === instanceId)
+    const child = row?.childSessionId
+    if (typeof child !== 'string' || child.length === 0) return false
+    newWorkClosed.set(child, Object.freeze({ instanceId, rootSessionId: String(rootSessionId) }))
+    return true
+  }
+
+  /**
+   * Reopen new-work admission after the lifecycle procedure exits (its
+   * counterpart in `quiesce.ts`). Idempotent: an unknown/never-closed member
+   * is a no-op. The durable state is the authority from here on — an ARCHIVED
+   * / DISPOSED row is refused by {@link memberResumeRefusal}, a restored row
+   * resumes normally.
+   * @param {{rootSessionId?: unknown, instanceId?: unknown}} target
+   * @returns {boolean} whether a previously closed key was reopened.
+   */
+  function reopenAdmission(target) {
+    const instanceId = String(target?.instanceId ?? '')
+    const rootSessionId = target?.rootSessionId
+    if (instanceId === '' || rootSessionId === undefined || rootSessionId === null) return false
+    const row = domain.repositories.memberInstances
+      .list(String(rootSessionId))
+      .find((member) => String(member?.instanceId) === instanceId)
+    const child = row?.childSessionId
+    if (typeof child !== 'string' || child.length === 0) return false
+    return newWorkClosed.delete(child)
   }
 
   // ── C1 (restart-recovery, guide §6.1): the ownership-guarded activation wrappers ──
@@ -4373,6 +4466,13 @@ export function createAgentBindings(deps) {
     if (closing) {
       throw new Error(`agent-bindings: live bindings are closing — no new live handle for session '${sid}'`)
     }
+    // ADMISSION CLOSE (row 6, the archive/dispose in-process half): while a
+    // lifecycle quiesce is closing this member, NO dispatch may be admitted —
+    // not even one that would hit the `liveAgents` fast path below. The durable
+    // row still reads SETTLED inside the drop→commit window, so the durable
+    // gate alone cannot refuse here (see `newWorkClosed`).
+    const admissionRefusal = admissionCloseRefusal(sid)
+    if (admissionRefusal !== null) throw admissionRefusal
     const existing = liveAgents.get(sid)
     if (existing !== undefined) return existing
     // S1 (supplement guide §2.2-B, verbatim target shape): the WHOLE
@@ -4524,6 +4624,31 @@ export function createAgentBindings(deps) {
           )
         }
         throw new Error(`agent-bindings: live bindings began closing while resuming agent for session '${sid}'`)
+      }
+      // SEAM 3 — the POST-RESUME DURABLE RE-READ (row 6, the archive race).
+      // SEAM 1 read the row BEFORE the resume and saw SETTLED; the archive's
+      // durable commit can land while the resume is in flight (its quiesce
+      // dropped residency first, so nothing refused this resume). A handle
+      // that joins `liveAgents` here would then be served by the fast path in
+      // `ensureLiveAgent` forever after, without the gate ever being consulted
+      // again — the measured defect. Dispose the just-resumed handle and throw
+      // the same typed refusal.
+      //
+      // NO await between this read and `liveAgents.set` below: JS runs this
+      // block to completion, so a commit cannot land between them. A commit
+      // that lands AFTER the set is covered by the archive's own post-commit
+      // residency re-drop (`archive.ts` / `dispose.ts`); the two halves meet
+      // with no interval.
+      const lateRefusal = memberResumeRefusal(sid, teamRoot)
+      if (lateRefusal !== null) {
+        try {
+          await handle.dispose()
+        } catch (error) {
+          observations.push(
+            `agent-bindings: resumed agent dispose failed after a durable lifecycle refusal for '${sid}': ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+        throw lateRefusal
       }
       liveAgents.set(sid, handle)
       return handle
@@ -6064,6 +6189,16 @@ export function createAgentBindings(deps) {
     }
     callCounter += 1
     const resolvedCallId = ToolCallId(typeof callId === 'string' && callId.length > 0 ? callId : `p6t6-call-${callCounter}`)
+    // ADMISSION CLOSE, last moment (row 6): a dispatch ADMITTED before the
+    // close (ensureLiveAgent already returned, so the entry check could not
+    // see it) must not execute a tool once the quiesce has closed the member —
+    // including a dispatch whose own resume completed inside the drop→commit
+    // window. `prepareAgentForRequest` above is an await point, so this is
+    // checked as late as it can be without splitting tools.execute.
+    const lateAdmissionRefusal = admissionCloseRefusal(String(sessionId))
+    if (lateAdmissionRefusal !== null) {
+      throw toolRouteError('NO_LIVE_AGENT', lateAdmissionRefusal.message)
+    }
     try {
       return await handle.agent.ctx.tools.execute({
         callId: resolvedCallId,
@@ -6325,6 +6460,11 @@ export function createAgentBindings(deps) {
     interrupt,
     drainDescendants,
     residency,
+    // The per-member admission close (the lifecycle `AdmissionClosePort`
+    // production binding). `ensureLiveAgent` / `executeTool` consult it; the
+    // lifecycle procedure reopens it on every exit.
+    closeAdmission,
+    reopenAdmission,
     resolveCaller,
     // additive: the production root bootstrap
     boot,

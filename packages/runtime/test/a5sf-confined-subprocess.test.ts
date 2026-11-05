@@ -667,6 +667,29 @@ describe('BL-16 admission (unit, no process)', () => {
     expect(facts[0]).toMatchObject({ decision: 'deny', decidedBy: 'IO_READ_DENIED', locator: outside })
   })
 
+  it('a DENIED directory search root: the deny fact carries NO execution claim (one fact, zero spawns)', async () => {
+    // The disclosure the lane-safe rewrite attaches asserts an INVOCATION that
+    // RAN ("rg ran with --no-ignore-parent --no-ignore-vcs … .git was not
+    // read"). A deny is decided BEFORE any provider call, so it must never
+    // assert one. Regression shape: a DIRECTORY root the lane explicitly
+    // denies (the `.git` FILE operand is skipped by the ancestor walk, so it
+    // cannot carry the annotation and cannot catch this).
+    const policy = effective(lane([inside], [outside]), lane([inside]), lane([inside]))
+    const provider = fakeProvider()
+    const facts: FactRow[] = []
+    const Confined = confined(policy, provider, facts)
+
+    const handle = new Confined({}).spawn(grepSpec(world, outside))
+    await expect(handle.done).rejects.toThrowError(/IO_READ_DENIED|outside/)
+    // The negative control against "annotate after the fact": zero processes.
+    expect(provider.spawnCalls).toBe(0)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]).toMatchObject({ method: 'spawn', locator: outside, decision: 'deny', decidedBy: 'IO_READ_DENIED' })
+    // The deny fact states the refusal only: no execution claim, no
+    // `.git`-was-not-read claim, no ignore-semantics claim.
+    expect(facts[0]?.annotations).toBeUndefined()
+  })
+
   it('B3: REFUSES a program whose realpath is inside the Member write lane (a shell script named rg)', async () => {
     // The name allow-list admits `rg`; this program is the CALLER's bytes.
     const policy = effective(lane([inside]), lane([inside]), lane([inside]))

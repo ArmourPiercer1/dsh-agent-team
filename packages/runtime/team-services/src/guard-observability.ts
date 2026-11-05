@@ -191,7 +191,14 @@ export function observeGuard(
       observedAt: new Date().toISOString(),
       // The key is absent (not `undefined`) when there is nothing to say, so an
       // unannotated fact is byte-identical to the previous schema.
-      ...(annotations === undefined || annotations.length === 0
+      //
+      // A3 (BL-16 row-1 follow-up): annotations describe the INVOCATION that
+      // ran — "rg ran with --no-ignore-parent --no-ignore-vcs … .git was not
+      // read". Only an ALLOW fact may make that claim: a `deny` (or `ask`) is
+      // decided BEFORE the confined Provider is called, so no process exists
+      // and the fact is the refusal itself. Attaching the notes to a deny made
+      // a denied directory root's fact assert an execution that never happened.
+      ...(annotations === undefined || annotations.length === 0 || decision !== 'allow'
         ? {}
         : { annotations: Object.freeze([...annotations]) }),
     })

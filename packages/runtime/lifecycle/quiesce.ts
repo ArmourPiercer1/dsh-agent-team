@@ -152,3 +152,64 @@ export async function quiesceMember(
     residencyDropped: dropped,
   }
 }
+
+/**
+ * Reopen new-work admission for one member — the counterpart of step 1,
+ * which Archive and Dispose run on EVERY exit (committed, aborted, or
+ * faulted). Optional on the port: an absent method is a no-op (the mock-first
+ * worlds, and any wiring that never closed).
+ *
+ * The close is a PROCESS-LOCAL window, not the durable authority: after a
+ * successful commit the durable lifecycle refuses the member, and after a
+ * failed operation the member is still SETTLED — keeping it closed would brick
+ * a live member for the rest of the process. A reopen fault is therefore
+ * swallowed rather than surfaced: it must not turn a committed archive into a
+ * reported failure, and it protects nothing on the failure path.
+ * @param ports - the lifecycle ports.
+ * @param target - the composite member identity.
+ * @returns never rejects.
+ */
+export async function reopenAdmission(
+  ports: LifecyclePorts,
+  target: LifecycleTarget,
+): Promise<void> {
+  const reopen = ports.admission.reopenNewWork
+  if (typeof reopen !== 'function') return
+  try {
+    await reopen.call(ports.admission, target)
+  } catch {
+    // See the doc: the durable lifecycle (not this flag) is the authority, and
+    // the only correct caller-visible outcome is the operation's own result.
+  }
+}
+
+/**
+ * The POST-COMMIT residency re-drop (the archive/dispose race, row 6).
+ *
+ * Why this exists after step 5 already dropped residency: quiesce drops the
+ * handle BEFORE the durable transition is committed, so the drop→commit window
+ * is a real interval in which a dispatch may cold-resume the member (the
+ * durable row still reads SETTLED). A handle resumed in that window would
+ * survive the commit — and `ensureLiveAgent` returns a resident handle from
+ * `liveAgents` BEFORE consulting the durable gate, so it would outlive the
+ * archive for the rest of the process. Re-running the (idempotent) drop AFTER
+ * the commit closes that half; the glue's post-resume durable re-read closes
+ * the other (a resume that resolves after the commit).
+ *
+ * A port fault here is swallowed: the durable transition is ALREADY committed,
+ * so throwing would report a failed archive for a committed one. The durable
+ * gate refuses the member either way; the drop is the in-process cleanup.
+ * @param ports - the lifecycle ports.
+ * @param childSessionId - the member's child session (the residency key).
+ * @returns whether a (re)appeared handle was dropped.
+ */
+export function dropResidencyAfterCommit(
+  ports: LifecyclePorts,
+  childSessionId: string,
+): boolean {
+  try {
+    return ports.residency.dropResidency(childSessionId)
+  } catch {
+    return false
+  }
+}

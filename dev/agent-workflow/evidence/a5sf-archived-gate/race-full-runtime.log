@@ -1,0 +1,25 @@
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-race-fix
+
+[derived summary: the raw ~1.2 MB capture was dropped to satisfy the evidence size bound;
+counts and the failing-test block only, as the archived-gate round did]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/a5g6-install-face-render.test.ts:146:3
+    144|   }
+    145|
+    146|   it('the four definitions all carry a render that returns an array of…
+       |   ^
+    147|     const definitions = await buildDefinitions()
+    148|     // U7-F: the process family's second row mounts at its fixed native
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 481 passed (482)
+      Tests  1 failed | 6001 passed (6002)
+   Start at  10:11:03
+   Duration  218.15s (transform 60.80s, setup 0ms, import 330.46s, tests 551.29s, environment 58ms)

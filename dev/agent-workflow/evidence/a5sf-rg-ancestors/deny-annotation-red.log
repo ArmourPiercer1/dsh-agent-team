@@ -1,0 +1,70 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-race-fix
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests | 1 failed) 1266ms
+     ✓ reads the operands after `--`, resolving relative ones against cwd 1ms
+     ✓ falls back to cwd when the argv names no operand (the walk root IS cwd) 0ms
+     ✓ never mistakes a pattern or a --flag=value for a path 1ms
+     ✓ B1: refuses the pattern/ignore-file flags that read an undeclared path 0ms
+     ✓ B2: requires --no-config BEFORE the first `--` (a lane file named --no-config is an operand) 0ms
+     ✓ admits exactly the shipped grep and glob argv shapes (allow-list, not a deny-list) 0ms
+     ✓ ADDS --no-ignore-parent/--no-ignore-vcs when an ancestor is outside the lane 1ms
+     ✓ KEEPS the shipped argv when the lane includes the worktree root (ordinary .gitignore semantics) 1ms
+     ✓ KEEPS the shipped argv when `--no-ignore` already disables the ancestor walk (the glob shape) 0ms
+     ✓ KEEPS the shipped argv for a FILE operand (rg does no parent discovery for a file) 0ms
+     ✓ an explicit `deny: [<root>/.git]` still forces the flags (the VCS root is not readable) 1ms
+     ✓ a `mode: all` lane needs no flags (every ancestor is already in lane) 0ms
+     ✓ (i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure 177ms
+     ✓ (i-MUTATION) remove the two flags at the provider boundary: the same arm goes RED with the live stderr 143ms
+     ✓ (ii) `.git` is still refused at ADMISSION as a search root (one deny fact, zero processes) 111ms
+     ✓ (ii-KERNEL) the kernel still denies a direct `.git` read (raw provider, admission bypassed) 138ms
+     ✓ (iii) a lane that INCLUDES the worktree root keeps ordinary .gitignore semantics 135ms
+     ✓ (iii-MUTATION) forcing the flags onto that lane makes the ignored file appear 128ms
+     ✓ (iv) an invalid pattern still surfaces the REAL rg stderr and exit 2 124ms
+     ✓ (v) the flags change neither the fact count nor the process count 126ms
+     ✓ admits an in-lane search root and hands it to the confined provider 2ms
+     ✓ REFUSES a target outside the ceiling BEFORE any process exists 1ms
+     ✓ REFUSES a target that is INSIDE the ceiling but OUTSIDE the tool restriction 0ms
+     × a DENIED directory search root: the deny fact carries NO execution claim (one fact, zero spawns) 4ms
+     ✓ B3: REFUSES a program whose realpath is inside the Member write lane (a shell script named rg) 1ms
+     ✓ ADMITS the shipped rg path, which is outside the Member write lane 1ms
+     ✓ REFUSES a `..` operand that escapes the lane through cwd resolution 0ms
+     ✓ REFUSES when the argv names no operand and the cwd (the walk root) is out of lane 0ms
+     ✓ REFUSES a lane the OS profile cannot express instead of spawning unconfined 0ms
+     ✓ REFUSES a request for an stdio shape it cannot honour (spill file, control pipe) 0ms
+     ✓ REFUSES a terminal spawn (no terminal face on this provider) 0ms
+     ✓ preserves exit 1 (no matches) and exit 2 (invalid pattern) — no fabricated 0 4ms
+     ✓ REJECTS a completion it cannot record instead of inventing a success 1ms
+     ✓ reports a signal death as a signal, not as an exit code 1ms
+     ✓ terminates the child on caller cancellation 3ms
+     ✓ refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly 130ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-confined-subprocess.test.ts > BL-16 admission (unit, no process) > a DENIED directory search root: the deny fact carries NO execution claim (one fact, zero spawns)
+AssertionError: expected [ …(2) ] to be undefined
+
+- Expected:
+undefined
+
++ Received:
+[
+  "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+  "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read",
+]
+
+ ❯ packages/runtime/test/a5sf-confined-subprocess.test.ts:690:35
+    688|     // The deny fact states the refusal only: no execution claim, no
+    689|     // `.git`-was-not-read claim, no ignore-semantics claim.
+    690|     expect(facts[0]?.annotations).toBeUndefined()
+       |                                   ^
+    691|   })
+    692|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 35 passed (36)
+   Start at  10:10:51
+   Duration  1.71s (transform 308ms, setup 0ms, import 351ms, tests 1.27s, environment 0ms)

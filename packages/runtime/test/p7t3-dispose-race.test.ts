@@ -71,6 +71,8 @@ const x1 = await (async () => {
       interruptCalls: world.activity.calls.length,
       drainCalls: world.descendants.calls.length,
       dropCalls: world.residency.dropCalls.length,
+      postCommitDropSeq: world.residency.dropCalls[1]?.seq ?? -1,
+      commitSeq: world.commit.calls[0]?.seq ?? -1,
       commitOps: world.commit.calls.map((c) => `${c.operation}:${c.from}->${c.to}`),
     }
   } finally {
@@ -91,7 +93,10 @@ it('X1 dispose race: exactly one commits DISPOSED, loser ILLEGAL_STATE, each eff
   expect(x1.admissionCalls).toBe(1)
   expect(x1.interruptCalls).toBe(1)
   expect(x1.drainCalls).toBe(1)
-  expect(x1.dropCalls).toBe(1)
+  // The quiesce release + the row-6 post-commit re-drop (the second one runs
+  // after the durable DISPOSED commit and closes the drop→commit window).
+  expect(x1.dropCalls).toBe(2)
+  expect(x1.postCommitDropSeq).toBeGreaterThan(x1.commitSeq)
   expect(x1.commitOps).toEqual(['DISPOSE:RUNNING->DISPOSED'])
 })
 

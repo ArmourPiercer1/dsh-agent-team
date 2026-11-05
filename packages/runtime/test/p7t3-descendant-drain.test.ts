@@ -111,6 +111,8 @@ const d3 = await (async () => {
       commitOps: world.commit.calls.map((c) => `${c.operation}:${c.from}->${c.to}`),
       dropCalls: world.residency.dropCalls.length,
       dropDropped: world.residency.dropCalls[0]?.dropped ?? true,
+      postCommitDropSeq: world.residency.dropCalls[1]?.seq ?? -1,
+      commitSeq: world.commit.calls[0]?.seq ?? -1,
     }
   } finally {
     await destroyWorld(world)
@@ -129,8 +131,12 @@ it('D3 non-resident SETTLED: residency release no-op (not dropped), direct archi
     S.COMMIT_ARCHIVE,
   ])
   expect(d3.commitOps).toEqual(['ARCHIVE:SETTLED->ARCHIVED'])
-  expect(d3.dropCalls).toBe(1)
+  // Two drops, both no-ops: the quiesce release (step 5) and the row-6
+  // post-commit re-drop, which runs AFTER the durable commit and closes the
+  // window a cold resume could have entered.
+  expect(d3.dropCalls).toBe(2)
   expect(d3.dropDropped).toBe(false)
+  expect(d3.postCommitDropSeq).toBeGreaterThan(d3.commitSeq)
 })
 
 // D4 — a drain fault aborts BEFORE the residency release and before any

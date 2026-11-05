@@ -982,6 +982,19 @@ export interface TeamAgentBindings {
     readonly drainDescendants: (childSessionId: string) => Promise<import('../../lifecycle/index.js').DescendantDrainReport>;
     /** The ephemeral residency surface (lifecycle release + evict). */
     readonly residency: import('../../member-residency/index.js').ResidencyPort;
+    /**
+     * The per-member ADMISSION CLOSE live effect (DevPlan §20.3 step 1; row 6,
+     * 2026-11-05): mark the member's child session as closed for NEW WORK for
+     * the in-process duration of an Archive/Dispose procedure. The glue's
+     * `ensureLiveAgent` / `executeTool` refuse while it is closed — that is what
+     * closes the drop→commit window (the durable row still reads SETTLED there,
+     * so the durable gate cannot refuse). `reopenAdmission` is its counterpart
+     * and runs on every procedure exit. Both are SYNCHRONOUS and idempotent;
+     * `false` = no durable member row to key on (nothing closed).
+     */
+    readonly closeAdmission: (target: import('../../lifecycle/index.js').LifecycleTarget) => boolean;
+    /** Reopen new-work admission for one member (see {@link closeAdmission}). */
+    readonly reopenAdmission: (target: import('../../lifecycle/index.js').LifecycleTarget) => boolean;
     /** Resolve the calling authority + its OWNING team root from the
      *  calling session id (tools; P0 caller-root binding — the tool layer
      *  enforces owning-root == requested root before any downstream
