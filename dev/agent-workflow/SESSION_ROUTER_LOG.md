@@ -7928,3 +7928,11 @@ allow 路径回归；Web service-level denial ≠ subprocess network isolation�
 - ancestry：`git merge-base --is-ancestor candidate/a5sf-fs-search-1 origin/master` → exit 0；
   `git merge-base --is-ancestor 1484fa4ee candidate/a5sf-fs-search-1` → exit 0；
   `git merge-base --is-ancestor 1484fa4ee origin/master` → exit 0。
+
+### 留给 owner 的一个问题
+
+候选域方案（§7.5）本轮**只到提案 + 负控**，没有改 `scripts/ci-pr-gate.mjs`（本轮约束：Q7 / CI gates
+不变）。请 owner 裁决：是否授权一个**独立后续 PR**，在 `state-freshness` 的 `checkContractValues` 里
+加入 `verifiedFor` 解析、`candidateRefProvider` 与 `V@B=yes`+`verifiedFor` 的 named 拒绝，同时保持
+Q7 的 master 分支、`claimedRows` 判级、`V@B` 语义与既有行等级**逐字节不变**？在该 PR 落地前，
+候选行只能以文字注释存在，负控测试是对现有 gate 的锁定，不是对候选 claim 的机器执法。
