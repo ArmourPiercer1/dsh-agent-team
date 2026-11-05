@@ -7585,3 +7585,48 @@ probeFacts=0 postStopCounterRows=0`，body 是纯字符串，含 "belongs to a A
 **下一节点**：baseline 重切（P4/P5 的既有任务）会把 M-01/M-02/M-06/M-07 一起复位为 `V@B=yes`；在那之前
 矩阵的机器读法是"四行 live 已实测、待重新断言"。`grep`/`glob` 的 `P2-04` 预算 10/10 已用尽，任何进一步
 live 断言都需要新的 owner 分配。
+
+## 2026-11-05T00:25Z — 权威 baseline 重切 `as20261105r1`：树哈希证明只复位 M-06/M-07，M-01/M-02 因树不等价保持 stale
+
+**动作**：publisher → 新不可变快照 → `switch-authority` 移指针；`as20261102r1` 保留不删。
+- 新快照 `dev/engineering/authority-snapshots/as20261105r1.json`：`content_digest=sha256:55ab435ff43df3674d9655bea4c00d4ea53e953c06b720ce0fbe50fd9ca8d098`，
+  `baseline=1fd0d9fca3c8137a993a69927c3e15226ac41721`（master #596 tip），`baseline_collected=2026-11-05T00:22:45Z`，
+  `authored_from=previous-snapshot:as20261102r1@0a5b5841864a88d660b84dced6585797f7d6a736`。
+- 指针 `dev/engineering/current-authority.json` 字节 sha256 `b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35` → `2cba2673b82f44f8979b360eb9efc2a60e8723f7e6dacbaffee1fcd3b4b15c65`；
+  旧指针字节前置条件成立，原子写后重读 + loader 复验通过。第一次 switch 用了草稿 digest（`10212945…`），被 `SNAPSHOT_REFUSED` 拒绝且**零字节写入**——随后按已发布快照的真实 digest 重试成功；这正是前置条件该有的行为。
+- 回滚 = `git revert <switch commit>`（该 commit 移动指针并同步矩阵/STATUS/日志；**快照 commit 不随回滚删除**——已发布快照不可删）。回滚后 `as20261105r1` 仍在历史中，指针回到 `as20261102r1`。
+
+**硬条件（先证明，后移动指针）**：比较树对象哈希，不靠目测。
+| 路径 | `44babbfcf`（read/write 实测树） | `c658d974d`（grep/glob 实测树） | `75f030f8f`（证据提交） | `1fd0d9fca`（新 baseline） |
+|---|---|---|---|---|
+| `packages/**` | `ad13978b1dc47a70f0954cdc72956e4b456520c8` | `9609403ccc5a2057f66fbc2d0b6187832d834814` | 同 `c658d974d` | `9609403ccc5a2057f66fbc2d0b6187832d834814` |
+| `scripts/**` | `d4bcc3580eca5eb6d5f23a2787b28be74c59dbad` | 同左 | 同左 | 同左 |
+| `tests/paths.mjs` | `1bf4829eb8709a0121c80f9e91cb00855e0db7eb` | 同左 | 同左 | 同左 |
+| `package.json` / `pnpm-lock.yaml` | `2946fe23…` / `f70001d3…` | 同左 | 同左 | 同左 |
+| glue `packages/runtime/src/plugin/live/agent-bindings.mjs` | blob `76fad8ee…`，sha256 `df9b46af…` | blob `973e1e15…`，sha256 `6d256096…` | 同 `c658d974d` | 同 `c658d974d` |
+
+**逐行判定**：
+- `M-06` grep / `M-07` glob：`git diff --stat c658d974d 1fd0d9fca -- packages` **为空**；`scripts`、`tests/paths.mjs`、manifest/lock、glue 逐项相等 → 第十次 boot 的六行 PASS 是**该 baseline 树**的实测 → 复位 `ENFORCE-PARTIAL` / `V@B=yes`，证据格写入 snapshot `as20261105r1` + tested `c658d974d3d0502af482727b0aea23482f5e3920`。
+- `M-01` read / `M-02` write：`44babbfcf` 与 `1fd0d9fca` 的 `packages/**` **不相等**——116 个路径，含 `packages/runtime/team-services/src/fs.ts`、`mount.ts`、`install.ts`、`packages/runtime/member-io-policy/src/{compile,path-rules}.ts`、`packages/runtime/src/plugin/live/agent-bindings.mjs` 与 dist 产物；glue sha256 也不同（`df9b46af…` ≠ `6d256096…`）→ **拒绝复位**，保持 `NEEDS_REVALIDATION` / `V@B=no`，行内写明差异路径。8/8 PASS 的 live 记录不删。
+- 结果 = 任务允许的“只复位两行”：**宁可少复位，也不把旧树的实测洗成新 baseline 的当前验证**。
+
+**宿主 pin 与证据字节**：`tests/deepseek-harness-test-use` HEAD = `639ed015397290b3745d163aafe02ffee4aa3f84`（主 worktree、live2、preflight 三处一致，porcelain 空）；两份 run record 的 `bindings.hostSha` 同为该值。preflight README 自述 glue sha256 `df9b46af…` = `44babbfcf` 的实测值；search-live §3e 未声明 run-record sha256，故以 git blob 身份核对：导入后的 `run-record.json` sha256 `95cf2739…`、README `fe3ecda9…` 与 `75f030f8f` 的 blob **逐字节相同**。
+
+**证据归位（必须先说清）**：#596 合入 master 的只有矩阵与日志；grep/glob 第十次 boot 的记录（README §3e、`overall=PASS` 6/6、`run-record.json`）原先只存在于 `task/a5sf-search-live2-20261105 @ 75f030f8f`。本分支把该目录 36 个文件按 `git checkout 75f030f8f -- …` 原字节导入，使矩阵引用的证据在基线树内可读；一个字节未改。
+**发现的仓库缺陷（本 lane 不修）**：#596 在 `dev/agent-workflow/evidence/a5sf-search-live/row6-replay.mjs` 提交了未解决的 merge 冲突标记（`node --check` 报 `SyntaxError: Unexpected token '<<'`）；本 PR 不触碰该文件，已上报主 Agent。
+
+**回的边界**：`baseline` 只命名产品树的身份，不命名证据、不影响 `dev/agent-workflow/evidence/**`；因此重切不构成任何工具级能力的新验收，`edit`/`read_image` 等行等级不变。
+
+**门禁（verbatim 摘要；cwd = 本 worktree）**：
+```
+node scripts/current-authority.mjs            → ok:true status:POINTER version:as20261105r1 baseline:1fd0d9fca3c8137a993a69927c3e15226ac41721 two_current_findings:[]  rc=0
+node scripts/authority-contract-fields.mjs    → rc=0（library，无输出）
+node scripts/doc-checks.mjs                   → rc=0（library，无输出）
+node --test tests/s2-authority/current-authority-pointer.test.mjs → u2-current-authority: 25/25 passed（含 stale pointer / symlink / hardlink / 注入中断恢复 / two-current 负臂）
+node scripts/ci-pr-gate.mjs                   → DSH-CI-VERDICT fail pass=5 fail=3 skip=1
+    pass: graph-parse, kit-home-guard, state-freshness, blueprint-fence, lint-identities
+    state-freshness: "baseline 1fd0d9fca3c8…, matrix rows 21 claimed 2, drift 0 path(s)"
+    fail: install（pnpm store sqlite: unable to open database file）、typecheck（no node_modules）、artifacts-at-head（verdict=not-run reason=install）
+    skip: census（NOT RUN — opt-in; --full 才跑）
+```
+`install` / `typecheck` / `artifacts-at-head` 在本环境是 **not-run 型失败**（缺 `node_modules` 且 pnpm store 打不开），不是产品面失败；治理相关腿（Q5/Q6/Q7、phase 合同、矩阵 law）全部 pass，`drift 0 path(s)`。

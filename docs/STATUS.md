@@ -1,5 +1,10 @@
 # STATUS — Team vNext 当前状态总览
 
+> **dated CURRENT 快照（2026-11-05T00:22Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(1) 权威 baseline 重切（`as20261105r1`）**：`17ce7043…` → `1fd0d9fca…`（master #596 tip）。发布走 `publish-authority`（不可变快照）+ `switch-authority`（旧指针字节前置条件 + 原子写），指针 sha256 `b0ffcbbf…` → `2cba2673…`。回滚 = `git revert <switch commit>`；`as20261102r1` 保留不删。
+> **(2) 逐行结果（按树哈希证明，不按假设）**：`M-06`/`M-07`（grep/glob）实测树 `c658d974d` 的 `packages/**` 树哈希 `9609403c…` 与新 baseline 的 `packages/**` **相等**，复位 `ENFORCE-PARTIAL` / `V@B=yes`；`M-01`/`M-02`（read/write）实测树 `44babbfcf` 与新 baseline 的 `packages/**` **不相等**（116 个路径；glue `agent-bindings.mjs` sha256 `df9b46af…` ≠ `6d256096…`），**拒绝复位**，保持 `NEEDS_REVALIDATION` / `V@B=no`，需在新 baseline 上重跑 live。
+> **(3) 证据归位**：grep/glob 的第十次 boot 记录（README §3e + `run-record.json`，`overall=PASS` 6/6）原先只存在于 `task/a5sf-search-live2-20261105 @ 75f030f8f`；本次把该目录 36 个文件按原字节导入，使矩阵引用在基线树内可读。**发现（非本 lane 修复）**：#596 在 `dev/agent-workflow/evidence/a5sf-search-live/row6-replay.mjs` 提交了未解决的 merge 冲突标记（`node --check` 失败）；本 PR 不触碰该文件，已上报主 Agent。
+
 
 > **dated CURRENT 快照（2026-11-03T15:05Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(0) 用户新裁（2026-11-03）：预先批准 20 次 boot 预算，授权自行分配。** 分配与规则写入 `dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json`（P2-01 read 3、F1 有效半场 3、P2-03 write 3、P2-04 grep 3、BL-21 清单 2、G1.5/G1.6/G1.8 4、reserve 2）。每次 boot 仍走 BL-14 预登记门（per-run grant 绑定当次 HEAD，行数换算 maxStarts = boots+1），共享账本仍是唯一计数与唯一写入者；reserve 只用于全新失败类，不得对同一失败类二次重试。**boot 池从 0 变为 20，因此 P2 live 与 BL-21 不再被预算卡住；真实瓶颈改为下面的 F1 有效半场。**

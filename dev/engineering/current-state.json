@@ -33,13 +33,13 @@
   },
   "legacy_authority": {
     "present": true,
-    "file": "dev/engineering/authority-snapshots/as20261102r1.json",
+    "file": "dev/engineering/authority-snapshots/as20261105r1.json",
     "phase_id": "alpha5-sandbox-first",
     "active_plan": "docs/plans/active/alpha5-sandbox-first/current-implementation-plan.md",
     "backlog": "docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md",
     "matrix": "docs/plans/active/alpha5-sandbox-first/TOOL-ACCEPTANCE-MATRIX.md",
-    "baseline": "17ce7043089980fe1a2e56b29be12459bc74fc9f",
-    "baseline_collected": "2026-11-02T19:54:59Z",
+    "baseline": "1fd0d9fca3c8137a993a69927c3e15226ac41721",
+    "baseline_collected": "2026-11-05T00:22:45Z",
     "baseline_exists": true,
     "baseline_is_ancestor_of_head": true,
     "note": "source = snapshot resolved by dev/engineering/current-authority.json (recorded strings); this view never decides authority itself"
@@ -47,9 +47,9 @@
   "authority_source_binding": {
     "kind": "authority-pointer",
     "pointer_file": "dev/engineering/current-authority.json",
-    "snapshot_file": "dev/engineering/authority-snapshots/as20261102r1.json",
-    "snapshot_version": "as20261102r1",
-    "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4",
+    "snapshot_file": "dev/engineering/authority-snapshots/as20261105r1.json",
+    "snapshot_version": "as20261105r1",
+    "content_digest": "sha256:55ab435ff43df3674d9655bea4c00d4ea53e953c06b720ce0fbe50fd9ca8d098",
     "pointer_digest_verified": true,
     "view_may_not_reverse_decide_authority": true
   },
