@@ -1,0 +1,24 @@
+=== proposed diff: ROUTED_SERVICE_NAMES gains 'fs' (plus TA12's enumeration assertion, see below) ===
+diff --git a/packages/runtime/team-services/src/mount.ts b/packages/runtime/team-services/src/mount.ts
+index 1533639d7..ab58a08db 100644
+--- a/packages/runtime/team-services/src/mount.ts
++++ b/packages/runtime/team-services/src/mount.ts
+@@ -427,7 +427,7 @@ const DEFERRED_SETTLE_ROUNDS = 20
+  * carries the router's own label — so the child's `ctx.tools` would throw
+  * `cannot get property "tools" without inject` even though the router serves it.
+  */
+-const ROUTED_SERVICE_NAMES = ['tools', 'systemPrompt'] as const
++const ROUTED_SERVICE_NAMES = ['tools', 'systemPrompt', 'fs'] as const
+ 
+ /** Is `fiber` (transitively) a CHILD fiber of `ancestor`? Fiber ancestry, not scope ancestry. */
+ function isDescendantOf(fiber: Fiber, ancestor: Fiber): boolean {
+
+=== all a5sf world-factory suites with the diff applied: summary + failures ===
+✖ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (27.407317ms)
+✖ TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and the surface is restored (5.771416ms)
+ℹ tests 349
+ℹ pass 347
+ℹ fail 2
+✖ failing tests:
+✖ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (27.407317ms)
+✖ TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and the surface is restored (5.771416ms)

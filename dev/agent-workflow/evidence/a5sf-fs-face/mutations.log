@@ -1,0 +1,13 @@
+PASS baseline: red=[] expected=[]
+PASS M1-drop-version-guard: red=[edit-stale] expected=[edit-stale]
+       red  edit-stale: the model-facing reason names the staleness
+PASS M2-underreport-stat-size: red=[read-boundary] expected=[read-boundary]
+       red  read-boundary: the tool STREAMED (streamText exactly once, readText zero) after one stat
+PASS M3-drop-write-signal: red=[write-abort] expected=[write-abort]
+       red  write-abort: the target is byte-identical (no partial write)
+PASS M4-silent-attachment: red=[image-allowed] expected=[image-allowed]
+       red  image-allowed: EXACTLY ONE attachment
+PASS D-post-gap-1-composition: red=[image-route-c] expected=[image-route-c]
+       red  image-route-c: the routed read_image fails closed today
+
+MUTATION-CONTROLS-PASS (6 controls, 9 arms each)
