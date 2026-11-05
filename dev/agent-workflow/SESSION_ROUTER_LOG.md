@@ -7908,3 +7908,41 @@ BL-41 standing rule）；CI 失败归因**不可完整重建**（无 CI 日志�
 blueprint-fence / typecheck / lint-identities / artifacts-at-head **全 pass**；`state-freshness` 仍因
 **既有** `Q4`（baseline 指向候选、非 HEAD 祖先）红，本分支前后同一 finding、同一文案，**未移动指针**，
 裁决选项写为 evidence README §4-Q1。未登记 `dev/ci/eb3-ci-manifest.json`（需改 workflow，属 stop condition）。
+
+## 2026-11-06T16:40Z — #610 并入 master 后解冲突：面结构 + #608 行 + #611 裁定文本（head `5927b688e`，0 boot）
+
+**合并基线** `52a95fe0b`（`#609` ancestry 修复 + `#608` web 面行）。**冲突只有一处**：
+`ALPHA5-SANDBOX-BACKLOG.md`（面结构 vs master 的改动）。**先核对了前提，结论与冲突报告不同**：
+master 相对 merge base `e78bfd8af` **只改了 1 行**（BL-18 的 `#608` 接线轮状态），`BL-42`、§0 的
+2026-11-06 裁决块、BL-39 的归属更正**都不在 master 上**——它们在 **#611**（`task/a5sf-ruling-20261106`，
+`gh pr view 611` = OPEN）。因此裁定文本**从 #611 分支逐字取**，不自编；#611 合并时两侧字节一致，
+冲突至多是位置；若 #611 被拒，BL-42 = 一行 + 三处引用，删除成本明确。
+
+**取舍**：保留面结构（§0.1 六面 + A/B/C + C1/C2 台账 + 按面分节 + §8 阶段索引）；BL-18 取 master；
+BL-39、§0 五条裁决、BL-42 取 #611；BL-42 放 **Shell-PTY 的 P2 表**（唯一具名阻塞消费者 = BL-17），
+并在 **Cross-face 桶**登记为跨面阻塞（同时挡 Bash/CLI、第三方 CLI、external execution），**不复制行**；
+Shell-PTY 面注补四条硬边界（fail-closed、拒绝启动≠验收、web deny≠子进程隔离、BL-42 前只能验拒绝路径）。
+44 条旧行逐字保留（脚本校验），无改号无删除。面表 45 行（44+BL-42）、台账 43 行（41 BL + BR + BL-42），
+无重复 id。派生视图由 `docs-sync --write` 重生（`baseline_is_ancestor_of_head` 已回到 `true`）。
+
+**合并形状披露**：`81ff35a84` 是**内容为空的 merge commit**（结果未入 index 就提交了），
+解析内容全在 `5927b688e`（第二父 = `52a95fe0b`，ancestry 为真，满足 #611 §7.3「真 merge 不 squash」）。
+无 force-push、无改写。
+
+**预检（本轮最值钱的东西）**：新增 `--host-root`——pristine host 是 gitignored，worktree 永远没有它，
+而所有 live driver 都在 worktree 里跑；没有该旗标时 `assembly.usable` 红在**检出布局**而非**计划**。
+旗标只重定向 `tests/deepseek-harness-test-use/` 前缀，映射后仍不存在依旧红，实际根打印在 `inputs`。
+D16/D17 双向钉住（46 条测试）。三份原始 verdict：干净 **PASS 13/13**（`--repo .`）、别名
+**FAIL 12/13**（唯一红 `cases.isolation`，恰 `CASE_LOCATOR_ALIASED`+`CASE_GUARD_KEY_ALIASED`）、
+不给 host **FAIL 12/13**（仅 `ASSEMBLY_HOST_MODULE_MISSING`，fail-closed 演示）。13 条 check 逐条做了
+承重审计（evidence README §7），点名两个缺口：**G-1** network 归因（缺第 14 条 check，BL-42 接线前做）、
+**G-2** `wiring.run-record` 的 `productTreeProof` 分支在当前「都在 baseline 上跑」的事实下零覆盖。
+
+**CI（head `5927b688e`）**：`ci-required` **六层全绿**（fast/integration/product/security/census + grading）、
+`pr-gate` **success**、`candidate-protection` success；唯一红 = `pr-settlement-gate`
+（`NO_SETTLEMENT_CANDIDATE`，按指令不 settle，协调者补）。先前三条红 = 同一个 candidate pin
+（`#609` 修好），第四条 `docs:sync` 视图 = 本 PR 自己（`bf1e90d28` 修好）。
+
+**未改**：Authority 指针/快照、任何等级与 `V@B`、Q7/CI 门、`packages/**`（0 行）、`.github/**`。
+**未折入**：#611 的 `current-implementation-plan.md` §7（它声明了未实现的 `verifiedFor` 机制 +
+需要改 `scripts/ci-pr-gate.mjs`），已在 evidence README §4-Q4 记为文档合并顺序的 owner 决定。

@@ -191,7 +191,7 @@ stdio server or subagent CLI would connect directly while its parent proxies.”
 - 预算：**0 次 Host boot**（本 PR 全程 host-free）；剩余 3 次仍按 BL-17、BL-18、一次重试保留。
 - 已存在、与本 PR 无关的红：`state-freshness` 的 `Q4`（见 §4-Q1），本 PR 前后同一 finding、同一文案。
 
-### 5.1 CI 实测（PR #610，head `bf1e90d28`）
+### 5.1 CI 实测（PR #610，head `bf1e90d28`；**已被 §5.2 取代，留作历史**）
 
 | 层 | 结论 | 归因 |
 |---|---|---|
@@ -281,3 +281,27 @@ BL-42、§0 裁决块与 BL-39 的归属更正都在 **#611**（`task/a5sf-rulin
   工作，且需要新 fixture + 正负两条控制，本轮不夹带。
 - **G-2（`wiring.run-record` 的死分支）**：如上表。要么在 BL-17/BL-18 live 时故意在一棵
   non-baseline 树上跑一次以激活它，要么在 live 之后删掉该分支——**现在是零覆盖**。
+
+### 5.2 CI 实测（PR #610，合并 + 冲突解决后 head `5927b688e`）
+
+合并 master `52a95fe0b` 并把 BL-18/#611 文本折入面结构之后，**每一个先前为红的 job 都转绿**：
+
+| job | 结论 | 与 §5.1 的差异 |
+|---|---|---|
+| `pr-gate` | **success** | 先前 `docs:sync --check` 红；`docs-sync --write`（§5.1 的 `bf1e90d28`）之后转绿 |
+| `ci-required` → `synthesize-merge-tree` | success | — |
+| `ci-required` → `ci-fast` | **success** | 先前红在 `docs:probe (mandatory)`（同一条 stale 视图） |
+| `ci-required` → `ci-security` | success | 一直绿 |
+| `ci-required` → `ci-integration` | **success** | 先前红在 `Gate legs — graph-parse + state-freshness`（Q4 pin）；`#609` 的 true-merge ancestry 修好 |
+| `ci-required` → `ci-product` | **success** | 先前红在 `Gate — the eight host-free legs`（同一 Q4） |
+| `ci-required` → `ci-census` | **success** | 先前红在 `Precheck — the authority's two git pins are present and HEAD-ancestors`（同一 pin） |
+| `ci-required` → `ci-required` | **success** | 六层全绿 |
+| `pr-settlement-gate` | failure — `NO_SETTLEMENT_CANDIDATE` | **按 owner 指令不 settle，期望结果**；由协调者补 settlement |
+
+一句话：**先前三条红 job 是同一个事实（candidate pin 不是 HEAD 祖先），master 的 `#609` 修掉它之后
+全部转绿；另一条（`docs:sync` 视图）是本 PR 自己的，已在 `bf1e90d28` 修掉。** 本地复跑同结论：
+`docs-sync --check`、`docs-probe --base 52a95fe0b`（blocking=0）、`ci-pr-gate` 的
+graph-parse/state-freshness/kit-home-guard/blueprint-fence/lint-identities 五腿全 pass、
+46 条 node:test 全绿。
+
+**没有归因不明的红**：唯一剩余的红是 settlement，且它按指令不修。
