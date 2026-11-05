@@ -25,6 +25,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 import {
   ACCEPTANCE_CASES,
@@ -51,6 +53,8 @@ import {
   normalizeObservation,
   REALM_INVALIDATED_CODE,
   toRunVerdict,
+  PREFLIGHT_CHECK_IDS,
+  runZeroBootPreflight,
 } from './lib/a5sf-acceptance-preflight.mjs'
 
 /** The REAL #575 stream, extracted from the committed `teardown.json` (read-only
@@ -924,4 +928,167 @@ test('C16 the read/write method partition is the PRODUCT’s, and an unknown met
   const future = judgeRow2({ ...PASS.row2, facts: [readFact('aMethodThatDidNotExistYet', 'allow')] })
   assert.equal(future.verdict, 'REFUTED', 'a future read method that is ALLOWED must refute, not slip past a name filter')
   assert.equal(IO_WRITE_REQUIRES_READ, 'IO_WRITE_REQUIRES_READ')
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// D. THE SHARED ZERO-BOOT PREFLIGHT (2026-11-06 owner reorganisation)
+//
+// The negative control the directive asks for is D2: a deliberately aliased
+// two-case fixture must produce a RED preflight. D3–D12 are the mutation
+// controls that make each check load-bearing — a check whose fact can be
+// broken without turning it red is decoration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FIXTURE_DIR = new URL('./fixtures/', import.meta.url)
+const CLEAN_FIXTURE = new URL('a5sf-zero-boot-preflight-clean.json', FIXTURE_DIR)
+const ALIASED_FIXTURE = new URL('a5sf-zero-boot-preflight-aliased-two-case.json', FIXTURE_DIR)
+const CLEAN = JSON.parse(readFileSync(CLEAN_FIXTURE, 'utf8'))
+const ALIASED = JSON.parse(readFileSync(ALIASED_FIXTURE, 'utf8'))
+/** The fixture's native modules are real files in the pristine host checkout;
+ *  this suite is host-free by law, so existence is stubbed to "present" and the
+ *  assembly check is exercised on the probe path it will use in production. */
+const PRESENT = { fileExists: () => true }
+const ABSENT = { fileExists: () => false }
+const codesOf = (result) => result.findings.map((f) => f.code)
+const mutate = (bundle, fn) => { const copy = structuredClone(bundle); fn(copy); return runZeroBootPreflight(copy, PRESENT) }
+
+test('D1 the clean plan passes every check', () => {
+  const result = runZeroBootPreflight(CLEAN, PRESENT)
+  assert.equal(result.verdict, 'PASS')
+  assert.deepEqual(result.findings, [])
+  assert.equal(result.checks.length, PREFLIGHT_CHECK_IDS.length)
+  assert.deepEqual(result.checks.map((c) => c.id), [...PREFLIGHT_CHECK_IDS])
+  assert.equal(result.summary, `PASS ${PREFLIGHT_CHECK_IDS.length}/${PREFLIGHT_CHECK_IDS.length} checks`)
+})
+
+test('D2 NEGATIVE CONTROL: the aliased two-case fixture is RED, for the alias and nothing else', () => {
+  const result = runZeroBootPreflight(ALIASED, PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  // The red is ATTRIBUTABLE: the alias is the only defect, so exactly one check
+  // is red and it carries exactly the two alias codes. If collateral findings
+  // appeared, an operator could not tell whether the alias or the plan was at
+  // fault — the confusing failure allocation #1 actually produced.
+  const failed = result.checks.filter((c) => c.verdict === 'FAIL')
+  assert.equal(failed.length, 1)
+  assert.equal(failed[0].id, 'cases.isolation')
+  const codes = codesOf(result).sort()
+  assert.deepEqual(codes, ['CASE_GUARD_KEY_ALIASED', 'CASE_LOCATOR_ALIASED'])
+  // The two cases named are the two that aliased, and the locator is the one
+  // from the real allocation-#1 fixture.
+  const alias = result.findings.find((f) => f.code === 'CASE_LOCATOR_ALIASED')
+  assert.deepEqual(alias.cases, ['read-b', 'search-row3'])
+  assert.equal(alias.locator, '/w/workspace/lane/outside-restriction.txt')
+  assert.match(alias.detail, /candidate-1 allocation #1/)
+})
+
+test('D3 case isolation also refuses a duplicated id and a case with no locator', () => {
+  const dup = mutate(CLEAN, (b) => { b.cases[1].id = b.cases[0].id })
+  assert.ok(codesOf(dup).includes('CASE_ID_DUPLICATED'))
+  const noLoc = mutate(CLEAN, (b) => { delete b.cases[0].locator })
+  assert.ok(codesOf(noLoc).includes('CASE_LOCATOR_MISSING'))
+  const none = runZeroBootPreflight({ ...structuredClone(CLEAN), cases: [] }, PRESENT)
+  assert.ok(codesOf(none).includes('CASE_LIST_EMPTY'))
+})
+
+test('D4 assembly: a missing dist face, a missing native module and a broken row handoff are each red', () => {
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.assembly.distFaces.subprocess = false })).includes('ASSEMBLY_DIST_FACE_MISSING'))
+  const absent = runZeroBootPreflight(CLEAN, ABSENT)
+  assert.ok(codesOf(absent).includes('ASSEMBLY_HOST_MODULE_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.assembly.rowHandoff.worldRowIds = ['only-the-health-row'] })).includes('ASSEMBLY_ROW_HANDOFF_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.assembly.rowHandoff.usesHandOverRows = false })).includes('ASSEMBLY_ROW_HANDOFF_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.assembly.rowHandoff.beforeBoot = false })).includes('ASSEMBLY_ROW_HANDOFF_MISSING'))
+})
+
+test('D5 identity: the #575 create-root ≠ observe-root defect is refused, and blueprints/member bindings are graded', () => {
+  const roots = mutate(CLEAN, (b) => { b.identity.createRoot = 'session-a5sf-acceptance-team' })
+  assert.ok(codesOf(roots).includes('IDENTITY_ROOT_MISMATCH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.identity.blueprints[0].members = 0 })).includes('IDENTITY_BLUEPRINT_INVALID'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.identity.memberBindings = b.identity.memberBindings.filter((x) => x.caseId !== 'read-a') })).includes('IDENTITY_MEMBER_BINDING_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.identity.memberBindings[0].toolBindingIdentity = '' })).includes('IDENTITY_MEMBER_BINDING_INVALID'))
+})
+
+test('D6 identity.authority: an observed pointer that is not the named snapshot is red', () => {
+  const result = mutate(CLEAN, (b) => { b.runRecord.bindings.authority.pointer.content_digest = 'sha256:0000000000000000000000000000000000000000000000000000000000000000' })
+  assert.ok(codesOf(result).includes('IDENTITY_AUTHORITY_MISMATCH'))
+})
+
+test('D7 native.module-config: the two BL-16 attempt defects (empty config, missing key) are red', () => {
+  const empty = mutate(CLEAN, (b) => { b.nativeModules[0].config = {} })
+  assert.ok(codesOf(empty).includes('NATIVE_MODULE_CONFIG_EMPTY'))
+  const missing = mutate(CLEAN, (b) => { delete b.nativeModules[0].config.sampleOverCapGlobResults })
+  assert.ok(codesOf(missing).includes('NATIVE_MODULE_CONFIG_EMPTY'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.nativeModules[0].inject = [] })).includes('NATIVE_MODULE_INJECT_EMPTY'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.nativeModules = [] })).includes('NATIVE_MODULE_UNDECLARED'))
+})
+
+test('D8 policy.paths: an allow outside the lane, a deny inside it, and a deny inside the runtime allowance are red', () => {
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[0].locator = '/w/elsewhere/needle.txt' })).includes('POLICY_EXPECTATION_CONTRADICTS_LANE'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.policy.effectiveReadAllow.push('/w/ceiling-outside') })).includes('POLICY_EXPECTATION_CONTRADICTS_LANE'))
+  const allowance = mutate(CLEAN, (b) => {
+    b.cases[1].locator = '/etc/passwd'
+    b.policy.dispositions['read-b'] = { ceiling: 'allow', restriction: 'deny', effective: 'deny' }
+  })
+  assert.ok(codesOf(allowance).includes('POLICY_ROOT_INSIDE_RUNTIME_ALLOWANCE'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[1].deniedBy = 'ceiling' })).includes('POLICY_AXIS_ATTRIBUTION_WRONG'))
+})
+
+test('D9 policy.fifo: the BL-16 attempt-6 defect (FIFO outside the lane) is red', () => {
+  const result = mutate(CLEAN, (b) => { b.policy.fifo = '/w/ceiling-outside/blocking.fifo' })
+  assert.ok(codesOf(result).includes('POLICY_FIFO_OUTSIDE_LANE'))
+  assert.equal(result.checks.find((c) => c.id === 'policy.fifo').verdict, 'FAIL')
+})
+
+test('D10 collector.shape: empty corpus, missing return-shape key, no terminate, no archive are red', () => {
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[0].corpus = [] })).includes('COLLECTOR_CORPUS_EMPTY'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[0].returnShape = ['call', 'result'] })).includes('COLLECTOR_RETURN_SHAPE_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[0].terminate = false })).includes('COLLECTOR_TERMINATE_MISSING'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.cases[0].archiveBeforeStart = false })).includes('COLLECTOR_ARCHIVE_MISSING'))
+})
+
+test('D11 wiring: candidate/grant/run-record/ledger disagreement is red before a start', () => {
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.candidate.head = 'not-a-sha' })).includes('CANDIDATE_SHA_INVALID'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.candidate.baseline = 'a'.repeat(40) })).includes('CANDIDATE_BASELINE_MISMATCH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.grant.boundCommit = 'b'.repeat(40) })).includes('GRANT_CANDIDATE_MISMATCH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.grant.maxStarts = 2 })).includes('GRANT_NOT_LARGE_ENOUGH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.runRecord.teamSha = 'c'.repeat(40) })).includes('RUNRECORD_TEAM_SHA_MISMATCH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.runRecord.ledger.bootRows = 2 })).includes('LEDGER_ARITHMETIC_MISMATCH'))
+  assert.ok(codesOf(mutate(CLEAN, (b) => { b.runRecord.ledger.plannedStarts = 2 })).includes('LEDGER_ARITHMETIC_MISMATCH'))
+})
+
+test('D12 the run record may name the baseline instead of the candidate head only when every product path is proven equal', () => {
+  const proven = mutate(CLEAN, (b) => { b.runRecord.teamSha = b.candidate.baseline })
+  assert.equal(proven.verdict, 'PASS', 'a proven-identical tree is allowed')
+  const unproven = mutate(CLEAN, (b) => {
+    b.runRecord.teamSha = b.candidate.baseline
+    b.candidate.productTreeProof[1].equal = false
+  })
+  assert.ok(codesOf(unproven).includes('RUNRECORD_TEAM_SHA_MISMATCH'))
+})
+
+test('D13 a bundle with the wrong schema is refused instead of graded', () => {
+  const result = runZeroBootPreflight({ ...structuredClone(CLEAN), schema: 'something/else' }, PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(codesOf(result), ['BUNDLE_SCHEMA_MISMATCH'])
+})
+
+test('D14 the CLI prints ONE machine-readable verdict and exits non-zero on the aliased fixture', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const bundle = fileURLToPath(ALIASED_FIXTURE)
+  const run = spawnSync(process.execPath, [cli, '--bundle', bundle, '--repo', fileURLToPath(new URL('../..', import.meta.url))], { encoding: 'utf8' })
+  assert.equal(run.status, 1)
+  const lines = run.stdout.trim().split('\n')
+  assert.equal(lines.length, 1, `the CLI must print exactly one line (got ${JSON.stringify(lines)})`)
+  assert.ok(lines[0].startsWith('DSH-A5SF-PREFLIGHT '))
+  const verdict = JSON.parse(lines[0].slice('DSH-A5SF-PREFLIGHT '.length))
+  assert.equal(verdict.verdict, 'FAIL')
+  assert.ok(verdict.findings.some((f) => f.code === 'CASE_LOCATOR_ALIASED'))
+})
+
+test('D15 a run directory without a preflight bundle is REFUSED, never reconstructed from the run output', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const run = spawnSync(process.execPath, [cli, '--run-dir', fileURLToPath(new URL('./fixtures', import.meta.url))], { encoding: 'utf8' })
+  assert.equal(run.status, 1)
+  const verdict = JSON.parse(run.stdout.trim().slice('DSH-A5SF-PREFLIGHT '.length))
+  assert.equal(verdict.verdict, 'FAIL')
+  assert.deepEqual(verdict.findings.map((f) => f.code), ['PREFLIGHT_BUNDLE_MISSING'])
 })

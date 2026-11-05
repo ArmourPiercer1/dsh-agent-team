@@ -1112,3 +1112,579 @@ export function judgeAcceptanceRow(caseId, sample = {}) {
     default: throw new Error(`no acceptance judge for ${JSON.stringify(caseId)} (known: ${ACCEPTANCE_CASES.join(', ')})`)
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE SHARED ZERO-BOOT PREFLIGHT (2026-11-06, owner reorganisation directive)
+//
+// WHY THIS SECTION EXISTS. The two live drivers under
+// `dev/agent-workflow/evidence/a5sf-candidate1/run-boot.mjs` and
+// `.../a5sf-search-live/run-boot.mjs` each grew their own pre-start checks, and
+// they are good — but they are copied per driver, they only run when a driver
+// runs (so an operator discovers a defect AFTER spending a start unless the
+// driver happens to check it), and they do not cover the two defects that cost
+// real allocations:
+//
+//   1. **CASE ALIASING** (candidate-1 allocation #1, 2026-11-06). Two cases
+//      declared the SAME locator (`outside-restriction.txt`) and both judges
+//      collect guard facts BY LOCATOR, so each lane's deny fact satisfied the
+//      other's case. Two rows came back REFUTED for a defect of the fixture,
+//      not of the product, and the retry cost allocation #4.
+//   2. **A DENY EXERCISE INSIDE THE RUNTIME ALLOWANCE** (BL-16/BL-39). A
+//      declared root under `/etc`, `/usr`, `/lib`, `/lib64` or `/proc` is
+//      refused by the admission layer but WOULD be served by the kernel
+//      profile's runtime allowance, so a case that expects "the kernel refuses
+//      it" is vacuous.
+//
+// This section is the ONE host-free contract over a PRE-BOOT bundle: no ports,
+// no DSH_HOME, no pristine host, no boot. A driver writes the bundle before it
+// spends a start (`preflight-bundle.json`); the CLI in
+// `scripts/a5sf-preflight.mjs` grades it and prints ONE machine-readable
+// verdict; the test in `tests/world-factory/a5sf-acceptance-preflight.test.mjs`
+// carries the aliased two-case negative control and one mutation per check.
+//
+// WHAT IT IS NOT: it does not replace the per-row judges above, and it does
+// not decide a row. It answers one question — "would spending a start on this
+// plan teach us anything, or would it burn a boot on a defect of the instrument?"
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The bundle schema this contract reads. A driver may add fields; these are required. */
+export const ZERO_BOOT_PREFLIGHT_SCHEMA = 'a5sf-zero-boot-preflight/1'
+
+/** The closed check-id set. A reader greps one id, not a sentence. */
+export const PREFLIGHT_CHECK_IDS = Object.freeze([
+  'assembly.usable',
+  'identity.roots',
+  'identity.blueprints',
+  'identity.member-tool-binding',
+  'identity.authority',
+  'native.module-config',
+  'policy.paths',
+  'policy.fifo',
+  'cases.isolation',
+  'collector.shape',
+  'wiring.candidate',
+  'wiring.grant',
+  'wiring.run-record',
+])
+
+/** The verdict vocabulary. Two words, because a preflight cannot "probably" pass. */
+export const PREFLIGHT_VERDICTS = Object.freeze(['PASS', 'FAIL'])
+
+const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+const nonBlank = (v) => typeof v === 'string' && v.trim() !== ''
+const SHA40 = /^[0-9a-f]{40}$/
+
+/**
+ * Boundary-aware path containment: `/a/bc` is NOT inside `/a/b`.
+ *
+ * Deliberately string-based and normalising only trailing slashes and `..`
+ * segments. This is the SAME predicate class the drivers use for their lane
+ * dispositions; it is not a second path algebra (the product's
+ * `matchLocator` remains the authority for a served call).
+ *
+ * @param {string} child
+ * @param {string} parent
+ * @returns {boolean}
+ */
+export function pathWithin(child, parent) {
+  if (!nonBlank(child) || !nonBlank(parent)) return false
+  const norm = (p) => {
+    const parts = []
+    for (const seg of String(p).replace(/\/+/g, '/').split('/')) {
+      if (seg === '' || seg === '.') continue
+      if (seg === '..') parts.pop()
+      else parts.push(seg)
+    }
+    return `/${parts.join('/')}`
+  }
+  const c = norm(child)
+  const p = norm(parent)
+  if (c === p) return true
+  return c.startsWith(p.endsWith('/') ? p : `${p}/`)
+}
+
+/** The runtime allowance the OS profile adds OUTSIDE the read lane (subprocess.ts
+ *  `systemRuntimeAllowPaths`). A deny exercise inside it is not a kernel refusal. */
+export const PREFLIGHT_RUNTIME_ALLOWANCE = Object.freeze(['/bin', '/usr', '/lib', '/lib64', '/etc', '/proc', '/sbin'])
+
+function finding(code, detail, extra = {}) {
+  return Object.freeze({ code, detail, ...extra })
+}
+
+/**
+ * CASE ISOLATION — the allocation-#1 defect, made impossible to spend a boot on.
+ *
+ * Every case must own a locator and a guard-fact key that no other case uses.
+ * A shared locator is not a style problem: the judges collect facts by locator,
+ * so aliasing makes two cases read each other's evidence and produces verdicts
+ * about the instrument. The check is deliberately identity-based (the same
+ * string after normalisation), not a heuristic.
+ *
+ * @param {readonly object[]} cases
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkCaseIsolation(cases) {
+  const findings = []
+  if (!Array.isArray(cases) || cases.length === 0) {
+    findings.push(finding('CASE_LIST_EMPTY', 'the bundle declares no cases; a preflight over nothing cannot pass'))
+    return { ok: false, findings }
+  }
+  const byLocator = new Map()
+  const byGuardKey = new Map()
+  const byId = new Set()
+  for (const c of cases) {
+    if (!isObject(c)) { findings.push(finding('CASE_MALFORMED', `a case is not an object: ${JSON.stringify(c)}`)); continue }
+    const id = String(c.id ?? '')
+    if (!nonBlank(id)) { findings.push(finding('CASE_ID_MISSING', 'a case has no id')); continue }
+    if (byId.has(id)) findings.push(finding('CASE_ID_DUPLICATED', `case id ${JSON.stringify(id)} is declared more than once`))
+    byId.add(id)
+    if (!nonBlank(c.locator)) findings.push(finding('CASE_LOCATOR_MISSING', `case ${id} declares no locator`))
+    const loc = String(c.locator ?? '').replace(/\/+$/, '')
+    if (nonBlank(loc)) {
+      const prior = byLocator.get(loc)
+      if (prior !== undefined) {
+        findings.push(finding('CASE_LOCATOR_ALIASED', `cases ${JSON.stringify(prior)} and ${JSON.stringify(id)} share the locator ${JSON.stringify(loc)}; a judge that collects by locator cannot tell their facts apart (this is candidate-1 allocation #1)`, { locator: loc, cases: [prior, id] }))
+      } else byLocator.set(loc, id)
+    }
+    const key = String(c.guardFactKey ?? '').trim()
+    if (nonBlank(key)) {
+      const prior = byGuardKey.get(key)
+      if (prior !== undefined) findings.push(finding('CASE_GUARD_KEY_ALIASED', `cases ${JSON.stringify(prior)} and ${JSON.stringify(id)} share the guard-fact key ${JSON.stringify(key)}; one fact would satisfy two cases`, { guardFactKey: key, cases: [prior, id] }))
+      else byGuardKey.set(key, id)
+    }
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * POLICY-COMPUTED PATH / FIFO / PERMISSION EXPECTATIONS.
+ *
+ * A case's EXPECTED disposition must agree with the lane inputs the bundle
+ * declares, and the exercise must be able to observe the refusal:
+ *  - an `allow` case's locator must be inside the effective lane (and therefore
+ *    inside the ceiling and the tool restriction);
+ *  - a `deny` case's locator must be OUTSIDE the effective lane, and its own
+ *    declared axis must be the one that denies (an out-of-ceiling case must not
+ *    claim the restriction refused it);
+ *  - a `deny` case inside {@link PREFLIGHT_RUNTIME_ALLOWANCE} is refused: the
+ *    kernel profile grants that root, so "the OS refuses it" is not measurable;
+ *  - the FIFO cancellation window must be inside the effective read lane, or
+ *    the confined spawn is refused at admission before the cancellation window
+ *    exists (BL-16 attempt 6, 2026-11-04).
+ *
+ * @param {object} bundle
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkPolicyPaths(bundle) {
+  const findings = []
+  const policy = isObject(bundle?.policy) ? bundle.policy : null
+  const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
+  if (policy === null) {
+    findings.push(finding('POLICY_UNDECLARED', 'the bundle carries no policy block; the path/permission expectations cannot be graded'))
+    return { ok: false, findings }
+  }
+  const readLane = Array.isArray(policy.effectiveReadAllow) ? policy.effectiveReadAllow : []
+  const writeLane = Array.isArray(policy.effectiveWriteAllow) ? policy.effectiveWriteAllow : []
+  if (readLane.length === 0) findings.push(finding('POLICY_EFFECTIVE_LANE_EMPTY', 'policy.effectiveReadAllow is empty; every read case would be vacuous and every deny case trivially true'))
+  const effective = readLane
+  for (const c of cases) {
+    if (!isObject(c)) continue
+    const id = String(c.id)
+    const expected = String(c.expected ?? '')
+    if (expected !== 'allow' && expected !== 'deny') {
+      findings.push(finding('POLICY_EXPECTATION_UNKNOWN', `case ${id} declares expected=${JSON.stringify(c.expected)}; the closed set is allow|deny`))
+      continue
+    }
+    const axis = String(c.axis ?? 'read')
+    if (axis === 'network') {
+      // The network axis has no destination granularity this round: a deny
+      // exercise is only measurable if the lane declares deny AND the backend
+      // probe reports `enforced`; otherwise the call is refused before the
+      // wire and no connection can be observed.
+      if (expected === 'allow') findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round`))
+      if (String(policy.networkAccess ?? '') !== 'deny') findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} expects DENY on the network axis but policy.networkAccess=${JSON.stringify(policy.networkAccess)}`))
+      if (c.networkProbeEnforced !== true) findings.push(finding('POLICY_NETWORK_PROBE_NOT_ENFORCED', `case ${id} claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so "zero connects" is unmeasurable`))
+      continue
+    }
+    if (axis !== 'read' && axis !== 'write') {
+      findings.push(finding('POLICY_AXIS_UNKNOWN', `case ${id} declares axis=${JSON.stringify(axis)}; the closed set is read|write|network`))
+      continue
+    }
+    const lane = axis === 'write' ? writeLane : readLane
+    if (!nonBlank(c.locator)) { findings.push(finding('CASE_LOCATOR_MISSING', `case ${id} declares no locator`)); continue }
+    const inEffective = lane.some((root) => pathWithin(c.locator, root))
+    if (expected === 'allow' && !inEffective) {
+      findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} expects ALLOW on the ${axis} axis but ${JSON.stringify(c.locator)} is outside the effective ${axis} lane ${JSON.stringify(lane)}; the boot would spend a start refuting the fixture`))
+    }
+    if (expected === 'deny') {
+      if (inEffective) {
+        findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} expects DENY on the ${axis} axis but ${JSON.stringify(c.locator)} is inside the effective ${axis} lane; the case cannot fail for the reason it claims`))
+      }
+      // The runtime allowance is a READ/EXECUTE grant; a write inside it is still
+      // refused by the kernel, so only a read-axis deny can be made vacuous by it.
+      const allowanceRoot = axis === 'read' ? PREFLIGHT_RUNTIME_ALLOWANCE.find((root) => pathWithin(c.locator, root)) : undefined
+      if (allowanceRoot !== undefined) {
+        findings.push(finding('POLICY_ROOT_INSIDE_RUNTIME_ALLOWANCE', `case ${id} expects DENY on ${JSON.stringify(c.locator)}, which sits under the runtime allowance ${JSON.stringify(allowanceRoot)}; the OS profile grants that root, so only the admission layer can refuse it and a kernel-refusal claim is vacuous`))
+      }
+      const disposition = isObject(policy.dispositions) ? policy.dispositions[id] : undefined
+      if (isObject(disposition) && nonBlank(c.deniedBy)) {
+        const actualDenier = disposition.effective === 'deny'
+          ? (disposition.restriction === 'deny' ? 'restriction' : (disposition.ceiling === 'deny' ? 'ceiling' : null))
+          : null
+        if (actualDenier !== null && actualDenier !== String(c.deniedBy)) {
+          findings.push(finding('POLICY_AXIS_ATTRIBUTION_WRONG', `case ${id} says ${JSON.stringify(c.deniedBy)} denies it, but the declared dispositions deny it at ${JSON.stringify(actualDenier)}`))
+        }
+      }
+    }
+  }
+  const fifo = policy.fifo
+  if (nonBlank(fifo)) {
+    const inFifo = effective.some((root) => pathWithin(fifo, root))
+    if (!inFifo) {
+      findings.push(finding('POLICY_FIFO_OUTSIDE_LANE', `the cancellation FIFO ${JSON.stringify(fifo)} is outside the effective read lane; a confined spawn of it is refused at admission, so the cancellation window never exists (BL-16 attempt 6)`))
+    }
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * BUILD / ASSEMBLY USABLE.
+ *
+ * Three pre-start facts the drivers already assert, lifted out of the drivers:
+ * the emitted `dist` carries every face the plan rides; every native module the
+ * plan mounts exists at its declared path; and the rows the driver EMITTED are
+ * the rows the World was HANDED, before `boot` (the 2026-11-04 and attempt-1
+ * defect: `emitPatchLayer` returned text that never reached `world.u6Fs.rows`).
+ *
+ * `fileExists` is injected so the pure check is testable without a checkout;
+ * when it is absent the declared `exists` flag is used and that fact is stated
+ * in the check detail (a declared fact is weaker than a probed one).
+ *
+ * @param {object} bundle
+ * @param {{fileExists?: (rel: string) => boolean}} [probe]
+ * @returns {{ok: boolean, findings: object[], probed: boolean}}
+ */
+export function checkAssemblyUsable(bundle, probe = {}) {
+  const findings = []
+  const assembly = isObject(bundle?.assembly) ? bundle.assembly : null
+  if (assembly === null) {
+    return { ok: false, findings: [finding('ASSEMBLY_UNDECLARED', 'the bundle carries no assembly block')], probed: false }
+  }
+  const fileExists = typeof probe.fileExists === 'function' ? probe.fileExists : null
+  const faces = isObject(assembly.distFaces) ? assembly.distFaces : {}
+  const required = Array.isArray(assembly.requiredDistFaces) && assembly.requiredDistFaces.length > 0
+    ? assembly.requiredDistFaces
+    : Object.keys(faces)
+  if (required.length === 0) findings.push(finding('ASSEMBLY_FACES_UNDECLARED', 'assembly.requiredDistFaces is empty; a plan that names no face cannot be preflighted'))
+  for (const face of required) {
+    if (faces[face] !== true) findings.push(finding('ASSEMBLY_DIST_FACE_MISSING', `the emitted dist does not carry the ${JSON.stringify(face)} face the plan rides; run the build before spending a start`))
+  }
+  const modules = Array.isArray(assembly.hostModules) ? assembly.hostModules : []
+  for (const mod of modules) {
+    if (!isObject(mod) || !nonBlank(mod.path)) { findings.push(finding('ASSEMBLY_HOST_MODULE_UNDECLARED', `a host module entry has no path: ${JSON.stringify(mod)}`)); continue }
+    const exists = fileExists === null ? mod.exists === true : fileExists(mod.path)
+    if (!exists) findings.push(finding('ASSEMBLY_HOST_MODULE_MISSING', `the native module ${JSON.stringify(mod.path)} is absent from this checkout; the row cannot be mounted`))
+  }
+  const handoff = isObject(assembly.rowHandoff) ? assembly.rowHandoff : null
+  if (handoff === null) {
+    findings.push(finding('ASSEMBLY_ROW_HANDOFF_MISSING', 'assembly.rowHandoff is absent; the emitted rows were never proven to reach the World'))
+  } else {
+    if (handoff.usesHandOverRows !== true) findings.push(finding('ASSEMBLY_ROW_HANDOFF_MISSING', 'the rows do not reach the World through the single `handOverRows(world, rows)` seam'))
+    if (handoff.beforeBoot !== true) findings.push(finding('ASSEMBLY_ROW_HANDOFF_MISSING', 'the row handover is not proven to run BEFORE `harness.boot(`'))
+    const emitted = Array.isArray(handoff.emittedRowIds) ? handoff.emittedRowIds : []
+    const world = Array.isArray(handoff.worldRowIds) ? handoff.worldRowIds : []
+    if (emitted.join('\u0000') !== world.join('\u0000')) {
+      findings.push(finding('ASSEMBLY_ROW_HANDOFF_MISSING', `emitted rows ${JSON.stringify(emitted)} are not the rows the World received ${JSON.stringify(world)} (ordered identity); this is the attempt-1/2026-11-04 defect`))
+    }
+    if (handoff.healthProbeRowPresent === false) findings.push(finding('ASSEMBLY_HEALTH_ROW_MISSING', 'the World would compose no health-probe row; the p6t6 route cannot answer and every row is unanswerable'))
+  }
+  return { ok: findings.length === 0, findings, probed: fileExists !== null }
+}
+
+/**
+ * IDENTITY — root wiring, blueprint identity, Member/ToolBinding identity, and
+ * the authority the run believes it is observing.
+ *
+ * The roots are graded with {@link assertAcceptanceRootWiring} (the same
+ * function the P2-01 driver imports), so a bundle cannot pass with a
+ * create-root ≠ observe-root construction.
+ *
+ * @param {object} bundle
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkIdentity(bundle) {
+  const findings = []
+  const identity = isObject(bundle?.identity) ? bundle.identity : null
+  if (identity === null) return { ok: false, findings: [finding('IDENTITY_UNDECLARED', 'the bundle carries no identity block')] }
+
+  const roots = {
+    bootRoot: identity.bootRoot,
+    teamRoot: identity.teamRoot,
+    createRoot: identity.createRoot,
+    stateQueryRoot: identity.stateQueryRoot,
+    toolRouteRoot: identity.toolRouteRoot ?? identity.teamRoot,
+    archiveRoot: identity.archiveRoot,
+    oracleRoot: identity.oracleRoot,
+    directiveRoot: identity.directiveRoot ?? identity.teamRoot,
+  }
+  try {
+    assertAcceptanceRootWiring(roots)
+  } catch (error) {
+    findings.push(finding('IDENTITY_ROOT_MISMATCH', String(error?.message ?? error)))
+  }
+
+  const blueprints = Array.isArray(identity.blueprints) ? identity.blueprints : []
+  if (blueprints.length === 0) findings.push(finding('IDENTITY_BLUEPRINT_UNDECLARED', 'no blueprint is declared; Member/ToolBinding identity cannot be graded'))
+  const seenBlueprintIds = new Set()
+  for (const bp of blueprints) {
+    if (!isObject(bp) || !nonBlank(bp.blueprintId)) { findings.push(finding('IDENTITY_BLUEPRINT_INVALID', `a blueprint declares no blueprintId: ${JSON.stringify(bp)}`)); continue }
+    if (seenBlueprintIds.has(bp.blueprintId)) findings.push(finding('IDENTITY_BLUEPRINT_INVALID', `blueprintId ${JSON.stringify(bp.blueprintId)} is declared twice`))
+    seenBlueprintIds.add(bp.blueprintId)
+    if (!Number.isInteger(bp.members) || bp.members < 1) findings.push(finding('IDENTITY_BLUEPRINT_INVALID', `blueprint ${JSON.stringify(bp.blueprintId)} declares members=${JSON.stringify(bp.members)}; a validated blueprint has at least one Member`))
+  }
+
+  const bindings = Array.isArray(identity.memberBindings) ? identity.memberBindings : []
+  const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
+  for (const c of cases) {
+    if (!isObject(c) || !nonBlank(c.id)) continue
+    if (c.face === 'non-data-plane') continue
+    const binding = bindings.find((b) => isObject(b) && b.caseId === c.id)
+    if (binding === undefined) {
+      findings.push(finding('IDENTITY_MEMBER_BINDING_MISSING', `case ${c.id} rides a data-plane face but declares no Member/ToolBinding identity; a verdict would not be attributable`))
+      continue
+    }
+    if (!nonBlank(binding.memberIdentity) || !nonBlank(binding.toolBindingIdentity)) {
+      findings.push(finding('IDENTITY_MEMBER_BINDING_INVALID', `case ${c.id} declares an incomplete Member/ToolBinding identity: ${JSON.stringify(binding)}`))
+    }
+  }
+
+  const authority = isObject(bundle?.authority) ? bundle.authority : null
+  const record = isObject(bundle?.runRecord) ? bundle.runRecord : null
+  if (authority === null) {
+    findings.push(finding('IDENTITY_AUTHORITY_UNDECLARED', 'the bundle carries no authority block'))
+  } else {
+    if (!nonBlank(authority.snapshotVersion)) findings.push(finding('IDENTITY_AUTHORITY_INVALID', 'authority.snapshotVersion is blank'))
+    if (!nonBlank(authority.contentDigest)) findings.push(finding('IDENTITY_AUTHORITY_INVALID', 'authority.contentDigest is blank'))
+    if (authority.pointerSha256 !== undefined && !/^[0-9a-f]{64}$/.test(String(authority.pointerSha256))) {
+      findings.push(finding('IDENTITY_AUTHORITY_INVALID', 'authority.pointerSha256 is not a sha256 (the pointer precondition cannot be stated)'))
+    }
+    if (record !== null && isObject(record.bindings) && isObject(record.bindings.authority)) {
+      const observed = record.bindings.authority
+      if (isObject(observed.pointer) && nonBlank(observed.pointer.content_digest) && observed.pointer.content_digest !== authority.contentDigest) {
+        findings.push(finding('IDENTITY_AUTHORITY_MISMATCH', `the run record observed pointer digest ${observed.pointer.content_digest} but the bundle names ${authority.contentDigest}`))
+      }
+    }
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * NATIVE MODULE REQUIRED CONFIG.
+ *
+ * Both attempt-4 and attempt-5 of BL-16 died on this and neither was a product
+ * defect: the search module was mounted with an EMPTY config, then with a
+ * config missing `sampleOverCapGlobResults`. A module that requires config keys
+ * must declare them, and the bundle must supply every one non-empty.
+ *
+ * @param {object} bundle
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkNativeModuleConfig(bundle) {
+  const findings = []
+  const modules = Array.isArray(bundle?.nativeModules) ? bundle.nativeModules : []
+  if (modules.length === 0) {
+    findings.push(finding('NATIVE_MODULE_UNDECLARED', 'the bundle declares no native module; the row would mount nothing'))
+    return { ok: false, findings }
+  }
+  for (const mod of modules) {
+    if (!isObject(mod) || !nonBlank(mod.name)) { findings.push(finding('NATIVE_MODULE_INVALID', `a native module has no name: ${JSON.stringify(mod)}`)); continue }
+    const inject = Array.isArray(mod.inject) ? mod.inject : []
+    if (inject.length === 0) findings.push(finding('NATIVE_MODULE_INJECT_EMPTY', `${mod.name} declares no inject services; a mounted module that consumes nothing is not the tool under test`))
+    const required = Array.isArray(mod.requiredConfig) ? mod.requiredConfig : []
+    const config = isObject(mod.config) ? mod.config : {}
+    for (const key of required) {
+      if (!nonBlank(String(key))) { findings.push(finding('NATIVE_MODULE_CONFIG_UNDECLARED', `${mod.name} lists a blank required config key`)); continue }
+      const value = config[key]
+      if (value === undefined || value === null || value === '' ||
+          (Array.isArray(value) && value.length === 0) ||
+          (isObject(value) && Object.keys(value).length === 0)) {
+        findings.push(finding('NATIVE_MODULE_CONFIG_EMPTY', `${mod.name} requires config ${JSON.stringify(key)} but the bundle supplies ${JSON.stringify(value)}; the module would fail to mount (BL-16 attempts 4 and 5)`))
+      }
+    }
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * COLLECTOR / RETURN-SHAPE / TERMINATE / ARCHIVE STRUCTURAL CHECKS.
+ *
+ * Every case must declare (a) a non-empty corpus of samples it will collect,
+ * (b) the return-shape keys its judge reads, (c) a termination step and (d) an
+ * archive-before-start bound. A case that cannot say what it will collect is
+ * the shape of a boot that returns `NOT_REACHED` for every row.
+ *
+ * @param {object} bundle
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkCollectorShape(bundle) {
+  const findings = []
+  const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
+  const JUDGE_KEYS = Object.freeze(['call', 'result', 'claim'])
+  for (const c of cases) {
+    if (!isObject(c)) continue
+    const id = String(c.id ?? '?')
+    const corpus = Array.isArray(c.corpus) ? c.corpus : []
+    if (corpus.length === 0) findings.push(finding('COLLECTOR_CORPUS_EMPTY', `case ${id} declares no corpus; its judge would read an empty sample and could pass on nulls`))
+    const shape = Array.isArray(c.returnShape) ? c.returnShape : []
+    const missing = JUDGE_KEYS.filter((k) => !shape.includes(k))
+    if (missing.length > 0) findings.push(finding('COLLECTOR_RETURN_SHAPE_MISSING', `case ${id} returnShape is missing ${JSON.stringify(missing)}; the judge's input would be incomplete`))
+    if (c.terminate !== true) findings.push(finding('COLLECTOR_TERMINATE_MISSING', `case ${id} declares no termination step; a case that can leave a process or a Member alive is not preflightable`))
+    if (c.archiveBeforeStart !== true) findings.push(finding('COLLECTOR_ARCHIVE_MISSING', `case ${id} does not declare archive-before-start; a second run would overwrite the first run's evidence`))
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * CANDIDATE SHA + GRANT + RUN-RECORD WIRING.
+ *
+ * The three identities must agree before a start: the candidate commit the
+ * grant is bound to, the tree the run record says it executed on, and the
+ * baseline the authority snapshot names. The ledger arithmetic is the same
+ * rule the read-gate enforces after the run — checked here so a mis-set budget
+ * is found before it is spent.
+ *
+ * @param {object} bundle
+ * @returns {{ok: boolean, findings: object[]}}
+ */
+export function checkCandidateWiring(bundle) {
+  const findings = []
+  const grant = isObject(bundle?.grant) ? bundle.grant : null
+  const record = isObject(bundle?.runRecord) ? bundle.runRecord : null
+  const candidate = isObject(bundle?.candidate) ? bundle.candidate : null
+  const authority = isObject(bundle?.authority) ? bundle.authority : null
+
+  if (candidate === null || !SHA40.test(String(candidate.head ?? ''))) {
+    findings.push(finding('CANDIDATE_SHA_INVALID', `candidate.head is not a 40-hex commit: ${JSON.stringify(candidate?.head)}`))
+  }
+  if (candidate !== null && authority !== null && nonBlank(candidate.baseline) && nonBlank(authority.baseline) && candidate.baseline !== authority.baseline) {
+    findings.push(finding('CANDIDATE_BASELINE_MISMATCH', `candidate.baseline ${candidate.baseline.slice(0, 12)}… is not the authority baseline ${authority.baseline.slice(0, 12)}…; the run would execute on a tree the snapshot does not name`))
+  }
+  if (grant === null) {
+    findings.push(finding('GRANT_UNDECLARED', 'the bundle carries no grant; no start may be spent'))
+  } else {
+    if (!nonBlank(grant.grantId)) findings.push(finding('GRANT_UNATTRIBUTED', 'grant.grantId is blank'))
+    if (!nonBlank(grant.grantedBy)) findings.push(finding('GRANT_UNATTRIBUTED', 'grant.grantedBy is blank; a start must name who authorised it'))
+    if (!SHA40.test(String(grant.boundCommit ?? ''))) findings.push(finding('GRANT_CANDIDATE_MISMATCH', `grant.boundCommit is not a 40-hex commit: ${JSON.stringify(grant.boundCommit)}`))
+    else if (candidate !== null && SHA40.test(String(candidate.head ?? '')) && grant.boundCommit !== candidate.head) {
+      findings.push(finding('GRANT_CANDIDATE_MISMATCH', `the grant is bound to ${grant.boundCommit.slice(0, 12)}… but the candidate head is ${candidate.head.slice(0, 12)}…; the start would execute on a tree no grant names`))
+    }
+    const prior = Number(grant.priorRows ?? 0)
+    const planned = Number(grant.plannedStarts ?? 0)
+    const max = Number(grant.maxStarts ?? 0)
+    if (!Number.isInteger(planned) || planned < 1) findings.push(finding('GRANT_NOT_LARGE_ENOUGH', `grant.plannedStarts=${JSON.stringify(grant.plannedStarts)} must be at least 1`))
+    if (!Number.isInteger(max) || max < prior + planned) {
+      findings.push(finding('GRANT_NOT_LARGE_ENOUGH', `grant.maxStarts=${JSON.stringify(grant.maxStarts)} does not cover prior rows ${JSON.stringify(prior)} + planned starts ${JSON.stringify(planned)}; the read-gate will refuse the run after it has already begun`))
+    }
+  }
+  if (record === null) {
+    findings.push(finding('RUNRECORD_UNDECLARED', 'the bundle carries no runRecord block; the wiring cannot be graded'))
+  } else {
+    if (!SHA40.test(String(record.teamSha ?? ''))) findings.push(finding('RUNRECORD_TEAM_SHA_INVALID', `runRecord.teamSha is not a 40-hex commit: ${JSON.stringify(record.teamSha)}`))
+    else if (candidate !== null && SHA40.test(String(candidate.head ?? '')) && record.teamSha !== candidate.head) {
+      // The run may execute at the frozen candidate's BASELINE commit only when
+      // the per-path proof says the two product trees are byte-identical.
+      const proof = Array.isArray(candidate.productTreeProof) ? candidate.productTreeProof : []
+      const provenEqual = proof.length > 0 && proof.every((p) => isObject(p) && p.equal === true)
+      if (record.teamSha !== candidate.baseline || !provenEqual) {
+        findings.push(finding('RUNRECORD_TEAM_SHA_MISMATCH', `the run record names tree ${record.teamSha.slice(0, 12)}… which is neither the candidate head ${candidate.head.slice(0, 12)}… nor its baseline with a per-path productTreeProof proving equality`))
+      }
+    }
+    if (isObject(record.bindings) && isObject(record.bindings.authority) && isObject(record.bindings.authority.pointer) && !nonBlank(record.bindings.authority.pointer.snapshot_version)) {
+      findings.push(finding('RUNRECORD_AUTHORITY_MISMATCH', 'runRecord.bindings.authority.pointer names no snapshot_version'))
+    }
+    const ledger = isObject(record.ledger) ? record.ledger : null
+    if (ledger === null) {
+      findings.push(finding('LEDGER_ARITHMETIC_MISMATCH', 'runRecord.ledger is absent; bootRows === plannedStarts - aborts cannot be graded'))
+    } else {
+      const bootRows = Number(ledger.bootRows)
+      const planned = Number(ledger.plannedStarts)
+      const aborts = Number(ledger.aborts ?? 0)
+      if (!Number.isInteger(bootRows) || !Number.isInteger(planned) || !Number.isInteger(aborts)) {
+        findings.push(finding('LEDGER_ARITHMETIC_MISMATCH', `runRecord.ledger is not integral: ${JSON.stringify(ledger)}`))
+      } else if (bootRows !== planned - aborts) {
+        findings.push(finding('LEDGER_ARITHMETIC_MISMATCH', `bootRows=${bootRows} but plannedStarts(${planned}) - aborts(${aborts}) = ${planned - aborts}; the ledger and the plan disagree`))
+      }
+      if (grant !== null && Number.isInteger(planned) && Number(grant.plannedStarts ?? -1) !== planned) {
+        findings.push(finding('LEDGER_ARITHMETIC_MISMATCH', `grant.plannedStarts=${String(grant.plannedStarts)} but runRecord.ledger.plannedStarts=${planned}`))
+      }
+    }
+  }
+  return { ok: findings.length === 0, findings }
+}
+
+/**
+ * Run every preflight check over one bundle and return ONE verdict.
+ *
+ * The verdict is `FAIL` if ANY check produced a finding. There is no weighting
+ * and no "advisory" tier: a preflight exists to stop a start, so a finding is a
+ * stop. Every check's findings are returned, not just the first, because an
+ * operator fixing an instrument should see all of its defects in one pass.
+ *
+ * @param {object} bundle
+ * @param {{fileExists?: (rel: string) => boolean, now?: () => Date}} [options]
+ * @returns {{schema: string, verdict: 'PASS'|'FAIL', checks: object[], findings: object[], summary: string}}
+ */
+export function runZeroBootPreflight(bundle, options = {}) {
+  const checks = []
+  const add = (id, result) => {
+    checks.push(Object.freeze({ id, verdict: result.findings.length === 0 ? 'PASS' : 'FAIL', findings: Object.freeze(result.findings) }))
+  }
+  if (!isObject(bundle)) {
+    return Object.freeze({
+      schema: ZERO_BOOT_PREFLIGHT_SCHEMA,
+      verdict: 'FAIL',
+      checks: Object.freeze([]),
+      findings: Object.freeze([finding('BUNDLE_MALFORMED', 'the preflight input is not an object')]),
+      summary: 'FAIL 0/0 checks readable',
+    })
+  }
+  if (bundle.schema !== ZERO_BOOT_PREFLIGHT_SCHEMA) {
+    return Object.freeze({
+      schema: ZERO_BOOT_PREFLIGHT_SCHEMA,
+      verdict: 'FAIL',
+      checks: Object.freeze([]),
+      findings: Object.freeze([finding('BUNDLE_SCHEMA_MISMATCH', `bundle.schema is ${JSON.stringify(bundle.schema)}, expected ${JSON.stringify(ZERO_BOOT_PREFLIGHT_SCHEMA)}`)]),
+      summary: 'FAIL 0/0 checks readable',
+    })
+  }
+  add('assembly.usable', checkAssemblyUsable(bundle, { fileExists: options.fileExists }))
+  // One evaluation, partitioned by finding family — a check that ran twice could
+  // disagree with itself if a check ever grew a side effect.
+  const identity = checkIdentity(bundle)
+  add('identity.roots', { findings: identity.findings.filter((f) => f.code.startsWith('IDENTITY_ROOT')) })
+  add('identity.blueprints', { findings: identity.findings.filter((f) => f.code.startsWith('IDENTITY_BLUEPRINT')) })
+  add('identity.member-tool-binding', { findings: identity.findings.filter((f) => f.code.startsWith('IDENTITY_MEMBER')) })
+  add('identity.authority', { findings: identity.findings.filter((f) => f.code.startsWith('IDENTITY_AUTHORITY') || f.code === 'IDENTITY_UNDECLARED') })
+  add('native.module-config', checkNativeModuleConfig(bundle))
+  const policy = checkPolicyPaths(bundle)
+  add('policy.paths', { findings: policy.findings.filter((f) => f.code !== 'POLICY_FIFO_OUTSIDE_LANE') })
+  add('policy.fifo', { findings: policy.findings.filter((f) => f.code === 'POLICY_FIFO_OUTSIDE_LANE') })
+  add('cases.isolation', checkCaseIsolation(bundle.cases))
+  add('collector.shape', checkCollectorShape(bundle))
+  const wiring = checkCandidateWiring(bundle)
+  add('wiring.candidate', { findings: wiring.findings.filter((f) => f.code.startsWith('CANDIDATE')) })
+  add('wiring.grant', { findings: wiring.findings.filter((f) => f.code.startsWith('GRANT')) })
+  add('wiring.run-record', { findings: wiring.findings.filter((f) => f.code.startsWith('RUNRECORD') || f.code.startsWith('LEDGER')) })
+
+  const findings = Object.freeze(checks.flatMap((c) => c.findings))
+  const passed = checks.filter((c) => c.verdict === 'PASS').length
+  const verdict = findings.length === 0 ? 'PASS' : 'FAIL'
+  const blocks = findings.length === 0 ? '' : ` blocks=${[...new Set(findings.map((f) => f.code))].join(',')}`
+  return Object.freeze({
+    schema: ZERO_BOOT_PREFLIGHT_SCHEMA,
+    verdict,
+    checks: Object.freeze(checks),
+    findings,
+    summary: `${verdict} ${String(passed)}/${String(checks.length)} checks${blocks}`,
+  })
+}

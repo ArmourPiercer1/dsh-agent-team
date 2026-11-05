@@ -1,0 +1,37 @@
+{
+  "schema": "a5sf-org/negative-control/1",
+  "what": "The shared zero-boot preflight must be RED on the deliberately aliased two-case fixture (the candidate-1 allocation #1 defect) and GREEN on the same plan with per-case locators. This is the negative control the owner directive asks for.",
+  "command": {
+    "clean": "node scripts/a5sf-preflight.mjs --bundle tests/world-factory/fixtures/a5sf-zero-boot-preflight-clean.json --repo /home/armourpiercer/projects/dsh-agent-team",
+    "aliased": "node scripts/a5sf-preflight.mjs --bundle tests/world-factory/fixtures/a5sf-zero-boot-preflight-aliased-two-case.json --repo /home/armourpiercer/projects/dsh-agent-team"
+  },
+  "clean": {
+    "verdict": "PASS",
+    "summary": "PASS 13/13 checks",
+    "checks": 13,
+    "findings": 0
+  },
+  "aliased": {
+    "verdict": "FAIL",
+    "summary": "FAIL 12/13 checks blocks=CASE_LOCATOR_ALIASED,CASE_GUARD_KEY_ALIASED",
+    "failedChecks": [
+      {
+        "id": "cases.isolation",
+        "codes": [
+          "CASE_LOCATOR_ALIASED",
+          "CASE_GUARD_KEY_ALIASED"
+        ]
+      }
+    ],
+    "codes": [
+      "CASE_GUARD_KEY_ALIASED",
+      "CASE_LOCATOR_ALIASED"
+    ]
+  },
+  "attribution": {
+    "why_red_is_meaningful": "exactly one check (cases.isolation) is red, and it carries exactly the two alias codes; every other check stays green, so the red cannot be collateral damage from a missing host tree or a wrong lane",
+    "defect": "cases read-b and search-row3 declare the same locator workspace/lane/outside-restriction.txt and the same guard-fact key, so each judge collects the other's deny fact (candidate-1 allocation #1, 2 rows REFUTED, retried as allocation #4)"
+  },
+  "boots_spent": 0,
+  "source_reproduce": "tests/world-factory/a5sf-acceptance-preflight.test.mjs D1-D15"
+}
