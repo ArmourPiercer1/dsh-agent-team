@@ -138,7 +138,7 @@
 
 import { createHash } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, statSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -306,6 +306,7 @@ const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
+const A6_CRASH = process.env['C1_A6_CRASH'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1134,7 +1135,7 @@ function replyToolNames(record) {
  * executes through the plane takeover. The ledger is captured verbatim so a
  * second (plane PA) approval leg is visible rather than inferred.
  */
-async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
+async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   log('── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──')
   writeFileSync(join(BLUEPRINT_DIR, 'c1-a6.yaml'), savedBlueprintA6Yaml(denyList))
   const create = await remoteCall(booted.origin, booted.cookie, 'team.create', {
@@ -1150,6 +1151,80 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     return false
   }
 
+  if (A6_CRASH) {
+    let pa = null
+    const waitDeadline = Date.now() + 60_000
+    while (Date.now() < waitDeadline) {
+      const current = readControlLedger(CREATE_ROOT_A6)
+      pa = current.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+      if (pa !== null) break
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+    const beforeKill = pa === null ? null : readControlLedger(CREATE_ROOT_A6)
+    host.child.kill('SIGKILL')
+    const exitDeadline = Date.now() + 20_000
+    while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+    const exited = !host.alive()
+    const durable = readControlLedger(CREATE_ROOT_A6)
+    const afterRestart = { booted: null, error: null }
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      let parsed = null
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+        if (matches.length > 0) { parsed = matches.at(-1); break }
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      if (parsed === null) throw new Error('no restart boot URL')
+      const origin2 = `http://127.0.0.1:${parsed[1]}`
+      let cookie2 = null
+      let authError = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, parsed[2]); break } catch (error) { authError = error; await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error(`restart auth failed: ${authError?.message ?? 'unknown'}`)
+      afterRestart.booted = { origin: origin2, cookie: cookie2, host: h2 }
+      afterRestart.error = null
+    } catch (error) {
+      afterRestart.error = String(error?.message ?? error)
+    }
+    let revived = false
+    let late = null
+    let decisionAfter = null
+    if (afterRestart.booted !== null && pa !== null) {
+      late = await remoteCall(afterRestart.booted.origin, afterRestart.booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: pa.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: resolve after a Host crash and restart',
+      }, 'c1a6crash', 4)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const final = readControlLedger(CREATE_ROOT_A6)
+      decisionAfter = final.decisions.filter((d) => d.requestId === pa.requestId).at(-1) ?? null
+      revived = existsSync(FILE_A6_ALLOW) && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
+      const consumed = final.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+      check('A6-13', 'a Host crash after the PA request write leaves the durable request recoverable, with no execution before/after restart', exited && pa !== null && final.requests.some((r) => r.requestId === pa.requestId) && !revived,
+        `exited=${String(exited)} pa=${String(pa?.requestId)} restart=${afterRestart.error ?? 'ok'} decision=${JSON.stringify(decisionAfter)} consumed=${String(consumed !== null)} file=${String(revived)}`)
+      const failClosed = decisionAfter?.decision === 'deny' && decisionAfter?.reason === 'authority-undetermined'
+      check('A6-14', 'after a Host crash and restart, a human allow fails closed as authority-undetermined and cannot execute the dead member call', failClosed && !revived,
+        `decision=${String(decisionAfter?.decision)} reason=${String(decisionAfter?.reason)} consumed=${String(consumed !== null)} file=${String(revived)}`)
+      writeEvidence('a6-crash.json', { pa, beforeKill, durable, restart: { error: afterRestart.error }, late: late.body ?? late, decisionAfter, revived })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+    } else {
+      check('A6-13', 'a Host crash after the PA request write leaves the durable request recoverable', false,
+        `exited=${String(exited)} pa=${String(pa?.requestId)} restart=${afterRestart.error ?? 'ok'}`)
+      writeEvidence('a6-crash.json', { pa, beforeKill, durable, restart: { error: afterRestart.error }, revived })
+    }
+    return exited && pa !== null && afterRestart.error === null && !revived
+  }
   let humanEscalation = null
   let humanLeg = null
   let humanDecision = null
@@ -1700,7 +1775,7 @@ function readControlLedger(root) {
       if (entry.factType === 'control-request-recorded') {
         out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, approvalCaseId: payload.approvalCaseId, legOrdinal: payload.legOrdinal, reviewAuthority: payload.reviewAuthority, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-decision-recorded') {
-        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, createdAt: entry.createdAt })
+        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, reason: payload.reason, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-allow-consumed') {
         out.consumptions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-current-leg-transferred') {
@@ -1958,7 +2033,7 @@ async function main() {
       log(`saved blueprints X + Y + Z written (deny list = ${denyList.length} names)`)
 
       if (ALPHA6_OFFICER) {
-        const ok = await runAlpha6OfficerScenario({ booted, mock, denyList })
+        const ok = await runAlpha6OfficerScenario({ booted, mock, denyList, host })
         stopHost(host)
         await mock.close()
         if (!FLAG_KEEP) {
