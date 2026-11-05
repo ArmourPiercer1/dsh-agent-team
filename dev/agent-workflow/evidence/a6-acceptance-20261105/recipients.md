@@ -29,10 +29,10 @@ evidence is the durable Leader decision, not the legacy notification turn count
 ## Officer handoff — PASS (clean run), successor was previously never woken
 
 Run: `C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_HANDOFF=1`, evidence
-`a6-handoff-only-r4/` (root `session-c1-smoke-a6-2026-11-05T16-42-18`, exit 0).
+`a6-handoff-only-r6/` (root `session-c1-smoke-a6-2026-11-05T17-10-52`, exit 0).
 The Leader created a **fresh** worker `w-a6-ho` and delegated the handoff ask to it.
 
-Durable facts for PA `ctrl-0k86pi815q2wab0pfcrs61wy`:
+Durable facts for PA `ctrl-0i9xjnj1kx69341ewupe51le`:
 
 - guard `parameter-permission`: Leader allow, consumed;
 - PA `team-tool-execute`: `operationOwnerTemplateId=worker`, `reviewAuthority=leader`,
@@ -42,7 +42,7 @@ Durable facts for PA `ctrl-0k86pi815q2wab0pfcrs61wy`:
 - `control-decision-recorded` **seq 23**, `decision:'allow'`, decider
   `{kind:'instance', instanceId:'inst-leader', role:'leader'}`;
 - allow consumed, original command executed once:
-  `c1-a6-handoff-2026-11-05T16-42-18` in `c1-a6-handoff-2026-11-05T16-42-18.txt`;
+  `c1-a6-handoff-2026-11-05T17-10-52` in `c1-a6-handoff-2026-11-05T17-10-52.txt`;
 - `A6-8 PASS`, `executed=true`.
 
 ### The defect this run proved and the fix
