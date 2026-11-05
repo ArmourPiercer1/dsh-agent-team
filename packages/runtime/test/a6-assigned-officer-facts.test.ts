@@ -751,6 +751,7 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
           transfers: [],
         } as never),
       },
+      fixedLeaderOrHumanCategory: () => false,
       members: {
         get: (root, instanceId) =>
           root === childRoot && instanceId === 'inst-a6-created-officer'
