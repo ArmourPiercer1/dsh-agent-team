@@ -64,11 +64,16 @@
  *        SETTLED → ARCHIVE → ARCHIVED — `executed` with the
  *        `lifecycle-changed` effect (from RUNNING, to ARCHIVED), the
  *        durable record ARCHIVED, and the commit port recording exactly
- *        those two CAS transitions;
+ *        those two CAS transitions. The transaction ENDS with the row-6
+ *        post-commit residency re-drop and the admission reopen, asserted
+ *        by global-clock seq (order, not merely presence);
  *   B2 quiesce failure (the same production row): a live-effect fault
  *        in the interrupt step aborts the procedure → rejected
  *        `LIFECYCLE_LIVE_EFFECT_FAILED`, ZERO durable lifecycle commits,
- *        the target stays RUNNING, the residency unreleased.
+ *        the target stays RUNNING, the residency unreleased. Row 6 makes
+ *        the abort asymmetry load-bearing: admission is reopened exactly
+ *        once, and NO residency drop runs (the fault precedes step 5, and
+ *        a post-commit re-drop cannot exist without a commit).
  */
 import { describe, expect, it } from 'vitest'
 import { createActivityLedger } from '../../runtime/activity/index.js'
@@ -101,7 +106,7 @@ import {
   P7T3DescendantsFake,
   P7T3ResidencyFake,
 } from '../../runtime/test/p7t3-helpers.js'
-import type { P7T3CommitCall } from '../../runtime/test/p7t3-helpers.js'
+import type { P7T3CommitCall, P7T3DropCall } from '../../runtime/test/p7t3-helpers.js'
 import { createTeamTools } from '../src/index.js'
 import type { TeamToolsResult } from '../src/index.js'
 import {
@@ -425,15 +430,20 @@ interface ProductionScenario {
   readonly workerAvFinal: number
   readonly commitCalls: readonly P7T3CommitCall[]
   readonly clockKinds: readonly string[]
-  readonly residencyDrops: readonly { readonly dropped: boolean }[]
+  readonly residencyDrops: readonly P7T3DropCall[]
   readonly admissionCalls: number
   readonly activityCalls: number
   readonly drainCalls: number
+  /** Row 6: the procedure-scoped admission reopen, by global-clock seq. */
+  readonly reopenSeqs: readonly number[]
   readonly failedQuiesce: TeamToolsResult
   readonly failedWorkerFinal: string
   readonly failedCommitCalls: number
   readonly failedResidencyDrops: number
   readonly failedClockKinds: readonly string[]
+  /** Row 6 abort path: drop/reopen seqs (the drop arm must stay EMPTY). */
+  readonly failedDropSeqs: readonly number[]
+  readonly failedReopenSeqs: readonly number[]
 }
 
 const B = await (async (): Promise<ProductionScenario> => {
@@ -529,7 +539,16 @@ const B = await (async (): Promise<ProductionScenario> => {
   }
 
   // ── B1: the production row, the happy RUNNING archive ───────────────────
-  let b1: Omit<ProductionScenario, 'failedQuiesce' | 'failedWorkerFinal' | 'failedCommitCalls' | 'failedResidencyDrops' | 'failedClockKinds'>
+  let b1: Omit<
+    ProductionScenario,
+    | 'failedQuiesce'
+    | 'failedWorkerFinal'
+    | 'failedCommitCalls'
+    | 'failedResidencyDrops'
+    | 'failedClockKinds'
+    | 'failedDropSeqs'
+    | 'failedReopenSeqs'
+  >
   {
     const { env, world, commit, clock, residency, admission, activity, descendants } =
       await buildProductionWorld('archive-member-tool-f2', false)
@@ -562,6 +581,8 @@ const B = await (async (): Promise<ProductionScenario> => {
         admissionCalls: admission.calls.length,
         activityCalls: activity.calls.length,
         drainCalls: descendants.calls.length,
+        // Row 6: the ORDERING evidence (one global clock, monotonic seq).
+        reopenSeqs: admission.reopenCalls.map((call) => call.seq),
       }
     } finally {
       await destroyP6T1World(world)
@@ -571,7 +592,7 @@ const B = await (async (): Promise<ProductionScenario> => {
   // ── B2: the quiesce failure arm (its own world so B1's durable state is
   // untouched) ──────────────────────────────────────────────────────────────
   const b2 = await (async () => {
-    const { env, world, commit, clock, residency } = await buildProductionWorld(
+    const { env, world, commit, clock, residency, admission } = await buildProductionWorld(
       'archive-member-tool-f2b',
       true,
     )
@@ -589,6 +610,8 @@ const B = await (async (): Promise<ProductionScenario> => {
         failedCommitCalls: commit.calls.length,
         failedResidencyDrops: residency.dropCalls.length,
         failedClockKinds: clock.kinds(),
+        failedDropSeqs: residency.dropCalls.map((call) => call.seq),
+        failedReopenSeqs: admission.reopenCalls.map((call) => call.seq),
       }
     } finally {
       await destroyP6T1World(world)
@@ -775,7 +798,9 @@ describe('team_archive_member — the production P7-T3 row (quiesce, then the tw
     expect(archive.expectedActivityVersion).toBe(B.workerAvBefore + 1)
     // The procedure order (the machine-checkable clock): the five quiesce
     // live steps COMPLETE BEFORE the first durable commit; the resident
-    // handle is released by the fifth step.
+    // handle is released by the fifth step. Row 6 (2026-11-05): the
+    // transaction then ENDS with the post-commit re-drop and the reopen —
+    // the drop→commit window must not carry a live handle past ARCHIVED.
     expect(B.clockKinds).toEqual([
       'admission.close',
       'activity.interrupt',
@@ -783,12 +808,37 @@ describe('team_archive_member — the production P7-T3 row (quiesce, then the tw
       'residency.drop',
       'commit',
       'commit',
+      'residency.drop',
+      'admission.reopen',
     ])
     expect(B.admissionCalls).toBe(1)
     expect(B.activityCalls).toBe(1)
     expect(B.drainCalls).toBe(1)
-    expect(B.residencyDrops).toHaveLength(1)
+    // Two drops: step 5 and the row-6 re-drop. The second is a no-op on the
+    // fake's map (the handle is already gone), which is why the SEQ
+    // assertion below — not `dropped` — is the load-bearing one.
+    expect(B.residencyDrops).toHaveLength(2)
     expect(B.residencyDrops[0]?.dropped).toBe(true)
+    expect(B.residencyDrops[1]?.dropped).toBe(false)
+  })
+
+  it('B1 row 6: the post-commit re-drop is ORDERED after the last CAS commit and before the admission reopen', () => {
+    // Presence is not the property under test; ORDER is. The defect this
+    // closes is a drop that ran too EARLY (leaving the drop→commit window
+    // open), so this asserts against the one global monotonic clock.
+    expect(B.residencyDrops).toHaveLength(2)
+    expect(B.commitCalls).toHaveLength(2)
+    expect(B.reopenSeqs).toHaveLength(1)
+    const firstCommitSeq = B.commitCalls[0]?.seq ?? -1
+    const lastCommitSeq = B.commitCalls[B.commitCalls.length - 1]?.seq ?? -1
+    const preCommitDropSeq = B.residencyDrops[0]?.seq ?? -1
+    const postCommitDropSeq = B.residencyDrops[1]?.seq ?? -1
+    // Step 5 still releases the handle BEFORE any durable commit...
+    expect(preCommitDropSeq).toBeLessThan(firstCommitSeq)
+    // ...the re-drop follows the LAST commit (ARCHIVE → ARCHIVED)...
+    expect(postCommitDropSeq).toBeGreaterThan(lastCommitSeq)
+    // ...and the reopen closes the procedure after both drops.
+    expect(B.reopenSeqs[0] ?? -1).toBeGreaterThan(postCommitDropSeq)
   })
 
   it('B2 a quiesce live-effect fault aborts before any durable commit (stays RUNNING; residency unreleased)', () => {
@@ -800,9 +850,19 @@ describe('team_archive_member — the production P7-T3 row (quiesce, then the tw
     expect(B.failedWorkerFinal).toBe('RUNNING')
     expect(B.failedCommitCalls).toBe(0)
     expect(B.failedResidencyDrops).toBe(0)
+    // Row 6 asymmetric abort: the close is procedure-scoped, so admission is
+    // REOPENED exactly once; the post-commit re-drop does NOT run (there is
+    // no commit to follow, and the interrupt fault precedes step 5, so the
+    // pre-commit drop never ran either). This is what makes the abort path
+    // distinguishable from "the success path minus some steps".
+    expect(B.failedDropSeqs).toEqual([])
+    expect(B.failedReopenSeqs).toHaveLength(1)
     // The clock proves the abort point: admission closed, the interrupt
-    // faulted — nothing after it ran (no drain observation recorded a
-    // commit, no residency release).
-    expect(B.failedClockKinds).toEqual(['admission.close', 'activity.interrupt'])
+    // faulted — nothing after it ran except the procedure-exit reopen.
+    expect(B.failedClockKinds).toEqual([
+      'admission.close',
+      'activity.interrupt',
+      'admission.reopen',
+    ])
   })
 })
