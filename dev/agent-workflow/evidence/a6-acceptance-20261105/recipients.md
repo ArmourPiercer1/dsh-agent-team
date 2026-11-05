@@ -1,10 +1,8 @@
 # Alpha.6 recipient probes — real Host (2026-11-05)
 
-All product code is the already-gated integration HEAD `b4d4d21e3fa9cef9db5ead895a47c479d925e7f4`
-(branch docs/evidence HEAD `49abe7e10976e85a18a2b935963617deb9884ac6`). The only worktree
-change for these probes is the env-gated C1 kit extension
-(`tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs`); no product file changed.
-The Host is real `0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`, mock model only.
+Product HEAD for the handoff rerun: `fd7a5d6c1` (the transfer-sink fix below); the earlier
+self-review runs used `b4d4d21e3fa9cef9db5ead895a47c479d925e7f4`. The Host is real
+`0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`, mock model only.
 
 ## Officer self-review — PASS
 
@@ -28,28 +26,44 @@ The self-ask therefore routes to the **Leader**, never back to the Officer. The 
 evidence is the durable Leader decision, not the legacy notification turn count
 (`leaderNotifications=7` counts the list/resolve model turns, not seven independent notices).
 
-## Officer handoff — BLOCKED (candidate lost wake)
+## Officer handoff — PASS (clean run), successor was previously never woken
 
-Run: `C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_RECIPIENTS=1 C1_A6_HANDOFF=1`, evidence
-`a6-recipients-r12/` (same root as above). The Leader created a **fresh** worker
-`inst-07tbm2t1f1jz` (`w-a6-ho`) and delegated the handoff ask to it (a previously settled
-worker cannot resume its suspended call after approval).
+Run: `C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_HANDOFF=1`, evidence
+`a6-handoff-only-r4/` (root `session-c1-smoke-a6-2026-11-05T16-42-18`, exit 0).
+The Leader created a **fresh** worker `w-a6-ho` and delegated the handoff ask to it.
 
-Durable facts:
+Durable facts for PA `ctrl-0k86pi815q2wab0pfcrs61wy`:
 
-- guard `parameter-permission` `ctrl-0w41dmx03jbioi0mi5jyz0rc`: Leader `allow` seq 25,
-  consumed seq 26;
-- PA `team-tool-execute` `ctrl-1ww7pw714asytc0ouvpbt1az`: `operationOwnerTemplateId=worker`,
-  `reviewAuthority=leader`, `legOrdinal=1`, **status still pending**; no decision, no
-  transfer (`control-current-leg-transferred` absent), no consumption, no command file.
+- guard `parameter-permission`: Leader allow, consumed;
+- PA `team-tool-execute`: `operationOwnerTemplateId=worker`, `reviewAuthority=leader`,
+  `legOrdinal=1`;
+- `control-current-leg-transferred` **seq 22**, cause `officer-handoff`, actor the Officer,
+  `target:'leader'`, same `approvalCaseId` / `currentLegRequestId`;
+- `control-decision-recorded` **seq 23**, `decision:'allow'`, decider
+  `{kind:'instance', instanceId:'inst-leader', role:'leader'}`;
+- allow consumed, original command executed once:
+  `c1-a6-handoff-2026-11-05T16-42-18` in `c1-a6-handoff-2026-11-05T16-42-18.txt`;
+- `A6-8 PASS`, `executed=true`.
 
-No Officer review wake and no Leader notification turn was observed for that PA leg
-(`a6-handoff-mock.json`; the last observed mock turn is the self-review tail). The base
-single-worker A6 flow does wake the Officer for the same kind of PA leg, so this is
-**BLOCKED with a candidate lost-wake/lost-pending defect for a post-boot-created second
-worker**, not merely a missing assertion. It is not yet labelled P1 until the trigger is
-isolated (new worker vs. second case under one root vs. timing); it must not be waived.
-`A6-8` is red and the handoff row stays BLOCKED.
+### The defect this run proved and the fix
+
+Before `fd7a5d6c1`, the same clean scenario (`a6-handoff-only-r3`) wrote the transfer (seq 22)
+but **no successor notification, no Leader decision and no execution**: the old Officer latch
+was retired and the durable leg was stranded. Root cause: `ControlService` emits
+`reviewEvents.current-leg-transferred` / `human-current-leg`, but **production had no consumer
+at all** (`grep reviewEvents packages/runtime/src/plugin` was empty). The fix wires the
+production root's `reviewEvents` to re-read the moved leg and run the **same trusted
+notifier/route** used at creation, so a transferred leg reaches its new recipient instead of
+the former reviewer. This is the "successor current-leg notification reachability, not just
+persistence" requirement.
+
+### Cross-scenario limit (not a handoff failure)
+
+Running self-review and then handoff **in the same Host lifetime** (`a6-recipients-r22`) still
+leaves the second PA pending with no model turn even though the native handle reported
+`idle` and `followup` set it `running`. The handoff path itself is green in the clean run; the
+open item is a **same-session queued wake after a direct prompt to the Officer**, recorded
+under row 15, not a failure of the transfer/recipient logic. It is not waived.
 
 ## Re-run commands
 
@@ -59,8 +73,8 @@ C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_RECIPIENTS=1 \
   node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
   --host-port 3628 --mock-port 3629 --evidence-dir "$PWD/dev/agent-workflow/evidence/a6-recipients-r13" --keep
 
-# handoff probe (expected to expose the pending leg until fixed)
-C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_RECIPIENTS=1 C1_A6_HANDOFF=1 \
+# handoff probe (clean flow; no direct Officer prompt first)
+C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_HANDOFF=1 \
   node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
-  --host-port 3630 --mock-port 3631 --evidence-dir "$PWD/dev/agent-workflow/evidence/a6-handoff-r13" --keep
+  --host-port 3650 --mock-port 3651 --evidence-dir "$PWD/dev/agent-workflow/evidence/a6-handoff-only-r4" --keep
 ```

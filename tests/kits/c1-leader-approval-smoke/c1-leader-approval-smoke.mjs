@@ -1214,6 +1214,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
 }
 
 let mockWakeSeq = 0
+let a6HandoffPhase = false
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
@@ -1224,6 +1225,9 @@ function makeDecide() {
     const lastUser = lastUserTextOf(req)
     if (lastUser.startsWith('Generate the session title') || lastUser.startsWith('Create a concise title')) {
       return { kind: 'text', content: 'C1 smoke session' }
+    }
+    if (lastUser.includes(MK_A6_HANDOFF) && !lastUser.startsWith('[team-review-wake')) {
+      a6HandoffPhase = true
     }
     const tools = toolMsgsOf(req).length
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
@@ -1252,7 +1256,7 @@ function makeDecide() {
           rootSessionId: CREATE_ROOT_A6,
           requestToken: `c1-a6-res-${String(mockWakeSeq++)}`,
           requestId: named !== '' ? named : first,
-          decision: lastUser.includes(SUM_A6_HANDOFF) ? 'handoff' : 'allow',
+          decision: a6HandoffPhase ? 'handoff' : 'allow',
         })
       }
       return { kind: 'text', content: 'C1_A6_OFFICER_DONE' }
