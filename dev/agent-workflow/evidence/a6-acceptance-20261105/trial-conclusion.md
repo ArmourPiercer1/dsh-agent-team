@@ -16,6 +16,7 @@ No master merge, no un-draft, no production switch.
 | Handoff transfer wakes the successor | PASS | `a6-handoff-only-r6`; fix `fd7a5d6c1` |
 | Escalation reaches the human leg; human allow consumed once then executes | PASS (authority) | `a6-human-r9` |
 | Stop after human allow, before consumption: no execution, second allow rejected | PASS | `a6-stop-r3`, `CONTROL_REQUEST_DECIDED` |
+| Crash after PA request write, restart: request durable, human allow fails closed, no execution | PASS (fail-closed) | `a6-crash-r4`, A6-13/14 |
 
 Full local gate: 9/9, census 677/8830, identity set identical to
 `nine-root-u7-1-old-reds.md`; independent review of the product delta
@@ -31,8 +32,9 @@ Full local gate: 9/9, census 677/8830, identity set identical to
 - **Same-session queued wake**: after a direct prompt to the Officer,
   `followup` reports running but no model turn consumes the queued wake
   (`a6-recipients-r22`, row 15).
-- **Sticky Stop, four crash windows, native Inbox reconciliation**: no real-Host
-  injection; only the normal settle paths above.
+- **Sticky Stop, the other three crash windows, native Inbox reconciliation**:
+  only the post-write window was injected; native inbox claim/release replay and
+  the before-write / after-allow / after-consume windows were not.
 - **Sink unit test**: not added; the E2E plus the code argument are the evidence.
 
 ## Decision
