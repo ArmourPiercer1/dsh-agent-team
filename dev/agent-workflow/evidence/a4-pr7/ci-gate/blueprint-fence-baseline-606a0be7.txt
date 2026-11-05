@@ -34,7 +34,7 @@ OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
 OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
 OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
 OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1
-OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L600=v5, L789=v5, L1253=v5, L1884=v5
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L614=v5, L803=v5, L1304=v5, L1935=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
