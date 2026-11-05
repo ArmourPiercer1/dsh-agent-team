@@ -152,16 +152,27 @@ Same boot: negative control **PROVEN** (`UNCONFINED_CONTROL_LEAKS`: 11 base spaw
 both secret lines returned), glob in-lane **PROVEN**, glob outside-ceiling **PROVEN**.
 Counter legs: `base-spawn 10, read-call 2, write-call 2, confined-spawn 4, confined-exit 4`.
 
-## 4. What this supports now
+## 4. What this supported — and why the claims are now retracted
 
-- **`M-01` (read) → `ENFORCE-PARTIAL` / `V@B=yes`**: rows 1/2/3 PASS on the frozen candidate
-  (product tree identical to `1484fa4ee`). Uncovered: row 5 (post-invalidation), `edit` live,
-  Bash/PTY live, Web live.
-- **`M-02` (write) → `ENFORCE-PARTIAL` / `V@B=yes`**: row4a/row4b PASS at `1484fa4ee` itself.
-  Uncovered: atomic replace / version check; write-without-read team semantics = `BL-38`.
-- **`M-06` (grep) → `ENFORCE-PARTIAL` / `V@B=yes`**: 6/6 at `25e106b4…` (product = `1484fa4ee`)
-  plus the unconfined negative control.
-- **`M-07` (glob) → `ENFORCE-PARTIAL` / `V@B=yes`**: both arms PROVEN at `1484fa4ee` itself.
+At the time of each run the four rows were `V@B=yes` (tested `1484fa4ee` / `25e106b4…`, product
+tree identical). **They are now `NEEDS_REVALIDATION` / `V@B=no`**, because master's `#606`
+(`a5bd88b85`) was merged in afterwards and it moved **28 product paths** — including
+`packages/runtime/team-services/src/subprocess.ts` (the face grep/glob ride), `mount.ts`,
+`install.ts`, `types.ts`, `index.ts` (the face read/write ride) and
+`packages/runtime/test/a5sf-bl16-grep-realm.test.ts` itself. The measured result stands **for
+`1484fa4ee`**; it is no longer a claim about the code that would merge. Re-establishing it takes
+one more boot at the merged tree (the fixture split is already in place).
+
+| row | measured at `1484fa4ee` | current claim |
+|---|---|---|
+| `M-01` (read) | rows 1/2/3 PASS (11/11 total) | `NEEDS_REVALIDATION` / `V@B=no` |
+| `M-02` (write) | row4a/row4b PASS | `NEEDS_REVALIDATION` / `V@B=no` |
+| `M-06` (grep) | 6/6 + unconfined negative control | `NEEDS_REVALIDATION` / `V@B=no` |
+| `M-07` (glob) | both arms PROVEN | `NEEDS_REVALIDATION` / `V@B=no` |
+
+Still uncovered by any run: FS row 5 (post-invalidation), `edit` live, Bash/PTY live, Web live,
+`read_image`; write's atomic replace / version check, and write-without-read team semantics
+(`BL-38`).
 
 **The one deliberate deviation from the instruction as worded.** The retry's run record does not
 put `1484fa4ee` in `bindings.teamSha`; it puts it in `bindings.baseline`. `teamSha` names the
@@ -199,5 +210,10 @@ The last command refuses unless `lane-ruling.json` authorises another start (`re
 - **2026-11-05 (after allocation #4):** allocation #1's two REFUTED rows are **withdrawn as
   verdicts about the product** and recorded as what they were — cross-row locator aliasing in the
   composed fixture. The rows PASS unchanged after the split, with byte-identical judges.
+- **2026-11-05 (after merging `origin/master` `a5bd88b85`):** the four `V@B=yes` claims are
+  **retracted** to `NEEDS_REVALIDATION` / `V@B=no`. Reason: the merge moved 28 product paths,
+  three of them on the faces these rows ride, so the tested tree is no longer the tree that would
+  merge. Nothing here is withdrawn: `bindings.productTreeProof` still proves the run's executed
+  tree equals the frozen candidate; that equality just no longer describes HEAD.
 - No earlier evidence is withdrawn: Search `6/6` at `c658d974d` and FS `8/8` at `44babbfcf`
   remain true **of their own trees**.

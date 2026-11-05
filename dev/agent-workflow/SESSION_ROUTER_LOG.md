@@ -7834,3 +7834,31 @@ search row3 = `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION`（恰好 
 `allocation-map.json` 与 README §5；修常量留给后续 run，以保持"提交的 driver = 执行的 driver"。
 
 **花费**：累计 `2/5`（#1 + #4），0 abort，剩 3（#2/#3 = BL-17/BL-18 live 半场，#5 = 按需再 retry）。
+
+## 2026-11-05T21:06Z — CANDIDATE-1：合并 #606 后三条 gate 同因变红（Q7），四行 claim 按规则撤回
+
+`#607` 清 BEHIND 时把 `origin/master`（`a5bd88b85`，`#606` confined web 面）合进来，`0525bd90` 上
+`pr-gate` / `ci-product` / `ci-integration` 三条同时红。查日志：三条死于**同一条 leg**，不是三个问题：
+
+```
+DSH-CI-LEG leg=state-freshness verdict=fail detail=Q7: product surface moved since baseline
+(28 path(s)) while rows still claim current verification: read (M-01), write (M-02),
+grep (M-06 native), glob (M-07) — mark NEEDS_REVALIDATION (which then REQUIRES V@B=no) or
+re-verify against HEAD
+```
+
+coordinator 的三个假设都不成立：没有 suite-total 失败（`eb3-tool-acceptance` 本地 rc=0，tools=31 由派生而得，
+非字面量）、没有 census 身份新增红（`ci-product`/`pr-gate` 的 census 在 hosted runner 上是 declared refusal，
+本地 8 条全 pass）、`eb3-run-manifest` 也没有报我的记录（`C8` 恰好把我的 run-record 当 honest 样本 pass）。
+
+**归因**：不是 master 自带红——同一条 leg 在 `origin/master` 单独跑是 **pass**（baseline
+`1fd0d9fca3c8…`、claimed 0、drift 89：没有 current claim 就不触发 Q7）；在合并树上是 **fail**
+（claimed 4、drift 28）。而且 28 条漂移不是无关的 web 面：`team-services/src/subprocess.ts`（grep/glob
+骑的子进程面）、`mount.ts`/`install.ts`/`types.ts`/`index.ts`（read/write 骑的 service 面）与
+`packages/runtime/test/a5sf-bl16-grep-realm.test.ts` 本身都在其中——**被测树已不是将合并的树**。
+
+**修法**：不调 pin、不放宽 leg、不 skip，四行按 Q7 复位 `NEEDS_REVALIDATION` / `V@B=no`，11/11 证据与
+结论保留（属于 `1484fa4ee`）；矩阵 §1.1/§3/结论/附录 A 与证据 README 同步写明"结论有效、current claim 失效"。
+本地复跑三条：`pr-gate --full` pass（8/9，census declared refusal）、`ci-product` 8/8 pass、
+`ci-integration` 7 个 eb3 脚本 rc=0 + graph-parse/state-freshness pass；仅改 2 个文档文件，产品路径 0 改动。
+重新建立 claim 需在新树再 boot 一次（fixture 拆分已在位），花费记在 5-start 池（已用 `2/5`）。
