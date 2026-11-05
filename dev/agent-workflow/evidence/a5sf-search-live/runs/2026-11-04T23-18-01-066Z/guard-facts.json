@@ -1,0 +1,93 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-04T20:22:30.509Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 2,
+    "observedAt": "2026-11-04T20:22:30.692Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 3,
+    "observedAt": "2026-11-04T20:22:30.710Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 4,
+    "observedAt": "2026-11-04T20:22:30.728Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 5,
+    "observedAt": "2026-11-04T20:22:30.779Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside-glob",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 6,
+    "observedAt": "2026-11-04T20:22:30.828Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14xcgx11i3lu",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/blocking.fifo",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 7,
+    "observedAt": "2026-11-04T20:22:30.846Z"
+  }
+]

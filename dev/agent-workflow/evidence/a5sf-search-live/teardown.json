@@ -119,63 +119,23 @@
   },
   "postStopDispatches": [
     {
-      "status": 200,
+      "status": 422,
       "body": {
-        "ok": false,
-        "error": {
-          "message": "grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)",
-          "info": {
-            "name": "SearchError",
-            "code": "SEARCH_FAILED"
-          }
-        }
+        "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
       }
     },
     {
-      "status": 200,
+      "status": 422,
       "body": {
-        "ok": true,
-        "value": {
-          "root": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
-          "paths": [
-            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt"
-          ]
-        }
+        "error": "no live agent for 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141': agent-bindings: session 'session-team-child-47be99afeb8b0aac5c2a00478d3f8141' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
       }
     }
   ],
-  "probeFacts": [
-    {
-      "schema": "a5sf-guard-consult/1",
-      "realm": "member",
-      "memberIdentity": "inst-14xcgx11i3lu",
-      "toolBindingIdentity": null,
-      "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
-      "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside",
-      "decision": "allow",
-      "decidedBy": "ALLOW",
-      "sequence": 1,
-      "observedAt": "2026-11-04T20:22:33.332Z"
-    },
-    {
-      "schema": "a5sf-guard-consult/1",
-      "realm": "member",
-      "memberIdentity": "inst-14xcgx11i3lu",
-      "toolBindingIdentity": null,
-      "policyRevision": "a5sf-search:inst-14xcgx11i3lu:g1",
-      "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob",
-      "decision": "allow",
-      "decidedBy": "ALLOW",
-      "sequence": 2,
-      "observedAt": "2026-11-04T20:22:33.371Z"
-    }
-  ],
+  "probeFacts": [],
   "consultCopy": {
     "copied": true,
-    "sha256": "37b3a371994ed3973331a705b18335ac3eb39671776cef7d4de78683a743721b",
-    "bytes": 3036
+    "sha256": "f00f166dcca6c7dc5e34d88e4a904e39ca55291c690718a37e0e35a19fcb3c5a",
+    "bytes": 4512
   },
   "processSeam": {
     "hostPid": null,
@@ -190,7 +150,7 @@
         "killed": true,
         "portFree": true
       },
-      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z",
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z",
       "releasedPorts": [
         3182,
         3491,
