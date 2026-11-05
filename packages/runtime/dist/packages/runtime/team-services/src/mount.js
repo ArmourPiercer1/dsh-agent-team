@@ -103,6 +103,26 @@ export const A5SF_SUBPROCESS_UNCONFINED_REALM = 'SUBPROCESS_UNCONFINED_REALM';
  */
 export const A5SF_TERMINALS_LEGACY_PTY_REFUSED = 'TERMINALS_LEGACY_PTY_REFUSED';
 /**
+ * BL-18 (P2-05) — the refusal code for a `web`-consuming native module targeted
+ * at a realm that owns NO confined `web` face.
+ *
+ * WHY IT EXISTS: the native `web_fetch`/`web_search` row at the host pin is
+ * upstream's `@deepseek-ai/dsh-tool-web`, whose `inject` is
+ * `["tools","web","systemPrompt"]` and whose body is
+ * `await ctx.web.fetch({ url }, signal)`. The confined `web` face is mounted on
+ * the MEMBER realm only and only when the composition supplies one; a realm
+ * with no web face would resolve the INHERITED host `ctx.web` (the real HTTP
+ * provider, the process-wide proxy dispatcher) with zero guard facts — the same
+ * silent widening BL-16/BL-17 refuse on the `subprocess`/`terminals` axes.
+ * Refused HERE, at composition time, before any tool definition exists.
+ *
+ * The string is the `TeamServiceInstallError.code` (the closed install
+ * vocabulary's `NETWORK_UNCONFINED_REALM`, already used by product-assembly for
+ * the same concept at assembly time); the exported name is the token a caller
+ * and a test compare against.
+ */
+export const A5SF_NETWORK_UNCONFINED_REALM = 'NETWORK_UNCONFINED_REALM';
+/**
  * BL-17 (2026-11-04): the service names a plugin module DECLARES it injects.
  *
  * Reads the PUBLIC Cordis plugin metadata (`Plugin.inject`, array or object
@@ -400,6 +420,7 @@ export async function mountA5sfRealm(input) {
         ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
         ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
         ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
+        ...(input.web === undefined ? {} : { web: input.web }),
     });
     // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
     // Member's isolated scope by the CALLER, through this realm's
@@ -1018,6 +1039,28 @@ export async function mountA5sfRealm(input) {
                     + ' under (旧代 PTY), so a governed Member is never served by it. A future confined terminal backend has to install a'
                     + ' terminal face on the realm\'s own isolated scope; until then this path is refused, not documented as unused');
             }
+            // BL-18 (P2-05) — the network axis at the realm boundary. A module that
+            // consumes `web` (the pinned `tool-web` pair) may only be mounted on a
+            // realm that OWNS a confined web face. The answer comes from the realm's
+            // `faces` (a required, total answer), never from `target.get('web')` —
+            // that lookup returns the inherited host service when this realm mounted
+            // no shadow, which is exactly the silent widening this refusal replaces.
+            const targetsUnconfinedWebRealm = (mount) => {
+                if (!declaredInjectionsOf(mount.module).includes('web'))
+                    return false;
+                const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity);
+                const faces = binding === undefined ? installation.members[0]?.faces : binding.faces;
+                return faces === undefined || faces.web === null;
+            };
+            for (const mount of modules) {
+                if (!targetsUnconfinedWebRealm(mount))
+                    continue;
+                const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity);
+                throw new TeamServiceInstallError(A5SF_NETWORK_UNCONFINED_REALM, `native tool module '${moduleLabelOf(mount)}' injects \`web\`, but ${realmLabelOf(binding)} mounts no confined web face;`
+                    + ' refusing at composition time instead of letting the module resolve the inherited, unconfined host web service'
+                    + ' (the real HTTP provider plus the process-wide proxy dispatcher, with zero guard facts).'
+                    + ' A realm that must host a web consumer has to install a confined web face on its own isolated scope');
+            }
             const created = [];
             /**
              * E8 (2026-11-03): one entry per REAL mount of THIS attach, so the
@@ -1061,6 +1104,8 @@ export async function mountA5sfRealm(input) {
                 // lookup (which would answer the inherited base service).
                 const targetFaces = binding === undefined ? installation.members[0]?.faces : binding.faces;
                 const targetHasConfinedSubprocess = targetFaces !== undefined && targetFaces.subprocess !== null;
+                // BL-18: the target realm's OWN web answer (never `ctx.get('web')`).
+                const targetHasConfinedWeb = targetFaces !== undefined && targetFaces.web !== null;
                 // The REAL services: the router delegates everything except the two
                 // registration calls, so the tool bodies see the live registry.
                 const realTools = target.get('tools');
@@ -1157,6 +1202,18 @@ export async function mountA5sfRealm(input) {
                             + ` (${deferredTerminal.map((created) => `[${Object.keys(created.inject).join(',')}]`).join(', ')}),`
                             + ` but ${realmLabelOf(binding)} mounts no confined terminal face; refusing at composition time`
                             + ' instead of letting the child resolve the inherited, legacy-generation host PTY service');
+                    }
+                    // BL-18: the same deferred-injection law on the network axis. A module
+                    // that defers `ctx.inject(['web'], …)` would otherwise mount and later
+                    // resolve the inherited host web service.
+                    if (!targetHasConfinedWeb) {
+                        const deferredWeb = descendants.filter((created) => 'web' in created.inject);
+                        if (deferredWeb.length > 0) {
+                            throw new TeamServiceInstallError(A5SF_NETWORK_UNCONFINED_REALM, `native tool module '${moduleLabelOf(mount)}' deferred a \`web\` injection`
+                                + ` (${deferredWeb.map((created) => `[${Object.keys(created.inject).join(',')}]`).join(', ')}),`
+                                + ` but ${realmLabelOf(binding)} mounts no confined web face; refusing at composition time`
+                                + ' instead of letting the child resolve the inherited, unconfined host web service');
+                        }
                     }
                     if (!observeOnly) {
                         // PUBLIC state only: `Fiber.state` is the documented surface, and a

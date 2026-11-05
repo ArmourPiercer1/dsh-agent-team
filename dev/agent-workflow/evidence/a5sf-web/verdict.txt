@@ -1,0 +1,24 @@
+# BL-18 gates: verdicts for the final tree
+generated: 2026-11-05T11:13:50.605Z
+
+gate: node --test tests/world-factory/a5sf-*.test.mjs
+mode: ALL a5sf world-factory arms (whole lane, not only this task's file)
+tests: 313
+pass: 313
+fail: 0
+verdict: all arms green on this tree; measured baseline before this round = 301/301, this round adds 12
+
+gate: node --test tests/world-factory/a5sf-web.test.mjs (arms-green.log / arms-red.log)
+verdict: 12/12 green on this branch; 11/12 RED on pristine origin/master sources (the 1 pass is the pre-existing ordinary-host context arm)
+
+gate: node dev/agent-workflow/evidence/a5sf-web/mutation-controls.mjs
+verdict: control PASS, M1/M2/M3 all RED-AS-REQUIRED (mutation-controls.json)
+
+gate: vitest run packages/runtime {a5sf-*,a5g6-install-face-render,a3p4-permission-lifecycle-e2e,p7t3-lifecycle-fact}
+verdict: 16 files, 234/234 pass
+
+gate: vitest run packages/testkit test/p4t6-session-event-scan.test.ts
+verdict: 20/20 pass with packages/testkit/test/p4t6-bookings/a5sfweb.json (1433 -> 1434)
+
+gate: tsc -p packages/runtime/tsconfig.json --noEmit  |  pnpm -r typecheck  |  eslint (touched sources)  |  git diff --check
+verdict: rc 0 / rc 0 / 0 errors / rc 0

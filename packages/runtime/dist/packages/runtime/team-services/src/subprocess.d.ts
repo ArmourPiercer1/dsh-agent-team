@@ -193,6 +193,13 @@ export interface ConfinedCapabilityRow {
 /** The one provider method a confined spawn needs. */
 export interface ConfinedProcessProvider {
     spawnStreaming(request: SpawnRequest, streaming?: StreamingOptions): Promise<ProviderResult<ConfinedStreamProcess>>;
+    /**
+     * OPTIONAL capability probe (BL-17). The shipped OS provider carries it; a
+     * double without one is `unsupported`, never a default allow. BL-18 shares
+     * this declaration with the confined `web` face through
+     * {@link NetworkCapabilityProbeCarrier}, so one probe answers both lanes.
+     */
+    readonly probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>;
 }
 /** One bounded output reader (the native `SubprocessOutputReader` contract). */
 export interface ConfinedOutputReader {
@@ -485,6 +492,20 @@ export declare const SHELL_WRITE_GUARD_METHOD = "spawn:write";
  * The axis decision itself is identical — one evaluator, no second policy.
  */
 export declare function createMemberSubprocessWriteGuard(policy: Pick<EffectiveIoPolicy, 'memberIdentity' | 'write'>, resolver?: PathIdentityResolver): FsGuard;
+/**
+ * BL-18 — the structural carrier `probeNetworkDenial` needs.
+ *
+ * The probe is an OPTIONAL capability discovered on the backend object
+ * (`provider.probe?.()`); `ConfinedProcessProvider` was only ever the FIRST
+ * carrier. Declaring the minimum shape here is what lets the confined `web`
+ * face call the SAME probe instead of growing a second, disagreeable one: a
+ * process backend and a web backend answer one question with one vocabulary.
+ * Every existing caller satisfies it structurally, so this is a widening that
+ * changes no call site and no behaviour.
+ */
+export interface NetworkCapabilityProbeCarrier {
+    readonly probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>;
+}
 /** What the backend's own probe said about the network dimension. */
 export interface ConfinedNetworkCapabilityProbe {
     readonly dimension: 'network-destination';
@@ -506,7 +527,7 @@ export interface ConfinedNetworkCapabilityProbe {
  * answer. No probe, a refused probe, or any other level all mean
  * `unsupported` — the closed answer, never a default-allow.
  */
-export declare function probeNetworkDenial(provider: ConfinedProcessProvider): Promise<ConfinedNetworkCapabilityProbe>;
+export declare function probeNetworkDenial(provider: NetworkCapabilityProbeCarrier): Promise<ConfinedNetworkCapabilityProbe>;
 /**
  * Merge the compiled profile with the runtime allowance (lane wins on overlap).
  *

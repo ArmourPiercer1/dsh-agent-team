@@ -1,0 +1,57 @@
+# BL-18 census-leg — AFTER (the booking that fixes the identity CI named)
+
+## The correction (one file, one ledger row — no source change)
+packages/runtime/test/a5p4-lane-hygiene.test.ts, NAMED_PROVIDER_MOUNTS gains:
+  { file: 'runtime/team-services/src/web.ts', kind: 'types-only',
+    lane: 'bl-18 — Member realm confined web face (types-only; provider instance injected)',
+    edge: "import type { ProviderResult } from '../../sandbox-provider/index.js'" }
+
+Why a BOOKING and not a code change: web.ts really does carry exactly this one edge into the
+lane — a TYPE-only import, because the ONE probe it calls (BL-17's probeNetworkDenial, imported
+from ./subprocess.js) answers ProviderResult. It imports no factory, builds no provider and
+starts no process; that is the ledger's 'types-only' shape verbatim, the same shape the BL-16
+subprocess face beside it is booked with. p4t6 (the file census) was already booked and green;
+this is the LANE ledger, a different question, and it is the one CI caught.
+
+## Gate runs on this worktree (the real leg, not a suite)
+$ node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 \
+    --census-test-timeout 90000 --store-dir <repo>/.pnpm-store --transcript-dir .scratch/census-transcripts
+
+run 1 (before the CI-shaped install; deps resolved through a sibling-worktree symlink):
+  3 reds — alpha5-glob-backend X3, alpha5-search-backend P11 (both: expected cancelled /
+  received completed, a timeoutMs:1 race), a4p7-merge-gate closure mutation (deps resolved
+  through the symlink). a5p4-lane-hygiene: GREEN. p4t6: 20/20 green.
+
+  then: CI=true pnpm install --frozen-lockfile --store-dir <repo>/.pnpm-store
+  (symlinked node_modules removed first, so this worktree has the same real install the
+  workflow performs; the a4p7 closure leg and alpha5-search P11 are 1/1 green in isolation)
+
+run 2 (CI-shaped install):
+  captured 668f/8824l, 668f/8824l  (CI on b1cb21d87: 668f/8824l too — same population)
+  NEW RED(S) 1: TEST packages/runtime/test/alpha5-glob-backend.test.ts::A5-GLOB X ... X3 the
+    timeout arm settles cancelled and spills nothing
+  NEW COLLECTION-ERROR FILE(S): none. a5p4-lane-hygiene ABSENT from the added set.
+  comparison JSON: added=[that one identity], resolved=[], totals={files:668,legs:8824}
+
+run 3 (VITEST_MAX_THREADS=2, to approximate the 2-core runner):
+  NEW COLLECTION-ERROR FILE(S) 1: FILE packages/runtime/test/a5-read-slice-window.test.ts
+    ::COLLECTION-OR-UNHANDLED  ("Error: Hook timed out in 10000ms" in beforeAll)
+  again: a5p4 absent, p4t6 green, same 668f/8824l population.
+
+## Why those remaining reds are not this branch (each one is a timeout, in an untouched file)
+  - git diff --stat touches no alpha5-* file and no a5-read-slice-window file.
+  - alpha5-glob-backend:983 uses createAnchoredGlobBackend({ timeoutMs: 1 }) and :988 expects
+    settlement.kind === "cancelled" — a 1 ms budget vs a warm-cache walk; whichever reaches
+    the event loop first wins.
+  - a5-read-slice-window:377 beforeAll exceeds the 10 s HOOK timeout (not the 90 s test clock
+    the leg sets), i.e. it measures how loaded this box is.
+  - every one is green in isolation on this box: glob 53/53 (20.9 s), the X3 arm 5/5,
+    search P11 1/1, a4p7 closure 1/1.
+  - CI graded BOTH of those identities green in BOTH captures on b1cb21d87; its only red was
+    the a5p4 identity this booking fixes. Three local runs produced three DIFFERENT unrelated
+    reds — the signature of load, not of a regression.
+
+## Verdict of record
+  The identity CI named was real, was mine, and is fixed by the row above. The census of
+  record is the CI run on the pushed head; the local runs are recorded here in full, including
+  the three reds they produced, because a hand-picked green would be worth nothing.

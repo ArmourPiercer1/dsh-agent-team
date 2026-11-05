@@ -24,6 +24,7 @@
 import { requireProviderCapabilities } from '../../member-io-policy/src/provider-capabilities.js';
 import { createConfinedFileSystemClass, createMemberFsGuard, } from './fs.js';
 import { createConfinedSubprocessClass, } from './subprocess.js';
+import { createConfinedWebClass, } from './web.js';
 import { observeGuard } from './guard-observability.js';
 import { TeamServiceInstallError, } from './types.js';
 /** Member id → installed, per root Context. Guards double installation. */
@@ -56,6 +57,15 @@ function assertSpec(spec) {
 /** Sample the live `subprocess` service class (BL-16), if the host has one. */
 function sampleSubprocessClass(root) {
     const live = root.get('subprocess');
+    if (live === undefined || live === null)
+        return undefined;
+    const prototype = Object.getPrototypeOf(live);
+    const ctor = prototype?.constructor;
+    return typeof ctor === 'function' ? ctor : undefined;
+}
+/** Sample the live `web` service class (BL-18), if the host has one. */
+function sampleWebClass(root) {
+    const live = root.get('web');
     if (live === undefined || live === null)
         return undefined;
     const prototype = Object.getPrototypeOf(live);
@@ -114,6 +124,16 @@ export async function installMemberIoProviders(input) {
     if (input.subprocess !== undefined && SubprocessBase === undefined) {
         throw new TeamServiceInstallError('PROVIDER_UNAVAILABLE', 'a confined subprocess face was declared but the root Context carries no `subprocess` service to confine; a Member never falls back to the host subprocess service');
     }
+    // 2c. BL-18: a DECLARED confined web face needs a live base class to shadow.
+    // A host with no `web` service cannot mount one, and silently skipping it
+    // would leave `web_fetch` on the inherited host service — the hole this face
+    // exists to close. Refuse before any scope exists (same law as `subprocess`).
+    const WebBase = input.web === undefined
+        ? undefined
+        : input.web.providerClass ?? sampleWebClass(root);
+    if (input.web !== undefined && WebBase === undefined) {
+        throw new TeamServiceInstallError('PROVIDER_UNAVAILABLE', 'a confined web face was declared but the root Context carries no `web` service to confine; a Member never falls back to the host web service');
+    }
     // 3. Mount, tracking every fiber so a later failure can roll back.
     const installed = [];
     const rollback = async () => {
@@ -134,9 +154,15 @@ export async function installMemberIoProviders(input) {
         // the `fs` scope identity intact while giving `subprocess` its own shadow
         // (a sibling isolate would not be visible to the native modules, which are
         // mounted on THIS ctx).
-        const scoped = input.subprocess === undefined
+        const withSubprocess = input.subprocess === undefined
             ? isolated
             : isolated.isolate('subprocess', Symbol(`member-subprocess:${spec.identity.memberInstanceId}`));
+        // BL-18: the web face nests on the SAME isolated chain (one service per
+        // isolate call), so a native module mounted on THIS ctx resolves the
+        // confined `web` exactly as it resolves the confined `fs`/`subprocess`.
+        const scoped = input.web === undefined
+            ? withSubprocess
+            : withSubprocess.isolate('web', Symbol(`member-web:${spec.identity.memberInstanceId}`));
         const guard = createMemberFsGuard(policy);
         // DEFAULT PATH = the original guard object (no wrapper, no extra call).
         const observed = input.onGuardConsult === undefined
@@ -198,6 +224,37 @@ export async function installMemberIoProviders(input) {
             }
             subprocess = mounted;
         }
+        // BL-18: the confined web face, mounted on the same isolated scope.
+        let disposeWeb;
+        let web;
+        if (input.web !== undefined && WebBase !== undefined) {
+            const ConfinedWeb = createConfinedWebClass(WebBase, {
+                ...input.web,
+                onGuardConsult: input.onGuardConsult,
+            });
+            try {
+                const mountPlugin = scoped.plugin;
+                const fiber = await mountPlugin(ConfinedWeb, {});
+                disposeWeb = async () => {
+                    await fiber.dispose();
+                };
+            }
+            catch (error) {
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' confined web mount failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
+            const mountedWeb = scoped.get('web');
+            if (mountedWeb === undefined) {
+                await disposeWeb?.();
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' mounted no confined web service`);
+            }
+            web = mountedWeb;
+        }
         let disposed = false;
         // BL-17 (2026-11-04): the realm STATES which confined faces it owns, as a
         // total answer. `subprocess: null` is the explicit "no process face here",
@@ -206,6 +263,10 @@ export async function installMemberIoProviders(input) {
         const faces = Object.freeze({
             fs: 'confined',
             subprocess: subprocess ?? null,
+            // BL-18: the same TOTAL answer on the network axis. `web: null` is the
+            // explicit "this realm confines no web", which `mountNativeToolModules`
+            // turns into a composition-time refusal for a `web`-consuming module.
+            web: web ?? null,
         });
         const installation = Object.freeze({
             identity: spec.identity,
@@ -223,6 +284,8 @@ export async function installMemberIoProviders(input) {
                     return;
                 disposed = true;
                 INSTALLED.get(root)?.delete(spec.identity.memberInstanceId);
+                if (disposeWeb !== undefined)
+                    await disposeWeb();
                 if (disposeSubprocess !== undefined)
                     await disposeSubprocess();
                 await disposeMount();
@@ -307,7 +370,7 @@ export async function installToolBindingRealm(input) {
         fs: scoped.get('fs'),
         // BL-17: the total answer. This installer mounts `fs` only; saying so
         // explicitly is what lets the mount seam refuse a process consumer.
-        faces: Object.freeze({ fs: 'confined', subprocess: null }),
+        faces: Object.freeze({ fs: 'confined', subprocess: null, web: null }),
         dispose: async () => {
             if (disposed)
                 return;
