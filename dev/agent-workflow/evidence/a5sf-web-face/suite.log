@@ -1,0 +1,18 @@
+✔ P1-GUARD-BEFORE-PROVIDER: one guard evaluation, completed BEFORE the provider is entered, and the provider sees the declared URL (13.570401ms)
+✔ P1-DECLARED-URL-UNMUTATED: no normalization or rewrite happens between the model argument and the provider request (4.950601ms)
+✔ P2-DENY-CAPABILITY-REFUSAL: deny refuses with NETWORK_UNCONFINED_REALM, zero provider calls, and a refusal that names the capability — never an observation (4.892222ms)
+✔ P2-DENY-SEARCH-ALSO-CAPABILITY: the sibling web_search path refuses with the same code, zero provider calls, and the same wording discipline (3.987798ms)
+✔ P3-REDIRECT-POSITION: a redirect followed INSIDE the provider returns its final location to the caller with the guard never re-evaluating the new location (2.718709ms)
+✔ P3-PROXY-POSITION: the provider inherits the ambient proxy environment unmodified and the face resolves no proxy of its own (1.470071ms)
+✔ P4-NO-PER-METHOD-LANE: the compiled network axis is a single closed binary, so "allow fetch / deny search" is NOT expressible (1.749161ms)
+✔ P4-SHARED-GUARD-BOTH-PATHS: fetch and search consult the SAME guard instance (one sequence counter) and record their own method (4.432442ms)
+✔ P5-AMBIGUOUS-FAIL-CLOSED: the compiled `web` AND `a5sfWebFace` refuse at AUTHORING time with REALM_DECLARATION_INVALID naming both sources, before any request (6.442807ms)
+✔ P5-EXACTLY-ONE-SOURCE: each source ALONE mounts a working confined face (compiled-only and config-only), and the denial still holds (12.341274ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 367.647126

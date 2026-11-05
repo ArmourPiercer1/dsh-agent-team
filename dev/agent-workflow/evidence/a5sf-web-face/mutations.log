@@ -1,0 +1,21 @@
+PASS baseline: red=[] expected=[]
+PASS M1-provider-before-guard: red=["P1-GUARD-BEFORE-PROVIDER","P2-DENY-CAPABILITY-REFUSAL"] expected=["P1-GUARD-BEFORE-PROVIDER","P2-DENY-CAPABILITY-REFUSAL"]
+       property: P1 (declared multi-arm: the deny position is the same line)
+       the provider is entered before the guard: the fact no longer exists at provider entry and the deny lane fetches once
+PASS M2-refusal-claims-an-observation: red=["P2-DENY-CAPABILITY-REFUSAL","P2-DENY-SEARCH-ALSO-CAPABILITY"] expected=["P2-DENY-CAPABILITY-REFUSAL","P2-DENY-SEARCH-ALSO-CAPABILITY"]
+       property: P2
+       the refusal now claims a measurement the face never made (the wording discipline is the property)
+PASS M3a-redirect-target-re-guarded: red=["P3-REDIRECT-POSITION"] expected=["P3-REDIRECT-POSITION"]
+       property: P3 / WEB_REDIRECT_UNMEDIATED_ON_ALLOW
+       a redirect hop is re-mediated: a second fact appears and the redirect target enters the guard
+PASS M3b-proxy-handled-by-the-face: red=["P3-PROXY-POSITION"] expected=["P3-PROXY-POSITION"]
+       property: P3 / WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW
+       the face hands the provider a proxy decision of its own (a third argument), so the provider no longer inherits the environment unmediated
+PASS M4-search-gets-its-own-guard-instance: red=["P4-SHARED-GUARD-BOTH-PATHS"] expected=["P4-SHARED-GUARD-BOTH-PATHS"]
+       property: P4
+       search gets a SECOND observed guard, so its fact sequence restarts at 1: the two paths no longer share one guard instance
+PASS M5-two-web-face-sources-tolerated: red=["P5-AMBIGUOUS-FAIL-CLOSED"] expected=["P5-AMBIGUOUS-FAIL-CLOSED"]
+       property: P5
+       the compiled and configured sources are no longer a fork: the config factory silently overwrites the compiled face
+PASS core-patch-budget: `git status --porcelain -- packages/` is empty
+MUTATION-CONTROLS-PASS
