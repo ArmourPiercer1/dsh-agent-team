@@ -1,0 +1,414 @@
+RED BASELINE — a5sf-pty-contract, layer B (Shell-PTY capability face)
+=====================================================================
+
+Tree: a scratch git worktree `.worktrees/a5sf-pty-red` (git-ignored, removed after
+this run), synced to `task/a5sf-pty-contract-20261107` and then MUTILATED per leg.
+The task worktree is never edited by this run.
+
+Suite: tests/world-factory/a5sf-pty-contract.test.mjs (14 cases).
+
+WHY TWO LEGS: this face has two independent product mechanisms, so "the surface is
+absent" has two different shapes. Each leg removes ONE and runs the SAME suite; the
+red set is the arms that claim the missing mechanism and nothing else.
+
+Arms of the PINNED host PTY service (P1-HOST, P2-HOST, P3-HOST, P5-HOST) cannot be
+redded on a tree — the tree does not own that service. Their RED is the instrument
+control (the injected port misreports) recorded in mutations.log as I1/I2/I3.
+The P4 control arm and the P1 revocation FINDING arm are not expected to red either:
+they characterise behaviour that neither removed mechanism provides.
+
+==================================================================
+LEG 1 — the PRODUCT lifecycle surface is absent
+  run: rm packages/runtime/team-sandbox/src/terminal.ts
+  expect: exactly the 7 registry arms red (P1 x3 incl. the revocation FINDING, P2 x1, P3 x1, P5 x2)
+==================================================================
+
+leg 1 exit rc=1
+
+----- leg 1 red set -----
+P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing
+P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)
+P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field)
+P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain
+P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt
+P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill
+
+----- leg 1 first failure detail -----
+not ok 1 - P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+  ---
+  duration_ms: 220.687113
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+
+----- leg 1 TAP (full) -----
+TAP version 13
+# Subtest: P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+not ok 1 - P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+  ---
+  duration_ms: 220.687113
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing
+not ok 2 - P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing
+  ---
+  duration_ms: 0.079861
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)
+not ok 3 - P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)
+  ---
+  duration_ms: 0.081704
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once
+ok 4 - P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once
+  ---
+  duration_ms: 6.155473
+  type: 'test'
+  ...
+# Subtest: P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field)
+not ok 5 - P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field)
+  ---
+  duration_ms: 0.060465
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams
+ok 6 - P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams
+  ---
+  duration_ms: 2.24518
+  type: 'test'
+  ...
+# Subtest: P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain
+not ok 7 - P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain
+  ---
+  duration_ms: 0.093948
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns
+ok 8 - P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns
+  ---
+  duration_ms: 2.273334
+  type: 'test'
+  ...
+# Subtest: P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs
+ok 9 - P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs
+  ---
+  duration_ms: 5.568221
+  type: 'test'
+  ...
+# Subtest: P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+ok 10 - P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+  ---
+  duration_ms: 8.781034
+  type: 'test'
+  ...
+# Subtest: P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted)
+ok 11 - P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted)
+  ---
+  duration_ms: 3.420215
+  type: 'test'
+  ...
+# Subtest: P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt
+not ok 12 - P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt
+  ---
+  duration_ms: 0.077968
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill
+not ok 13 - P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill
+  ---
+  duration_ms: 0.041759
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/packages/runtime/team-sandbox/src/terminal.ts' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    moduleResolve (node:internal/modules/esm/resolve:879:10)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    resolve (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/scripts/run-tests-hooks.mjs:43:10)
+    nextResolve (node:internal/modules/esm/hooks:785:28)
+    AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30)
+    MessagePort.handleMessage (node:internal/modules/esm/worker:251:24)
+    [nodejs.internal.kHybridDispatch] (node:internal/event_target:848:20)
+    MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+  ...
+# Subtest: P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed
+ok 14 - P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed
+  ---
+  duration_ms: 1.90167
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 7
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 316.701574
+
+==================================================================
+LEG 2 — both composition-refusal sites are absent (tree otherwise current)
+  run: mount.ts pre-mount loop -> 'if (true) continue'
+       mount.ts deferred site -> 'if (false)'
+  expect: exactly the 2 P4 arms red (declared + deferred); the P4 control green
+==================================================================
+
+leg 2 exit rc=1
+
+----- leg 2 red set -----
+P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs
+P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+
+----- leg 2 first failure detail -----
+not ok 10 - P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+  ---
+  duration_ms: 4.251259
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: 'the deferred terminals consumer is still refused'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    armDeferredRefusalIsPostAllocation (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:539:10)
+    async withRefusal (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:253:7)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+
+----- leg 2 TAP (full) -----
+TAP version 13
+# Subtest: P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+ok 1 - P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own
+  ---
+  duration_ms: 224.508587
+  type: 'test'
+  ...
+# Subtest: P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing
+ok 2 - P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing
+  ---
+  duration_ms: 0.320517
+  type: 'test'
+  ...
+# Subtest: P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)
+ok 3 - P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)
+  ---
+  duration_ms: 0.117092
+  type: 'test'
+  ...
+# Subtest: P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once
+ok 4 - P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once
+  ---
+  duration_ms: 5.971486
+  type: 'test'
+  ...
+# Subtest: P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field)
+ok 5 - P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field)
+  ---
+  duration_ms: 0.434101
+  type: 'test'
+  ...
+# Subtest: P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams
+ok 6 - P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams
+  ---
+  duration_ms: 2.197139
+  type: 'test'
+  ...
+# Subtest: P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain
+ok 7 - P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain
+  ---
+  duration_ms: 0.288175
+  type: 'test'
+  ...
+# Subtest: P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns
+ok 8 - P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns
+  ---
+  duration_ms: 2.161402
+  type: 'test'
+  ...
+# Subtest: P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs
+not ok 9 - P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs
+  ---
+  duration_ms: 8.173293
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: 'mounting the shipped persistent-bash module must be REFUSED'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    armRefusedBeforeAllocation (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:525:10)
+    async withRefusal (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:253:7)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+not ok 10 - P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING)
+  ---
+  duration_ms: 4.251259
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:266:5'
+  failureType: 'testCodeFailure'
+  error: 'the deferred terminals consumer is still refused'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    armDeferredRefusalIsPostAllocation (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:539:10)
+    async withRefusal (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-red/tests/world-factory/a5sf-pty-contract.test.mjs:253:7)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted)
+ok 11 - P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted)
+  ---
+  duration_ms: 2.756699
+  type: 'test'
+  ...
+# Subtest: P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt
+ok 12 - P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt
+  ---
+  duration_ms: 0.308564
+  type: 'test'
+  ...
+# Subtest: P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill
+ok 13 - P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill
+  ---
+  duration_ms: 0.344793
+  type: 'test'
+  ...
+# Subtest: P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed
+ok 14 - P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed
+  ---
+  duration_ms: 1.604358
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 12
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 324.270637
+
+----- tree restored: the refusal code is present again -----
+4
