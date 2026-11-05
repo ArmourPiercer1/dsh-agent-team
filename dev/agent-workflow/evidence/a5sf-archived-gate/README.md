@@ -20,7 +20,7 @@ brief). The diagnosis evidence commit `d75a03c38` is cherry-picked (evidence onl
 
 **2026-11-05 RACE ROUND (this branch — read §4b first).** An independent adversarial review measured a
 **BLOCKING** hole the round above did not cover: the product order is quiesce-then-commit, so a dispatch issued
-in the drop→commit window cold-resumed the member and the live handle survived the commit. §4.2's replay had the
+in the `quiesce → commit` window cold-resumed the member and the live handle survived the commit. §4.2's replay had the
 two effects reversed, which is why the first round's arms never saw it. This branch fixes it with three coupled
 changes — (a) a post-commit residency re-drop in `archive.ts`/`dispose.ts`, (b) a post-resume durable re-read
 immediately before `liveAgents.set` (SEAM 3), (c) the per-member admission close implemented for real (it was a
@@ -179,7 +179,7 @@ the reversed order, which is exactly why the hole was invisible: no arm ever dis
 
 **Measured before the fix** (`archive-race-arms.test.mjs`, host-free, real glue + real
 `createLifecycleService`): `RO1` sequential arm **PASSED** (the claim that already held), `RO2` dispatch inside
-the drop→commit window **200 OK**, `RO3` resume resolving after the commit **200 OK + resident**, `RO4` handle
+the `quiesce → commit` window **200 OK**, `RO3` resume resolving after the commit **200 OK + resident**, `RO4` handle
 survives the commit **`resident true`** — `3 failed | 1 passed` (`race-red-before.log`). After the fix
 `4 passed (4)` (`race-green-after.log`): all four arms refuse with **422**, zero tool executions,
 `resident=false`.
@@ -245,9 +245,14 @@ only window in this seam family that can still execute a tool.
 `packages/runtime/src/plugin/live/agent-bindings.mjs` **is** the protected glue, and this fix genuinely edits it
 (that is where the durable gate, the post-resume re-read and the admission close live). The sha256 changes:
 
-- before (origin/master `b17cb939b`): `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b`
-- after the first (row-6 gate) change: `6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8`
+- before the row-6 gate change (pre-#594 tree, `44babbfcf`): `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b`
+- after the first (row-6 gate) change (that change is #594; at `origin/master` `b17cb939b`): `6d256096d98c8afdd1935e68c57f7571c647ae63362a652d7198e5f91ddb94e8`
 - after the 2026-11-05 race fix: `d3945eff6960ef8adc811a38f2a2f447a6a9a359122622e7f80ddfbad125287f`
+
+**Correction (2026-11-05, matrix audit).** The first bullet above originally read *"before (origin/master
+`b17cb939b`): `df9b46af…`"*. That attribution was wrong: `b17cb939b` already contains the row-6 gate change
+(#594) and its glue is `6d256096…` — the value the second bullet already gives; `df9b46af…` is the pre-#594
+`44babbfcf` tree. The digests and every measured result in this file are unchanged.
 
 This is legitimate and minimal: the delta is (1) the shared `memberResumeRefusal` helper, (2) its two call sites
 (SEAM 1 in `ensureLiveAgentOnce`, SEAM 2 in the boot loop), (3) the race fix — the `newWorkClosed` state,
@@ -324,7 +329,7 @@ gitignored.
    with a terminal-at-`reopenAdmission` marker plus ONE durable confirmation at the publish seam (normal boots:
    zero extra reads; the raced member: one). `../a5sf-boot-seam/README.md` (BS1/BS2/BS3) and
    `../a5sf-boot-publish/README.md` (BS4/BS5, M1–M3) carry the arms. The **remaining** boot window is a
-   residency-observation interval (the archive's own `commit → post-commit re-drop`), during which new-work
+   residency-observation interval (the archive's own `commit → post-commit residency re-drop`), during which new-work
    admission is still closed, so it cannot execute a tool — and the configuration where the lifecycle wires no
    `AdmissionClosePort` at all (the pre-#598 `root.ts:2164` shape) still has an EXECUTABLE mid-boot publish
    window, which BS5 pins as a characterised gap rather than a guarantee.

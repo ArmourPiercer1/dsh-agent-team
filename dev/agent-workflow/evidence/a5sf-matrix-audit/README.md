@@ -6,7 +6,9 @@
 **Scope:** the three current plan documents (`TOOL-ACCEPTANCE-MATRIX.md`,
 `ALPHA5-SANDBOX-BACKLOG.md`, `current-implementation-plan.md`) and every evidence pointer /
 commit / sha256 / section they cite. **No Host boot, no product-code change, no grade or
-`V@B` change, no evidence-file edit.**
+`V@B` change.** Evidence-file edits are limited to the coordinator-approved F-16 sha
+attribution correction and F-17 interval-name normalisation (no verdict, number or measured
+result changed).
 
 ## 1. Method (mechanically reproducible)
 
@@ -90,23 +92,22 @@ contradiction or unresolvable pointer; **L** = stale count/wording/section numbe
 | F-10 | L | matrix:40 (M-01) | "授权 baseline 早于 63 个产品面路径" | the baseline was re-cut; the sentence reads as current | "重切前 baseline …" | **yes** |
 | F-11 | L | matrix:45,46 | "Q7 因此在 34 条路径面上拒绝" | now 36 paths at #600 | "#598 时点 34 条；至 #600 为 36 条" | **yes** |
 | F-12 | M | backlog:53 (BL-15) | "PARTIAL（写轴 live 已证…）" | matrix M-02 is `NEEDS_REVALIDATION` / `V@B=no` for the same evidence | name the stale tree and the matrix state | **yes** |
-| F-13 | M | backlog:110 (BL-21) | `BLOCKED（需真实 Host boot）` | the source-evidenced half is DONE (`NATIVE-SOURCE-INVENTORY.md`) and the matrix cites "BL-21 库存已查明" | status `IN-PROGRESS` (source half DONE, runtime half BLOCKED) | **no** (coordinator status decision) |
-| F-14 | M | backlog:113–114 (BL-22/BL-23) | `BLOCKED（依赖 BL-21）` | matrix shows BL-22 (FS group) and BL-23 (search group) partially met (M-01..M-04, M-06/M-07) | `IN-PROGRESS` / `PARTIAL`, not blanket `BLOCKED` | **no** (coordinator status decision) |
-| F-15 | L | backlog:55–58 (BL-17..BL-20) | entry files `a5sf-bash.mjs`, `a5sf-web.mjs`, `a5sf-ptc.mjs`, `a5sf-new-cli.mjs` | none exists at HEAD; they are planned filenames from the memo | mark as "planned, not yet created" or point at the memo row | **no** (planned artifact) |
-| F-16 | M | `a5sf-archived-gate/README.md:248` | "before (origin/master `b17cb939b`): `df9b46af…`" | `b17cb939b`'s glue is `6d256096…`; `df9b46af…` is `44babbfcf` / pre-#594 | relabel the commit (or the digest) | **no** (evidence file, forbidden) |
-| F-17 | L | evidence READMEs + matrix | `drop→commit` (archived-gate, matrix) vs `quiesce→commit` (boot-seam, boot-publish); `commit → post-commit re-drop` vs `… residency re-drop` | same two intervals, two names each | one canonical name per interval | **no** (evidence/cosmetic) |
-| F-18 | M | matrix §0 / §1.1 | grade vocabulary is listed but not defined; the brief's `ENFORCE` and `N/A` are not in the closed enum | a reader cannot derive `ENFORCE-PARTIAL` / `NEEDS_REVALIDATION` semantics from the table; only `ci-pr-gate` Q5/Q7 encodes the pairing | add a one-line definition per grade (or cite the gate law) | **no** (contract change) |
+| F-13 | M | backlog:110 (BL-21) | `BLOCKED（需真实 Host boot）` | the source-evidenced half is DONE (`NATIVE-SOURCE-INVENTORY.md`) and the matrix cites "BL-21 库存已查明" | status `IN-PROGRESS` (source half DONE, runtime half BLOCKED) | **yes**（coordinator decision） |
+| F-14 | M | backlog:113–114 (BL-22/BL-23) | `BLOCKED（依赖 BL-21）` | matrix shows BL-22 (FS group) and BL-23 (search group) partially met (M-01..M-04, M-06/M-07) | `IN-PROGRESS` / `PARTIAL`, not blanket `BLOCKED` | **yes**（coordinator decision） |
+| F-15 | L | backlog:55–58 (BL-17..BL-20) | entry files `a5sf-bash.mjs`, `a5sf-web.mjs`, `a5sf-ptc.mjs`, `a5sf-new-cli.mjs` | none exists at HEAD; they are planned filenames from the memo | mark as "planned, not yet created" or point at the memo row | **yes**（marked planned, not created） |
+| F-16 | M | `a5sf-archived-gate/README.md:248` | "before (origin/master `b17cb939b`): `df9b46af…`" | `b17cb939b`'s glue is `6d256096…`; `df9b46af…` is `44babbfcf` / pre-#594 | relabel the commit (or the digest) | **yes**（dated correction; numbers unchanged） |
+| F-17 | L | evidence READMEs + matrix | `drop→commit` (archived-gate, matrix) vs `quiesce→commit` (boot-seam, boot-publish); `commit → post-commit re-drop` vs `… residency re-drop` | same two intervals, two names each | one canonical name per interval | **yes**（canonical names; CORRECTION blocks untouched） |
+| F-18 | M | matrix §0 / §1.1 | grade vocabulary is listed but not defined; the brief's `ENFORCE` and `N/A` are not in the closed enum | a reader cannot derive `ENFORCE-PARTIAL` / `NEEDS_REVALIDATION` semantics from the table; only `ci-pr-gate` Q5/Q7 encodes the pairing | add a one-line definition per grade (or cite the gate law) | **yes**（definitions added; ⑧ cells untouched） |
 | F-19 | L | backlog:110 | output `evidence/a5sf-p3/inventory/` | absent (planned output of a blocked item) | leave as planned; do not pre-create | **no** (expected) |
-| F-20 | L | matrix:142 | `evidence/a5sf-p1-0{1..8}/` | a brace expression, not a literal path | list the eight paths or keep the brace as documented shorthand | **no** (style) |
-| F-21 | L | backlog:52–54 | status words "**live G2 已取得**" / `PARTIAL` | §0's closed status set is `DONE / IN-PROGRESS / READY / BLOCKED / DEFERRED` | map prose to the closed set | **no** (status decision) |
-| F-22 | H | backlog:120,123 (BL-30, BL-33) | `BLOCKED（依赖 BL-09/BL-11）` / `BLOCKED（依赖 BL-11）` | BL-09 and BL-11 are both `DONE` in the same table (PR #541 / #545) — a blocker on a met dependency is stale, and BL-33 has no remaining named blocker | `READY` (or name the actual remaining dependency, e.g. G3) | **no** (status decision) |
+| F-20 | L | matrix:142 | `evidence/a5sf-p1-0{1..8}/` | a brace expression, not a literal path | list the eight paths or keep the brace as documented shorthand | **yes**（eight literals） |
+| F-21 | L | backlog:52–54 | status words "**live G2 已取得**" / `PARTIAL` | §0's closed status set is `DONE / IN-PROGRESS / READY / BLOCKED / DEFERRED` | map prose to the closed set | **yes**（closed-set status word; prose kept） |
+| F-22 | H | backlog:120,123 (BL-30, BL-33) | `BLOCKED（依赖 BL-09/BL-11）` / `BLOCKED（依赖 BL-11）` | BL-09 and BL-11 are both `DONE` in the same table (PR #541 / #545) — a blocker on a met dependency is stale, and BL-33 has no remaining named blocker | `READY` (or name the actual remaining dependency, e.g. G3) | **yes**（coordinator decision） |
 
-## 4. Mechanical fixes applied (this branch)
+## 4. Fixes applied (this branch)
 
-All three files are under `docs/plans/active/alpha5-sandbox-first/`. No grade, `V@B`, or
-evidence content was changed.
+Round A — P4 audit (no grade, `V@B`, or evidence content changed):
 
-1. `TOOL-ACCEPTANCE-MATRIX.md` §1: heading date 11-04 → 11-05; §1.1 now distinguishes "at the
+1. `TOOL-ACCEPTANCE-MATRIX.md` §1: heading date 11-04 → 11-05; §1.1 distinguishes "at the
    re-cut" from "at HEAD" and states all four rows are `V@B=no`; §3 G1 cell and closing
    paragraph use the same past tense. Reason: F-01/F-03.
 2. `TOOL-ACCEPTANCE-MATRIX.md` rows M-06/M-07: three "reset / `V@B=yes`" sentences made
@@ -121,23 +122,36 @@ evidence content was changed.
 5. `current-implementation-plan.md` §1: "全部 `NOT_WIRED`" → the actual grade mix; "R1/R3 未开始"
    → `DONE`; §3 items 1–3 rewritten to the current backlog statuses. Reason: F-06/F-07/F-08.
 
-## 5. What I refused to fix, and why
+Round B — coordinator decisions (2026-11-05, same branch):
 
-- **No grade and no `V@B` cell changed.** The four live-capable rows were already in the honest
-  state (`M-01`/`M-02` `NEEDS_REVALIDATION`, `M-06`/`M-07` `ENFORCE-PARTIAL` with `V@B=no`);
-  only their prose lied. **No grade change is recommended** — `ENFORCE-PARTIAL` without `V@B`
-  is the documented host-free grade (M-03 uses it too), and `NEEDS_REVALIDATION` is the Q7
-  answer for an expired live tree.
-- **`a5sf-archived-gate/README.md:248` (F-16)** is a factual sha attribution error, but evidence
-  files are coordinator-owned; the correction is: "before (44babbfcf / pre-#594): `df9b46af…`;
-  at b17cb939b: `6d256096…`".
-- **Backlog statuses BL-21/BL-22/BL-23 and the BL-17..BL-20 entry names (F-13/F-14/F-15/F-21)**
-  are planning decisions, not sentences that can be mechanically repaired; the exact suggested
-  text is in the findings table.
-- **The window vocabulary (F-17)** is consistent in substance; renaming it would edit three
-  evidence READMEs, so it is reported, not changed.
-- **The missing grade definitions (F-18)** would be a contract addition; the gate already
-  encodes the only enforced law (Q7 requires `NEEDS_REVALIDATION` ⇒ `V@B=no`).
+6. **F-22**: BL-30 → `READY（原记 BLOCKED（依赖 BL-09/BL-11，二者已 DONE））`; BL-33 →
+   `READY（原记 BLOCKED（依赖 BL-11，已 DONE））`.
+7. **F-13/F-14**: BL-21 → `IN-PROGRESS（源半已 done、runtime 半被 boot 阻；原记 BLOCKED…）`;
+   BL-22/BL-23 → `IN-PROGRESS（原记 BLOCKED（依赖 BL-21）；矩阵 M-01..M-04 / M-06..M-07 的
+   部分覆盖 in prose）`. No `PARTIAL` status word invented.
+8. **F-18**: §0 now defines `ENFORCE`, `ENFORCE-PARTIAL`, `NEEDS_REVALIDATION`, `N/A` and
+   `NOT_WIRED`, and states `V@B` is orthogonal. `ENFORCE`/`N/A` are explicitly not admitted
+   into the ⑧ machine enum until `ci-pr-gate`'s ENUM is extended (not this PR).
+9. **F-17**: canonical interval names in the three evidence READMEs and the matrix:
+   `quiesce → commit` and `commit → post-commit residency re-drop`. Dated `CORRECTION` blocks
+   were left verbatim.
+10. **F-16**: archived-gate §5 first bullet relabelled to the pre-#594 `44babbfcf` tree; the
+    `b17cb939b` value `6d256096…` stays in the second bullet; a dated correction says the old
+    attribution was wrong. No digest, verdict or measured number changed.
+11. **F-15**: four backlog entry names marked `（planned, not created）`.
+12. **F-20**: `evidence/a5sf-p1-0{1..8}/` replaced with the eight literal directories.
+13. **F-21**: BL-14/BL-15/BL-16 status words mapped to the closed set (`IN-PROGRESS`), prose kept.
+
+## 5. What I did not change, and why
+
+- **No grade and no `V@B` cell changed.** `ENFORCE-PARTIAL` without `V@B` is the documented
+  host-free grade (M-03 uses it); `NEEDS_REVALIDATION` is the Q7 answer for an expired live
+  tree. **No grade change is recommended.**
+- **F-19** (`evidence/a5sf-p3/inventory/`) is left as a planned output; pre-creating it would
+  fake BL-21's runtime half.
+- **`ENFORCE`/`N/A` are still not ⑧ machine values.** Adding them to the table's prose
+  vocabulary is safe; adding them to the ⑧ closed set without extending `ci-pr-gate`'s ENUM
+  would create a gate trap, so the gate change is deliberately deferred to its own PR.
 
 ## 6. Gates
 
@@ -145,12 +159,11 @@ evidence content was changed.
 |---|---|---|
 | Document checks | `node scripts/doc-checks.mjs` | **rc=0** |
 | Whitespace | `git diff --check origin/master...HEAD` | **rc=0** |
-| Matrix validator (the only in-repo script that grades the matrix) | `node scripts/ci-pr-gate.mjs --only state-freshness` | **pass** — `matrix rows 21 claimed 0, drift 36 path(s)` (Q5/Q7 green) |
-| Full merge gate | `node scripts/ci-pr-gate.mjs` | **fail only on environment legs**: `install` (`ERR_SQLITE_ERROR`, no pnpm store), `typecheck` (no `node_modules`), `artifacts-at-head` (`not-run reason=install`); `graph-parse`, `kit-home-guard`, `state-freshness`, `blueprint-fence`, `citability` pass; `census` skip (opt-in). This is the sandbox, not a pass. |
+| Matrix validator | `node scripts/ci-pr-gate.mjs --only state-freshness` | **pass** — 21 rows, 0 claimed, drift 36 (Q5/Q7 green) |
+| Full merge gate | `node scripts/ci-pr-gate.mjs` | **fail only on environment legs**: `install` (`ERR_SQLITE_ERROR`, no pnpm store), `typecheck` (no `node_modules`), `artifacts-at-head` (`not-run reason=install`); `graph-parse`, `kit-home-guard`, `state-freshness`, `blueprint-fence`, `citability` pass; `census` skip. Not a pass. |
 
-Search for the matrix validator: `grep -rl "TOOL-ACCEPTANCE-MATRIX" scripts/` returns nothing
-(the matrix path comes from the authority contract); the Q5/Q7 grading lives in
-`scripts/ci-pr-gate.mjs` (lines ~246–392) and is reached by the `state-freshness` leg.
+The matrix path comes from the authority contract; the Q5/Q7 grading lives in
+`scripts/ci-pr-gate.mjs` (~246–392) and is reached by the `state-freshness` leg.
 
 ## 7. Can the table be trusted?
 
@@ -158,11 +171,17 @@ Search for the matrix validator: `grep -rl "TOOL-ACCEPTANCE-MATRIX" scripts/` re
 nobody re-read the sentence next to it.** Their ⑧ `ENFORCE-PARTIAL` is legitimate (host-free
 half, like M-03), but the cell simultaneously said "重切后复位为当前断言 … `V@B=yes`" and
 "本行等级 … `V@B=yes` 与 live 证据均不变" while the ⑨ column — and the very end of the same
-cell — said `no`. A reader who trusted the sentence would have counted a current claim on a
-tree that #598/#599/#600 had already moved. After the fixes, every row's `V@B` is consistent
-with its prose, and the four stale rows say why they are stale.
+cell — said `no`. After the fixes, every row's `V@B` is consistent with its prose, and the four
+stale rows say why they are stale (M-01/M-02 now name both path layers: the 116-path
+`44babbfcf` vs baseline gap, and the 36-path baseline..HEAD gap).
 
-**Still not blocked by this audit:** the grade vocabulary has no written definitions (F-18),
-and the backlog's BL-21/BL-22/BL-23 statuses still overstate "blocked" relative to the matrix
-(F-13/F-14), while BL-30/BL-33 are blocked on dependencies (BL-09/BL-11) the same table marks
-`DONE` (F-22). Those are coordinator decisions, not table-vs-evidence facts.
+**No row has a ⑧/⑨ contradiction under the new §0 definitions.** `V@B` is orthogonal by
+construction: `ENFORCE-PARTIAL` asserts a mechanism measurement, `V@B=no` says the *current*
+baseline tree was not the measured one. The closest cases are M-06/M-07 (`ENFORCE-PARTIAL` /
+`no`), and they are consistent.
+
+**One definitional edge, left as a grade decision:** M-19 (`state tools`) and M-20
+(`present`/`skill`/`attachment`) are encoded `NOT_WIRED`, but the new definition says
+`NOT_WIRED` = "the mechanism applies but the surface is not bound", while those tools have no
+data-plane I/O and might belong in `N/A`. They are not a ⑧/⑨ contradiction (⑨ is `no` either
+way); re-encoding them is a grade decision, so it is reported rather than changed.
