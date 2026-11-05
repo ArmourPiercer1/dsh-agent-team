@@ -99,6 +99,7 @@ contradiction or unresolvable pointer; **L** = stale count/wording/section numbe
 | F-19 | L | backlog:110 | output `evidence/a5sf-p3/inventory/` | absent (planned output of a blocked item) | leave as planned; do not pre-create | **no** (expected) |
 | F-20 | L | matrix:142 | `evidence/a5sf-p1-0{1..8}/` | a brace expression, not a literal path | list the eight paths or keep the brace as documented shorthand | **no** (style) |
 | F-21 | L | backlog:52–54 | status words "**live G2 已取得**" / `PARTIAL` | §0's closed status set is `DONE / IN-PROGRESS / READY / BLOCKED / DEFERRED` | map prose to the closed set | **no** (status decision) |
+| F-22 | H | backlog:120,123 (BL-30, BL-33) | `BLOCKED（依赖 BL-09/BL-11）` / `BLOCKED（依赖 BL-11）` | BL-09 and BL-11 are both `DONE` in the same table (PR #541 / #545) — a blocker on a met dependency is stale, and BL-33 has no remaining named blocker | `READY` (or name the actual remaining dependency, e.g. G3) | **no** (status decision) |
 
 ## 4. Mechanical fixes applied (this branch)
 
@@ -163,4 +164,5 @@ with its prose, and the four stale rows say why they are stale.
 
 **Still not blocked by this audit:** the grade vocabulary has no written definitions (F-18),
 and the backlog's BL-21/BL-22/BL-23 statuses still overstate "blocked" relative to the matrix
-(F-13/F-14); both are coordinator decisions, not table-vs-evidence facts.
+(F-13/F-14), while BL-30/BL-33 are blocked on dependencies (BL-09/BL-11) the same table marks
+`DONE` (F-22). Those are coordinator decisions, not table-vs-evidence facts.
