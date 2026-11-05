@@ -317,6 +317,31 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     expect(deliver).not.toHaveBeenCalled()
   })
 
+  it('never sends an UNROUTABLE A6 ordinary ask to the Leader either', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => ({ kind: 'unroutable', reason: 'not a delegable ordinary tool ask' }),
+      notifyLeader,
+    })
+    const a6 = {
+      ...request,
+      requestId: 'req-route-a6-unroutable',
+      approvalCaseId: 'case-route-a6-unroutable',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+      operationToolOwner: 'dsh-agent-team',
+      operationToolName: 'bash',
+    } as ControlRequestRecord
+    await expect(notifier.notifyLeaderRequest(a6)).rejects.toThrow(/is unroutable/)
+    expect(notifyLeader).not.toHaveBeenCalled()
+    expect(deliver).not.toHaveBeenCalled()
+  })
+
   it('delivers an UNROUTABLE legacy guard row to the Leader, not an A6 ordinary ask', async () => {
     const deliver = vi.fn(async () => {})
     const notifyLeader = vi.fn(async () => {})
@@ -339,6 +364,32 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     await notifier.notifyLeaderRequest(legacy)
     expect(notifyLeader).toHaveBeenCalledTimes(1)
     expect(deliver).not.toHaveBeenCalled()
+  })
+
+  it('resolves a non-route wake against the REQUEST root, not the boot root', async () => {
+    const deliver = vi.fn(async () => {})
+    const resolve = vi.fn(async () => ({ instanceId: 'inst-officer' }))
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-boot',
+      resolveCurrentReviewer: resolve,
+      memberSession: (_root: string, _instanceId: string) => ({ childSessionId: 'session-officer-child' }),
+      deliver,
+    })
+    const childRow = {
+      ...request,
+      rootSessionId: 'root-a6-request',
+      approvalCaseId: 'case-a6-request-root',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+    } as ControlRequestRecord
+    await notifier.notifyLeaderRequest(childRow)
+    expect(resolve).toHaveBeenCalledWith({
+      rootSessionId: 'root-a6-request',
+      approvalCaseId: 'case-a6-request-root',
+      currentLegRequestId: 'req-a6-pr6-1',
+      legOrdinal: 1,
+    })
+    expect(deliver).toHaveBeenCalledWith('root-a6-request', expect.objectContaining({ targetSessionId: 'session-officer-child' }))
   })
 
   it('delivers a CASE-LESS leader-approval row to the Leader instead of throwing', async () => {
