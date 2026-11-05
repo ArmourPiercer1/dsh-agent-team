@@ -1,0 +1,22 @@
+PASS baseline: red=[] expected=[]
+PASS M1-existing-domain-lookup-dropped: red=["P1-ONE-ALLOCATE-PER-SESSION","P5-KILL-ONE-NOT-THE-OTHER"] expected=["P1-ONE-ALLOCATE-PER-SESSION","P5-KILL-ONE-NOT-THE-OTHER"]
+       the reuse path never finds the live domain: a repeat acquire allocates a second PTY (and the replace-on-tighten arm loses its kill)
+PASS M2-killed-domain-accepts-a-command: red=["P1-NO-COMMAND-AFTER-KILL","P3-REGISTRY-REAP"] expected=["P1-NO-COMMAND-AFTER-KILL","P3-REGISTRY-REAP"]
+       a command addressed to a KILLED terminal is admitted (the removed domain no longer refuses), so "no write after kill" is violated
+PASS M3-kill-error-propagated: red=["P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES"] expected=["P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES"]
+       the swallowed kill error surfaces, so the already-dead and dead-group fates reject shutdown instead of collapsing into killed:true
+PASS M4-shutdown-keeps-the-dead-domain: red=["P3-REGISTRY-REAP"] expected=["P3-REGISTRY-REAP"]
+       shutdown retains the domain, so a second shutdown re-kills the port (two kills for one terminal)
+PASS M5-pre-mount-terminal-refusal-dropped: red=["P4-REFUSED-BEFORE-ALLOCATION"] expected=["P4-REFUSED-BEFORE-ALLOCATION"]
+       the declared-inject terminals loop is skipped, so the module mounts instead of being refused (the deferred shape is refused by its own later site)
+PASS M5b-deferred-terminal-refusal-dropped: red=["P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION"] expected=["P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION"]
+       the deferred-injection site stops refusing, so the post-allocation window is no longer detected (the declared shape stays refused)
+PASS M6-shutdown-receipt-misattributes-the-pid: red=["P5-TWO-BINDINGS-IDENTITY"] expected=["P5-TWO-BINDINGS-IDENTITY"]
+       every receipt row carries the FIRST domain's pid — the mis-attribution the concurrency arm must catch
+PASS I1-host-port-closes-twice: red=["P1-HOST-SESSION-LIFECYCLE","P3-HOST-REAP"] expected=["P1-HOST-SESSION-LIFECYCLE","P3-HOST-REAP"]
+       the injected port reports two closes per session, so "one close per terminal" is violated at the boundary the arms measure
+PASS I2-host-port-collapses-exit-status: red=["P2-HOST-DISTINGUISHES-OUTCOMES"] expected=["P2-HOST-DISTINGUISHES-OUTCOMES"]
+       the port reports exitCode 0 for every fate, so the service can no longer propagate an exit code vs a signal
+PASS I3-host-port-crosses-writes: red=["P5-HOST-TWO-SESSIONS-FENCED"] expected=["P5-HOST-TWO-SESSIONS-FENCED"]
+       the port attributes each write/read to the other session — the crossing the concurrency arm must catch
+MUTATION-CONTROLS-PASS

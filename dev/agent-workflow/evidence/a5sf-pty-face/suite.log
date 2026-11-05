@@ -1,0 +1,22 @@
+✔ P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own (223.219309ms)
+✔ P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing (0.277586ms)
+✔ P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING) (0.106101ms)
+✔ P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once (5.822383ms)
+✔ P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field) (0.440323ms)
+✔ P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams (2.327185ms)
+✔ P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain (0.35938ms)
+✔ P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns (2.118541ms)
+✔ P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs (5.172362ms)
+✔ P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING) (8.033829ms)
+✔ P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted) (3.748406ms)
+✔ P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt (0.502131ms)
+✔ P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill (0.283727ms)
+✔ P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed (1.720498ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 318.125527
