@@ -1,0 +1,203 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source
+
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 8ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 37ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 26ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 125ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 18ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 520ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 742ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (17 tests) 178ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 183ms
+ ✓ packages/runtime/test/p7t3-lifecycle-fact.test.ts (7 tests) 20ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 306ms
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-grep:mount:9678808b-3ffa-43bb-955b-18513f5f78b2-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:c32f6faa45b16e494c6896d6dc72c73c4b3511ff02d4b1316fdd82e337360f80:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-grep:mount:9678808b-3ffa-43bb-955b-18513f5f78b2-1 grantId=grant:d9740dbecbd59c3f064226555582dc99 effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-grep:mount:9678808b-3ffa-43bb-955b-18513f5f78b2-1 grantId=grant:d9740dbecbd59c3f064226555582dc99 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:c32f6faa45b16e494c6896d6dc72c73c4b3511ff02d4b1316fdd82e337360f80:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-bash:mount:12448263-6e3b-4b22-b273-9d60580fe687-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-bash:mount:12448263-6e3b-4b22-b273-9d60580fe687-1 grantId=grant:b0babcecdf55e4e774528f8bf4f40738 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-bash:mount:12448263-6e3b-4b22-b273-9d60580fe687-1 grantId=grant:b0babcecdf55e4e774528f8bf4f40738 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1 search positive: with plane.fsInstance the team_grep call runs the REAL read-only search over the governed root
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-grep:mount:6b38b029-5803-42f4-8a0c-ea174d1a9299-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1 search positive: with plane.fsInstance the team_grep call runs the REAL read-only search over the governed root
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-grep:mount:6b38b029-5803-42f4-8a0c-ea174d1a9299-1 grantId=grant:4d2a5e234c1cf4b8e3fe236611677467 effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-grep:mount:6b38b029-5803-42f4-8a0c-ea174d1a9299-1 grantId=grant:4d2a5e234c1cf4b8e3fe236611677467 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-1 grantId=grant:0de978d96abdd988b9735a0188b29970 effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-1 grantId=grant:0de978d96abdd988b9735a0188b29970 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0
+
+ ✓ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 574ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 2798ms
+     ✓ (i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure  328ms
+     ✓ (iv) an invalid pattern still surfaces the REAL rg stderr and exit 2  308ms
+     ✓ (v) the flags change neither the fact count nor the process count  329ms
+     ✓ refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly  422ms
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5g7-unit-realm legs=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-2 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-2 grantId=grant:3dac9014a7f6f8ba3a4bcdd08c2a6544 effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-grep:mount:aa639a79-b137-4607-9429-e6c1f9906dbf-2 grantId=grant:3dac9014a7f6f8ba3a4bcdd08c2a6544 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:447da6675b4f4a7670650a1b8a66c9149069158c2643f85073609249aa096ec0:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G2 search confinement: a target escaping the governed root is a typed refusal and the backend body never runs
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-bash:mount:66c0ddfd-166b-4631-b708-90cef98f1617-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-bash:mount:66c0ddfd-166b-4631-b708-90cef98f1617-1 grantId=grant:a273844269ac19a3bbbde0bd0150fd44 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-bash:mount:66c0ddfd-166b-4631-b708-90cef98f1617-1 grantId=grant:a273844269ac19a3bbbde0bd0150fd44 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+ ✓ packages/runtime/test/bp1-red-glue-probe.test.ts (2 tests) 16ms
+ ✓ packages/runtime/test/c1-leader-notification-glue.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/tcm-m3-root-work-glue.test.ts (9 tests) 21ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts (12 tests) 23ms
+ ✓ packages/runtime/test/work-completion-notification-glue.test.ts (8 tests) 24ms
+ ✓ packages/runtime/test/a3p5-glue-permission-receipt.test.ts (11 tests) 3318ms
+     ✓ positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived  3201ms
+ ✓ packages/runtime/test/team-session-activation-glue.test.ts (18 tests) 6ms
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:66c0ddfd-166b-4631-b708-90cef98f1617-1 pid=462 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-bash:mount:a8824559-618c-494b-bce7-6055b170c485-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-bash:mount:a8824559-618c-494b-bce7-6055b170c485-1 grantId=grant:2ffe5395d842e4e69a87bfcfa545bc1a effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-bash:mount:a8824559-618c-494b-bce7-6055b170c485-1 grantId=grant:2ffe5395d842e4e69a87bfcfa545bc1a caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:a8824559-618c-494b-bce7-6055b170c485-1 pid=494 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G5 deny-before-backend with the PRODUCTION shell backend: template-deny answers first, backend execCount 0, zero side effects
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-glob:mount:f851f952-22dc-4c44-9116-fb9b45881368-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:bfff741f7c92400cf963f25a6eec6901ad7f8dd36bd620a03e2d2b0015b33cda:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-glob:mount:f851f952-22dc-4c44-9116-fb9b45881368-1 grantId=grant:dc987f869d5a37c1be195df6ce611de5 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-glob:mount:f851f952-22dc-4c44-9116-fb9b45881368-1 grantId=grant:dc987f869d5a37c1be195df6ce611de5 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:bfff741f7c92400cf963f25a6eec6901ad7f8dd36bd620a03e2d2b0015b33cda:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob:mount:f851f952-22dc-4c44-9116-fb9b45881368-1 pid=513 files=2 capped=false
+
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests) 4004ms
+     ✓ R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one  355ms
+     ✓ R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)  589ms
+     ✓ R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim  739ms
+     ✓ R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)  654ms
+     ✓ R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)  485ms
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-read-30980e47-4e0d-4787-8aec-6f92d66e2d1d-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:eb7775b22482f69991a9bbc2d05e9395ac45d4881b0c5f7bc18f5bba9a10a0ba:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-read-30980e47-4e0d-4787-8aec-6f92d66e2d1d-1 grantId=grant:6fc6b8260646a2c6fcb3d58e44e5145b effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-read-30980e47-4e0d-4787-8aec-6f92d66e2d1d-1 grantId=grant:6fc6b8260646a2c6fcb3d58e44e5145b caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:eb7775b22482f69991a9bbc2d05e9395ac45d4881b0c5f7bc18f5bba9a10a0ba:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source/tests/homes/a5g7-unit-mw3ct4ll/root/data/needle.txt
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-bash:mount:ea85e6f8-faa9-464e-b6a2-db2387be4573-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-bash:mount:ea85e6f8-faa9-464e-b6a2-db2387be4573-1 grantId=grant:435385088793e8609f174337f7d6c86d effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-bash:mount:ea85e6f8-faa9-464e-b6a2-db2387be4573-1 grantId=grant:435385088793e8609f174337f7d6c86d caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash:mount:ea85e6f8-faa9-464e-b6a2-db2387be4573-1 pid=549 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-grep:mount:f6c130f3-e0fa-41d4-89d7-9269b13061c3-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:c32f6faa45b16e494c6896d6dc72c73c4b3511ff02d4b1316fdd82e337360f80:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-grep:mount:f6c130f3-e0fa-41d4-89d7-9269b13061c3-1 grantId=grant:9166ac209cadd3545be433ca608ee05b effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-grep:mount:f6c130f3-e0fa-41d4-89d7-9269b13061c3-1 grantId=grant:9166ac209cadd3545be433ca608ee05b caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:c32f6faa45b16e494c6896d6dc72c73c4b3511ff02d4b1316fdd82e337360f80:g0
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G9 KIT-COMPAT PIN (stays green): the public backends override seam still wins over the production construction
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5g7-unit-realm templateId=a5g7-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5g7-instance-bash:mount:b2e496c1-4007-4135-9216-071a59e2ffdb-1 approvalCaseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G9 KIT-COMPAT PIN (stays green): the public backends override seam still wins over the production construction
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5g7-instance-bash:mount:b2e496c1-4007-4135-9216-071a59e2ffdb-1 grantId=grant:1daeaaeb32f690b29cce6245d915e961 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5g7-instance-bash:mount:b2e496c1-4007-4135-9216-071a59e2ffdb-1 grantId=grant:1daeaaeb32f690b29cce6245d915e961 caseId=tadm:a5m1-test-team-root:a5g7-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+ ✓ packages/runtime/test/alpha5-glue7-plane-backends.test.ts (12 tests) 5675ms
+     ✓ G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps  463ms
+     ✓ G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host  353ms
+     ✓ G6b the SHIPPED glob row keeps its bounded face + typed walker error + symlink-final refusal (the retired CANDIDATE-A factory's three faces, retargeted)  301ms
+     ✓ G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)  345ms
+
+ Test Files  23 passed (23)
+      Tests  306 passed (306)
+   Start at  17:39:17
+   Duration  6.14s (transform 28.26s, setup 0ms, import 38.80s, tests 18.63s, environment 2ms)

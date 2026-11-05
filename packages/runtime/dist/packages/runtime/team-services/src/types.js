@@ -89,6 +89,21 @@ export const TEAM_SERVICE_INSTALL_CODES = [
      * from "wider than the bound authority".
      */
     'REALM_DECLARATION_EXCEEDS_BLUEPRINT',
+    /**
+     * PRODUCT ASSEMBLY policy-source fix (2026-11-05): a row declared
+     * `a5sfMemberPolicies` but supplied no blueprint the declaration could be
+     * reconciled against — `config.blueprintSource` is absent/blank, does not
+     * parse, resolves to a DIFFERENT team or a DIFFERENT revision, or the
+     * blueprint carries no `memberIoCeilings` family to derive from.
+     *
+     * The declaration is the EXCEPTION path: it may only narrow the Member
+     * ceiling a blueprint already declares. Without a resolvable blueprint the
+     * row would assemble Member permission facts from a second, independently
+     * editable statement of the same truth, so it refuses rather than treating
+     * "no blueprint" as "no constraints". Derivation (`a5sfMemberAuthority`) is
+     * the product path that needs no declaration at all.
+     */
+    'MEMBER_POLICY_WITHOUT_BLUEPRINT',
 ];
 /**
  * The per-call denial raised by an installed Provider method. Carries the

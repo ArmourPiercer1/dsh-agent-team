@@ -82,10 +82,13 @@ import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'
 import {
+  A5SF_MEMBER_AUTHORITY_KEY,
   A5SF_MEMBER_POLICIES_KEY,
   createProductRealmProvider,
+  deriveProductRealmPlan,
   parseProductRealmDeclaration,
 } from '../../../team-services/src/product-assembly.js'
+import { TeamServiceInstallError } from '../../../team-services/src/types.js'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
@@ -99,12 +102,17 @@ export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
  * for the declaration shape, the refusal vocabulary and the faces the seam
  * does not own.
  *
- * ENABLEMENT LAW (superseded text below, kept accurate): the realm is enabled
- * by `a5sfEvidencePath` (evidence round, an observation SINK) OR by this
- * PRODUCT declaration. A declaration also accepts `a5sfEvidencePath` as an
- * optional sink, but the sink is never what turns enforcement on.
+ * ENABLEMENT LAW: the realm is enabled by `a5sfEvidencePath` (evidence round,
+ * an observation SINK), by this PRODUCT declaration, or by the DERIVED path's
+ * `a5sfMemberAuthority` (see below). A declaration also accepts
+ * `a5sfEvidencePath` as an optional sink, but the sink is never what turns
+ * enforcement on.
+ *
+ * POLICY-SOURCE FIX (2026-11-05): a declaration is now the EXCEPTION path and
+ * REQUIRES `config.blueprintSource`; a row that omits the declaration and sets
+ * `a5sfMemberAuthority` derives the Member ceilings from that same blueprint.
  */
-export { A5SF_MEMBER_POLICIES_KEY }
+export { A5SF_MEMBER_POLICIES_KEY, A5SF_MEMBER_AUTHORITY_KEY }
 
 /**
  * The row-config key carrying the NATIVE tool modules to re-mount inside each
@@ -235,19 +243,29 @@ export function a5sfToolPlaneOf(realm) {
  * Read the row's a5sf wiring out of its config.
  *
  * ENABLEMENT: at least one ENABLING key present — `a5sfEvidencePath` (the
- * evidence sink) OR `a5sfMemberPolicies` (the product declaration). ABSENT both
+ * evidence sink), `a5sfMemberPolicies` (the DECLARED exception) OR
+ * `a5sfMemberAuthority` (the DERIVED product path). ABSENT all three
  * (`undefined`/`null`) = the row is not a5sf-wired at all: returns `undefined`,
  * the legacy path. PRESENT but not a non-blank string (evidence path) = a
  * configuration fault (fail loudly at row assembly, never a silently disabled
  * sandbox lane).
  *
- * `a5sfMemberPolicies` is parsed by the ONE product parser. When the row ALSO
- * carries `config.blueprintSource` (the Team's bound blueprint), that source is
- * passed as the parse context so the declared ceilings are reconciled with
- * `memberIoCeilings[template]` (review B2): a declaration that exceeds the
- * blueprint refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` instead of mounting.
- * When `blueprintSource` parses to a different team, no reconciliation happens
- * (it is not this Team's authority) and both declaration forms keep working.
+ * DERIVATION IS THE PRODUCT PATH (policy-source fix, 2026-11-05): with
+ * `a5sfMemberAuthority` and NO `a5sfMemberPolicies`, the Member ceilings are
+ * read from `config.blueprintSource`'s `memberIoCeilings` family by
+ * `deriveProductRealmPlan`, so the product config omits the declaration
+ * entirely and there is exactly ONE editable statement of the permission facts.
+ *
+ * DECLARATION IS THE EXCEPTION: when `a5sfMemberPolicies` is present the ONE
+ * product parser is called with `config.blueprintSource`, which is now REQUIRED
+ * to resolve to the same team/revision. A declaration with no resolvable
+ * blueprint refuses `MEMBER_POLICY_WITHOUT_BLUEPRINT`; one that exceeds the
+ * DERIVED ceiling refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT`; a strictly
+ * narrower one assembles with the typed residual
+ * `declaration-narrows-bound-blueprint`. Supplying both `a5sfMemberPolicies` and
+ * `a5sfMemberAuthority` is allowed: the declaration is checked against the
+ * derived policy, and the two authority references must agree (a disagreement is
+ * `REALM_DECLARATION_INVALID`).
  *
  * `a5sfNativeToolModules`, when present, is validated here too (route C): a
  * non-array, an empty array entry, or an entry that is neither a non-blank
@@ -262,17 +280,19 @@ export function a5sfToolPlaneOf(realm) {
  *   memberPolicies?: object,
  *   nativeToolModules?: readonly object[],
  * } | undefined} the frozen wiring block: `evidencePath` only when an evidence
- *   sink is configured, `memberPolicies` only when the product declaration is
- *   present (the parsed plan), `nativeToolModules` only when route C declares
- *   modules. Keys are omitted, never `undefined`-valued.
+ *   sink is configured, `memberPolicies` only when the product declaration (or
+ *   the derived path) is present (the parsed plan), `nativeToolModules` only
+ *   when route C declares modules. Keys are omitted, never `undefined`-valued.
  */
 export function a5sfRealmConfigOf(config) {
   const settings = config === undefined || config === null ? undefined : config
   const rawEvidence = settings === undefined ? undefined : settings[A5SF_EVIDENCE_PATH_KEY]
   const rawPolicies = settings === undefined ? undefined : settings[A5SF_MEMBER_POLICIES_KEY]
+  const rawAuthority = settings === undefined ? undefined : settings[A5SF_MEMBER_AUTHORITY_KEY]
   const hasEvidence = rawEvidence !== undefined && rawEvidence !== null
   const hasPolicies = rawPolicies !== undefined && rawPolicies !== null
-  if (!hasEvidence && !hasPolicies) return undefined
+  const hasAuthority = rawAuthority !== undefined && rawAuthority !== null
+  if (!hasEvidence && !hasPolicies && !hasAuthority) return undefined
 
   let evidencePath
   if (hasEvidence) {
@@ -283,17 +303,44 @@ export function a5sfRealmConfigOf(config) {
     }
     evidencePath = rawEvidence
   }
-  // PRODUCT ASSEMBLY: the declaration is parsed by the ONE product-assembly
-  // parser (typed `TeamServiceInstallError` refusals), never by this row. It is
-  // parsed even when no evidence path is configured: the declaration — not a
-  // sink path — is what makes the realm REQUIRED for the Members it names.
-  // `config.blueprintSource` rides along as the B2 reconciliation anchor; the
-  // parser ignores a blank/non-string value and a different team's blueprint.
-  const memberPolicies = hasPolicies
-    ? parseProductRealmDeclaration(rawPolicies, {
-      blueprintSource: settings === undefined ? undefined : settings.blueprintSource,
-    })
+  const blueprintSource = settings === undefined ? undefined : settings.blueprintSource
+
+  // DECLARED EXCEPTION: the ONE product-assembly parser (typed
+  // `TeamServiceInstallError` refusals), never this row. The blueprint source is
+  // REQUIRED and is reconciled by the parser; omitting it is a typed refusal,
+  // never "no constraints".
+  let memberPolicies = hasPolicies
+    ? parseProductRealmDeclaration(rawPolicies, { blueprintSource })
     : undefined
+
+  // DERIVED PRODUCT PATH: `a5sfMemberAuthority` asks the assembly to read the
+  // ceilings out of the bound blueprint itself. With BOTH keys present, the
+  // declaration was already checked against the derived ceilings; their
+  // authority references must agree too, or one of them is editing a fact the
+  // other cannot see.
+  if (hasAuthority) {
+    const derivedPlan = deriveProductRealmPlan({
+      blueprintSource,
+      authority: rawAuthority,
+    })
+    if (memberPolicies !== undefined) {
+      const declared = memberPolicies.authority
+      const derived = derivedPlan.authority
+      if (declared.revision !== derived.revision || declared.admitted !== derived.admitted) {
+        throw new TeamServiceInstallError(
+          'REALM_DECLARATION_INVALID',
+          `${A5SF_MEMBER_POLICIES_KEY}.authority `
+          + `{ revision: ${JSON.stringify(declared.revision)}, admitted: ${String(declared.admitted)} } disagrees with `
+          + `config.${A5SF_MEMBER_AUTHORITY_KEY} { revision: ${JSON.stringify(derived.revision)}, `
+          + `admitted: ${String(derived.admitted)} }; the declared and derived policies must reference the SAME `
+          + 'Alpha.4 authority, so one of them is not the fact it claims to be',
+          `${A5SF_MEMBER_POLICIES_KEY}.authority`,
+        )
+      }
+    } else {
+      memberPolicies = derivedPlan
+    }
+  }
 
   const declarations = expectedToolsDeclarationsOf(settings[A5SF_EXPECTED_TOOLS_KEY])
   const modules = nativeToolModulesOf(settings[A5SF_NATIVE_TOOL_MODULES_KEY], declarations)

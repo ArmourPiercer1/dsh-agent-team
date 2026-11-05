@@ -1,0 +1,38 @@
+✔ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (22.198433ms)
+✔ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (7.857034ms)
+✔ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (11.014142ms)
+✔ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (6.985426ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (2.98976ms)
+✔ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.842745ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (3.003015ms)
+✔ PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads (4.867434ms)
+✖ PA9 the declaration is reconciled with config.blueprintSource: narrowing mounts (and is named), widening/other-team/absent all refuse typed (4.696162ms)
+✔ PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted (4.9229ms)
+✔ PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings (2.77332ms)
+✔ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (0.154162ms)
+✔ PA13 the derived path produces the SAME effective lanes as the equivalent declaration (one computation, not two) (4.572597ms)
+✔ PA14 a5sfMemberAuthority + blueprintSource governs Members with NO declaration in the product config (6.04326ms)
+✔ PA15 a bound blueprint with a Team-scoped toolBindings family yields the typed residual (no per-Member binding invention) (1.533774ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 322.413915
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:737:1
+✖ PA9 the declaration is reconciled with config.blueprintSource: narrowing mounts (and is named), widening/other-team/absent all refuse typed (4.696162ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: a read ceiling wider than the blueprint ceiling must refuse
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source/tests/world-factory/a5sf-product-assembly.test.mjs:770:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }

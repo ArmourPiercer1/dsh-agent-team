@@ -260,6 +260,31 @@ function declarationFor(materialized) {
 }
 
 /**
+ * The v4 blueprint a product declaration must name (policy-source fix,
+ * 2026-11-05): every declared Member ceiling is reconciled against the ceiling
+ * DERIVED from this document. These fixtures are TEST-ONLY and used to omit the
+ * source (relying on the pre-fix gap); the generated blueprint is the
+ * declaration's own ceiling, i.e. fully expressible with no narrowing.
+ */
+function blueprintSourceFor(decl) {
+  const document = {
+    schemaVersion: 4,
+    blueprintId: decl.teamId,
+    revision: decl.blueprintRevision,
+    leader: { templateId: 'leader', persona: 'Lead.' },
+    members: decl.members.map((member) => ({ templateId: member.templateId, persona: `Worker ${member.templateId}.` })),
+    requirements: [],
+    memberEnvelopes: [],
+    policyStates: [],
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
+    metadata: {},
+    memberIoCeilings: decl.members.map((member) => ({ templateId: member.templateId, io: member.ceiling })),
+  }
+  return `---\n${JSON.stringify(document, null, 2)}\n---\n`
+}
+
+/**
  * Mount the REAL product realm for one case, make the ONE call, and return the
  * observed guard fact + effect. Nothing here fabricates the decision: the fact
  * is written by `guard-observability.ts` inside the confined Provider, and the
@@ -275,8 +300,10 @@ async function runAdmission({ materialized, sinkPath, target }) {
   const root = new Context()
   await root.plugin(TestFileSystem, {})
   const base = root.get('fs')
+  const declaration = declarationFor(materialized)
   const config = row.a5sfRealmConfigOf({
-    a5sfMemberPolicies: declarationFor(materialized),
+    a5sfMemberPolicies: declaration,
+    blueprintSource: blueprintSourceFor(declaration),
     a5sfEvidencePath: sinkPath,
   })
   const realm = await row.mountMemberA5sfRealm({
@@ -578,7 +605,11 @@ test('DP-PROJ the REAL product projection RETAINS the ask lane at admission (rea
     const declaredAsk = materialized.ceiling[materialized.axis].ask
     assert.ok(declaredAsk.length > 0, `${id}: the case declares an ask locator`)
 
-    const config = row.a5sfRealmConfigOf({ a5sfMemberPolicies: declarationFor(materialized) })
+    const projectionDeclaration = declarationFor(materialized)
+    const config = row.a5sfRealmConfigOf({
+      a5sfMemberPolicies: projectionDeclaration,
+      blueprintSource: blueprintSourceFor(projectionDeclaration),
+    })
     assert.notEqual(config, undefined)
     const compiled = assembly.createProductRealmProvider(config.memberPolicies).compiledFor({
       sessionId: 'session-proj',
@@ -622,7 +653,11 @@ async function admissionWithDeclaration(materialized, declaration, sinkPath) {
   const mutated = { ...materialized }
   const root = new Context()
   await root.plugin(TestFileSystem, {})
-  const config = row.a5sfRealmConfigOf({ a5sfMemberPolicies: declaration, a5sfEvidencePath: sinkPath })
+  const config = row.a5sfRealmConfigOf({
+    a5sfMemberPolicies: declaration,
+    blueprintSource: blueprintSourceFor(declaration),
+    a5sfEvidencePath: sinkPath,
+  })
   const realm = await row.mountMemberA5sfRealm({
     root,
     a5sfConfig: config,
@@ -832,7 +867,7 @@ function blueprintSourceOf(read) {
   const document = {
     schemaVersion: 4,
     blueprintId: TEAM,
-    revision: '7',
+    revision: '1',
     leader: { templateId: 'leader', persona: 'Lead.' },
     members: [{ templateId: TEMPLATE, persona: 'Worker.' }],
     requirements: [],

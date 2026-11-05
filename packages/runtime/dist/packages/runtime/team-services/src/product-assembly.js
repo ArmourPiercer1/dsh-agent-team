@@ -57,6 +57,32 @@
  * A declaration that cannot be expressed is REFUSED, never silently mounted
  * as a narrower answer.
  *
+ * ONE COMPUTATION, DECLARED IS THE EXCEPTION (policy-source fix, 2026-11-05).
+ *   The external review's remaining finding was that `a5sfMemberPolicies` let a
+ *   row-config author write permission facts that should be DERIVED, and the
+ *   blueprint anchor was OPTIONAL — so a product row could assemble a Member
+ *   ceiling no blueprint ever saw. Now:
+ *     - DERIVATION IS THE PRODUCT PATH. {@link deriveProductRealmDeclaration} /
+ *       {@link deriveProductRealmPlan} read the resolved `memberIoCeilings`
+ *       family out of the row's own `config.blueprintSource` and produce the
+ *       SAME declaration shape; a row may set `a5sfMemberAuthority`
+ *       ({@link A5SF_MEMBER_AUTHORITY_KEY}) and carry NO `a5sfMemberPolicies`
+ *       at all.
+ *     - DECLARATION IS THE EXCEPTION. `config.blueprintSource` is now REQUIRED
+ *       whenever `a5sfMemberPolicies` is present; it must parse, resolve to the
+ *       declared team AND revision, and declare a ceiling for every declared
+ *       template. Otherwise assembly refuses `MEMBER_POLICY_WITHOUT_BLUEPRINT`.
+ *     - THE DECLARED CEILINGS ARE CHECKED AGAINST THE DERIVED ONES (not against
+ *       a re-implementation): the reconciliation feeds the bound blueprint
+ *       through the SAME `deriveProductRealmDeclaration`, then requires every
+ *       declared lane to be inside the derived lane. Wider ⇒
+ *       `REALM_DECLARATION_EXCEEDS_BLUEPRINT`; strictly narrower is accepted as
+ *       an explicitly typed residual (`declaration-narrows-bound-blueprint`),
+ *       never as a silent second truth.
+ *   `instanceGeneration` is still a caller-supplied number (no TeamDomain row is
+ *   read at assembly), so every plan carries the typed residual
+ *   `instance-generation-declared-not-bound` instead of pretending it is bound.
+ *
  * WHAT IS DELIBERATELY NOT REACHABLE FROM PRODUCT CONFIG (stated, not faked):
  * the confined `subprocess` face needs a `ConfinedProcessProvider` built by
  * the composition that owns the P1-07 launcher pin. Product CONFIG cannot name
@@ -67,7 +93,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/product-assembly
  */
-import { BLUEPRINT_V4_AUTHORIZATIONS, findMemberIoCeiling, parseBlueprint, parseBlueprintV4, } from '../../../domain/blueprint/src/index.js';
+import { BLUEPRINT_V4_AUTHORIZATIONS, parseBlueprint, parseBlueprintV4, } from '../../../domain/blueprint/src/index.js';
 import { compileEffectiveIo, compileMemberPolicy, laneWithinLane, projectToolIoRestriction, toPathRuleSet, } from '../../member-io-policy/src/index.js';
 import { TeamServiceInstallError } from './types.js';
 /**
@@ -80,6 +106,45 @@ import { TeamServiceInstallError } from './types.js';
 export const A5SF_MEMBER_POLICIES_KEY = 'a5sfMemberPolicies';
 /** The declaration schema token, versioned like every other seam in this lane. */
 export const A5SF_PRODUCT_REALM_SCHEMA = 'a5sf-product-member-policies/1';
+/**
+ * The row-config key that carries the authority REFERENCE for the DERIVED
+ * product path (policy-source fix, 2026-11-05).
+ *
+ * A row may carry this key and NO `a5sfMemberPolicies`: the Member ceilings are
+ * then derived from `config.blueprintSource`'s `memberIoCeilings` family and
+ * this key supplies only the Alpha.4 authority reference the compiler consumes
+ * verbatim. Shape: `{ revision: <non-blank string>, admitted: <boolean> }`.
+ *
+ * It is NOT a permission fact: it cannot widen, narrow or replace a derived
+ * ceiling. Supplying it together with `a5sfMemberPolicies` is allowed (the
+ * declaration is then checked against the derived policy and its own authority
+ * reference must agree with this one).
+ */
+export const A5SF_MEMBER_AUTHORITY_KEY = 'a5sfMemberAuthority';
+/**
+ * The residual facts an assembly plan states about what it could NOT bind
+ * (policy-source fix, 2026-11-05).
+ *
+ * A plan that silently carried a field it did not reconcile would "look bound".
+ * These tokens say which parts are declared/caller-supplied instead:
+ *   - `instance-generation-declared-not-bound`: the generation on every Member
+ *     comes from config/caller, never from a live MemberInstance row (no
+ *     TeamDomain is read at assembly time).
+ *   - `declaration-narrows-bound-blueprint`: the explicit declaration is
+ *     STRICTLY narrower than the blueprint-derived ceiling on at least one
+ *     axis. Allowed (narrowing cannot widen authority) but named, so a
+ *     declaration can never pass as "the blueprint" without saying so.
+ *   - `blueprint-tool-bindings-not-member-scoped`: the bound blueprint declares
+ *     a Team-scoped `toolBindings` family, which v4 gives NO MemberTemplate
+ *     association; the derived declaration therefore derives CEILINGS only and
+ *     does not invent a per-Member binding. A composition that needs per-Member
+ *     tool-binding realms still declares `a5sfMemberPolicies` (then reconciled).
+ */
+export const A5SF_PRODUCT_ASSEMBLY_RESIDUALS = [
+    'instance-generation-declared-not-bound',
+    'declaration-narrows-bound-blueprint',
+    'blueprint-tool-bindings-not-member-scoped',
+];
 /** The reserved scaffold leader template id (never a declared Member template). */
 const SCAFFOLD_LEADER_TEMPLATE = 'a5sf-product-scaffold-leader';
 const DECLARATION_KEYS = ['schema', 'teamId', 'blueprintRevision', 'authority', 'members'];
@@ -225,79 +290,164 @@ function projectedRestrictionOf(raw, where) {
     return restriction;
 }
 /**
- * Reconcile the declared ceilings with the row's own bound blueprint (B2).
+ * Resolve the row's bound blueprint — every declared-policy path needs one.
  *
- * THE WIDENING CHANNEL THIS CLOSES: a declaration embeds a ceiling family, and
- * `config.blueprintSource` is the Team blueprint the Alpha.4 authority revision
- * is keyed to. Without this check, a row-config-only edit could raise a ceiling
- * above `memberIoCeilings[template]` while the authority revision (and the
- * blueprint content hash the authority was granted for) stayed unchanged. The
- * guard makes that disagreement unrepresentable: the declaration must be a
- * NARROWING of the bound blueprint on read, write AND network, or the row
- * refuses at assembly.
- *
- * SCOPE (coordinator ruling, 2026-11-05): only when the two documents are the
- * SAME team. A different `blueprintId` is not this Team's authority, and a row
- * with no `blueprintSource` (host-free assembly, declaration-only row) keeps
- * working unchanged. Restrictions are NOT reconciled here: a tool restriction
- * can only narrow the intersection (`compileEffectiveIo`), so it is not a
- * ceiling-widening channel — B4 covers their grammar through the shipped
- * validator instead.
+ * A source that is not a non-blank string, does not parse, is a different team
+ * or a different revision is `MEMBER_POLICY_WITHOUT_BLUEPRINT`: the declaration
+ * would be permission facts no blueprint for THIS team/revision ever saw.
  */
-function reconcileWithBoundBlueprint(declaration, blueprintSource) {
-    let bound;
+function resolveBoundBlueprint(blueprintSource) {
+    if (typeof blueprintSource !== 'string' || blueprintSource.trim() === '') {
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `${A5SF_MEMBER_POLICIES_KEY} declares Member permission facts, but config.blueprintSource is absent or blank. `
+            + 'The declaration is the EXCEPTION path and may only narrow a blueprint ceiling; derivation '
+            + `(\`${A5SF_MEMBER_AUTHORITY_KEY}\`) is the product path that needs no declaration at all`, 'config.blueprintSource');
+    }
     try {
-        bound = parseBlueprint(blueprintSource);
+        return parseBlueprint(blueprintSource);
     }
     catch (error) {
-        refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}: config.blueprintSource could not be parsed, so the declared ceilings cannot be `
-            + `reconciled with the Team's bound blueprint: ${error instanceof Error ? error.message : String(error)}`, 'config.blueprintSource');
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `config.blueprintSource does not resolve to a blueprint (${error instanceof Error ? error.message : String(error)}), `
+            + 'so the declared Member permission facts cannot be reconciled with the Team\'s authority-bearing blueprint', 'config.blueprintSource');
     }
-    // Different team: not the same authority, and the ruling keeps both declaration
-    // forms working. (The team comparison is on the document identity itself.)
-    if (bound.blueprintId !== declaration.teamId)
-        return;
+}
+/** Validate the closed authority reference (`{ revision, admitted }`). */
+function authorityRefOf(raw, where) {
+    const authority = closedRecord(raw, AUTHORITY_KEYS, where);
+    const revision = authority['revision'];
+    if (typeof revision !== 'string' || revision.trim() === '') {
+        refuse('REALM_DECLARATION_INVALID', `${where}.revision must be a non-blank string: the Alpha.4 authority reference is consumed verbatim and is never invented here`, `${where}.revision`);
+    }
+    if (typeof authority['admitted'] !== 'boolean') {
+        refuse('REALM_DECLARATION_INVALID', `${where}.admitted must be a boolean (the Alpha.4 admission fact, referenced not decided)`, `${where}.admitted`);
+    }
+    return Object.freeze({ revision, admitted: authority['admitted'] });
+}
+/**
+ * Read the v4 `memberIoCeilings` family out of an already-parsed blueprint.
+ *
+ * The ONLY derivation step: no lane is recomputed, no default is invented. The
+ * leader template is excluded (it is not a Member and never gets a Member
+ * ceiling); an optional `templateIds` subset lets a caller derive for exactly
+ * the templates it manages.
+ */
+function derivedMembersOf(bound, instanceGenerations, templateIds) {
     if (bound.schemaVersion !== 4) {
-        refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${A5SF_MEMBER_POLICIES_KEY}: the bound blueprint for team '${declaration.teamId}' is schemaVersion `
-            + `${String(bound.schemaVersion)} and declares no memberIoCeilings family; a declared ceiling cannot be a `
-            + 'narrowing of a ceiling the blueprint does not declare', `${A5SF_MEMBER_POLICIES_KEY}.members`);
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `the bound blueprint for team '${bound.blueprintId}' is schemaVersion ${String(bound.schemaVersion)} and declares `
+            + `no v4 memberIoCeilings family; there is no Member ceiling to derive, so a declaration has no blueprint to narrow`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
     }
-    const boundCeilings = bound;
+    const core = bound;
+    const family = core.memberIoCeilings ?? [];
+    if (family.length === 0) {
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `the bound blueprint for team '${bound.blueprintId}' declares an empty memberIoCeilings family; `
+            + 'there is no Member ceiling to derive, so a declaration has no blueprint to narrow', `${A5SF_MEMBER_POLICIES_KEY}.members`);
+    }
+    const wanted = templateIds === undefined ? undefined : new Set(templateIds);
+    const leaderTemplateId = bound.leader.templateId;
+    const selected = family.filter((entry) => entry.templateId !== leaderTemplateId
+        && (wanted === undefined || wanted.has(entry.templateId)));
+    if (selected.length === 0) {
+        refuse('REALM_DECLARATION_INVALID', `the bound blueprint for team '${bound.blueprintId}' declares no memberIoCeilings entry for the requested `
+            + `template(s) ${JSON.stringify(templateIds ?? [])} (the leader template is never a Member)`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
+    }
+    return selected.map((entry) => Object.freeze({
+        templateId: entry.templateId,
+        instanceGeneration: instanceGenerations?.[entry.templateId] ?? 0,
+        ceiling: entry.io,
+    }));
+}
+/**
+ * DERIVE the assembly declaration from a resolved blueprint source.
+ *
+ * THE PRODUCT PATH (policy-source fix, 2026-11-05): a row that sets
+ * `a5sfMemberAuthority` and omits `a5sfMemberPolicies` gets its Member ceilings
+ * from the blueprint's own `memberIoCeilings` family, so there is exactly ONE
+ * editable statement of the permission facts. `teamId`/`blueprintRevision` are
+ * read from the blueprint itself, never re-typed by an author.
+ *
+ * What it does NOT derive, stated instead of invented: v4 `toolBindings` are
+ * Team-scoped and carry no MemberTemplate association, so the derived
+ * declaration derives CEILINGS only; `A5SF_PRODUCT_ASSEMBLY_RESIDUALS` names
+ * that when the bound blueprint declares such a family. `instanceGeneration`
+ * has no blueprint/TeamDomain source at assembly time, so it is the
+ * caller-supplied `instanceGenerations` map (default `0`) and the plan carries
+ * the typed `instance-generation-declared-not-bound` residual.
+ */
+export function deriveProductRealmDeclaration(input) {
+    const bound = resolveBoundBlueprint(input.blueprintSource);
+    const authority = authorityRefOf(input.authority, A5SF_MEMBER_AUTHORITY_KEY);
+    return declarationFromBoundBlueprint(bound, authority, input.instanceGenerations, input.templateIds);
+}
+/** Shared derivation used by BOTH the public helper and the reconciliation. */
+function declarationFromBoundBlueprint(bound, authority, instanceGenerations, templateIds) {
+    return Object.freeze({
+        schema: A5SF_PRODUCT_REALM_SCHEMA,
+        teamId: bound.blueprintId,
+        blueprintRevision: String(bound.revision),
+        authority,
+        members: derivedMembersOf(bound, instanceGenerations, templateIds),
+    });
+}
+/**
+ * Reconcile a DECLARED ceiling family against the DERIVED one.
+ *
+ * One computation: the comparison input is the declaration that
+ * {@link deriveProductRealmDeclaration} produces from the bound blueprint, not a
+ * parallel re-implementation. Every declared lane must be inside the derived
+ * lane (wider ⇒ `REALM_DECLARATION_EXCEEDS_BLUEPRINT`). A strictly narrower
+ * declaration is accepted — narrowing cannot widen the authority — but returns
+ * `true` so the plan records `declaration-narrows-bound-blueprint`.
+ *
+ * Network: a declaration had to be `allow` already (else
+ * `NETWORK_UNCONFINED_REALM`), so it is a narrowing only when the derived lane
+ * is also `allow`; an allow declaration over a narrowed blueprint ceiling is a
+ * widening and refuses.
+ */
+function reconcileWithDerived(declaration, derived) {
+    let narrowed = false;
     declaration.members.forEach((member, index) => {
         const where = `${A5SF_MEMBER_POLICIES_KEY}.members[${String(index)}]`;
-        const ceiling = findMemberIoCeiling(boundCeilings, member.templateId);
-        if (ceiling === null) {
+        const derivedMember = derived.members.find((entry) => entry.templateId === member.templateId);
+        if (derivedMember === undefined) {
             refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${where}: the bound blueprint for team '${declaration.teamId}' declares no memberIoCeilings entry for `
                 + `template '${member.templateId}'; a declared ceiling for an undeclared template is wider than the `
                 + 'authority the blueprint grants', `${where}.ceiling`);
         }
         for (const axis of ['read', 'write']) {
             const declaredLane = toPathRuleSet(member.ceiling[axis]);
-            const ceilingLane = toPathRuleSet(ceiling.io[axis]);
-            if (!laneWithinLane(declaredLane, ceilingLane)) {
-                refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${where}.ceiling.${axis} is not a narrowing of the bound blueprint's memberIoCeilings`
-                    + `['${member.templateId}'].io.${axis}: the declaration permits a locator the blueprint does not.`
-                    + ' A ceiling can only be widened by a new blueprint/authority revision, never by a row-config edit', `${where}.ceiling.${axis}`);
+            const derivedLane = toPathRuleSet(derivedMember.ceiling[axis]);
+            if (!laneWithinLane(declaredLane, derivedLane)) {
+                refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${where}.ceiling.${axis} is not a narrowing of the ceiling DERIVED from the bound blueprint's `
+                    + `memberIoCeilings['${member.templateId}'].io.${axis}: the declaration permits a locator the blueprint `
+                    + 'does not. A ceiling can only be widened by a new blueprint/authority revision, never by a row-config edit', `${where}.ceiling.${axis}`);
             }
+            if (!laneWithinLane(derivedLane, declaredLane))
+                narrowed = true;
         }
-        // The network axis is boolean this round: the declaration already had to be
-        // `allow` (else NETWORK_UNCONFINED_REALM), so the blueprint must allow too.
-        // `toPathRuleSet` deliberately maps a network lane's non-`all` mode to
-        // `restricted`, so this comparison is on the AUTHORED modeword, not on the
-        // rw-rule-set vocabulary.
+        // The network axis is boolean this round: `toPathRuleSet` maps a non-`all`
+        // mode to `restricted`, so this comparison is on the AUTHORED modeword.
         const declaredNetworkMode = member.ceiling['network'].mode;
-        const ceilingNetworkMode = ceiling.io['network'].mode;
-        if (declaredNetworkMode === 'allow' && ceilingNetworkMode !== 'allow') {
-            refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${where}.ceiling.network is 'allow' but the bound blueprint's ceiling for template `
-                + `'${member.templateId}' is '${String(ceilingNetworkMode)}'; an allow declaration over a narrowed ceiling `
+        const derivedNetworkMode = derivedMember.ceiling['network'].mode;
+        if (declaredNetworkMode === 'allow' && derivedNetworkMode !== 'allow') {
+            refuse('REALM_DECLARATION_EXCEEDS_BLUEPRINT', `${where}.ceiling.network is 'allow' but the ceiling DERIVED from the bound blueprint for template `
+                + `'${member.templateId}' is '${String(derivedNetworkMode)}'; an allow declaration over a narrowed ceiling `
                 + 'is a widening', `${where}.ceiling.network`);
         }
+        if (declaredNetworkMode !== derivedNetworkMode)
+            narrowed = true;
     });
+    return narrowed;
 }
 /**
  * Parse + validate a product declaration into a composition plan.
  *
+ * THE BLUEPRINT IS REQUIRED (policy-source fix, 2026-11-05): a declaration is
+ * only the EXCEPTION path, so `context.blueprintSource` must resolve to a
+ * blueprint for the SAME team and revision with a `memberIoCeilings` family.
+ * Absent/blank/unparseable/other-team/other-revision ⇒
+ * `MEMBER_POLICY_WITHOUT_BLUEPRINT`.
+ *
  * REFUSES (typed, before any Member is set up):
+ *   - no resolvable blueprint (`MEMBER_POLICY_WITHOUT_BLUEPRINT`);
  *   - a non-record / wrong schema / unknown or missing field;
  *   - a blank team id or blueprint revision, a bad authority reference;
  *   - an empty Member list, a duplicate template, the reserved scaffold id;
@@ -307,10 +457,14 @@ function reconcileWithBoundBlueprint(declaration, blueprintSource) {
  *   - any ToolBinding whose face this realm does not own
  *     (`SUBPROCESS_UNCONFINED_REALM` / `NETWORK_UNCONFINED_REALM`) or whose
  *     lanes cannot project (`MEMBER_POLICY_UNAVAILABLE`);
- *   - a ceiling that exceeds the row's own bound blueprint
- *     (`REALM_DECLARATION_EXCEEDS_BLUEPRINT`, B2).
+ *   - a ceiling that exceeds the DERIVED ceiling from the row's own bound
+ *     blueprint (`REALM_DECLARATION_EXCEEDS_BLUEPRINT`).
  */
-export function parseProductRealmDeclaration(raw, context = {}) {
+export function parseProductRealmDeclaration(raw, context) {
+    // PRESENCE GATE FIRST: no declaration may be read at all without a blueprint
+    // it can be reconciled against. Removing this check would recreate the
+    // "two places to write permission facts" hole (see mutation control (a)).
+    const bound = resolveBoundBlueprint(context.blueprintSource);
     const declaration = closedRecord(raw, DECLARATION_KEYS, `${A5SF_MEMBER_POLICIES_KEY}`);
     if (declaration['schema'] !== A5SF_PRODUCT_REALM_SCHEMA) {
         refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.schema must be ${JSON.stringify(A5SF_PRODUCT_REALM_SCHEMA)}`, `${A5SF_MEMBER_POLICIES_KEY}.schema`);
@@ -323,13 +477,7 @@ export function parseProductRealmDeclaration(raw, context = {}) {
     if (typeof blueprintRevision !== 'string' || blueprintRevision.trim() === '') {
         refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.blueprintRevision must be a non-blank string`, `${A5SF_MEMBER_POLICIES_KEY}.blueprintRevision`);
     }
-    const authorityRaw = closedRecord(declaration['authority'], AUTHORITY_KEYS, `${A5SF_MEMBER_POLICIES_KEY}.authority`);
-    if (typeof authorityRaw['revision'] !== 'string' || authorityRaw['revision'].trim() === '') {
-        refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.authority.revision must be a non-blank string: the Alpha.4 authority reference is consumed verbatim and is never invented here`, `${A5SF_MEMBER_POLICIES_KEY}.authority.revision`);
-    }
-    if (typeof authorityRaw['admitted'] !== 'boolean') {
-        refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.authority.admitted must be a boolean (the Alpha.4 admission fact, referenced not decided)`, `${A5SF_MEMBER_POLICIES_KEY}.authority.admitted`);
-    }
+    const authority = authorityRefOf(declaration['authority'], `${A5SF_MEMBER_POLICIES_KEY}.authority`);
     const membersRaw = declaration['members'];
     if (!Array.isArray(membersRaw) || membersRaw.length === 0) {
         refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.members must be a non-empty array (an empty declaration declares no managed Member and must be omitted, never present-and-empty)`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
@@ -397,7 +545,7 @@ export function parseProductRealmDeclaration(raw, context = {}) {
             schema: A5SF_PRODUCT_REALM_SCHEMA,
             teamId,
             blueprintRevision,
-            authority: { revision: authorityRaw['revision'], admitted: authorityRaw['admitted'] },
+            authority,
             members: normalised,
         }));
     }
@@ -411,26 +559,64 @@ export function parseProductRealmDeclaration(raw, context = {}) {
             + `${error instanceof Error ? error.message : String(error)}`
             + `${problems === undefined ? '' : ` — problems: ${JSON.stringify(problems)}`}`, A5SF_MEMBER_POLICIES_KEY);
     }
-    // B2: the declaration must be a NARROWING of the row's own bound blueprint.
-    // Runs AFTER the declaration is known-valid (a malformed declaration keeps its
-    // precise REALM_DECLARATION_INVALID answer) and BEFORE any plan is returned,
-    // so a widening declaration never reaches a mount.
-    const blueprintSource = context.blueprintSource;
-    if (typeof blueprintSource === 'string' && blueprintSource.trim() !== '') {
-        reconcileWithBoundBlueprint({
-            schema: A5SF_PRODUCT_REALM_SCHEMA,
-            teamId,
-            blueprintRevision,
-            authority: { revision: authorityRaw['revision'], admitted: authorityRaw['admitted'] },
-            members: normalised,
-        }, blueprintSource);
+    // THE DECLARATION MUST BE ABOUT THIS BLUEPRINT. A different team or revision
+    // means the bound source is not the authority the declaration claims, so the
+    // declaration would be permission facts that blueprint never saw.
+    if (bound.blueprintId !== teamId) {
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `config.blueprintSource resolves to team '${bound.blueprintId}', but ${A5SF_MEMBER_POLICIES_KEY} manages `
+            + `'${teamId}'. A blueprint for another team is not this Team's authority and is not reconciled by scope: `
+            + 'the declaration is refused rather than assembled from itself', 'config.blueprintSource');
     }
+    if (String(bound.revision) !== blueprintRevision) {
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `config.blueprintSource resolves to revision '${String(bound.revision)}', but ${A5SF_MEMBER_POLICIES_KEY} `
+            + `claims blueprintRevision '${blueprintRevision}'. The declaration is not a statement about the bound `
+            + 'blueprint and cannot be reconciled against it', `${A5SF_MEMBER_POLICIES_KEY}.blueprintRevision`);
+    }
+    // ONE COMPUTATION: derive the declaration the product path would produce from
+    // this SAME blueprint, then require every declared lane to be inside it. The
+    // comparison is against the derived declaration, never a parallel reading.
+    const declaredDeclaration = {
+        schema: A5SF_PRODUCT_REALM_SCHEMA,
+        teamId,
+        blueprintRevision,
+        authority,
+        members: normalised,
+    };
+    const generations = {};
+    for (const member of normalised)
+        generations[member.templateId] = member.instanceGeneration;
+    const derived = declarationFromBoundBlueprint(bound, authority, generations);
+    const narrowed = reconcileWithDerived(declaredDeclaration, derived);
+    const residuals = ['instance-generation-declared-not-bound'];
+    if (narrowed)
+        residuals.push('declaration-narrows-bound-blueprint');
+    if ((bound.toolBindings?.length ?? 0) > 0)
+        residuals.push('blueprint-tool-bindings-not-member-scoped');
     return Object.freeze({
         schema: A5SF_PRODUCT_REALM_SCHEMA,
         teamId,
-        authority: Object.freeze({ revision: authorityRaw['revision'], admitted: authorityRaw['admitted'] }),
+        authority,
         blueprint,
         members: Object.freeze(members),
+        provenance: Object.freeze({
+            source: context.source ?? 'declared',
+            residuals: Object.freeze(residuals),
+        }),
+    });
+}
+/**
+ * DERIVED plan: the row path that carries NO `a5sfMemberPolicies`.
+ *
+ * The derived declaration is handed to {@link parseProductRealmDeclaration}, so
+ * validation, reconciliation and compilation are the SAME computation the
+ * declared path runs; `source: 'derived'` only records where the input came
+ * from and changes no permission fact.
+ */
+export function deriveProductRealmPlan(input) {
+    const declaration = deriveProductRealmDeclaration(input);
+    return parseProductRealmDeclaration(declaration, {
+        blueprintSource: input.blueprintSource,
+        source: 'derived',
     });
 }
 function descriptorOf(raw) {

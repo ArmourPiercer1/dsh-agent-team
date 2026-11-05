@@ -290,6 +290,13 @@ remove the duplicated facts; it would not remove an authority check that now alr
 forms keep working: no `blueprintSource` ⇒ the guard is skipped (host-free assembly), a
 `blueprintSource` for a different team ⇒ it is not this Team's authority and is not reconciled.
 
+**SUPERSEDED 2026-11-05 by §11 (policy-source fix).** The paragraph above records the state after
+B2. The external review then named the remaining hole exactly: an OPTIONAL blueprint anchor still
+let a product row assemble Member permission facts from the declaration alone, i.e. two
+independently editable statements of the same truth. §11 closes it: the blueprint is now REQUIRED,
+derivation is the product path, and the declaration is the exception. The "no `blueprintSource` ⇒
+guard skipped" sentence is no longer true and is kept only as history.
+
 ## §10. Review-fix round (2026-11-05) — B1–B8, measured then fixed
 
 An independent reviewer reproduced a blocking defect. Everything below was **re-measured on this
@@ -457,3 +464,90 @@ invisible to the revision — holds, and over-invalidation is the conservative d
 
 See §6's fix-round rows (`gates/green-fix-round-product.log`, `gates/red-fix-round-product.log`,
 `gates/red-b1-projector.log`, `gates/fix-round-final-verification.log`).
+
+
+## §11. Policy-source fix (2026-11-05) — derivation is the product path, declaration is the exception
+
+**Why this round exists.** §9's open decision ("embedded vs derived") was the last gap the external
+review named: `#590` wired the confined realm and `config.blueprintSource` could constrain a
+declaration, but the anchor was OPTIONAL. So a product row could assemble a Member ceiling that no
+blueprint ever saw — permission facts written in two independently editable places. `TDD RED` was
+measured on `origin/master` `fed66fbd8` before any edit: a declaration with NO `blueprintSource`
+assembled `configKeys: ['memberPolicies']`, `teamId/blueprintId 'team.a5sf.product'`,
+`blueprintRevision '1'`, `contentHash sha256:ebfde798…13d72d`,
+`policyRevision a5sf1:72ee8690c5778e7efb9b67a4d455cde6`, read/write
+`restricted ['/work']`, network `allow`. That exact shape is PA12; it must now refuse
+`MEMBER_POLICY_WITHOUT_BLUEPRINT` (and does).
+
+**What changed (one computation, no second compiler).**
+
+1. **Presence is mandatory.** `parseProductRealmDeclaration` refuses
+   `MEMBER_POLICY_WITHOUT_BLUEPRINT` when `config.blueprintSource` is absent, blank, unparseable,
+   resolves to a DIFFERENT team, resolves to a DIFFERENT revision, or the blueprint has no
+   `memberIoCeilings` family. The optional-anchor skip and the different-team skip are gone.
+2. **Derivation is the product path.** `deriveProductRealmDeclaration` /
+   `deriveProductRealmPlan` read `memberIoCeilings` out of the row's own blueprint and produce the
+   SAME declaration shape; `teamId` and `blueprintRevision` come from the blueprint itself. A row
+   may set the new `config.a5sfMemberAuthority` (`{ revision, admitted }`) and carry NO
+   `a5sfMemberPolicies` at all (PA14). The derived declaration is handed to the SAME parser, so
+   validation/reconciliation/compilation are not forked.
+3. **Declaration is checked against derivation, not trusted.** The reconciliation input is
+   `deriveProductRealmDeclaration(bound, …)` itself: every declared lane must be inside the derived
+   lane. Wider ⇒ `REALM_DECLARATION_EXCEEDS_BLUEPRINT`; strictly narrower ⇒ accepted (narrowing can
+   never widen the authority) and NAMED as the residual `declaration-narrows-bound-blueprint`;
+   equal ⇒ no residual. PA13 asserts the derived and hand-declared paths produce the SAME
+   `blueprint.contentHash`, the same policy revision, and the same effective read/write/network
+   lanes.
+4. **Honesty fields.** `teamId`/`blueprintRevision` are now reconciled (same team, same revision).
+   `instanceGeneration` still has no TeamDomain source at assembly time, so EVERY plan carries the
+   typed residual `instance-generation-declared-not-bound` instead of looking bound.
+5. **What derivation deliberately does NOT invent.** v4 `toolBindings` are Team-scoped and carry no
+   MemberTemplate association; the derived declaration therefore derives CEILINGS only and records
+   `blueprint-tool-bindings-not-member-scoped` when the bound blueprint declares such a family
+   (PA15). It does not silently drop the family and does not invent a per-Member binding.
+
+**Direction chosen for divergence (and why).** Only the WIDENING direction refuses
+(`REALM_DECLARATION_EXCEEDS_BLUEPRINT`). Narrower-than-blueprint stays legal, because a per-deployment
+tightening cannot widen the authority the blueprint grants; it is a typed residual, not a silent
+second truth. The one statement that must be single is the UPPER bound; the declaration is allowed to
+be a subordinate ceiling below it. Exact equality is not required (that would make every deployment
+edit a blueprint revision); the derived path is still what a config should use when it wants the
+blueprint's own ceiling.
+
+**Fixtures that relied on the gap (test-only, enumerated).**
+
+- `tests/world-factory/a5sf-product-assembly.test.mjs` — PA1/PA2/PA3/PA4/PA6/PA7/PA8/PA9/PA10/PA11
+  called `a5sfRealmConfigOf({ a5sfMemberPolicies })` with no blueprint. TEST-ONLY fixtures relying on
+  the gap; they now pass a generated blueprint whose `memberIoCeilings` equal the declaration's
+  (`blueprintSourceForDeclaration`/`declaredConfig`). PA9's "different team / absent source keep
+  working" arms became refusal arms; its blueprint helper default revision changed `7`→`1` so the
+  declaration is actually ABOUT the bound revision.
+- `tests/world-factory/a5sf-dual-plane.test.mjs` — the run admission path, DP-PROJ and the mutation
+  helper declared policies with no blueprint (TEST-ONLY, relying on the gap). They now generate the
+  blueprint from the declaration (`blueprintSourceFor`) and the B2 helper revision `7`→`1`.
+- **No shipped composition/preset in this repository declares `a5sfMemberPolicies`** (unchanged from
+  §7), so no product config needed a dated migration. `.github/workflows/ci-integration.yml` and
+  `dev/ci/eb3-ci-manifest.json` prose were corrected because they described the old skip law.
+
+**Mutation controls (both run, then reverted; green suite restored).**
+
+- (a) Remove the presence check (absent source skips resolution/reconciliation): PA12 and PA9's
+  absent arm go red, the other 13 arms stay green.
+- (b) Make `reconcileWithDerived` a no-op: PA9 goes red on the EXCEEDING case
+  ("Missing expected exception: a read ceiling wider than the blueprint ceiling must refuse"), the
+  other 14 arms stay green.
+
+**Gates (this round, verbatim in `gates/`).** `a5sf-product-assembly` 15/15 (baseline 11),
+`node --test tests/world-factory/a5sf-*.test.mjs` 280/280 (measured baseline at `fed66fbd8` in this
+environment = 276, NOT 292; see the gate log for the baseline-check worktree), runtime
+a5sf+lifecycle+glue vitest 306/306 (23 files), `tsc` rc=0, `pnpm -r typecheck` rc=0, eslint
+`161 problems (129 errors)` IDENTICAL to the `origin/master` baseline (no new finding; changed files
+clean), `git diff --check` rc=0. No new scannable `.ts` file was added, so no census booking. No
+Host boot, no port, CORE PATCH BUDGET = 0 (`tests/deepseek-harness-test-use` pristine
+`639ed01539`).
+
+**Answer to "is there still any product path by which Member permission facts can be assembled from a
+declaration that no blueprint ever saw?" — NO.** The row (`a5sf-realm-config-of`) and the public
+parser both go through the same mandatory gate; a declaration with no resolvable same-team,
+same-revision blueprint refuses before any plan exists, and the direct parser call is covered by
+PA12's second assertion.

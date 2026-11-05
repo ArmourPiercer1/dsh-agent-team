@@ -1,0 +1,26 @@
+✖ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (8.854002ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 264.199853
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:1044:1
+✖ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (8.854002ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: the old product path assembled here; it must now refuse
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source/tests/world-factory/a5sf-product-assembly.test.mjs:1055:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
