@@ -34,8 +34,8 @@
 | P1 Provider/Backend 排他替换与发布路径 | 已实现并有测试 | `evidence/a5sf-p1-06/` |
 | P1 OS Runner / Subprocess 公共面 | 机制级实测：本机 Landlock v7 上 `content-read`/`write` enforced，真实受限子进程被拒读；嵌套 deny 拒绝；network/dir-metadata/alias UNSUPPORTED | `evidence/a5sf-p1-07/OS-RUNNER-EVIDENCE.md` |
 | P1 PTY / 持久进程生命周期 | 领域层实现并有测试；真实 PTY 端口仍是 double（P2-04 换真） | `evidence/a5sf-p1-08/TERMINAL-LIFECYCLE-EVIDENCE.md` |
-| 工具级端到端（原生 `read`/`write`/`grep`/`bash`/`web_fetch`/…） | **未接线**：矩阵全部 `NOT_WIRED`（少数机制 `PROBE-GATED`） | `TOOL-ACCEPTANCE-MATRIX.md` |
-| 审批/治理接管（R1）、证据链（R3）、发布验收 | 未开始（BL-09 / BL-11 / BL-37） | 本文件 §3 |
+| 工具级端到端（原生 `read`/`write`/`grep`/`bash`/`web_fetch`/…） | **部分接线**：`read`/`write` 有 live 实测但按 Q7 记 `NEEDS_REVALIDATION`；`edit`/`grep`/`glob` = `ENFORCE-PARTIAL`；`read_image` = `BOUNDED-DEFER`；其余仍 `NOT_WIRED`（少数机制 `PROBE-GATED`） | `TOOL-ACCEPTANCE-MATRIX.md` |
+| 审批/治理接管（R1）、证据链（R3）、发布验收 | R1/R3 已 DONE（BL-09 / BL-11；BL-12 / BL-13 亦 DONE）；发布验收未开始（BL-37） | 本文件 §3 |
 
 **环境事实（必须随结果一起读）**：本机为 WSL2 内核 `6.18.33.2-microsoft-standard-WSL2`，
 Landlock ABI v7。PoC 早期记录的 WSL2 `EBADF` `ENV_BLOCK` **在本内核不复现**；但任何“其他内核
@@ -58,12 +58,15 @@ CONDITIONAL 改写成 PASS，除非补齐具名条件。
 
 ## 3. 立即执行顺序（ready 队列）
 
-1. **BL-09 / BL-10（R1 + R2）**：先把 Alpha.4 审批/治理与工程基线**接管**到新执行面——它们是
-   P2 每条验收的前置证据链（BL-11）；同批只允许一个 Writer，禁止生成第二 Ledger。
-2. **BL-14..BL-18（P2 代表机制）**：按“RED 实测 → 最小接线 → C1 正向+拒绝 → C2 真实 Host
-   Oracle → 独立 Review → commit”交付；每条一个可集成的最小纵切，不做“五个大模块再接线”。
-3. **BL-21（P3-00 库存）**：需要真实 Host boot；在 boot 预算内先完成来源导出，动态来源默认
-   `NOT_TESTED`。
+1. **BL-09 / BL-10（R1 + R2）已 DONE**（PR #541 / #540），BL-11 / BL-12 / BL-13 亦已 DONE：
+   Alpha.4 审批/治理与工程基线已接管，P2 每条验收的前置证据链已就位，不再占用 ready 队列。
+2. **BL-14..BL-20（P2 代表机制）**：BL-14 / BL-15 的 live 半场已取得，但实测树与当前 baseline
+   不等价（矩阵 `NEEDS_REVALIDATION` / `V@B=no`，需在新树上重跑）；BL-16 的 live 六行 PASS 也因
+   `#598`/`#599`/`#600` 移动产品面而退回 `V@B=no`；BL-17..BL-20 仍 READY。按“RED 实测 → 最小接线
+   → C1 正向+拒绝 → C2 真实 Host Oracle → 独立 Review → commit”交付；每条一个可集成的最小纵切，
+   不做“五个大模块再接线”。
+3. **BL-21（P3-00 库存）**：source-evidenced 半场已完成（`NATIVE-SOURCE-INVENTORY.md`）；runtime
+   枚举半场仍需真实 Host boot；在 boot 预算内完成来源导出，动态来源默认 `NOT_TESTED`。
 4. 任何 P3 批量的入口 = 对应 P2 机制 G2 通过；未通过的家族**不得**用“自研等价工具”解锁。
 
 ## 4. 交付与审查纪律
