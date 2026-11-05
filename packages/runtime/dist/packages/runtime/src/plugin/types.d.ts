@@ -301,6 +301,47 @@ export interface TeamPluginConfig {
      */
     readonly a5sfExpectedTools?: Readonly<Record<string, readonly string[]>>;
     /**
+     * BL-18 LIVE-HALF UNBLOCK (2026-11-06, optional and ADDITIVE): the CONFINED
+     * `web` face, carried by the row config as a module specifier whose factory
+     * answers the SAME `{ effective, provider }` object the compiled provider
+     * answer can carry as `web`.
+     *
+     * WHY THIS KEY EXISTS: `evidence/a5sf-web/README.md` §8 marked five of eight
+     * live steps `BLOCKED` because the realm row forwarded `compiled.subprocess`
+     * but not `compiled.web`, and no row config key carried a confined web
+     * provider — so no product-shaped composition could hang a deny-lane
+     * measurement on anything. This key (plus `compiled.web`, the exact mirror of
+     * the `subprocess` block) is that unblock.
+     *
+     * SHAPE: a module specifier string, or `{ url, config? }` — the same forms
+     * `a5sfNativeToolModules` accepts, for the same reason (the row composition
+     * names a module the host can load; the glue never guesses a transport path).
+     * The module exports `createConfinedWebFace({ member, members, config })` (or
+     * a default function) answering `{ effective, provider }` with
+     * `effective.network.access` (`'allow' | 'deny'`) and `provider.fetch`
+     * (optional `provider.search`, `probe`, plus the optional
+     * `realmId`/`memberScope`/`providerClass` the install spec accepts).
+     *
+     * THE DECISION IS NOT RECOMPUTED: the factory is an ordinary composition
+     * caller of the ONE compiler (`compileEffectiveIo`, P1-02), and the mounted
+     * face consults that compiled `effective.network.access` plus BL-17's
+     * imported `probeNetworkDenial`. The row only imports, calls and validates.
+     *
+     * FAIL CLOSED: a configured key whose factory answers no mountable face
+     * refuses at composition time with the typed `NETWORK_UNCONFINED_REALM`
+     * (never a silently unmounted tool that falls back to the inherited host
+     * `ctx.web`). A compiled answer that ALSO carries `web` is a fork and refuses
+     * `REALM_DECLARATION_INVALID`; a lone configured key with no a5sf realm
+     * enablement is a configuration fault.
+     *
+     * ABSENT = the pre-unblock row byte-for-byte: no face is mounted and a
+     * `web`-consuming native module is still refused typed at composition time.
+     */
+    readonly a5sfWebFace?: string | {
+        readonly url: string;
+        readonly config?: Record<string, unknown>;
+    };
+    /**
      * The MCP server of the world (null port = not mounted). LEGACY 0|1
      * form — multi-mcp C7: still accepted during this alpha; the canonical
      * 0..N input is `mcpServers` (below), and new documents and tests use

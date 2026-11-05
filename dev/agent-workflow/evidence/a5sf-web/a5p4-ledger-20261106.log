@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-row/packages/runtime
+
+a5p4 law(4) live named provider mounts on this tree: runtime/team-sandbox/src/profile.ts , runtime/team-sandbox/src/runner.ts , runtime/team-sandbox/src/subprocess.ts , runtime/team-services/src/subprocess.ts , runtime/team-services/src/web.ts , tools/process-family/src/bash-contribution.mjs , tools/process-family/src/confined-shell-executor.mjs , tools/process-family/src/pwsh-confined.mjs , tools/search-family/src/glob-backend.mjs , tools/search-family/src/search-backend.mjs , tools/search-family/src/search-contribution.mjs
+ ✓ test/a5p4-lane-hygiene.test.ts (8 tests) 705ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  662ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  22:07:33
+   Duration  1.19s (transform 223ms, setup 0ms, import 384ms, tests 705ms, environment 0ms)

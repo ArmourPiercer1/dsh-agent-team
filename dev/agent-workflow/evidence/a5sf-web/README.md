@@ -258,18 +258,22 @@ change either behaviour.
   closes the inherited-service path, and the ordinary host fetch is unchanged.
 * The **live** half (real egress, real DNS, a redirect chain against a live server, proxy-env
   behaviour, the model actually seeing `web_fetch` in a booted world) is **unproven**.
-* **Product wiring is deliberately left unwired.** `a5sf-realm-row.mjs` forwards a compiled
-  `subprocess` face (BL-16 shape) but has no `web` forwarding, and no product composition
-  supplies a web provider. A composition that declared one today would hand an `allow` lane's
-  calls to a real transport **with no OS network confinement at all** — the same reasoning that
-  keeps BL-17's persistent shell unwired. The row's own 禁网 clause cannot be met by this host's
-  backend, so "just wire it" would be egress dressed as governance.
-* `product-assembly.ts` still refuses a `network: deny` declaration at assembly time
-  (`REALM_DECLARATION_INVALID` path). That refusal is **unchanged**, and remains *correct for the
-  current composition*: the product tree supplies no web provider, so a narrowed network lane
-  still has no enforcing face. What changed is that the capability now exists at the backend
-  seam; making that sentence stale is a product-wiring decision (with its own live acceptance),
-  not this round's.
+* **Product wiring is deliberately DEFAULT-OFF (updated 2026-11-06).** As of the 2026-11-06
+  unblock (§8b) `a5sf-realm-row.mjs` DOES forward a compiled `web` face and DOES accept the
+  `a5sfWebFace` config factory, but **no shipped preset declares one**: the default product
+  composition mounts no web face and a governed Member's model-visible `web_fetch` is still the
+  inherited host tool. That is deliberate. A composition that declares one hands an `allow`
+  lane's calls to a real transport **with no OS network confinement at all** — the same reasoning
+  that keeps BL-17's persistent shell unwired. The row's own 禁网 clause cannot be met by this
+  host's backend, so "just wire it into a preset" would be egress dressed as governance. What the
+  unblock buys is a composition that CAN be declared and measured (§8b), not a changed product
+  default.
+* `product-assembly.ts` still refuses a `network: deny` declaration at assembly time (a narrowed
+  ceiling or ToolBinding answers `NETWORK_UNCONFINED_REALM`). That refusal is **unchanged** by the
+  2026-11-06 row unblock, and remains correct: the product tree supplies no web preset, so a
+  narrowed network lane still has no enforcing face. **Consequence for the live half:** the deny
+  steps (§8b steps 3/4/5/7) must ride the OPTIONAL `teamA5sfRealm` provider seam, not
+  `a5sfMemberPolicies`; the ALLOW step can ride either.
 * **Is the `web_fetch` face a CORE seam blocker? NO.** It is upstream's `tool-web`, and it is
   wrap-able at a public seam: the host `web` class is sampled from the live service, subclassed,
   mounted under `root.isolate('web', …)`, and the module is re-mounted through the realm's own
@@ -292,6 +296,14 @@ has no `web` forwarding**, so there is no row config key, no service and no cons
 put a web face on a Member. The unblocking change is named under each blocked step; it is the
 BL-18 product-wiring follow-up, not something these commands can work around. Do not improvise a
 mount and then record it as a live row: a bespoke harness proves the harness, not the product.
+
+> **2026-11-06 UPDATE — the wiring half landed; the live half is STILL UNMEASURED.** The row now
+> forwards a compiled `web` face (the exact mirror of `compiled.subprocess`) and accepts a
+> `a5sfWebFace` config factory, so steps 3–7 below are **RUNNABLE** on this tree. **Not one of them
+> was executed**: no boot, no strace, no socket, no DNS this round. The table's `BLOCKED` cells are
+> kept as the 2026-11-05 finding, and each now carries the unblocked status in parentheses. The
+> commands, the composition they need and what a green step would still not prove are in
+> **§8b**. Step 8 remains BLOCKED (a control surface is still missing, not the web face).
 
 Common preconditions (verbatim from `.github/workflows/census-runtime.yml`; that file is the
 authority if this drifts):
@@ -322,11 +334,11 @@ pnpm build:composition
 | --- | --- | --- | --- |
 | 1 | **Host boots** with a world `DSH_HOME`, pinned runtime | **RUNNABLE** | `DSH_HOME=$PWD/tests/homes/bl18-live node tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3181 --no-open` — success = the line `dsh web: http://127.0.0.1:3181/?token=...` appears (TEST_METHODS §2 health check 1). Never `:3080`. |
 | 2 | **Ordinary DSH unaffected (live)** — no Alpha.5 realm, `web_fetch` still fetches | **RUNNABLE** (step 1 host) | In that world's tool plane call `web_fetch` on a URL you control (a local server: `python3 -m http.server 3491`), then `grep` the world's tool-call log for the returned body and confirm **no** `a5sf-guard-consult` fact exists for it. Record the body byte-length and the absence of the fact. |
-| 3 | **Deny lane, pre-connection (the row's core claim)** — `network: deny`, `web_fetch`, kernel-observed zero connections | **BLOCKED** | Needs a `web` face on the Member. Unblock = forward a compiled web face in `a5sf-realm-row.mjs` (mirror the existing `compiled.subprocess` block: shape `{ effective, provider }` with `provider.fetch`/`provider.search`, mounted by `mountA5sfRealm`), plus a provider constructor the row can call. Then: `strace -f -e trace=connect,sendto,sendmsg,socket -o .scratch/bl18-deny.strace -p <host pid>` **before** the call, call `web_fetch`, stop the trace, and require (a) the typed `NETWORK_UNCONFINED_REALM` refusal, (b) exactly one `web:fetch` fact, (c) **zero** `connect`/`sendto`/`sendmsg`/`socket` lines for the target host/port. This is the only step that upgrades §5's provider-counter claim to a kernel-observed fact. |
-| 4 | **Deny lane, redirect shape** — a `302` to an allowed-looking host is never followed | **BLOCKED** (same unblock) | Start a local server whose only response is `302 Location: http://127.0.0.1:3491/allowed-looking`, re-run step 3, and require the same refusal plus **no** request line in the server's access log. |
-| 5 | **Deny lane, proxy env** — a proxy cannot be consulted before a request exists | **BLOCKED** (same unblock) | Re-run step 3 with `HTTP_PROXY=http://127.0.0.1:3492 HTTPS_PROXY=… ALL_PROXY=…` pointed at a logging proxy (`python3 -m http.server 3492` is enough to log nothing), and require the same refusal and **no** proxy log entry. |
-| 6 | **Allow lane, exactly one call, residuals visible** — `network: allow` | **BLOCKED** (same unblock) | Local server on `3491`, call `web_fetch` for `http://127.0.0.1:3491/legal/page`, require exactly one request line, the body in the model-facing result, one ALLOW fact carrying `WEB_REDIRECT_UNMEDIATED_ON_ALLOW` + `WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW`, and record which redirect/proxy dimensions the host provider actually exercised (hop count, proxy route). |
-| 7 | **Second call path** — `web_search` on the same face | **BLOCKED** (same unblock) | Repeat step 3 with `web_search`: same pre-provider refusal, zero connections, one `web:search` fact. |
+| 3 | **Deny lane, pre-connection (the row's core claim)** — `network: deny`, `web_fetch`, kernel-observed zero connections | **RUNNABLE** (2026-11-06 unblock; NOT YET RUN — §8b) | Needs a `web` face on the Member. Unblock = forward a compiled web face in `a5sf-realm-row.mjs` (mirror the existing `compiled.subprocess` block: shape `{ effective, provider }` with `provider.fetch`/`provider.search`, mounted by `mountA5sfRealm`), plus a provider constructor the row can call. Then: `strace -f -e trace=connect,sendto,sendmsg,socket -o .scratch/bl18-deny.strace -p <host pid>` **before** the call, call `web_fetch`, stop the trace, and require (a) the typed `NETWORK_UNCONFINED_REALM` refusal, (b) exactly one `web:fetch` fact, (c) **zero** `connect`/`sendto`/`sendmsg`/`socket` lines for the target host/port. This is the only step that upgrades §5's provider-counter claim to a kernel-observed fact. |
+| 4 | **Deny lane, redirect shape** — a `302` to an allowed-looking host is never followed | **RUNNABLE** (2026-11-06 unblock; NOT YET RUN — §8b) | Start a local server whose only response is `302 Location: http://127.0.0.1:3491/allowed-looking`, re-run step 3, and require the same refusal plus **no** request line in the server's access log. |
+| 5 | **Deny lane, proxy env** — a proxy cannot be consulted before a request exists | **RUNNABLE** (2026-11-06 unblock; NOT YET RUN — §8b) | Re-run step 3 with `HTTP_PROXY=http://127.0.0.1:3492 HTTPS_PROXY=… ALL_PROXY=…` pointed at a logging proxy (`python3 -m http.server 3492` is enough to log nothing), and require the same refusal and **no** proxy log entry. |
+| 6 | **Allow lane, exactly one call, residuals visible** — `network: allow` | **RUNNABLE** (2026-11-06 unblock; NOT YET RUN — §8b) | Local server on `3491`, call `web_fetch` for `http://127.0.0.1:3491/legal/page`, require exactly one request line, the body in the model-facing result, one ALLOW fact carrying `WEB_REDIRECT_UNMEDIATED_ON_ALLOW` + `WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW`, and record which redirect/proxy dimensions the host provider actually exercised (hop count, proxy route). |
+| 7 | **Second call path** — `web_search` on the same face | **RUNNABLE** (2026-11-06 unblock; NOT YET RUN — §8b) | Repeat step 3 with `web_search`: same pre-provider refusal, zero connections, one `web:search` fact. |
 | 8 | **Cross-generation** — revoke the Member's policy revision mid-flight | **BLOCKED** (same unblock + a control surface) | Revoke while a `web_fetch` is in flight; record that the call is refused/aborted rather than completing under the old lane. |
 
 What a green step 3–7 would NOT prove, even after the wiring lands: that the *model* sees the
@@ -334,15 +346,161 @@ confined tool rather than a shadow of it (step 3's fact stream is the evidence f
 tool's output), that a redirect chain across origins is safe under `allow` (it is not mediated —
 §6), and that a non-`ctx.web` transport is confined (it is not — §6 R1/R2).
 
+## 8b. The unblock, and exactly how far it goes (2026-11-06)
+
+**What was blocked, and what no longer is.** §8 marked steps 3–8 `BLOCKED` on one missing
+product seam: `a5sf-realm-row.mjs` forwarded `compiled.subprocess` and nothing else. That is now
+fixed in the row, host-free:
+
+| File | Change |
+| --- | --- |
+| `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | `mountMemberA5sfRealm` now forwards a confined `web` face from exactly the same place it forwards `subprocess`: the composed answer `{ effective, provider }`, shape-checked (`provider.fetch` required, `provider.search` optional). Plus the row-config key `a5sfWebFace` (`string | { url, config? }`), a module whose `createConfinedWebFace({ member, members, config })` answers the SAME shape — the "provider constructor the row can call" this README asked for. **One source per realm**: both present refuses `REALM_DECLARATION_INVALID`. |
+| `packages/runtime/src/plugin/types.ts` | `a5sfWebFace` joins the row-config type next to `a5sfNativeToolModules` / `a5sfExpectedTools`, with the fail-closed contract stated. |
+
+**No second permission computation.** The forwarded face is the BL-18 backend face, unchanged:
+it reads `effective.network.access` and calls BL-17's imported `probeNetworkDenial`. The row owns
+no compiler, no probe and no guard (`ROW-NO-SECOND-COMPILER` reads the source and requires the
+absence of `compileEffectiveIo(`, `intersectLane(`, `probeNetworkDenial(`, `createWebNetworkGuard(`).
+The config factory is an ordinary COMPOSITION caller of the one compiler (the built
+`packages/runtime/dist/packages/runtime/member-io-policy/src/index.js` is importable from a boot
+row); the row only imports, calls `assertConfinedWebFace` and forwards.
+
+**Fail closed on absence.** A declared face that cannot mount refuses at composition time with the
+typed `NETWORK_UNCONFINED_REALM`, before any scope exists: `compiled.web` without a callable
+`provider.fetch` (or without `effective.network.access`), a configured factory that answers no
+face, and a factory that answers an unmountable shape. A lone `a5sfWebFace` with no a5sf realm
+enablement is a config `TypeError` rather than a silently ignored confinement. A realm that
+declares no web face is byte-identical: `faces.web === null`, and a `web`-consuming native module
+is still refused with the shipped `A5SF_NETWORK_UNCONFINED_REALM` at composition time.
+
+### 8b.1 Arms, RED → GREEN (10 arms, host-free)
+
+Run: `node --test tests/world-factory/a5sf-web-row.test.mjs` — **RED 9 fail / 1 pass** on
+`a5bd88b85` (the control below is green on both sides), **GREEN 10/10** on this branch. Logs:
+`arms-row-red.log`, `arms-row-green.log`.
+
+| Arm | What it measures | RED on the base (the actual failure) |
+| --- | --- | --- |
+| `ROW-FACE-FORWARDED` | `compiled.web` reaches `installMemberIoProviders`; `faces.web` is a mounted face with `fetch`+`search`, sibling faces unchanged (`fs:'confined'`, `subprocess:null`) | `faces.web === null` — the row dropped the compiled face |
+| `ROW-DENY` | deny lane through the row's OWN `attachA5sfNativeToolModules` + the REAL pinned `tool-web`: typed refusal, **0 fetch / 0 DNS / 0 connect / 0 proxy**, host `ctx.web` tripwire 0 calls, exactly one `web:fetch` fact `deny`/`NETWORK_UNCONFINED_REALM` | `attach` refuses the module: "mounts no confined web face" (nothing to measure) |
+| `ROW-ALLOW` | allow lane: exactly ONE provider fetch with the declared URL, body in the model result, one `ALLOW` fact with `WEB_REDIRECT_UNMEDIATED_ON_ALLOW` + `WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW` | same composition-time refusal |
+| `ROW-ABSENCE-TYPED` | `compiled.web = { effective }` with no provider ⇒ typed `NETWORK_UNCONFINED_REALM`, no realm mounted, 0 fetches | no throw at all: the row ignored the declared face and mounted a realm without it |
+| `ROW-CONFIG-FACE` | `a5sfWebFace` factory mounts the face for an answer that carries NO `web`; deny still refuses pre-provider, one typed fact | the key is unknown to the reader — no face, no fact |
+| `ROW-CONFIG-ABSENCE` | factory answering no provider ⇒ typed; blank specifier ⇒ config `TypeError` | both silently ignored |
+| `ROW-AMBIGUOUS` | compiled face + config factory ⇒ `REALM_DECLARATION_INVALID` | both ignored / no fork detection |
+| `ROW-NO-FACE` | no declaration ⇒ `faces = { fs:'confined', subprocess:null, web:null }` and the real module refused typed (context control; green on both sides) | — (green: this is the default path) |
+| `ROW-PRODUCT-DECLARATION` | the SHIPPED product path (`a5sfMemberPolicies` + `blueprintSource`) + `a5sfWebFace`, `provider: () => undefined` (no `teamA5sfRealm` service): face mounted, allow call fetches exactly once | no face; the product composition cannot host a web consumer |
+| `ROW-NO-SECOND-COMPILER` | the row source owns no compiler/probe/guard | the config key it pins does not exist yet |
+
+The `p2-seam` pin `{fs:'confined',subprocess:null,web:null}` is **unchanged and still correct**: a
+binding realm mounts no web face and this PR adds none. It is not edited.
+
+### 8b.2 Mutation controls (`mutation-controls-row.mjs`, report `mutation-controls-row.json`)
+
+```bash
+node dev/agent-workflow/evidence/a5sf-web/mutation-controls-row.mjs   # control: PASS
+```
+
+| Mutant | Edit | Required RED | Obtained |
+| --- | --- | --- | --- |
+| M1 composition-time presence check removed | `assertConfinedWebFace` returns its input unchecked | absence arms only | `ROW-ABSENCE-TYPED`, `ROW-CONFIG-ABSENCE`; the other 8 GREEN |
+| M2 web guard bypassed | `createWebNetworkGuard` returns before reading `effective.network.access` | deny arms only | `ROW-DENY`, `ROW-CONFIG-FACE`; the other 8 GREEN |
+
+Both restore every touched file byte-identically (sha256 before/after, in the report).
+
+### 8b.3 Which blocked steps are RUNNABLE now, and the exact commands
+
+Status: **RUNNABLE on this tree; NOT ONE WAS EXECUTED THIS ROUND** (host-free budget). The
+commands assume the §8 preconditions (pinned host + `pnpm run build && pnpm build:composition`).
+
+**The deny composition (steps 3/4/5/7) — what a boot must contain.** The product CONFIG path
+cannot express `network: deny` and that refusal is deliberately unchanged (`product-assembly.ts`
+refuses a narrowing ceiling AND a narrowing ToolBinding with `NETWORK_UNCONFINED_REALM`; relaxing
+it would be a different PR with its own live acceptance). The deny lane therefore rides the
+OPTIONAL public service seam the shipped `host.ts` already consumes: a composition row that
+`ctx.provide('teamA5sfRealm', …)` and answers
+
+```js
+// <world>/rows/bl18-web-offer-row.mjs — COMPOSITION (public seam), not product code.
+export const name = 'bl18-web-offer-row'
+export function apply(ctx) {
+  ctx.provide('teamA5sfRealm', {
+    compiledFor: () => ({
+      members: [{ identity, policy: { ok: true, value: compiledCeiling } }],   // fixture ceiling, disclosed
+      web: {
+        effective,                    // compiled-shaped: { ..., network: { access: 'deny' } }
+        provider: {                   // NEVER entered on a deny lane — its entry is the counter
+          fetch: () => { throw new Error('BL18_PROVIDER_ENTERED') },
+        },
+        realmId: 'bl18-live-deny',
+      },
+    }),
+  })
+}
+```
+
+`compiledCeiling` / `effective` are the same compiled-shaped fixtures the 2026-11-03 live row used
+and for the same reason (no product code bridges the v3 acceptance blueprint to a compiled
+ceiling); the GUARD, the probe, the refusal position and the fact transport are shipped. The Team
+row config adds:
+
+```yaml
+a5sfEvidencePath: <world>/evidence/bl18-row/guard.jsonl
+a5sfNativeToolModules:
+  - url: <repo>/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+    expectedTools: [web_fetch, web_search]
+```
+
+```bash
+# step 1 (unchanged) + step 3 trace
+DSH_HOME=$PWD/tests/homes/bl18-web-row node tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3181 --no-open
+HOST_PID=$(pgrep -f 'dsh web --port 3181' | head -1)
+strace -f -e trace=connect,sendto,sendmsg,socket -o "$DSH_HOME/evidence/bl18-deny.strace" -p "$HOST_PID" &
+# call web_fetch from the governed Member session for a URL you control, then kill %1
+# REQUIRE, all four:
+#  (a) the tool error names the pre-provider refusal (network=deny, capability unsupported);
+#  (b) $DSH_HOME/evidence/bl18-row/guard.jsonl has EXACTLY ONE web:fetch fact,
+#      decision=deny, decidedBy=NETWORK_UNCONFINED_REALM;
+#  (c) ZERO strace lines whose sockaddr names the target host/port
+#      (the trace also carries the host's own model traffic — filter by sockaddr, record the rest);
+#  (d) grep -c BL18_PROVIDER_ENTERED <host log> == 0   (the provider was never entered)
+```
+
+* **Steps 4/5** are the same run with the local `302` server and the logging proxy on 3491/3492;
+  their extra requirement is "no request line / no proxy log entry", i.e. the same zero-egress
+  evidence.
+* **Step 7** is the same run calling `web_search` (one `web:search` fact, same zero counters).
+  The composition's `provider.search` may be absent; the deny probe refuses before it either way.
+* **Step 6 (allow)** can additionally use the pure PRODUCT path — no `teamA5sfRealm` service:
+  `a5sfMemberAuthority`/`a5sfMemberPolicies` + `blueprintSource` + `a5sfWebFace` whose factory
+  compiles `effective` with the built one-compiler and answers a provider that delegates to the
+  ROOT host `ctx.web` (`fetch`/`search`), sampled before the realm mounts. That composition is
+  pinned host-free by `ROW-PRODUCT-DECLARATION`; the live step additionally needs the local
+  server on 3491 and must record exactly one request line + the residuals on the ALLOW fact.
+* **Step 8 stays BLOCKED.** Not the web face: there is still no product control surface that
+  revokes a Member's policy revision mid-flight, and the face deliberately reads the lane once per
+  call from the compiled object it mounted with. A boot cannot fabricate the revocation through a
+  shipped seam.
+
+**Two honest limits of a green step 3–7** (unchanged from §8): a zero-connect strace proves the
+REFUSAL POSITION on this host, not OS-level network confinement (the host backend reports
+`unsupported`, which is exactly why the denial refuses); and an ALLOW lane is ordinary egress whose
+redirect/proxy dimensions this face does not mediate (§6).
+
+**Do not read §8b as a result.** It is the executable recipe the unblock makes possible; BL-18
+stays NOT DONE until one boot runs it and its logs are committed here.
+
 ## 9. Honest intermediate state (why BL-18 is still NOT DONE)
 
 * The backend half (allow-path mock, `network: deny` pre-provider refusal, the sibling
   `web_search` path, the composition-time unconfined-realm refusal, the probe's load-bearing
   role, the residual disclosure, ordinary-fetch invariance) is proven host-free and
   mutation-controlled.
-* The live half (real egress, real DNS, redirect chain, proxy env, a booted Member's tool
-  surface, cross-generation behaviour) is **unproven**; §8 is the checklist, not a result, and
-  five of its eight steps are marked `BLOCKED` on the product wiring rather than on the operator.
+* The **wiring** half landed 2026-11-06 (§8b): the realm row forwards/configures a confined
+  `web` face, fail-closed on absence, with 10 host-free arms and two mutation controls. **The live
+  half is still UNMEASURED**: no boot was spent, so steps 3–7 of §8 are RUNNABLE but unexecuted,
+  and step 8 remains BLOCKED on a missing revocation control surface (not on the web face). §8 is
+  a checklist, not a result.
 * The **census leg** (nine roots, two captures, identity-set graded) is green for the identity this
   branch introduced: the `a5p4` NAMED MOUNTS red is fixed by the `types-only` booking in §3.2. The
   leg was red in CI before that booking and is the reason this README grew §3.2.

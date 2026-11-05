@@ -1,0 +1,96 @@
+{
+  "schema": "a5sf-web/mutation-controls-row/1",
+  "generatedAt": "2026-11-05T14:04:24.227Z",
+  "armsFile": "tests/world-factory/a5sf-web-row.test.mjs",
+  "sources": [
+    "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+    "packages/runtime/team-services/src/web.ts"
+  ],
+  "originalSourceSha256": {
+    "packages/runtime/src/plugin/live/a5sf-realm-row.mjs": "c44aefd89a67119450ef72bd52e181418faaea5117008984c722d2a55cc843d2",
+    "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+  },
+  "control": "PASS",
+  "outcomes": [
+    {
+      "mutant": "M1-row-web-presence-check-removed",
+      "description": "the composition-time presence check accepts a declared web face with no provider (the fail-closed check becomes dead code)",
+      "mutatedFileSha256": {
+        "packages/runtime/src/plugin/live/a5sf-realm-row.mjs": "a4a1d667b4f701d3fa96ea5d814d3c6e5c46271522b7339cdc0a44b24177841d"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/src/plugin/live/a5sf-realm-row.mjs": "c44aefd89a67119450ef72bd52e181418faaea5117008984c722d2a55cc843d2"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ROW-FACE-FORWARDED": "passed",
+        "ROW-DENY": "passed",
+        "ROW-ALLOW": "passed",
+        "ROW-ABSENCE-TYPED": "failed",
+        "ROW-CONFIG-FACE": "passed",
+        "ROW-CONFIG-ABSENCE": "failed",
+        "ROW-AMBIGUOUS": "passed",
+        "ROW-NO-FACE": "passed",
+        "ROW-PRODUCT-DECLARATION": "passed",
+        "ROW-NO-SECOND-COMPILER": "passed"
+      },
+      "expected": {
+        "failed": [
+          "ROW-ABSENCE-TYPED",
+          "ROW-CONFIG-ABSENCE"
+        ],
+        "passed": [
+          "ROW-FACE-FORWARDED",
+          "ROW-DENY",
+          "ROW-ALLOW",
+          "ROW-CONFIG-FACE",
+          "ROW-AMBIGUOUS",
+          "ROW-NO-FACE",
+          "ROW-PRODUCT-DECLARATION",
+          "ROW-NO-SECOND-COMPILER"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M2-web-guard-bypassed",
+      "description": "the confined web face stops consulting the compiled network lane (the guard becomes an unconditional admission)",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "e0a192cef78621892ac21de9ba903a925baa7a6d7a75b448b1236cdff8bf3547"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ROW-FACE-FORWARDED": "passed",
+        "ROW-DENY": "failed",
+        "ROW-ALLOW": "passed",
+        "ROW-ABSENCE-TYPED": "passed",
+        "ROW-CONFIG-FACE": "failed",
+        "ROW-CONFIG-ABSENCE": "passed",
+        "ROW-AMBIGUOUS": "passed",
+        "ROW-NO-FACE": "passed",
+        "ROW-PRODUCT-DECLARATION": "passed",
+        "ROW-NO-SECOND-COMPILER": "passed"
+      },
+      "expected": {
+        "failed": [
+          "ROW-DENY",
+          "ROW-CONFIG-FACE"
+        ],
+        "passed": [
+          "ROW-FACE-FORWARDED",
+          "ROW-ALLOW",
+          "ROW-ABSENCE-TYPED",
+          "ROW-CONFIG-ABSENCE",
+          "ROW-AMBIGUOUS",
+          "ROW-NO-FACE",
+          "ROW-PRODUCT-DECLARATION",
+          "ROW-NO-SECOND-COMPILER"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ]
+}
