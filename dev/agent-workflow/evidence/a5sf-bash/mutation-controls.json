@@ -1,0 +1,202 @@
+{
+  "schema": "a5sf-bash/mutation-controls/1",
+  "generatedAt": "2026-11-05T10:31:26.937Z",
+  "armsFile": "tests/world-factory/a5sf-bash.test.mjs",
+  "sources": [
+    "packages/runtime/team-services/src/subprocess.ts",
+    "packages/runtime/team-services/src/mount.ts"
+  ],
+  "originalSourceSha256": {
+    "packages/runtime/team-services/src/subprocess.ts": "27511865579b244883762d49837eb68ceca17947a57b9f5e563aca837138b2ee",
+    "packages/runtime/team-services/src/mount.ts": "01b9edb9e8d2b5fd0d58fc4109475a6fad07ff4d0d615a556c08b35ecdb265d5"
+  },
+  "control": "PASS",
+  "outcomes": [
+    {
+      "mutant": "M1-shell-admission-removed",
+      "description": "the shell-class admission always answers \"no refusal\" (a shell is admitted on its argv alone)",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/subprocess.ts": "83943f89bb586213d7e3ce59fb26097d377dc3fcafcfddbfc2c4707659f0c378"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/subprocess.ts": "27511865579b244883762d49837eb68ceca17947a57b9f5e563aca837138b2ee"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT": "passed",
+        "NOT-DECLARED": "failed",
+        "PROGRAM-NOT-ADMITTED": "failed",
+        "INVOCATION-UNDECLARED": "failed",
+        "ARGV-SHAPE": "failed",
+        "RG-UNCHANGED": "passed",
+        "WRITABLE-PROGRAM": "passed",
+        "WRITE-ONLY-READ": "passed",
+        "WRITE-ONLY-WRITE": "passed",
+        "WRITE-ONLY-WRITE-OUTSIDE": "passed",
+        "CREATE-OUTSIDE": "passed",
+        "CHMOD-OUTSIDE": "passed",
+        "CREATE/CHMOD-INSIDE": "passed",
+        "NETWORK-DENY-UNENFORCED": "passed",
+        "NETWORK-DENY-ENFORCED": "passed",
+        "NETWORK-ALLOW": "passed",
+        "CAPABILITY-PROBE": "passed",
+        "PTY-LEGACY-MOUNT": "passed",
+        "PTY-LEGACY-DEFERRED": "passed",
+        "PTY-FACE": "passed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "NOT-DECLARED",
+          "PROGRAM-NOT-ADMITTED",
+          "INVOCATION-UNDECLARED",
+          "ARGV-SHAPE"
+        ],
+        "passed": [
+          "ADMIT",
+          "RG-UNCHANGED",
+          "WRITABLE-PROGRAM",
+          "WRITE-ONLY-READ",
+          "WRITE-ONLY-WRITE",
+          "WRITE-ONLY-WRITE-OUTSIDE",
+          "CREATE-OUTSIDE",
+          "CHMOD-OUTSIDE",
+          "CREATE/CHMOD-INSIDE",
+          "NETWORK-DENY-UNENFORCED",
+          "NETWORK-DENY-ENFORCED",
+          "NETWORK-ALLOW",
+          "CAPABILITY-PROBE",
+          "PTY-LEGACY-MOUNT",
+          "PTY-LEGACY-DEFERRED",
+          "PTY-FACE",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M2-network-probe-assumes-enforcement",
+      "description": "the capability probe claims `network-destination: enforced` regardless of what the backend measured",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/subprocess.ts": "0bb1491c5d7504037ce95f23ac6282bc587454ab56d4a907ff296c8af6630b43"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/subprocess.ts": "27511865579b244883762d49837eb68ceca17947a57b9f5e563aca837138b2ee"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT": "passed",
+        "NOT-DECLARED": "passed",
+        "PROGRAM-NOT-ADMITTED": "passed",
+        "INVOCATION-UNDECLARED": "passed",
+        "ARGV-SHAPE": "passed",
+        "RG-UNCHANGED": "passed",
+        "WRITABLE-PROGRAM": "passed",
+        "WRITE-ONLY-READ": "passed",
+        "WRITE-ONLY-WRITE": "passed",
+        "WRITE-ONLY-WRITE-OUTSIDE": "passed",
+        "CREATE-OUTSIDE": "passed",
+        "CHMOD-OUTSIDE": "passed",
+        "CREATE/CHMOD-INSIDE": "passed",
+        "NETWORK-DENY-UNENFORCED": "failed",
+        "NETWORK-DENY-ENFORCED": "passed",
+        "NETWORK-ALLOW": "passed",
+        "CAPABILITY-PROBE": "passed",
+        "PTY-LEGACY-MOUNT": "passed",
+        "PTY-LEGACY-DEFERRED": "passed",
+        "PTY-FACE": "passed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "NETWORK-DENY-UNENFORCED"
+        ],
+        "passed": [
+          "ADMIT",
+          "NOT-DECLARED",
+          "PROGRAM-NOT-ADMITTED",
+          "INVOCATION-UNDECLARED",
+          "ARGV-SHAPE",
+          "RG-UNCHANGED",
+          "WRITABLE-PROGRAM",
+          "WRITE-ONLY-READ",
+          "WRITE-ONLY-WRITE",
+          "WRITE-ONLY-WRITE-OUTSIDE",
+          "CREATE-OUTSIDE",
+          "CHMOD-OUTSIDE",
+          "CREATE/CHMOD-INSIDE",
+          "NETWORK-DENY-ENFORCED",
+          "NETWORK-ALLOW",
+          "CAPABILITY-PROBE",
+          "PTY-LEGACY-MOUNT",
+          "PTY-LEGACY-DEFERRED",
+          "PTY-FACE",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M3-pty-refusal-dropped",
+      "description": "both 旧代 PTY refusal branches are made unreachable (pre-mount + deferred)",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/mount.ts": "c4cab94f247b6c20715f702ae9352b113378e40b995d88c3b5c9c8f913a12dc2"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/mount.ts": "01b9edb9e8d2b5fd0d58fc4109475a6fad07ff4d0d615a556c08b35ecdb265d5"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT": "passed",
+        "NOT-DECLARED": "passed",
+        "PROGRAM-NOT-ADMITTED": "passed",
+        "INVOCATION-UNDECLARED": "passed",
+        "ARGV-SHAPE": "passed",
+        "RG-UNCHANGED": "passed",
+        "WRITABLE-PROGRAM": "passed",
+        "WRITE-ONLY-READ": "passed",
+        "WRITE-ONLY-WRITE": "passed",
+        "WRITE-ONLY-WRITE-OUTSIDE": "passed",
+        "CREATE-OUTSIDE": "passed",
+        "CHMOD-OUTSIDE": "passed",
+        "CREATE/CHMOD-INSIDE": "passed",
+        "NETWORK-DENY-UNENFORCED": "passed",
+        "NETWORK-DENY-ENFORCED": "passed",
+        "NETWORK-ALLOW": "passed",
+        "CAPABILITY-PROBE": "passed",
+        "PTY-LEGACY-MOUNT": "failed",
+        "PTY-LEGACY-DEFERRED": "failed",
+        "PTY-FACE": "passed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "PTY-LEGACY-MOUNT",
+          "PTY-LEGACY-DEFERRED"
+        ],
+        "passed": [
+          "ADMIT",
+          "NOT-DECLARED",
+          "PROGRAM-NOT-ADMITTED",
+          "INVOCATION-UNDECLARED",
+          "ARGV-SHAPE",
+          "RG-UNCHANGED",
+          "WRITABLE-PROGRAM",
+          "WRITE-ONLY-READ",
+          "WRITE-ONLY-WRITE",
+          "WRITE-ONLY-WRITE-OUTSIDE",
+          "CREATE-OUTSIDE",
+          "CHMOD-OUTSIDE",
+          "CREATE/CHMOD-INSIDE",
+          "NETWORK-DENY-UNENFORCED",
+          "NETWORK-DENY-ENFORCED",
+          "NETWORK-ALLOW",
+          "CAPABILITY-PROBE",
+          "PTY-FACE",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ]
+}

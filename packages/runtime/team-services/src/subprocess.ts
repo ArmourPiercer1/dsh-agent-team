@@ -74,6 +74,41 @@
  * {@link CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS} only to make the refusal
  * detail truthful; they are refused by the same allow-list rule.
  *
+ * SHELL-CLASS ADMISSION (BL-17 / P2-04 backend — NOT a widening of that rule):
+ * the block above stays true for every caller that declares nothing. A realm
+ * may DECLARE a shell class ({@link ConfinedShellClassAdmission} on the face's
+ * options), and then a `bash`/`sh` spawn is a first-class, explicitly admitted
+ * invocation — never "not rg, therefore pass":
+ *
+ *  - the program basename must be in the realm's declared `programs`, the
+ *    request must carry the declared invocation, and the argv shape is a
+ *    closed contract (`<program> -c <body>` only);
+ *  - the body is READ-OPAQUE, so static attribution is impossible by
+ *    construction (BL-40/BL-41). The caller therefore DECLARES the roots the
+ *    command will read, write and `chmod`, and each declared root is consulted
+ *    against the SAME compiled effective lane through the SAME
+ *    `evaluateLocatorAccess` / `TeamIoDenial` / `observeGuard` chain the `fs`
+ *    face uses, BEFORE any provider call. An out-of-lane declared read is
+ *    `IO_READ_DENIED`; an out-of-lane declared write or `chmod` is
+ *    `IO_WRITE_DENIED` — the same typed axis refusals, one fact each;
+ *  - the OS profile remains the boundary for everything the declaration did
+ *    not name (BL-41: argv checking is defence in depth, never the only
+ *    permission evidence). `chmod` is the measured exception: Landlock does
+ *    not mediate it for a same-uid owner, so an UNDECLARED mode change is not
+ *    refused by the kernel — it is refused only when declared. That limit is
+ *    disclosed, never claimed away;
+ *  - the network axis is consulted. `network: deny` is admitted ONLY when the
+ *    backend's own capability probe reports `network-destination: enforced`
+ *    ({@link probeNetworkDenial}); otherwise the spawn is refused with the
+ *    existing `NETWORK_UNCONFINED_REALM` concept before any process. On this
+ *    host's provider set the probe reports `unsupported`, so a
+ *    network-denied shell is REFUSED, never simulated as denied;
+ *  - a PTY is NOT part of this face: the spawn spec carries no terminal,
+ *    `spawnTerminal` refuses, and the composition seam refuses a
+ *    `terminals`-consuming module on a governed realm
+ *    (`TERMINALS_LEGACY_PTY_REFUSED`) instead of letting the inherited,
+ *    legacy-generation PTY serve a governed Member.
+ *
  * WHAT IT DOES NOT DO, stated so it cannot be read as more:
  *  - It is not a second policy evaluator. The lane decision is
  *    `evaluateLocatorAccess`, the OS profile is `compileExecutionProfile`, and
@@ -133,6 +168,14 @@ export interface ConfinedSpawnSpec {
   readonly graceMs: number
   readonly signal?: AbortSignal | undefined
   readonly env?: NodeJS.ProcessEnv | undefined
+  /**
+   * BL-17: the DECLARED shell-class invocation. Present only for a shell-class
+   * `argv[0]`; it states which admitted program runs and which roots the
+   * command declares it will touch. The body is read-opaque, so this
+   * declaration is the ONLY statically attributable input the face has — and
+   * the OS profile stays the boundary for everything it does not name.
+   */
+  readonly shell?: ConfinedShellDeclaration | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +191,13 @@ export interface ConfinedStreamProcess {
   readonly exited: Promise<{ readonly code: number | null; readonly signal: string | null }>
   terminate(options?: StreamingOptions): Promise<unknown>
   readonly payloadExit: Promise<PayloadExitRecord>
+}
+
+/** One capability row as the confined provider's OWN probe states it. */
+export interface ConfinedCapabilityRow {
+  readonly dimension: string
+  readonly level: string
+  readonly note?: string | undefined
 }
 
 /** The one provider method a confined spawn needs. */
@@ -428,6 +478,176 @@ export async function programWriteLaneRefusal(
   return undefined
 }
 
+// ---------------------------------------------------------------------------
+// BL-17 — the shell-class ADMISSION (a declared class, never a fall-through)
+// ---------------------------------------------------------------------------
+
+/**
+ * The closed refusal vocabulary of the shell-class admission. A shell program
+ * is not "not-rg, therefore refused" (BL-16) and not "not-rg, therefore
+ * passed" (the hole BL-17 must not open): it is a class the REALM declares and
+ * a call DECLARES, with a typed refusal for every way that declaration can be
+ * missing or malformed.
+ */
+export const CONFINED_SHELL_ADMISSION_CODES = [
+  /** The realm declared no shell class at all: no shell program may run. */
+  'SUBPROCESS_SHELL_NOT_DECLARED',
+  /** The realm declared a shell class but not THIS program (e.g. `sh` vs `bash`). */
+  'SUBPROCESS_SHELL_PROGRAM_NOT_ADMITTED',
+  /** The request carries no declared invocation, so its roots are unattributable. */
+  'SUBPROCESS_SHELL_INVOCATION_UNDECLARED',
+  /** The declared invocation is not the admitted shape (`<program> -c <body>`). */
+  'SUBPROCESS_SHELL_ARGV_UNSUPPORTED',
+] as const
+
+export type ConfinedShellAdmissionCode = (typeof CONFINED_SHELL_ADMISSION_CODES)[number]
+
+/** One shell-admission refusal (decided before any process). */
+export interface ShellAdmissionRefusal {
+  readonly code: ConfinedShellAdmissionCode
+  readonly detail: string
+  readonly target: string
+}
+
+/**
+ * The realm's DECLARED shell class. Absent means "this realm admits no shell
+ * program" — the BL-16 behaviour, unchanged. Present means exactly the named
+ * basenames are admissible, each still subject to its declared invocation and
+ * the lane consults below. The declaration belongs to the COMPOSITION (the
+ * same place that pins the launcher and builds the process provider), not to
+ * the Member: a Member cannot widen it through argv or config.
+ */
+export interface ConfinedShellClassAdmission {
+  /** Admitted shell-class program basenames (e.g. `['bash','sh']`), lower-case. */
+  readonly programs: readonly string[]
+}
+
+/**
+ * The declared invocation of ONE shell spawn. The body is read-opaque, so the
+ * caller declares what the command will touch; each root is resolved against
+ * `cwd` and consulted on the axis it belongs to. The declaration is NOT a
+ * grant: every root still has to be admitted by the compiled lane.
+ */
+export interface ConfinedShellDeclaration {
+  /** The shell program basename this invocation runs; must match `argv[0]`. */
+  readonly program: string
+  /** Roots the command declares it will READ. */
+  readonly reads?: readonly string[] | undefined
+  /** Roots the command declares it will CREATE / MODIFY / REMOVE. */
+  readonly writes?: readonly string[] | undefined
+  /**
+   * Paths whose MODE the command declares it will change (`chmod`). Landlock
+   * cannot mediate a same-uid mode change, so this declaration is the ONLY
+   * layer that can refuse an out-of-lane one — disclosed, not claimed away.
+   */
+  readonly chmod?: readonly string[] | undefined
+}
+
+const shellRefusal = (
+  code: ConfinedShellAdmissionCode,
+  detail: string,
+  target: string,
+): ShellAdmissionRefusal => Object.freeze({ code, detail, target })
+
+/** True when `argv[0]` names a shell-class program (the class this gate owns). */
+export function isShellClassSpawn(spec: { readonly argv: readonly string[] }): boolean {
+  const program = spec.argv[0]
+  return typeof program === 'string' && program.length > 0 && isShellClassProgram(basename(program))
+}
+
+/**
+ * THE ADMISSION. Returns `undefined` for a non-shell program (the rg / unknown
+ * path, unchanged) and for an admitted shell invocation; otherwise the typed
+ * refusal that decides the spawn before any process.
+ *
+ * An admitted shell is one where ALL of the following hold:
+ *  1. the realm declared a shell class;
+ *  2. `argv[0]`'s basename is in that class;
+ *  3. the request carries a declared invocation for the same program;
+ *  4. the argv shape is exactly `<program> -c <non-empty body>` — the one shape
+ *     whose body is a command line rather than a set of operands;
+ *  5. every declared root is a non-empty string.
+ *
+ * The lane decisions happen after this gate (they are async: they resolve
+ * symlinks and consult the guard); this function is pure so the shape refusal
+ * is synchronous and independently testable.
+ */
+export function shellClassAdmissionRefusal(
+  spec: { readonly argv: readonly string[]; readonly shell?: ConfinedShellDeclaration | undefined },
+  admission: ConfinedShellClassAdmission | undefined,
+): ShellAdmissionRefusal | undefined {
+  if (!isShellClassSpawn(spec)) return undefined
+  const program = spec.argv[0] as string
+  const name = basename(program).toLowerCase()
+  if (admission === undefined || admission.programs.length === 0) {
+    return shellRefusal(
+      'SUBPROCESS_SHELL_NOT_DECLARED',
+      `argv[0] ${JSON.stringify(program)} is shell/interpreter-class (${name}) and this realm declares no shell class; `
+        + 'a shell body cannot be statically attributed to declared operands, so it is refused before any process. '
+        + 'A composition that intends to run it must declare the program in the confined subprocess face\'s shellClass.programs',
+      program,
+    )
+  }
+  if (!admission.programs.includes(name)) {
+    return shellRefusal(
+      'SUBPROCESS_SHELL_PROGRAM_NOT_ADMITTED',
+      `argv[0] ${JSON.stringify(program)} (${name}) is not in the realm's declared shell class (${admission.programs.join(', ')}); `
+        + 'a program outside the declaration is refused before any process',
+      program,
+    )
+  }
+  const declaration = spec.shell
+  if (declaration === undefined) {
+    return shellRefusal(
+      'SUBPROCESS_SHELL_INVOCATION_UNDECLARED',
+      `argv[0] ${JSON.stringify(program)} is an admitted shell program but the request carries no declared invocation; `
+        + 'the declared read/write/chmod roots are the only statically attributable input for a shell body, so an undeclared one is refused',
+      program,
+    )
+  }
+  if (typeof declaration.program !== 'string' || basename(declaration.program).toLowerCase() !== name) {
+    return shellRefusal(
+      'SUBPROCESS_SHELL_PROGRAM_NOT_ADMITTED',
+      `the declared invocation names program ${JSON.stringify(declaration.program)}, which does not match argv[0] ${JSON.stringify(program)}; `
+        + 'a declaration that describes another program is refused',
+      program,
+    )
+  }
+  if (spec.argv.length !== 3 || spec.argv[1] !== '-c' || typeof spec.argv[2] !== 'string' || spec.argv[2].trim() === '') {
+    return shellRefusal(
+      'SUBPROCESS_SHELL_ARGV_UNSUPPORTED',
+      `argv[0] ${JSON.stringify(program)} is admitted only in the closed command-string shape '<program> -c <body>'; `
+        + `got ${JSON.stringify([...spec.argv])} — flags such as -l/--login and positional operands are refused because their reads are not the declared ones`,
+      program,
+    )
+  }
+  const declaredRoots: readonly (readonly [string, readonly string[] | undefined])[] = [
+    ['reads', declaration.reads],
+    ['writes', declaration.writes],
+    ['chmod', declaration.chmod],
+  ]
+  for (const [axis, roots] of declaredRoots) {
+    if (roots === undefined) continue
+    if (roots.some((root) => typeof root !== 'string' || root.trim() === '')) {
+      return shellRefusal(
+        'SUBPROCESS_SHELL_INVOCATION_UNDECLARED',
+        `the declared ${axis} roots must be non-empty strings; an empty declaration cannot be admitted as "nothing to check"`,
+        program,
+      )
+    }
+  }
+  return undefined
+}
+
+/**
+ * Resolve one declared shell root against `cwd`. Roots are the CALLER's
+ * declaration; resolving is the same normalisation `readIntentsOf` applies to
+ * operands, never a widening.
+ */
+export function resolveShellRoot(cwd: string, root: string): string {
+  return isAbsolute(root) ? resolvePath(root) : resolvePath(resolvePath(cwd), root)
+}
+
 /**
  * The DECLARED read roots of one spawn request.
  *
@@ -676,6 +896,106 @@ export function createMemberSubprocessGuard(
   }
 }
 
+/**
+ * BL-17 — the guard METHOD this face consults for a declared shell WRITE
+ * (`writes`, and `chmod` targets). It is a distinct method name so the fact
+ * says which axis was consulted; the decision is the SAME
+ * `evaluateLocatorAccess` (write access) and the SAME typed `TeamIoDenial`
+ * vocabulary the `fs` face uses.
+ */
+export const SHELL_WRITE_GUARD_METHOD = 'spawn:write'
+
+/**
+ * The WRITE half of the shell admission. It is deliberately NOT the `fs`
+ * guard's `writeText` path: the `fs` face adds a write⇒read requirement for an
+ * existing target (the native read-before-write contract), while a shell lane
+ * that grants write and withholds read MUST be able to write (`只写不读`).
+ * The axis decision itself is identical — one evaluator, no second policy.
+ */
+export function createMemberSubprocessWriteGuard(
+  policy: Pick<EffectiveIoPolicy, 'memberIdentity' | 'write'>,
+  resolver: PathIdentityResolver = NODE_PATH_IDENTITY_RESOLVER,
+): FsGuard {
+  return async function subprocessWriteGuard(method: string, hostPath: string): Promise<void> {
+    const lane: PathRuleSet = policy.write
+    const decision = await evaluateLocatorAccess({ lane, locator: hostPath, access: 'write', resolver })
+    if (decision.decision !== 'allow') {
+      throw new TeamIoDenial(
+        decision.decision === 'deny'
+          ? 'IO_WRITE_DENIED'
+          : decision.decision === 'ask' ? 'IO_ASK_REQUIRES_APPROVAL' : 'IO_POLICY_UNSUPPORTED',
+        decision.detail,
+        { memberIdentity: policy.memberIdentity, method, target: hostPath },
+      )
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// BL-17 — the network dimension: ask the backend, never assume it
+// ---------------------------------------------------------------------------
+
+/** What the backend's own probe said about the network dimension. */
+export interface ConfinedNetworkCapabilityProbe {
+  readonly dimension: 'network-destination'
+  /** `enforced` only when the backend's probe says so; absence is `unsupported`. */
+  readonly level: 'enforced' | 'unsupported'
+  /** The probe's own note (or why no row was available). */
+  readonly note: string
+  /** The raw capability rows the backend returned (empty when it has no probe). */
+  readonly rows: readonly ConfinedCapabilityRow[]
+}
+
+/**
+ * Ask the confined provider's OWN capability probe about network enforcement.
+ *
+ * WHY THIS IS NOT OPTIMISM: this host's provider set ships no network-deny
+ * enforcement (`sandbox-provider/network.ts` refuses `deny`/`restricted`
+ * before any process and states `network-destination: unsupported`). A face
+ * that ran a `network: deny` command while claiming denial would be the worst
+ * outcome available, so `deny` is admitted only on an explicit `enforced`
+ * answer. No probe, a refused probe, or any other level all mean
+ * `unsupported` — the closed answer, never a default-allow.
+ */
+export async function probeNetworkDenial(provider: ConfinedProcessProvider): Promise<ConfinedNetworkCapabilityProbe> {
+  const unsupported = (note: string): ConfinedNetworkCapabilityProbe => Object.freeze({
+    dimension: 'network-destination' as const,
+    level: 'unsupported' as const,
+    note,
+    rows: Object.freeze([]),
+  })
+  // The probe is an OPTIONAL capability of the backend, discovered structurally
+  // (`ConfinedProcessProvider` stays the one-method seam every existing provider
+  // and double already satisfies; P1-07's provider carries `probe()`). Absence,
+  // a throw, a refusal or a missing row are all the SAME closed answer.
+  const probe = (provider as {
+    probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>
+  }).probe
+  if (typeof probe !== 'function') {
+    return unsupported('the confined provider exposes no capability probe, so network enforcement cannot be proven')
+  }
+  let probed
+  try {
+    probed = await probe.call(provider)
+  } catch (error) {
+    return unsupported(`the confined provider's capability probe threw (${error instanceof Error ? error.message : String(error)}); enforcement cannot be proven`)
+  }
+  if (!probed.ok) {
+    return unsupported(`the confined provider's capability probe refused (${probed.error.code}); enforcement cannot be proven`)
+  }
+  const rows = probed.value
+  const row = rows.find((candidate) => candidate.dimension === 'network-destination')
+  if (row === undefined) {
+    return unsupported('the confined provider reported no network-destination capability row; enforcement cannot be proven')
+  }
+  return Object.freeze({
+    dimension: 'network-destination' as const,
+    level: row.level === 'enforced' ? 'enforced' as const : 'unsupported' as const,
+    note: typeof row.note === 'string' && row.note !== '' ? row.note : `probe reported network-destination='${row.level}'`,
+    rows: Object.freeze([...rows]),
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Layer 2 — the runtime allowance added to the compiled profile
 // ---------------------------------------------------------------------------
@@ -784,6 +1104,13 @@ export interface ConfinedSubprocessOptions {
   readonly realm?: 'member' | 'binding'
   /** The binding identity the effective policy was compiled for, if any. */
   readonly toolBindingIdentity?: string | null
+  /**
+   * BL-17 — the realm's declared shell class. Absent = no shell program is
+   * admitted on this face (the BL-16 refusal, unchanged). A composition that
+   * intends to run a declared `bash -c` invocation supplies the programs it
+   * admits; the Member cannot widen this through argv, config or a tool call.
+   */
+  readonly shellClass?: ConfinedShellClassAdmission
 }
 
 /** A Provider constructor Cordis can mount as the `subprocess` service. */
@@ -797,9 +1124,20 @@ export const CONFINED_SUBPROCESS_REFUSAL_CODES = [
   'SUBPROCESS_PROVIDER_REFUSED',
   'SUBPROCESS_TERMINAL_UNSUPPORTED',
   'SUBPROCESS_EXIT_UNRECORDABLE',
+  /**
+   * BL-17 — the lane requests `network: deny` and the backend's own capability
+   * probe does NOT report `network-destination: enforced`. The existing
+   * `NETWORK_UNCONFINED_REALM` concept (its install-time token lives in
+   * `TEAM_SERVICE_INSTALL_CODES`), reused at the per-spawn refusal point: a
+   * command that would reach the network is refused instead of run, and the
+   * refusal never claims an enforcement this host does not have.
+   */
+  'NETWORK_UNCONFINED_REALM',
 ] as const
 
-export type ConfinedSubprocessRefusalCode = (typeof CONFINED_SUBPROCESS_REFUSAL_CODES)[number]
+export type ConfinedSubprocessRefusalCode =
+  | (typeof CONFINED_SUBPROCESS_REFUSAL_CODES)[number]
+  | ConfinedShellAdmissionCode
 
 /** A typed refusal from the confined subprocess face. */
 export class ConfinedSubprocessRefusal extends Error {
@@ -931,12 +1269,20 @@ export function createConfinedSubprocessClass(
   // into an install-time failure that would take the Member's `fs` lane down.
   const profile = compileExecutionProfile(effective)
   const laneGuard = options.guard ?? createMemberSubprocessGuard(effective)
+  // BL-17: the WRITE lane consult a declared shell uses. Same evaluator, same
+  // typed denial, same observed-guard transport — only the axis differs.
+  const writeLaneGuard = createMemberSubprocessWriteGuard(effective)
   // The attribution refusal is a DECISION of this face, not a lane lookup, but
   // it must travel through the SAME observed guard so it is recorded as one
   // fact with the same schema. The queue is consumed synchronously by the
   // guard call below (spawn runs to that first `await` before returning), so a
   // concurrent spawn can never pick up another spawn's refusal.
-  const pendingAttribution: ProgramAttributionRefusal[] = []
+  interface AdmissionFactRefusal {
+    readonly code: 'IO_READ_DENIED' | 'IO_WRITE_DENIED'
+    readonly detail: string
+    readonly target: string
+  }
+  const pendingAttribution: AdmissionFactRefusal[] = []
   const admissionGuard: FsGuard = async (method: string, hostPath: string): Promise<void> => {
     const at = pendingAttribution.findIndex((refusal) => refusal.target === hostPath)
     if (at !== -1) {
@@ -947,6 +1293,10 @@ export function createConfinedSubprocessClass(
         method,
         target: hostPath,
       })
+    }
+    if (method === SHELL_WRITE_GUARD_METHOD) {
+      await writeLaneGuard(method, hostPath)
+      return
     }
     await laneGuard(method, hostPath)
   }
@@ -987,13 +1337,40 @@ export function createConfinedSubprocessClass(
       // reach the lane guard (and can no longer be misreported as a lane "does
       // not exist" denial). A shell body that reaches the KERNEL is exactly the
       // general-face hole this refusal closes.
-      const attribution = programAttributionRefusal(spec)
-      const intents = attribution === undefined ? readIntentsOf(spec) : Object.freeze([] as string[])
+      //
+      // BL-17: the shell-class DECISION comes before that: a declared shell
+      // class admits a declared invocation; every other shell is refused with
+      // its own typed code (not by falling through the rg allow-list, and not
+      // by passing because it is not rg).
+      const shellRefusal = shellClassAdmissionRefusal(spec, options.shellClass)
+      const shellInvocation = shellRefusal === undefined && isShellClassSpawn(spec) ? spec.shell : undefined
+      const attribution = shellRefusal !== undefined || shellInvocation !== undefined
+        ? undefined
+        : programAttributionRefusal(spec)
+      // A shell body's own reads are NOT statically attributable (that is why it
+      // needs a declaration); its declared roots are consulted below instead.
+      const intents = attribution === undefined && shellInvocation === undefined
+        ? readIntentsOf(spec)
+        : Object.freeze([] as string[])
       const started = (async () => {
+        if (shellRefusal !== undefined) {
+          // One fact on the SAME observed transport (a read-axis refusal: the
+          // body's reads cannot be attributed), then the shell-specific typed
+          // code for the caller. No provider call in either case.
+          pendingAttribution.push({ code: 'IO_READ_DENIED', detail: shellRefusal.detail, target: shellRefusal.target })
+          try {
+            await guard(SUBPROCESS_GUARD_METHOD, shellRefusal.target)
+          } catch (error) {
+            if (!(error instanceof TeamIoDenial)) throw error
+          }
+          throw new ConfinedSubprocessRefusal(shellRefusal.code, shellRefusal.detail)
+        }
         // B3 (review round 3): the name allow-list cannot tell a shipped `rg`
         // from a Member-writable script that happens to be named `rg`. A
         // program whose realpath is inside the effective WRITE lane is refused
-        // through the SAME guard/evaluator, before any provider call.
+        // through the SAME guard/evaluator, before any provider call. BL-17:
+        // the same identity check covers an admitted shell program (a
+        // Member-writable file named `bash` is still refused).
         const refusal = attribution ?? await programWriteLaneRefusal(spec.argv[0] as string, effective.write)
         if (refusal !== undefined) {
           pendingAttribution.push(refusal)
@@ -1006,6 +1383,24 @@ export function createConfinedSubprocessClass(
             target: refusal.target,
           })
         }
+        // BL-17 — THE NETWORK AXIS, ASKED NOT ASSUMED. `network: deny` is a
+        // claim about the OS; it is admitted only on the backend's own
+        // `enforced` capability row. Anything else refuses the spawn with the
+        // existing `NETWORK_UNCONFINED_REALM` concept, before any process, so
+        // no command can reach the network under a claim this host cannot keep.
+        const networkDenied = effective.network.access === 'deny'
+        if (networkDenied) {
+          const capability = await probeNetworkDenial(provider)
+          if (capability.level !== 'enforced') {
+            throw new ConfinedSubprocessRefusal(
+              'NETWORK_UNCONFINED_REALM',
+              `the effective lane requests network=deny, but the confined provider's capability probe reports `
+                + `${capability.dimension}='${capability.level}' (${capability.note}); refusing before any process instead of running `
+                + 'a network-capable child under a deny claim this host cannot enforce. A backend that proves '
+                + `'enforced' is the only configuration that admits this spawn`,
+            )
+          }
+        }
         // BL-16 live row 1: a confined `rg` whose search root sits inside a
         // git worktree used to walk ABOVE the lane for VCS/ancestor ignore
         // discovery, read the lane-denied `.git`, and treat that kernel refusal
@@ -1013,7 +1408,7 @@ export function createConfinedSubprocessClass(
         // NOT widened: the INVOCATION is made self-contained (or, for a root
         // whose discovery already stays in the lane, left exactly as shipped).
         // The rewrite is disclosed on the allow fact, never as an extra fact.
-        const searchArgv = attribution === undefined
+        const searchArgv = attribution === undefined && shellInvocation === undefined
           ? await laneSafeSearchArgv(spec, effective.read)
           : unchangedSearchArgv(spec.argv)
         for (const intent of intents) {
@@ -1021,6 +1416,19 @@ export function createConfinedSubprocessClass(
             ? searchArgv.annotations
             : undefined
           await guard(SUBPROCESS_GUARD_METHOD, intent, annotations)
+        }
+        // BL-17: every DECLARED shell root is consulted before the provider is
+        // called — reads on the read lane, writes and `chmod` targets on the
+        // write lane. The body itself is the OS profile's problem (and
+        // `chmod` has no Landlock right at all, which is why an UNDECLARED mode
+        // change is disclosed as outside this admission's reach).
+        if (shellInvocation !== undefined) {
+          for (const root of shellInvocation.reads ?? []) {
+            await guard(SUBPROCESS_GUARD_METHOD, resolveShellRoot(spec.cwd, root))
+          }
+          for (const root of [...(shellInvocation.writes ?? []), ...(shellInvocation.chmod ?? [])]) {
+            await guard(SHELL_WRITE_GUARD_METHOD, resolveShellRoot(spec.cwd, root))
+          }
         }
         const allowPaths = confinedSpawnAllowPaths(profile.value.allowPaths, spec.argv[0] as string, options.runtimeAllowPaths ?? [])
         const request: SpawnRequest = {
@@ -1032,6 +1440,11 @@ export function createConfinedSubprocessClass(
           cwd: resolvePath(spec.cwd),
           env: envPairs({ ...confinedChildEnvironment(spec.env), ...options.env }),
           allowPaths,
+          // BL-17: the request carries the network dimension ONLY when the
+          // probe proved it (checked above). With `allow` the field is absent,
+          // exactly as before — the face never claims a dimension it did not
+          // probe.
+          ...(networkDenied ? { networkProfile: 'deny' as const } : {}),
           // The payload's OWN completion state MUST reach the handle: `grep`
           // distinguishes exit 0 (matches) from 1 (no matches) and treats 2+
           // as a search failure. The B2 passthrough is this lane's only user

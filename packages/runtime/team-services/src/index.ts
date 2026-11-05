@@ -25,34 +25,47 @@ export type {
   ToolBindingRealmSpec,
 } from './install.js'
 export {
+  CONFINED_SHELL_ADMISSION_CODES,
   CONFINED_SUBPROCESS_REFUSAL_CODES,
   CONFINED_SUBPROCESS_SHELL_CLASS_PROGRAMS,
   CONFINED_SUBPROCESS_STATIC_PROGRAMS,
   ConfinedSubprocessRefusal,
+  SHELL_WRITE_GUARD_METHOD,
   confinedChildEnvironment,
   confinedSpawnAllowPaths,
   createConfinedOutputReader,
   createConfinedSubprocessClass,
   createMemberSubprocessGuard,
+  createMemberSubprocessWriteGuard,
   isShellClassProgram,
+  isShellClassSpawn,
+  probeNetworkDenial,
   programAttributionRefusal,
   readIntentsOf,
+  resolveShellRoot,
+  shellClassAdmissionRefusal,
   SUBPROCESS_GUARD_METHOD,
 } from './subprocess.js'
 export type {
+  ConfinedCapabilityRow,
   ConfinedCollectMode,
+  ConfinedNetworkCapabilityProbe,
   ConfinedOutputMode,
   ConfinedOutputReader,
   ConfinedProcessProvider,
+  ConfinedShellAdmissionCode,
+  ConfinedShellClassAdmission,
+  ConfinedShellDeclaration,
   ConfinedSpawnSpec,
   ConfinedStdinMode,
   ConfinedStreamProcess,
   ConfinedSubprocessOptions,
   ConfinedSubprocessRefusalCode,
   ProgramAttributionRefusal,
+  ShellAdmissionRefusal,
   SubprocessProviderConstructor,
 } from './subprocess.js'
-export { A5SF_SUBPROCESS_UNCONFINED_REALM, mountA5sfRealm } from './mount.js'
+export { A5SF_SUBPROCESS_UNCONFINED_REALM, A5SF_TERMINALS_LEGACY_PTY_REFUSED, mountA5sfRealm } from './mount.js'
 export type {
   A5sfRealmBinding,
   A5sfRealmMember,
