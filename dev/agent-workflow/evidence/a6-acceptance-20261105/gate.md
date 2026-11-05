@@ -2,11 +2,11 @@
 
 ## Final recipient-probe HEAD
 
-- HEAD: `60b1dd700` (product fix `fd7a5d6c1` + recipient/refusal/Stop/crash probes + fence re-record)
+- HEAD: `a432e49ea` (product fix `fd7a5d6c1` + recipient/refusal/Stop/crash/allow-crash probes + fence re-record)
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `tests/deepseek-harness-test-use` -> main checkout symlink,
   `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS**, 0 skip, 304.3 s
+- Result: **9/9 PASS**, 0 skip, 294.9 s (isolated rerun; the first run at this HEAD hit the known 1 ms `alpha5-glob-backend` X3 race and was 8/9 on census)
 - Census: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`, identity set identical
   to the published baseline, 0 new reds, 0 collection errors
 
@@ -21,7 +21,9 @@ had stale source maps) and census; after a real runtime rebuild and map commit,
 L615/L804/L1379/L2010; `a6-crash-r4` proves a post-write SIGKILL, restart and
 fail-closed human resolution. The fence baseline was re-recorded for the moved
 identities and four stale `a6-assigned-officer-facts` entries; `60b1dd700` is
-9/9 with no resolved identities. The first attempt at `1135f381b`
+9/9 with no resolved identities. The after-allow crash probe moved the C1
+identities again to L615/L804/L1400/L2031; `a432e49ea` is 9/9 on the isolated
+rerun, with the flake disclosed above. The first attempt at `1135f381b`
 was 8/9 only on the blueprint fence: the handoff probe
 shifted one v5 identity from L1815 to L1819. The fence baseline was re-recorded in the open
 (same source/fixture) at `5b7381a34`, whose full gate is the 9/9 above. No assertion was
