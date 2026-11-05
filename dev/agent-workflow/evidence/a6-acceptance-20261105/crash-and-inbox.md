@@ -56,3 +56,20 @@ Root `session-c1-smoke-a6-2026-11-05T20-48-55`, real Host `:3700`.
 reconciled. The guard's consumption (the only one in the ledger) is unrelated.
 So the crash is fail-safe against double execution but **loses an already
 approved call**; there is no post-restart resume/replay path for it.
+
+## After-consume, before-result window (run `a6-crash-consume-r2`)
+
+Root `session-c1-smoke-a6-2026-11-05T21-10-25`, real Host `:3704`.
+
+1. The Plane PA leg was allowed and its `control-allow-consumed` fact appeared:
+   `consBefore=1`.
+2. The probe killed the Host at that point, before the bash result/side effect
+   was written: `fileBefore=0`.
+3. `create-or-open` restart succeeded. After restart: `consAfter=1`, still no
+   file. No second consumption and no execution was added.
+
+`A6-16` PASS for the **no-duplicate** property. The complementary property is
+**not** met: the allow was consumed but the command was never executed, and
+nothing reconciles or replays it. The post-restart ledger therefore contains an
+allow that has been spent without its tool result — an at-most-once, not
+at-least-once, recovery.
