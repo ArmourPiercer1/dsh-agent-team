@@ -1,0 +1,15 @@
+✔ the register parses into rows and a summary table (0.399567ms)
+✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.625955ms)
+✔ (d) every row has all required fields exactly once (0.512931ms)
+✔ (d) every row declares one consequence class from the closed set, and the table agrees (0.272907ms)
+✔ (a) every finding id is still present in the evidence file that originated it (1.379592ms)
+✔ (b) every anchor resolves and still contains the symbol the row claims (3.585738ms)
+✔ the register names the evidence it digests and does not claim a boot (0.152268ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.024477
