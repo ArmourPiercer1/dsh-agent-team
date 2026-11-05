@@ -169,11 +169,17 @@ export function createAlpha6RootControlNotifier(ports: {
         }
         if (route.kind === 'no-work') return
         if (route.kind === 'unroutable' || route.kind === 'hold') {
-          // A row whose OWN durable authority is the Leader (the legacy
+          // A LEGACY row whose OWN durable authority is the Leader (the
           // parameter-permission ask carries no Alpha.6 ordinary-tool facts)
-          // is legally the Leader's to settle. This is not a fallback for a
-          // member-authority leg: those still refuse below.
-          if (request.kind === 'leader-approval' && request.reviewAuthority === 'leader' && ports.notifyLeader !== undefined) {
+          // is legally the Leader's to settle. An authored policy `hold` is
+          // NEVER overridden, and an A6 ordinary ask (tool owner/name
+          // present) is never handed to the Leader.
+          const legacyLeaderRow =
+            request.kind === 'leader-approval' &&
+            request.reviewAuthority === 'leader' &&
+            request.operationToolOwner === undefined &&
+            request.operationToolName === undefined
+          if (route.kind === 'unroutable' && legacyLeaderRow && ports.notifyLeader !== undefined) {
             await ports.notifyLeader(request)
             return
           }
@@ -194,7 +200,7 @@ export function createAlpha6RootControlNotifier(ports: {
         return await deliverOfficerWake(ports, request, route.target.instanceId)
       }
       const reviewer = await ports.resolveCurrentReviewer({
-        rootSessionId: ports.rootSessionId,
+        rootSessionId: request.rootSessionId,
         approvalCaseId: request.approvalCaseId,
         currentLegRequestId: request.requestId,
         legOrdinal: request.legOrdinal,

@@ -770,6 +770,26 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
     })).resolves.toEqual({ instanceId: 'inst-a6-created-officer' })
   })
 
+  it('refuses a root when routingForRoot explicitly answers null', async () => {
+    const ports = createAlpha6ControlPorts({
+      rootSessionId: P6T4_ROOT,
+      routing: BASE_ROUTING,
+      routingForRoot: () => null,
+      control: { readControlState: async () => ({ requests: [], transfers: [] } as never) },
+      members: {
+        get: () => undefined,
+        list: () => [],
+      },
+      fixedLeaderOrHumanCategory: () => false,
+    })
+    await expect(ports.currentReviewerForTransfer({
+      rootSessionId: 'root-a6-unresolvable',
+      approvalCaseId: 'case-a6-unresolvable',
+      currentLegRequestId: 'ctrl-a6-unresolvable',
+      legOrdinal: 1,
+    })).resolves.toBeNull()
+  })
+
   it('live root composition pins no startup Officer and resolves the current unique one at query time', async () => {
     const world = await makeWorld('a6-live-root-composition')
     try {

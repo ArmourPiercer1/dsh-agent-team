@@ -551,7 +551,7 @@ export function createAlpha6ControlPorts(input: Alpha6ControlPortsInput): Alpha6
     const existing = portsByRoot.get(rootSessionId)
     if (existing !== undefined) return existing
     const created = (async () => {
-      const parsed = input.routingForRoot?.(rootSessionId) ?? input.routing
+      const parsed = input.routingForRoot === undefined ? input.routing : input.routingForRoot(rootSessionId)
       if (parsed === null) return null
       return createAssignedOfficerFactsPort({
         rootSessionId,
