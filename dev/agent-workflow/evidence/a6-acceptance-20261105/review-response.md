@@ -58,11 +58,12 @@ use boot routing) from `null` (this root is refused). Test added:
 
 The landing presenter and `requestedEffect: 'allow'` remain evidenced by the
 real-Host ledger (seq 8/9 and 11/12); the new test pins the security-critical
-verifier branch.
+verifier branch. The real Host E2E was rerun after these fixes at `c26a9a00`:
+6/6 criteria, one execution, 2/2/2 consumption, pending 0.
 
 ## P2-3 — gate evidence — ADDRESSED
 
-A full `--full` gate is rerun at the final docs-inclusive HEAD; `gate.md` binds
+A full `--full` gate is rerun at code HEAD `c26a9a00`; `gate.md` binds
 the result and keeps the earlier census-flake disclosure. The pre-existing
 `a6-pr1-lane-hygiene` `readFileSync` race is disclosed, not hidden; no assertion
 was changed to obtain a green.
