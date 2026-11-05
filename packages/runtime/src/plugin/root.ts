@@ -241,7 +241,7 @@ import {
 } from '../../alpha6/wake-dispatch.js'
 import type { LatchCoordinator } from '../../alpha6/wake-dispatch.js'
 import type { PlannedWake } from '../../alpha6/wake-plan.js'
-import type { PaCallFacts } from '../../control/types.js'
+import type { ControlReviewEvent, PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs'
@@ -2902,6 +2902,33 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
       : undefined
+  // A6-PR2c transfer/human-leg events are the wake plane's only signal that a
+  // CASE'S CURRENT LEG moved. Without this consumer the durable transfer (and
+  // the escalation's human leg) is written but its successor is never woken —
+  // the old reviewer's latch is correctly retired, so the pending leg is left
+  // with no recipient at all. Re-read the moved leg, then run it through the
+  // SAME trusted notifier/route used at creation; the notifier's current-leg
+  // transfer route picks the successor, never the former reviewer.
+  const alpha6ReviewEventSink =
+    alpha6Wiring.mode === 'alpha6' && alpha6RequestNotification !== undefined
+      ? (event: ControlReviewEvent): void => {
+          if (event.kind !== 'current-leg-transferred' && event.kind !== 'human-current-leg') return
+          void (async () => {
+            const current = controlRef.current
+            if (current === undefined) return
+            const state = await current.readControlState(event.rootSessionId)
+            const record = state.requests.find((row) => row.requestId === event.currentLegRequestId)
+            if (record === undefined) return
+            await alpha6RequestNotification.notifyLeaderRequest(record)
+          })().catch((error: unknown) => {
+            params.onNotificationFailure?.({
+              requestId: event.currentLegRequestId,
+              kind: `review-event-${event.kind}`,
+              error,
+            })
+          })
+        }
+      : undefined
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
@@ -2910,6 +2937,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
     // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
     ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
+    ...(alpha6ReviewEventSink === undefined ? {} : { reviewEvents: alpha6ReviewEventSink }),
     ...(params.onNotificationFailure !== undefined
       ? { onNotificationFailure: params.onNotificationFailure }
       : {}),
