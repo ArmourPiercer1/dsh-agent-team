@@ -1,14 +1,14 @@
 {
   "schema": "a5sf-search-live/go-no-go/1",
   "branch": "task/a5sf-search-live2-20261105",
-  "evidenceHeadAtDryRun": "deec8053e8d303ef8f7bba212c2e591bef3ab244",
-  "productTreeDigest": "c783a31781290ea2ef32dd2b2733d25973626eedde950cb5eefef889a8bcbf0b",
+  "evidenceHeadAtDryRun": "c658d974d3d0502af482727b0aea23482f5e3920",
+  "productTreeDigest": "6dc0f743155867b7b463ecae3af472ef32f5686f1155eb272425c0f5a549664d",
   "pinnedHost": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pool": {
     "item": "P2-04 grep (BL-16)",
     "boots": 10,
-    "consumed": 9,
-    "remaining": 1
+    "consumed": 10,
+    "remaining": 0
   },
   "ruling": {
     "authorisedStarts": 10,
@@ -33,18 +33,18 @@
   },
   "ledger": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-    "rows": 18,
-    "intents": 9,
-    "bootRows": 9,
+    "rows": 20,
+    "intents": 10,
+    "bootRows": 10,
     "aborts": 0,
     "unparseable": 0,
     "orphanBootRuns": [],
     "orphanAbortRuns": [],
     "plannedMismatch": [],
     "bootsInPool": 10,
-    "remaining": 1
+    "remaining": 0
   },
-  "go": true,
+  "go": false,
   "checks": [
     {
       "id": "dry-run evidence exists and is green",
@@ -108,8 +108,8 @@
       "id": "handoff: the plan was produced on THIS commit and carries a non-empty patch",
       "ok": true,
       "detail": {
-        "planHead": "deec8053e8d303ef8f7bba212c2e591bef3ab244",
-        "head": "deec8053e8d303ef8f7bba212c2e591bef3ab244",
+        "planHead": "c658d974d3d0502af482727b0aea23482f5e3920",
+        "head": "c658d974d3d0502af482727b0aea23482f5e3920",
         "patchBytes": 6630,
         "patchSha256": "a165c6e05a40bb185020f2c2ce17b8b89b3954687703871221881baf39cb3d2b"
       }
@@ -118,8 +118,8 @@
       "id": "the PRODUCT tree matches the one the dry run measured",
       "ok": true,
       "detail": {
-        "committed": "c783a31781290ea2ef32dd2b2733d25973626eedde950cb5eefef889a8bcbf0b",
-        "now": "c783a31781290ea2ef32dd2b2733d25973626eedde950cb5eefef889a8bcbf0b"
+        "committed": "6dc0f743155867b7b463ecae3af472ef32f5686f1155eb272425c0f5a549664d",
+        "now": "6dc0f743155867b7b463ecae3af472ef32f5686f1155eb272425c0f5a549664d"
       }
     },
     {
@@ -137,16 +137,16 @@
       "ok": true,
       "detail": {
         "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/dev/agent-workflow/evidence/a5sf-search-live/run-ledger.jsonl",
-        "rows": 18,
-        "intents": 9,
-        "bootRows": 9,
+        "rows": 20,
+        "intents": 10,
+        "bootRows": 10,
         "aborts": 0,
         "unparseable": 0,
         "orphanBootRuns": [],
         "orphanAbortRuns": [],
         "plannedMismatch": [],
         "bootsInPool": 10,
-        "remaining": 1
+        "remaining": 0
       }
     },
     {
@@ -160,14 +160,14 @@
       "id": "ledger: each intent's plannedStarts equals its boot rows, net of declared aborts",
       "ok": true,
       "detail": {
-        "intents": 9,
+        "intents": 10,
         "mismatch": []
       }
     },
     {
       "id": "budget: at least ONE P2-04 start is still available",
-      "ok": true,
-      "detail": "boots=10 spent=9 remaining=1"
+      "ok": false,
+      "detail": "boots=10 spent=10 remaining=0"
     },
     {
       "id": "boot pool allocates the three P2-04 starts (the ruling)",
@@ -211,8 +211,8 @@
     },
     {
       "id": "budget: this start is authorised by the named rulings",
-      "ok": true,
-      "detail": "named=10 spent=9 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
+      "ok": false,
+      "detail": "named=10 spent=10 — a further start needs a NEW ruling entry appended to lane-ruling.json, not an edit to authorisedStarts"
     },
     {
       "id": "pinned host tree is at the pinned commit and clean",

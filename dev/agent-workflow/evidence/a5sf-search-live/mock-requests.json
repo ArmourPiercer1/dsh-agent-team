@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-search-live/mock-requests/1",
-  "at": "2026-11-04T20:22:31.132Z",
+  "at": "2026-11-04T23:23:08.866Z",
   "label": "member turn dispatched",
   "note": "the model-visible transcript the tool-result bytes live in; written OUTSIDE the World home so teardown cannot swallow it",
   "requests": [
@@ -31,8 +31,8 @@
             "id": "call-a5sfsrch-probe",
             "name": "grep",
             "arguments": {
-              "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+              "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
             }
           }
         ]
@@ -81,8 +81,8 @@
               "id": "call-a5sfsrch-probe",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -96,7 +96,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
               "is_error": false
@@ -115,7 +115,7 @@
             "name": "grep",
             "arguments": {
               "pattern": "A5SF_SEARCH_OUTSIDE",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
             }
           }
         ]
@@ -142,8 +142,8 @@
               "id": "call-a5sfsrch-probe",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -157,7 +157,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
               "is_error": false
@@ -212,8 +212,8 @@
               "id": "call-a5sfsrch-probe",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -227,7 +227,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
               "is_error": false
@@ -261,7 +261,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -275,7 +275,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T20-17-23Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T20-17-23Z"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfsrch-20261104T23-18-01Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
               "is_error": false
@@ -286,24 +286,6 @@
     },
     {
       "seq": 6,
-      "reply": {
-        "kind": "text",
-        "content": "a5sf search session"
-      },
-      "messages": [
-        {
-          "role": "user",
-          "content": [
-            {
-              "type": "text",
-              "text": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:bb884c6b16ed71d750f5cb08dfddbdd307b0cd27c97f471a0e98ad8cb141a04c] A5SF_SEARCH_L1_DRIVE\"}]"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "seq": 7,
       "reply": {
         "kind": "tool-call",
         "toolCalls": [
@@ -338,6 +320,24 @@
       ]
     },
     {
+      "seq": 7,
+      "reply": {
+        "kind": "text",
+        "content": "a5sf search session"
+      },
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:bb884c6b16ed71d750f5cb08dfddbdd307b0cd27c97f471a0e98ad8cb141a04c] A5SF_SEARCH_L1_DRIVE\"}]"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "seq": 8,
       "reply": {
         "kind": "text",
@@ -364,8 +364,8 @@
             "id": "call-a5sfsrch-grep-in",
             "name": "grep",
             "arguments": {
-              "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+              "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
             }
           }
         ]
@@ -396,7 +396,7 @@
             "name": "grep",
             "arguments": {
               "pattern": "A5SF_SEARCH_OUTSIDE",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
             }
           }
         ]
@@ -423,8 +423,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -438,10 +438,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         }
@@ -457,7 +457,7 @@
             "name": "grep",
             "arguments": {
               "pattern": "A5SF_SEARCH_RESTRICTION",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/outside-restriction.txt"
             }
           }
         ]
@@ -484,8 +484,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -499,10 +499,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         },
@@ -515,7 +515,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -548,7 +548,7 @@
             "name": "grep",
             "arguments": {
               "pattern": "A5SF_(",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/invalid"
             }
           }
         ]
@@ -575,8 +575,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -590,10 +590,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         },
@@ -606,7 +606,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -636,7 +636,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_RESTRICTION",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/outside-restriction.txt"
               }
             }
           ]
@@ -669,7 +669,7 @@
             "name": "glob",
             "arguments": {
               "pattern": "needle.txt",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob"
             }
           }
         ]
@@ -696,8 +696,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -711,10 +711,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         },
@@ -727,7 +727,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -757,7 +757,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_RESTRICTION",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/outside-restriction.txt"
               }
             }
           ]
@@ -787,7 +787,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_(",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/invalid"
               }
             }
           ]
@@ -820,7 +820,7 @@
             "name": "glob",
             "arguments": {
               "pattern": "secret.txt",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside-glob"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside-glob"
             }
           }
         ]
@@ -847,8 +847,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -862,10 +862,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         },
@@ -878,7 +878,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -908,7 +908,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_RESTRICTION",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/outside-restriction.txt"
               }
             }
           ]
@@ -938,7 +938,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_(",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/invalid"
               }
             }
           ]
@@ -968,7 +968,7 @@
               "name": "glob",
               "input": {
                 "pattern": "needle.txt",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob"
               }
             }
           ]
@@ -982,7 +982,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt"
+                  "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt"
                 }
               ],
               "is_error": false
@@ -1001,7 +1001,7 @@
             "name": "grep",
             "arguments": {
               "pattern": "A5SF_SEARCH_FIFO",
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/blocking.fifo"
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/blocking.fifo"
             }
           }
         ]
@@ -1028,8 +1028,8 @@
               "id": "call-a5sfsrch-grep-in",
               "name": "grep",
               "input": {
-                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T20-17-23Z",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside"
+                "pattern": "A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside"
               }
             }
           ]
@@ -1043,10 +1043,10 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: grep search failed (exit 2): rg: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/.git: Permission denied (os error 13)"
+                  "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/needle.txt\nLine 1: A5SF_SEARCH_NEEDLE_u5a5sfsrch-20261104T23-18-01Z"
                 }
               ],
-              "is_error": true
+              "is_error": false
             }
           ]
         },
@@ -1059,7 +1059,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_OUTSIDE",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside"
               }
             }
           ]
@@ -1089,7 +1089,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_SEARCH_RESTRICTION",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/outside-restriction.txt"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/outside-restriction.txt"
               }
             }
           ]
@@ -1119,7 +1119,7 @@
               "name": "grep",
               "input": {
                 "pattern": "A5SF_(",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/invalid"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/invalid"
               }
             }
           ]
@@ -1149,7 +1149,7 @@
               "name": "glob",
               "input": {
                 "pattern": "needle.txt",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob"
               }
             }
           ]
@@ -1163,7 +1163,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/workspace/lane/inside/glob/needle.txt"
+                  "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/workspace/lane/inside/glob/needle.txt"
                 }
               ],
               "is_error": false
@@ -1179,7 +1179,7 @@
               "name": "glob",
               "input": {
                 "pattern": "secret.txt",
-                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T20-17-23Z/ceiling-outside-glob"
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-search-live2/tests/homes/u5a5sfsrch-20261104T23-18-01Z/ceiling-outside-glob"
               }
             }
           ]

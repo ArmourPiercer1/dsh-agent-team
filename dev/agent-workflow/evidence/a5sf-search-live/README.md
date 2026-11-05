@@ -1,12 +1,11 @@
 # a5sf-search-live — the live half of P2-03 / BL-16 (`grep`), the six-row search acceptance
 
-**Status (2026-11-05, second re-grant): FOUR OF SIX ROWS ARE JUDGED PASS.** The owner
-granted 4 further boots (pool 10, 9 spent, 1 unspent). Rows **2, 3, 5 and 4 PASS** live;
-row **1 REFUTED with bytes** (`rg` reads the repo's ancestor `.git`, is refused by the
-ceiling and exits 2); row **6 FAIL** on a real question (an archived member's tool route
-still executes and spawns). `M-06` stays `ENFORCE-PARTIAL` — now with four measured
-clauses and one refuted clause — and `M-07`'s two glob arms are PROVEN live for the first
-time. Nothing is promoted in the matrix: that file is the owner's.
+**Status (2026-11-05, final): SIX OF SIX ROWS ARE JUDGED PASS, LIVE.** The tenth and
+last `P2-04` boot (run 10, `2026-11-04T23-18-01Z`, port 3182) ran on a tree carrying
+`#593` (lane-safe `rg` argv) and `#594` (an ARCHIVED Member cannot be cold-resumed) and
+returned `overall=PASS cases=6 PASS:6`. Row 1's `confined-exit` is `code=0` with empty
+`stderr`; row 6's post-archive dispatches are `422` with zero guard facts and zero
+spawns. The pool is 10/10 and `go-no-go` now refuses further starts by design.
 
 | attempt | when | port | got to | died at |
 |---|---|---|---|---|
@@ -19,6 +18,7 @@ time. Nothing is promoted in the matrix: that file is the owner's.
 | 7 | 20:01:20–20:07:01Z | 3182 | **rows 2/3/5 judged PASS**; row 1 REFUTED with stderr | completed — row 4 refused by arithmetic, row 6 a finding |
 | 8 | 20:10:19–20:15:30Z | 3182 | the cancel was accepted **4 ms** after the FIFO spawned | completed — row 4's three clauses were mis-reads |
 | 9 | 20:17:23–20:22:33Z | 3182 | **row 4 PASS** (`CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT`) | completed — 4 PASS / 2 FAIL |
+| 10 | 23:18:01–23:23:11Z | 3182 | **ALL SIX PASS** on the `#593`/`#594` tree | completed — `overall=PASS` |
 
 - base: `origin/master` @ `a2c56fb8457a2729289a6d11ba975ac8eeb0c3a9`
 - branch: `task/a5sf-search-live-20261104`; draft PR #588
@@ -402,6 +402,80 @@ three were mis-reads of the product's own evidence:
 
 Run 9, with those three reads corrected, judged row 4 **PASS**.
 
+## 3e. The tenth boot: all six PASS, and exactly what that licenses
+
+Run 10 (`2026-11-04T23-18-01Z`, port 3182) is the first — and, with the pool at 10/10,
+the last — run in which every row reached a judge with a complete sample and passed.
+
+| row | verdict | reason | the number that matters |
+|---|---|---|---|
+| 1 | PASS | `IN_LANE_GREP_ALLOWED_AND_CONFINED` | `confined-exit code=0`, `stderrBytes=0` |
+| 2 | PASS | `OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS` | `deny IO_READ_DENIED`, spawn count unchanged |
+| 3 | PASS | `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION` | ceiling allow / restriction deny / effective deny |
+| 4 | PASS | `CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT` | interrupt `accepted`, child exits 143 |
+| 5 | PASS | `INVALID_PATTERN_SURFACED_AS_TOOL_ERROR` | tool error, never "no matches" |
+| 6 | PASS | `NO_USABLE_CALLABLE_SHADOW_AFTER_STOP` | 422 + 0 facts + 0 spawns |
+
+### Row 1, and the disclosure that has to travel with it
+
+`confined-exit code=0 signal= stderrBytes=0 stderr=""` — the ancestor-discovery failure
+is gone. #593 does not widen the sandbox: when a declared root's discovery walk would
+leave the effective read lane, the invocation gets `--no-ignore-parent --no-ignore-vcs`
+and the allow fact says so, additively:
+
+```
+fact spawn allow ALLOW realm=member binding=null locator=…/workspace/lane/inside
+  annotations=[
+    "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs
+     because an ancestor of the search root is outside the effective read lane, …",
+    "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied … and
+     parent ignore files are NOT read; files they would ignore under this search root
+     ARE searched. .git was not read"
+  ]
+```
+
+So the lane shape measured here is the **lane-scoped** one: the worktree root is outside
+the lane, and `.gitignore` semantics are OFF for this invocation. Row 1 therefore asserts
+the in-lane match, the single `allow` fact and the confined spawn — **not** `.gitignore`
+behaviour, which this shape does not provide. `.git` confidentiality is unaffected: an
+explicit `.git` root is still `IO_READ_DENIED` with zero spawns (host-free).
+
+### Row 6, and where the typed code actually lives
+
+After the archive boundary (`stopInstant` = the archive call, not `world.teardown()`)
+both post-archive dispatches — `grep` and `glob` as the archived child session — return
+**422**, with `factsAtStop=7 probeFacts=0 postStopCounterRows=0`: no guard fact, no
+confined spawn, no base spawn. The wire body is
+
+```json
+{"error": "no live agent for 'session-team-child-…': agent-bindings: session '…' belongs
+ to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume
+ (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"}
+```
+
+**The typed code is not on the wire.** `memberResumeRefusal` produces
+`PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED` internally and `executeTool` re-labels to
+`NO_LIVE_AGENT`, but the route serialises a plain `error` string, so `code=<none>` in
+the driver log is the wire shape, not a missing probe. Recorded here so nobody later
+reads a green row 6 as "the typed code was observed at the boundary".
+
+### What the six PASSes do and do not license
+
+They license, for **this composition and this lane shape**: the Member realm's `grep`
+and `glob` are served by the confined subprocess face; out-of-lane reads (beyond the
+ceiling and beyond the restriction) are refused before any process exists; the guard
+consultation is recorded as one `allow` and one `deny` per decision; an admitted search
+can be cancelled with the child terminating; an invalid pattern is a tool error; and an
+archived Member's tool surface is not callable.
+
+They do **not** license: `.gitignore`/ignore semantics inside a lane-scoped invocation
+(off by design, disclosed on the fact); `toolBindingIdentity` (still `null` — the install
+spec has no field); the preset-expression binding narrowing (row 3's other arm stays
+`UNSUPPORTED`; the row passed through the restriction lane); a binding-realm
+`subprocess` face (BL-17 forbids it); another tool's behaviour; or a World whose
+workspace is not inside a repository (never measured). They also do not license
+"the typed code was seen at the archive boundary" — see above.
+
 ## 4. The two live findings
 
 ### F1 — WITHDRAWN: it was the lane's own instrumentation, not a product finding
@@ -508,7 +582,7 @@ is `realm='member'`, `toolBindingIdentity=null`. The matrix/backlog note should 
 "last start" ruling, and the owner's **3-start re-grant** of 2026-11-05 (pool 3 spent +
 3 fresh = 6). `run-ledger.jsonl` holds 6 intents and 6 boot rows; the invariant
 `bootRows === plannedStarts − aborts` holds per run (`1 = 1 − 0` six times). Pool item
-`P2-04 grep (BL-16)`: **10 allocated, 9 spent, 1 remaining** (`go-no-go` prints GO — the
+`P2-04 grep (BL-16)`: **10 allocated, 10 spent, 0 remaining** (`go-no-go` prints GO — the
 pool is not exhausted, but the lane stops here on purpose: the two remaining failures are
 findings a re-run cannot change). 5 ruling entries: the original task, the retry, the
 "last start" ruling, the owner's 3-start re-grant, and the owner's 4-start re-grant of
@@ -525,7 +599,7 @@ REFUSE the same check after the third boot  →  NO-GO  (spent=3, remaining=0)
 
 ### The cost line the retry ruling asked for
 
-**This vertical has spent 9 of 10 starts and judged 4 of 6 rows PASS** (rows 2, 3, 5, 4),
+**This vertical has spent 10 of 10 starts and judged 6 of 6 rows PASS** (run 10, on the `#593`/`#594` tree),
 with row 1 refuted by a byte-level cause and row 6 open on a contract question. The
 first three starts: a handoff the gate could not see, a composition gap (F2) plus the
 lane's own instrument (F1, withdrawn), and a launch method that killed its own run. The
