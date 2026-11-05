@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract
+
+ ✓ packages/runtime/test/a5p4-network-closure.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 97ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 511ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 1425ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests) 1952ms
+
+ Test Files  5 passed (5)
+      Tests  60 passed (60)
+   Start at  03:51:28
+   Duration  2.52s (transform 1.15s, setup 0ms, import 1.55s, tests 3.99s, environment 0ms)
+

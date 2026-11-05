@@ -1,0 +1,14 @@
+PASS baseline: red=[] expected=[]
+PASS M1-argv-shape-refusal-dropped: red=["P1-ARGV-SHAPE-REJECTED"] expected=["P1-ARGV-SHAPE-REJECTED"]
+       the closed <program> -c <body> shape no longer refuses anything
+PASS M2-undeclared-class-treated-as-declared: red=["P2-CLASS-UNDECLARED"] expected=["P2-CLASS-UNDECLARED"]
+       the no-class branch is skipped, so the admission dereferences an absent class instead of returning SHELL_NOT_DECLARED
+PASS M3-network-refusal-dropped: red=["P3-DENY-REFUSES-BEFORE-SPAWN"] expected=["P3-DENY-REFUSES-BEFORE-SPAWN"]
+       an unproven deny claim no longer refuses; the spawn request is built and the provider refuses it instead
+PASS M4-write-guard-reads-the-read-lane: red=["P4-CHMOD-WRITE-AXIS","P4-WRITE-AXIS-ATTRIBUTION"] expected=["P4-CHMOD-WRITE-AXIS","P4-WRITE-AXIS-ATTRIBUTION"]
+       the write consult uses the READ lane, so a write the read axis allows is admitted (the mis-attribution bug class)
+PASS M5-proxy-overlay-added-to-the-confined-scrub: red=["P5-PROXY-DIVERGENCE"] expected=["P5-PROXY-DIVERGENCE"]
+       the confined scrub gains upstream's proxy flag whenever a proxy is published (the overlay effect)
+PASS M6-absolute-program-check-dropped: red=["GEN-NATIVE-MODULE-BOUNDARY","P1-PRECEDENCE"] expected=["GEN-NATIVE-MODULE-BOUNDARY","P1-PRECEDENCE"]
+       a bare `bash` is no longer refused at argv[0], which is the shipped executor’s own shape
+MUTATION-CONTROLS-PASS

@@ -1,0 +1,25 @@
+✔ P1-ARGV-ACCEPTED-BOUNDARY: the declared shape admits quoting, NUL and a 200 kB body; none is ARGV_UNSUPPORTED (486.658144ms)
+✔ P1-ARGV-SHAPE-REJECTED: a whitespace/empty/non-string body or a non-<-c> shape is ARGV_UNSUPPORTED with zero processes (4.621208ms)
+✔ P1-PRECEDENCE: absolute-program, class/program and declaration checks each refuse BEFORE the argv shape (3.512209ms)
+✔ P2-CLASS-UNDECLARED: the SAME canonical invocation with no declared class is SHELL_NOT_DECLARED, zero processes (2.766057ms)
+✔ P2-CLASS-DECLARED: the SAME canonical invocation with a declared class is admitted and really runs (128.652522ms)
+(node:11) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ P2-SHELL-PROGRAM-NOT-IN-CLASS: a shell program outside the class is PROGRAM_NOT_ADMITTED; adding it to the class admits it (127.957184ms)
+✔ P2-NON-SHELL-PROGRAM-UNAFFECTED: a declared class never admits /bin/cat; the program allow-list still owns it (3.108314ms)
+✔ P3-PROBE-SHAPE: the real probe says network-destination=unsupported with mechanism/evidence null; absence is a capability gap (102.717522ms)
+✔ P3-DENY-REFUSES-BEFORE-SPAWN: a network=deny lane is NETWORK_UNCONFINED_REALM with zero provider calls and no measurement claim (102.977193ms)
+✔ P4-WRITE-AXIS-ATTRIBUTION: a write outside the write lane is spawn:write/IO_WRITE_DENIED while the READ axis allows the same path (4.998424ms)
+✔ P4-WRITE-CONTROL: widening ONLY the write lane admits the same invocation and really creates the file (125.887103ms)
+✔ P4-CHMOD-WRITE-AXIS: a declared chmod outside the write lane is spawn:write and leaves mode+bytes unchanged (3.570309ms)
+✔ P5-ENV-SCRUB: the confined child drops credential-shaped and DSH_* names, keeps ordinary ones, and applies spec overrides (162.780361ms)
+✔ P5-PROXY-DIVERGENCE: with a real proxy policy the unconfined child gets NODE_USE_ENV_PROXY=1 and the confined child does NOT (167.557906ms)
+✔ GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs (22.52862ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1522.528188
