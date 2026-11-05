@@ -1,0 +1,146 @@
+{
+  "schema": "a5sf-web/mutation-controls/1",
+  "generatedAt": "2026-11-05T11:07:41.341Z",
+  "armsFile": "tests/world-factory/a5sf-web.test.mjs",
+  "sources": [
+    "packages/runtime/team-services/src/web.ts"
+  ],
+  "originalSourceSha256": {
+    "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+  },
+  "control": "PASS",
+  "outcomes": [
+    {
+      "mutant": "M1-web-pre-refusal-removed",
+      "description": "the confined web face stops refusing a `network: deny` lane after probing (the refusal becomes dead code)",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "1c46ee3b0f57f099492a463f87b614772bcdacd51eb8f2687b7af09d65313b92"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT-ALLOW": "passed",
+        "SHADOW": "passed",
+        "DENY-PRE-REFUSAL": "failed",
+        "DENY-TYPED-CODE": "failed",
+        "DENY-SEARCH-SECOND-PATH": "failed",
+        "DENY-PROBE-ABSENT": "failed",
+        "PROBE-LOAD-BEARING": "passed",
+        "UNCONFINED-REALM-MOUNT": "passed",
+        "PROBE-REUSE": "passed",
+        "ORDINARY-DSH-FETCH": "passed",
+        "UNCHANGED-SHAPE": "passed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "DENY-PRE-REFUSAL",
+          "DENY-TYPED-CODE",
+          "DENY-SEARCH-SECOND-PATH",
+          "DENY-PROBE-ABSENT"
+        ],
+        "passed": [
+          "ADMIT-ALLOW",
+          "SHADOW",
+          "PROBE-LOAD-BEARING",
+          "UNCONFINED-REALM-MOUNT",
+          "PROBE-REUSE",
+          "ORDINARY-DSH-FETCH",
+          "UNCHANGED-SHAPE",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M2-web-delegation-removed",
+      "description": "the mock returns WITHOUT the provider being consulted (`fetch` answers a canned object)",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "dd6d7f4dd28880987706b415ffd227f30f6bdd18ae571718b8afafe2c3dc37c1"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT-ALLOW": "failed",
+        "SHADOW": "failed",
+        "DENY-PRE-REFUSAL": "passed",
+        "DENY-TYPED-CODE": "passed",
+        "DENY-SEARCH-SECOND-PATH": "passed",
+        "DENY-PROBE-ABSENT": "passed",
+        "PROBE-LOAD-BEARING": "failed",
+        "UNCONFINED-REALM-MOUNT": "passed",
+        "PROBE-REUSE": "passed",
+        "ORDINARY-DSH-FETCH": "passed",
+        "UNCHANGED-SHAPE": "failed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "ADMIT-ALLOW",
+          "SHADOW",
+          "PROBE-LOAD-BEARING",
+          "UNCHANGED-SHAPE"
+        ],
+        "passed": [
+          "DENY-PRE-REFUSAL",
+          "DENY-TYPED-CODE",
+          "DENY-SEARCH-SECOND-PATH",
+          "DENY-PROBE-ABSENT",
+          "UNCONFINED-REALM-MOUNT",
+          "PROBE-REUSE",
+          "ORDINARY-DSH-FETCH",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "mutant": "M3-web-residual-removed",
+      "description": "the ALLOW constituent stops carrying the redirect/proxy residual annotation",
+      "mutatedFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "3d92ebeb5b3336bcfc0c38e32e7b9c1a483d253b8b3e51e90436dbeb2933090f"
+      },
+      "restoredFileSha256": {
+        "packages/runtime/team-services/src/web.ts": "3e41be3b4e2ccbcde1e2a59308966afe12e543f68ec999c90e93a35d267bf901"
+      },
+      "armsExitCode": 1,
+      "observed": {
+        "ADMIT-ALLOW": "failed",
+        "SHADOW": "passed",
+        "DENY-PRE-REFUSAL": "passed",
+        "DENY-TYPED-CODE": "passed",
+        "DENY-SEARCH-SECOND-PATH": "passed",
+        "DENY-PROBE-ABSENT": "passed",
+        "PROBE-LOAD-BEARING": "passed",
+        "UNCONFINED-REALM-MOUNT": "passed",
+        "PROBE-REUSE": "passed",
+        "ORDINARY-DSH-FETCH": "passed",
+        "UNCHANGED-SHAPE": "passed",
+        "COMPOSITION": "passed"
+      },
+      "expected": {
+        "failed": [
+          "ADMIT-ALLOW"
+        ],
+        "passed": [
+          "SHADOW",
+          "DENY-PRE-REFUSAL",
+          "DENY-TYPED-CODE",
+          "DENY-SEARCH-SECOND-PATH",
+          "DENY-PROBE-ABSENT",
+          "PROBE-LOAD-BEARING",
+          "UNCONFINED-REALM-MOUNT",
+          "PROBE-REUSE",
+          "ORDINARY-DSH-FETCH",
+          "UNCHANGED-SHAPE",
+          "COMPOSITION"
+        ]
+      },
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ]
+}

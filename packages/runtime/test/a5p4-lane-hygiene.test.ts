@@ -247,6 +247,22 @@ describe('a5p4 lane purity and dormancy', () => {
       kind: 'types-only',
     },
     {
+      // Alpha.5 sandbox-first BL-18 (P2-05): the Member realm's confined `web`
+      // face names the network-dimension capability row ONLY as a type — it
+      // consumes `ProviderResult` because the ONE capability probe it calls
+      // (BL-17's `probeNetworkDenial`, imported from `./subprocess.js`) speaks
+      // that shape. It imports no factory, builds no provider and starts no
+      // process: the web face receives its provider INSTANCE from the
+      // composition, exactly like the subprocess face above. Booked as a
+      // reviewed types-only edge (exactly one public-face import, no deep path,
+      // no factory call) — the census caught this file as an UNBOOKED
+      // production reference, which is the ledger working, not a false alarm.
+      file: 'runtime/team-services/src/web.ts',
+      lane: 'bl-18 — Member realm confined web face (types-only; provider instance injected)',
+      edge: "import type { ProviderResult } from '../../sandbox-provider/index.js'",
+      kind: 'types-only',
+    },
+    {
       // U7-F (the governed pwsh shell-class row): the pwsh confined backend
       // builds its provider for the SAME Landlock law as the bash row —
       // a true mount (public-face import, own factory call site); the

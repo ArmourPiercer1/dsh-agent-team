@@ -273,8 +273,13 @@ if (!process.argv.includes(CHILD_FLAG)) {
     // 2026-11-04 (BL-16/BL-17 refusal round): `faces` joins the frozen surface. A realm that does
     // not say which services it actually mounts is exactly the bug class the refusal exists to
     // prevent, so the answer is a REQUIRED total field rather than an optional one that can be
-    // omitted; a binding realm answers `{fs:'confined', subprocess:null}`. Widening this pinned
-    // shape is deliberate and is recorded in dev/agent-workflow/evidence/a5sf-bl16-grep/README.md §6.3.
+    // omitted; a binding realm answers `{fs:'confined', subprocess:null, web:null}`. Widening this
+    // pinned shape is deliberate and is recorded in dev/agent-workflow/evidence/a5sf-bl16-grep/README.md §6.3.
+    //
+    // 2026-11-05 (BL-18/P2-05): the same TOTAL-answer law gains the NETWORK face. A binding realm
+    // still mounts `fs` only, so its answer is `web: null` — an explicit "this realm confines no
+    // web", which `mountNativeToolModules` turns into the typed composition-time refusal for a
+    // `web`-consuming module. The field is not optional for the same reason `subprocess` is not.
     const realmKeys = ['ctx', 'dispose', 'faces', 'fs', 'identity', 'policyRevision', 'toolBindingIdentity']
 
     const rootDefault = await makeRoot()
@@ -289,7 +294,7 @@ if (!process.argv.includes(CHILD_FLAG)) {
     for (const realm of [realmDefault, realmUndefined, realmObserved]) {
       assert.deepEqual(Object.keys(realm).sort(), realmKeys)
       assert.equal(Object.isFrozen(realm), true)
-      assert.deepEqual(realm.faces, { fs: 'confined', subprocess: null })
+      assert.deepEqual(realm.faces, { fs: 'confined', subprocess: null, web: null })
       assert.equal(realm.toolBindingIdentity, BINDING)
       assert.equal(realm.policyRevision, BINDING_REVISION)
       assert.deepEqual(JSON.parse(JSON.stringify(realm.identity)), { ...IDENTITY })

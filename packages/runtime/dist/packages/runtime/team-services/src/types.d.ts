@@ -19,9 +19,9 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderSurface } from './fs.js';
-import type { ConfinedSubprocessSurface } from './install.js';
+import type { ConfinedSubprocessSurface, ConfinedWebSurface } from './install.js';
 /** Closed per-call denial vocabulary of an installed Provider. */
-export declare const TEAM_IO_DENIAL_CODES: readonly ["IO_READ_DENIED", "IO_WRITE_DENIED", "IO_WRITE_REQUIRES_READ", "IO_POLICY_UNSUPPORTED", "IO_ASK_REQUIRES_APPROVAL"];
+export declare const TEAM_IO_DENIAL_CODES: readonly ["IO_READ_DENIED", "IO_WRITE_DENIED", "IO_WRITE_REQUIRES_READ", "IO_POLICY_UNSUPPORTED", "IO_ASK_REQUIRES_APPROVAL", "NETWORK_UNCONFINED_REALM"];
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number];
 /** Closed install-time refusal vocabulary. */
 export declare const TEAM_SERVICE_INSTALL_CODES: readonly ["MEMBER_POLICY_UNAVAILABLE", "MEMBER_POLICY_STALE", "MEMBER_IDENTITY_INVALID", "MEMBER_DUPLICATE", "PROVIDER_UNAVAILABLE", "PROVIDER_INCOMPATIBLE", "SERVICE_ALREADY_INSTALLED", "SERVICE_MOUNT_FAILED", "SUBPROCESS_UNCONFINED_REALM", "TERMINALS_LEGACY_PTY_REFUSED", "NETWORK_UNCONFINED_REALM", "REALM_DECLARATION_INVALID", "REALM_DECLARATION_EXCEEDS_BLUEPRINT", "MEMBER_POLICY_WITHOUT_BLUEPRINT"];
@@ -66,6 +66,15 @@ export interface RealmServiceFaces {
     readonly fs: 'confined';
     /** The confined process face mounted on this realm's isolated scope, or null. */
     readonly subprocess: ConfinedSubprocessSurface | null;
+    /**
+     * BL-18: the confined `web` face mounted on this realm's isolated scope, or
+     * `null` — an EXPLICIT answer, never an omission. `mountNativeToolModules`
+     * refuses a `web`-consuming native module (the pinned `tool-web` declares
+     * `inject: ["tools","web","systemPrompt"]`) on a realm whose answer is
+     * `null`, instead of letting the module resolve the inherited host
+     * `ctx.web` and fetch with zero guard facts.
+     */
+    readonly web: ConfinedWebSurface | null;
 }
 /**
  * One Member's installed realm: the isolated Context that carries the

@@ -203,6 +203,13 @@ export interface ConfinedCapabilityRow {
 /** The one provider method a confined spawn needs. */
 export interface ConfinedProcessProvider {
   spawnStreaming(request: SpawnRequest, streaming?: StreamingOptions): Promise<ProviderResult<ConfinedStreamProcess>>
+  /**
+   * OPTIONAL capability probe (BL-17). The shipped OS provider carries it; a
+   * double without one is `unsupported`, never a default allow. BL-18 shares
+   * this declaration with the confined `web` face through
+   * {@link NetworkCapabilityProbeCarrier}, so one probe answers both lanes.
+   */
+  readonly probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>
 }
 
 /** One bounded output reader (the native `SubprocessOutputReader` contract). */
@@ -935,6 +942,21 @@ export function createMemberSubprocessWriteGuard(
 // BL-17 — the network dimension: ask the backend, never assume it
 // ---------------------------------------------------------------------------
 
+/**
+ * BL-18 — the structural carrier `probeNetworkDenial` needs.
+ *
+ * The probe is an OPTIONAL capability discovered on the backend object
+ * (`provider.probe?.()`); `ConfinedProcessProvider` was only ever the FIRST
+ * carrier. Declaring the minimum shape here is what lets the confined `web`
+ * face call the SAME probe instead of growing a second, disagreeable one: a
+ * process backend and a web backend answer one question with one vocabulary.
+ * Every existing caller satisfies it structurally, so this is a widening that
+ * changes no call site and no behaviour.
+ */
+export interface NetworkCapabilityProbeCarrier {
+  readonly probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>
+}
+
 /** What the backend's own probe said about the network dimension. */
 export interface ConfinedNetworkCapabilityProbe {
   readonly dimension: 'network-destination'
@@ -957,7 +979,7 @@ export interface ConfinedNetworkCapabilityProbe {
  * answer. No probe, a refused probe, or any other level all mean
  * `unsupported` — the closed answer, never a default-allow.
  */
-export async function probeNetworkDenial(provider: ConfinedProcessProvider): Promise<ConfinedNetworkCapabilityProbe> {
+export async function probeNetworkDenial(provider: NetworkCapabilityProbeCarrier): Promise<ConfinedNetworkCapabilityProbe> {
   const unsupported = (note: string): ConfinedNetworkCapabilityProbe => Object.freeze({
     dimension: 'network-destination' as const,
     level: 'unsupported' as const,
@@ -968,9 +990,7 @@ export async function probeNetworkDenial(provider: ConfinedProcessProvider): Pro
   // (`ConfinedProcessProvider` stays the one-method seam every existing provider
   // and double already satisfies; P1-07's provider carries `probe()`). Absence,
   // a throw, a refusal or a missing row are all the SAME closed answer.
-  const probe = (provider as {
-    probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>
-  }).probe
+  const probe = provider.probe
   if (typeof probe !== 'function') {
     return unsupported('the confined provider exposes no capability probe, so network enforcement cannot be proven')
   }

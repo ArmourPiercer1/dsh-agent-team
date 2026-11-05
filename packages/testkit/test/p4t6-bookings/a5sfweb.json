@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFWEB",
+  "paths": [
+    "packages/runtime/team-services/src/web.ts"
+  ],
+  "expectedDelta": {
+    "from": 1433,
+    "to": 1434
+  },
+  "reason": "a5sf BL-18/P2-05 (branch task/a5sf-web-20261105): the confined `web` face — the network axis of a governed Member. One new scannable source: `web.ts` (the host `web` service subclass whose `fetch`/`search` consult the compiled `effective.network.access` BEFORE any provider call, the typed `NETWORK_UNCONFINED_REALM` refusal built on BL-17's `probeNetworkDenial`, the `WEB_NETWORK_RESIDUALS` annotation law for the admitted call, and the exported guard-method/face vocabulary). The sibling edits ride already-counted paths (subprocess.ts probe-signature widening, install/mount/types/index faces), and the arms (`tests/world-factory/a5sf-web.test.mjs` + `lib/a5sf-web-arms.mjs`), the dist mirrors and dev/ evidence are .mjs/generated/outside the scan. Zero denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this branch with `web.ts` on disk and this booking absent, the p4t6 scan reads `scanner counts 1434, ledger derives 983 + 450 = 1433` (vitest run of packages/testkit/test/p4t6-session-event-scan.test.ts, log `.scratch/p4t6-unbooked.log`). The merged-tree ledger already derives 1433 across 99 bookings; this booking adds exactly one path."
+}

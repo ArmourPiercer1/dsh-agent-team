@@ -25,6 +25,7 @@ import type { Context } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import { type FsProviderConstructor, type FsProviderSurface } from './fs.js';
 import { createConfinedSubprocessClass, type ConfinedProcessProvider, type SubprocessProviderConstructor } from './subprocess.js';
+import { type ConfinedWebProvider, type WebProviderConstructor } from './web.js';
 import { type GuardConsultObserver } from './guard-observability.js';
 import { type MemberIoInstallation, type RealmServiceFaces } from './types.js';
 /** One Member to install: identity + its compiled policy (or the refusal). */
@@ -62,6 +63,15 @@ export interface InstallMemberIoProvidersInput {
      * mounted and the inherited service is untouched (the historical behavior).
      */
     readonly subprocess?: ConfinedSubprocessRealmSpec;
+    /**
+     * BL-18 (2026-11-05): mount a CONFINED `web` face on the SAME isolated Member
+     * scope, so a routed native module that injects `web` (the pinned `tool-web`
+     * row `web_fetch`/`web_search`) executes on the Member's compiled network
+     * lane instead of the inherited host `ctx.web`. Omitted = nothing is mounted
+     * and a `web`-consuming module is refused at composition time (default-
+     * preserving: today's product tree declares none).
+     */
+    readonly web?: ConfinedWebRealmSpec;
 }
 /**
  * The confined `subprocess` face of ONE Member realm.
@@ -95,6 +105,25 @@ export interface ConfinedSubprocessRealmSpec {
 export interface ConfinedSubprocessSurface {
     spawn(spec: unknown): unknown;
     spawnTerminal?(spec: unknown): Promise<unknown>;
+}
+export type { ConfinedWebProvider, ConfinedWebSurface, WebProviderConstructor } from './web.js';
+/**
+ * The confined `web` face of ONE Member realm (BL-18).
+ *
+ * `effective` is the SAME compiled `EffectiveIo` the `fs` face guards with — the
+ * network decision is `effective.network.access`, already produced by
+ * `compileEffectiveIo` (ceiling ∩ tool restriction); this lane never re-derives
+ * an intersection. `provider` is the composition-owned web transport (the ONE
+ * place a real socket lives), injected next to the launcher pin exactly like the
+ * confined process provider, so a Member can never supply or widen it.
+ */
+export interface ConfinedWebRealmSpec {
+    readonly effective: EffectiveIoPolicy;
+    readonly provider: ConfinedWebProvider;
+    readonly realmId?: string;
+    readonly memberScope?: string;
+    /** Explicit base class; omitted = sample the live `web` service. */
+    readonly providerClass?: WebProviderConstructor;
 }
 /**
  * Install one confined Provider per Member into its own isolated `fs` scope.

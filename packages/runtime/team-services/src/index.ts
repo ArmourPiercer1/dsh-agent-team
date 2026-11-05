@@ -1,8 +1,10 @@
 /**
  * `@dsh-agent-team/runtime/team-services` — Alpha.5 P1-05: the per-Member
  * Service realm (isolated `ctx.fs` scope + confined Provider subclass) and the
- * install/denial vocabulary. BL-16 adds the confined `subprocess` face
- * (`subprocess.ts`); the web provider is still P1-06/out of this lane.
+ * install/denial vocabulary. BL-16/BL-17 add the confined `subprocess` face
+ * (`subprocess.ts`); BL-18 adds the confined `web` face (`web.ts`) — the
+ * network axis, refused before any provider call when the compiled lane
+ * requests `network: deny` and no backend proves enforcement.
  *
  * @module @dsh-agent-team/runtime/team-services
  */
@@ -19,11 +21,26 @@ export {
 export type {
   ConfinedSubprocessRealmSpec,
   ConfinedSubprocessSurface,
+  ConfinedWebRealmSpec,
+  ConfinedWebSurface,
   InstallMemberIoProvidersInput,
   MemberServiceSpec,
   ToolBindingRealm,
   ToolBindingRealmSpec,
 } from './install.js'
+export {
+  WEB_FETCH_GUARD_METHOD,
+  WEB_NETWORK_RESIDUALS,
+  WEB_SEARCH_GUARD_METHOD,
+  createConfinedWebClass,
+  createWebNetworkGuard,
+} from './web.js'
+export type {
+  ConfinedWebOptions,
+  ConfinedWebProvider,
+  WebNetworkResidual,
+  WebProviderConstructor,
+} from './web.js'
 export {
   CONFINED_SHELL_ADMISSION_CODES,
   CONFINED_SUBPROCESS_REFUSAL_CODES,

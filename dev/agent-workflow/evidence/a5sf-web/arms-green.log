@@ -1,0 +1,20 @@
+✔ ADMIT-ALLOW: a governed Member with network allow reaches EXACTLY ONE provider fetch with the declared URL (14.378713ms)
+✔ SHADOW: the allow path resolves the CONFINED face, never the inherited host ctx.web (tripwire) (4.228376ms)
+✔ DENY-PRE-REFUSAL: network deny refuses web_fetch before the provider: 0 fetch, 0 DNS, 0 connect, 0 proxy, one typed fact (4.606051ms)
+✔ DENY-TYPED-CODE: the confined face throws the typed NETWORK_UNCONFINED_REALM (not a message convention) (0.25337ms)
+✔ DENY-SEARCH-SECOND-PATH: the sibling web_search on the same face is refused too (no second call path) (5.464837ms)
+✔ DENY-PROBE-ABSENT: a backend with NO probe answers unsupported (closed), never a default allow (3.661131ms)
+✔ PROBE-LOAD-BEARING: the refusal is the probe's ANSWER — a backend that proves `enforced` is admitted (3.330476ms)
+✔ UNCONFINED-REALM-MOUNT: the REAL tool-web module is refused on a realm that owns no confined web face (2.900653ms)
+✔ PROBE-REUSE: the web face calls BL-17's probeNetworkDenial — it does not own a second probe (0.34299ms)
+✔ ORDINARY-DSH-FETCH: with NO Alpha.5 realm the host web_fetch fetches exactly as today (4.295242ms)
+✔ UNCHANGED-SHAPE: a network-allow realm returns BYTE-IDENTICAL model text to the ordinary host path (7.765331ms)
+✔ COMPOSITION: the web provider is a composition input, never a Member field (0.490298ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 372.953543
