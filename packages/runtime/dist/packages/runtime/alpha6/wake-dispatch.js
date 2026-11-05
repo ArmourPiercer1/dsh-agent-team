@@ -256,7 +256,7 @@ export async function dispatchReviewWakes(deps) {
                 wakeId: effect.wakeId,
                 workFingerprint: effect.workFingerprint,
             });
-            await deliver(effect);
+            await deliver({ ...effect, requestIds: wake.currentLegIds });
             accepted = true;
         }
         catch (error) {
@@ -492,7 +492,7 @@ export async function releaseReviewWake(coordinator, work, deliverOrOptions = {}
                 wakeId: effect.wakeId,
                 workFingerprint: effect.workFingerprint,
             });
-            await options.deliver(effect);
+            await options.deliver(options.requestIds === undefined ? effect : { ...effect, requestIds: options.requestIds });
         }
         catch (error) {
             let landed = false;

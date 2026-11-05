@@ -115,17 +115,17 @@ export interface Alpha6NotifierReviewerPort {
 export function createAlpha6RootControlNotifier(ports: {
   readonly rootSessionId: string
   readonly resolveCurrentReviewer: Alpha6NotifierReviewerPort
-  readonly memberSession: (instanceId: string) =>
+  readonly memberSession: (rootSessionId: string, instanceId: string) =>
     | { readonly childSessionId?: string }
     | undefined
     | Promise<{ readonly childSessionId?: string } | undefined>
-  readonly deliver: WakeDeliveryPort
+  readonly deliver: (rootSessionId: string, wake: Parameters<WakeDeliveryPort>[0]) => Promise<void>
   /**
    * Optional trusted merge inputs. When BOTH are present, the notifier reads
    * the durable pending legs, keeps only those the SAME facts port proves are
    * delegable to the SAME reviewer, and delivers ONE wake for the group.
    */
-  readonly readRequests?: () => Promise<readonly ControlRequestRecord[]>
+  readonly readRequests?: (rootSessionId: string) => Promise<readonly ControlRequestRecord[]>
   readonly reviewFacts?: (
     query: AssignedOfficerReviewFactsQuery,
   ) => Promise<AssignedOfficerReviewFacts | null>
@@ -134,11 +134,12 @@ export function createAlpha6RootControlNotifier(ports: {
    * ONLY recipient authority: a Leader/Human/held route is never delivered to
    * the current Officer merely because that Officer exists.
    */
-  readonly route?: (requestId: string) => Promise<ReviewRoute | null>
+  readonly route?: (requestId: string, rootSessionId?: string) => Promise<ReviewRoute | null>
   /** The legacy Leader liveness notification, used for a LEGAL Leader route. */
   readonly notifyLeader?: (request: ControlRequestRecord) => Promise<void>
   /** Coordinator seam: when present, delivery goes through the latch. */
   readonly dispatchWake?: (input: {
+    readonly rootSessionId: string
     readonly reviewerInstanceId: string
     readonly targetSessionId: string
     readonly currentLegIds: readonly string[]
@@ -160,7 +161,7 @@ export function createAlpha6RootControlNotifier(ports: {
         )
       }
       if (ports.route !== undefined) {
-        const route = await ports.route(request.requestId)
+        const route = await ports.route(request.requestId, request.rootSessionId)
         if (route === null) {
           throw new Error(
             `Alpha.6 review wake refused: no trusted route for request '${request.requestId}' (no Leader fallback)`,
@@ -168,6 +169,14 @@ export function createAlpha6RootControlNotifier(ports: {
         }
         if (route.kind === 'no-work') return
         if (route.kind === 'unroutable' || route.kind === 'hold') {
+          // A row whose OWN durable authority is the Leader (the legacy
+          // parameter-permission ask carries no Alpha.6 ordinary-tool facts)
+          // is legally the Leader's to settle. This is not a fallback for a
+          // member-authority leg: those still refuse below.
+          if (request.kind === 'leader-approval' && request.reviewAuthority === 'leader' && ports.notifyLeader !== undefined) {
+            await ports.notifyLeader(request)
+            return
+          }
           throw new Error(
             `Alpha.6 review wake refused: request '${request.requestId}' is ${route.kind} (${route.reason}); no Officer wake and no Leader fallback`,
           )
@@ -206,7 +215,7 @@ export function createAlpha6RootControlNotifier(ports: {
     reviewerInstanceId: string,
   ): Promise<void> {
       const reviewer = { instanceId: reviewerInstanceId }
-      const member = await ports.memberSession(reviewer.instanceId)
+      const member = await ports.memberSession(request.rootSessionId, reviewer.instanceId)
       const targetSessionId = member?.childSessionId
       if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
         throw new Error(
@@ -220,7 +229,7 @@ export function createAlpha6RootControlNotifier(ports: {
       const merged =
         ports.readRequests !== undefined && ports.reviewFacts !== undefined
           ? await collectAlpha6DelegableLegs({
-              rootSessionId: ports.rootSessionId,
+              rootSessionId: request.rootSessionId,
               reviewerInstanceId: reviewer.instanceId,
               seed: request,
               readRequests: ports.readRequests,
@@ -232,6 +241,7 @@ export function createAlpha6RootControlNotifier(ports: {
       const mergedIds = merged.map((entry) => entry.requestId).sort()
       if (ports.dispatchWake !== undefined) {
         await ports.dispatchWake({
+          rootSessionId: request.rootSessionId,
           reviewerInstanceId: reviewer.instanceId,
           targetSessionId,
           currentLegIds: mergedIds,
@@ -239,14 +249,14 @@ export function createAlpha6RootControlNotifier(ports: {
         return
       }
       if (merged.length === 1) {
-        await ports.deliver({
+        await ports.deliver(request.rootSessionId, {
           targetSessionId,
           wakeId: `review:${request.requestId}`,
           text: renderOfficerReviewWake(request),
         })
         return
       }
-      await ports.deliver({
+      await ports.deliver(request.rootSessionId, {
         targetSessionId,
         wakeId: `review:${mergedIds.join(',')}`,
         text: renderMergedOfficerReviewWake(merged),
@@ -275,7 +285,7 @@ export interface Alpha6DelegableLegsInput {
   readonly reviewerInstanceId: string
   /** The already-trusted leg that triggered this read (included verbatim). */
   readonly seed?: ControlRequestRecord
-  readonly readRequests: () => Promise<readonly ControlRequestRecord[]>
+  readonly readRequests: (rootSessionId: string) => Promise<readonly ControlRequestRecord[]>
   readonly reviewFacts: (
     query: AssignedOfficerReviewFactsQuery,
   ) => Promise<AssignedOfficerReviewFacts | null>
@@ -286,7 +296,7 @@ export interface Alpha6DelegableLegsInput {
     readonly legOrdinal: number
   }) => Promise<{ readonly instanceId: string } | null>
   /** The ONE shared router decision, when the caller has it. */
-  readonly route?: (requestId: string) => Promise<ReviewRoute | null>
+  readonly route?: (requestId: string, rootSessionId?: string) => Promise<ReviewRoute | null>
 }
 
 /**
@@ -300,7 +310,7 @@ export async function collectAlpha6DelegableLegs(
   const merged: ControlRequestRecord[] = input.seed === undefined ? [] : [input.seed]
   let pending: readonly ControlRequestRecord[]
   try {
-    pending = await input.readRequests()
+    pending = await input.readRequests(input.rootSessionId)
   } catch {
     pending = []
   }
@@ -311,7 +321,7 @@ export async function collectAlpha6DelegableLegs(
     if (candidate.approvalCaseId === undefined || candidate.legOrdinal === undefined) continue
     if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined) continue
     if (input.route !== undefined) {
-      const route = await input.route(candidate.requestId)
+      const route = await input.route(candidate.requestId, input.rootSessionId)
       if (
         route === null ||
         route.kind !== 'recipient' ||

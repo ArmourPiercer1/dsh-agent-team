@@ -1453,6 +1453,13 @@ export interface PaEffectsVerifierInput {
   /** The REAL decider: the resolving caller (stage 'resolve') or the
    *  durable allow's decider (stage 'guard'). Never a presented stand-in. */
   readonly decider: ControlCallerRef
+  /**
+   * The rung the decider EXERCISED for this leg, when the durable decision
+   * carries normalized capability evidence. An assigned Officer reviews at
+   * the leg's frozen rung (leader), not at its principal's native member
+   * rung; absent evidence leaves the verifier on the principal-derived rung.
+   */
+  readonly reviewerAuthority?: ProposalAuthorityPosition
   /** PR358-B: the call-level facts, when the caller already holds them.
    *  Honoured ONLY under the bridge's `allowFactsInjection: true` test seam
    *  (default false ⇒ ignored, the adapter is always consulted). */

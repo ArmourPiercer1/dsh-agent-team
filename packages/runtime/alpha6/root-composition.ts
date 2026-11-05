@@ -151,6 +151,13 @@ export interface Alpha6LiveRootCompositionInput {
   }
   readonly control: Alpha6RootCompositionInput['control']
   readonly permissionOverlay?: Alpha6PermissionOverlayPort
+  /**
+   * The frozen v5 source of a CREATED team root, read from its registry row.
+   * The live composition is constructed once per boot row, so routing for a
+   * team created later must be resolved per query, never assumed to be the
+   * boot anchor's policy.
+   */
+  readonly blueprintSourceForRoot?: (rootSessionId: string) => string | null
 }
 
 /**
@@ -221,15 +228,22 @@ export function createAlpha6LiveRootComposition(
   const ports = createAlpha6ControlPorts({
     rootSessionId: input.rootSessionId,
     routing: parsed,
+    ...(input.blueprintSourceForRoot === undefined
+      ? {}
+      : {
+          routingForRoot: (rootSessionId: string) => {
+            if (rootSessionId === input.rootSessionId) return parsed
+            const source = input.blueprintSourceForRoot?.(rootSessionId)
+            return source === undefined || source === null ? null : parseAlpha6Routing(source)
+          },
+        }),
     control: {
       readControlState: async (rootSessionId) =>
         (await input.control.readControlState(rootSessionId)) as never,
     },
     members: {
-      get: (rootSessionId, instanceId) =>
-        rootSessionId === input.rootSessionId ? input.members.get(rootSessionId, instanceId) : undefined,
-      list: (rootSessionId) =>
-        rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
+      get: (rootSessionId, instanceId) => input.members.get(rootSessionId, instanceId),
+      list: (rootSessionId) => input.members.list(rootSessionId),
     },
     authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) =>
       generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),

@@ -93,6 +93,13 @@ export interface Alpha6LiveRootCompositionInput {
     };
     readonly control: Alpha6RootCompositionInput['control'];
     readonly permissionOverlay?: Alpha6PermissionOverlayPort;
+    /**
+     * The frozen v5 source of a CREATED team root, read from its registry row.
+     * The live composition is constructed once per boot row, so routing for a
+     * team created later must be resolved per query, never assumed to be the
+     * boot anchor's policy.
+     */
+    readonly blueprintSourceForRoot?: (rootSessionId: string) => string | null;
 }
 /**
  * The PRODUCTION opt-in assembly — the ONE seam `root.ts` calls.

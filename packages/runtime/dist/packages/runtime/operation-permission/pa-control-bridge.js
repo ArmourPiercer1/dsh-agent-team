@@ -257,7 +257,11 @@ export function createPaControlLeg(deps) {
                     identity: {
                         subject: { kind: 'instance', instanceId: member.instanceId },
                         beneficiaryAuthority: deps.beneficiaryAuthority,
-                        requestedEffect: 'ask',
+                        // The PA leg asks to ALLOW the operation; the consumption-point
+                        // recheck only answers an `allow` effect, and a durable allow is
+                        // exactly what this leg becomes. `ask` here left every A6 PA
+                        // execution blocked at guard as authority-undetermined.
+                        requestedEffect: 'allow',
                         operationFingerprint: digest,
                         authorityScope,
                         correlation,
@@ -426,7 +430,12 @@ export function createPaControlLeg(deps) {
             return deny(`the approval authority rose to '${fresh.value.requiredAuthority}' after the decision was given at '${plan.requiredAuthority}' — the old decision is not usable and the one-shot allow was not consumed`, record.requestId);
         }
         // ── 4. the trusted presenter: the PresentedApproval, real facts only ─
-        const reviewerAuthority = deciderAuthority(decision.decider);
+        // The durable capability evidence (A6-PR2b) records the rung this decider
+        // EXERCISED. An assigned Officer reviews at the leg's frozen rung, so the
+        // presented approval must carry that rung, not the Officer principal's
+        // native member rung; native/legacy rows have no evidence and are unchanged.
+        const reviewerAuthority = decision.reviewCapability?.effectiveReviewAuthority
+            ?? deciderAuthority(decision.decider);
         if (reviewerAuthority === undefined) {
             return deny('the durable decider is outside the closed ControlCallerRef vocabulary — no reviewer rung can be presented', record.requestId);
         }
@@ -535,7 +544,7 @@ export function createPaEffectsVerifier(deps) {
             observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId });
             return { ok: false, reason: 'pa-authority-drift', detail };
         };
-        const deciderRung = deciderAuthority(decider);
+        const deciderRung = input.reviewerAuthority ?? deciderAuthority(decider);
         if (deciderRung === undefined) {
             return undetermined('the durable decider is outside the closed ControlCallerRef vocabulary — its reach cannot be derived');
         }

@@ -187,6 +187,8 @@ export interface ReviewWakeReleaseOptions {
     readonly intent?: ReviewWakeIntentStore;
     /** Native Inbox removal for a `withdraw-wake` effect. */
     readonly inbox?: ReviewWakeInboxPort;
+    /** The exact legs this release's fresh wake covers (see deliver effect). */
+    readonly requestIds?: readonly string[];
 }
 export interface ReviewWakeReleaseFailure {
     readonly scope: 'delivery' | 'transition';

@@ -29,8 +29,12 @@ export interface Alpha6RootRouterInput {
     }) => boolean | null | Promise<boolean | null>;
 }
 export interface Alpha6RootRouter {
-    /** Route ONE durable leg; null when the row is absent/not a case leg. */
-    readonly route: (requestId: string) => Promise<ReviewRoute | null>;
+    /**
+     * Route ONE durable leg; null when the row is absent/not a case leg.
+     * `rootSessionId` is the REQUEST's team root (a created team may differ
+     * from the boot root this composition was constructed under).
+     */
+    readonly route: (requestId: string, rootSessionId?: string) => Promise<ReviewRoute | null>;
 }
 export declare function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6RootRouter;
 export type { ReviewRoute };

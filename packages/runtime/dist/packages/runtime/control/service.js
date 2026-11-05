@@ -2644,7 +2644,7 @@ export function createControlService(options) {
                     });
                 }
                 if (paRead.state === 'valid') {
-                    const denyReason = await paEffectsDenyReason('resolve', root, request.payload.requestId, paRead.manifest, callerRefOf(caller));
+                    const denyReason = await paEffectsDenyReason('resolve', root, request.payload.requestId, paRead.manifest, callerRefOf(caller), resolvedCapability?.capability.effectiveReviewAuthority);
                     if (denyReason !== undefined) {
                         return await commitDecision({
                             requestId: request.payload.requestId,
@@ -3002,13 +3002,20 @@ export function createControlService(options) {
      * Zero-write either way: this function commits nothing; the verdict only
      * picks the closed reason the CALLER's next durable fact carries.
      */
-    async function paEffectsDenyReason(stage, root, requestId, manifest, decider) {
+    async function paEffectsDenyReason(stage, root, requestId, manifest, decider, reviewerAuthority) {
         const port = options.paEffectsVerifier;
         if (port === undefined)
             return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED;
         let verdict;
         try {
-            verdict = await port({ stage, rootSessionId: root, requestId, manifest, decider });
+            verdict = await port({
+                stage,
+                rootSessionId: root,
+                requestId,
+                manifest,
+                decider,
+                ...(reviewerAuthority === undefined ? {} : { reviewerAuthority }),
+            });
         }
         catch {
             return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED;
@@ -3412,7 +3419,7 @@ export function createControlService(options) {
                     };
                 }
                 if (paRead.state === 'valid') {
-                    const denyReason = await paEffectsDenyReason('guard', root, request.payload.requestId, paRead.manifest, decision.payload.decider);
+                    const denyReason = await paEffectsDenyReason('guard', root, request.payload.requestId, paRead.manifest, decision.payload.decider, decision.payload.reviewCapability?.effectiveReviewAuthority);
                     if (denyReason !== undefined) {
                         return {
                             allowed: false,

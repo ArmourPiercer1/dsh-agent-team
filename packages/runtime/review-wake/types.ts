@@ -151,6 +151,13 @@ export type ReviewWakeEffect =
       readonly key: ReviewWakeKey
       readonly wakeId: string
       readonly workFingerprint: string
+      /**
+       * The exact durable leg ids this wake covers, when the dispatcher has
+       * them. They are addressed REVIEW TARGETS (not authority): the Officer
+       * cannot enumerate the Leader-only pending list, so the wake itself
+       * must carry the ids it is allowed to decide.
+       */
+      readonly requestIds?: readonly string[]
     }
   | {
       readonly kind: 'withdraw-wake'

@@ -238,6 +238,24 @@
       "sha256": "abd425cc74c7d59038cef4ee89dfd8200b0b808c73aa8e6eb094af35a509a840",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
       "reason": "Same PR, review-wake liveness correction: has()/remove() now throw when the target session cannot be materialised, so an unreadable native Inbox is never mistaken for an absent message (which previously released the latch, cleared a live intent row and re-delivered a duplicate wake). No new authority, decision or durable write."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "55b20e970d4f64e8682755d96c1216a2ccb4d871dcfdc5d301fee42919925e93",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 isolated integration E2E correction",
+      "reason": "A6 real-Host E2E: an assigned Officer resolves at the leg's frozen rung, so the PA resolve/guard verifier receives the durable decision's EXERCISED reviewerAuthority (reviewCapability.effectiveReviewAuthority) instead of deriving the principal's native member rung. Scoped to a decision the service already verified; native/legacy rows carry no evidence and are byte-identical. No new durable write, no decision-value change, no global member widening."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "cae88ea2dc3938cce80bbaf24040f564774a9843d2f7fe82c7d351dbd1498b4a",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 isolated integration E2E correction",
+      "reason": "Same correction: PaEffectsVerifierInput carries the optional reviewerAuthority the durable decision exercised, so the PA all-effects verifier can re-check an assigned-Officer allow without inventing a rung or widening the global resolver table."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "80311d3e207c9a83f7ea9fd7f8ca50907681e16f16a94a5820d6834f8bc40845",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 isolated integration E2E correction",
+      "reason": "Same correction, two narrow wires: (1) the presented approval/landing edge uses the durable decision's exercised reviewerAuthority when present; (2) an A6 PA leg requests the ALLOW effect (not the pending ask token), so the consumption-point authority recheck can answer it. Both are A6-gated by the existing a6:true bridge branch; legacy PA rows and the resolver table are unchanged. Real-Host evidence: dev/agent-workflow/evidence/a6-officer-host."
     }
   ]
 }

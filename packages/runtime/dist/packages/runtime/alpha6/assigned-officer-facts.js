@@ -136,7 +136,7 @@ export function createAssignedOfficerFactsPort(input) {
             return null;
         }
         const officers = members.filter((member) => member.templateId === routing.officerTemplateId &&
-            member.lifecycle === 'RUNNING' &&
+            (member.lifecycle === 'CREATED' || member.lifecycle === 'RUNNING' || member.lifecycle === 'SETTLED') &&
             // The Leader's durable child session IS the team root; it is never the
             // Officer even if a row were forged with the Officer template.
             member.childSessionId !== root &&
@@ -241,39 +241,60 @@ export function createAssignedOfficerFactsPort(input) {
  * model flag — only the durable rows `readControlState` reports.
  */
 export function createAlpha6ControlPorts(input) {
-    const root = input.rootSessionId;
-    async function snapshot() {
+    const portsByRoot = new Map();
+    async function snapshot(rootSessionId) {
         try {
-            return await input.control.readControlState(root);
+            return await input.control.readControlState(rootSessionId);
         }
         catch {
             return null;
         }
     }
     const leg = async (query) => {
-        const state = await snapshot();
+        const state = await snapshot(query.rootSessionId);
         if (state === null)
             return null;
         return state.requests.find((row) => row.requestId === query.currentLegRequestId) ?? null;
     };
     const transfer = async (query) => {
-        const state = await snapshot();
+        const state = await snapshot(query.rootSessionId);
         if (state === null)
             return null;
         return state.transfers.find((row) => row.currentLegRequestId === query.currentLegRequestId) ?? null;
     };
-    const facts = createAssignedOfficerFactsPort({
-        rootSessionId: root,
-        routing: input.routing,
-        members: input.members,
-        leg,
-        transfer,
-        ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
-        fixedLeaderOrHumanCategory: input.fixedLeaderOrHumanCategory,
-    });
+    // The boot root and every created team have distinct frozen Blueprints. Cache
+    // one port per request root: the port's own root identity checks stay exact,
+    // and a root whose v5 routing cannot be resolved gets no reviewer at all.
+    function factsFor(rootSessionId) {
+        const existing = portsByRoot.get(rootSessionId);
+        if (existing !== undefined)
+            return existing;
+        const created = (async () => {
+            const parsed = input.routingForRoot?.(rootSessionId) ?? input.routing;
+            if (parsed === null)
+                return null;
+            return createAssignedOfficerFactsPort({
+                rootSessionId,
+                routing: parsed,
+                members: input.members,
+                leg,
+                transfer,
+                ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
+                fixedLeaderOrHumanCategory: input.fixedLeaderOrHumanCategory,
+            });
+        })();
+        portsByRoot.set(rootSessionId, created);
+        return created;
+    }
     return {
-        currentReviewerForTransfer: facts.resolveCurrentReviewer,
-        reviewCallFactsForAssignedOfficer: facts,
+        currentReviewerForTransfer: async (query) => {
+            const facts = await factsFor(query.rootSessionId);
+            return facts === null ? null : facts.resolveCurrentReviewer(query);
+        },
+        reviewCallFactsForAssignedOfficer: async (query) => {
+            const facts = await factsFor(query.rootSessionId);
+            return facts === null ? null : facts(query);
+        },
     };
 }
 //# sourceMappingURL=assigned-officer-facts.js.map

@@ -3363,6 +3363,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             callerRefOf(caller),
+            resolvedCapability?.capability.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
             return await commitDecision({
@@ -3788,12 +3789,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requestId: string,
     manifest: PaControlManifest,
     decider: ControlCallerRef,
+    reviewerAuthority?: ProposalAuthorityPosition,
   ): Promise<ControlDecisionReason | undefined> {
     const port = options.paEffectsVerifier
     if (port === undefined) return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     let verdict: PaEffectsVerifierVerdict
     try {
-      verdict = await port({ stage, rootSessionId: root, requestId, manifest, decider })
+      verdict = await port({
+        stage,
+        rootSessionId: root,
+        requestId,
+        manifest,
+        decider,
+        ...(reviewerAuthority === undefined ? {} : { reviewerAuthority }),
+      })
     } catch {
       return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     }
@@ -4246,6 +4255,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             decision.payload.decider,
+            decision.payload.reviewCapability?.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
             return {
