@@ -7862,3 +7862,49 @@ coordinator 的三个假设都不成立：没有 suite-total 失败（`eb3-tool-
 本地复跑三条：`pr-gate --full` pass（8/9，census declared refusal）、`ci-product` 8/8 pass、
 `ci-integration` 7 个 eb3 脚本 rc=0 + graph-parse/state-freshness pass；仅改 2 个文档文件，产品路径 0 改动。
 重新建立 claim 需在新树再 boot 一次（fixture 拆分已在位），花费记在 5-start 池（已用 `2/5`）。
+
+## 2026-11-06T14:55Z — A5SF-ORG：按能力面重组 + 三层验收 + 共享零 boot 预检（PR #610，两笔提交）
+
+**owner 指令**：按能力面（而非逐工具流水线）组织开发；验收三层（A 面×轴共享安全矩阵 / B 逐工具契约 /
+C 冻结候选跨面真 Host）；集成轨与候选轨分离；不放松 Q7、CI、Authority 与任何安全不变量；不重建架构；
+优先改既有文件；用共享零 boot 预检减少无效启动；审查 subprocess/Shell-PTY/Web adapter 是否重复上游设施。
+**预算：0 次 Host 启动**（P2-04 池仍 `2/5`；剩余 3 次按 BL-17 live、BL-18 live、一次重试保留）。
+
+**交付（两笔提交，一个 PR）**：
+- `0f43dcab0` docs：backlog 按 face 重排（新 §0.1 = 六个面 + cross-face 桶、A/B/C 定义、41 BL + BR 的
+  C1/C2/need-boot 台账；44 条旧行**逐字保留**，脚本校验每条旧行在新文件中字节存在；无改号、无删除）。
+  plan 新增 §7（集成轨 vs 候选轨、冻结规则 = “候选内修复即重新冻结”、Q7 成本 = 冻结窗口产品合并数 ×
+  live 行数、§7.3 记录当前轨道冲突为 owner 决策）与 §8（9 个任务，每共享文件一个 owner，C1/C2 与
+  boot 需求；3 次剩余启动正好对应 BL-17、BL-18、一次 FS/Search 重验）。matrix 新增 §1.1.1（M-01..M-21
+  行→面归属 + 每行证据满足的层；`†` = `#606` 撤回 current claim 的四行；**主矩阵仍 9 格，⑧/⑨ 未动**）。
+  ROUTER_RULES 新增 §0.1（三角色、共享 Host 装配独占、新面先设计正/负测试、boot 前置 preflight PASS）。
+- `b66740ca4` test：扩展既有 `tests/world-factory/lib/a5sf-acceptance-preflight.mjs`（非新 harness）——
+  13 条 check：assembly.usable（dist face / 原生模块存在 / **boot 前** emitted==world 行身份 / 健康行）、
+  identity.*（同一 `assertAcceptanceRootWiring` + blueprint + Member/ToolBinding + authority 观察）、
+  native.module-config（BL-16 attempt 4/5）、policy.paths（allow 在 lane 外、deny 在 lane 内、deny 落在
+  OS runtime allowance 内、轴归因错；write/network 按各自 lane 判定）、policy.fifo（BL-16 attempt 6）、
+  **cases.isolation（allocation #1 的别名缺陷）**、collector.shape、wiring.candidate/grant/run-record。
+  `scripts/a5sf-preflight.mjs` 一条 `DSH-A5SF-PREFLIGHT {json}` 行，exit 0/1/2；`--run-dir` 缺 bundle 时
+  **拒绝**而不是从运行输出反推。
+
+**负控（指令要求的那一条）**：干净 bundle **PASS 13/13**；故意别名两案 **FAIL 12/13**，且**唯一**红
+check = `cases.isolation`，恰带 `CASE_LOCATOR_ALIASED` + `CASE_GUARD_KEY_ALIASED`（可归因，非连带）。
+测试 D1–D15（共 44 条，全绿），每个 check family 一条变异控制；原始 verdict 落
+`dev/agent-workflow/evidence/a5sf-org/`。
+
+**adapter 审查结论**（`evidence/a5sf-org/README.md` §2，均带 file:line）：`web.ts` 不重复任何网络客户端
+（每次 fetch = 一次注入 provider 调用，guard 在 provider 行之前）；terminal 面是注入 `PtyPort` 的纯状态机
+（今天无重复，前向风险已写：接线时若自实现 TERM→KILL/进程组回收即与 `LocalTerminalHandle` 重复）；
+输出收集器是**故意更窄**的 tail-only 变体（无 spill 文件 = 不产生未声明 lane 外写）；**唯一具体提案 P-1**：
+`confinedChildEnvironment` 漏掉上游公开 `scrubbedParentEnv()` 的代理叠加，受限子进程可能绕过父进程代理
+归一化——环境保真度分歧、非 lane 放宽，只提案不改（触碰 `packages/**`）。
+
+**指标**（只读既有记录，measured/estimated 逐项标源）：≥12 次启动中 **4 次无可用 verdict，全部为仪器
+缺陷**（composition handoff、空 config、缺 `sampleOverCapGlobResults`、FIFO 在 lane 外、两案共用 locator）；
+`#606` 造成 **1 次候选重验**（28 条产品路径、4 行撤回）；未完成 BL **27 条**（25 可执行；BL-38 DEFERRED、
+BL-41 standing rule）；CI 失败归因**不可完整重建**（无 CI 日志归档）——记为记录缺口本身。
+
+**门**：`doc-checks` pass；`git diff --check` clean；`ci-pr-gate` 的 graph-parse / kit-home-guard / install /
+blueprint-fence / typecheck / lint-identities / artifacts-at-head **全 pass**；`state-freshness` 仍因
+**既有** `Q4`（baseline 指向候选、非 HEAD 祖先）红，本分支前后同一 finding、同一文案，**未移动指针**，
+裁决选项写为 evidence README §4-Q1。未登记 `dev/ci/eb3-ci-manifest.json`（需改 workflow，属 stop condition）。
