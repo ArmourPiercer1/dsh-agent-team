@@ -38,3 +38,21 @@ execute.
   consumption; after consumption before result).
 - Native Inbox/claim/release cold-start replay: the probe checks the durable
   Control ledger, not a native inbox claim record.
+
+## After-allow, before-consumption window (run `a6-crash-allow-r1`)
+
+Root `session-c1-smoke-a6-2026-11-05T20-48-55`, real Host `:3700`.
+
+1. The Plane PA leg `ctrl-11r23rv0ixt0501omxgvp1k0` was recorded; the
+   Officer's allow was recorded at decision sequence 11.
+2. The probe killed the Host immediately when the allow appeared, before the
+   PA wait consumed it: `consBefore=0`, no workspace file (`fileBefore=0`).
+3. `create-or-open` restart succeeded; after restart `consAfter=0` and
+   `fileAfter=0`. No second consumption and no execution was added.
+
+`A6-15` PASS for the **no-duplicate** property. But this window is
+**not recovered**: the durable allow has no corresponding
+`control-allow-consumed`, and the dead Member call is never executed or
+reconciled. The guard's consumption (the only one in the ledger) is unrelated.
+So the crash is fail-safe against double execution but **loses an already
+approved call**; there is no post-restart resume/replay path for it.

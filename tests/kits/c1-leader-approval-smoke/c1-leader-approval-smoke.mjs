@@ -306,7 +306,7 @@ const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
-const A6_CRASH = process.env['C1_A6_CRASH'] === '1'
+const A6_CRASH = process.env['C1_A6_CRASH'] === '1' || process.env['C1_A6_CRASH'] === 'allow'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1152,15 +1152,21 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   }
 
   if (A6_CRASH) {
+    const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow' : 'request'
     let pa = null
+    let decided = null
     const waitDeadline = Date.now() + 60_000
     while (Date.now() < waitDeadline) {
       const current = readControlLedger(CREATE_ROOT_A6)
       pa = current.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
-      if (pa !== null) break
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      decided = pa === null ? null : current.decisions.find((d) => d.requestId === pa.requestId) ?? null
+      if (pa !== null && (crashMode === 'request' || (decided !== null && decided.decision === 'allow'))) break
+      await new Promise((resolve) => setTimeout(resolve, 25))
     }
     const beforeKill = pa === null ? null : readControlLedger(CREATE_ROOT_A6)
+    const beforeFileCount = existsSync(FILE_A6_ALLOW)
+      ? (readFileSync(FILE_A6_ALLOW, 'utf8').match(new RegExp(SUM_A6_ALLOW, 'g')) ?? []).length
+      : 0
     host.child.kill('SIGKILL')
     const exitDeadline = Date.now() + 20_000
     while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
@@ -1199,6 +1205,21 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     let revived = false
     let late = null
     let decisionAfter = null
+    if (crashMode === 'allow') {
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const consBefore = beforeKill?.consumptions.filter((c) => c.requestId === pa?.requestId).length ?? 0
+      const consAfter = final.consumptions.filter((c) => c.requestId === pa?.requestId).length
+      const fileCount = existsSync(FILE_A6_ALLOW)
+        ? (readFileSync(FILE_A6_ALLOW, 'utf8').match(new RegExp(SUM_A6_ALLOW, 'g')) ?? []).length
+        : 0
+      revived = fileCount > 0
+      check('A6-15', 'a Host crash after the PA allow but at/around consumption does not add a second consumption or execution after restart',
+        afterRestart.error === null && decided?.decision === 'allow' && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1,
+        `mode=${crashMode} restart=${afterRestart.error ?? 'ok'} decision=${String(decided?.decision)} consBefore=${String(consBefore)} consAfter=${String(consAfter)} fileBefore=${String(beforeFileCount)} fileAfter=${String(fileCount)} revived=${String(revived)}`)
+      writeEvidence('a6-crash.json', { mode: crashMode, pa, beforeKill, durable, restart: { error: afterRestart.error }, decisionAfter: decided, revived, consBefore, consAfter, beforeFileCount, fileCount })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+      return afterRestart.error === null && decided?.decision === 'allow' && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1
+    }
     if (afterRestart.booted !== null && pa !== null) {
       late = await remoteCall(afterRestart.booted.origin, afterRestart.booted.cookie, 'team.resolveControl', {
         teamSessionId: CREATE_ROOT_A6,
