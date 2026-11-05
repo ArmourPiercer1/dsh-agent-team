@@ -1,6 +1,6 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `4e569e757` (product fix `fd7a5d6c1` plus the
+- **Integrated code HEAD under test:** `f2d74da4a` (product fix `fd7a5d6c1` plus the
   recipient/refusal probes; full gate 9/9 in `gate.md`).
 - **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
   `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
