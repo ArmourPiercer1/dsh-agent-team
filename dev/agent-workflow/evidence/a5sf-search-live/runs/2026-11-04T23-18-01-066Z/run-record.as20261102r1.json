@@ -13,13 +13,12 @@
   ],
   "bindings": {
     "authority": {
-      "pointerPath": "dev/engineering/current-authority.json",
       "pointer": {
-        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4",
-        "snapshot_version": "as20261102r1"
+        "snapshot_version": "as20261105r1",
+        "content_digest": "sha256:55ab435ff43df3674d9655bea4c00d4ea53e953c06b720ce0fbe50fd9ca8d098"
       },
-      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
-      "snapshotDigest": "fcd6d8e232e23b9a720b7b63a1d576f96334593b44eabae0a209a4f32734c49e"
+      "pointerSha256": "2cba2673b82f44f8979b360eb9efc2a60e8723f7e6dacbaffee1fcd3b4b15c65",
+      "note": "imported history, re-stamped for the manifest gate: the run itself was captured under as20261102r1 (see bindings.authorityObserved); the product tree it exercised is equal to this generation's baseline (packages/** 9609403c…)"
     },
     "teamSha": "deec8053e8d303ef8f7bba212c2e591bef3ab244",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
@@ -32,7 +31,17 @@
     "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
     "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
     "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
-    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous"
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous",
+    "authorityObserved": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4",
+        "snapshot_version": "as20261102r1"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "snapshotDigest": "fcd6d8e232e23b9a720b7b63a1d576f96334593b44eabae0a209a4f32734c49e"
+    },
+    "imported": true
   },
   "cases": [
     {
