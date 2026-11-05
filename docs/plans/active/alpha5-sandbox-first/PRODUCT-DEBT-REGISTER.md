@@ -214,7 +214,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `active` to `stale`; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay green.
 - **blocked by**: nothing; a host-free arm carries it; not the boot budget.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L236` contains `function assertCurrent(domainId: string)` ; `packages/runtime/team-sandbox/src/terminal.ts#L269-L270` contains `list(): readonly TerminalDomain[]`
-- **status**: FIXED — branch `task/a5sf-pd7-20261107`, fix commit `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (draft PR first line `PD-7-FIX`). Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
+- **status**: FIXED — branch `task/a5sf-pd7-20261107`, fix commit `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (draft PR #619, first line `PD-7-FIX`). Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
 
 ### PD-8 (F1) — the shutdown receipt cannot tell an exit from a kill
 
