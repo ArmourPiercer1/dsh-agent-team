@@ -1,0 +1,250 @@
+✖ P1-ARGV-ACCEPTED-BOUNDARY: the declared shape admits quoting, NUL and a 200 kB body; none is ARGV_UNSUPPORTED (177.510988ms)
+✖ P1-ARGV-SHAPE-REJECTED: a whitespace/empty/non-string body or a non-<-c> shape is ARGV_UNSUPPORTED with zero processes (0.090451ms)
+✖ P1-PRECEDENCE: absolute-program, class/program and declaration checks each refuse BEFORE the argv shape (0.035207ms)
+✖ P2-CLASS-UNDECLARED: the SAME canonical invocation with no declared class is SHELL_NOT_DECLARED, zero processes (0.070554ms)
+✖ P2-CLASS-DECLARED: the SAME canonical invocation with a declared class is admitted and really runs (0.083519ms)
+✖ P2-SHELL-PROGRAM-NOT-IN-CLASS: a shell program outside the class is PROGRAM_NOT_ADMITTED; adding it to the class admits it (0.044765ms)
+✖ P2-NON-SHELL-PROGRAM-UNAFFECTED: a declared class never admits /bin/cat; the program allow-list still owns it (0.083098ms)
+✖ P3-PROBE-SHAPE: the real probe says network-destination=unsupported with mechanism/evidence null; absence is a capability gap (0.044124ms)
+✖ P3-DENY-REFUSES-BEFORE-SPAWN: a network=deny lane is NETWORK_UNCONFINED_REALM with zero provider calls and no measurement claim (0.08964ms)
+✖ P4-WRITE-AXIS-ATTRIBUTION: a write outside the write lane is spawn:write/IO_WRITE_DENIED while the READ axis allows the same path (0.086835ms)
+✖ P4-WRITE-CONTROL: widening ONLY the write lane admits the same invocation and really creates the file (0.04769ms)
+✖ P4-CHMOD-WRITE-AXIS: a declared chmod outside the write lane is spawn:write and leaves mode+bytes unchanged (0.043953ms)
+✖ P5-ENV-SCRUB: the confined child drops credential-shaped and DSH_* names, keeps ordinary ones, and applies spec overrides (0.023926ms)
+✖ P5-PROXY-DIVERGENCE: with a real proxy policy the unconfined child gets NODE_USE_ENV_PROXY=1 and the confined child does NOT (0.020399ms)
+✖ GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs (0.018565ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 0
+ℹ fail 15
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 246.279335
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P1-ARGV-ACCEPTED-BOUNDARY: the declared shape admits quoting, NUL and a 200 kB body; none is ARGV_UNSUPPORTED (177.510988ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P1-ARGV-SHAPE-REJECTED: a whitespace/empty/non-string body or a non-<-c> shape is ARGV_UNSUPPORTED with zero processes (0.090451ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P1-PRECEDENCE: absolute-program, class/program and declaration checks each refuse BEFORE the argv shape (0.035207ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P2-CLASS-UNDECLARED: the SAME canonical invocation with no declared class is SHELL_NOT_DECLARED, zero processes (0.070554ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P2-CLASS-DECLARED: the SAME canonical invocation with a declared class is admitted and really runs (0.083519ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P2-SHELL-PROGRAM-NOT-IN-CLASS: a shell program outside the class is PROGRAM_NOT_ADMITTED; adding it to the class admits it (0.044765ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P2-NON-SHELL-PROGRAM-UNAFFECTED: a declared class never admits /bin/cat; the program allow-list still owns it (0.083098ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P3-PROBE-SHAPE: the real probe says network-destination=unsupported with mechanism/evidence null; absence is a capability gap (0.044124ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P3-DENY-REFUSES-BEFORE-SPAWN: a network=deny lane is NETWORK_UNCONFINED_REALM with zero provider calls and no measurement claim (0.08964ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P4-WRITE-AXIS-ATTRIBUTION: a write outside the write lane is spawn:write/IO_WRITE_DENIED while the READ axis allows the same path (0.086835ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P4-WRITE-CONTROL: widening ONLY the write lane admits the same invocation and really creates the file (0.04769ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P4-CHMOD-WRITE-AXIS: a declared chmod outside the write lane is spawn:write and leaves mode+bytes unchanged (0.043953ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P5-ENV-SCRUB: the confined child drops credential-shaped and DSH_* names, keeps ordinary ones, and applies spec overrides (0.023926ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ P5-PROXY-DIVERGENCE: with a real proxy policy the unconfined child gets NODE_USE_ENV_PROXY=1 and the confined child does NOT (0.020399ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at tests/world-factory/a5sf-sub-contract.test.mjs:259:5
+✖ GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs (0.018565ms)
+  file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/packages/runtime/team-services/src/web.ts:63
+  import { probeNetworkDenial,                            } from './subprocess.js'
+           ^^^^^^^^^^^^^^^^^^
+  SyntaxError: The requested module './subprocess.js' does not provide an export named 'probeNetworkDenial'
+      at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+      at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+      at async node:internal/modules/esm/loader:647:26
+      at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:97:22
+      at async makeSubContractWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/lib/a5sf-sub-contract-world.mjs:287:17)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-contract/tests/world-factory/a5sf-sub-contract.test.mjs:248:19)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
