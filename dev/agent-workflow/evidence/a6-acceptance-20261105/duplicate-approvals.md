@@ -1,22 +1,22 @@
-# Duplicate-approval evidence (real Host, run 2026-11-05T11-43-02)
+# Duplicate-approval evidence (real Host, rerun 2026-11-05T13-22-47)
 
 ## The two durable requests
 
 | Fact | Request A | Request B |
 |---|---|---|
-| requestId | `ctrl-0gnb5xi024g2650y6y8pk1el` | `ctrl-1g1pypn0j7ppns1v1iel90ng` |
+| requestId | `ctrl-0v7zhk11cthwri0oz5zvj1eh` | `ctrl-1u2v1ph1qgwmja0mzqqc70ww` |
 | actionName | `parameter-permission` | `team-tool-execute` |
 | kind | `leader-approval` | `leader-approval` |
-| subject / operation owner | `inst-0ibibfl0efxk` (worker) | `inst-0ibibfl0efxk` (worker, template `worker`) |
+| subject / operation owner | `inst-0k257w10zy8l` (worker) | `inst-0k257w10zy8l` (worker, template `worker`) |
 | reviewAuthority | `leader` | `leader` |
 | requestedEffect | `allow` | `allow` |
 | authorityScope | `{operationClass: 'bash', matcher: {kind:'exact', resource:'bash'}}` | `{operationClass: 'tool-invoke', matcher: {kind:'exact', resource:'c1-plane-realm-…\|tool:bash'}}` |
-| operationFingerprint | `sha256:79d586368f7d…` | `sha256:9e6b7ba24ed3…` |
+| operationFingerprint | `sha256:00128488e222…` | `sha256:28a0b0a39a8e…` |
 | effectSetFingerprint | absent (guard row) | `sha256:77b14744144e…` |
-| parametersFingerprint | absent | `sha256:2ba36a384940…` |
+| parametersFingerprint | absent | `sha256:bf9a1579644d…` |
 | authorityGeneration | absent | `0` |
-| approvalCaseId | `case-1p87jv7027z57o1i30qp50o8` | `case-09r29o81oj25t70eoom260pb` |
-| decider | `inst-leader` (`role: leader`) | `inst-0wb69cp1fdbg` (Officer; `reviewCapability.source = blueprint-officer`, `effectiveReviewAuthority = leader`) |
+| approvalCaseId | `case-074mw220svpzjh1e82qac0np` | `case-0fhb7gr18blcwc15570st05x` |
+| decider | `inst-leader` (`role: leader`) | `inst-0alpljp1t5ni` (Officer; `reviewCapability.source = blueprint-officer`, `effectiveReviewAuthority = leader`) |
 | decision / sequence | allow / 8 | allow / 11 |
 | consumption / sequence | sequence 9, paired to decision 8 | sequence 12, paired to decision 11 |
 | execution result | one bash command executed once | same invocation |

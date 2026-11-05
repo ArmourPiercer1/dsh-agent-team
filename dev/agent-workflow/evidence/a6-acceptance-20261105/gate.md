@@ -13,17 +13,17 @@
 Leg verdicts: graph-parse, kit-home-guard, state-freshness, install, blueprint-fence,
 typecheck, lint-identities, artifacts-at-head, census — all `pass`.
 
-## Disclosed flake on the E2E-only HEAD
+## Disclosed flakes
 
-At `8ea3a0517924c5b244fc713317bd5e457ba77263`, full gate was **8/9**: the census leg
-failed on a pre-existing 1 ms timing race, first `alpha5-glob-backend` X3, then
-`alpha5-search-backend` P11 (`expected 'completed' to be 'cancelled'`). Each test passes
-standalone on the same tree, and the same census passed standalone on that HEAD. The
-integrated merge `48182b7` then passed the full gate 9/9. The failure is recorded here
-rather than hidden; no product assertion was changed to obtain the green.
+The same two pre-existing 1 ms timing races (`alpha5-glob-backend` X3,
+`alpha5-search-backend` P11, both `expected 'completed' to be 'cancelled'`) appear in
+census captures across this tree. They pass standalone. The first full attempt at
+`c26a9a00` was 8/9 for exactly those two; the immediate rerun was 9/9. The earlier
+review-fix HEAD `e63cfbdc9` had the same flake pattern before this final HEAD. The
+failures are recorded rather than hidden; no product assertion was changed.
 
 ## Test corpus
 
-`pnpm vitest run packages/runtime/test` (with the pristine host symlink):
-**491 files / 6001 tests passed** on the E2E implementation tree before the final test
-fold; the final integrated tree is covered by the census above.
+`pnpm vitest run packages/runtime/test` (with the pristine host symlink) on the reviewed
+fix tree: **490 files / 6008 tests passed**. The final integrated tree is covered by the
+census above.

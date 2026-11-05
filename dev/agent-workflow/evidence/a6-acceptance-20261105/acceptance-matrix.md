@@ -1,12 +1,15 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `e63cfbdc9` (merge of review-fix
-  `996427e3f` into `48182b783`; the final docs commit adds no product bytes)
-- **E2E implementation HEAD:** `8ea3a0517924c5b244fc713317bd5e457ba77263`
-- **Real Host run:** stamp `2026-11-05T11-43-02`, host `http://127.0.0.1:3600`, mock `:3601`
-- **Evidence:** `dev/agent-workflow/evidence/a6-officer-host/` (run.log, instance.log, mock.log,
-  a6-officer.json, control-ledger.json, l0-surface.json); durable events are reproduced verbatim
-  in `control-ledger.json` from the retained host home `tests/homes/c1-smoke-2026-11-05T11-43-02`.
+- **Integrated code HEAD under test:** `c26a9a0020d1e705600436a33d4777ba32c99205`
+  (review fixes `996427e3f` merged into `48182b783`, plus the acceptance docs;
+  no product bytes changed after the review-fix commit)
+- **Real Host run:** stamp `2026-11-05T13-22-47`, host `http://127.0.0.1:3602`, mock `:3603`,
+  rerun **after** the P1 review fixes. The first run (`2026-11-05T11-43-02`, evidence
+  `a6-officer-host/`) remains as history.
+- **Evidence:** `dev/agent-workflow/evidence/a6-officer-host-r2/` (run.log, instance.log,
+  mock.log, a6-officer.json, control-ledger.json, summary-extract.json, l0-surface.json);
+  durable events are extracted verbatim from the retained host home
+  `tests/homes/c1-smoke-2026-11-05T13-22-47`.
 - **Scope:** isolated integration and real Host E2E only. No master merge, no un-draft, no
   production enablement, no release.
 
@@ -14,10 +17,10 @@
 
 | # | Criterion | Result | Evidence |
 |---|---|---|---|
-| 1 | v5 `team.create` admits a real Officer + review routing | **PASS** | `run.log` A6-1; created root `session-c1-smoke-a6-2026-11-05T11-43-02`, blueprint hash `sha256:81769c…` |
-| 2 | Real Member bash ask produces a model-visible Officer review wake | **PASS** | `a6-officer.json` `.wakes`: 3 Officer turns, wake text carries `requestId: - ctrl-1g1pypn…`; `mock.log` seq 13 |
+| 1 | v5 `team.create` admits a real Officer + review routing | **PASS** | `run.log` A6-1; created root `session-c1-smoke-a6-2026-11-05T13-22-47`, blueprint hash `sha256:fc0963…` |
+| 2 | Real Member bash ask produces a model-visible Officer review wake | **PASS** | `a6-officer.json` `.wakes`: 3 Officer turns, wake text carries `requestId: - ctrl-1u2v1ph…`; `mock.log` wake seq 13 |
 | 3 | Officer resolves through `team_resolve_control` | **PASS** | `mock.log` seq 14; durable decision sequence 11, `reviewCapability.source = blueprint-officer`, `effectiveReviewAuthority = leader` |
-| 4 | The original Member command executes after the Officer allow | **PASS** | `executed=true`; workspace file `tests/homes/c1-smoke-2026-11-05T11-43-02/workspace/c1-a6-allow-2026-11-05T11-43-02.txt` contains the stamp |
+| 4 | The original Member command executes after the Officer allow | **PASS** | `executed=true`; workspace file `tests/homes/c1-smoke-2026-11-05T13-22-47/workspace/c1-a6-allow-2026-11-05T13-22-47.txt` contains the stamp |
 | 5 | The Leader is not woken for a leg routed to the Officer | **PASS (scoped)** | `leaderWakeCount=0` means no **Officer review wake** went to the Leader. The separate legacy guard ask (row 1) did use the Leader notification path; see the duplicate report. |
 | 6 | No durable request is left pending | **PASS** | 2 requests, 2 decisions, 2 consumptions, `pending=0` |
 | 7 | One-shot consumption / no double execution | **PASS** | exactly one `control-allow-consumed` per request (sequences 9 and 12); one file write; no second execution |
@@ -38,12 +41,13 @@
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on the final docs-inclusive HEAD
-(`gate.md` records the exact SHA and outputs):
+Full local gate **9/9 PASS, zero skips** on code HEAD `c26a9a00`; the evidence
+commit that records this result changes docs/evidence only. `gate.md` records the
+exact SHA and outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
 
-Census result on that run: **677 files / 8821 legs**, `COUNTS MOVED, SET DID NOT`,
+Census result on the passing second attempt: **677 files / 8828 legs**, `COUNTS MOVED, SET DID NOT`,
 0 new reds / 0 collection errors. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
 census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 and
 `alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
@@ -54,7 +58,8 @@ See `gate.md` for the exact outputs and the flake disclosure.
 Verdict at `8ea3a0517`: **BLOCK** (no P0; P1-1 notification-policy bypass,
 P1-2 per-root router policy). Both P1s, P2-1 and the verifier-test gap are fixed
 in `996427e3f`; P2-3 is covered by the rerun gate; P3 root/ledger items are
-addressed. See `review-response.md`.
+addressed. The real Host E2E was rerun at `c26a9a00` after the fixes and passed
+6/6 again. See `review-response.md`.
 
 ## Verdict
 
