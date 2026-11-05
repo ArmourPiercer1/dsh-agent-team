@@ -158,8 +158,8 @@ text-only 拒绝仍先于任何 I/O，且 GAP 的 inject 文本不出现）。**
 | M-11 | run_code / PTC | External execution | `—` | 无 routed-native 接入面（BL-19，T-06） |
 | M-12 | lsp | External execution | `—` | 无产品接线；启动位置未 trace |
 | M-13 | terminal_* | Shell-PTY | `B` | `TERMINALS_LEGACY_PTY_REFUSED` + 端口注入状态机 |
-| M-14 | web_fetch | Web | `B` | deny 车道 provider 之前拒绝；live 因行不转发 `web` face 而不可达（T-04） |
-| M-15 | web_search | Web | `B` | 同上 |
+| M-14 | web_fetch | Web | `B` | deny 车道 provider 之前拒绝；`#608` 起行已转发/可配置 `web` face，live 仍未跑（不是“不可达”） |
+| M-15 | web_search | Web | `B` | 同上；`GAP-WEB-CONTRACT-1`：真 `{query}` 形状的 fact locator 落在稳定 marker，见 `a5sf-web-face/README.md` §4 |
 | M-16 | third-party CLI | Subprocess | `A+B` | A：通用 argv/stdio/cwd 的 OS confinement；`PROBE-GATED` |
 | M-17 | stdio MCP | External execution | `—` | `NOT_WIRED` |
 | M-18 | remote MCP / HTTP / SSH | External execution | `—` | `UNSUPPORTED` + `TRUSTED_DELEGATION` 披露 |
@@ -186,6 +186,21 @@ text-only 拒绝仍先于任何 I/O，且 GAP 的 inject 文本不出现）。**
 + 真 Landlock provider。证据=`dev/agent-workflow/evidence/a5sf-subprocess-face/README.md`、`suite.log`、
 `mutations.log`。**这些臂不构成任何行的 live/level 证据**：`M-06`/`M-07` 仍 `ENFORCE-PARTIAL`/`V@B=no`
 （live 树的 `#606` 漂移未重测），`M-08` 仍 `NOT_WIRED`，`M-09` 仍 `NOT_WIRED`；本段只加证据指针。
+
+**2026-11-07 Web 面 layer B（契约半场，0 boot，0 egress，不改等级/V@B）**：`M-14`/`M-15` 骑的 confined
+`web` face 现在有五条 host-free 契约性质（10 条臂）在**产品挂载面**上实测：`mountA5sfRealm`（真 pinned
+`@deepseek-ai/dsh-tool-web`，route-C 挂载）+ `mountMemberA5sfRealm`（真行）。P1 守护顺序：allowed 调用在
+provider 进入时已有一条 guard fact（`factsAtEntry===1`），且 provider 收到**声明** URL 的同一字符串；P2
+拒绝措辞：`deny` 的 `NETWORK_UNCONFINED_REALM` 必须命名**能力**（`network-destination` / `unsupported` /
+`capability probe`）而**不得**声称任何观测（`observed zero connections` / `no traffic` / `syscalls recorded`
+任一出现即该臂 FAIL）；P3 两条 residual 钉成**位置**：provider 内部跟随的 redirect 目标从不重新过 guard，
+proxy 选择整体在 provider 下游（face 只传 `(request, signal)` 且不改写环境）；P4 fetch/search **共用**一条
+compiled 车道与**同一个** guard 实例（`sequence` 1→2），因此“allow fetch / deny search”**不可表达**（产品
+陈述，非测试缺口）；P5 `compiled.web` 与 `a5sfWebFace` 同时存在时在**编写期** fail-closed（两源都点名、
+零 provider 调用、sink 未创建），且两条单源路径各自可用。证据=
+`dev/agent-workflow/evidence/a5sf-web-face/README.md`、`suite.log`、`mutations.log`、`red-first-run.log`。
+**这些臂不构成任何行的 live/level 证据**：`M-14`/`M-15` 仍 `B` / `V@B=no`；本段只加证据指针，并把
+`M-14` 原“行不转发 `web` face”的过时说明更正为“live 未跑”。
 
 ## 2. 静态工具名附录（与主矩阵的映射）
 

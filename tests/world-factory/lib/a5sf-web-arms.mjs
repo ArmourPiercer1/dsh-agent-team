@@ -295,7 +295,17 @@ export function makeHostWebTripwire(Service) {
  * `web` face on the same isolated scope. The real host `web` service is a
  * TRIPWIRE, so an accidental inherited-resolution is a measured failure.
  */
-export async function makeGovernedRealm(seams, { network = 'allow', withWebFace = true, probeLevel = 'unsupported', body } = {}) {
+export async function makeGovernedRealm(seams, {
+  network = 'allow',
+  withWebFace = true,
+  probeLevel = 'unsupported',
+  body,
+  // LAYER B (web contract): the boundary is replacable so a contract arm can
+  // record the ORDER of the guard/provider edge and the exact arguments the
+  // provider received. Omitted = the shipped `fakeWebBoundary`, byte-identical
+  // to the pre-contract harness.
+  boundary: injectedBoundary,
+} = {}) {
   const BaseFs = makeBaseFsClass(seams.Service)
   const HostWeb = makeHostWebTripwire(seams.Service)
   HostWeb.calls = 0
@@ -306,7 +316,7 @@ export async function makeGovernedRealm(seams, { network = 'allow', withWebFace 
   await root.plugin(BaseFs, {})
   const agentKey = { session: { header: {} } }
   const agent = seams.createScope(root, agentKey)
-  const boundary = fakeWebBoundary({ probeLevel, ...(body === undefined ? {} : { body }) })
+  const boundary = injectedBoundary ?? fakeWebBoundary({ probeLevel, ...(body === undefined ? {} : { body }) })
   const facts = []
   const realm = await seams.mountA5sfRealm({
     root: agent.ctx,
