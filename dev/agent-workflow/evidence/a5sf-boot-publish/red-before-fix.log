@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/dev/agent-workflow/evidence/a5sf-boot-publish
+
+ ❯ ../a5sf-boot-seam/boot-seam-arms.test.mjs (5 tests | 1 failed) 1070ms
+     ✓ BS1 BOOT RACE: the ARCHIVED commit lands while the resume is in flight -> not resident, 422, 0 executions  1044ms
+     ✓ BS2 BOOT INTERLEAVE: the resume resolves inside the quiesce->commit window -> no handle deposited 4ms
+     × BS4 PUBLISH WINDOW: a resume resolving AFTER a completed archive must not publish, even mid-boot 12ms
+     ✓ BS5 UNWIRED ADMISSION PORT: the post-loop sweep is the only backstop (and the publish window is open there) 5ms
+     ✓ BS3 LIST BUDGET: one enumeration for the member set + one sweep, independent of member count 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ../a5sf-boot-seam/boot-seam-arms.test.mjs > boot resume against a concurrent archive > BS4 PUBLISH WINDOW: a resume resolving AFTER a completed archive must not publish, even mid-boot
+AssertionError: expected { published: true, …(4) } to deeply equal { published: false, …(4) }
+
+- Expected
++ Received
+
+  {
+    "bootPending": true,
+    "lifecycle": "ARCHIVED",
+-   "published": false,
+-   "status": 422,
+-   "toolExecutions": 0,
++   "published": true,
++   "status": 200,
++   "toolExecutions": 1,
+  }
+
+ ❯ ../a5sf-boot-seam/boot-seam-arms.test.mjs:369:24
+    367|       // GREEN after it: nothing is published (422, zero executions) a…
+    368|       // handle can never be served in the interval at all.
+    369|       expect(measured).toEqual({
+       |                        ^
+    370|         published: false,
+    371|         lifecycle: 'ARCHIVED',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:26:30
+   Duration  2.11s (transform 1.54s, setup 0ms, import 946ms, tests 1.07s, environment 0ms)

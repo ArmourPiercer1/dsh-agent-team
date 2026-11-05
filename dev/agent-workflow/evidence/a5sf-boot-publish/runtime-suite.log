@@ -1,0 +1,231 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish
+
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 406ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 79ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (17 tests) 143ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 649ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 33ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 60ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 193ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 49ms
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 19ms
+ ✓ packages/runtime/test/p8s7r2-disposed-history.test.ts (17 tests) 17ms
+ ✓ packages/runtime/test/p5t6-cold-member.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 27ms
+ ✓ packages/runtime/test/p5t6-fresh-member.test.ts (24 tests) 36ms
+ ✓ packages/runtime/test/a5ptc-escalation-row.test.ts (10 tests) 2394ms
+     ✓ NC-1 replay: one approval allows EXACTLY ONE call; the replayed ask is refused  573ms
+     ✓ L-U1b archive face (PRODUCTION PROCEDURE FORM): the REAL archiveMember commits ARCHIVED durably — the archived member never routes again, NOT EVEN through a cold re-mount that re-establishes residency; restore recovers  1751ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 310ms
+ ✓ packages/runtime/test/a3p4-r4-authority-binding.test.ts (17 tests) 187ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/a3p4-permission-lifecycle-e2e.test.ts (26 tests) 456ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 2620ms
+     ✓ (iii-MUTATION) forcing the flags onto that lane makes the ignored file appear  337ms
+     ✓ (iv) an invalid pattern still surfaces the REAL rg stderr and exit 2  325ms
+     ✓ (v) the flags change neither the fact count nor the process count  302ms
+     ✓ refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly  358ms
+ ✓ packages/runtime/test/p8s7r2-residency-resuming.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/p5t6-evict-readmit.test.ts (7 tests) 10ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/a3p4-production-permission-plane.test.ts (7 tests) 272ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 648ms
+     ✓ exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes  343ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-policy-state-durable.test.ts > p8s7r2-policy-state-durable teardown > the R2-1 worlds are disposed (stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-policy-state-durable.test.ts (8 tests) 7ms
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s7r2-model-state.test.ts > R2-3 (P8-S7-R2): BQ-11 the model state view > R23.16: every world root closed cleanly and the scratch dirs are destroyed (reversible)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-model-state.test.ts (18 tests) 14ms
+stderr | packages/runtime/test/p8s7r2-effective-config.test.ts > p8s7r2-effective-config: the R2-2 resolved effective-config view (BQ-08, projection v2) > the R2-2 worlds are disposed (close + stop semantics)
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+[dsh-agent-team] remote mount: SKIPPED — the row stopped before the "connection" public service appeared
+
+ ✓ packages/runtime/test/p8s7r2-effective-config.test.ts (22 tests) 28ms
+ ✓ packages/runtime/test/p8s5a-host-loadability.test.ts (3 tests) 6ms
+ ✓ packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts (17 tests) 1172ms
+     ✓ exec intent → server canonicalization → durable exact-fingerprint row → pre-execute ALLOW for the identical call; deny for another command; revoke → deny  315ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests) 4287ms
+     ✓ R0/R1: the preset definition reaches the INHERITED service; the shadow reaches the confined one  334ms
+     ✓ R5: a shell body is refused at ADMISSION (0 spawns, one fact), and the KERNEL allowance is measured directly  329ms
+     ✓ R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)  596ms
+     ✓ R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim  661ms
+     ✓ R7: a lane that includes the worktree root keeps ordinary .gitignore semantics (no silent global change)  745ms
+     ✓ R7m: MUTATION — forcing the flags onto that lane loses .gitignore semantics (why the change is conditional)  721ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/p8s5b-operation-fencing.test.ts (26 tests) 17ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/t12a-team-tools-registration.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/t12a-b3-external-deny.test.ts (4 tests) 4ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/t12a-m2-persona.test.ts (8 tests) 6ms
+ ✓ packages/runtime/test/t12a-glue-handoff-ports.test.ts (12 tests) 6ms
+ ✓ packages/runtime/test/t12a-b2-child-identity.test.ts (4 tests) 6ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/t12a-m1-effective-cwd.test.ts (5 tests) 3ms
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: bootPhase must be "create", "resume" or "create-or-open"
+    at fail (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:676:11)
+    at validateTeamPluginConfig (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:683:97)
+    at bootstrap (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:1737:29)
+    at Module.apply (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:3159:46)
+    at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/test/p8s5a-production-assembly.test.ts:718:16
+    at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/test/p8s5a-production-assembly.test.ts:706:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the "agents" public service is absent from the plugin context
+    at bootstrap (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:1744:13)
+    at Module.apply (/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/src/plugin/host.ts:3159:46)
+    at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/test/p8s5a-production-assembly.test.ts:745:16
+    at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/packages/runtime/test/p8s5a-production-assembly.test.ts:706:13
+    at VitestModuleEvaluator._runInlinedModule (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vitest@4.1.11_@opentelemetry+api@1.9.1_@types+node@22.20.1_jsdom@30.0.1_vite@8.2.2_@types+node@22.20.1_yaml@2.9.0_/node_modules/vitest/dist/module-evaluator.js:206:4)
+    at VitestModuleRunner.directRequest (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1273:59)
+    at VitestModuleRunner.cachedRequest (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1180:73)
+    at VitestModuleRunner.import (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/module-runner.js:1135:10)
+    at file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2457:5
+    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/p8s5a-production-assembly.test.ts
+[dsh-agent-team] remote mount: SKIPPED — the "connection" public service is absent (headless host)
+
+ ✓ packages/runtime/test/p8s5a-production-assembly.test.ts (7 tests) 5ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ packages/runtime/test/t12a-m3-recursive-drain.test.ts (5 tests) 3ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+ ✓ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts (20 tests) 2163ms
+     ✓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline  954ms
+
+ Test Files  40 passed (40)
+      Tests  522 passed (522)
+   Start at  13:27:44
+   Duration  6.26s (transform 30.69s, setup 0ms, import 59.21s, tests 16.36s, environment 4ms)
