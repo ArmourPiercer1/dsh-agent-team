@@ -26,7 +26,8 @@ identities again to L615/L804/L1400/L2031; `a432e49ea` was 9/9 on the isolated
 rerun (first attempt 8/9 on the known `alpha5-glob-backend` X3 1 ms race). The
 after-consume probe moved the C1 identities to L615/L804/L1405/L2036 and was
 9/9 at `516767b01`; the before-write probe moved them to L615/L804/L1456/L2087
-and is 9/9 at `a1868f878`. The first attempt at `1135f381b`
+and is 9/9 at `a1868f878`. The Sticky Stop audit is a source/docs-only
+addition after that gate (no test or product bytes). The first attempt at `1135f381b`
 was 8/9 only on the blueprint fence: the handoff probe
 shifted one v5 identity from L1815 to L1819. The fence baseline was re-recorded in the open
 (same source/fixture) at `5b7381a34`, whose full gate is the 9/9 above. No assertion was

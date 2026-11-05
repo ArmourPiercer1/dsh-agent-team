@@ -41,7 +41,10 @@ Full local gate: 9/9, census 677/8830, identity set identical to
   an unconsumed allow, and the after-consume window leaves a spent allow with no
   execution; neither is replayed/resumed. This is safe against duplicates but
   loses the approved call (availability gap).
-- **Sticky Stop, native Inbox reconciliation**: not injected.
+- **Sticky Stop**: the coordinator semantics are implemented and unit-tested,
+  but production never dispatches `stop`/`resume`; Host `session/cancel` does
+  not reach the wake plane (`sticky-stop.md`). NOT_WIRED.
+- **Native Inbox reconciliation**: not injected.
 - **Sink unit test**: not added; the E2E plus the code argument are the evidence.
 
 ## Decision
