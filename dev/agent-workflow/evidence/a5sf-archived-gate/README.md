@@ -220,15 +220,25 @@ restore of every touched file, and "no RED" is a control failure):
 | **R-M3** (c) removed | both admission consults := `null` | `RO2` (and RO4's racing dispatch is no longer refused) | `RO2, RO4 failed`; RO1/RO3 passed |
 
 **What is still true after this fix** — the honest answer to *"can a dispatch concurrent with an archive still
-produce a live, tool-bearing handle on this process?"*: **not through `ensureLiveAgent` / `executeTool`**. Those
-two doors are closed for every dispatch that reaches them while the procedure is open, and both variants
-("resume inside the window", "resume after the commit") end `422` with zero executions. The paths that remain
-uncovered are the ones that write `liveAgents` WITHOUT those two doors: the **boot resume loop**
-(`agent-bindings.mjs:5166-5179`; its `liveAgents.set` does not consult the close) and the **child-factory create**
-path (§7 risk 2). A boot that races an archive in the same process can still land a resident handle for an
-archived member until some later drop. The boot loop is not reachable from a tool dispatch (it is row start), so
-the row-6 tool claim holds — but the general in-process invariant does not extend to it, and that is booked as a
-named residual (§7 risk 2) rather than claimed fixed.
+produce a live, tool-bearing handle on this process?"*: **not through the two doors this round closed**, i.e.
+not for a dispatch that enters `ensureLiveAgent` **while the procedure is open**. Both variants ("resume inside
+the window", "resume after the commit") end `422` with zero executions. The paths that remain uncovered are the
+ones that write `liveAgents` WITHOUT those two doors: the **boot resume loop** and the **child-factory create**
+path (§7 risk 2).
+
+**Correction (2026-11-05, second adversarial review; the follow-up round's evidence is
+`../a5sf-boot-publish/`).** The sentences above originally continued: *"A boot that races an archive in the same
+process can still land a resident handle … The boot loop is not reachable from a tool dispatch (it is row start),
+so the row-6 tool claim holds."* **The second half was false and the first half understated the hole.** A boot
+publish IS reachable from a tool dispatch: a Leader turn during member boot calls `ensureLiveAgent` →
+`submitAttributedInput`/`workDelivery.deliver`, and `ensureLiveAgent` returns a resident handle from its fast path
+**before any gate**. With the archive already returned (its `finally` reopened admission, the durable row
+`ARCHIVED`, the post-commit drop having found no handle), the resume that was in flight then publishes — and a
+dispatch during boot executed a tool: `BS4 {published: true, status: 200, toolExecutions: 1}` (it is `422`/0 only
+after `boot()`, i.e. after the post-loop sweep). That is now fixed at the publish seam (SEAM 6, BOOT-PUBLISH):
+`reopenAdmission` records the terminal lifecycle it already enumerated, and the boot publish refuses after one
+durable confirmation. The residual that remains is §7 risk 2(a) — rewritten there — plus risk 1, which is the
+only window in this seam family that can still execute a tool.
 
 ## 5. Protected glue digest and identity
 
@@ -302,15 +312,22 @@ gitignored.
    makes this safe today; a multi-writer deployment needs a transition notification or a revisioned reload.
    SEAM 3 does **not** narrow this case (it re-reads the same in-memory snapshot, which is what makes it able to
    see a *local* commit at all), and the admission close (§4b (c)) is process-local by construction.
-2. **Two in-process resume seams still write `liveAgents` outside the two guarded doors.** Both are row-start
-   paths, not tool dispatches, so they do not weaken the row-6 tool claim — but they are why §4b's answer is
-   "not through `ensureLiveAgent`/`executeTool`" rather than "nowhere in the process":
-   (a) **the boot resume loop** (`agent-bindings.mjs:5166-5179`): SEAM 2 refuses an already-`ARCHIVED` row, but
-   it reads the rows ONCE for the whole loop and its `liveAgents.set` has no post-resume re-read, so a commit
-   landing while a member's boot resume is in flight can still deposit a resident handle (dropped only by a
-   later residency release). Adding SEAM 3 there is mechanical, but it costs one `list()` per boot member — the
-   property this lane measured as "one list for the whole member set" — so it was left as a named residual
-   rather than spent silently.
+2. **Two in-process resume seams write `liveAgents` outside the two doors this round guarded.** One of them
+   turned out to be reachable from a tool dispatch after all (correction above: the boot publish can be served to
+   a Leader turn *during* boot, and the dispatch executed) and is now covered by the BOOT-PUBLISH round; the
+   other is a row-start path with no dispatch route:
+   (a) **the boot resume loop** — **now covered, twice; this entry is no longer an open residual.** Two
+   follow-up rounds closed it without breaking the boot's list budget: BOOT-SEAM added the post-resume in-memory
+   admission check plus ONE post-loop durable sweep (2 member-set enumerations, independent of member count),
+   and BOOT-PUBLISH found that those two still left the interval between `liveAgents.set` and the sweep open
+   for a procedure that had already RETURNED (a mid-boot dispatch executed: `200`/1 execution), and closed it
+   with a terminal-at-`reopenAdmission` marker plus ONE durable confirmation at the publish seam (normal boots:
+   zero extra reads; the raced member: one). `../a5sf-boot-seam/README.md` (BS1/BS2/BS3) and
+   `../a5sf-boot-publish/README.md` (BS4/BS5, M1–M3) carry the arms. The **remaining** boot window is a
+   residency-observation interval (the archive's own `commit → post-commit re-drop`), during which new-work
+   admission is still closed, so it cannot execute a tool — and the configuration where the lifecycle wires no
+   `AdmissionClosePort` at all (the pre-#598 `root.ts:2164` shape) still has an EXECUTABLE mid-boot publish
+   window, which BS5 pins as a characterised gap rather than a guarantee.
    (b) **the child factory** (`childFactory.createChildSession`, `agent-bindings.mjs:~4879`): it cold-resumes a
    durable child session without the lifecycle read. Reachable only if a create flow asks for the **same
    instance id** as an archived member (the public `team_create_member` allocates a fresh instance id, so not
@@ -323,8 +340,11 @@ gitignored.
    no work is silently lost, but there is no automatic "deliver after restore" leg here.
 4. **Cost.** THREE in-memory `list` scans per cold resume as of the race fix: ownership, SEAM 1 (gate before the
    resume), SEAM 3 (gate after it) — `row6-durable-read.test.mjs` measures `2` gate / `5` total `list()` calls,
-   up from `1` / `4`. Steady state adds **zero** reads (a resident handle returns before the gate), and boot
-   adds none (the boot loop reuses the rows it already listed). A cold resume already pays the session load, so
+   up from `1` / `4`. Steady state adds **zero** reads (a resident handle returns before the gate). **Boot, after
+   the two follow-up rounds: 2 member-set enumerations, independent of member count** (the loop's one read + the
+   one post-loop sweep), plus **one** durable confirmation for a member whose archive/dispose completed in this
+   process before the publish (SEAM 6's marker; normal boots pay zero) — measured by BS3 as `{one: 5, two: 8}`
+   total `list()` calls with `enumerations: 2` in both worlds. A cold resume already pays the session load, so
    this is not on the tool hot path; but if a future seam calls the gate on a per-call path it must cache per
    `(sessionId, lifecycle revision)` **with** a cross-process invalidation channel (see risk 1), not a bare memo.
 5. **Wire status contract.** The route still maps every ensure-live failure to `NO_LIVE_AGENT`/422. The typed

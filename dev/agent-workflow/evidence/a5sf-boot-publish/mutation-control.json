@@ -1,0 +1,97 @@
+{
+ "control": "a5sf-boot-publish mutation control",
+ "sourceSha256": {
+  "packages/runtime/src/plugin/live/agent-bindings.mjs": "fd7770c56692f7f372918c834ad8719ec1bdcfa432921e399145222c32c6f3d7"
+ },
+ "outcomes": [
+  {
+   "mutant": "M1-post-loop-durable-sweep",
+   "description": "remove the post-loop durable sweep (the eviction decision never fires)",
+   "mutatedFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "3cf7297580e8b312fda0b46901c6ba56a9173b6457eba7eadb053a5b02f37db0"
+   },
+   "restoredFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "fd7770c56692f7f372918c834ad8719ec1bdcfa432921e399145222c32c6f3d7"
+   },
+   "vitestExitCode": 1,
+   "observed": {
+    "BS1": "passed",
+    "BS2": "passed",
+    "BS4": "passed",
+    "BS5": "failed",
+    "BS3": "passed"
+   },
+   "expected": {
+    "failed": [
+     "BS5"
+    ],
+    "passed": [
+     "BS1",
+     "BS2",
+     "BS3",
+     "BS4"
+    ]
+   },
+   "verdict": "RED-AS-REQUIRED"
+  },
+  {
+   "mutant": "M2-post-resume-admission-check",
+   "description": "remove the post-resume in-memory admission check in the boot loop",
+   "mutatedFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "80e6b4e1a0abc87e51825c6910860be71d52f080aae1110f099cbf97dfb2a892"
+   },
+   "restoredFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "fd7770c56692f7f372918c834ad8719ec1bdcfa432921e399145222c32c6f3d7"
+   },
+   "vitestExitCode": 1,
+   "observed": {
+    "BS1": "passed",
+    "BS2": "failed",
+    "BS4": "passed",
+    "BS5": "passed",
+    "BS3": "passed"
+   },
+   "expected": {
+    "failed": [
+     "BS2"
+    ],
+    "passed": [
+     "BS1",
+     "BS3",
+     "BS4"
+    ]
+   },
+   "verdict": "RED-AS-REQUIRED"
+  },
+  {
+   "mutant": "M3-terminal-marker-confirmation",
+   "description": "keep the marker but drop the one durable confirmation at the boot publish",
+   "mutatedFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "bee838e2207f576d477f05f6d2f9e33f9e75cf19100a8fce29c2e8cd908dcb0d"
+   },
+   "restoredFileSha256": {
+    "packages/runtime/src/plugin/live/agent-bindings.mjs": "fd7770c56692f7f372918c834ad8719ec1bdcfa432921e399145222c32c6f3d7"
+   },
+   "vitestExitCode": 1,
+   "observed": {
+    "BS1": "passed",
+    "BS2": "passed",
+    "BS4": "failed",
+    "BS5": "passed",
+    "BS3": "passed"
+   },
+   "expected": {
+    "failed": [
+     "BS4"
+    ],
+    "passed": [
+     "BS1",
+     "BS2",
+     "BS3"
+    ]
+   },
+   "verdict": "RED-AS-REQUIRED"
+  }
+ ],
+ "verdict": "ALL-MUTANTS-RED-AS-REQUIRED"
+}

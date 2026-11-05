@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish
+
+ ✓ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests) 251ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 117ms
+
+ Test Files  2 passed (2)
+      Tests  25 passed (25)
+   Start at  13:30:56
+   Duration  643ms (transform 390ms, setup 0ms, import 500ms, tests 369ms, environment 0ms)

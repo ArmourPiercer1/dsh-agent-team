@@ -11,7 +11,7 @@ Branch `task/a5sf-boot-seam-20261105` off `origin/master` (`61554ae1d`), worktre
 
 | file | what it is |
 |---|---|
-| `boot-seam-arms.test.mjs` | the three arms (BS1 boot race, BS2 boot interleave, BS3 list budget) |
+| `boot-seam-arms.test.mjs` | the arms (BS1 boot race, BS2 boot interleave, BS3 list budget) — **two more were added by the follow-up BOOT-PUBLISH round in the same file** (`BS4` the publish window, `BS5` the unwired-admission-port backstop; see `../a5sf-boot-publish/`), so the suite now runs 5 legs and BS3's attribution moved from a stack sniff to a resume-depth probe |
 | `boot-seam-vitest.config.mjs` | the host-free arm runner (root = this directory, outside `packages/**`) |
 | `red-before-seam.log` | the arms on the UNPATCHED glue: **3 failed / 3** |
 | `green-gate.log` | the same arms after the seam: **3 passed / 3** |
@@ -158,7 +158,7 @@ to the source (same sha256).
 |---|---|
 | boot-seam arms, RED before the fix | `3 failed (3)` — `red-before-seam.log` |
 | boot-seam arms, GREEN after the fix | `3 passed (3)` — `green-gate.log` |
-| `mutation-control.mjs` (sweep alone / admission check alone) | `M1: BS1 failed, BS2/BS3 passed`; `M2: BS2 failed, BS1/BS3 passed`; sha256 restored → `ALL-MUTANTS-RED-AS-REQUIRED` |
+| `mutation-control.mjs` (sweep alone / admission check alone) | `M1: BS1 failed, BS2/BS3 passed`; `M2: BS2 failed, BS1/BS3 passed`; sha256 restored → `ALL-MUTANTS-RED-AS-REQUIRED`. **Superseded in part by BOOT-PUBLISH:** with SEAM 6 in place M1 no longer turns BS1 red (the marker refuses that publish before the sweep), so the sweep's mutant is now pinned by `BS5` in `../a5sf-boot-publish/mutation-control.mjs` |
 | `node --test tests/world-factory/a5sf-*.test.mjs` | `tests 219 / pass 219 / fail 0` |
 | runtime a5sf + lifecycle + glue suites (`a5sf-`, `p5t6-`, `a3p4-`, `t12a-`, `p8s5`, `p8s7r2-`, `a5ptc-`) | `40 files / 522 passed (522)` — the prior lane's 39-file figure reproduces exactly (`501 passed`) with the filter restricted to `packages/runtime/test`; the same `a5sf-` filter also matches `packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts` (21 legs, all green) |
 | p7t3 (lifecycle) | `5 files / 31 passed (31)` |
@@ -178,8 +178,25 @@ wiring, not code, and it is gitignored.
 
 ## 7. The question that decides whether this work is done
 
-**After this change, can a boot resume still deposit a resident handle for a member that is ARCHIVED by
-the time `boot()` returns?** **Yes — in exactly one window, and it is not this seam's to close.**
+> **CORRECTION (2026-11-05, second adversarial review — see `../a5sf-boot-publish/README.md`).** This
+> section was WRONG as first written, in two ways, and both are fixed in the text below rather than hidden:
+> (i) "every other ordering is closed" was false — the interval between this round's `liveAgents.set` and
+> the post-loop sweep was open, and a dispatch *during boot* could execute a tool on an ARCHIVED member
+> (BS4: `{published: true, status: 200, toolExecutions: 1}`); (ii) "the dispatch path re-checks the durable
+> gate at the last moment" was false — `executeTool`'s last-moment check consults only the in-memory
+> admission map, never the durable row. The single window described below is still the only *boot-return*
+> window, but it is not the only window this round left, and it was never the one that mattered most.
+
+**After this change, can a boot resolve with a resident handle for a member that is ARCHIVED by the time
+`boot()` returns?** **Yes — in exactly one window, and it is not this seam's to close.** That window cannot
+execute a tool (see the last paragraph), but it is a *residency* window, not an execution one, and it is
+narrower than the publish window that BS4 found and this round's successor closed.
+
+**After BOOT-PUBLISH (the follow-up round, `../a5sf-boot-publish/`), the answer to the publish half is:**
+no member whose durable row is ARCHIVED can be *published* by the boot loop when the lifecycle wires
+`AdmissionClosePort` — a marker recorded at the procedure's `reopenAdmission` forces one durable
+confirmation at the publish seam (SEAM 6) and the publish is refused. The window below (the archive's own
+`commit → post-commit re-drop`) remains a **residency-observation** window and cannot execute.
 
 The window is the archive procedure's own **commit → post-commit residency re-drop** interval, and it is
 reachable only through *ordering*, not through staleness:
@@ -189,15 +206,23 @@ reachable only through *ordering*, not through staleness:
 3. **`boot()`'s promise resolves in that interval** (the caller observes the ARCHIVED member resident);
 4. the archive's `dropResidencyAfterCommit(...)` runs and removes the handle.
 
-Every other ordering is closed, in this process:
+Every other ordering is closed **as of BOOT-PUBLISH** (`../a5sf-boot-publish/`), in this process, provided the
+lifecycle wires `AdmissionClosePort` (production `root.ts` does, since #598):
 
-- commit **before** the sweep's enumeration → the sweep disposes and evicts it (BS1);
+- commit **before** the sweep's enumeration → SEAM 6 refuses the publish at `reopenAdmission`'s marker (BS4),
+  and the sweep evicts anything an unwired configuration published (BS5);
 - resume resolving **inside** the quiesce→commit window → the in-memory admission check never publishes
   the handle (BS2);
+- resume resolving **after the procedure already returned** (its `finally` reopened admission, the row is
+  `ARCHIVED`) → this round's hole; SEAM 6's marker + one durable read refuse the publish (BS4). Before
+  BOOT-PUBLISH this published a resident handle and a dispatch during boot executed a tool;
 - commit **after** `boot()` returns → the handle was published before the commit, and the archive's
   post-commit re-drop removes it (the race fix's fix (a), already in place);
 - a *different* process committing → out of scope here too (the durable tables are an in-memory snapshot
-  of the medium — the archived-gate round's residual risk 1, unchanged).
+  of the medium — the archived-gate round's residual risk 1, unchanged), **and this is the one window that
+  can still execute**: a stale durable snapshot means the boot publish's confirmation reads `SETTLED` and
+  publishes; the single-writer-per-domain discipline is what makes that unreachable in a product
+  deployment, not any check in this seam.
 
 **Why closing that last interval is a different decision.** It is not a read this seam can add and not a
 stale-view problem: it requires making **residency-release atomic with the durable commit** — either the
@@ -208,9 +233,14 @@ continuation so no observer can run between them. Either one changes the lifecyc
 discipline stops at exactly that line ("if a fix at this seam turns out to require touching the
 permission plane or the lifecycle service contract, stop and report"). It is also the same class as the
 race fix's own residual: the interval is bounded by one synchronous statement after an `await`, and its
-only reachable effect in this process is a caller observing the handle *before* the drop that is already
-scheduled — not a tool execution (the dispatch path re-checks the durable gate and the admission close
-at the last moment). Recording it here, unclosed, is the honest price of not widening the contract.
+only reachable effect in this process is a caller **observing** the handle *before* the drop that is already
+scheduled. It cannot execute a tool: throughout that interval the archive still holds new-work admission
+CLOSED (`quiesce.ts` reopens it only after the post-commit re-drop), so `ensureLiveAgent` refuses at entry
+and `executeTool` refuses at its last-moment admission check; once admission is open again the handle is
+already gone. **The earlier sentence here — "the dispatch path re-checks the durable gate … at the last
+moment" — was false**: `executeTool`'s late check consults only the in-memory admission map. The
+non-executability above rests on that map being closed for the whole interval, not on any durable re-read.
+Recording it here, unclosed, is the honest price of not widening the contract.
 
 ---
 

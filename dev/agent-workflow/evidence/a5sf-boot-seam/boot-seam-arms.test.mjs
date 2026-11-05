@@ -107,15 +107,28 @@ async function createBootWorld(hooks = {}) {
   const handles = []
   const createAgent = world.agents.create.bind(world.agents)
   const resumeAgent = world.agents.resume.bind(world.agents)
+  // BS3's ATTRIBUTION PROBE (not a name sniff): a member-set enumeration is a
+  // `list()` issued while NO resume is in flight. The three per-resume
+  // consumption reads happen INSIDE `agents.resume` (makeHandle →
+  // resolveConsumptionViews / installPersonaForSetup), so the depth counter
+  // separates them from the loop's enumeration and the post-loop sweep
+  // WITHOUT depending on the helper's name — renaming or inlining
+  // `listMemberRows` can no longer turn BS3 red for the wrong reason.
+  const probe = { resumeDepth: 0 }
   world.agents.create = async (request) => {
     const handle = await createAgent(request)
     handles.push(handle)
     return handle
   }
   world.agents.resume = async (request) => {
-    const handle = await resumeAgent(request)
-    handles.push(handle)
-    return handle
+    probe.resumeDepth += 1
+    try {
+      const handle = await resumeAgent(request)
+      handles.push(handle)
+      return handle
+    } finally {
+      probe.resumeDepth -= 1
+    }
   }
   const toolExecutions = () => handles.reduce((total, handle) => total + handle.agent.ctx.toolExecutions.length, 0)
   /** Every fake-fs operation any handle ever performed (the guard's IO surface). */
@@ -147,14 +160,18 @@ async function createBootWorld(hooks = {}) {
         target.activityVersion = args.expectedActivityVersion + 1
       },
     },
-    admission: {
-      async closeNewWork(target) {
-        world.binding.closeAdmission?.(target)
-      },
-      async reopenNewWork(target) {
-        world.binding.reopenAdmission?.(target)
-      },
-    },
+    admission: hooks.admission === false
+      // The PRE-#598 production shape (root.ts:2164): a no-op close and no
+      // reopen, i.e. the glue gets NO in-process signal from the procedure.
+      ? { async closeNewWork() {} }
+      : {
+          async closeNewWork(target) {
+            world.binding.closeAdmission?.(target)
+          },
+          async reopenNewWork(target) {
+            world.binding.reopenAdmission?.(target)
+          },
+        },
     activity: { async interrupt() {} },
     descendants: { async drainDescendants() { return { drained: 0, quiescent: true } } },
     residency: world.binding.residency,
@@ -167,6 +184,7 @@ async function createBootWorld(hooks = {}) {
     service: createLifecycleService(ports),
     toolExecutions,
     fsOps,
+    probe,
     target: { rootSessionId: ROOT, instanceId: INSTANCE },
   }
 }
@@ -188,27 +206,27 @@ async function routeReply(binding, sessionId, request) {
 
 const PROBE = { name: 'grep', args: { pattern: 'A5SF_BOOTSEAM_NEEDLE', path: '/tmp/lane/inside' }, callId: 'bootseam-probe' }
 
+/** Bounded wait for an observable predicate (never a fixed sleep as proof). */
+async function waitFor(predicate, timeoutMs) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (predicate() === true) return true
+    await new Promise((resolve) => setTimeout(resolve, 2))
+  }
+  return predicate() === true
+}
+
 /**
  * Record every `memberInstances.list` call the glue (or the lifecycle ports)
  * makes, with the calling frame. The object is the one the glue's closure
  * calls, so substitution is exact.
  */
-function recordListCalls(world) {
+function recordListCalls(world, classify = () => ({})) {
   const repo = world.domain.repositories.memberInstances
   const calls = []
   const original = repo.list
   repo.list = (root) => {
-    const stack = new Error().stack ?? ''
-    // The boot's OWN enumerations are the ones issued through the named
-    // helper (`listMemberRows`): the member-set read of the resume loop and
-    // the one post-loop sweep. The per-resume consumption reads
-    // (`instanceIdForSession` / `locateTemplate` / `installPersonaForSetup`)
-    // pre-date this seam and are not member-set enumerations.
-    calls.push({
-      root: String(root),
-      gate: stack.includes('memberResumeRefusal'),
-      fromBoot: stack.includes('listMemberRows'),
-    })
+    calls.push({ root: String(root), ...classify() })
     return original(root)
   }
   return {
@@ -299,14 +317,134 @@ describe('boot resume against a concurrent archive', () => {
     }
   })
 
+  it('BS4 PUBLISH WINDOW: a resume resolving AFTER a completed archive must not publish, even mid-boot', async () => {
+    const resumeBarrierA = makeBarrier()
+    const resumeBarrierB = makeBarrier()
+    const { world, row, rows, service, toolExecutions } = await createBootWorld({
+      extraMembers: [memberRow(INSTANCE_B, CHILD_B, 'bootseam-member-b')],
+      resumeGate: (req) => {
+        const sid = String(req.resumeSessionId)
+        if (sid === CHILD) return resumeBarrierA.wait()
+        if (sid === CHILD_B) return resumeBarrierB.wait()
+        return undefined
+      },
+    })
+    try {
+      let bootSettled = false
+      const bootPromise = world.binding.boot().finally(() => { bootSettled = true })
+      await resumeBarrierA.reached
+      expect(bootSettled).toBe(false)
+
+      // The REAL procedure runs to COMPLETION while A's resume is suspended:
+      // close admission → interrupt → drain → quiesce (release residency; no
+      // handle exists yet) → commit ARCHIVED → post-commit re-drop (nothing to
+      // drop) → finally REOPEN admission. After this point the in-memory
+      // admission check cannot refuse the pending resume: the flag is OPEN.
+      await service.archiveMember({ rootSessionId: ROOT, instanceId: INSTANCE })
+      expect(row.lifecycle).toBe('ARCHIVED')
+
+      // A's resume now resolves with the archive already finished. B is still
+      // suspended, so the post-loop sweep has NOT run and boot is still
+      // pending — the reviewer's interval, where `ensureLiveAgent`'s fast path
+      // serves whatever this publish deposited.
+      resumeBarrierA.release()
+      await waitFor(() => world.binding.hasLive(CHILD), 300)
+      const published = world.binding.hasLive(CHILD)
+      const executionsBefore = toolExecutions()
+      const reply = await routeReply(world.binding, CHILD, PROBE)
+      const measured = {
+        published,
+        lifecycle: row.lifecycle,
+        bootPending: bootSettled === false,
+        status: reply.status,
+        toolExecutions: toolExecutions() - executionsBefore,
+      }
+
+      resumeBarrierB.release()
+      await bootPromise
+      expect(rows.find((candidate) => candidate.instanceId === INSTANCE_B)?.lifecycle).toBe('SETTLED')
+      // RED on the pre-fix tree: published=true, status=200, one execution.
+      // GREEN after it: nothing is published (422, zero executions) and the
+      // handle can never be served in the interval at all.
+      expect(measured).toEqual({
+        published: false,
+        lifecycle: 'ARCHIVED',
+        bootPending: true,
+        status: 422,
+        toolExecutions: 0,
+      })
+      expect(world.binding.hasLive(CHILD)).toBe(false)
+      const after = await routeReply(world.binding, CHILD, PROBE)
+      expect(after.status).toBe(422)
+      expect(after.body.error).toMatch(/ARCHIVED MemberInstance/u)
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  })
+
+  it('BS5 UNWIRED ADMISSION PORT: the post-loop sweep is the only backstop (and the publish window is open there)', async () => {
+    // The PRE-#598 production wiring (root.ts:2164): `closeNewWork` is a no-op
+    // and there is no `reopenNewWork`, so the glue receives NO in-process
+    // signal — neither the admission close (SEAM 5) nor the terminal marker
+    // (SEAM 6) can exist. This arm CHARACTERISES that configuration instead of
+    // letting the fix claim it:
+    //   * mid-boot, after the archive completed and the resume resolved, the
+    //     handle IS published and a dispatch executes a tool (200 / 1) — an
+    //     EXECUTABLE window, stated plainly, not described as harmless;
+    //   * after `boot()` the post-loop durable sweep has dropped it (422 / 0).
+    // The production root wires both ports since #598, so this is the shape a
+    // root must NOT have; M1 (sweep removed) turns this arm red, which is what
+    // makes the sweep a measured backstop rather than an asserted one.
+    const resumeBarrierA = makeBarrier()
+    const resumeBarrierB = makeBarrier()
+    const { world, row, service, toolExecutions } = await createBootWorld({
+      admission: false,
+      extraMembers: [memberRow(INSTANCE_B, CHILD_B, 'bootseam-member-b')],
+      resumeGate: (req) => {
+        const sid = String(req.resumeSessionId)
+        if (sid === CHILD) return resumeBarrierA.wait()
+        if (sid === CHILD_B) return resumeBarrierB.wait()
+        return undefined
+      },
+    })
+    try {
+      let bootSettled = false
+      const bootPromise = world.binding.boot().finally(() => { bootSettled = true })
+      await resumeBarrierA.reached
+      await service.archiveMember({ rootSessionId: ROOT, instanceId: INSTANCE })
+      expect(row.lifecycle).toBe('ARCHIVED')
+      resumeBarrierA.release()
+      await waitFor(() => world.binding.hasLive(CHILD), 300)
+      const executionsBeforeMid = toolExecutions()
+      const midReply = await routeReply(world.binding, CHILD, PROBE)
+      const midBoot = {
+        published: world.binding.hasLive(CHILD),
+        bootPending: bootSettled === false,
+        status: midReply.status,
+        toolExecutions: toolExecutions() - executionsBeforeMid,
+      }
+      resumeBarrierB.release()
+      await bootPromise
+      const afterReply = await routeReply(world.binding, CHILD, PROBE)
+      // DOCUMENTED GAP (unwired configuration only): executable mid-boot.
+      expect(midBoot).toEqual({ published: true, bootPending: true, status: 200, toolExecutions: 1 })
+      // THE SWEEP'S GUARANTEE (what M1 removes): after boot, nothing resident.
+      expect(world.binding.hasLive(CHILD)).toBe(false)
+      expect(afterReply.status).toBe(422)
+      expect(toolExecutions()).toBe(1)
+    } finally {
+      await world.binding.close().catch(() => undefined)
+    }
+  })
+
   it('BS3 LIST BUDGET: one enumeration for the member set + one sweep, independent of member count', async () => {
     const measure = async (memberCount) => {
       const extraMembers = memberCount === 2
         ? [memberRow(INSTANCE_B, CHILD_B, 'bootseam-member-b')]
         : []
-      const { world } = await createBootWorld({ extraMembers })
+      const { world, probe } = await createBootWorld({ extraMembers })
       try {
-        const recorder = recordListCalls(world)
+        const recorder = recordListCalls(world, () => ({ enumeration: probe.resumeDepth === 0 }))
         try {
           await world.binding.boot()
         } finally {
@@ -317,7 +455,7 @@ describe('boot resume against a concurrent archive', () => {
         if (memberCount === 2) expect(resumed).toContain(CHILD_B)
         return {
           total: recorder.calls.length,
-          enumerations: recorder.calls.filter((call) => call.fromBoot).length,
+          enumerations: recorder.calls.filter((call) => call.enumeration).length,
         }
       } finally {
         await world.binding.close().catch(() => undefined)

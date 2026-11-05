@@ -975,6 +975,35 @@ export function createAgentBindings(deps) {
    */
   const newWorkClosed = new Map()
   /**
+   * SEAM 6 (the boot PUBLISH window): the durable lifecycle state a lifecycle
+   * procedure last OBSERVED when it reopened this child's admission.
+   *
+   * Why the admission close alone is not enough at a boot publish. The
+   * procedure reopens admission in its `finally`, i.e. AFTER the durable
+   * commit and after the post-commit residency re-drop. A boot resume that
+   * resolves after that point therefore sees an OPEN admission map while the
+   * durable row is already ARCHIVED — the exact interval in which the old
+   * SEAM 5 passed and published a resident handle for an archived member
+   * (`ensureLiveAgent`'s fast path then serves it BEFORE any gate, and
+   * `executeTool`'s last-moment check consults only this map, never the
+   * durable row: a mid-boot dispatch executed a tool on an ARCHIVED member —
+   * BS4). `reopenAdmission` already enumerates the row to find the child, so
+   * it records that row's lifecycle here for free; a terminal state leaves a
+   * marker, a restore (or an aborted procedure) clears it.
+   *
+   * Cost: the marker itself is in-memory (zero durable reads). A marker HIT
+   * buys exactly ONE durable read at the boot publish seam — the member is
+   * already known to have gone terminal once in this process, and only the
+   * durable row can tell whether a restore has since re-admitted it. Normal
+   * boots (no marker) pay nothing, so the boot budget stays "one member-set
+   * enumeration + at most one sweep".
+   *
+   * Lifetime: until a lifecycle procedure observes a non-terminal row (or the
+   * binding closes). A stale marker is safe in both directions — it can only
+   * cause one extra durable read, and the read is the authority.
+   */
+  const terminalAtReopen = new Map()
+  /**
    * @type {boolean} the row-stop (close) lifecycle gate — set at the VERY
    * START of close() (before any snapshot/dispose work) and never cleared.
    * The closing gate protects ensureLiveAgent and work-completion delivery
@@ -1356,6 +1385,13 @@ export function createAgentBindings(deps) {
       .find((member) => String(member?.instanceId) === instanceId)
     const child = row?.childSessionId
     if (typeof child !== 'string' || child.length === 0) return false
+    // SEAM 6: the procedure's exit is the ONE moment the row's post-transition
+    // lifecycle is already enumerated here for free. A terminal state becomes
+    // the boot-publish marker; anything else (an aborted procedure, a restore)
+    // clears it.
+    const state = String(row?.lifecycle ?? '')
+    if (state === 'ARCHIVED' || state === 'DISPOSED') terminalAtReopen.set(child, state)
+    else terminalAtReopen.delete(child)
     return newWorkClosed.delete(child)
   }
 
@@ -5201,16 +5237,31 @@ export function createAgentBindings(deps) {
           // check and `liveAgents.set`: a close can only land before or after
           // this block, never inside it.
           const midProcedureRefusal = admissionCloseRefusal(child)
-          if (midProcedureRefusal !== null) {
+          // SEAM 6 — the COMPLETED-procedure half (the boot publish window).
+          // The admission close cannot see a procedure that has already
+          // RETURNED: its `finally` reopened the map while the durable row is
+          // terminal, so the check above passes and the resume would publish.
+          // The marker makes that case payable with exactly ONE durable read —
+          // and only for a member that actually went terminal in this process
+          // at boot time. A restore (or an aborted procedure) cleared the
+          // marker or fails the read, in which case the publish proceeds.
+          let completedProcedureRefusal = null
+          if (midProcedureRefusal === null && terminalAtReopen.has(child)) {
+            const lateTerminal = memberResumeRefusal(child, rootSid)
+            if (lateTerminal !== null) completedProcedureRefusal = lateTerminal
+            else terminalAtReopen.delete(child)
+          }
+          const bootRefusal = midProcedureRefusal ?? completedProcedureRefusal
+          if (bootRefusal !== null) {
             try {
               await handle.dispose()
             } catch (error) {
               observations.push(
-                `agent-bindings: resumed agent dispose failed after a closed-admission boot refusal for '${child}': ${error instanceof Error ? error.message : String(error)}`,
+                `agent-bindings: resumed agent dispose failed after a boot publish refusal for '${child}': ${error instanceof Error ? error.message : String(error)}`,
               )
             }
             observations.push(
-              `agent-bindings: boot resume skipped ${String(midProcedureRefusal.code)} member '${child}' — a lifecycle quiesce is in progress in this process (Architecture §30.1)`,
+              `agent-bindings: boot resume skipped ${String(bootRefusal.code)} member '${child}' — a lifecycle procedure in this process has made the member terminal (Architecture §41.6/§30.2/§29.4; the admission close, §30.1, covers the procedure still being open)`,
             )
             continue
           }
@@ -5234,20 +5285,24 @@ export function createAgentBindings(deps) {
         // (`archive.ts`/`dispose.ts` fix (a)) removes a handle that was
         // published before the commit.
         const afterBoot = listMemberRows(rootSid)
-        const sweptRefusals = []
+        // BATCH ATOMICITY: take the whole eviction set and EVICT IT ALL before
+        // the first `await` (a dispose). A per-member delete→await→delete loop
+        // would leave the handles LATER in the set live between two disposals —
+        // a dispatch could be served one the sweep has already decided to drop.
+        const doomed = []
         for (const member of afterBoot) {
           const sweptChild = member?.childSessionId
           if (typeof sweptChild !== 'string' || sweptChild.length === 0) continue
-          if (!liveAgents.has(sweptChild)) continue
+          const sweptHandle = liveAgents.get(sweptChild)
+          // A concurrent archive's post-commit re-drop may already have taken
+          // it: nothing to evict, and `undefined` must NEVER reach `.dispose()`.
+          if (sweptHandle === undefined) continue
           const sweptRefusal = memberResumeRefusal(sweptChild, rootSid, afterBoot)
           if (sweptRefusal === null) continue
-          sweptRefusals.push({ child: sweptChild, refusal: sweptRefusal })
-        }
-        for (const { child: sweptChild, refusal: sweptRefusal } of sweptRefusals) {
-          const sweptHandle = liveAgents.get(sweptChild)
-          // Evict BEFORE the dispose await: a dispatch must never be served
-          // the handle this sweep has already condemned.
           liveAgents.delete(sweptChild)
+          doomed.push({ child: sweptChild, refusal: sweptRefusal, handle: sweptHandle })
+        }
+        for (const { child: sweptChild, refusal: sweptRefusal, handle: sweptHandle } of doomed) {
           try {
             await sweptHandle.dispose()
           } catch (error) {

@@ -7701,3 +7701,62 @@ sha256 校验恢复，`ALL-MUTANTS-RED-AS-REQUIRED`。门：`node --test tests/w
 返回 —— 归档自身的 **durable commit → post-commit residency re-drop** 间隙（扫描快照落在仍 SETTLED 时、
 随后提交落地、`boot()` 在 re-drop 之前 resolve）。其余顺序均已关闭。要关它需要让驻留释放与 durable
 commit **原子化**（发布栅栏或生命周期合同变更），属于另一个决策，按范围纪律停在此处并报告。
+
+## 2026-11-05（真实 UTC 05:30Z）— BOOT-PUBLISH：boot 发布窗口（同一复活类，比 BOOT-SEAM 低一层）
+
+**缘起（第二份独立对抗性 review，结论正确）**：#599 的 BS1/BS2 是"对的绿"，因为它们只在 `boot()` resolve
+**之后**下发。真正的洞在循环 `liveAgents.set` 与 post-loop sweep **之间**：归档过程**已经返回**（finally 已
+reopen admission），durable 行是 ARCHIVED，post-commit re-drop 早已无句柄可删（resume 当时 in-flight）；
+此时 SEAM 5 的**内存**检查通过并发布句柄 —— 而 `ensureLiveAgent` 在 SEAM 1 之前就从 fast path 返回它，
+`executeTool` 的最后一刻检查**只查 admission map、从不查 durable 行**。自测复现（两成员、A 归档完成后释放 A、
+B 仍挂住使 boot pending、boot 期间下发）：`BS4 {published:true, lifecycle:ARCHIVED, bootPending:true,
+status:200, toolExecutions:1}`；`1 failed | 4 passed`。可达性：boot 期间的 Leader 回合 →
+`submitAttributedInput`/`workDelivery.deliver` → `ensureLiveAgent` fast path；HTTP 路由在 boot 期间到不了
+（那一个回合属于 boot），所以必须精确描述而不是当成"不可达"。
+
+**修复（仅保护胶水，保持 boot 列表预算）**：
+- **SEAM 6 marker**：`reopenAdmission` 本来就枚举 durable 行以定位 child，现在顺带读它的 `lifecycle`：terminal
+  （ARCHIVED/DISPOSED）→ `terminalAtReopen.set(child, state)`；非 terminal（中止的过程 / restore 重新准入）→ 清除。
+  零额外 durable 读。
+- **SEAM 6 确认**：boot 循环里若 admission 打开但 marker 命中，做**恰好一次** `memberResumeRefusal(child, rootSid)`
+  重读：仍 terminal → dispose 并跳过（沿 SEAM 2 的 observation 姿态，绝不让 boot 失败）；已非 terminal → 清 marker
+  并正常发布。检查与 `liveAgents.set` 之间无 await。正常 boot **零**额外 list，只有"本次 boot 期间归档/销毁已完成"
+  的成员付一次。
+- **SEAM 4 批原子性 + undefined 守卫**：先把快照批准的句柄**全部** evict（`doomed` 数组）再开始 dispose await；
+  `liveAgents.get` 返回 undefined（并发 post-commit re-drop 已取走）时跳过，而不是让 `undefined.dispose()` 落进
+  catch 被记成 dispose 失败。（此项无专属臂：复现"两次 dispose 之间下发"需要 dispose 双持有屏障，臂里的双立即
+  resolve —— 如实记为"人工检视"，不宣称有臂。）
+- **BS3 归因去名依赖**（review LOW）：`recordListCalls` 改为按"resume 不在飞行中时的 list()"分类（world 的 resume
+  包装器带深度探针），重命名/内联 `listMemberRows` 不再误红；绝对总数 5/8 不变。
+
+**臂**：BS4 发布窗口（RED `{published:true,status:200,toolExecutions:1}` → GREEN `{published:false,status:422,
+toolExecutions:0}`，boot 后同为 422）；BS5（pre-#598 接线：close 为 no-op、无 reopen —— 该配置下 glue 没有任何进程内
+信号，boot 期间下发**确为 200/1 次执行**，明文记为"可执行窗口"，只有 post-loop sweep 兜住 boot 后的驻留），
+BS1/BS2/BS3 保持绿，5/5。
+
+**变异控制**（`ALL-MUTANTS-RED-AS-REQUIRED`，sha256 校验恢复 `fd7770c5…`）：M1 拆 sweep → **BS5** 红（不是 BS1）；
+M2 拆内存 admission 检查 → BS2 红；M3（本轮新增）只拆 marker 的 durable 确认 → **BS4** 红、其余全绿。
+**控制暴露的事实**：M1 首跑时 BS1 不再红 —— SEAM 6 已在 wired 路径上先于 sweep 拒绝发布，sweep 在该路径已冗余；
+sweep 仍是"未接 AdmissionClosePort 的 root"的唯一防线，故其变异体改由为此新建的 BS5 钉住，而不是留在一条"看起来
+需要它"的臂上。
+
+**三处失实声明已改**（均以 dated CORRECTION 引用原句，不静默改写）：`a5sf-boot-seam/README.md` §7"Every other
+ordering is closed"与"the dispatch path re-checks the durable gate … at the last moment"（`executeTool` 末检只查
+admission map）；`a5sf-archived-gate/README.md` §4"not reachable from a tool dispatch (it is row start)"与 §7 risk
+2(a) 仍把 boot loop 当作未关残余 —— 两份 README 现在在同一 tip 上不再互相矛盾。
+
+**门（逐字）**：arm RED→GREEN `1 failed | 4 passed` → `5 passed`；world-factory `219/219`；runtime a5sf+lifecycle+
+glue `40 files / 522 passed`；p7t3 `31 passed`；row-6 RO1–RO4 复跑 `4 passed`；row-6 gate arms `4 passed`；`tsc` rc 0；
+`pnpm -r typecheck` rc 0（9 projects）；eslint 0 errors；ARC-A `25 passed`；`pnpm run build` + `place-dist-glue`
+（101 处，glue 字节同一）+ client composition rc 0；`check-artifacts-committed` `ok 1960 glue=101`；
+`check-artifacts-at-head` `ok 1960 drift=0`；`git diff --check origin/master...HEAD` rc 0。
+
+**保护胶水**：`agent-bindings.mjs` `9cdb5513…` → **`fd7770c56692f7f372918c834ad8719ec1bdcfa432921e399145222c32c6f3d7`**，
+在 `arc-a-protected-center.json` 登记为 NAMED center-interface 覆盖（+6 行，旧条目逐字节保留）；dist 同 commit 字节同一。
+
+**剩余窗口（如实）**：本修复后，本进程内"居留可被观察到"仍有一个区间 —— 归档自身的 `commit → post-commit
+residency re-drop` 间隙（句柄在 commit 之前已发布，drop 之前仍在 `liveAgents`；boot 若在该区间 resolve 也能被观察到）。
+**它不能执行**：整个区间 admission 仍为 CLOSED（`quiesce.ts` 只在 drop 之后 reopen），入口与末检都拒；一旦 reopen，
+句柄已被 drop。**但**若某个 root 不接 `AdmissionClosePort`（pre-#598 形状），boot 期间下发**可以执行**（BS5 实测
+200/1）；跨进程提交（archived-gate risk 1）是唯一仍可执行的窗口，靠 single-writer-per-domain 纪律而非本 seam 保证。
+PR #600（draft），首行 `BOOT-PUBLISH`。

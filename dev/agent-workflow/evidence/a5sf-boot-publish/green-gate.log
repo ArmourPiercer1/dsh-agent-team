@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-boot-publish/dev/agent-workflow/evidence/a5sf-boot-publish
+
+ ✓ ../a5sf-boot-seam/boot-seam-arms.test.mjs (5 tests) 1525ms
+     ✓ BS1 BOOT RACE: the ARCHIVED commit lands while the resume is in flight -> not resident, 422, 0 executions  1207ms
+     ✓ BS4 PUBLISH WINDOW: a resume resolving AFTER a completed archive must not publish, even mid-boot  303ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  13:31:00
+   Duration  2.58s (transform 1.67s, setup 0ms, import 970ms, tests 1.52s, environment 0ms)
