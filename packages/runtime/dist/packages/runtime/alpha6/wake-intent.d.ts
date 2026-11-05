@@ -42,7 +42,7 @@ export declare function pruneAbsentReviewWakeRow(input: {
     readonly store: ReviewWakeIntentStore;
     readonly wakeId: string;
     readonly inbox: Pick<ReviewWakeInboxPort, 'has'>;
-}): Promise<'cleared' | 'kept' | 'unreadable'>;
+}): Promise<'cleared' | 'kept' | 'unreadable' | 'clear-failed'>;
 /** What the reducer decided to deliver, before any Host call. */
 export interface ReviewWakeQueuedIntent {
     readonly key: ReviewWakeKey;

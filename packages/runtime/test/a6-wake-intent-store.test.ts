@@ -233,4 +233,21 @@ describe('A6 stale-row prune (post-plan, under the caller held latch lock)', () 
     expect(result).toBe('unreadable')
     expect(cleared).toEqual([])
   })
+
+  it('reports a failed clear instead of aborting the caller (no throw)', async () => {
+    const cleared: string[] = []
+    const store = {
+      persistQueued: () => {},
+      markAccepted: () => {},
+      clear: async (wakeId?: string) => {
+        if (wakeId !== undefined) cleared.push(wakeId)
+        throw new Error('EACCES: intent directory not writable')
+      },
+      read: () => null,
+    }
+    await expect(
+      pruneAbsentReviewWakeRow({ store, wakeId: 'wake-clear-fail', inbox: { has: () => false } }),
+    ).resolves.toBe('clear-failed')
+    expect(cleared).toEqual(['wake-clear-fail'])
+  })
 })

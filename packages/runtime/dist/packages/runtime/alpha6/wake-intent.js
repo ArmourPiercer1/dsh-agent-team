@@ -45,7 +45,12 @@ export async function pruneAbsentReviewWakeRow(input) {
     catch {
         return 'unreadable';
     }
-    await input.store.clear(input.wakeId);
+    try {
+        await input.store.clear(input.wakeId);
+    }
+    catch {
+        return 'clear-failed';
+    }
     return 'cleared';
 }
 function sameKey(a, b) {

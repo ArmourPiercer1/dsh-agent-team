@@ -49,13 +49,17 @@ export async function pruneAbsentReviewWakeRow(input: {
   readonly store: ReviewWakeIntentStore
   readonly wakeId: string
   readonly inbox: Pick<ReviewWakeInboxPort, 'has'>
-}): Promise<'cleared' | 'kept' | 'unreadable'> {
+}): Promise<'cleared' | 'kept' | 'unreadable' | 'clear-failed'> {
   try {
     if ((await input.inbox.has(input.wakeId)) !== false) return 'kept'
   } catch {
     return 'unreadable'
   }
-  await input.store.clear(input.wakeId)
+  try {
+    await input.store.clear(input.wakeId)
+  } catch {
+    return 'clear-failed'
+  }
   return 'cleared'
 }
 

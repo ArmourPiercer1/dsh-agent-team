@@ -2,7 +2,8 @@
 
 Host: pristine `tests/deepseek-harness-test-use` @ `639ed01539` (0.2.0-rc.2).
 Kit: `tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs`
-with `C1_PLANE_TAKEOVER=1` (new opt-in mode). Ports 3546/3547;
+with `C1_PLANE_TAKEOVER=1` (new opt-in mode), invoked with
+`--host-port 3546 --mock-port 3547`;
 DSH_HOME and the scratch workspace are under the gitignored `tests/homes/`.
 
 This run answers the open question from `a6-c1-020`: can the same legacy C1
