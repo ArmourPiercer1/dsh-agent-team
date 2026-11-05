@@ -32,8 +32,8 @@
 | # | Required scenario | Result | Why |
 |---|---|---|---|
 | 10 | Leader exception routing | **NOT_REACHED** | the E2E kit declares `leaderExceptions: []`; no real exception leg was exercised |
-| 11 | Officer self-review | **NOT_REACHED** | no self-ask scenario was created |
-| 12 | Handoff successor notification / production `reviewEvents` consumer | **NOT_REACHED** | only the assigned-Officer path was run; no handoff transfer, no successor current-leg delivery |
+| 11 | Officer self-review | **PASS** | real Host `a6-recipients-r6` / `r12`: Officer's own PA leg `ctrl-1lc9fk11mqfnfy168muob00k` decided by Leader seq 19, consumed seq 20, command executed; see `recipients.md` |
+| 12 | Handoff successor notification / production `reviewEvents` consumer | **BLOCKED** | `a6-recipients-r12`: fresh worker's PA `ctrl-1ww7pw714asytc0ouvpbt1az` stayed pending with no wake/decision/transfer; candidate lost-wake, `recipients.md` |
 | 13 | Human Escalation recipient | **NOT_REACHED** | both decisions were agent decisions (Leader legacy notification and Officer); no human recipient |
 | 14 | Human final approval, original-call validity, Stop/cancel/timeout non-revival | **NOT_REACHED** | no Human ask, no Stop/cancel mid-wait |
 | 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **NOT_REACHED / PARTIAL** | one real deliver/claim/turn-end release was observed, but no crash-window or Sticky Stop injection; reconciliation after restart was not tested |

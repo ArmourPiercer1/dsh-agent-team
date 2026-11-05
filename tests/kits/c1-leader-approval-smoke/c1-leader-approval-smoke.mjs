@@ -273,6 +273,9 @@ const MK_ZCHECK = `C1MK_ZCHECK_${RUN_STAMP}`
 const MK_XCROSS = `C1MK_XCROSS_${RUN_STAMP}`
 const MK_A6 = `C1MK_A6LEAD_${RUN_STAMP}`
 const MK_A6MEM = `C1MK_A6MEM_${RUN_STAMP}`
+const MK_A6SELF = `C1MK_A6SELF_${RUN_STAMP}`
+const MK_A6_HANDOFF = `C1MK_A6HANDOFF_${RUN_STAMP}`
+const MK_A6_NEWWORKER = `C1MK_A6NEWW_${RUN_STAMP}`
 const MK_A6_OFFICER_READY = `C1MK_A6OFFREADY_${RUN_STAMP}`
 
 // The C1 notification prefix token (the renderer's first line).
@@ -295,6 +298,18 @@ const FILE_X_ALLOW = join(WORKSPACE, `c1-x-allow-${RUN_STAMP}.txt`)
 const FILE_X_DENY = join(WORKSPACE, `c1-x-deny-${RUN_STAMP}.txt`)
 const SUM_A6_ALLOW = `c1-a6-allow-${RUN_STAMP}`
 const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
+// Optional recipient probe: the OFFICER itself asks for a governed bash tool.
+// The current-leg OperationOwner is then the Officer template, so the router
+// must route the self-ask to the Leader (never back to the Officer).
+const A6_RECIPIENTS = process.env['C1_A6_RECIPIENTS'] === '1'
+const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
+const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
+const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
+const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
+const CMD_A6_SELF = `echo ${SUM_A6_SELF} > ${FILE_A6_SELF} && echo a6-self-executed`
+const SUM_A6_HANDOFF = `c1-a6-handoff-${RUN_STAMP}`
+const FILE_A6_HANDOFF = join(WORKSPACE, `c1-a6-handoff-${RUN_STAMP}.txt`)
+const CMD_A6_HANDOFF = `echo ${SUM_A6_HANDOFF} > ${FILE_A6_HANDOFF} && echo a6-handoff-executed`
 const FILE_Y = join(WORKSPACE, `c1-y-${RUN_STAMP}.txt`)
 const FILE_Z = join(WORKSPACE, `c1-z-${RUN_STAMP}.txt`)
 const CMD_X_ALLOW = `echo ${SUM_X_ALLOW} > ${FILE_X_ALLOW} && echo x-allow-executed`
@@ -758,7 +773,9 @@ function savedBlueprintA6Yaml(denyList) {
     '      permissions:',
     '        default: deny',
     '        allow: []',
-    '        ask: []',
+    ...(A6_EXTRA
+      ? ['        ask:', '          - tool: bash', '            resource:', '              kind: any']
+      : ['        ask: []']),
     '        deny: []',
   ]
   let text = savedBlueprintYaml(
@@ -772,10 +789,17 @@ function savedBlueprintA6Yaml(denyList) {
   text = text.replace('memberEnvelopes:', officer.join('\n') + '\nmemberEnvelopes:')
   // The worker envelope follows `memberEnvelopes:`; append the Officer entry
   // under the SAME key (a second mapping key would be duplicate YAML).
-  text = text.replace(
-    '      deny: []\npermissionMutationEnvelope:',
-    '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
-  )
+  if (A6_EXTRA) {
+    text = text.replace(
+      '      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - request-control\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+    )
+  } else {
+    text = text.replace(
+      '      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+    )
+  }
   text = text.replace(
     'metadata: {}',
     [
@@ -1146,6 +1170,23 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
   check('A6-6', 'every durable request at the end is settled (no lost pending leg)', pending.length === 0,
     `requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.map((r) => r.requestId).join(',')}`)
 
+  let selfReview = null
+  let handoff = null
+  if (A6_RECIPIENTS) {
+    log('── A6-SELF: Officer self-ask -> Leader wake -> allow -> execute ──')
+    selfReview = await runAlpha6SelfReview({ booted, mock })
+    check('A6-7', 'Officer self-ask is routed to the Leader, not back to the Officer', selfReview.ok,
+      `prompt=${String(selfReview.promptStatus)} notif=${String(selfReview.leaderNotifications)} selfReq=${String(selfReview.selfRequestId)} leaderDecided=${String(selfReview.leaderDecided)} executed=${String(selfReview.executed)}`)
+    writeEvidence('a6-self-review.json', { ...selfReview, ledger: undefined })
+  }
+  if (A6_HANDOFF) {
+    log('── A6-HANDOFF: Officer hands the PA leg to the Leader -> allow -> execute ──')
+    handoff = await runAlpha6Handoff({ booted, mock })
+    check('A6-8', 'Officer handoff made the Leader the successor recipient and the call executed once', handoff.ok,
+      `requestId=${String(handoff.requestId)} transfer=${JSON.stringify(handoff.transfer)} decision=${JSON.stringify(handoff.decision)} executed=${String(handoff.executed)}`)
+    writeEvidence('a6-handoff.json', { ...handoff, ledger: undefined })
+  }
+
   writeEvidence('a6-officer.json', {
     schemaVersion: 5,
     runtime: 'real Host 0.2.0-rc.2',
@@ -1164,18 +1205,26 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
     execText,
     filePath: FILE_A6_ALLOW,
     ledger,
+    selfReview: selfReview === null ? null : { ...selfReview, ledger: undefined },
+    handoff: handoff === null ? null : { ...handoff, ledger: undefined },
   })
   return wakes.length > 0 && resolveCalls.length > 0 && executed && pending.length === 0
+    && (selfReview === null || selfReview.ok)
+    && (handoff === null || handoff.ok)
 }
 
 let mockWakeSeq = 0
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
-    if (typeof firstMsg?.content === 'string' && firstMsg.content.startsWith('Create a concise title')) {
+    if (typeof firstMsg?.content === 'string'
+      && (firstMsg.content.startsWith('Create a concise title') || firstMsg.content.startsWith('Generate the session title'))) {
       return { kind: 'text', content: 'C1 smoke session' }
     }
     const lastUser = lastUserTextOf(req)
+    if (lastUser.startsWith('Generate the session title') || lastUser.startsWith('Create a concise title')) {
+      return { kind: 'text', content: 'C1 smoke session' }
+    }
     const tools = toolMsgsOf(req).length
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
       return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
@@ -1203,7 +1252,7 @@ function makeDecide() {
           rootSessionId: CREATE_ROOT_A6,
           requestToken: `c1-a6-res-${String(mockWakeSeq++)}`,
           requestId: named !== '' ? named : first,
-          decision: 'allow',
+          decision: lastUser.includes(SUM_A6_HANDOFF) ? 'handoff' : 'allow',
         })
       }
       return { kind: 'text', content: 'C1_A6_OFFICER_DONE' }
@@ -1222,7 +1271,10 @@ function makeDecide() {
       // summary line carries the command/summary text).
       let root = CREATE_ROOT_Y
       let decision = 'allow'
-      if (lastUser.includes(SUM_A6_ALLOW)) {
+      if (lastUser.includes(CREATE_ROOT_A6)) {
+        root = CREATE_ROOT_A6
+        decision = 'allow'
+      } else if (lastUser.includes(SUM_A6_ALLOW) || lastUser.includes(SUM_A6_SELF) || lastUser.includes(SUM_A6_HANDOFF)) {
         root = CREATE_ROOT_A6
         decision = 'allow'
       } else if (lastUser.includes(SUM_X_ALLOW) || lastUser.includes(SUM_X_DENY)) {
@@ -1249,11 +1301,49 @@ function makeDecide() {
     }
 
     // (3) member chains.
+    if (lastUser.includes(MK_A6_HANDOFF)) {
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(CMD_A6_HANDOFF))
+        case 1: return { kind: 'text', content: 'C1_A6_HANDOFF_DONE' }
+        default: return { kind: 'text', content: `C1_A6_HANDOFF_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6SELF)) {
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(CMD_A6_SELF))
+        case 1: return { kind: 'text', content: 'C1_A6_SELF_DONE' }
+        default: return { kind: 'text', content: `C1_A6_SELF_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
     if (lastUser.includes(MK_A6MEM)) {
       switch (tools) {
         case 0: return toolCall('bash', bashArgs(CMD_A6_ALLOW))
         case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
         default: return { kind: 'text', content: `C1_A6_MEMBER_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6_NEWWORKER)) {
+      switch (tools) {
+        case 0: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-ho-worker-${RUN_STAMP}`,
+          delegationTemplateId: 'worker',
+          label: 'w-a6-ho',
+        })
+        case 1: {
+          const wid = extractInstanceId(toolMsgsOf(req)[0]?.content)
+          if (wid === null) return { kind: 'text', content: `C1_A6_HO_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          return toolCall('team_delegate', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-ho-delegate-${RUN_STAMP}`,
+            delegationInstanceId: wid,
+            label: 'w-a6-ho',
+            prompt: MK_A6_HANDOFF,
+            async: true,
+          })
+        }
+        case 2: return { kind: 'text', content: 'C1_A6_HO_DONE' }
+        default: return { kind: 'text', content: `C1_A6_HO_FALLTHROUGH tools=${String(tools)}` }
       }
     }
     if (lastUser.includes(MK_A6)) {
@@ -1478,7 +1568,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
  * {factType, rootSessionId, payload, ...}. Read-only.
  */
 function readControlLedger(root) {
-  const out = { requests: [], decisions: [], consumptions: [], error: null }
+  const out = { requests: [], decisions: [], consumptions: [], transfers: [], error: null }
   try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const ledger = parsed?.tables?.ledger
@@ -1492,15 +1582,145 @@ function readControlLedger(root) {
       if (entry.factType === 'control-request-recorded') {
         out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-decision-recorded') {
-        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, resolver: payload.resolver ?? payload.resolvedBy, createdAt: entry.createdAt })
+        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-allow-consumed') {
         out.consumptions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, createdAt: entry.createdAt })
+      } else if (entry.factType === 'control-current-leg-transferred') {
+        out.transfers.push({ sequence: Number(k), factType: entry.factType, ...payload })
       }
     }
   } catch (error) {
     out.error = String(error?.message ?? error)
   }
   return out
+}
+
+/** The durable member rows for one root (the real child sessions). */
+function readMemberRows(root) {
+  try {
+    const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
+    const rows = parsed?.tables?.member_instances
+    if (rows === null || typeof rows !== 'object') return []
+    const out = []
+    for (const v of Object.values(rows)) {
+      if (typeof v !== 'string') continue
+      let row
+      try { row = JSON.parse(v) } catch { continue }
+      if (String(row?.rootSessionId) === root) out.push(row)
+    }
+    return out
+  } catch { return [] }
+}
+
+/** Drive the Officer's OWN bash ask and prove the self-ask reached the Leader. */
+async function runAlpha6SelfReview({ booted, mock }) {
+  const officer = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+  if (officer === undefined) return { ok: false, reason: 'no Officer child session', leaderWakes: 0, officerWakes: 0, executed: false }
+  const before = mock.requests.length
+  const prompt = await apiPrompt(booted.origin, booted.cookie, officer.childSessionId, MK_A6SELF, 'c1a6self')
+  const done = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6SELF)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_SELF_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'Officer self-ask done after Leader allow + plane execute',
+  )
+  const after = mock.requests.slice(before)
+  writeEvidence('a6-self-mock.json', after.map((r) => ({
+    seq: r.seq,
+    lastUser: lastUserTextOf(r).slice(0, 900),
+    reply: r.reply,
+    toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+  })))
+  const wakes = after.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake'))
+  const leaderWakes = wakes.filter((r) => JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const officerWakes = wakes.filter((r) => JSON.stringify(r.body ?? '').includes('C1 smoke Officer'))
+  const execText = existsSync(FILE_A6_SELF) ? readFileSync(FILE_A6_SELF, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_SELF)
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  const selfAsk = ledger.requests.filter((r) => r.targetInstanceId === officer.instanceId && r.actionName === 'team-tool-execute').at(-1)
+  const selfDecision = selfAsk === undefined ? undefined : ledger.decisions.find((d) => d.requestId === selfAsk.requestId)
+  // The Leader recipient is the LEGACY notification seam for a legal
+  // Leader route (not the Officer review wake); count those turns too.
+  const leaderNotifications = after.filter((r) =>
+    lastUserTextOf(r).startsWith('[team-control') && JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const leaderDecided = selfDecision?.decider?.role === 'leader'
+  return {
+    ok: prompt.status === 200 && done !== null && executed && selfAsk !== undefined
+      && leaderDecided && leaderNotifications.length > 0,
+    promptStatus: prompt.status,
+    doneSeen: done !== null,
+    wakes: wakes.length,
+    leaderWakes: leaderWakes.length,
+    officerWakes: officerWakes.length,
+    leaderNotifications: leaderNotifications.length,
+    selfRequestId: selfAsk?.requestId ?? null,
+    selfActionName: selfAsk?.actionName ?? null,
+    selfDecision: selfDecision ?? null,
+    leaderDecided,
+    executed,
+    execText,
+    filePath: FILE_A6_SELF,
+    requestId: selfAsk?.requestId ?? null,
+    ledger,
+  }
+}
+
+/** The Officer hands the PA leg to the Leader; the Leader must be the
+ *  successor recipient and the original call executes once after its allow. */
+async function runAlpha6Handoff({ booted, mock }) {
+  const before = mock.requests.length
+  // A settled worker cannot resume its suspended tool call after approval, so
+  // the Leader creates a FRESH worker for the handoff leg.
+  const kick = await apiPrompt(booted.origin, booted.cookie, CREATE_ROOT_A6, MK_A6_NEWWORKER, 'c1a6ho-kick')
+  let worker = null
+  const workerDeadline = Date.now() + 60_000
+  while (Date.now() < workerDeadline && worker === null) {
+    worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.label === 'w-a6-ho' && typeof row.childSessionId === 'string') ?? null
+    if (worker === null) await new Promise((resolve) => setTimeout(resolve, 200))
+  }
+  if (worker === null) return { ok: false, reason: 'no fresh handoff worker session', kickStatus: kick.status, executed: false, leaderNotifications: 0 }
+  const prompt = kick
+  const done = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6_HANDOFF)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_HANDOFF_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'handoff call done after Leader allow + plane execute',
+  )
+  const after = mock.requests.slice(before)
+  writeEvidence('a6-handoff-mock.json', after.map((r) => ({
+    seq: r.seq,
+    lastUser: lastUserTextOf(r).slice(0, 900),
+    reply: r.reply,
+    toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+  })))
+  const leaderNotifications = after.filter((r) =>
+    lastUserTextOf(r).startsWith('[team-control') && JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  const ask = ledger.requests.filter((r) => r.targetInstanceId === worker.instanceId && r.actionName === 'team-tool-execute').at(-1)
+  const transfer = ask === undefined ? undefined : ledger.transfers.find((t) => t.currentLegRequestId === ask.requestId)
+  const decision = ask === undefined ? undefined : ledger.decisions.find((d) => d.requestId === ask.requestId)
+  const execText = existsSync(FILE_A6_HANDOFF) ? readFileSync(FILE_A6_HANDOFF, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_HANDOFF)
+  const ok = prompt.status === 200 && done !== null && executed
+    && transfer !== undefined && transfer.target === 'leader' && transfer.cause === 'officer-handoff'
+    && decision?.decider?.role === 'leader' && leaderNotifications.length > 0
+  return {
+    ok,
+    promptStatus: prompt.status,
+    doneSeen: done !== null,
+    requestId: ask?.requestId ?? null,
+    transfer: transfer ?? null,
+    decision: decision ?? null,
+    leaderNotifications: leaderNotifications.length,
+    executed,
+    execText,
+    filePath: FILE_A6_HANDOFF,
+    ledger,
+  }
 }
 
 /** The scripted human resolution (the boot root is the host-known operator
