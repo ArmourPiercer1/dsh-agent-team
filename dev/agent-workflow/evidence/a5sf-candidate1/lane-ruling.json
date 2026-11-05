@@ -1,0 +1,36 @@
+{
+  "schema": "a5sf-candidate1/lane-ruling/1",
+  "lane": "task/a5sf-candidate1-20261106",
+  "allocationItem": "candidate-1 of 5: frozen-candidate FS/Search regression (M-01/M-02/M-06/M-07)",
+  "poolAllocated": 5,
+  "authorisedStarts": 2,
+  "rulings": [
+    {
+      "starts": 1,
+      "by": "owner, 2026-11-06 (\"批准5次P2-04预算\"), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374",
+      "at": "2026-11-06T06:20:00Z",
+      "reason": "BOOT ALLOCATION #1 OF 5: freeze the limited trial candidate (new authority snapshot naming the candidate head) and re-run the accepted FS/Search live acceptance ON that frozen tree, so M-01/M-02/M-06/M-07 stop being NEEDS_REVALIDATION. ONE start. Starts 2 and 3 are the BL-17/BL-18 live halves; 4-5 are reserved for retries of THIS allocation's failure class and may not be used for a new acceptance face.",
+      "conditions": [
+        "freeze first: publish a new immutable authority snapshot naming the candidate head as baseline, then move the pointer with scripts/switch-authority.mjs; no hand-edited pointer",
+        "boot at the exact tree the snapshot names as baseline; the run record must carry that same 40-hex sha and the authority re-stamped to the live generation with authorityObserved preserved",
+        "port family 3180 (never :3080), DSH_HOME under tests/homes/<world> inside the workspace, per-run grant.json, archive-before-start, managed background job (never nohup &)",
+        "one start: a failed row is reported with its transcript, never retried into a pass and never dropped; an aborted start still counts as spent",
+        "no scope creep: Bash/PTY and Web live runs are later allocations"
+      ]
+    },
+    {
+      "starts": 1,
+      "by": "coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374, authorised 2026-11-05 (retry from the reserved pool)",
+      "at": "2026-11-05T12:45:00Z",
+      "reason": "BOOT ALLOCATION #4 OF 5 (retry of #1). The #1 run's two REFUTED rows (FS read B, search row 3) are ONE instrument defect: both rows declared the same locator (outside-restriction.txt) and both judges collect guard facts BY LOCATOR, so each saw the other lane's deny fact. The authorised change is the FIXTURE only (FS read B gets its own path and its own expected fact set); the frozen product tree, the snapshot as20261105r2 and the pointer do not move. If this attempt still fails, report the failure with its transcript and stop — no clause is relaxed and no further split is authorised by this entry.",
+      "conditions": [
+        "no product path may change: packages/**, scripts/**, tests/paths.mjs, package.json, pnpm-lock.yaml and the glue agent-bindings.mjs must be byte-identical to the frozen candidate 1484fa4ee (tree-hash proof recorded in the run record)",
+        "the judges are untouched: tests/world-factory/lib/a5sf-acceptance-preflight.mjs and a5sf-search-live.mjs keep their bytes",
+        "one start, port from the 3180 family, DSH_HOME under tests/homes/, per-run grant.json recording allocation #4, archive-before-start, managed background job",
+        "the ledger must distinguish this boot from #1 (phase a5sf-candidate1-boot2), and the run record must name the product baseline it exercises"
+      ]
+    }
+  ],
+  "note": "The 5-start grant is independent of the 2026-11-05 10-start P2-04 grant; the two must never be summed. Allocations #2/#3 are the BL-17/BL-18 live halves; #4/#5 are retries of allocation #1's failure class. Unspent starts expire with this allocation and do not roll over.",
+  "remainingAfterThisLane": "allocation #5 of the 2026-11-06 grant (one further retry at the coordinator's discretion), plus #2/#3 (BL-17, BL-18)"
+}

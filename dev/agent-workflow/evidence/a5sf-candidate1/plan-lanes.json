@@ -1,0 +1,47 @@
+{
+  "schema": "a5sf-candidate1/plan-lanes/1",
+  "at": "2026-11-05T12:32:58.207Z",
+  "head": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+  "ceilingReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace"
+  ],
+  "restrictionReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside"
+  ],
+  "effectiveReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside"
+  ],
+  "dispositions": {
+    "readA": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    },
+    "readB": {
+      "ceiling": "allow",
+      "restriction": "deny",
+      "effective": "deny"
+    },
+    "readC": {
+      "ceiling": "deny",
+      "restriction": "allow",
+      "effective": "deny"
+    },
+    "w4a": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    },
+    "w4b": {
+      "ceiling": "allow",
+      "restriction": "deny",
+      "effective": "deny"
+    },
+    "fifo": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    }
+  }
+}
