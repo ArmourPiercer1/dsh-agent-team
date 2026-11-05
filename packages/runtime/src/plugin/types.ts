@@ -234,10 +234,10 @@ export interface TeamPluginConfig {
    */
   readonly a5sfEvidencePath?: string
   /**
-   * PRODUCT ASSEMBLY (2026-11-05, optional and ADDITIVE): the PRODUCT-VISIBLE
-   * declaration that gives the Members it names their compiled a5sf realm
-   * (confined `fs` Provider, the two-axis lane, and — through
-   * `a5sfNativeToolModules` — the native tool shadow).
+   * PRODUCT ASSEMBLY (2026-11-05; policy-source fix 2026-11-05, optional and
+   * ADDITIVE): the PRODUCT-VISIBLE declaration that gives the Members it names
+   * their compiled a5sf realm (confined `fs` Provider, the two-axis lane, and —
+   * through `a5sfNativeToolModules` — the native tool shadow).
    *
    * WHY THIS KEY EXISTS: before it, the only enablement the product row
    * understood was `a5sfEvidencePath` (an evidence SINK) plus a `teamA5sfRealm`
@@ -256,6 +256,12 @@ export interface TeamPluginConfig {
    * REFERENCE to the Alpha.4 effective authority — this lane never evaluates an
    * approval; call-time admission stays Alpha.4's.
    *
+   * DECLARATION IS THE EXCEPTION, DERIVATION IS THE PRODUCT PATH. This key is
+   * only for a per-deployment NARROWING (or for per-Member tool restrictions);
+   * a Team that just wants the blueprint's own ceilings should OMIT it and set
+   * `a5sfMemberAuthority` instead, which derives the same declaration from
+   * `config.blueprintSource` with no second editable statement.
+   *
    * SEMANTICS:
    *   - a TEMPLATE absent from `members` is UNMANAGED: `compiledFor` answers
    *     `undefined`, no realm is mounted, no fact is written, the tool surface
@@ -269,15 +275,34 @@ export interface TeamPluginConfig {
    *     malformed declaration — including a `toolRestrictions` entry the shipped
    *     v4 `toolBindings` grammar refuses, or an `authorization: deny` the realm
    *     cannot honour (review B3/B4) — refuses with `REALM_DECLARATION_INVALID`;
-   *   - when the row carries `config.blueprintSource` for the SAME team, the
-   *     declared ceilings must be a NARROWING of the blueprint's
-   *     `memberIoCeilings[template]` on read/write/network, otherwise the row
-   *     refuses `REALM_DECLARATION_EXCEEDS_BLUEPRINT` (review B2): a row-config
-   *     edit may not raise a ceiling without a new blueprint/authority revision.
-   *     A `blueprintSource` for a different team is not this Team's authority and
-   *     is not reconciled.
+   *   - `config.blueprintSource` is REQUIRED: it must resolve to the declared
+   *     team AND revision and declare a `memberIoCeilings` family, otherwise the
+   *     row refuses `MEMBER_POLICY_WITHOUT_BLUEPRINT` instead of assembling
+   *     permission facts no blueprint saw;
+   *   - the declared ceilings are checked against the ceiling DERIVED from that
+   *     SAME blueprint: wider ⇒ `REALM_DECLARATION_EXCEEDS_BLUEPRINT`; strictly
+   *     narrower is accepted as the typed residual
+   *     `declaration-narrows-bound-blueprint`; equal needs no residual.
    */
   readonly a5sfMemberPolicies?: A5sfProductRealmDeclaration
+  /**
+   * DERIVED PRODUCT PATH (2026-11-05, optional): the Alpha.4 authority
+   * REFERENCE for Member ceilings read from `config.blueprintSource`.
+   *
+   * Set this key and OMIT `a5sfMemberPolicies`: every template in the
+   * blueprint's `memberIoCeilings` family (except the blueprint's own leader)
+   * gets its ceiling derived from that family, so the product config carries no
+   * copy of the permission facts. Shape `{ revision, admitted }`, same reference
+   * semantics as the declaration's `authority` (consumed verbatim; never an
+   * approval).
+   *
+   * Supplying it TOGETHER with `a5sfMemberPolicies` is allowed: the declaration
+   * is reconciled against the derived ceilings and the two authority references
+   * must agree, or the row refuses `REALM_DECLARATION_INVALID`. A row with
+   * neither this key nor `a5sfMemberPolicies` (and no evidence path) is the
+   * byte-identical legacy path.
+   */
+  readonly a5sfMemberAuthority?: Readonly<{ revision: string; admitted: boolean }>
   /**
    * ROUTE C (this round, optional): the NATIVE tool modules to re-mount INSIDE
    * each Member's isolated `fs` scope, so the model-visible native

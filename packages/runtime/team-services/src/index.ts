@@ -60,25 +60,34 @@ export type {
   MountedA5sfRealm,
 } from './mount.js'
 /**
- * PRODUCT ASSEMBLY (2026-11-05): the product-visible declaration
- * (`config.a5sfMemberPolicies`) that gives a declared Member its compiled
- * realm through the SAME install/mount seams the evidence rows use. See
- * `product-assembly.ts` for the declaration shape, the refusal vocabulary and
- * the faces this lane deliberately does not own.
+ * PRODUCT ASSEMBLY (2026-11-05; policy-source fix 2026-11-05): the derived
+ * product path (`a5sfMemberAuthority` → ceilings read from
+ * `config.blueprintSource`) and the EXCEPTION path (`a5sfMemberPolicies`, which
+ * must resolve and narrow that same blueprint). See `product-assembly.ts` for
+ * the declaration shape, the refusal vocabulary and the faces this lane
+ * deliberately does not own.
  */
 export {
+  A5SF_MEMBER_AUTHORITY_KEY,
   A5SF_MEMBER_POLICIES_KEY,
+  A5SF_PRODUCT_ASSEMBLY_RESIDUALS,
   A5SF_PRODUCT_REALM_SCHEMA,
   createProductRealmProvider,
+  deriveProductRealmDeclaration,
+  deriveProductRealmPlan,
   parseProductRealmDeclaration,
 } from './product-assembly.js'
 export type {
+  A5sfDerivedRealmInput,
+  A5sfProductAssemblyResidual,
   A5sfProductCompiledAnswer,
   A5sfProductManagedMember,
   A5sfProductMemberDeclaration,
   A5sfProductRealmDeclaration,
+  A5sfProductRealmParseContext,
   A5sfProductRealmPlan,
   A5sfProductRealmProvider,
+  A5sfProductRealmSource,
 } from './product-assembly.js'
 export {
   createGuardConsultFileSink,

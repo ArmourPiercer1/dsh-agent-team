@@ -359,15 +359,21 @@ jobs:
         # this step carries: PA8 (a legal v4 `mode: all` + `deny` restriction is REFUSED at
         # the realm with IO_READ_DENIED and zero provider reads — the projector used to
         # collapse the shape to 'no-additional-narrowing' and DROP the deny, serving the
-        # denied file), PA9 (B2: the declared ceilings are reconciled with the row's own
-        # `config.blueprintSource` — a widening ceiling refuses
-        # REALM_DECLARATION_EXCEEDS_BLUEPRINT; another team's blueprint and an absent source
-        # are not reconciled), PA10 (B3/B4: `authorization` is validated against the shipped
-        # v4 table and `deny` is refused instead of mounted; the restriction entries ride the
-        # shipped `toolBindings` grammar, so a bogus implementationOrigin or a scalar-shaped
-        # `allow` is refused by the shipped validator instead of silently becoming deny-all),
-        # and PA11 (B8: the contentHash — hence the MemberPolicy revision — covers the
-        # bindings). The file path is a required token in dev/ci/eb3-ci-manifest.json;
+        # denied file), PA9/PA12 (policy-source fix, 2026-11-05: a declaration is the
+        # EXCEPTION path and `config.blueprintSource` is REQUIRED — absent, blank,
+        # unparseable, another team or another revision refuses
+        # MEMBER_POLICY_WITHOUT_BLUEPRINT; a widening ceiling refuses
+        # REALM_DECLARATION_EXCEEDS_BLUEPRINT; a strictly narrower one is a typed residual),
+        # PA13/PA14 (derivation is the PRODUCT path: `a5sfMemberAuthority` + the bound
+        # blueprint produce a plan with NO `a5sfMemberPolicies`, and the derived and declared
+        # paths compile to the SAME effective lanes), PA10 (B3/B4: `authorization` is
+        # validated against the shipped v4 table and `deny` is refused instead of mounted; the
+        # restriction entries ride the shipped `toolBindings` grammar, so a bogus
+        # implementationOrigin or a scalar-shaped `allow` is refused by the shipped validator
+        # instead of silently becoming deny-all), PA11 (B8: the contentHash — hence the
+        # MemberPolicy revision — covers the bindings), and PA15 (a Team-scoped
+        # `toolBindings` family is NAMED as a typed residual, never invented into a per-Member
+        # binding). The file path is a required token in dev/ci/eb3-ci-manifest.json;
         # dropping it is CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and
         # mkdtemp fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
         run: node --test tests/world-factory/a5sf-product-assembly.test.mjs

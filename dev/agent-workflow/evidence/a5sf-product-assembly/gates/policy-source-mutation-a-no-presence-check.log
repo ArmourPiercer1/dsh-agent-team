@@ -1,0 +1,55 @@
+✔ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (24.176971ms)
+✔ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (11.876947ms)
+✔ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (7.15207ms)
+✔ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (8.206997ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (3.131909ms)
+✔ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (3.024487ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (5.346721ms)
+✔ PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads (3.625103ms)
+✖ PA9 the declaration is reconciled with config.blueprintSource: narrowing mounts (and is named), widening/other-team/absent all refuse typed (11.787745ms)
+✔ PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted (4.866372ms)
+✔ PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings (3.827587ms)
+✖ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (0.658537ms)
+✔ PA13 the derived path produces the SAME effective lanes as the equivalent declaration (one computation, not two) (3.447737ms)
+✔ PA14 a5sfMemberAuthority + blueprintSource governs Members with NO declaration in the product config (6.335734ms)
+✔ PA15 a bound blueprint with a Team-scoped toolBindings family yields the typed residual (no per-Member binding invention) (2.171992ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 13
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 341.797057
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:737:1
+✖ PA9 the declaration is reconciled with config.blueprintSource: narrowing mounts (and is named), widening/other-team/absent all refuse typed (11.787745ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: a declaration with no blueprint must refuse instead of assembling
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source/tests/world-factory/a5sf-product-assembly.test.mjs:866:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-product-assembly.test.mjs:1044:1
+✖ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (0.658537ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: the old product path assembled here; it must now refuse
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-policy-source/tests/world-factory/a5sf-product-assembly.test.mjs:1055:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
