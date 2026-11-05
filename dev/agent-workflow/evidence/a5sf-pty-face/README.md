@@ -70,7 +70,7 @@ counter appears it is the ORDERING witness a property of this layer owns (P4).
 `mkdtemp` fixtures only. The FS/subprocess faces' real-child precedent is *not*
 extended to a real PTY (§5).
 
-**HOST-REQUIRED, three states** (§10): the four pinned entries are `lib/` build
+**HOST-REQUIRED, three states** (§9): the four pinned entries are `lib/` build
 outputs of the gitignored `tests/deepseek-harness-test-use` checkout.
 
 ## 3. The arms (14, `tests/world-factory/a5sf-pty-contract.test.mjs`)
@@ -127,7 +127,7 @@ one close — the two answers differ because of `record.closing` (`index.ts:285-
 which the arm pins rather than smoothing over; send/read after kill are
 `NO_SESSION`.
 
-**RED→GREEN**: arm written, run; §7's `red-first-run.log` leg 1 removes
+**RED→GREEN**: arm written, run; §8's `red-first-run.log` leg 1 removes
 `terminal.ts` (7 registry arms red) and leg 2 removes both refusal sites
 (2 P4 arms red). Each arm's own discriminator is its control in §6.
 
