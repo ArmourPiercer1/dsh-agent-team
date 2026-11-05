@@ -5,7 +5,7 @@ Branch `task/a5sf-boot-publish-20261105`, worktree `.worktrees/a5sf-boot-publish
 stable development instance (`:3080`) was not touched; `CORE PATCH BUDGET = 0`.
 
 The BOOT-SEAM round (#599) closed the two windows it could see — the resume resolving *inside* the
-archive's quiesce→commit interval (SEAM 5, in-memory admission close) and the member still resident *after*
+archive's `quiesce → commit` interval (SEAM 5, in-memory admission close) and the member still resident *after*
 the loop (SEAM 4, one post-loop durable sweep). A second independent adversarial review found the same
 resurrection class in the interval **between** them, and it is right: BS1/BS2 were green for the wrong
 reason, because both dispatch only *after* `boot()` resolves.
@@ -68,7 +68,7 @@ absolute totals (5 / 8) are unchanged.
 | arm | what it pins | pre-fix | post-fix |
 |---|---|---|---|
 | BS1 | ARCHIVED commit lands while the resume is in flight, dispatch after `boot()` | green | green |
-| BS2 | resume resolves inside quiesce→commit | green | green |
+| BS2 | resume resolves inside `quiesce → commit` | green | green |
 | **BS4** | resume resolves after the procedure **returned**; dispatch **mid-boot** | **RED** `{published:true, status:200, toolExecutions:1}` | **GREEN** `{published:false, status:422, toolExecutions:0}`, and `422` after boot too |
 | **BS5** | the PRE-#598 wiring (no admission port): sweep-only backstop | green (documents it) | green |
 | BS3 | 2 member-set enumerations for 1 and 2 members; totals `{one:5,two:8}` | green | green |
