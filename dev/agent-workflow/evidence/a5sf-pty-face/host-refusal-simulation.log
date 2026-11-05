@@ -1,0 +1,63 @@
+HOST PRECONDITION — the three states. A5SF_PTY_CONTRACT_HOST_ROOT only SIMULATES states 1/2
+(the product code never reads it); state 3 is the real run recorded in suite.log.
+
+== state 1: pinned host ABSENT ==
+$ A5SF_PTY_CONTRACT_HOST_ROOT=/tmp/a5sf-pty-contract-host-absent node --test tests/world-factory/a5sf-pty-contract.test.mjs
+A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own — REFUSED (pinned host not provisioned) (0.632728ms) # A5SF host requirement: p1-allocate needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing — REFUSED (pinned host not provisioned) (0.086043ms) # A5SF host requirement: p1-after-kill needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING) — REFUSED (pinned host not provisioned) (0.043031ms) # A5SF host requirement: p1-revoke-empty needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once — REFUSED (pinned host not provisioned) (0.038853ms) # A5SF host requirement: p1-host needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field) — REFUSED (pinned host not provisioned) (0.093387ms) # A5SF host requirement: p2-collapse needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams — REFUSED (pinned host not provisioned) (0.051387ms) # A5SF host requirement: p2-host needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain — REFUSED (pinned host not provisioned) (0.093938ms) # A5SF host requirement: p3-registry needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns — REFUSED (pinned host not provisioned) (0.10052ms) # A5SF host requirement: p3-host needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs — REFUSED (pinned host not provisioned) (0.201591ms) # A5SF host requirement: p4-declared needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING) — REFUSED (pinned host not provisioned) (0.148911ms) # A5SF host requirement: p4-deferred needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted) — REFUSED (pinned host not provisioned) (0.1002ms) # A5SF host requirement: p4-inert needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt — REFUSED (pinned host not provisioned) (0.040477ms) # A5SF host requirement: p5-identity needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill — REFUSED (pinned host not provisioned) (0.528611ms) # A5SF host requirement: p5-kill-one needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+﹣ P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed — REFUSED (pinned host not provisioned) (0.036799ms) # A5SF host requirement: p5-host needs the pinned baseline's built lib/ entries. A5SF-PTY-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=14 cases=14 verdict=NOT_RUN pinned=639ed015397290b3745d163aafe02ffee4aa3f84 baseline=0.2.0-rc.2 path=/tmp/a5sf-pty-contract-host-absent reason=pinned-host-not-provisioned
+ℹ tests 14
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 14
+ℹ todo 0
+ℹ duration_ms 60.945647
+rc=0
+
+== state 2: pinned host PRESENT but PARTIAL (a pin violation, not an absence) ==
+$ A5SF_PTY_CONTRACT_HOST_ROOT=/tmp node --test tests/world-factory/a5sf-pty-contract.test.mjs
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-contract/tests/world-factory/a5sf-pty-contract.test.mjs:214
+  throw new Error(
+        ^
+
+Error: A5SF-PTY-CONTRACT-HOST-INCOMPLETE: the pinned host tree exists at /tmp but is missing terminalService=/tmp/packages/terminal/terminal/lib/index.js, agentRegistry=/tmp/packages/core/agent/lib/index.js, session=/tmp/packages/core/session/lib/index.js, persistentBash=/tmp/packages/shell/tool-bash-persistent/lib/index.js — a partial or older host is a pin violation (expected 639ed015397290b3745d163aafe02ffee4aa3f84 / 0.2.0-rc.2, built)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-contract/tests/world-factory/a5sf-pty-contract.test.mjs:214:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+✖ tests/world-factory/a5sf-pty-contract.test.mjs (41.596879ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.47803
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pty-contract.test.mjs:1:1
+✖ tests/world-factory/a5sf-pty-contract.test.mjs (41.596879ms)
+  'test failed'
+rc=1
+
+== state 3: pinned host PRESENT and COMPLETE ==
+$ A5SF_REQUIRE_PINNED_HOST=1 node --test tests/world-factory/a5sf-pty-contract.test.mjs
+(the real run: 14/14 pass, recorded in suite.log)

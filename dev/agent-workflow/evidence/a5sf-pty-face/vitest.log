@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-contract
+
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 48ms
+ ✓ packages/runtime/test/p8t2-terminal.test.ts (5 tests) 3ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 1387ms
+
+ Test Files  4 passed (4)
+      Tests  64 passed (64)
+   Start at  04:50:48
+   Duration  1.79s (transform 633ms, setup 0ms, import 779ms, tests 1.44s, environment 0ms)
