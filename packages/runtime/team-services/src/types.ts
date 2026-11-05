@@ -20,7 +20,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js'
 import type { FsProviderSurface } from './fs.js'
-import type { ConfinedSubprocessSurface } from './install.js'
+import type { ConfinedSubprocessSurface, ConfinedWebSurface } from './install.js'
 
 /** Closed per-call denial vocabulary of an installed Provider. */
 export const TEAM_IO_DENIAL_CODES = [
@@ -44,6 +44,19 @@ export const TEAM_IO_DENIAL_CODES = [
    * must be able to tell them apart.
    */
   'IO_ASK_REQUIRES_APPROVAL',
+  /**
+   * BL-18 (P2-05) — the confined `web` face's per-call network refusal.
+   *
+   * The SAME token the install vocabulary already carries (`NETWORK_UNCONFINED_REALM`,
+   * introduced by product-assembly): a lane that requests `network: deny` while the
+   * backend cannot PROVE it enforces the network dimension is a claim, not a
+   * ceiling. Reusing the token is deliberate — a caller compares one concept
+   * across the composition-time refusal (no web face installed) and the
+   * per-call refusal (a web call under a deny claim this host cannot keep).
+   * The two vocabularies stay separate LISTS (install vs per-call) because they
+   * are raised at different stages, but the token names one fact.
+   */
+  'NETWORK_UNCONFINED_REALM',
 ] as const
 
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number]
@@ -189,6 +202,15 @@ export interface RealmServiceFaces {
   readonly fs: 'confined'
   /** The confined process face mounted on this realm's isolated scope, or null. */
   readonly subprocess: ConfinedSubprocessSurface | null
+  /**
+   * BL-18: the confined `web` face mounted on this realm's isolated scope, or
+   * `null` — an EXPLICIT answer, never an omission. `mountNativeToolModules`
+   * refuses a `web`-consuming native module (the pinned `tool-web` declares
+   * `inject: ["tools","web","systemPrompt"]`) on a realm whose answer is
+   * `null`, instead of letting the module resolve the inherited host
+   * `ctx.web` and fetch with zero guard facts.
+   */
+  readonly web: ConfinedWebSurface | null
 }
 
 /**

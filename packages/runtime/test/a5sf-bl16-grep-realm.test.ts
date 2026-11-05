@@ -512,11 +512,15 @@ describe('BL-16 realm wiring — the routed grep/glob resolve the CONFINED subpr
       trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
       scratchRoot: join(world, 'scratch-r5'),
       assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
-    }) as unknown as ConfinedProcessProvider & {
-      probe(): Promise<{ ok: boolean; value?: { dimension: string; level: string }[] }>
+    }) as unknown as ConfinedProcessProvider
+    // BL-18 widened `ConfinedProcessProvider` with the OPTIONAL probe member, so
+    // the provider's own (narrower) probe signature is read through ONE local
+    // structural view instead of an intersection that the widened type rejects.
+    const probeOf = osProvider as unknown as {
+      probe(): Promise<{ ok: boolean; value?: readonly { dimension: string; level: string }[] }>
     }
     const { provider, spawns } = countingProvider(osProvider)
-    const probe = await osProvider.probe()
+    const probe = await probeOf.probe()
     const dimension = probe.value?.find((row) => row.dimension === 'content-read')
     const enforced = probe.ok === true && dimension?.level === 'enforced'
     if (!enforced) {

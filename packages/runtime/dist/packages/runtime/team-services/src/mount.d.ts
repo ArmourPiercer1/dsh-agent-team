@@ -42,7 +42,7 @@ import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdent
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
 import { type MemberServiceSpec, type ToolBindingRealm } from './install.js';
-import type { ConfinedSubprocessRealmSpec } from './install.js';
+import type { ConfinedSubprocessRealmSpec, ConfinedWebRealmSpec } from './install.js';
 import type { MemberIoInstallation } from './types.js';
 /** One Member to mount: identity + the ceiling compiled for that generation. */
 export interface A5sfRealmMember {
@@ -257,6 +257,26 @@ export declare const A5SF_SUBPROCESS_UNCONFINED_REALM = "SUBPROCESS_UNCONFINED_R
  */
 export declare const A5SF_TERMINALS_LEGACY_PTY_REFUSED = "TERMINALS_LEGACY_PTY_REFUSED";
 /**
+ * BL-18 (P2-05) — the refusal code for a `web`-consuming native module targeted
+ * at a realm that owns NO confined `web` face.
+ *
+ * WHY IT EXISTS: the native `web_fetch`/`web_search` row at the host pin is
+ * upstream's `@deepseek-ai/dsh-tool-web`, whose `inject` is
+ * `["tools","web","systemPrompt"]` and whose body is
+ * `await ctx.web.fetch({ url }, signal)`. The confined `web` face is mounted on
+ * the MEMBER realm only and only when the composition supplies one; a realm
+ * with no web face would resolve the INHERITED host `ctx.web` (the real HTTP
+ * provider, the process-wide proxy dispatcher) with zero guard facts — the same
+ * silent widening BL-16/BL-17 refuse on the `subprocess`/`terminals` axes.
+ * Refused HERE, at composition time, before any tool definition exists.
+ *
+ * The string is the `TeamServiceInstallError.code` (the closed install
+ * vocabulary's `NETWORK_UNCONFINED_REALM`, already used by product-assembly for
+ * the same concept at assembly time); the exported name is the token a caller
+ * and a test compare against.
+ */
+export declare const A5SF_NETWORK_UNCONFINED_REALM = "NETWORK_UNCONFINED_REALM";
+/**
  * E8 (2026-11-03): the ATTACH RECORD of a successful managed native attach.
  *
  * `allowEmpty: true` must never read as "verified safe". When a composition
@@ -335,6 +355,13 @@ export interface MountA5sfRealmInput {
      * `ctx.subprocess` gets the confined provider.
      */
     readonly subprocess?: ConfinedSubprocessRealmSpec;
+    /**
+     * BL-18: the confined `web` face for this Member's isolated scope.
+     * Omitted = none is mounted (default-preserving), and a `web`-consuming
+     * native module is then refused at composition time — never silently served
+     * by the inherited host `ctx.web`.
+     */
+    readonly web?: ConfinedWebRealmSpec;
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

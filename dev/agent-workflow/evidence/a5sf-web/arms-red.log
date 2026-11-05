@@ -1,0 +1,225 @@
+✖ ADMIT-ALLOW: a governed Member with network allow reaches EXACTLY ONE provider fetch with the declared URL (13.584219ms)
+✖ SHADOW: the allow path resolves the CONFINED face, never the inherited host ctx.web (tripwire) (4.929424ms)
+✖ DENY-PRE-REFUSAL: network deny refuses web_fetch before the provider: 0 fetch, 0 DNS, 0 connect, 0 proxy, one typed fact (4.573387ms)
+✖ DENY-TYPED-CODE: the confined face throws the typed NETWORK_UNCONFINED_REALM (not a message convention) (0.236809ms)
+✖ DENY-SEARCH-SECOND-PATH: the sibling web_search on the same face is refused too (no second call path) (6.537558ms)
+✖ DENY-PROBE-ABSENT: a backend with NO probe answers unsupported (closed), never a default allow (4.291063ms)
+✖ PROBE-LOAD-BEARING: the refusal is the probe's ANSWER — a backend that proves `enforced` is admitted (3.556334ms)
+✖ UNCONFINED-REALM-MOUNT: the REAL tool-web module is refused on a realm that owns no confined web face (2.342014ms)
+✖ PROBE-REUSE: the web face calls BL-17's probeNetworkDenial — it does not own a second probe (0.254241ms)
+✔ ORDINARY-DSH-FETCH: with NO Alpha.5 realm the host web_fetch fetches exactly as today (4.485302ms)
+✖ UNCHANGED-SHAPE: a network-allow realm returns BYTE-IDENTICAL model text to the ordinary host path (6.493884ms)
+✖ COMPOSITION: the web provider is a composition input, never a Member field (2.510253ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 1
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 370.485751
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-web.test.mjs:77:1
+✖ ADMIT-ALLOW: a governed Member with network allow reaches EXACTLY ONE provider fetch with the declared URL (13.584219ms)
+  AssertionError [ERR_ASSERTION]: the admitted call must succeed: Error: BL18_TRIPWIRE: the INHERITED host ctx.web was consulted
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:81:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:106:1
+✖ SHADOW: the allow path resolves the CONFINED face, never the inherited host ctx.web (tripwire) (4.929424ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:110:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:119:1
+✖ DENY-PRE-REFUSAL: network deny refuses web_fetch before the provider: 0 fetch, 0 DNS, 0 connect, 0 proxy, one typed fact (4.573387ms)
+  AssertionError [ERR_ASSERTION]: the backend's OWN probe was asked once (not assumed)
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:131:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:144:1
+✖ DENY-TYPED-CODE: the confined face throws the typed NETWORK_UNCONFINED_REALM (not a message convention) (0.236809ms)
+  TypeError: seams.services.createConfinedWebClass is not a function
+      at makeFace (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/lib/a5sf-web-arms.mjs:196:35)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:147:27)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-web.test.mjs:164:1
+✖ DENY-SEARCH-SECOND-PATH: the sibling web_search on the same face is refused too (no second call path) (6.537558ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'web:fetch',
+  -   'web:search'
+  - ]
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:178:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'web:fetch', 'web:search' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:182:1
+✖ DENY-PROBE-ABSENT: a backend with NO probe answers unsupported (closed), never a default allow (4.291063ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:189:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:194:1
+✖ PROBE-LOAD-BEARING: the refusal is the probe's ANSWER — a backend that proves `enforced` is admitted (3.556334ms)
+  AssertionError [ERR_ASSERTION]: an enforced backend admits the call: Error: BL18_TRIPWIRE: the INHERITED host ctx.web was consulted
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:202:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:213:1
+✖ UNCONFINED-REALM-MOUNT: the REAL tool-web module is refused on a realm that owns no confined web face (2.342014ms)
+  AssertionError [ERR_ASSERTION]: typed composition-time refusal
+  + actual - expected
+  
+  + null
+  - undefined
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:221:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:232:1
+✖ PROBE-REUSE: the web face calls BL-17's probeNetworkDenial — it does not own a second probe (0.254241ms)
+  Error: ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/packages/runtime/team-services/src/web.ts'
+      at readFileSync (node:fs:483:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:236:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/packages/runtime/team-services/src/web.ts'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:262:1
+✖ UNCHANGED-SHAPE: a network-allow realm returns BYTE-IDENTICAL model text to the ordinary host path (6.493884ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:274:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-web.test.mjs:283:1
+✖ COMPOSITION: the web provider is a composition input, never a Member field (2.510253ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /provider/iu. Input:
+  
+  'TypeError: seams.services.createConfinedWebClass is not a function'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:290:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TypeError: seams.services.createConfinedWebClass is not a function
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:290:38
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/world-factory/a5sf-web.test.mjs:290:10)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19)
+        at Test.run (node:internal/test_runner/test:1467:12)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:974:7),
+    expected: /provider/iu,
+    operator: 'throws',
+    diff: 'simple'
+  }

@@ -1,0 +1,31 @@
+# BL-18 capability probe record (host-free). Generated 2026-11-05T11:11:42.060Z
+# 1) the web face's default carrier: a web provider with NO probe
+probeNetworkDenial({fetch}) => {
+  "dimension": "network-destination",
+  "level": "unsupported",
+  "note": "the confined provider exposes no capability probe, so network enforcement cannot be proven",
+  "rows": []
+}
+# 2) a web provider whose probe reports unsupported (the fake boundary default)
+probeNetworkDenial(fakeWebBoundary) => {
+  "dimension": "network-destination",
+  "level": "unsupported",
+  "note": "fake web boundary probe",
+  "rows": [
+    {
+      "dimension": "network-destination",
+      "level": "unsupported",
+      "note": "fake web boundary probe"
+    }
+  ]
+}
+# 3) the shipped sandbox-provider network row (no ABI measured here; no boot)
+networkProbeRow(null) => {
+  "dimension": "network-destination",
+  "level": "unsupported",
+  "mechanism": null,
+  "realmId": "unbound",
+  "trustRoot": null,
+  "evidence": null,
+  "note": "no landlock ABI measured: Landlock ABI v4 mediates only TCP port bind/connect inside the domain; UDP, IPv6 raw paths, AF_UNIX sockets, inherited socket FDs and out-of-band routes are NOT covered — this is not a general no-network guarantee (PoC-4b)"
+}
