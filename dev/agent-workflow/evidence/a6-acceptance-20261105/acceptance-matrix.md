@@ -67,5 +67,6 @@ regression test was made leg-bearing in `90937099d`. See `review-response.md`.
 
 **Isolated integration: PASS on the reached path; review P1s cleared.** A real Member call routed to the
 assigned Officer, the Officer's durable allow was consumed, and the exact command executed
-once. Rows 14-16 are partial/blocked as stated; they are not silently passed. Production
-enablement and master merge remain blocked.
+once. Rows 14-16 are partial/blocked as stated; they are not silently passed. The
+isolated-trial decision is **NO-GO for enablement/release**; see
+`trial-conclusion.md`. Production enablement and master merge remain blocked.
