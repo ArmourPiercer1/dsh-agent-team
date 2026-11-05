@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "kind": "frozen-candidate",
+  "candidate_id": "cand-a5sf-fs-search-1",
+  "candidate_ref": "refs/heads/candidate/a5sf-fs-search-1",
+  "candidate_commit": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+  "candidate_commit_subject": "CANDIDATE-1 retry prep (allocation #4): split the FS read-B fixture off the search row-3 locator",
+  "candidate_commit_time": "2026-11-05T20:32:54+08:00",
+  "status": "FROZEN",
+  "frozen_at_utc": "2026-11-05T15:30:14Z",
+  "frozen_by": "task/a5sf-ruling-20261106 (owner rulings of 2026-11-06, session calendar; real UTC 2026-11-05)",
+  "product": {
+    "sha": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "sha_meaning": "the frozen product commit. candidate_commit carries the same product faces byte for byte; only evidence/fixture files differ, which is why the measured run executed candidate_commit rather than this commit.",
+    "trees": {
+      "packages": "44535c94dbb871a8ab132911507fa29936363689",
+      "scripts": "d4bcc3580eca5eb6d5f23a2787b28be74c59dbad",
+      "tests/paths.mjs": "1bf4829eb8709a0121c80f9e91cb00855e0db7eb",
+      "package.json": "2946fe23bb540ccfa7d9cc31a2d0082ec2bd6191",
+      "pnpm-lock.yaml": "f70001d314807dfeb789401efdf6e7a46fdbbb8f",
+      "packages/runtime/src/plugin/live/agent-bindings.mjs": "62a96b8798c9df1e21c6559e854d68814c5a2d99"
+    },
+    "judges": {
+      "tests/world-factory/lib/a5sf-acceptance-preflight.mjs": "de66ee86e0c8d8cbd8935857645592384b1c9ab4",
+      "tests/world-factory/lib/a5sf-search-live.mjs": "e386ab796116c39525063da2fc31a712a02a12b4"
+    },
+    "equality_command": "git diff --stat 1484fa4ee0ff9326a3dafcac060bf63f8d334a1f 25e106b4573cac0ab624c7e0bc5ca7d36dba3730 -- packages scripts tests/paths.mjs package.json pnpm-lock.yaml",
+    "equality_exit": 0,
+    "equality_note": "empty output, exit 0 — byte-identical for every path the Q7 drift law and the acceptance judges read."
+  },
+  "authority": {
+    "pointer": "dev/engineering/current-authority.json",
+    "snapshot_version": "as20261105r2",
+    "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "snapshot_baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointer_decision": "UNCHANGED — the pointer stays on the integration baseline (as20261105r2). Moving it onto this candidate would either assert nothing (while V@B stays no) or, the moment a row were flipped to V@B=yes, be graded by the state-freshness Q7 leg against candidate..HEAD (28 product paths of drift on master) and turn master red. The candidate claim therefore travels per row as verifiedFor, not as the single global baseline. See current-implementation-plan.md section 7.5."
+  },
+  "dependencies": {
+    "host_baseline_version": "0.2.0-rc.2",
+    "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "host_tree": "tests/deepseek-harness-test-use",
+    "lockfile_tree": "f70001d314807dfeb789401efdf6e7a46fdbbb8f",
+    "package_json_tree": "2946fe23bb540ccfa7d9cc31a2d0082ec2bd6191",
+    "dependency_note": "the dependency set is the one the measured run executed; a candidate repair that changes any of these is a NEW candidate version, not an edit of this one."
+  },
+  "evidence": {
+    "run_record": "dev/agent-workflow/evidence/a5sf-candidate1/run-record.json",
+    "run_id": "a5sf-candidate1-2026-11-05T12-33-06-567Z",
+    "suite": "a5sf-candidate1",
+    "overall": "PASS",
+    "cases": "11/11",
+    "boots": "1 boot (port 3184), 2 ledger rows (intent + boot), 0 abort, 0 retry",
+    "evidence_note": "the record is preserved as written. A candidate repair keeps this record and records the new run beside it; it never rewrites or deletes it."
+  },
+  "ancestry": {
+    "candidate_is_ancestor_of_origin_master": true,
+    "command": "git merge-base --is-ancestor candidate/a5sf-fs-search-1 origin/master",
+    "exit": 0,
+    "product_is_ancestor_of_candidate": true,
+    "product_command": "git merge-base --is-ancestor 1484fa4ee0ff9326a3dafcac060bf63f8d334a1f candidate/a5sf-fs-search-1",
+    "product_exit": 0,
+    "bring_back_to_master": "only by a real merge that keeps ancestry (merge commit or --no-ff). Squash, rebase and cherry-pick impersonation are forbidden: they make the product SHA unreachable from master while the manifest keeps claiming it."
+  },
+  "immutability": {
+    "rule": "the ref is frozen at candidate_commit. No amend, reset, rebase, force-push or product-code edit under this candidate identity. Any repair creates a NEW candidate_id and a NEW ref (e.g. cand-a5sf-fs-search-2) with a new sha; the old ref, manifest and evidence stay.",
+    "supersedes": null,
+    "reacceptance": "a repair re-accepts only the faces its diff touches: the product path set old..new decides which rows must be re-run; rows whose faces did not move may cite the preserved evidence, but the row must name the new candidate version and sha."
+  },
+  "content_digest": "sha256:64b6b4cda0a4bfabc3efce1e8f89836a2c1690ffdeac70615774369915c7a9c5",
+  "content_digest_note": "F0 canonical bytes (sorted keys, minified) of this object with content_digest and content_digest_note removed; same convention as scripts/authority-snapshot.mjs canonicalBytes. Recompute with: node --input-type=module -e \"import {readFileSync} from 'node:fs'; import {createHash} from 'node:crypto'; import {canonicalBytes} from './scripts/authority-snapshot.mjs'; const o=JSON.parse(readFileSync('dev/engineering/candidates/cand-a5sf-fs-search-1.json','utf8')); const d=o.content_digest, n=o.content_digest_note; delete o.content_digest; delete o.content_digest_note; console.log('sha256:'+createHash('sha256').update(canonicalBytes(o)).digest('hex')===d?'OK':'MISMATCH')\""
+}

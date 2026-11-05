@@ -102,3 +102,114 @@ CONDITIONAL 改写成 PASS，除非补齐具名条件。
 | R5 | 旧 tool-family 输出向量 → 黄金向量 | C 类只承继测试与证据 | BL-13 |
 
 **禁止**：把回收当作新验收；用回收削弱新不变量；以“复用”为名恢复旧 `FamilyAssembly` 执行体。
+
+## 7. Candidate track：独立冻结候选与两轨验证（2026-11-06 owner 裁决机制化）
+
+> 本节把 owner 的两条裁决落成**可执行的机制**，不新增语义权威：Q7 的严格性、`V@B` 的
+> 含义、Authority 指针的六字段契约全部不变。候选轨道只是给「在候选树上验过」这一事实
+> 一个**自己的**记录位置；它永远不能拿来把 master 行标成 current。
+
+### 7.1 候选 ref 的命名与冻结
+
+- 命名：`candidate/<lane>-<n>`。本期第一个 = `candidate/a5sf-fs-search-1`，指向
+  **被 FS/Search live run 实测的那棵树** `25e106b4573cac0ab624c7e0bc5ca7d36dba3730`
+  （= 冻结产品提交 `1484fa4ee` + 仅证据/fixture 拆分；产品面逐字节相等的证明在 run record
+  `bindings.productTreeProof`，本清单不转述结论、只登记可复核的 tree/blob SHA）。
+- 每个候选在 `dev/engineering/candidates/<candidate-id>.json` 有一份**不可变**清单
+  （`cand-a5sf-fs-search-1.json`）：`candidate_id` / `candidate_ref` / `candidate_commit` /
+  产品 SHA + 产品面 tree/blob（`packages`、`scripts`、`tests/paths.mjs`、`package.json`、
+  `pnpm-lock.yaml`、glue）/ 判官 blob / Authority 快照 `{snapshot_version, content_digest,
+  baseline}` / 依赖（host baseline `0.2.0-rc.2` @ `639ed01539…`、lockfile、package.json）/
+  证据 run record / ancestry 记录。清单带 F0 规范字节摘要（与 snapshot 同约定），
+  并在文件内给出重算命令。
+- 冻结语义：ref 一旦指向 `candidate_commit` 即不再前进。master 继续开发，但**没有任何新
+  提交会自动进入**某个冻结候选；候选与 master 之间只有显式动作（重跑 + 新候选版本，或
+  真实 merge）。
+
+### 7.2 一次修复 = 一个新的候选版本
+
+- **禁止**在既有 candidate identity 下改产品代码：不得 amend / reset / rebase / force-push
+  `candidate/*`，不得让同一 `candidate_id` 的 ref 悄悄移动。违反即等于伪造成立证据。
+- 修复产生**新** `candidate_id`（`cand-<lane>-<n+1>`）与**新** ref / 新 sha，清单里
+  `supersedes` 指向前一版；旧 ref、旧清单、旧 run record **原样保留**，不删、不改写。
+- 重新验收范围 = 修复 **diff 实际触及的产品面**：`git diff --name-only <old-sha> <new-sha>
+  -- packages scripts tests/paths.mjs package.json pnpm-lock.yaml` 决定哪些行必须重跑；
+  未触及的行可以引用保留证据，但行内必须写新候选版本 + 新 sha，并注明
+  `reacceptance: preserved`。**不得**把旧树的 PASS 直接搬成新树的 PASS。
+
+### 7.3 ancestry 规则（发布前与合回时）
+
+- **发布任何 snapshot 之前**必须实测 baseline 的 Git ancestry，而不是相信清单文字：
+  `git merge-base --is-ancestor <snapshot-baseline> <candidate-ref-or-HEAD>`，exit 0 才算
+  「baseline 是真实祖先」；非 0 一律拒绝发布。机器复核 = `state-freshness` 的 Q4
+  （baseline 必须解析成 commit 且是 HEAD 或 HEAD 祖先）。
+- 任何把候选 SHA 带回 master 的操作必须保留**真实 merge ancestry**：merge commit 或
+  `git merge --no-ff`。**禁止 squash / rebase / cherry-pick 冒充**：它们让候选 SHA 从
+  master 不可达，而清单仍宣称产品 SHA，等于用历史形状撒谎。本仓库先例
+  `0e72e0291`（`fix(authority): make the pinned baseline an ancestor of master (true merge,
+  not squash)`）就是这条规则的成因。
+
+### 7.4 候选 PASS ≠ master PASS（一句话，不可改写）
+
+**候选 ref 上的一行 PASS（或 `V@B=yes`）只证明该行在候选树上成立；它不是、也永远不能被
+提升为「最新 master PASS」。** 任何 gate、报告、PR 文案都不得把候选结论写成 master 的
+current claim；master 的 current claim 只能来自 master 树上按 Q7 成立的证据。
+
+### 7.5 两轨兼容方案（最小增量；由 owner 裁决「先给方案 + 负控，不放宽 Q7」）
+
+**问题**：`V@B` 的含义是「在 Authority 唯一 baseline 命名的树上验过」，所以候选树上的
+验证与 master 树上的验证无法在同一张矩阵里共存。
+
+**方案（不动 `V@B`、不动 Q7、不动 Authority 语义）**：矩阵行 ⑥ 列可携带一个**可选的**
+候选域 claim：
+
+```
+verifiedFor: <candidate-id>@<40-hex sha>
+```
+
+- `V@B` 仍是唯一 master 域声明；`verifiedFor` 只描述「该行在哪个候选版本上验过」。
+- **合法组合**：`V@B=no` + `verifiedFor`（候选域 claim）与既有 `V@B=yes`（master 域 claim）
+  可以同时存在于同一文件的不同行。
+- **`V@B=yes` + `verifiedFor` = named RED**：同一行同时声称「在 Authority baseline current」
+  与「只在候选 X 上 current」是矛盾声明；候选 claim 永远不满足 master claim。这条拒绝
+  与 drift 无关，是本方案的负控核心。
+- 读取该 claim 的 gate leg：**`state-freshness`**（唯一读 Q1–Q7 的 leg）。解析点在
+  `scripts/ci-pr-gate.mjs` 的 `checkContractValues` Q5 行循环：抽取 `verifiedFor`，
+  候选行**不进入** `claimedRows`（master 域），并新增独立的 `candidateClaims` 集合。
+- 新增 provider（只在 `state-freshness` leg 接线，不新增 leg、不改 drift 法则）：
+  `candidateRefProvider(candidateId, sha)` → `{ tip, drift }`，实现 = `git rev-parse
+  refs/heads/candidate/<id>`（回退 `refs/remotes/origin/candidate/<id>`）+ `git diff
+  --name-only <sha> <tip> -- <产品面>`。provider 缺失 / git 失败 = FAIL（未知永不当空）。
+- **候选前进时什么变红**（三条，全部 named）：
+  1. `Q7_CANDIDATE_REF_MOVED`：ref tip ≠ 行内 sha。修复必须开新候选版本；旧版本行在重跑或
+     显式 `reacceptance: preserved`（附 diff 触及面）之前保持红。
+  2. `Q7_CANDIDATE_MANIFEST_MISMATCH`：`dev/engineering/candidates/<id>.json` 的
+     `candidate_commit`/产品 tree/blob 与 `git rev-parse <tip>:<path>` 不再逐项相等——
+     同一 id 下的产品漂移，直接拒绝。
+  3. `Q7_CANDIDATE_UNVERIFIABLE`：有候选 claim 却没有 provider / ref 不存在 / 清单缺失。
+- **master 侧不变**：候选行不进入 `claimedRows`，所以既不会替 master 消掉 Q7 的
+  `product surface moved since baseline` 红，也不会因为 master 前进而把候选行判红。
+- **负控（已实现，未改 gate 语义）**：`tests/s2-authority/candidate-track-negative-control.test.mjs`。
+  今日行为：`V@B=yes` + 候选注释 + master 产品漂移 → `Q7` 红（N1）；去掉注释同样红
+  （N1-control，证明红不是注释语法造成的）；`V@B=no` + 候选注释 + master 漂移 → 绿
+  （N2，两轨共存）；干净 master 行 + 无漂移 → 绿（N3，控制非空转）。**它会在一种回归下
+  变红**：未来 parser 一旦把带候选注释的行从 master 的 Q7 集合里排除、却没有补上
+  `V@B=yes`+`verifiedFor` 的 named 拒绝，N1 的 Q7 finding 消失，测试即失败。
+  parser 落地时该测试必须收紧为断言上述 named 拒绝（漂移无关），而不是删除。
+- **为什么这不是放宽**：`verifiedFor` 是**新增**的、范围更窄的声明；它不改变任何既有
+  行的判级、不改变 `V@B` 的 yes/no 语义、不给任何行增加 master 可信度。Q7 的 master
+  分支字节不变。
+
+### 7.6 Authority 指针的决定：**不移动**，留在 integration baseline
+
+- 决定：`dev/engineering/current-authority.json` 保持 `as20261105r2`（baseline
+  `1484fa4ee…`），**不**改成候选 `25e106b…`。候选身份由 7.1 清单 + 7.5 行级 claim 承载。
+- 实测依据（本机，2026-11-06 轮）：
+  - 指针按现状：`state-freshness` pass，`claimed 0, drift 28`。
+  - 假想指针移到 `25e106b`、矩阵仍全 `V@B=no`：`drift 28, claimed 0` → **仍然 pass，
+    但 `V@B=yes` 没有可断言的对象**（指针移动是空转的）。
+  - 假想指针移到 `25e106b` 且候选行写 `V@B=yes`：`drift 28, claimed 4` → **Q7 红**
+    （外加 `NEEDS_REVALIDATION` 与 `V@B=yes` 的矛盾红）。也就是说：指针移动要么什么
+    都不说，要么一说就红，因为候选树不是 master 的树。
+- 因此「移动指针」不是表达候选验证的正确工具；行级 `verifiedFor` 才是。这也避免把
+  单例六字段 baseline 变成随 lane 漂移的第二权威。

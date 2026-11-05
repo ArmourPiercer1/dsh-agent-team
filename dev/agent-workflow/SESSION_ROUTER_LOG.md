@@ -7862,3 +7862,77 @@ coordinator 的三个假设都不成立：没有 suite-total 失败（`eb3-tool-
 本地复跑三条：`pr-gate --full` pass（8/9，census declared refusal）、`ci-product` 8/8 pass、
 `ci-integration` 7 个 eb3 脚本 rc=0 + graph-parse/state-freshness pass；仅改 2 个文档文件，产品路径 0 改动。
 重新建立 claim 需在新树再 boot 一次（fixture 拆分已在位），花费记在 5-start 池（已用 `2/5`）。
+
+## 2026-11-06 — OWNER RULINGS：候选轨道独立冻结 + v1 不要求完整网络隔离后端
+
+（会话日历 2026-11-06；真实 UTC 2026-11-05。两条均为 owner 裁决，原文约束照录，实施不扩权。）
+
+### R1 — Candidate Track = independent frozen candidate
+
+**裁决原文意图**：从确定的 master 提交建立独立候选分支，绑定不可变产品 SHA、Authority 快照、依赖与
+Host baseline；master 继续开发，**没有任何新内容会自动进入冻结候选**；候选修复产生**新候选版本 + 新
+sha**，旧证据保留，重新验收范围**只限修复实际影响到的面**；**禁止在既有候选身份下静默改产品代码**；
+Q7 的安全语义与严格性**不变**；候选 PASS **永远不得**被提升为「latest master PASS」；若当前
+Authority/Q7 实现无法表达两轨验证上下文，**先给最小兼容方案 + 负控**，不得放宽 Q7；发布 snapshot 前
+必须核验 baseline 的真实 Git ancestry，任何把候选 SHA 带进 master 的操作必须保留真实 merge ancestry
+——**禁止 squash 冒充**。
+
+**落地（机制，不是散文）**：
+- 候选 ref：`candidate/a5sf-fs-search-1` → `25e106b4573cac0ab624c7e0bc5ca7d36dba3730`，即 FS/Search
+  live run 实测树（= 产品提交 `1484fa4ee` + 仅证据/fixture 拆分）。产品面逐字节相等由 run record
+  `bindings.productTreeProof` 记录，本清单另以 `git rev-parse`/`git diff` 复核（`packages`
+  `44535c94…`、`scripts` `d4bcc358…`、`tests/paths.mjs` `1bf4829e…`、`package.json` `2946fe23…`、
+  `pnpm-lock.yaml` `f70001d3…`、判官 `de66ee86…`/`e386ab79…`）。
+- 候选清单：`dev/engineering/candidates/cand-a5sf-fs-search-1.json`（不可变；含产品 SHA/tree/blob、
+  Authority `{as20261105r2, sha256:d28bdf46…}`、依赖 host `0.2.0-rc.2 @ 639ed01539…` + lockfile、
+  证据 run record、ancestry 记录、F0 摘要及重算命令）。
+- **Authority 指针不移动**，保持 `as20261105r2`（baseline `1484fa4ee…`）。实测依据：指针按现状
+  `claimed 0, drift 28` → pass；假想移到 `25e106b` 且矩阵仍全 `V@B=no` → `claimed 0, drift 28` 仍
+  pass（**空转**，`V@B=yes` 无可断言对象）；假想移到 `25e106b` 且候选行写 `V@B=yes` → `claimed 4,
+  drift 28` → **Q7 红**。指针移动要么什么都不说、要么一说就红，因为候选树不是 master 的树。
+- 两轨最小方案（proposal，未改 gate/Q7/V@B/Authority 语义）：行 ⑥ 可带
+  `verifiedFor: <candidate-id>@<40-hex sha>`；合法组合 = `V@B=no` + `verifiedFor`；`V@B=yes` +
+  `verifiedFor` = named RED（候选 claim 永不满足 master claim）。读取 leg = `state-freshness` 的
+  `checkContractValues`（Q5 行解析 + 新 `candidateRefProvider`），候选行**不进入** `claimedRows`。
+  候选前进变红：`Q7_CANDIDATE_REF_MOVED`（ref tip ≠ 行内 sha）、
+  `Q7_CANDIDATE_MANIFEST_MISMATCH`（清单 commit/产品 tree 与 ref tip 不等）、
+  `Q7_CANDIDATE_UNVERIFIABLE`（有 claim 无 provider/ref/清单）。master 侧 Q7 分支字节不变。
+  负控已实现：`tests/s2-authority/candidate-track-negative-control.test.mjs` 4/4 PASS——N1
+  （候选注释 + `V@B=yes` + master 漂移 → Q7 红）、N1-control（去掉注释同样红）、N2
+  （`V@B=no` + 候选注释 → master 绿）、N3（干净行 + 无漂移 → 绿）。未来 parser 若把候选行从
+  master Q7 集合排除却不补 named 拒绝，N1 消失、测试变红。
+- 文档：`current-implementation-plan.md` 新增 §7（候选命名/「一次修复=一个新候选版本」/ancestry/
+  「候选 PASS 不是 master PASS」/两轨方案/指针决定）。
+
+### R2 — v1 does not require a full network-isolation backend
+
+**裁决原文意图**：`network: deny` 保持 fail-closed，**绝不**回退到联网运行；FS/Search 及其他已验证
+面**可以**组成 scoped internal trial candidate，不被 Bash/CLI 缺少 deny 后端阻塞；Bash/CLI 只有在
+**真实 OS/进程边界 deny 后端**验证通过后才可声称 "offline but functional"——**refusing to start
+does not count as passing that feature's acceptance**；Web `network: allow` 路径可继续被接受；可信
+Web Provider 前的 `network: deny` 拒绝**不得**被泛化成「任意子进程已网络隔离」；**归属更正：BL-39
+是 Launcher `/etc`+`/proc` 文件读取例外收窄（read-exception hardening），不是网络隔离**——保留
+BL-39，真实 deny 后端另立条目。
+
+**落地**：`ALPHA5-SANDBOX-BACKLOG.md` §0 新增 2026-11-06 裁决块（5 条约束逐条）；BL-39 标题与状态
+改为「Launcher 文件读取例外收窄」，并在范围边界明写「不提供、也不证明任何 egress/DNS 拒绝能力」；
+新增 **BL-42**（真实 OS/进程边界 network-deny 后端，READY，owner-owned；验收含 0 connect 负控与
+allow 路径回归；Web service-level denial ≠ subprocess network isolation）。**未做**：不改 Q7、
+不改任何 grade/`V@B`、不改 Authority、不改 `.github/**`、不改 `packages/**`。
+
+### 本轮门与预算
+
+- 启动 0 次（`0 of remaining 3` 未花；无 Host boot、未碰 :3080）；CORE PATCH BUDGET = 0（0 产品文件改动）。
+- `node scripts/doc-checks.mjs` → rc 0；`node scripts/ci-pr-gate.mjs --only state-freshness` → pass
+  （`claimed 0, drift 28`）；`git diff --check` → rc 0；负控测试 4/4 PASS。
+- ancestry：`git merge-base --is-ancestor candidate/a5sf-fs-search-1 origin/master` → exit 0；
+  `git merge-base --is-ancestor 1484fa4ee candidate/a5sf-fs-search-1` → exit 0；
+  `git merge-base --is-ancestor 1484fa4ee origin/master` → exit 0。
+
+### 留给 owner 的一个问题
+
+候选域方案（§7.5）本轮**只到提案 + 负控**，没有改 `scripts/ci-pr-gate.mjs`（本轮约束：Q7 / CI gates
+不变）。请 owner 裁决：是否授权一个**独立后续 PR**，在 `state-freshness` 的 `checkContractValues` 里
+加入 `verifiedFor` 解析、`candidateRefProvider` 与 `V@B=yes`+`verifiedFor` 的 named 拒绝，同时保持
+Q7 的 master 分支、`claimedRows` 判级、`V@B` 语义与既有行等级**逐字节不变**？在该 PR 落地前，
+候选行只能以文字注释存在，负控测试是对现有 gate 的锁定，不是对候选 claim 的机器执法。
