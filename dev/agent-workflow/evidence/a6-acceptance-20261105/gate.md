@@ -1,11 +1,13 @@
 # Gate record
 
-## Final integrated HEAD
+## Final docs-inclusive HEAD
 
-- HEAD: `48182b783554df08e40219c4079f0a0bb1d27075`
+- HEAD: recorded after the rerun below (code merge `e63cfbdc9` + acceptance docs)
+- Superseded green: `48182b783` + review-fix merge `e63cfbdc9` (before docs)
 - Command: `CI=true DSH_CI_STORE_DIR="$PWD/.drill/pnpm-store" node scripts/ci-pr-gate.mjs --full`
 - Pristine host: `tests/deepseek-harness-test-use` -> main checkout, `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS, 0 skips, 0 refused legs** (`DSH-CI-VERDICT pass`), 314.7 s
+- Result: **see the run appended below** (the earlier 9/9 result on `48182b7`
+  remains valid for the code tree before the review fixes)
 - Census: **677 files / 8821 legs**, `COUNTS MOVED, SET DID NOT`, 0 new reds, 0 collection errors
 
 Leg verdicts: graph-parse, kit-home-guard, state-freshness, install, blueprint-fence,

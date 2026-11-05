@@ -1,7 +1,7 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `48182b783554df08e40219c4079f0a0bb1d27075`
-  (`alpha6/int-20261103`, merge of `8ea3a0517` into `23b5061a6`)
+- **Integrated code HEAD under test:** `e63cfbdc9` (merge of review-fix
+  `996427e3f` into `48182b783`; the final docs commit adds no product bytes)
 - **E2E implementation HEAD:** `8ea3a0517924c5b244fc713317bd5e457ba77263`
 - **Real Host run:** stamp `2026-11-05T11-43-02`, host `http://127.0.0.1:3600`, mock `:3601`
 - **Evidence:** `dev/agent-workflow/evidence/a6-officer-host/` (run.log, instance.log, mock.log,
@@ -38,7 +38,8 @@
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on integrated HEAD `48182b7`:
+Full local gate **9/9 PASS, zero skips** on the final docs-inclusive HEAD
+(`gate.md` records the exact SHA and outputs):
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
 
@@ -48,9 +49,16 @@ census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 an
 `alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
 See `gate.md` for the exact outputs and the flake disclosure.
 
+## Independent review
+
+Verdict at `8ea3a0517`: **BLOCK** (no P0; P1-1 notification-policy bypass,
+P1-2 per-root router policy). Both P1s, P2-1 and the verifier-test gap are fixed
+in `996427e3f`; P2-3 is covered by the rerun gate; P3 root/ledger items are
+addressed. See `review-response.md`.
+
 ## Verdict
 
-**Isolated integration: PASS on the reached path.** A real Member call routed to the
+**Isolated integration: PASS on the reached path; review P1s cleared.** A real Member call routed to the
 assigned Officer, the Officer's durable allow was consumed, and the exact command executed
 once. The remaining acceptance rows are **NOT_REACHED**, not silently passed. Production
 enablement and master merge remain blocked.
