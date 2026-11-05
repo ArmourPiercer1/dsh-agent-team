@@ -62,11 +62,11 @@
 3. **面内独占**：一个批次内一个面一个 implementer；跨面的改动归 Integration Owner，不得由一个面的
    implementer 顺手改另一个面的共享边界。
 4. **boot 与 preflight**：只有 Integration Owner 授权 start；start 之前必须有一段
-   `scripts/a5sf-preflight.mjs` 的 PASS（零 boot，见计划 §8 T-01）。没有 bundle 的 driver 运行
+   `scripts/a5sf-preflight.mjs` 的 PASS（零 boot，见计划 §9 T-01）。没有 bundle 的 driver 运行
    视为 driver 缺陷，不是“环境问题”。
 5. **三层与两类证据**：A = 面 × 轴安全矩阵，B = 逐工具契约，C = 冻结候选跨面真 Host。`C1` = host-free，
    `C2` = live；两者互补、不可互替。判定口径见 `ALPHA5-SANDBOX-BACKLOG.md` §0.1 与
-   `current-implementation-plan.md` §7。
+   `current-implementation-plan.md` §7（候选轨机制）与 §8（两轨的组织方式）。
 
 ---
 

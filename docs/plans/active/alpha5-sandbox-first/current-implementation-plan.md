@@ -103,85 +103,6 @@ CONDITIONAL 改写成 PASS，除非补齐具名条件。
 
 **禁止**：把回收当作新验收；用回收削弱新不变量；以“复用”为名恢复旧 `FamilyAssembly` 执行体。
 
-## 7. Integration Track 与 Candidate Track（2026-11-06 owner 指令）
-
-开发分两条轨道，**不是两个分支策略偏好**，而是 Q7 的代价结构决定的：Q7 比较 `baseline` 快照与
-**HEAD 的产品面**，所以“被测过的树”与“会合入的树”一旦不同，所有 `V@B=yes` 立刻失效。把这条
-事实写进流程，比在每次失效后重新解释它便宜。
-
-| | **Integration Track（集成轨）** | **Candidate Track（候选轨）** |
-|---|---|---|
-| 载体 | `master`（连续） | 冻结 head（`task/a5sf-candidate-<date>` 的某个 commit） |
-| 接收什么 | 文档、证据、测试基础设施；产品改动按正常 PR 逐一合入 | **不再接收产品改动**；只做 C2 验收 |
-| 什么时候花 boot | 不花（boot 只在候选轨/指定 live 任务上花） | 一次冻结、一次（或少数几次）批量 Host 验收 |
-| 谁是 owner | Integration Owner | Integration Owner 启动，Acceptance-Reviewer 判 |
-| 退出条件 | 每个 PR 全门绿 | 候选被接受（合入 `master`）或放弃（证据保留、判定作废） |
-
-### 7.1 分支、冻结与合并规则
-
-1. **集成 PR**：一任务一分支一 worktree 一 writer，合入 `master`；共享装配文件（`index.ts`、
-   `tsconfig*.json`、产品入口、Authority、Member 生命周期）**只有 Integration Owner** 可变。
-2. **冻结**：从**当时的集成 head** 切候选分支，冻结到某个 commit；对该 commit
-   `publish-authority` 一份**新快照**（`baseline` = 该候选 head）。快照是**不可变的**，发布不等于
-   移动指针。
-3. **指针**：`dev/engineering/current-authority.json` 只由 Integration Owner 通过
-   `scripts/switch-authority.mjs` 移动，且只在 **a) 接受候选**（此时候选 head 已成为 `master` 的
-   祖先）或 **b) 放弃候选并把指针切回集成 head** 这两个时刻移动。候选运行期间，运行记录携带
-   **发布快照的 digest + 实际观察到的指针**两份事实（`bindings.candidateSnapshot` /
-   `bindings.authorityObserved`），不靠“事后 re-stamp”把观察改写成想要的样子。
-4. **冻结期间不放行任何产品改动**：`packages/**`、`scripts/**`、`tests/paths.mjs`、
-   `package.json`、`pnpm-lock.yaml`（Q7 的 drift 集）在冻结窗口内不动。文档/证据/测试基础设施
-   可以在 `master` 上继续集成（它们不在 drift 集内），但**不得与候选的产品面产生语义差**。
-5. **候选内的“修复”= 重新冻结，不是原地改树**：影响该候选安全性/正确性的修复只能作为
-   **受控变更**进入——切新候选 head、发布新快照、把旧 run 记为 `superseded`，保留其证据与判定。
-   对已冻结树做 `commit --amend` / rebase / 追加产品提交都是禁止的（那会让“被测过”与“证据指向”
-   脱钩）。
-6. **“旧候选通过了它的测试” ≠ “master 的最新通过了”**。候选的 C2 证据只证明**它自己的树**；
-   `master` 产品面一动，该证据的 current claim 立刻是 `NEEDS_REVALIDATION`，无论候选当时多绿。
-   这条不因候选是“最终候选”而放宽。
-
-### 7.2 Q7 的代价如何降低（不改变 Q7）
-
-Q7 本身**不得放松**：它是“当前验证必须关于会合入的树”这一安全不变量的机器表达。可改的只有
-**触发次数**：
-
-- 每次冻结窗口内发生一次产品合并 ⇒ 一次 drift ⇒ 该候选的 live 断言全部作废 ⇒ 一次重验 boot。
-- 因此 **Q7 成本 = 冻结窗口内的产品合并次数 × 需要 live 的行数**，而不是“Q7 太严”。
-- 唯一合法的降本手段是**冻结期间少改产品**：把产品改动集中在冻结之前（集成轨），把冻结窗口压到
-  只跑验收的长度。**不是**改 gate、不是改 baseline 指向、不是“先合并再补证据”。
-- 实测：`#606`（28 条产品路径）使 candidate-1 的四行在同一小时内由 `V@B=yes` 退回 `no`；
-  此前 `#598`/`#599`/`#600` 已让 BL-16 的六行同样退回。这两次都是**合并时机**的成本，不是
-  Q7 的缺陷。
-
-### 7.3 当前观测到的轨道冲突（必须由 owner 裁决，不由本计划自行处置）
-
-当前指针解析到的快照把 `baseline` 指向候选 `1484fa4ee…`（candidate-1 的冻结树），但 `master`
-此后又合入了 `#606`/`#607`。后果是 `ci-pr-gate --only state-freshness` 在 `master` 上报
-`Q4: baseline … is neither HEAD nor an ancestor of HEAD`——**这不是本次重组引入的红**，而是
-“指针指着候选、集成轨继续合并”这一组合的直接结果。按 §7.1 的规则它属于非法状态，但**修它要移动
-Authority 指针**，那是 owner 的决定，不是本计划的执行项；处置选项写在 §9 的问题清单里。
-
-## 8. 下一批可执行任务（2026-11-06）
-
-规则：**每个共享文件只有一个 owner**；一个任务 = 一个最小纵切；`C1` = host-free 验收，
-`C2` = live 验收；`boot` = 是否需要 Host 启动（当前剩 3 次：BL-17 live、BL-18 live、一次重试）。
-**产品文件（`packages/**`）的任何一行改动都必须由 Capability Implementer 以独立 PR 提交**；
-本表只是分配，不是开工授权。
-
-| # | 任务 | Face | 依赖 | 唯一 owner 文件（共享文件仅此一处） | 最小纵切 | C1 验收 | C2 验收 | boot |
-|---|---|---|---|---|---|---|---|---|
-| T-01 | **PREFLIGHT-BUNDLE**：两个 live driver 在花 start 之前写出 `preflight-bundle.json` 并以 `scripts/a5sf-preflight.mjs` 的 PASS 为开工条件 | cross | 本 PR 的 preflight + 负控 | `tests/world-factory/lib/a5sf-acceptance-preflight.mjs`（共享契约）；每个 driver 在自己的证据目录内改**仅一个** `run-boot.mjs` | driver `--plan` 生成 bundle → preflight PASS/FAIL → 不 PASS 不 boot | 别名 fixture 红 / 干净 bundle 绿（已具备，D1–D15） | — | 否 |
-| T-02 | **RECUT-BASELINE**：把集成 head 重切为 authority baseline，消掉 §7.3 的 Q4 红 | cross | owner 对 §9-Q1 的裁决；`#607` 之后不再有产品合并 | `dev/engineering/current-authority.json`（指针；快照由 publisher 写） | publish 新快照（baseline = 集成 head）→ switch → 回读 | `state-freshness` 绿；F0 digest 校验通过 | — | 否 |
-| T-03 | **BL-17-LIVE**：持久 bash 的 live 半场（同 PTY 多命令、只写不读、`chmod` 缺口、禁网、旧代 PTY 拒用） | Shell-PTY | T-01（bundle 预检）；BL-17 host-free 半场已绿；allocation #2 由 owner 解冻 | `dev/agent-workflow/evidence/a5sf-bash/run-boot.mjs`（新） | 单次 boot 跑 §8 八步，逐步落盘 | 21 臂保持绿（回归，不是新验收） | §8 step 1–8 逐条带 exit code | **是**（1） |
-| T-04 | **BL-18-WEBFACE**：让受管 Member 的 `web_fetch` 真的解析到 confined `web` face（现无 row config key / service / constructor） | Web | 先合入一条**绿**的转发改动；`#608` 视为未完成，不得在其上继续 | `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | 行配置转发 `{ effective, provider.fetch, provider.search }` → realm 挂载 → 无 face 时组合期仍 typed 拒绝 | host-free 臂：转发后 `faces.web` 为真、无 face 时 `A5SF_NETWORK_UNCONFINED_REALM` 仍拒 | BL-18 §8 step 1–8（`strace` 零 connect/DNS） | **是**（1，合并后） |
-| T-05 | **FS-SEARCH-REVALIDATE**：在**新集成 head** 上重跑 FS/Search C2（M-01/M-02/M-06/M-07） | FS Provider + Subprocess | T-01、T-02；候选必须从新基线切 | `dev/agent-workflow/evidence/a5sf-candidate1/run-boot.mjs`（既有文件，唯一 writer） | 冻结候选 → 预检 PASS → 单次 boot → 11/11 | 预检 PASS + judged fixtures 不变 | 11/11（含 productTreeProof） | **是**（1） |
-| T-06 | **BL-19-PTC-C1**：`run_code`/PTC 的 C1 判定（它是执行模式不是可装载模块） | External execution | BL-21 源清单已 DONE；无产品依赖 | `docs/plans/active/alpha5-sandbox-first/NATIVE-SOURCE-INVENTORY.md` | 写出“无 routed-native 接入面”的具名判定与最小负控设计 | 一个 host-free 测试把该判定钉住（不接受即红） | — | 否 |
-| T-07 | **EXT-FACE-DESIGN**：为 LSP / MCP 面**先设计**最小正/负测试（在首个产品实现之前） | External execution | T-06 | `tests/world-factory/a5sf-external-face.test.mjs`（新） | 每面一正一负的**契约测试**（不实现产品） | 测试在无产品接线时以 `NOT_WIRED` 判定 fail-closed | — | 否 |
-| T-08 | **NONDATA-AUDIT**：M-19/M-20/M-21 是否真的无数据面 I/O；有则重新归面 | Non-data-plane | 无 | `docs/plans/active/alpha5-sandbox-first/TOOL-ACCEPTANCE-MATRIX.md` §1.1 | 逐行判定 + 证据路径；不改等级 | 一个 host-free 检查：任何“读写文件”的工具名不得留在本面 | — | 否 |
-| T-09 | **ADAPTER-DEDUP（提案，未排期）**：收敛 `subprocess.ts` 对上游 `OutputCollector` / `childEnv` 的重复实现 | Subprocess | owner 批准（触碰产品） | `packages/runtime/team-services/src/subprocess.ts`（唯一） | 用上游公开 seam 替代本地 collector/env，或明确声明“不替代”并写理由 | 现有 313/313 臂保持绿 | 现有 live 行不变 | 否 |
-
-**未列入本表的东西**：`#608` 的续写（未完成、红 CI，按 directive 不基于它构建）；任何改变
-`rg` allow-list 的“通用化”改动（BL-41 明确它不是通用安全模型）；任何 Q7/CI/Authority 的放宽。
 ## 7. Candidate track：独立冻结候选与两轨验证（2026-11-06 owner 裁决机制化）
 
 > 本节把 owner 的两条裁决落成**可执行的机制**，不新增语义权威：Q7 的严格性、`V@B` 的
@@ -292,3 +213,92 @@ verifiedFor: <candidate-id>@<40-hex sha>
     都不说，要么一说就红，因为候选树不是 master 的树。
 - 因此「移动指针」不是表达候选验证的正确工具；行级 `verifiedFor` 才是。这也避免把
   单例六字段 baseline 变成随 lane 漂移的第二权威。
+
+## 8. 两条轨道的组织学补充（集成轨/候选轨在本计划里怎么落地）
+
+开发分两条轨道，**不是两个分支策略偏好**，而是 Q7 的代价结构决定的：Q7 比较 `baseline` 快照与
+**HEAD 的产品面**，所以“被测过的树”与“会合入的树”一旦不同，所有 `V@B=yes` 立刻失效。把这条
+事实写进流程，比在每次失效后重新解释它便宜。
+
+| | **Integration Track（集成轨）** | **Candidate Track（候选轨）** |
+|---|---|---|
+| 载体 | `master`（连续） | 冻结 head（`task/a5sf-candidate-<date>` 的某个 commit） |
+| 接收什么 | 文档、证据、测试基础设施；产品改动按正常 PR 逐一合入 | **不再接收产品改动**；只做 C2 验收 |
+| 什么时候花 boot | 不花（boot 只在候选轨/指定 live 任务上花） | 一次冻结、一次（或少数几次）批量 Host 验收 |
+| 谁是 owner | Integration Owner | Integration Owner 启动，Acceptance-Reviewer 判 |
+| 退出条件 | 每个 PR 全门绿 | 候选被接受（合入 `master`）或放弃（证据保留、判定作废） |
+
+### 8.1 分支、冻结与合并规则
+
+1. **集成 PR**：一任务一分支一 worktree 一 writer，合入 `master`；共享装配文件（`index.ts`、
+   `tsconfig*.json`、产品入口、Authority、Member 生命周期）**只有 Integration Owner** 可变。
+2. **冻结**：从**当时的集成 head** 切候选分支、冻结到某个 commit，并写下 §7.1 的**候选清单**
+   （`dev/engineering/candidates/<id>.json`，不可变）。**冻结不发布以候选 head 为 `baseline` 的新快照**——
+   §7.6 已裁定指针留在 integration baseline；候选身份由清单 + 行级 `verifiedFor` 承载。
+3. **指针**：`dev/engineering/current-authority.json` 只由 Integration Owner 通过
+   `scripts/switch-authority.mjs` 移动。**按 §7.6，候选不移动指针**（指针移动对候选而言要么什么都不说、
+   要么一说就红）；指针只为「集成 baseline 本身重切」而移动。候选运行期间，运行记录仍必须携带
+   **它以为在观察的快照 digest + 实际观察到的指针**两份事实（`bindings.candidateSnapshot` /
+   `bindings.authorityObserved`），不靠“事后 re-stamp”把观察改写成想要的样子。
+4. **冻结期间不放行任何产品改动**：`packages/**`、`scripts/**`、`tests/paths.mjs`、
+   `package.json`、`pnpm-lock.yaml`（Q7 的 drift 集）在冻结窗口内不动。文档/证据/测试基础设施
+   可以在 `master` 上继续集成（它们不在 drift 集内），但**不得与候选的产品面产生语义差**。
+5. **候选内的“修复”= 重新冻结，不是原地改树**（规范细节见 §7.2 / §7.3）：影响该候选安全性/正确性的修复只能作为
+   **受控变更**进入——切新候选 head、发布新快照、把旧 run 记为 `superseded`，保留其证据与判定。
+   对已冻结树做 `commit --amend` / rebase / 追加产品提交都是禁止的（那会让“被测过”与“证据指向”
+   脱钩）。
+6. **“旧候选通过了它的测试” ≠ “master 的最新通过了”**（§7.4 是这一条的正本）。候选的 C2 证据只证明**它自己的树**；
+   `master` 产品面一动，该证据的 current claim 立刻是 `NEEDS_REVALIDATION`，无论候选当时多绿。
+   这条不因候选是“最终候选”而放宽。
+
+### 8.2 Q7 的代价如何降低（不改变 Q7）
+
+Q7 本身**不得放松**：它是“当前验证必须关于会合入的树”这一安全不变量的机器表达。可改的只有
+**触发次数**：
+
+- 每次冻结窗口内发生一次产品合并 ⇒ 一次 drift ⇒ 该候选的 live 断言全部作废 ⇒ 一次重验 boot。
+- 因此 **Q7 成本 = 冻结窗口内的产品合并次数 × 需要 live 的行数**，而不是“Q7 太严”。
+- 唯一合法的降本手段是**冻结期间少改产品**：把产品改动集中在冻结之前（集成轨），把冻结窗口压到
+  只跑验收的长度。**不是**改 gate、不是改 baseline 指向、不是“先合并再补证据”。
+- 实测：`#606`（28 条产品路径）使 candidate-1 的四行在同一小时内由 `V@B=yes` 退回 `no`；
+  此前 `#598`/`#599`/`#600` 已让 BL-16 的六行同样退回。这两次都是**合并时机**的成本，不是
+  Q7 的缺陷。
+### 8.3 当前状态（`#609` 与 `#611` 之后，2026-11-06）
+
+本节替换第一轮写的「当前观测到的轨道冲突」——那条冲突**已经修好**，继续留着就是一条过期断言：
+
+- `#609` 用**真 merge**（非 squash）把候选 `1484fa4ee` 并入 master 历史，
+  `git merge-base --is-ancestor` 为真，`state-freshness` 的 `Q4` 转绿，派生视图
+  `baseline_is_ancestor_of_head` 回到 `true`。**指针与快照没有移动过**：指针仍指 `as20261105r2`，
+  只是它命名的 baseline 现在是真实祖先。
+- `#611` 已合入：候选 ref `candidate/a5sf-fs-search-1` + 不可变清单
+  `dev/engineering/candidates/cand-a5sf-fs-search-1.json` 落地，机制细节见上面的 §7。
+  **尚未落地的是 §7.5 的 gate 侧读取**（`verifiedFor` 的解析点、`candidateRefProvider`）——
+  `scripts/ci-pr-gate.mjs` 未被本计划改动，所以 `verifiedFor` 现在只是行内声明，还没有机器复核。
+  这是 #611 的后续项，不是本计划可以顺手做的（改 gate 属 CI 面）。
+- 因此：**两条轨道的划分仍然成立，但"集成轨被候选指针卡住"这个症状已消失**。剩余的真实成本
+  只有 §8.2 那一条（冻结窗口内的产品合并次数），以及 `verifiedFor` 尚无 gate 复核这一条待办。
+
+
+## 9. 下一批可执行任务（2026-11-06）
+
+规则：**每个共享文件只有一个 owner**；一个任务 = 一个最小纵切；`C1` = host-free 验收，
+`C2` = live 验收；`boot` = 是否需要 Host 启动（当前剩 3 次：BL-17 live、BL-18 live、一次重试）。
+**产品文件（`packages/**`）的任何一行改动都必须由 Capability Implementer 以独立 PR 提交**；
+本表只是分配，不是开工授权。
+
+| # | 任务 | Face | 依赖 | 唯一 owner 文件（共享文件仅此一处） | 最小纵切 | C1 验收 | C2 验收 | boot |
+|---|---|---|---|---|---|---|---|---|
+| T-01 | **PREFLIGHT-BUNDLE**：两个 live driver 在花 start 之前写出 `preflight-bundle.json` 并以 `scripts/a5sf-preflight.mjs` 的 PASS 为开工条件 | cross | 本 PR 的 preflight + 负控 | `tests/world-factory/lib/a5sf-acceptance-preflight.mjs`（共享契约）；每个 driver 在自己的证据目录内改**仅一个** `run-boot.mjs` | driver `--plan` 生成 bundle → preflight PASS/FAIL → 不 PASS 不 boot | 别名 fixture 红 / 干净 bundle 绿（已具备，D1–D15） | — | 否 |
+| T-02 | **~~RECUT-BASELINE~~ — DROPPED（2026-11-06）**：原打算把集成 head 重切为 authority baseline 以消掉 Q4 红。**两处前提都已消失**：(a) `#609` 用真 merge 修好 ancestry，`Q4` 已绿；(b) `#611` §7.6 裁定指针**不移动**。保留此行只为记录「它曾被排期、为什么不再做」，**不得**据它去切 baseline | cross | —（已失效） | 无（不改指针、不发布快照） | — | — | — | 否 |
+| T-03 | **BL-17-LIVE**：持久 bash 的 live 半场（同 PTY 多命令、只写不读、`chmod` 缺口、禁网、旧代 PTY 拒用） | Shell-PTY | T-01（bundle 预检）；BL-17 host-free 半场已绿；allocation #2 由 owner 解冻 | `dev/agent-workflow/evidence/a5sf-bash/run-boot.mjs`（新） | 单次 boot 跑 §8 八步，逐步落盘 | 21 臂保持绿（回归，不是新验收） | §8 step 1–8 逐条带 exit code | **是**（1） |
+| T-04 | **BL-18-WEBFACE**：让受管 Member 的 `web_fetch` 真的解析到 confined `web` face（现无 row config key / service / constructor） | Web | 先合入一条**绿**的转发改动；`#608` 视为未完成，不得在其上继续 | `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | 行配置转发 `{ effective, provider.fetch, provider.search }` → realm 挂载 → 无 face 时组合期仍 typed 拒绝 | host-free 臂：转发后 `faces.web` 为真、无 face 时 `A5SF_NETWORK_UNCONFINED_REALM` 仍拒 | BL-18 §8 step 1–8（`strace` 零 connect/DNS） | **是**（1，合并后） |
+| T-05 | **FS-SEARCH-REVALIDATE**：在**新集成 head** 上重跑 FS/Search C2（M-01/M-02/M-06/M-07） | FS Provider + Subprocess | T-01、T-02；候选必须从新基线切 | `dev/agent-workflow/evidence/a5sf-candidate1/run-boot.mjs`（既有文件，唯一 writer） | 冻结候选 → 预检 PASS → 单次 boot → 11/11 | 预检 PASS + judged fixtures 不变 | 11/11（含 productTreeProof） | **是**（1） |
+| T-06 | **BL-19-PTC-C1**：`run_code`/PTC 的 C1 判定（它是执行模式不是可装载模块） | External execution | BL-21 源清单已 DONE；无产品依赖 | `docs/plans/active/alpha5-sandbox-first/NATIVE-SOURCE-INVENTORY.md` | 写出“无 routed-native 接入面”的具名判定与最小负控设计 | 一个 host-free 测试把该判定钉住（不接受即红） | — | 否 |
+| T-07 | **EXT-FACE-DESIGN**：为 LSP / MCP 面**先设计**最小正/负测试（在首个产品实现之前） | External execution | T-06 | `tests/world-factory/a5sf-external-face.test.mjs`（新） | 每面一正一负的**契约测试**（不实现产品） | 测试在无产品接线时以 `NOT_WIRED` 判定 fail-closed | — | 否 |
+| T-08 | **NONDATA-AUDIT**：M-19/M-20/M-21 是否真的无数据面 I/O；有则重新归面 | Non-data-plane | 无 | `docs/plans/active/alpha5-sandbox-first/TOOL-ACCEPTANCE-MATRIX.md` §1.1 | 逐行判定 + 证据路径；不改等级 | 一个 host-free 检查：任何“读写文件”的工具名不得留在本面 | — | 否 |
+| T-09 | **ADAPTER-DEDUP（提案，未排期）**：收敛 `subprocess.ts` 对上游 `OutputCollector` / `childEnv` 的重复实现 | Subprocess | owner 批准（触碰产品） | `packages/runtime/team-services/src/subprocess.ts`（唯一） | 用上游公开 seam 替代本地 collector/env，或明确声明“不替代”并写理由 | 现有 313/313 臂保持绿 | 现有 live 行不变 | 否 |
+
+**未列入本表的东西**：`#608` 的续写（`#608` 本身已合入且 CI 绿；它的续写——把 web face 纳入默认
+产品 preset——未完成，且第 4 步起仍需 live）；任何改变
+`rg` allow-list 的“通用化”改动（BL-41 明确它不是通用安全模型）；任何 Q7/CI/Authority 的放宽。
