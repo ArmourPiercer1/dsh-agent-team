@@ -31,7 +31,7 @@
 
 | # | Required scenario | Result | Why |
 |---|---|---|---|
-| 10 | Leader exception routing | **PASS** | clean real Host `a6-exception-r2`: declared `worker`/`dsh-agent-team:bash` exception routes both the guard and the plane PA leg to the Leader, 0 Officer wakes; PA allow decider `role:'leader'`, consumed, executed once; see `leader-exception.md` |
+| 10 | Leader exception routing | **PASS** | clean real Host `a6-exception-r2` (`c4a4e5616`): declared `worker`/`dsh-agent-team:bash` exception routes both the guard and the plane PA leg to the Leader, 0 Officer wakes; PA allow decider `role:'leader'`, consumed, executed once; see `leader-exception.md` |
 | 11 | Officer self-review | **PASS** | real Host `a6-recipients-r6` / `r12`: Officer's own PA leg `ctrl-1lc9fk11mqfnfy168muob00k` decided by Leader seq 19, consumed seq 20, command executed; see `recipients.md` |
 | 12 | Handoff successor notification / production `reviewEvents` consumer | **PASS** | clean real Host `a6-handoff-only-r6`: transfer seq 22 → Leader decision seq 23 → execution once. The missing production `reviewEvents` consumer was the defect; fixed in `fd7a5d6c1`; `recipients.md` |
 | 13 | Human Escalation recipient / final approval | **PASS** | clean real Host `a6-human-r9`: Officer escalate seq 12, human leg seq 13 (`reviewAuthority:'human-user'`), human allow seq 14 (`decider.kind:'human'`), consumed seq 15, command executed once; see `human.md` |
