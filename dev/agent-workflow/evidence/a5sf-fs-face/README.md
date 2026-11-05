@@ -107,6 +107,12 @@ File: `tests/world-factory/a5sf-fs-contract.test.mjs` (+ world builder
 `tests/world-factory/lib/a5sf-fs-contract-world.mjs`). Nine node:test cases, no Host,
 no port, no `DSH_HOME`, no `tests/homes/**`.
 
+**HOST-REQUIRED.** Every case loads the pinned baseline's built `lib/` entries
+(`packages/fs/{tool-fs,fs-local,fs-observation-policy}/lib/index.js`); that checkout is
+gitignored and `lib/` is not even committed in it. What a hosted runner does and does
+not have, the declared refusal that replaces a hard failure there, and the two
+provisioning options are §10.
+
 Every arm runs over the **PRODUCT** seam (`mountMemberA5sfRealm` +
 `attachA5sfNativeToolModules`, route C), the **REAL** pinned
 `@deepseek-ai/dsh-tool-fs` module, the **REAL** pinned `LocalFileSystem`, and the
@@ -333,6 +339,114 @@ cd packages/runtime && pnpm exec vitest run \
   test/a5sf-provider-composition.test.ts test/a5sf-invocation.test.ts
 ```
 
+On a machine **without** the pinned host the same command prints
+`A5SF-FS-CONTRACT-HOST-REFUSED … refused=1 skipped=9 verdict=NOT_RUN` and exits 0 with
+`pass 0`; a lane that is *supposed* to provide the host must run
+`A5SF_REQUIRE_PINNED_HOST=1 node --test tests/world-factory/a5sf-fs-contract.test.mjs`
+so absence becomes a failure (§10, `host-refusal-simulation.log`).
+
 Environment: WSL2 kernel 6.18.33.2-microsoft-standard-WSL2, Node 24.21.0, Landlock
 ABI v7, `pnpm` workspace; pristine host tree resolved via `tests/paths.mjs`
 (`0.2.0-rc.2 @ 639ed01539…`). `DSH_HOME` unused. No port bound.
+
+---
+
+## 10. CI: what the hosted runner actually has, the declared refusal, and the provisioning proposal
+
+### 10.1 Measured facts (PR #612, this round)
+
+- `ci-integration` has **no host provisioning step**: its setup is Checkout → Node →
+  merge-tree bind → pnpm → Install → … and no step clones or builds
+  `tests/deepseek-harness-test-use` (`grep -n 'test-use|deepseek-harness' .github/workflows/ci-integration.yml`
+  → no match). The tree is **gitignored**, so a runner checkout has none of it.
+- The arms import **`lib/` build output**, and `lib/` is **not committed** in the pinned
+  tree either: `git -C tests/deepseek-harness-test-use ls-tree -r --name-only 639ed01539 packages/fs/fs-local`
+  lists only `src/`, `tests/`, `package.json`, READMEs (0 `lib/` paths). A plain checkout
+  of the pinned SHA therefore still fails this precondition; a provisioning lane must
+  also **build** the host.
+- The first hosted run of this suite failed exactly there, before any arm ran:
+  `Error: the pinned baseline's toolFs entry is missing (…/tests/deepseek-harness-test-use/packages/fs/tool-fs…)`
+  at `makeFsContractWorld` → `EB3-LAYER layer=ci-integration verdict=FAIL`.
+- Locally the tree exists **and is built**; `findTestRepoRoot` also walks up into the
+  main worktree, which is why the local run never hit this.
+
+So the answer to "absent or different": **absent on the runner** (no checkout at all),
+and **different even if checked out** (no `lib/` build). The two shapes must not be
+confused, which is why the gate distinguishes them.
+
+### 10.2 The fix: a declared refusal, counted as not-run, never as pass
+
+`tests/world-factory/a5sf-fs-contract.test.mjs` now has three states
+(`host-refusal-simulation.log` is the receipt, produced in a temp tree with no
+ancestor carrying the checkout):
+
+| state | outcome | machine-readable evidence |
+| --- | --- | --- |
+| host absent | every case registered as **SKIPPED**; exit 0 | `A5SF-FS-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=9 cases=9 verdict=NOT_RUN pinned=639ed01539… baseline=0.2.0-rc.2 path=… reason=pinned-host-not-provisioned`, and `ℹ pass 0 / ℹ skipped 9` |
+| host absent + `A5SF_REQUIRE_PINNED_HOST=1` | **FAIL** (exit 1) | `A5SF-FS-CONTRACT-HOST-INCOMPLETE: … provision … and build it` |
+| host present but a `lib/` entry missing | **FAIL** (exit 1) | `A5SF-FS-CONTRACT-HOST-INCOMPLETE: the pinned host tree exists at … but is missing toolFs=…, fsLocal=…, observationPolicy=… — a partial or older host is a pin violation` |
+| host present and complete | the nine arms RUN (assertions unchanged) | `ℹ pass 9 / ℹ skipped 0` |
+
+Why this is not a fake green:
+
+- the refusal is a **single greppable token** with the pin it required, the path it
+  looked at, `refused=1`, `skipped=<all cases>` and `verdict=NOT_RUN`;
+- the refusal registers **the same nine cases** the real path would run, so a refusal
+  cannot undercount what it refused (the case table is the single list for both);
+- `pass 0` is what the runner's summary says; nothing in this README claims the arms
+  passed on CI;
+- the moment the host appears, the arms run — and if it appears *partially*, that is a
+  red pin violation, not a silent skip;
+- the mutation controls still run wherever the host exists (they are not weakened).
+
+Known limit, disclosed rather than papered over: a skip is not a job failure, so the
+`ci-integration` **layer job** is green on a hostless runner. The token is the only
+thing that says "not run"; that is the same trade-off `census` makes on hosted PR runs
+(`pr-gate.yml`: `refusedlegs=census`). The step comment in `ci-integration.yml` still
+says "no pristine host tree at run time", which the refusal makes **inaccurate** — I was
+asked not to edit `.github/workflows/**`, so this is flagged here for the owner.
+
+### 10.3 Proposal A (preferred if CI must prove these arms): a provisioning lane
+
+Mirror `characterization.yml` / `census-runtime.yml`:
+
+1. read `TEST_USE_BASELINE_SHA` / `DSH_BASELINE_VERSION` from `tests/paths.mjs` (never
+   copy them), `git fetch --depth 1` that exact SHA from
+   `https://github.com/ArmourPiercer1/deepseek-harness.git`;
+2. assert the checked-out SHA **equals** the pin (a moved branch tip is a failure);
+3. `pnpm install` **and build** inside the checkout (the `lib/` requirement above —
+   `characterization.yml` already does checkout + install + build);
+4. run `A5SF_REQUIRE_PINNED_HOST=1 node --test tests/world-factory/a5sf-fs-contract.test.mjs`
+   so the refusal cannot come back green;
+5. decide whether this lives in `ci-integration` (then its step env sets the flag) or in
+   a separate host lane whose green means "the arms ran".
+
+Cost: one extra host install+build in that lane; no boot, no port.
+
+### 10.4 Proposal B (cheaper, removes the checkout entirely): the pinned npm packages
+
+All three entries are published at exactly the pinned version, with `lib/` in the
+tarball (verified this round):
+
+```
+@deepseek-ai/dsh-tool-fs@0.2.0-rc.2             → package/lib/index.js, deps diff/schemastery/util-code-language
+@deepseek-ai/dsh-fs-local@0.2.0-rc.2            → package/lib/index.js, deps chokidar/koffi/schemastery
+@deepseek-ai/dsh-fs-observation-policy@0.2.0-rc.2 → package/lib/index.js, no deps
+```
+
+Adding them as root `devDependencies` (the repo already carries
+`@deepseek-ai/dsh-tool-fs-search@0.2.0-rc.2` the same way) lets the ordinary
+`pnpm install --frozen-lockfile` step provide them, and the suite imports the same
+`lib/index.js` from `node_modules` instead of the gitignored checkout. The arms would
+still exercise the real pinned implementation (the published artifact of the same
+release), and the refusal would become dead code on CI.
+
+**Not done in this round, and why:** regenerating `pnpm-lock.yaml` needs registry
+resolution; in this sandbox `pnpm add` re-resolved the graph and aborted on
+`ECONNRESET` / 87-second registry timeouts (`ERR_PNPM_META_FETCH_FAIL`) **before**
+writing `package.json` or the lockfile, so nothing was left half-changed. This is a
+dependency-topology decision (a third pin site next to `tests/paths.mjs`) for the owner,
+not something to slip into a test-only PR. If approved: add the three deps, let the
+suite keep the same entry paths via `import('@deepseek-ai/dsh-tool-fs')` (one helper
+switch in `fsContractHostLayout`), regenerate the lockfile on a machine with a stable
+registry, and the `ci-integration` step needs no other change.

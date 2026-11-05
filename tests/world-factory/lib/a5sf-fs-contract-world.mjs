@@ -84,6 +84,31 @@ export const PIXEL_PNG = Buffer.from(
 const SEAM_CACHE = new Map()
 
 /**
+ * WHERE the pinned entries live and WHAT the arms consume. Exported so the
+ * suite's host gate can distinguish the two failure shapes the CI round proved:
+ *
+ *   root ABSENT                 -> a DECLARED REFUSAL (not-run), never a pass;
+ *   root present, an entry gone -> a HARD FAILURE (a partial/older host is a pin
+ *                                  violation, not an environment absence).
+ *
+ * The entries are `lib/` build outputs, and `lib/` is NOT committed in the pinned
+ * tree (`git ls-tree <pin> packages/fs/tool-fs` has no `lib/`), so "the checkout
+ * is there" is not by itself enough — a provisioned lane must build the host.
+ */
+export function fsContractHostLayout(repoRoot) {
+  const root = testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot)
+  const pinnedFs = join(root, 'packages', 'fs')
+  return {
+    root,
+    entries: {
+      toolFs: join(pinnedFs, 'tool-fs', 'lib', 'index.js'),
+      fsLocal: join(pinnedFs, 'fs-local', 'lib', 'index.js'),
+      observationPolicy: join(pinnedFs, 'fs-observation-policy', 'lib', 'index.js'),
+    },
+  }
+}
+
+/**
  * Load the repo seams and the PINNED module entries. Cached per repo root.
  * @param {string} repoRoot - workspace root (the tree under test).
  */
@@ -98,12 +123,7 @@ export function loadFsContractSeams(repoRoot) {
     const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
     const { bindScopeParent, createScope } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-scope')).href)
 
-    const pinnedFs = join(testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot), 'packages', 'fs')
-    const entries = {
-      toolFs: join(pinnedFs, 'tool-fs', 'lib', 'index.js'),
-      fsLocal: join(pinnedFs, 'fs-local', 'lib', 'index.js'),
-      observationPolicy: join(pinnedFs, 'fs-observation-policy', 'lib', 'index.js'),
-    }
+    const { entries } = fsContractHostLayout(repoRoot)
     for (const [name, entry] of Object.entries(entries)) {
       if (!existsSync(entry)) {
         throw new Error(
