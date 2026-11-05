@@ -79,3 +79,22 @@ was changed to obtain a green.
   documented as theoretical, no authority impact.
 - A6-5 wording is scoped in the acceptance matrix: `leaderWakes=0` counts review
   wakes, not the separate legacy guard notification.
+
+## Independent re-review of the fix commit
+
+A second read-only reviewer examined `8ea3a0517..996427e3f`. Verdict:
+**PASS_WITH_P2** — both earlier P1s closed, no new P0/P1, no authority
+widening; the only substantive finding was that the first `routingForRoot:
+null` regression test was non-discriminating (it used an empty control state,
+so the old boot-reuse path was never reached).
+
+That test is now leg-bearing: a valid leg under the BOOT policy plus the boot
+Officer, with `routingForRoot: () => null`; only the fixed refusal yields null
+(`a6-assigned-officer-facts.test.ts`). Two P3 test gaps were also closed:
+an **unroutable A6 ordinary ask** must throw with zero Leader notifications,
+and a non-route wake resolves against `request.rootSessionId`, not the boot
+root. Fix commit: `90937099d`; integration merge: `f842c6821`.
+
+The same re-review noted only defense-in-depth P3s that are not reachable for
+a PA/A6 ask (the case-less row path; `PlannedWake.templateId` feeding only the
+plan fingerprint) and did not run the full gate.

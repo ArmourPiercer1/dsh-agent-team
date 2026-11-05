@@ -59,7 +59,9 @@ Verdict at `8ea3a0517`: **BLOCK** (no P0; P1-1 notification-policy bypass,
 P1-2 per-root router policy). Both P1s, P2-1 and the verifier-test gap are fixed
 in `996427e3f`; P2-3 is covered by the rerun gate; P3 root/ledger items are
 addressed. The real Host E2E was rerun at `c26a9a00` after the fixes and passed
-6/6 again. See `review-response.md`.
+6/6 again. A second independent review of the fix commit returned
+**PASS_WITH_P2** (both P1s closed, no new P0/P1); the one non-discriminating
+regression test was made leg-bearing in `90937099d`. See `review-response.md`.
 
 ## Verdict
 
