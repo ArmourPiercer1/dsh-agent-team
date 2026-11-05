@@ -1683,6 +1683,17 @@ export function createTeamProductionRoot(params) {
         // the composition's ONE v5 parser (`parseAlpha6Routing`) — no second
         // parser is introduced here.
         blueprintSource: config.blueprintSource,
+        blueprintSourceForRoot: (rootSessionId) => {
+            if (rootSessionId === rootSid)
+                return config.blueprintSource;
+            const session = repos.teamSessions.get(rootSessionId);
+            if (session === undefined)
+                return null;
+            const row = repos.blueprintRegistry.get(session.blueprint.blueprintId, session.blueprint.revision);
+            if (row === undefined || row.contentHash !== session.blueprint.contentHash)
+                return null;
+            return row.source;
+        },
         rootSessionId: rootSid,
         leaderTemplateId: blueprint.leader.templateId,
         // The SAME durable overlay the Alpha.5 authority plane reads. Dropping it
@@ -1768,6 +1779,7 @@ export function createTeamProductionRoot(params) {
     };
     const alpha6DispatchWake = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
         ? async (input) => {
+            const requestRoot = input.rootSessionId;
             const wake = {
                 reviewerInstanceId: input.reviewerInstanceId,
                 targetSessionId: input.targetSessionId,
@@ -1775,7 +1787,7 @@ export function createTeamProductionRoot(params) {
                 routeRole: 'officer',
                 currentLegIds: input.currentLegIds,
             };
-            const key = latchKeyFor(wake, rootSid, config.generation);
+            const key = latchKeyFor(wake, requestRoot, config.generation);
             const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`;
             return withAlpha6WakeLock(mapKey, async () => {
                 let coordinator = alpha6WakeCoordinators.get(mapKey);
@@ -1787,7 +1799,7 @@ export function createTeamProductionRoot(params) {
                 const intent = alpha6WakeIntents?.forKey(key);
                 const result = await dispatchLatch({
                     plan: { wakes: [wake], humanLegIds: [], held: [] },
-                    rootSessionId: rootSid,
+                    rootSessionId: requestRoot,
                     sessionGeneration: config.generation,
                     coordinators: [coordinator],
                     ...(intent === undefined ? {} : { intent }),
@@ -1799,7 +1811,7 @@ export function createTeamProductionRoot(params) {
                             throw new Error('Alpha.6 wake seam disappeared after boot');
                         }
                         await live.deliverReviewWake({
-                            rootSessionId: rootSid,
+                            rootSessionId: requestRoot,
                             targetSessionId,
                             wakeId: delivery.wakeId,
                             text: delivery.text,
@@ -1826,14 +1838,15 @@ export function createTeamProductionRoot(params) {
             if (coordinator === undefined || coordinator.state.status !== 'running')
                 return;
             const releasedWakeId = coordinator.state.wakeId;
+            const requestRoot = coordinator.state.key.rootSessionId;
             const readAndRelease = async () => {
                 // The FRESH authoritative read answering the post-turn rescan: the
                 // same facts port and the same reviewer resolution as the notifier.
                 const current = controlRef.current;
-                const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
+                const requests = current === undefined ? [] : (await current.readControlState(requestRoot)).requests;
                 const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
                 const fresh = await collectAlpha6DelegableLegs({
-                    rootSessionId: rootSid,
+                    rootSessionId: requestRoot,
                     reviewerInstanceId,
                     readRequests: async () => requests,
                     reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
@@ -1854,6 +1867,7 @@ export function createTeamProductionRoot(params) {
                     : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
                 const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
                 const result = await releaseLatch(coordinator, work, {
+                    requestIds: fresh.map((entry) => entry.requestId),
                     ...(intent === undefined ? {} : { intent }),
                     ...(live.reviewWakeInbox === undefined
                         ? {}
@@ -1863,7 +1877,7 @@ export function createTeamProductionRoot(params) {
                             throw new Error('Alpha.6 wake seam disappeared after boot');
                         }
                         await live.deliverReviewWake({
-                            rootSessionId: rootSid,
+                            rootSessionId: requestRoot,
                             targetSessionId,
                             wakeId: delivery.wakeId,
                             text: renderLatchWake(delivery),
@@ -2015,9 +2029,9 @@ export function createTeamProductionRoot(params) {
                 let rebuiltWork = false;
                 if (!alpha6WakeCoordinators.has(mapKey) && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
                     const current = controlRef.current;
-                    const requests = (await current.readControlState(rootSid)).requests;
+                    const requests = (await current.readControlState(intent.key.rootSessionId)).requests;
                     const fresh = await collectAlpha6DelegableLegs({
-                        rootSessionId: rootSid,
+                        rootSessionId: intent.key.rootSessionId,
                         reviewerInstanceId: intent.key.reviewerInstanceId,
                         readRequests: async () => requests,
                         reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
@@ -2026,6 +2040,7 @@ export function createTeamProductionRoot(params) {
                     });
                     if (fresh.length > 0) {
                         await alpha6DispatchWake({
+                            rootSessionId: intent.key.rootSessionId,
                             reviewerInstanceId: intent.key.reviewerInstanceId,
                             targetSessionId,
                             currentLegIds: fresh.map((entry) => entry.requestId),
@@ -2083,17 +2098,17 @@ export function createTeamProductionRoot(params) {
         ? createAlpha6RootControlNotifier({
             rootSessionId: rootSid,
             resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
-            memberSession: async (instanceId) => repos.memberInstances.get(rootSid, instanceId),
-            deliver: (wake) => live.deliverReviewWake === undefined
+            memberSession: async (requestRoot, instanceId) => repos.memberInstances.get(requestRoot, instanceId),
+            deliver: (requestRoot, wake) => live.deliverReviewWake === undefined
                 ? Promise.reject(new Error('Alpha.6 wake seam disappeared after boot'))
-                : live.deliverReviewWake({ rootSessionId: rootSid, ...wake }),
+                : live.deliverReviewWake({ rootSessionId: requestRoot, ...wake }),
             // Read the durable pending set lazily (the service exists after this
             // closure is built); the SAME trusted facts port filters every leg.
-            readRequests: async () => {
+            readRequests: async (requestRoot) => {
                 const current = controlRef.current;
                 if (current === undefined)
                     return [];
-                return (await current.readControlState(rootSid)).requests;
+                return (await current.readControlState(requestRoot)).requests;
             },
             reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
             ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),

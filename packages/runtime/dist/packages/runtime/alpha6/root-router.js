@@ -33,7 +33,12 @@ function officerStateOf(members, officerTemplateId, leaderTemplateId) {
     const candidates = members.filter((member) => member.templateId === officerTemplateId &&
         member.childSessionId !== undefined &&
         member.templateId !== leaderTemplateId);
-    const active = candidates.filter((member) => member.lifecycle === 'RUNNING');
+    // CREATED / RUNNING / SETTLED are all live member states; SETTLED is the
+    // normal idle state of an Officer between asks. Requiring RUNNING here made
+    // every real idle Officer invisible and held every route.
+    const active = candidates.filter((member) => member.lifecycle === 'CREATED' ||
+        member.lifecycle === 'RUNNING' ||
+        member.lifecycle === 'SETTLED');
     if (active.length === 1) {
         const officer = active[0];
         return {
@@ -90,10 +95,11 @@ function legFactsOf(row, fixedLeaderOrHumanCategory) {
 export function createAlpha6RootRouter(input) {
     const policy = blueprintReviewPolicyFrom(input.routing);
     return {
-        async route(requestId) {
+        async route(requestId, rootSessionId) {
+            const rootSessionIdForRead = rootSessionId ?? input.rootSessionId;
             let state;
             try {
-                state = await input.control.readControlState(input.rootSessionId);
+                state = await input.control.readControlState(rootSessionIdForRead);
             }
             catch {
                 return null;
@@ -102,7 +108,7 @@ export function createAlpha6RootRouter(input) {
             if (row === undefined || row.approvalCaseId === undefined || row.legOrdinal === undefined) {
                 return null;
             }
-            const members = await input.members.list(input.rootSessionId);
+            const members = await input.members.list(rootSessionIdForRead);
             const categoryAnswer = await input.fixedLeaderOrHumanCategory({ kind: row.kind });
             const category = categoryAnswer === true ? true : categoryAnswer === false ? false : null;
             const currentLeg = legFactsOf(row, category);

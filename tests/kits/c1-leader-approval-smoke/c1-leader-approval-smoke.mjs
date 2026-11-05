@@ -164,6 +164,10 @@ const ALPHA6_BOOT_ONLY = process.env['C1_ALPHA6_BOOT_ONLY'] === '1'
 // non-takeover native name is refused at the binding gate by design; the same
 // blueprint is plane-shaped once the row mounts the shell takeover.
 const PLANE_TAKEOVER = process.env['C1_PLANE_TAKEOVER'] === '1'
+// A6-OFFICER: the same real Host, but the ask is routed to a live Officer
+// through the opt-in review-routing plane. Requires the plane takeover so an
+// approved bash can actually execute.
+const ALPHA6_OFFICER = process.env['C1_ALPHA6_OFFICER'] === '1'
 
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
@@ -254,6 +258,8 @@ const BP_ANCHOR_ID = 'team.c1-anchor'
 const BP_X_ID = 'team.c1-x'
 const BP_Y_ID = 'team.c1-y'
 const BP_Z_ID = 'team.c1-z'
+const BP_A6_ID = 'team.c1-a6-officer'
+const CREATE_ROOT_A6 = `session-c1-smoke-a6-${RUN_STAMP}`
 
 // Distinct markers (no substring collisions).
 const MK_DISC = `C1MK_DISC_${RUN_STAMP}`
@@ -265,6 +271,9 @@ const MK_Z = `C1MK_Z_${RUN_STAMP}`
 const MK_ZMEM = `C1MK_ZMEM_${RUN_STAMP}`
 const MK_ZCHECK = `C1MK_ZCHECK_${RUN_STAMP}`
 const MK_XCROSS = `C1MK_XCROSS_${RUN_STAMP}`
+const MK_A6 = `C1MK_A6LEAD_${RUN_STAMP}`
+const MK_A6MEM = `C1MK_A6MEM_${RUN_STAMP}`
+const MK_A6_OFFICER_READY = `C1MK_A6OFFREADY_${RUN_STAMP}`
 
 // The C1 notification prefix token (the renderer's first line).
 const NOTIF_PREFIX = '[team-control requestId='
@@ -284,10 +293,13 @@ const S5_TOKEN = `c1-z-s5tok-${RUN_STAMP}`
 // executed branch is distinguishable in the tool result).
 const FILE_X_ALLOW = join(WORKSPACE, `c1-x-allow-${RUN_STAMP}.txt`)
 const FILE_X_DENY = join(WORKSPACE, `c1-x-deny-${RUN_STAMP}.txt`)
+const SUM_A6_ALLOW = `c1-a6-allow-${RUN_STAMP}`
+const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
 const FILE_Y = join(WORKSPACE, `c1-y-${RUN_STAMP}.txt`)
 const FILE_Z = join(WORKSPACE, `c1-z-${RUN_STAMP}.txt`)
 const CMD_X_ALLOW = `echo ${SUM_X_ALLOW} > ${FILE_X_ALLOW} && echo x-allow-executed`
 const CMD_X_DENY = `echo ${SUM_X_DENY} > ${FILE_X_DENY} && echo x-deny-executed`
+const CMD_A6_ALLOW = `echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW} && echo a6-allow-executed`
 const CMD_Y = `echo ${SUM_Y} > ${FILE_Y} && echo y-executed`
 const CMD_Z = `echo ${SUM_Z_FILE} > ${FILE_Z} && echo z-executed`
 
@@ -503,6 +515,7 @@ function teamRowConfig() {
     ? {
         realmId: planeRealmId,
         names: { bash: 'bash' },
+        workingDir: join(HOME, 'workspace'),
         confinedProvider: {
           trustRoot: `sha256:${planeLauncherSha().slice(0, 16)}#${launcher}`,
           assembly: { launcherPath: launcher, launcherSha256: planeLauncherSha(), minAbiVersion: 3 },
@@ -512,7 +525,7 @@ function teamRowConfig() {
   return {
     rootSessionId: ROOT,
     bootPhase: 'create',
-    blueprintSource: ALPHA6_BOOT_ONLY ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
+    blueprintSource: (ALPHA6_BOOT_ONLY || ALPHA6_OFFICER) ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
     blueprintDir: BLUEPRINT_DIR,
     rootPresetId: SMOKE_PRESET_ID,
     memberPresetId: SMOKE_PRESET_ID,
@@ -531,7 +544,7 @@ function teamRowConfig() {
     glueUrl: GLUE_URL,
     seamUrl: SEAM_URL,
     ...(plane === undefined ? {} : { teamToolPlane: plane }),
-    ...(ALPHA6_BOOT_ONLY
+    ...(ALPHA6_BOOT_ONLY || ALPHA6_OFFICER
       ? {
           alpha6ReviewRouting: true,
           alpha6WakeIntentPath: join(HOME, 'alpha6-wake-intents'),
@@ -722,6 +735,61 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '---',
     '',
   ].join('\n')
+}
+
+/** The v5 Officer shape: the strict worker/leader plus a real reviewer. */
+function savedBlueprintA6Yaml(denyList) {
+  const officer = [
+    '  - templateId: officer',
+    '    persona: "You are the C1 smoke Officer. Resolve the review legs routed to you; do not execute work."',
+    '    capabilities:',
+    '      teamTools:',
+    '        kind: allow',
+    '        items:',
+    '          - team_list_pending_control',
+    '          - team_resolve_control',
+    '      builtinToolDeny: []',
+    '      skills:',
+    '        kind: allow',
+    '        items: []',
+    '      mcp:',
+    '        kind: allow',
+    '        items: []',
+    '      permissions:',
+    '        default: deny',
+    '        allow: []',
+    '        ask: []',
+    '        deny: []',
+  ]
+  let text = savedBlueprintYaml(
+    BP_A6_ID,
+    `You are the A6 leader of the C1 smoke team. ${MK_A6}`,
+    `You are worker-a6 of the C1 smoke team. ${MK_A6MEM}`,
+    denyList,
+  )
+  text = text.replace('schemaVersion: 3', 'schemaVersion: 5')
+  text = text.replace('revision: "1"', 'revision: "1"\nrequirements: []')
+  text = text.replace('memberEnvelopes:', officer.join('\n') + '\nmemberEnvelopes:')
+  // The worker envelope follows `memberEnvelopes:`; append the Officer entry
+  // under the SAME key (a second mapping key would be duplicate YAML).
+  text = text.replace(
+    '      deny: []\npermissionMutationEnvelope:',
+    '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+  )
+  text = text.replace(
+    'metadata: {}',
+    [
+      'reviewRouting:',
+      '  enabled: true',
+      '  officerTemplateId: officer',
+      '  ordinaryToolApprovals:',
+      '    default: officer',
+      '    leaderExceptions: []',
+      '  whenOfficerUnavailable: hold',
+      'metadata: {}',
+    ].join('\n'),
+  )
+  return text
 }
 
 /**
@@ -1014,6 +1082,93 @@ function extractResultRequestId(content) {
  *      ROOTZ → done — both must reject TEAM_TOOL_CALLER_ROOT_MISMATCH
  *      (RH2/RH3, PR #20 closure)).
  */
+function replyToolNames(record) {
+  return (record?.reply?.toolCalls ?? []).map((t) => t?.name ?? '').filter((n) => n !== '')
+}
+
+/**
+ * Real-Host A6 acceptance: a Member bash ask is routed to the live Officer,
+ * the Officer resolves it through the production tools, and the approved call
+ * executes through the plane takeover. The ledger is captured verbatim so a
+ * second (plane PA) approval leg is visible rather than inferred.
+ */
+async function runAlpha6OfficerScenario({ booted, mock, denyList }) {
+  log('── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──')
+  writeFileSync(join(BLUEPRINT_DIR, 'c1-a6.yaml'), savedBlueprintA6Yaml(denyList))
+  const create = await remoteCall(booted.origin, booted.cookie, 'team.create', {
+    rootSessionId: CREATE_ROOT_A6,
+    blueprintId: BP_A6_ID,
+    initialWork: { prompt: MK_A6 },
+  }, 'c1a6')
+  const createOk = create.status === 200 && create.body?.result?.ok === true
+  check('A6-1', 'v5 team.create admits the Officer + routing on the real Host', createOk,
+    `status=${create.status} body=${JSON.stringify(create.body ?? create).slice(0, 700)}`)
+  if (!createOk) {
+    writeEvidence('a6-create-fail.json', create.body ?? create)
+    return false
+  }
+
+  const memberDone = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6MEM)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_MEMBER_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'A6 member done after Officer allow + plane execute',
+  )
+  const wakes = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake'))
+  const leaderWakes = wakes.filter((r) => {
+    const bodyText = JSON.stringify(r.body ?? '')
+    return bodyText.includes('You are the A6 leader')
+  })
+  const resolveCalls = wakes.flatMap((r) => replyToolNames(r)).filter((n) => n === 'team_resolve_control')
+  const memberReq = mock.requests.find((r) =>
+    lastUserTextOf(r).includes(MK_A6MEM)
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_MEMBER_DONE')
+  const memberToolResults = memberReq === undefined
+    ? []
+    : toolMsgsOf(memberReq).map((m) => contentText(m?.content).slice(0, 1200))
+  const execText = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_ALLOW)
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  const pending = ledger.requests.filter((r) => r.status === 'pending')
+  const toolRequests = ledger.requests.filter((r) => r.toolName !== undefined)
+  log(`A6: wakes=${wakes.length} leaderWakes=${leaderWakes.length} resolves=${resolveCalls.length} executed=${String(executed)} requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.length}`)
+
+  check('A6-2', 'the Member ask produced a model-visible Officer review wake', wakes.length > 0,
+    `wakes=${wakes.length} requests=${mock.requests.length}`)
+  check('A6-3', 'the Officer resolved through team_resolve_control', resolveCalls.length > 0,
+    `resolveCalls=${resolveCalls.length} wakeTools=${wakes.map((r) => replyToolNames(r).join(',')).join(' | ').slice(0, 500)}`)
+  check('A6-4', 'the original Member command executed after the Officer allow', executed,
+    `file=${FILE_A6_ALLOW} text=${JSON.stringify(execText.slice(0, 300))}`)
+  check('A6-5', 'the Leader was not woken for a leg routed to the Officer', wakes.length > 0 && leaderWakes.length === 0,
+    `wakes=${wakes.length} leaderWakes=${leaderWakes.length}`)
+  check('A6-6', 'every durable request at the end is settled (no lost pending leg)', pending.length === 0,
+    `requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.map((r) => r.requestId).join(',')}`)
+
+  writeEvidence('a6-officer.json', {
+    schemaVersion: 5,
+    runtime: 'real Host 0.2.0-rc.2',
+    create: { rootSessionId: CREATE_ROOT_A6, status: create.status, result: create.body?.result ?? create.body },
+    wakes: wakes.map((r) => ({
+      seq: r.seq,
+      userHead: lastUserTextOf(r).slice(0, 300),
+      replyTools: replyToolNames(r),
+      replyCalls: (r.reply?.toolCalls ?? []).map((t) => ({ name: t?.name, arguments: t?.arguments })),
+      toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+    })),
+    leaderWakeCount: leaderWakes.length,
+    memberToolResults,
+    memberDoneSeen: memberDone !== null,
+    executed,
+    execText,
+    filePath: FILE_A6_ALLOW,
+    ledger,
+  })
+  return wakes.length > 0 && resolveCalls.length > 0 && executed && pending.length === 0
+}
+
+let mockWakeSeq = 0
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
@@ -1022,8 +1177,39 @@ function makeDecide() {
     }
     const lastUser = lastUserTextOf(req)
     const tools = toolMsgsOf(req).length
+    if (lastUser.includes(MK_A6_OFFICER_READY)) {
+      return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
+    }
 
-    // (2) the C1 notification turns (token-leading, no dedupe).
+    // (2a) the Alpha.6 Officer wake. Both the guard ask and the plane PA ask
+    // arrive here; each turn lists and resolves exactly the id its text names
+    // (or the first pending id for a merged wake).
+    if (lastUser.startsWith('[team-review-wake')) {
+      const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
+        ?? /requestId=([^\]\s]+)/.exec(lastUser)?.[1]
+        ?? ''
+      if (tools === 0) {
+        return toolCall('team_list_pending_control', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-list-${String(mockWakeSeq++)}`,
+        })
+      }
+      if (tools === 1) {
+        const listText = contentText(toolMsgsOf(req).slice(-1)[0]?.content ?? '')
+        const first = /"requestId"\s*:\s*"([^"]+)"/.exec(listText)?.[1]
+          ?? /requestId[=:]\s*([A-Za-z0-9_.:-]+)/.exec(listText)?.[1]
+          ?? ''
+        return toolCall('team_resolve_control', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-res-${String(mockWakeSeq++)}`,
+          requestId: named !== '' ? named : first,
+          decision: 'allow',
+        })
+      }
+      return { kind: 'text', content: 'C1_A6_OFFICER_DONE' }
+    }
+
+    // (2b) the C1 notification turns (token-leading, no dedupe).
     if (lastUser.startsWith(NOTIF_PREFIX)) {
       // S4 injection: the Z member-ask notification (summary carries the
       // side-effect file marker) is REFUSED at the model layer — the
@@ -1036,7 +1222,10 @@ function makeDecide() {
       // summary line carries the command/summary text).
       let root = CREATE_ROOT_Y
       let decision = 'allow'
-      if (lastUser.includes(SUM_X_ALLOW) || lastUser.includes(SUM_X_DENY)) {
+      if (lastUser.includes(SUM_A6_ALLOW)) {
+        root = CREATE_ROOT_A6
+        decision = 'allow'
+      } else if (lastUser.includes(SUM_X_ALLOW) || lastUser.includes(SUM_X_DENY)) {
         root = CREATE_ROOT_X
         decision = lastUser.includes(SUM_X_DENY) ? 'deny' : 'allow'
       } else if (lastUser.includes(SUM_Z_S5)) {
@@ -1060,6 +1249,44 @@ function makeDecide() {
     }
 
     // (3) member chains.
+    if (lastUser.includes(MK_A6MEM)) {
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(CMD_A6_ALLOW))
+        case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
+        default: return { kind: 'text', content: `C1_A6_MEMBER_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6)) {
+      switch (tools) {
+        case 0: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-officer-${RUN_STAMP}`,
+          delegationTemplateId: 'officer',
+          label: 'officer',
+        })
+        case 1: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-worker-${RUN_STAMP}`,
+          delegationTemplateId: 'worker',
+          label: 'w-a6',
+        })
+        case 2: {
+          const workerId = extractInstanceId(toolMsgsOf(req)[1]?.content)
+          if (workerId === null) return { kind: 'text', content: `C1_A6_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[1]?.content).slice(0, 300)}` }
+          return toolCall('team_delegate', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-delegate-${RUN_STAMP}`,
+            delegationInstanceId: workerId,
+            label: 'w-a6',
+            prompt: MK_A6MEM,
+            async: true,
+          })
+        }
+        case 3: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+        case 4: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+        default: return { kind: 'text', content: `C1_A6_LEADER_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
     if (lastUser.includes(MK_XMEM)) {
       switch (tools) {
         case 0: return toolCall('bash', bashArgs(CMD_X_ALLOW))
@@ -1389,6 +1616,17 @@ async function main() {
       writeFileSync(join(BLUEPRINT_DIR, 'c1-y.yaml'), savedBlueprintYaml(BP_Y_ID, `You are the leader of the C1 smoke Y team. ${MK_Y}`, `You are worker-y of the C1 smoke Y team. ${MK_YMEM}`, denyList))
       writeFileSync(join(BLUEPRINT_DIR, 'c1-z.yaml'), savedBlueprintYaml(BP_Z_ID, `You are the leader of the C1 smoke Z team. ${MK_Z}`, `You are worker-z of the C1 smoke Z team. ${MK_ZMEM}`, denyList))
       log(`saved blueprints X + Y + Z written (deny list = ${denyList.length} names)`)
+
+      if (ALPHA6_OFFICER) {
+        const ok = await runAlpha6OfficerScenario({ booted, mock, denyList })
+        stopHost(host)
+        await mock.close()
+        if (!FLAG_KEEP) {
+          rmSync(HOME, { recursive: true, force: true })
+          rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
+        }
+        process.exit(ok ? 0 : 2)
+      }
     }
 
     if (FAILS.includes('L0')) throw new Error('L0 failed — aborting before team.create')

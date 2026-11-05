@@ -80,7 +80,11 @@ export interface AssignedOfficerMemberSnapshot {
      * lifecycle); consumers must not require it for Leader identity.
      */
     readonly childSessionId?: string;
-    /** The contracts lifecycle spelling; only `RUNNING` is a live reviewer. */
+    /**
+     * The contracts lifecycle spelling. CREATED / RUNNING / SETTLED are live
+     * (SETTLED is the normal idle state; delivery and cold resume cover it);
+     * ARCHIVED / DISPOSED are not. A missing value is not evidence of liveness.
+     */
     readonly lifecycle?: string;
 }
 /** The durable member reads this provider consults. */
@@ -236,6 +240,11 @@ export interface Alpha6ControlStateReader {
 export interface Alpha6ControlPortsInput extends Omit<AssignedOfficerFactsInput, 'leg' | 'transfer'> {
     /** The live control service (or any narrower reader exposing the same). */
     readonly control: Alpha6ControlStateReader;
+    /**
+     * A created team has its OWN frozen v5 Blueprint. Resolve that root's parsed
+     * routing instead of reusing the boot-root policy; null refuses this root.
+     */
+    readonly routingForRoot?: (rootSessionId: string) => AssignedOfficerParsedRouting | null;
 }
 /**
  * The TWO trusted control-service ports, produced together so they cannot

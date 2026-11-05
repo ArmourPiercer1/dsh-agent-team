@@ -422,7 +422,7 @@ export async function dispatchReviewWakes(
         wakeId: effect.wakeId,
         workFingerprint: effect.workFingerprint,
       })
-      await deliver(effect)
+      await deliver({ ...effect, requestIds: wake.currentLegIds })
       accepted = true
     } catch (error) {
       // A transport can throw AFTER the native Inbox accepted the message.
@@ -590,6 +590,8 @@ export interface ReviewWakeReleaseOptions {
   readonly intent?: ReviewWakeIntentStore
   /** Native Inbox removal for a `withdraw-wake` effect. */
   readonly inbox?: ReviewWakeInboxPort
+  /** The exact legs this release's fresh wake covers (see deliver effect). */
+  readonly requestIds?: readonly string[]
 }
 
 export interface ReviewWakeReleaseFailure {
@@ -727,7 +729,9 @@ export async function releaseReviewWake(
         wakeId: effect.wakeId,
         workFingerprint: effect.workFingerprint,
       })
-      await options.deliver(effect)
+      await options.deliver(
+        options.requestIds === undefined ? effect : { ...effect, requestIds: options.requestIds },
+      )
     } catch (error) {
       let landed: boolean | null = false
       if (options.inbox !== undefined) {

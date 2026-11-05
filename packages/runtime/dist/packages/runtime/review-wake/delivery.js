@@ -36,7 +36,13 @@ export function renderReviewWake(effect) {
         '',
         `reviewer: ${reviewerInstanceId}`,
         `rootSession: ${rootSessionId}`,
-        'Read your current review tasks with `team_list_pending_control`, then decide or escalate with `team_resolve_control`.',
+        ...(effect.requestIds === undefined || effect.requestIds.length === 0
+            ? ['Read your current review tasks with `team_list_pending_control`, then decide or escalate with `team_resolve_control`.']
+            : [
+                'requestId:',
+                ...effect.requestIds.slice(0, 32).map((requestId) => `- ${boundedId(requestId, 'requestId', WAKE_ID_MAX)}`),
+                'Decide or escalate with `team_resolve_control` using the EXACT requestId above; `team_list_pending_control` may be Leader-only for a delegated reviewer.',
+            ]),
     ].join('\n');
 }
 /**

@@ -1,0 +1,67 @@
+{
+  "requests": [
+    {
+      "sequence": 7,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0gnb5xi024g2650y6y8pk1el",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-0ibibfl0efxk",
+      "correlation": "call-c1-w93q3moa",
+      "createdAt": "2026-11-05T11:43:15.500Z"
+    },
+    {
+      "sequence": 10,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1g1pypn0j7ppns1v1iel90ng",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-0ibibfl0efxk",
+      "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T11-43-02:inst-0ibibfl0efxk:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0ibibfl0efxk-bash:hexec:3a38e6ea-cded-417f-b6ae-aeff1d6484d9-1",
+      "createdAt": "2026-11-05T11:43:17.125Z"
+    }
+  ],
+  "decisions": [
+    {
+      "sequence": 8,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-0gnb5xi024g2650y6y8pk1el",
+      "decision": "allow",
+      "createdAt": "2026-11-05T11:43:16.860Z"
+    },
+    {
+      "sequence": 11,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-1g1pypn0j7ppns1v1iel90ng",
+      "decision": "allow",
+      "createdAt": "2026-11-05T11:43:18.619Z"
+    }
+  ],
+  "consumptions": [
+    {
+      "sequence": 9,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-0gnb5xi024g2650y6y8pk1el",
+      "createdAt": "2026-11-05T11:43:17.073Z"
+    },
+    {
+      "sequence": 12,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-1g1pypn0j7ppns1v1iel90ng",
+      "createdAt": "2026-11-05T11:43:18.711Z"
+    }
+  ],
+  "error": null
+}
+{
+  "wakes": 3,
+  "leaderWakeCount": 0,
+  "resolves": null,
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-05T11-43-02\n",
+  "memberToolResults": [
+    "bash · exit=0\n> a6-allow-executed\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+  ]
+}

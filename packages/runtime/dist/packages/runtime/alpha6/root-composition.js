@@ -105,12 +105,22 @@ export function createAlpha6LiveRootComposition(input) {
     const ports = createAlpha6ControlPorts({
         rootSessionId: input.rootSessionId,
         routing: parsed,
+        ...(input.blueprintSourceForRoot === undefined
+            ? {}
+            : {
+                routingForRoot: (rootSessionId) => {
+                    if (rootSessionId === input.rootSessionId)
+                        return parsed;
+                    const source = input.blueprintSourceForRoot?.(rootSessionId);
+                    return source === undefined || source === null ? null : parseAlpha6Routing(source);
+                },
+            }),
         control: {
             readControlState: async (rootSessionId) => (await input.control.readControlState(rootSessionId)),
         },
         members: {
-            get: (rootSessionId, instanceId) => rootSessionId === input.rootSessionId ? input.members.get(rootSessionId, instanceId) : undefined,
-            list: (rootSessionId) => rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
+            get: (rootSessionId, instanceId) => input.members.get(rootSessionId, instanceId),
+            list: (rootSessionId) => input.members.list(rootSessionId),
         },
         authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
         fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),

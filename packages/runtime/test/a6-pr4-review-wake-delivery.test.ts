@@ -19,6 +19,13 @@ describe('A6-PR4 review wake delivery seam', () => {
     expect(renderReviewWake(effect)).toBe(text)
   })
 
+  it('carries the exact request ids a delegated reviewer must resolve', () => {
+    const text = renderReviewWake({ ...effect, requestIds: ['ctrl-a6-1', 'ctrl-a6-2'] })
+    expect(text).toContain('requestId:')
+    expect(text).toContain('- ctrl-a6-1')
+    expect(text).toContain('- ctrl-a6-2')
+  })
+
   it('keeps the full wakeId in the token so Inbox identity never truncates', () => {
     const longId = `wake-${'x'.repeat(220)}`
     const text = renderReviewWake({ ...effect, wakeId: longId })
