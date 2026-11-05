@@ -7,6 +7,8 @@ import {
 import { decideAlpha6Composition } from '../alpha6/composition.js'
 import { createLeaderControlNotifier } from '../control/leader-notification.js'
 import type { ControlRequestRecord } from '../control/types.js'
+import { createAlpha6RootRouter } from '../alpha6/root-router.js'
+import type { ReviewRouting } from '../../domain/blueprint/src/index.js'
 
 const request: ControlRequestRecord = {
   requestId: 'req-a6-pr6-1',
@@ -304,5 +306,56 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     await notifier.notifyLeaderRequest(caseLess as ControlRequestRecord)
     expect(notifyLeader).toHaveBeenCalledTimes(1)
     expect(deliver).not.toHaveBeenCalled()
+  })
+})
+
+describe('A6 root router — real idle Officer liveness', () => {
+  const routing: ReviewRouting = {
+    enabled: true,
+    officerTemplateId: 'officer',
+    ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+    whenOfficerUnavailable: 'hold',
+  }
+  const leg = {
+    requestId: 'ctrl-a6-router-1',
+    approvalCaseId: 'case-a6-router-1',
+    legOrdinal: 1,
+    status: 'pending',
+    kind: 'leader-approval',
+    reviewAuthority: 'leader',
+    requestedEffect: 'allow',
+    operationFingerprint: 'sha256:op',
+    authorityScope: { kind: 'exact', path: '/tmp/a6-router' },
+    reviewPayload: { authorityScope: { kind: 'exact', path: '/tmp/a6-router' } },
+    operationToolOwner: 'dsh-agent-team',
+    operationToolName: 'bash',
+    operationOwnerTemplateId: 'worker',
+    perEffectRequiredAuthorities: ['leader'],
+  } as never
+  const routerWith = (lifecycle: string) => createAlpha6RootRouter({
+    rootSessionId: 'root-a6-router',
+    routing,
+    leaderTemplateId: 'leader',
+    control: { readControlState: async () => ({ requests: [leg], transfers: [] } as never) },
+    members: {
+      list: () => [
+        { instanceId: 'inst-officer', templateId: 'officer', childSessionId: 'session-child', lifecycle, rootSessionId: 'root-a6-router' },
+        { instanceId: 'inst-leader', templateId: 'leader' },
+      ],
+    },
+    fixedLeaderOrHumanCategory: () => false,
+  })
+
+  for (const lifecycle of ['CREATED', 'RUNNING', 'SETTLED'] as const) {
+    it(`routes to a ${lifecycle} Officer`, async () => {
+      await expect(routerWith(lifecycle).route('ctrl-a6-router-1', 'root-a6-router')).resolves.toMatchObject({
+        kind: 'recipient',
+        target: { kind: 'instance', instanceId: 'inst-officer', routeRole: 'officer' },
+      })
+    })
+  }
+
+  it('holds when the only Officer is ARCHIVED', async () => {
+    await expect(routerWith('ARCHIVED').route('ctrl-a6-router-1')).resolves.toMatchObject({ kind: 'hold' })
   })
 })
