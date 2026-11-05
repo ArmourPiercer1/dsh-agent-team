@@ -117,6 +117,8 @@ const HOST_TOOL_FS = join(HOST_TREE, 'packages', 'fs', 'tool-fs', 'lib', 'index.
 const HOST_TOOL_FS_SEARCH = join(HOST_TREE, 'packages', 'fs', 'tool-fs-search', 'lib', 'index.js')
 
 const LINE = 'a5sfc1'
+/** The ledger phase of THIS boot; set from the sequence after the ruling is read. */
+let BOOT_PHASE = 'a5sf-candidate1-boot1'
 const EVIDENCE_ROW = join(HERE, 'a5sf-candidate1-realm-provider-row.mjs')
 const RUN_LOG = join(HERE, 'run.log')
 const GRANT_PATH = join(HERE, 'grant.json')
@@ -476,7 +478,13 @@ function rowPathsOf({ home, workspaceDir }) {
      *  deny); w4a = the read-then-write file inside the restriction; w4b = the
      *  ceiling-only write target the binding lane cannot read (row 4b). */
     readA: join(inLane, 'needle.txt'),
-    readB: join(workspace, 'lane', 'outside-restriction.txt'),
+    /** FS read B: its OWN path, deliberately NOT the search row-3 operand
+     *  (`restrictedFile` above). Allocation #4's fixture split: the #1 run put
+     *  both rows on one locator, and both judges collect facts BY LOCATOR, so
+     *  each saw the other lane's deny fact. The lane premise is unchanged —
+     *  inside the ceiling, outside the restriction. */
+    readBDir: join(workspace, 'lane', 'fs'),
+    readB: join(workspace, 'lane', 'fs', 'outside-restriction.txt'),
     readC: join(home, 'ceiling-outside', 'secret.txt'),
     w4a: join(inLane, 'w4a.txt'),
     w4b: join(workspace, 'w4b.txt'),
@@ -514,7 +522,7 @@ function rowsFor({ home, workspaceDir }) {
         bindingIdentity: BINDING_IDENTITY,
         fsBindingIdentity: FS_BINDING_IDENTITY,
         laneReportPath: join(home, LANE_REPORT_NAME),
-        laneProbePaths: [paths.inLaneFile, paths.restrictedFile, paths.outsideFile, paths.outsideGlobFile, paths.fifo, paths.w4a, paths.w4b],
+        laneProbePaths: [paths.inLaneFile, paths.restrictedFile, paths.readB, paths.outsideFile, paths.outsideGlobFile, paths.fifo, paths.w4a, paths.w4b],
         counterPath: join(home, COUNTER_NAME),
         scratchRoot: join(home, 'search-scratch'),
       } },
@@ -1032,6 +1040,7 @@ async function boot() {
   const priorRows = ledgerRowsSoFar.length
   const priorBoots = ledgerRowsSoFar.filter((row) => String(row?.phase ?? '').startsWith('a5sf-candidate1-boot')).length
   const bootSequence = priorBoots + 1
+  BOOT_PHASE = `a5sf-candidate1-boot${String(bootSequence)}`
   // THE BUDGET IS THE RULING FILE, not a constant this driver may raise itself.
   // `authorisedStarts` sums named rulings; a start without a named ruling is a
   // self-authorisation and is refused here, before any ledger row exists.
@@ -1312,13 +1321,15 @@ async function boot() {
     assertBlueprintText(BP_ANCHOR_YAML, BP_ANCHOR_ID, 1, 'anchor.yaml')
 
     // ── the fixtures ────────────────────────────────────────────────────────
-    for (const dir of [paths.inLaneDir, paths.invalidDir, paths.globDir, paths.outsideDir, paths.outsideGlobDir]) {
+    for (const dir of [paths.inLaneDir, paths.readBDir, paths.invalidDir, paths.globDir, paths.outsideDir, paths.outsideGlobDir]) {
       mkdirSync(dir, { recursive: true })
     }
     writeFileSync(paths.inLaneFile, `${claims.needle}\nplain second line\n`)
     writeFileSync(join(paths.invalidDir, 'other.txt'), 'no needle here\n')
     writeFileSync(join(paths.globDir, 'needle.txt'), `${claims.needle}\n`)
     writeFileSync(paths.restrictedFile, `${claims.restrictedClaim}\n`)
+    // The SPLIT fixture: same claim, its own locator (allocation #4).
+    writeFileSync(paths.readB, `${claims.restrictedClaim}\n`)
     writeFileSync(paths.outsideFile, `${claims.outsideClaim}\n${claims.outsideSecond}\n`)
     writeFileSync(paths.outsideGlobFile, `${claims.outsideClaim}\n`)
     // The FS write targets: w4a is the read-then-write file inside the
@@ -1346,7 +1357,7 @@ async function boot() {
     log(`mock started on ${String(world.mock?.port)}`)
 
     // ── THE BOOT (the only one) ─────────────────────────────────────────────
-    bootInfo = await lease.boot(() => harness.boot({ world, phase: 'a5sf-candidate1-boot1', bootTimeoutMs: 300_000 }))
+    bootInfo = await lease.boot(() => harness.boot({ world, phase: BOOT_PHASE, bootTimeoutMs: 300_000 }))
     hostReached = true
     // STAGE 1 of the taxonomy: COMPOSITION. The Host has started; the first
     // question is whether the profile it composed carries the rows it was given.
@@ -1367,7 +1378,7 @@ async function boot() {
       throw new Error(`COMPOSITION_ROWS_MISSING: the profile the Host composed is missing ${JSON.stringify(composedProfile.missingRowIds)} of the rows it was handed (${JSON.stringify(expectedRowIds)}); present=${JSON.stringify(composedProfile.presentRowIds)} at ${String(composedProfile.path)} — this is the composition handoff, not the product`)
     }
     log(`BOOTED port=${bootInfo.port} (lease bootsSpent=${lease.bootsSpent()}) log=${bootInfo.logPath}`)
-    record.record.boots = [{ phase: 'a5sf-candidate1-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
+    record.record.boots = [{ phase: BOOT_PHASE, world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
 
     const origin = `http://127.0.0.1:${bootInfo.port}`
     const hostAlive = () => world.instance?.child !== null && world.instance?.child !== undefined && world.instance?.child.exitCode === null
@@ -1925,7 +1936,7 @@ async function boot() {
     record.record.fixtures = evidence.fixtures
     record.record.claims = claims
     record.record.sink = { path: sinkPath, facts: factsAll.length, copy: consultCopy }
-    record.record.boots = [{ phase: 'a5sf-candidate1-boot1', world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
+    record.record.boots = [{ phase: BOOT_PHASE, world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
     record.record.archive = { previousRun: archivedPreviousRun }
   } catch (error) {
     failure = error
