@@ -7803,3 +7803,34 @@ run record 绑定 `teamSha=1484fa4ee…`（= snapshot baseline），`bindings.au
 两个按 locator 收 fact 的 judge 各自多看见另一条 lane 的拒绝事实（装配/fixture 缺陷，产品侧 typed 拒绝 / 0 进程 /
 无泄漏全绿）。按纪律**不重试成通过**：两行仍 `V@B=no`，拆 fixture 后的重跑留给 `#4`/`#5` retry 预算。
 证据：`dev/agent-workflow/evidence/a5sf-candidate1/`（README 逐行 verdict 与数字）。
+
+## 2026-11-05T20:45Z — CANDIDATE-1 allocation #4（retry）：拆开 fixture 别名后同树 11/11
+
+coordinator 授权从保留池取第 #4 次 start（`session-76eeddd5…`），同一冻结候选、同一 snapshot
+`as20261105r2`、**不动指针、不发新快照**。唯一改动是 fixture：FS read B 从 search row3 的操作数
+`workspace/lane/outside-restriction.txt` 移到自己的 `workspace/lane/fs/outside-restriction.txt`（自己的
+locator 与 expected fact 集）；顺手把 boot phase 改为跟 ledger 序号（`…-boot2`），并新增 `lane-ruling.json`
+第二条 ruling（`authorisedStarts 2`）。run #1 的产物 `git mv` 到 `runs/allocation1/`（字节不变）。
+
+**产品树零改动（可校验）**：`packages` tree `44535c94…`、`scripts` tree `d4bcc358…`、`tests/paths.mjs`
+`1bf4829e…`、`package.json` `2946fe23…`、`pnpm-lock.yaml` `f70001d3…`，以及两个判官 blob
+（`a5sf-acceptance-preflight.mjs` `de66ee86…`、`a5sf-search-live.mjs` `e386ab79…`）在冻结候选 `1484fa4ee`
+与执行树 `25e106b4…` 之间逐项相等，已写入 run record `bindings.productTreeProof`。判官字节没变，
+所以"判官变松"这条路被结构性地排除。
+
+**启动**：一次 start（port 3184，home `tests/homes/u5a5sfc1-20261105T12-33-06Z`，grant `…-b2`，
+`maxStarts 4` = 2 prior rows + intent + boot），ledger 4 行（`intent(b1)`、`boot1`、`intent(b2)`、`boot2`），
+本轮 `bootRows 1 === plannedStarts 1 - 0`，0 abort、0 retry。`run a5sf-candidate1-2026-11-05T12-33-06-567Z`，
+**`overall=PASS partial=false`，11/11**。run record 直接观测到 live `as20261105r2`（无需重戳）；`teamSha` 记执行树
+`25e106b4…`、`bindings.baseline` 记冻结候选 `1484fa4ee`（在 `1484fa4ee` 上跑会重新造出被授权拆掉的别名缺陷）。
+
+**判定**：FS row2 = `BINDING_DENY_ON_READ_PATH`（readPathFacts 1 / stat / deny / 全 binding lane / 无 provider 读）；
+search row3 = `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION`（恰好 1 条 deny fact、0/0 spawn、无泄漏）；
+其余 9 行同 #1 全 PASS，负控与 glob 两面仍 PROVEN。矩阵 `M-01`/`M-02`/`M-06`/`M-07` 四行现均
+`ENFORCE-PARTIAL` / `V@B=yes`；`state-freshness` 报 `claimed 4, drift 0`。
+
+**已披露的一处偏差**：driver 的 `allocationItem` 是常量字符串（写着 allocation #1），本次实际是 #4
+（`grantId …-b2`、`bootSequence 2`、`boot2`、grantedBy 内含 #4 ruling 原文）。不就地改证据文件，映射写入
+`allocation-map.json` 与 README §5；修常量留给后续 run，以保持"提交的 driver = 执行的 driver"。
+
+**花费**：累计 `2/5`（#1 + #4），0 abort，剩 3（#2/#3 = BL-17/BL-18 live 半场，#5 = 按需再 retry）。

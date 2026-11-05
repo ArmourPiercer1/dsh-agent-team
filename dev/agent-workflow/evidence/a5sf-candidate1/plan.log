@@ -1,0 +1,139 @@
+[2026-11-05T12:32:58.155Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-05T12:32:58.156Z] root identity (plan): {"ok":true,"root":"session-a5sf-acceptance-team","bootRoot":"session-a5sf-acceptance-root","rootsCoincide":false,"productionRowRootChecked":true,"directiveRootChecked":true,"toolRouteRootIsLabel":true}
+[2026-11-05T12:32:58.159Z] HEAD=25e106b4573cac0ab624c7e0bc5ca7d36dba3730 pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-05T12:32:58.159Z] host tool-fs: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js exists=true sha256=66742231de99695b
+[2026-11-05T12:32:58.160Z] host tool-fs-search: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js exists=true sha256=7210e7aa23902105
+[2026-11-05T12:32:58.160Z] evidence row: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/a5sf-candidate1-realm-provider-row.mjs exists=true sha256=e1f0998b621ef1fc
+[2026-11-05T12:32:58.160Z] dist install: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/dist/packages/runtime/team-services/src/install.js exists=true sha256=2dc52395d8e1fd1f
+[2026-11-05T12:32:58.160Z] dist subprocess: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/dist/packages/runtime/team-services/src/subprocess.js exists=true sha256=127fb10a34eb571d
+[2026-11-05T12:32:58.160Z] attachments provider composition: mounted=true
+[2026-11-05T12:32:58.204Z] blueprint ingest: anchor={"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"} main={"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"}
+[2026-11-05T12:32:58.204Z] row identity check: {"ok":true,"rows":[{"rowId":"a5sf-candidate1-realm","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/a5sf-candidate1-realm-provider-row.mjs","packageName":"dsh-agent-team","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/package.json","hasClientHalf":true},{"rowId":"dsh-agent-team","modulePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/dist/packages/runtime/src/plugin/host.js","packageName":"@dsh-agent-team/runtime","packagePath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/package.json"
+[2026-11-05T12:32:58.206Z] plan paths: {"ceilingReadAllow":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace"],"restrictionReadAllow":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside","/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside"],"fifo":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/blocking.fifo"}
+[2026-11-05T12:32:58.206Z] lane probe readA: {"ceiling":"allow","restriction":"allow","effective":"allow","want":{"ceiling":"allow","restriction":"allow","effective":"allow"}}
+[2026-11-05T12:32:58.206Z] lane probe readB: {"ceiling":"allow","restriction":"deny","effective":"deny","want":{"ceiling":"allow","restriction":"deny","effective":"deny"}}
+[2026-11-05T12:32:58.207Z] lane probe readC: {"ceiling":"deny","restriction":"allow","effective":"deny","want":{"ceiling":"deny","restriction":"allow","effective":"deny"}}
+[2026-11-05T12:32:58.207Z] lane probe w4a: {"ceiling":"allow","restriction":"allow","effective":"allow","want":{"ceiling":"allow","restriction":"allow","effective":"allow"}}
+[2026-11-05T12:32:58.207Z] lane probe w4b: {"ceiling":"allow","restriction":"deny","effective":"deny","want":{"ceiling":"allow","restriction":"deny","effective":"deny"}}
+[2026-11-05T12:32:58.207Z] lane probe fifo: {"ceiling":"allow","restriction":"allow","effective":"allow","want":{"ceiling":"allow","restriction":"allow","effective":"allow"}}
+[2026-11-05T12:32:58.207Z] plan lanes: {"readA":{"ceiling":"allow","restriction":"allow","effective":"allow"},"readB":{"ceiling":"allow","restriction":"deny","effective":"deny"},"readC":{"ceiling":"deny","restriction":"allow","effective":"deny"},"w4a":{"ceiling":"allow","restriction":"allow","effective":"allow"},"w4b":{"ceiling":"allow","restriction":"deny","effective":"deny"},"fifo":{"ceiling":"allow","restriction":"allow","effective":"allow"}}
+[2026-11-05T12:32:58.207Z] plan rows: {"emittedRowIds":["a5sf-candidate1-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-candidate1-base"],"worldRowIds":["a5sf-candidate1-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-candidate1-base"],"identityHolds":true,"healthProbeRowPresent":true,"allFourRowsPresent":true,"handoff":{"usesHandOverRows":true,"beforeBoot":true}}
+[2026-11-05T12:32:58.207Z] patch layer bytes=7293; rows=a5sf-candidate1-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-candidate1-base
+[2026-11-05T12:32:58.207Z] ---- patch layer ----
+# a5sf search-live boot: confined member realm (fs + subprocess) + production Team row
+# with a5sfEvidencePath + a5sfNativeToolModules + a5sfExpectedTools + p6t6 + preset declaration.
+- insert:
+    - id: "a5sf-candidate1-realm"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/a5sf-candidate1-realm-provider-row.mjs"
+      config:
+        allowRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace"
+        restrictionReadAllow:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside"
+        bindingIdentity: "dsh.search/grep"
+        fsBindingIdentity: "dsh.fs/read"
+        laneReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/lane-report.json"
+        laneProbePaths:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/needle.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/outside-restriction.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/fs/outside-restriction.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside/secret.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside-glob/secret.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/blocking.fifo"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/w4a.txt"
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/w4b.txt"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/candidate-counter.jsonl"
+        scratchRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/search-scratch"
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-a5sf-acceptance-root"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5sf.cand1.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf search-live anchor team. A5SF_CAND1_DISC is the discovery marker.\"\nmembers:\n  - templateId: worker\n    persona: \"You are the a5sf search anchor worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/blueprints"
+        rootPresetId: "a5sf-candidate1-base"
+        memberPresetId: "a5sf-candidate1-base"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "a5sf-search-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/runtime/root-binding/harness/seam.mjs"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/a5sf-consult.jsonl"
+        a5sfNativeToolModules:
+          - "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js"
+          - url: "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js"
+            config:
+              sampleOverCapGlobResults: false
+        a5sfExpectedTools:
+          file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js:
+            - "read"
+            - "write"
+            - "edit"
+            - "read_image"
+          file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js:
+            - "grep"
+            - "glob"
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-candidate1-base"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-candidate1-base"
+        name: "a5sf search base"
+        description: "a5sf search-live boot preset (a5sfc1) = smoke + tool-fs-search"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+---- end patch ----
+[2026-11-05T12:32:58.209Z] provider row: name=a5sf-search-realm-provider apply=function inject=[]
+[2026-11-05T12:32:58.209Z] oracle: cases=6 first=live:search-row1-grep-in-lane-allowed
+[2026-11-05T12:32:58.209Z] dist confined-subprocess face: {"mountsConfinedSubprocess":true,"statesFacesTotal":true,"typedRefusalConstant":true,"staticProgramAllowList":true}
+[2026-11-05T12:32:58.209Z] runBindings probe: {"authority":{"pointerPath":"dev/engineering/current-authority.json","pointer":{"content_digest":"sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0","snapshot_version":"as20261105r2"},"pointerSha256":"31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a","snapshotDigest":"0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"},"teamSha":"25e106b4573cac0ab624c7e0bc5ca7d36dba3730","hostSha":"639ed015397290b3745d163aafe02ffee4aa3f84","hostTree":"/home/ar
+[2026-11-05T12:32:58.209Z] PLAN OK

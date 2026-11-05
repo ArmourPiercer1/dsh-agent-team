@@ -1,0 +1,13 @@
+{
+  "schema": "a5sf-candidate1/allocation-map/1",
+  "why": "grant.json / run-record bindings.allocationItem are written by the driver from a constant that names allocation #1. This file maps the ACTUAL allocation of the run to its grant, so the evidence is unambiguous without editing a file the driver wrote. Updating the constant is deferred to a future run so the committed driver stays byte-identical to the one that executed.",
+  "runId": "a5sf-candidate1-2026-11-05T12-33-06-567Z",
+  "allocation": "#4 of 5 (retry of allocation #1)",
+  "grantId": "grant-a5sf-candidate1-25e106b4573c-b2",
+  "grantPath": "grant.json",
+  "bootSequence": 2,
+  "ledgerPhase": "a5sf-candidate1-boot2",
+  "authorisedStartsInRuling": 2,
+  "rulingEntry": "second entry of lane-ruling.json (starts: 1, by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374)",
+  "driverConstantString": "candidate-1 of 5: frozen-candidate FS/Search regression (M-01/M-02/M-06/M-07)"
+}
