@@ -10,6 +10,9 @@
 >
 > **0 boots**, 0 ports, no `DSH_HOME`, no real PTY. Every number below comes from
 > `node --test` / `vitest run` in the task worktree.
+>
+> **Fix commit**: `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (branch
+> `task/a5sf-pd7-20261107`; the register row's `status` cites the same commit).
 
 ## 1. Mechanism (verified, not inferred)
 
