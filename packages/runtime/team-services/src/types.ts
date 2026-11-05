@@ -66,6 +66,21 @@ export const TEAM_SERVICE_INSTALL_CODES = [
    */
   'SUBPROCESS_UNCONFINED_REALM',
   /**
+   * BL-17 (2026-11-05) — 旧代 PTY 拒用: a module that CONSUMES `terminals` (the
+   * native persistent-`bash` path: `inject: ["tools","terminals"]` →
+   * `ctx.terminals.spawn(owner, …)`) was about to be mounted on a GOVERNED
+   * Member realm. No realm installs a confined terminal face (P1-08's PTY port
+   * is still a test double), so such a module would resolve the INHERITED,
+   * legacy-generation host `terminals` service: a persistent shell created
+   * outside the Member lane, whose policy is consumed only at spawn time and
+   * whose domain could outlive the revision it was opened under. Refused at
+   * composition time, before any fiber exists, instead of serving a governed
+   * Member through the legacy PTY. A future confined terminal backend installs
+   * a face on the realm's own isolated scope and the seam learns to report it;
+   * until then this is a refusal, not a documented "unused" path.
+   */
+  'TERMINALS_LEGACY_PTY_REFUSED',
+  /**
    * PRODUCT ASSEMBLY (2026-11-05): a product declaration narrows the NETWORK
    * axis (a ceiling/restriction `network: deny`, or a `delegated-remote`
    * execution boundary) and this realm installs NO web face. Refused at

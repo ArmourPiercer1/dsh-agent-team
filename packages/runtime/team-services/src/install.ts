@@ -106,6 +106,14 @@ export interface ConfinedSubprocessRealmSpec {
   readonly runtimeAllowPaths?: Parameters<typeof createConfinedSubprocessClass>[1]['runtimeAllowPaths']
   /** Explicit base class; omitted = sample the live `subprocess` service. */
   readonly providerClass?: SubprocessProviderConstructor
+  /**
+   * BL-17 — the COMPOSITION's declared shell class for this realm, forwarded
+   * verbatim to the confined face's admission. Omitted = no shell program is
+   * admitted (the BL-16 refusal). The Member cannot supply or widen it: the
+   * field is part of the install spec the composition builds, next to the
+   * launcher pin and the process provider.
+   */
+  readonly shellClass?: Parameters<typeof createConfinedSubprocessClass>[1]['shellClass']
 }
 
 /** The mounted confined `subprocess` service (structural, provider-private). */

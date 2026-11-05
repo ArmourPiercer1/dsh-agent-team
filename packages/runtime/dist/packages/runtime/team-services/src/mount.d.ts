@@ -237,6 +237,26 @@ export declare const A5SF_MEMBER_REALM_INVALIDATED = "A5SF_MEMBER_REALM_INVALIDA
  */
 export declare const A5SF_SUBPROCESS_UNCONFINED_REALM = "SUBPROCESS_UNCONFINED_REALM";
 /**
+ * BL-17 (2026-11-05) — 旧代 PTY 拒用: the refusal code for a
+ * `terminals`-consuming native module targeted at a GOVERNED Member realm.
+ *
+ * WHY IT EXISTS: the native persistent `bash` module declares
+ * `inject: ["tools","terminals"]` and opens its shell through
+ * `ctx.terminals.spawn(owner, { type: backendType })`. No realm installs a
+ * confined terminal face (P1-08's PTY port is still a test double), so such a
+ * module mounted on a governed realm would resolve the INHERITED,
+ * legacy-generation host `terminals` service: a persistent shell created
+ * OUTSIDE the Member lane, with the policy consumed only at spawn time and a
+ * domain that can outlive the revision it was opened under. That is refused
+ * HERE, at composition time, before any fiber or tool definition exists — the
+ * path is refused, not documented as unused.
+ *
+ * The string is the `TeamServiceInstallError.code` (the closed install
+ * vocabulary's `TERMINALS_LEGACY_PTY_REFUSED`); the exported name is the token
+ * a caller and a test compare against.
+ */
+export declare const A5SF_TERMINALS_LEGACY_PTY_REFUSED = "TERMINALS_LEGACY_PTY_REFUSED";
+/**
  * E8 (2026-11-03): the ATTACH RECORD of a successful managed native attach.
  *
  * `allowEmpty: true` must never read as "verified safe". When a composition

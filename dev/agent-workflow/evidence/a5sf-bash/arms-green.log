@@ -1,0 +1,29 @@
+✔ ADMIT: a declared `bash -c` runs through the confined provider with one allow fact per declared root (8.45676ms)
+✔ NOT-DECLARED: a realm with no declared shell class refuses `bash` with a typed code, one deny fact and NO process (0.690718ms)
+✔ PROGRAM-NOT-ADMITTED: a shell program outside the declared class is refused (0.391852ms)
+✔ INVOCATION-UNDECLARED: an admitted program with no declared invocation is refused (no unattributable root set) (0.349562ms)
+✔ ARGV-SHAPE: only `<program> -c <body>` is admitted (`-lc` and extra operands are refused) (0.323843ms)
+✔ RG-UNCHANGED: declaring a shell class does not weaken rg's admission (no --no-config is still refused; unknown programs too) (0.697039ms)
+✔ WRITABLE-PROGRAM: an admitted shell program the Member can WRITE is refused (name is not identity) (3.156305ms)
+✔ WRITE-ONLY-READ: a declared read of a write-only root is DENIED (fact + zero spawns + bytes unchanged) (0.795516ms)
+✔ WRITE-ONLY-WRITE: the SAME root is writable while unreadable — and the read witness is not vacuous (1.775571ms)
+✔ WRITE-ONLY-WRITE-OUTSIDE: a declared write outside the write lane is IO_WRITE_DENIED (0 spawns) (0.413923ms)
+✔ CREATE-OUTSIDE: a shell declaring a create outside the write lane is refused and the file never appears (0.254793ms)
+✔ CHMOD-OUTSIDE: a shell declaring a mode change outside the write lane is refused; mode and bytes unchanged (0.318373ms)
+✔ CREATE/CHMOD-INSIDE (control): the same declarations inside the write lane are admitted — the refusal is the lane, not the command (2.185347ms)
+✔ NETWORK-DENY-UNENFORCED: `network: deny` is refused with NETWORK_UNCONFINED_REALM and the probe recorded in the detail (0.430284ms)
+✔ NETWORK-DENY-ENFORCED (hypothetical backend): only a PROVEN `enforced` row admits the spawn and the request carries the deny profile (1.19897ms)
+✔ NETWORK-ALLOW: with the network axis allowed the request carries NO network profile (the face claims nothing it did not probe) (1.009982ms)
+✔ CAPABILITY-PROBE (real shipped gate): this host's provider set reports network-destination `unsupported` and refuses `deny` before any process (0.296642ms)
+✔ PTY-LEGACY-MOUNT: a `terminals`-consuming module is refused on a governed realm (typed, before any fiber, legacy PTY never consulted) (6.350844ms)
+✔ PTY-LEGACY-DEFERRED: a module that DEFERS `ctx.inject(['terminals'])` is refused by the same law (3.705845ms)
+✔ PTY-FACE: the confined subprocess face itself owns no terminal (spawnTerminal is a typed refusal) (0.280671ms)
+✔ COMPOSITION: `shellClass` is supplied by the install spec (the composition), never by the Member policy (0.078278ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 291.080212

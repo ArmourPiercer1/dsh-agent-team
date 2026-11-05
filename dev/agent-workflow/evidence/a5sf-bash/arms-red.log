@@ -1,0 +1,470 @@
+✖ ADMIT: a declared `bash -c` runs through the confined provider with one allow fact per declared root (2.819517ms)
+✖ NOT-DECLARED: a realm with no declared shell class refuses `bash` with a typed code, one deny fact and NO process (0.41746ms)
+✖ PROGRAM-NOT-ADMITTED: a shell program outside the declared class is refused (0.436336ms)
+✖ INVOCATION-UNDECLARED: an admitted program with no declared invocation is refused (no unattributable root set) (0.321188ms)
+✖ ARGV-SHAPE: only `<program> -c <body>` is admitted (`-lc` and extra operands are refused) (0.366484ms)
+✔ RG-UNCHANGED: declaring a shell class does not weaken rg's admission (no --no-config is still refused; unknown programs too) (0.50712ms)
+✖ WRITABLE-PROGRAM: an admitted shell program the Member can WRITE is refused (name is not identity) (0.494205ms)
+✖ WRITE-ONLY-READ: a declared read of a write-only root is DENIED (fact + zero spawns + bytes unchanged) (0.791047ms)
+✖ WRITE-ONLY-WRITE: the SAME root is writable while unreadable — and the read witness is not vacuous (0.529283ms)
+✖ WRITE-ONLY-WRITE-OUTSIDE: a declared write outside the write lane is IO_WRITE_DENIED (0 spawns) (0.302582ms)
+✖ CREATE-OUTSIDE: a shell declaring a create outside the write lane is refused and the file never appears (0.223313ms)
+✖ CHMOD-OUTSIDE: a shell declaring a mode change outside the write lane is refused; mode and bytes unchanged (0.25849ms)
+✖ CREATE/CHMOD-INSIDE (control): the same declarations inside the write lane are admitted — the refusal is the lane, not the command (0.329113ms)
+✖ NETWORK-DENY-UNENFORCED: `network: deny` is refused with NETWORK_UNCONFINED_REALM and the probe recorded in the detail (0.248701ms)
+✖ NETWORK-DENY-ENFORCED (hypothetical backend): only a PROVEN `enforced` row admits the spawn and the request carries the deny profile (0.261054ms)
+✖ NETWORK-ALLOW: with the network axis allowed the request carries NO network profile (the face claims nothing it did not probe) (1.999375ms)
+✔ CAPABILITY-PROBE (real shipped gate): this host's provider set reports network-destination `unsupported` and refuses `deny` before any process (0.146627ms)
+✖ PTY-LEGACY-MOUNT: a `terminals`-consuming module is refused on a governed realm (typed, before any fiber, legacy PTY never consulted) (6.912478ms)
+✖ PTY-LEGACY-DEFERRED: a module that DEFERS `ctx.inject(['terminals'])` is refused by the same law (2.8681ms)
+✔ PTY-FACE: the confined subprocess face itself owns no terminal (spawnTerminal is a typed refusal) (0.197934ms)
+✔ COMPOSITION: `shellClass` is supplied by the install spec (the composition), never by the Member policy (0.053772ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 4
+ℹ fail 17
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 285.249775
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-bash.test.mjs:88:1
+✖ ADMIT: a declared `bash -c` runs through the confined provider with one allow fact per declared root (2.819517ms)
+  AssertionError [ERR_ASSERTION]: an admitted shell must reach the provider: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  + actual - expected
+  
+  + TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  +     at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+  +     at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+  +     at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+  +     at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+  +     at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+  +     at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:90:24)
+  +     at Test.runInAsyncScope (node:async_hooks:227:14)
+  +     at Test.run (node:internal/test_runner/test:1402:25)
+  +     at Test.start (node:internal/test_runner/test:1262:17)
+  +     at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+  +   code: 'IO_READ_DENIED',
+  +   memberIdentity: 'member-bl17-bash',
+  +   method: 'spawn',
+  +   target: '/bin/bash'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:95:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+        at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+        at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+        at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+        at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:90:24)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.start (node:internal/test_runner/test:1262:17)
+        at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:109:1
+✖ NOT-DECLARED: a realm with no declared shell class refuses `bash` with a typed code, one deny fact and NO process (0.41746ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'SUBPROCESS_SHELL_NOT_DECLARED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:112:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'SUBPROCESS_SHELL_NOT_DECLARED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:121:1
+✖ PROGRAM-NOT-ADMITTED: a shell program outside the declared class is refused (0.436336ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'SUBPROCESS_SHELL_PROGRAM_NOT_ADMITTED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:128:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'SUBPROCESS_SHELL_PROGRAM_NOT_ADMITTED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:133:1
+✖ INVOCATION-UNDECLARED: an admitted program with no declared invocation is refused (no unattributable root set) (0.321188ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'SUBPROCESS_SHELL_INVOCATION_UNDECLARED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:136:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'SUBPROCESS_SHELL_INVOCATION_UNDECLARED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:141:1
+✖ ARGV-SHAPE: only `<program> -c <body>` is admitted (`-lc` and extra operands are refused) (0.366484ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'SUBPROCESS_SHELL_ARGV_UNSUPPORTED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:147:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'SUBPROCESS_SHELL_ARGV_UNSUPPORTED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:170:1
+✖ WRITABLE-PROGRAM: an admitted shell program the Member can WRITE is refused (name is not identity) (0.494205ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /WRITE lane/. Input:
+  
+  'argv[0] "/tmp/a5sf-bash-arms-FE06Mm/inside/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:181:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'argv[0] "/tmp/a5sf-bash-arms-FE06Mm/inside/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process',
+    expected: /WRITE lane/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:189:1
+✖ WRITE-ONLY-READ: a declared read of a write-only root is DENIED (fact + zero spawns + bytes unchanged) (0.791047ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '/bin/bash'
+  - '/tmp/a5sf-bash-arms-FE06Mm/writeOnly/write-only.txt'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:203:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '/bin/bash',
+    expected: '/tmp/a5sf-bash-arms-FE06Mm/writeOnly/write-only.txt',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:209:1
+✖ WRITE-ONLY-WRITE: the SAME root is writable while unreadable — and the read witness is not vacuous (0.529283ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  +     at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+  +     at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+  +     at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+  +     at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+  +     at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+  +     at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:212:24)
+  +     at Test.runInAsyncScope (node:async_hooks:227:14)
+  +     at Test.run (node:internal/test_runner/test:1402:25)
+  +     at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+  +     at Test.postRun (node:internal/test_runner/test:1542:19) {
+  +   code: 'IO_READ_DENIED',
+  +   memberIdentity: 'member-bl17-bash',
+  +   method: 'spawn',
+  +   target: '/bin/bash'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:217:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+        at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+        at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+        at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+        at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:212:24)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:235:1
+✖ WRITE-ONLY-WRITE-OUTSIDE: a declared write outside the write lane is IO_WRITE_DENIED (0 spawns) (0.302582ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'IO_WRITE_DENIED'
+        ^
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:242:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'IO_WRITE_DENIED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:253:1
+✖ CREATE-OUTSIDE: a shell declaring a create outside the write lane is refused and the file never appears (0.223313ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'IO_WRITE_DENIED'
+        ^
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:261:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'IO_WRITE_DENIED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:267:1
+✖ CHMOD-OUTSIDE: a shell declaring a mode change outside the write lane is refused; mode and bytes unchanged (0.25849ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'IO_WRITE_DENIED'
+        ^
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:276:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'IO_WRITE_DENIED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:283:1
+✖ CREATE/CHMOD-INSIDE (control): the same declarations inside the write lane are admitted — the refusal is the lane, not the command (0.329113ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  +     at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+  +     at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+  +     at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+  +     at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+  +     at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+  +     at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:284:24)
+  +     at Test.runInAsyncScope (node:async_hooks:227:14)
+  +     at Test.run (node:internal/test_runner/test:1402:25)
+  +     at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+  +     at Test.postRun (node:internal/test_runner/test:1542:19) {
+  +   code: 'IO_READ_DENIED',
+  +   memberIdentity: 'member-bl17-bash',
+  +   method: 'spawn',
+  +   target: '/bin/bash'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:289:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+        at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+        at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+        at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+        at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:284:24)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:306:1
+✖ NETWORK-DENY-UNENFORCED: `network: deny` is refused with NETWORK_UNCONFINED_REALM and the probe recorded in the detail (0.248701ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'IO_READ_DENIED'
+  - 'NETWORK_UNCONFINED_REALM'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:309:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'IO_READ_DENIED',
+    expected: 'NETWORK_UNCONFINED_REALM',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:317:1
+✖ NETWORK-DENY-ENFORCED (hypothetical backend): only a PROVEN `enforced` row admits the spawn and the request carries the deny profile (0.261054ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  +     at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+  +     at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+  +     at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+  +     at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+  +     at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+  +     at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:320:24)
+  +     at Test.runInAsyncScope (node:async_hooks:227:14)
+  +     at Test.run (node:internal/test_runner/test:1402:25)
+  +     at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+  +     at Test.postRun (node:internal/test_runner/test:1542:19) {
+  +   code: 'IO_READ_DENIED',
+  +   memberIdentity: 'member-bl17-bash',
+  +   method: 'spawn',
+  +   target: '/bin/bash'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:321:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+        at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+        at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+        at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+        at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:320:24)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:326:1
+✖ NETWORK-ALLOW: with the network axis allowed the request carries NO network profile (the face claims nothing it did not probe) (1.999375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+  +     at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+  +     at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+  +     at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+  +     at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+  +     at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+  +     at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:328:24)
+  +     at Test.runInAsyncScope (node:async_hooks:227:14)
+  +     at Test.run (node:internal/test_runner/test:1402:25)
+  +     at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+  +     at Test.postRun (node:internal/test_runner/test:1542:19) {
+  +   code: 'IO_READ_DENIED',
+  +   memberIdentity: 'member-bl17-bash',
+  +   method: 'spawn',
+  +   target: '/bin/bash'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:329:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: argv[0] "/bin/bash" is shell/interpreter-class (bash); its reads cannot be statically attributed to the declared read roots, so the spawn is refused before any process
+        at admissionGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:945:13)
+        at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/guard-observability.ts:173:13)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1000:17
+        at ConfinedSubprocess.spawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/packages/runtime/team-services/src/subprocess.ts:1049:9)
+        at runSpawn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/lib/a5sf-bash-arms.mjs:232:19)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:328:24)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:349:1
+✖ PTY-LEGACY-MOUNT: a `terminals`-consuming module is refused on a governed realm (typed, before any fiber, legacy PTY never consulted) (6.912478ms)
+  AssertionError [ERR_ASSERTION]: the legacy PTY mount must be refused
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:359:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-bash.test.mjs:377:1
+✖ PTY-LEGACY-DEFERRED: a module that DEFERS `ctx.inject(['terminals'])` is refused by the same law (2.8681ms)
+  AssertionError [ERR_ASSERTION]: the deferred legacy PTY mount must be refused
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bash/tests/world-factory/a5sf-bash.test.mjs:386:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
