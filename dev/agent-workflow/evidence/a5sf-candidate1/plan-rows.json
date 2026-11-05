@@ -1,0 +1,26 @@
+{
+  "schema": "a5sf-search-live/plan-rows/1",
+  "at": "2026-11-05T12:17:40.057Z",
+  "head": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+  "patchBytes": 7112,
+  "patchSha256": "ab101e4b98437e6569e66075b43463412326638177a6422359e451c1cd2cf999",
+  "emittedRowIds": [
+    "a5sf-candidate1-realm",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-candidate1-base"
+  ],
+  "worldRowIds": [
+    "a5sf-candidate1-realm",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-candidate1-base"
+  ],
+  "identityHolds": true,
+  "healthProbeRowPresent": true,
+  "allFourRowsPresent": true,
+  "handoff": {
+    "usesHandOverRows": true,
+    "beforeBoot": true
+  }
+}

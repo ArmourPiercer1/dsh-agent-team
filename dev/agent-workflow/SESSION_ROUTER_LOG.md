@@ -7782,3 +7782,24 @@ lane 与 effective-intersection lane 中都保留）——这是本轮刻意补�
 
 **记录的两条边界（不是本车道的 fail-open）**：无编译 realm 的 Member 没有 Alpha.5 车道、故不存在 ask 决策；
 `MANAGED_FS_METHODS` 之外的方法不被受限子类覆盖、故不携带任何车道决策。
+
+## 2026-11-05T20:32Z — CANDIDATE-1（boot allocation #1/5）：冻结候选 + 在 baseline 树上重测 FS/Search
+
+按 owner 2026-11-06 批准的 5 次 boot 中的第 1 次执行；本条目只记这一次运行（分配条目本身不在本分支）。
+
+**冻结**：候选树 `1484fa4ee0ff9326a3dafcac060bf63f8d334a1f`（组合 driver + fs-binding provider row + ruling，
+无产品改动）；`publish-authority` 发布 `as20261105r2`（`baseline` = 上述候选 head，digest `sha256:d28bdf46…`）；
+`switch-authority` 以旧指针字节前置条件（`2cba2673…`）把指针移到 `31ac81fb…`，`two_current_pending:false`。
+回滚 = `git revert d23054e1a` + 反向 switch（rollback 命令在证据 README §1）。
+
+**启动**：在该 baseline commit 上**一次** start（port 3184，home `tests/homes/u5a5sfc1-20261105T12-17-52Z`，
+grant `maxStarts 2` = 1 intent + 1 boot，`allocationItem` 指向本分配），0 abort、0 retry；
+`run a5sf-candidate1-2026-11-05T12-17-52-246Z`，11 案 **9 PASS / 2 FAIL**，`overall=FAIL partial=false`。
+run record 绑定 `teamSha=1484fa4ee…`（= snapshot baseline），`bindings.authority` 重戳为 live `as20261105r2`，
+`authorityObserved` 保留运行实际看到的 `as20261105r1`。
+
+**结果**：`M-02`（row4a/row4b）与 `M-07`（glob 两臂）在 baseline 树上判绿 → 复位 `ENFORCE-PARTIAL` / `V@B=yes`；
+`M-01` 的 FS row2 与 `M-06` 的 search row3 判 **REFUTED**——两者共用 `outside-restriction.txt` 一个 locator，
+两个按 locator 收 fact 的 judge 各自多看见另一条 lane 的拒绝事实（装配/fixture 缺陷，产品侧 typed 拒绝 / 0 进程 /
+无泄漏全绿）。按纪律**不重试成通过**：两行仍 `V@B=no`，拆 fixture 后的重跑留给 `#4`/`#5` retry 预算。
+证据：`dev/agent-workflow/evidence/a5sf-candidate1/`（README 逐行 verdict 与数字）。

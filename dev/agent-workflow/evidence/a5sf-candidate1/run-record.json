@@ -1,0 +1,501 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-candidate1-2026-11-05T12-17-52-246Z",
+  "suite": "a5sf-candidate1",
+  "startedAt": "2026-11-05T12:17:52.247Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-archive-boundary-no-callable-shadow",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-on-read-path",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "teamSha": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfc1",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "allocation": "boot allocation #1 of 5 (owner-granted 2026-11-06, relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374): freeze candidate + FS/Search regression on the frozen tree",
+    "grantId": "grant-a5sf-candidate1-1484fa4ee0ff-b1",
+    "allocationItem": "candidate-1 of 5: frozen-candidate FS/Search regression (M-01/M-02/M-06/M-07)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-candidate1/a5sf-candidate1-realm-provider-row.mjs (the accepted search row + an fs ToolBinding, so one Member carries both faces)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous",
+    "authorityObserved": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:55ab435ff43df3674d9655bea4c00d4ea53e953c06b720ce0fbe50fd9ca8d098",
+        "snapshot_version": "as20261105r1"
+      },
+      "pointerSha256": "2cba2673b82f44f8979b360eb9efc2a60e8723f7e6dacbaffee1fcd3b4b15c65",
+      "snapshotDigest": "a60e707bdf5136e2dfbf1356a3434c16a313f012f86a9e7149b242775d6f3dc8",
+      "note": "observed at the frozen candidate tree (commit 1484fa4ee). That tree predates the pointer-move commit on purpose: the snapshot names the candidate head as baseline, so the run happened AT the baseline while the pointer it could see was still as20261105r1. The live generation below is the one whose baseline IS this tree."
+    },
+    "authorityRestamped": true,
+    "authorityRestampedNote": "re-stamped by the same rule the a5sf-search-live import used: measurements untouched; the generation the run actually saw is preserved verbatim in bindings.authorityObserved (pointer bytes sha256 and snapshot digest included)."
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:16.854Z",
+      "status": "judged",
+      "reason": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:16.854Z",
+      "status": "judged",
+      "reason": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-05T12:23:16.855Z",
+      "status": "judged",
+      "reason": "ROW3_CLAUSE_FAILED",
+      "failed": [
+        "exactlyOneDenyFact",
+        "denyDecidedByReadDenied",
+        "denyLocatorIsDeclaredRoot"
+      ],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:16.855Z",
+      "status": "judged",
+      "reason": "INVALID_PATTERN_SURFACED_AS_TOOL_ERROR",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:18.968Z",
+      "status": "judged",
+      "reason": "CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row1-read-a-inside-both-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:18.969Z",
+      "status": "judged",
+      "reason": "READ_A_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "READ_A_ALLOWED_AND_CONFINED",
+        "checks": {
+          "notError": true,
+          "claimReturned": true,
+          "bindingAllowFact": true,
+          "providerServed": true,
+          "providerConfined": true
+        },
+        "allowFacts": 2,
+        "bindingAllowFacts": 2,
+        "counterRows": 1
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row2-read-b-binding-deny-on-read-path",
+      "verdict": "FAIL",
+      "at": "2026-11-05T12:23:18.969Z",
+      "status": "judged",
+      "reason": "ROW2_CLAUSE_FAILED",
+      "failed": [
+        "everyReadPathFactOnBindingLane"
+      ],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "REFUTED",
+      "detail": {
+        "checks": {
+          "isError": true,
+          "typedLaneRefusal": true,
+          "noClaimLeak": true,
+          "noWriteContentLeak": true,
+          "readPathConsulted": true,
+          "everyReadPathConsultationDenied": true,
+          "everyReadPathFactOnBindingLane": false,
+          "bindingDenyOnReadPath": true,
+          "noProviderRead": true
+        },
+        "failed": [
+          "everyReadPathFactOnBindingLane"
+        ],
+        "readPathFacts": 2,
+        "readPathMethods": [
+          "stat",
+          "spawn"
+        ],
+        "readPathDecisions": [
+          "deny",
+          "deny"
+        ],
+        "nonReadPathFacts": [],
+        "bindingReadPathFacts": 1,
+        "factsForB": 2,
+        "counterRows": 0,
+        "observed": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/outside-restriction.txt' is outside every allow subtree of the lane",
+        "reason": "ROW2_CLAUSE_FAILED"
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row3-read-c-refused-no-widening",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:18.969Z",
+      "status": "judged",
+      "reason": "REFUSED_WITHOUT_WIDENING",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "REFUSED_WITHOUT_WIDENING",
+        "checks": {
+          "isError": true,
+          "typedLaneRefusal": true,
+          "noClaimLeak": true,
+          "exactlyOneBindingDeny": true,
+          "noProviderRead": true,
+          "ceilingDenies": true,
+          "restrictionAllows": true,
+          "effectiveDenies": true,
+          "noWidenedAllow": true
+        },
+        "effectiveReadAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside"
+        ]
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:18.969Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_IN_LANE_READABLE",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "CEILING_WRITE_IN_LANE_READABLE",
+        "checks": {
+          "notError": true,
+          "diskMatches": true,
+          "allowFactPresent": true,
+          "everyWriteFactOnCeiling": true,
+          "confinedProviderServed": true
+        },
+        "failed": [],
+        "isError": false,
+        "disk": "A5SF_CAND1_WRITE_4A_u5a5sfc1-20261105T12-17-52Z\n",
+        "expectedContent": "A5SF_CAND1_WRITE_4A_u5a5sfc1-20261105T12-17-52Z\n",
+        "observed": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
+        "writeFacts": 1,
+        "ceilingFacts": 1,
+        "readLaneWriteFacts": 0,
+        "counterRows": 1
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:18.969Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+        "checks": {
+          "isError": true,
+          "ceilingWriteAllowed": true,
+          "noReadLaneWriteAllow": true,
+          "notTeamLaneRefusal": true,
+          "notReadCouplingRefusal": true,
+          "noPlantedBytesReturned": true,
+          "diskUnchanged": true
+        },
+        "failed": [],
+        "isError": true,
+        "disk": "A5SF_CAND1_W4B_ORIG_u5a5sfc1-20261105T12-17-52Z\n",
+        "plantedContent": "A5SF_CAND1_W4B_ORIG_u5a5sfc1-20261105T12-17-52Z\n",
+        "observed": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/w4b.txt\": file has not been read — read the file, then retry",
+        "writeFacts": 1,
+        "writeDecisions": [
+          {
+            "method": "writeText",
+            "decision": "allow",
+            "realm": "member"
+          }
+        ],
+        "ceilingWriteAllowFacts": 1,
+        "readLaneWriteAllowFacts": 0,
+        "counterRows": 1,
+        "providerWrote": true
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:search-row6-archive-boundary-no-callable-shadow",
+      "verdict": "PASS",
+      "at": "2026-11-05T12:23:19.334Z",
+      "status": "judged",
+      "reason": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+      "failed": [],
+      "detail": {
+        "checks": {
+          "archivedLifecycle": true,
+          "noActiveMemberLeft": true,
+          "everyDispatchExplained": true,
+          "noSuccessAfterStop": true,
+          "noCallableShadow": true,
+          "noManagedDisposeFault": true,
+          "noUnattributedRealmFault": true,
+          "factsAreTimestamped": true,
+          "noFactAfterStop": true,
+          "probeFactsAreRefusals": true,
+          "noProcessAfterStop": true,
+          "hostDead": true,
+          "portReleased": true,
+          "homeDeleted": true,
+          "noOrphanProcess": true
+        },
+        "identity": {
+          "managed": [],
+          "foreign": [],
+          "unattributed": [],
+          "ignoredNonFaultCount": 69,
+          "liveSurfaceChanges": [],
+          "identity": {
+            "sessionId": "session-team-child-48973fbd6f6bb615d57047d1467cdae4",
+            "instanceId": null,
+            "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+            "duringManagedDisposal": true,
+            "managedRealmCount": 1
+          }
+        },
+        "archive": {
+          "status": 200,
+          "ok": true
+        },
+        "stopInstant": "2026-11-05T12:23:19.073Z",
+        "factsObserved": 15,
+        "factsAfterStop": [],
+        "probeFactsObserved": 0,
+        "probeFacts": [],
+        "postStop": [
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          },
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          }
+        ],
+        "host": {
+          "hostAlive": false,
+          "portStillListening": false,
+          "homeDeleted": true
+        },
+        "orphanPids": [],
+        "confinedSpawnsAfterStop": 0,
+        "baseSpawnsAfterStop": 0
+      },
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "teardown"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-05T12:17:52.289Z",
+        "runId": "a5sf-candidate1-2026-11-05T12-17-52-246Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-candidate1-1484fa4ee0ff-b1",
+        "grantId": "grant-a5sf-candidate1-1484fa4ee0ff-b1",
+        "grantedBy": "1 start(s) by owner, 2026-11-06 (\"批准5次P2-04预算\"), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: BOOT ALLOCATION #1 OF 5: freeze the limited trial candidate (new authority snapshot naming the candidate head) and re-run the accepted FS/Search live acceptance ON that frozen tree, so M-01/M-02/M-06/M-07 stop being NEEDS_REVALIDATION. ONE start. Starts 2 and 3 are the BL-17/BL-18 live halves; 4-5 are reserved for retries of THIS allocation's failure class and may not be used for a new acceptance face.",
+        "boundCommit": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-05T12:17:58.807Z",
+        "runId": "a5sf-candidate1-2026-11-05T12-17-52-246Z",
+        "suite": "a5sf-search",
+        "world": "u5a5sfc1-20261105T12-17-52Z",
+        "phase": "a5sf-candidate1-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-candidate1-boot1",
+      "world": "u5a5sfc1-20261105T12-17-52Z",
+      "port": 3184,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/logs/u5a5sfc1-20261105T12-17-52Z/instance-port3184.log"
+    }
+  ],
+  "runVerdict": {
+    "overall": "FAIL",
+    "partial": false,
+    "abortedAt": null,
+    "judged": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied"
+    ],
+    "passed": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied"
+    ],
+    "neverObserved": [],
+    "note": "the run completed; overall is the worst case verdict"
+  },
+  "negativeControl": {
+    "verdict": "PROVEN",
+    "reason": "UNCONFINED_CONTROL_LEAKS",
+    "failed": [],
+    "detail": {
+      "result": {
+        "isError": false,
+        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfc1-20261105T12-17-52Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfc1-20261105T12-17-52Z"
+      },
+      "leakedTokens": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfc1-20261105T12-17-52Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfc1-20261105T12-17-52Z"
+      ],
+      "baseSpawns": 11,
+      "confinedSpawns": 0,
+      "guardFactsBeforeRealm": 0,
+      "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+    }
+  },
+  "globFace": {
+    "inLane": "PROVEN",
+    "outsideCeiling": "PROVEN"
+  },
+  "fixtures": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace",
+    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside",
+    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/needle.txt",
+    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/outside-restriction.txt",
+    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside",
+    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside/secret.txt",
+    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside-glob",
+    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/invalid",
+    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/glob",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/blocking.fifo",
+    "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/needle.txt",
+    "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/outside-restriction.txt",
+    "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside/secret.txt",
+    "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside/w4a.txt",
+    "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/w4b.txt",
+    "ceiling": {
+      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace",
+      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace"
+    },
+    "restrictionReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/workspace/lane/inside",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/ceiling-outside"
+    ],
+    "effectiveRead": "product intersection of ceiling ∩ restriction; the per-path dispositions are in lane-report.json probePaths.effectiveRead"
+  },
+  "claims": {
+    "needle": "A5SF_SEARCH_NEEDLE_u5a5sfc1-20261105T12-17-52Z",
+    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfc1-20261105T12-17-52Z",
+    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfc1-20261105T12-17-52Z",
+    "outsidePattern": "A5SF_SEARCH_OUTSIDE",
+    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5a5sfc1-20261105T12-17-52Z",
+    "restrictedPattern": "A5SF_SEARCH_RESTRICTION",
+    "fifoPattern": "A5SF_SEARCH_FIFO",
+    "w4aOrig": "A5SF_CAND1_W4A_ORIG_u5a5sfc1-20261105T12-17-52Z",
+    "w4aNew": "A5SF_CAND1_WRITE_4A_u5a5sfc1-20261105T12-17-52Z\n",
+    "w4bOrig": "A5SF_CAND1_W4B_ORIG_u5a5sfc1-20261105T12-17-52Z",
+    "w4bNew": "A5SF_CAND1_WRITE_4B_u5a5sfc1-20261105T12-17-52Z\n"
+  },
+  "sink": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-17-52Z/a5sf-consult.jsonl",
+    "facts": 15,
+    "copy": {
+      "copied": true,
+      "sha256": "03afdac17f94feda13f3743b09e751ed8c91a14f8abf3fa7a046c7708a7df7c7",
+      "bytes": 7510
+    }
+  },
+  "archive": {
+    "previousRun": "runs/2026-11-05T12-17-52-245Z"
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-05T12:23:19.336Z"
+}
