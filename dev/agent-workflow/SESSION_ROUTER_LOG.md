@@ -7782,3 +7782,83 @@ lane 与 effective-intersection lane 中都保留）——这是本轮刻意补�
 
 **记录的两条边界（不是本车道的 fail-open）**：无编译 realm 的 Member 没有 Alpha.5 车道、故不存在 ask 决策；
 `MANAGED_FS_METHODS` 之外的方法不被受限子类覆盖、故不携带任何车道决策。
+
+## 2026-11-05T20:32Z — CANDIDATE-1（boot allocation #1/5）：冻结候选 + 在 baseline 树上重测 FS/Search
+
+按 owner 2026-11-06 批准的 5 次 boot 中的第 1 次执行；本条目只记这一次运行（分配条目本身不在本分支）。
+
+**冻结**：候选树 `1484fa4ee0ff9326a3dafcac060bf63f8d334a1f`（组合 driver + fs-binding provider row + ruling，
+无产品改动）；`publish-authority` 发布 `as20261105r2`（`baseline` = 上述候选 head，digest `sha256:d28bdf46…`）；
+`switch-authority` 以旧指针字节前置条件（`2cba2673…`）把指针移到 `31ac81fb…`，`two_current_pending:false`。
+回滚 = `git revert d23054e1a` + 反向 switch（rollback 命令在证据 README §1）。
+
+**启动**：在该 baseline commit 上**一次** start（port 3184，home `tests/homes/u5a5sfc1-20261105T12-17-52Z`，
+grant `maxStarts 2` = 1 intent + 1 boot，`allocationItem` 指向本分配），0 abort、0 retry；
+`run a5sf-candidate1-2026-11-05T12-17-52-246Z`，11 案 **9 PASS / 2 FAIL**，`overall=FAIL partial=false`。
+run record 绑定 `teamSha=1484fa4ee…`（= snapshot baseline），`bindings.authority` 重戳为 live `as20261105r2`，
+`authorityObserved` 保留运行实际看到的 `as20261105r1`。
+
+**结果**：`M-02`（row4a/row4b）与 `M-07`（glob 两臂）在 baseline 树上判绿 → 复位 `ENFORCE-PARTIAL` / `V@B=yes`；
+`M-01` 的 FS row2 与 `M-06` 的 search row3 判 **REFUTED**——两者共用 `outside-restriction.txt` 一个 locator，
+两个按 locator 收 fact 的 judge 各自多看见另一条 lane 的拒绝事实（装配/fixture 缺陷，产品侧 typed 拒绝 / 0 进程 /
+无泄漏全绿）。按纪律**不重试成通过**：两行仍 `V@B=no`，拆 fixture 后的重跑留给 `#4`/`#5` retry 预算。
+证据：`dev/agent-workflow/evidence/a5sf-candidate1/`（README 逐行 verdict 与数字）。
+
+## 2026-11-05T20:45Z — CANDIDATE-1 allocation #4（retry）：拆开 fixture 别名后同树 11/11
+
+coordinator 授权从保留池取第 #4 次 start（`session-76eeddd5…`），同一冻结候选、同一 snapshot
+`as20261105r2`、**不动指针、不发新快照**。唯一改动是 fixture：FS read B 从 search row3 的操作数
+`workspace/lane/outside-restriction.txt` 移到自己的 `workspace/lane/fs/outside-restriction.txt`（自己的
+locator 与 expected fact 集）；顺手把 boot phase 改为跟 ledger 序号（`…-boot2`），并新增 `lane-ruling.json`
+第二条 ruling（`authorisedStarts 2`）。run #1 的产物 `git mv` 到 `runs/allocation1/`（字节不变）。
+
+**产品树零改动（可校验）**：`packages` tree `44535c94…`、`scripts` tree `d4bcc358…`、`tests/paths.mjs`
+`1bf4829e…`、`package.json` `2946fe23…`、`pnpm-lock.yaml` `f70001d3…`，以及两个判官 blob
+（`a5sf-acceptance-preflight.mjs` `de66ee86…`、`a5sf-search-live.mjs` `e386ab79…`）在冻结候选 `1484fa4ee`
+与执行树 `25e106b4…` 之间逐项相等，已写入 run record `bindings.productTreeProof`。判官字节没变，
+所以"判官变松"这条路被结构性地排除。
+
+**启动**：一次 start（port 3184，home `tests/homes/u5a5sfc1-20261105T12-33-06Z`，grant `…-b2`，
+`maxStarts 4` = 2 prior rows + intent + boot），ledger 4 行（`intent(b1)`、`boot1`、`intent(b2)`、`boot2`），
+本轮 `bootRows 1 === plannedStarts 1 - 0`，0 abort、0 retry。`run a5sf-candidate1-2026-11-05T12-33-06-567Z`，
+**`overall=PASS partial=false`，11/11**。run record 直接观测到 live `as20261105r2`（无需重戳）；`teamSha` 记执行树
+`25e106b4…`、`bindings.baseline` 记冻结候选 `1484fa4ee`（在 `1484fa4ee` 上跑会重新造出被授权拆掉的别名缺陷）。
+
+**判定**：FS row2 = `BINDING_DENY_ON_READ_PATH`（readPathFacts 1 / stat / deny / 全 binding lane / 无 provider 读）；
+search row3 = `RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION`（恰好 1 条 deny fact、0/0 spawn、无泄漏）；
+其余 9 行同 #1 全 PASS，负控与 glob 两面仍 PROVEN。矩阵 `M-01`/`M-02`/`M-06`/`M-07` 四行现均
+`ENFORCE-PARTIAL` / `V@B=yes`；`state-freshness` 报 `claimed 4, drift 0`。
+
+**已披露的一处偏差**：driver 的 `allocationItem` 是常量字符串（写着 allocation #1），本次实际是 #4
+（`grantId …-b2`、`bootSequence 2`、`boot2`、grantedBy 内含 #4 ruling 原文）。不就地改证据文件，映射写入
+`allocation-map.json` 与 README §5；修常量留给后续 run，以保持"提交的 driver = 执行的 driver"。
+
+**花费**：累计 `2/5`（#1 + #4），0 abort，剩 3（#2/#3 = BL-17/BL-18 live 半场，#5 = 按需再 retry）。
+
+## 2026-11-05T21:06Z — CANDIDATE-1：合并 #606 后三条 gate 同因变红（Q7），四行 claim 按规则撤回
+
+`#607` 清 BEHIND 时把 `origin/master`（`a5bd88b85`，`#606` confined web 面）合进来，`0525bd90` 上
+`pr-gate` / `ci-product` / `ci-integration` 三条同时红。查日志：三条死于**同一条 leg**，不是三个问题：
+
+```
+DSH-CI-LEG leg=state-freshness verdict=fail detail=Q7: product surface moved since baseline
+(28 path(s)) while rows still claim current verification: read (M-01), write (M-02),
+grep (M-06 native), glob (M-07) — mark NEEDS_REVALIDATION (which then REQUIRES V@B=no) or
+re-verify against HEAD
+```
+
+coordinator 的三个假设都不成立：没有 suite-total 失败（`eb3-tool-acceptance` 本地 rc=0，tools=31 由派生而得，
+非字面量）、没有 census 身份新增红（`ci-product`/`pr-gate` 的 census 在 hosted runner 上是 declared refusal，
+本地 8 条全 pass）、`eb3-run-manifest` 也没有报我的记录（`C8` 恰好把我的 run-record 当 honest 样本 pass）。
+
+**归因**：不是 master 自带红——同一条 leg 在 `origin/master` 单独跑是 **pass**（baseline
+`1fd0d9fca3c8…`、claimed 0、drift 89：没有 current claim 就不触发 Q7）；在合并树上是 **fail**
+（claimed 4、drift 28）。而且 28 条漂移不是无关的 web 面：`team-services/src/subprocess.ts`（grep/glob
+骑的子进程面）、`mount.ts`/`install.ts`/`types.ts`/`index.ts`（read/write 骑的 service 面）与
+`packages/runtime/test/a5sf-bl16-grep-realm.test.ts` 本身都在其中——**被测树已不是将合并的树**。
+
+**修法**：不调 pin、不放宽 leg、不 skip，四行按 Q7 复位 `NEEDS_REVALIDATION` / `V@B=no`，11/11 证据与
+结论保留（属于 `1484fa4ee`）；矩阵 §1.1/§3/结论/附录 A 与证据 README 同步写明"结论有效、current claim 失效"。
+本地复跑三条：`pr-gate --full` pass（8/9，census declared refusal）、`ci-product` 8/8 pass、
+`ci-integration` 7 个 eb3 脚本 rc=0 + graph-parse/state-freshness pass；仅改 2 个文档文件，产品路径 0 改动。
+重新建立 claim 需在新树再 boot 一次（fixture 拆分已在位），花费记在 5-start 池（已用 `2/5`）。

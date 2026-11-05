@@ -1,0 +1,23 @@
+{
+  "schema": "a5sf-search-live/plan-paths/1",
+  "at": "2026-11-05T12:32:58.206Z",
+  "head": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+  "ceilingReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace"
+  ],
+  "restrictionReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside"
+  ],
+  "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside",
+  "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/needle.txt",
+  "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/outside-restriction.txt",
+  "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside/secret.txt",
+  "outsideGlobFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside-glob/secret.txt",
+  "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/blocking.fifo",
+  "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/needle.txt",
+  "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/fs/outside-restriction.txt",
+  "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/ceiling-outside/secret.txt",
+  "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/lane/inside/w4a.txt",
+  "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/.rowcheck/workspace/w4b.txt"
+}

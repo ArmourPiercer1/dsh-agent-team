@@ -1,0 +1,25 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/dev/agent-workflow/evidence/a5sf-candidate1/run-ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-05T12:17:52.289Z",
+      "runId": "a5sf-candidate1-2026-11-05T12-17-52-246Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-candidate1-1484fa4ee0ff-b1",
+      "grantId": "grant-a5sf-candidate1-1484fa4ee0ff-b1",
+      "grantedBy": "1 start(s) by owner, 2026-11-06 (\"批准5次P2-04预算\"), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374: BOOT ALLOCATION #1 OF 5: freeze the limited trial candidate (new authority snapshot naming the candidate head) and re-run the accepted FS/Search live acceptance ON that frozen tree, so M-01/M-02/M-06/M-07 stop being NEEDS_REVALIDATION. ONE start. Starts 2 and 3 are the BL-17/BL-18 live halves; 4-5 are reserved for retries of THIS allocation's failure class and may not be used for a new acceptance face.",
+      "boundCommit": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-05T12:17:58.807Z",
+      "runId": "a5sf-candidate1-2026-11-05T12-17-52-246Z",
+      "suite": "a5sf-search",
+      "world": "u5a5sfc1-20261105T12-17-52Z",
+      "phase": "a5sf-candidate1-boot1"
+    }
+  ]
+}

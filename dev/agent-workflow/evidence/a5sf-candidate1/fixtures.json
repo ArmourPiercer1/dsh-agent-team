@@ -1,0 +1,50 @@
+{
+  "worldId": "u5a5sfc1-20261105T12-33-06Z",
+  "homePatch": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/cordis.patch.yml",
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace"
+  },
+  "fixtures": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace",
+    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside",
+    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/needle.txt",
+    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/outside-restriction.txt",
+    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/ceiling-outside",
+    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/ceiling-outside/secret.txt",
+    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/ceiling-outside-glob",
+    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/invalid",
+    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/glob",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/blocking.fifo",
+    "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/needle.txt",
+    "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/fs/outside-restriction.txt",
+    "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/ceiling-outside/secret.txt",
+    "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside/w4a.txt",
+    "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/w4b.txt",
+    "ceiling": {
+      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace",
+      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace"
+    },
+    "restrictionReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/workspace/lane/inside",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/ceiling-outside"
+    ],
+    "effectiveRead": "product intersection of ceiling ∩ restriction; the per-path dispositions are in lane-report.json probePaths.effectiveRead"
+  },
+  "claims": {
+    "needle": "A5SF_SEARCH_NEEDLE_u5a5sfc1-20261105T12-33-06Z",
+    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5a5sfc1-20261105T12-33-06Z",
+    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5a5sfc1-20261105T12-33-06Z",
+    "outsidePattern": "A5SF_SEARCH_OUTSIDE",
+    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5a5sfc1-20261105T12-33-06Z",
+    "restrictedPattern": "A5SF_SEARCH_RESTRICTION",
+    "fifoPattern": "A5SF_SEARCH_FIFO",
+    "w4aOrig": "A5SF_CAND1_W4A_ORIG_u5a5sfc1-20261105T12-33-06Z",
+    "w4aNew": "A5SF_CAND1_WRITE_4A_u5a5sfc1-20261105T12-33-06Z\n",
+    "w4bOrig": "A5SF_CAND1_W4B_ORIG_u5a5sfc1-20261105T12-33-06Z",
+    "w4bNew": "A5SF_CAND1_WRITE_4B_u5a5sfc1-20261105T12-33-06Z\n"
+  },
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/a5sf-consult.jsonl",
+  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/candidate-counter.jsonl",
+  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-candidate1/tests/homes/u5a5sfc1-20261105T12-33-06Z/lane-report.json"
+}
