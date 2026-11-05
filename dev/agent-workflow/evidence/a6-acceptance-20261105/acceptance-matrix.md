@@ -1,0 +1,56 @@
+# Alpha.6 isolated integration + real-Host E2E — acceptance matrix
+
+- **Integrated code HEAD under test:** `48182b783554df08e40219c4079f0a0bb1d27075`
+  (`alpha6/int-20261103`, merge of `8ea3a0517` into `23b5061a6`)
+- **E2E implementation HEAD:** `8ea3a0517924c5b244fc713317bd5e457ba77263`
+- **Real Host run:** stamp `2026-11-05T11-43-02`, host `http://127.0.0.1:3600`, mock `:3601`
+- **Evidence:** `dev/agent-workflow/evidence/a6-officer-host/` (run.log, instance.log, mock.log,
+  a6-officer.json, control-ledger.json, l0-surface.json); durable events are reproduced verbatim
+  in `control-ledger.json` from the retained host home `tests/homes/c1-smoke-2026-11-05T11-43-02`.
+- **Scope:** isolated integration and real Host E2E only. No master merge, no un-draft, no
+  production enablement, no release.
+
+## Criteria reached in this round
+
+| # | Criterion | Result | Evidence |
+|---|---|---|---|
+| 1 | v5 `team.create` admits a real Officer + review routing | **PASS** | `run.log` A6-1; created root `session-c1-smoke-a6-2026-11-05T11-43-02`, blueprint hash `sha256:81769c…` |
+| 2 | Real Member bash ask produces a model-visible Officer review wake | **PASS** | `a6-officer.json` `.wakes`: 3 Officer turns, wake text carries `requestId: - ctrl-1g1pypn…`; `mock.log` seq 13 |
+| 3 | Officer resolves through `team_resolve_control` | **PASS** | `mock.log` seq 14; durable decision sequence 11, `reviewCapability.source = blueprint-officer`, `effectiveReviewAuthority = leader` |
+| 4 | The original Member command executes after the Officer allow | **PASS** | `executed=true`; workspace file `tests/homes/c1-smoke-2026-11-05T11-43-02/workspace/c1-a6-allow-2026-11-05T11-43-02.txt` contains the stamp |
+| 5 | The Leader is not woken for a leg routed to the Officer | **PASS (scoped)** | `leaderWakeCount=0` means no **Officer review wake** went to the Leader. The separate legacy guard ask (row 1) did use the Leader notification path; see the duplicate report. |
+| 6 | No durable request is left pending | **PASS** | 2 requests, 2 decisions, 2 consumptions, `pending=0` |
+| 7 | One-shot consumption / no double execution | **PASS** | exactly one `control-allow-consumed` per request (sequences 9 and 12); one file write; no second execution |
+| 8 | Two approvals for one bash invocation both settle and are consumed | **PASS** | `parameter-permission` allow+consumed seq 8/9; `team-tool-execute` allow+consumed seq 11/12; identities differ (see duplicate report) |
+| 9 | Durable facts, not a unit substitute | **PASS** | `control-ledger.json` carries the full `control-request-recorded` / `control-decision-recorded` / `control-allow-consumed` payloads, including scope, fingerprints and generation |
+
+## Not reached in this round (explicitly not passed)
+
+| # | Required scenario | Result | Why |
+|---|---|---|---|
+| 10 | Leader exception routing | **NOT_REACHED** | the E2E kit declares `leaderExceptions: []`; no real exception leg was exercised |
+| 11 | Officer self-review | **NOT_REACHED** | no self-ask scenario was created |
+| 12 | Handoff successor notification / production `reviewEvents` consumer | **NOT_REACHED** | only the assigned-Officer path was run; no handoff transfer, no successor current-leg delivery |
+| 13 | Human Escalation recipient | **NOT_REACHED** | both decisions were agent decisions (Leader legacy notification and Officer); no human recipient |
+| 14 | Human final approval, original-call validity, Stop/cancel/timeout non-revival | **NOT_REACHED** | no Human ask, no Stop/cancel mid-wait |
+| 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **NOT_REACHED / PARTIAL** | one real deliver/claim/turn-end release was observed, but no crash-window or Sticky Stop injection; reconciliation after restart was not tested |
+| 16 | Duplicate-approval elimination | **NOT_IMPLEMENTED** | evidence collected; recommendation only (see duplicate report) |
+
+## Gate
+
+Full local gate **9/9 PASS, zero skips** on integrated HEAD `48182b7`:
+`node scripts/ci-pr-gate.mjs --full`, `CI=true`,
+`DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
+
+Census result on that run: **677 files / 8821 legs**, `COUNTS MOVED, SET DID NOT`,
+0 new reds / 0 collection errors. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
+census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 and
+`alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
+See `gate.md` for the exact outputs and the flake disclosure.
+
+## Verdict
+
+**Isolated integration: PASS on the reached path.** A real Member call routed to the
+assigned Officer, the Officer's durable allow was consumed, and the exact command executed
+once. The remaining acceptance rows are **NOT_REACHED**, not silently passed. Production
+enablement and master merge remain blocked.
