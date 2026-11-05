@@ -15,6 +15,10 @@
 # RE-RECORDED (2026-11-05, A6 recipient probes): the same kit gained the
 #   env-gated self-review/handoff fixtures, moving its four v5 identities to
 #   L598, L787, L1191, L1815. Same sources/fixtures; no new offending content.
+# RE-RECORDED (2026-11-05, A6 human/exception/Stop probes): the same kit
+#   gained the env-gated human-escalation, Leader-exception and Stop fixtures,
+#   moving the four v5 identities to L614, L803, L1304, L1935. Same
+#   sources/fixtures; no new offending content.
 # command:     node scripts/verify-blueprint-version-clean.mjs   (exit 1, "dirty-or-unknown")
 # lines:       every OFFENDING/UNKNOWN line, verbatim, sorted; one identity per line.
 #

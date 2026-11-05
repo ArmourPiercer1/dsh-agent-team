@@ -19,8 +19,9 @@ correctly did **not** match the plane leg.
 Observed on the real Host:
 
 - 3 Leader control notifications, **0** `[team-review-wake` turns.
-- Guard `parameter-permission` and plane PA `team-tool-execute` both routed to
-  the Leader; the PA decision is
+- The plane PA `team-tool-execute` routed to the Leader (the discriminator);
+  the guard reaches the Leader through the ordinary legacy path in every A6 run.
+  The PA decision is
   `ctrl-1s00b320zywn7l0lz6gio0xt` / `case-0489qdp1tu4c0e0uj33p70iy`,
   decider `{kind:'instance', instanceId:'inst-leader', role:'leader'}`.
 - Allow consumed; original command executed once; ledger ends 2/2/2/0.

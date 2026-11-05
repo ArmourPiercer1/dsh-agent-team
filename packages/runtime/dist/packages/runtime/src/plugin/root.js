@@ -2119,13 +2119,15 @@ export function createTeamProductionRoot(params) {
             ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
         : undefined;
-    // A6-PR2c transfer/human-leg events are the wake plane's only signal that a
-    // CASE'S CURRENT LEG moved. Without this consumer the durable transfer (and
-    // the escalation's human leg) is written but its successor is never woken —
-    // the old reviewer's latch is correctly retired, so the pending leg is left
-    // with no recipient at all. Re-read the moved leg, then run it through the
-    // SAME trusted notifier/route used at creation; the notifier's current-leg
-    // transfer route picks the successor, never the former reviewer.
+    // A6-PR2c transfer events are the wake plane's only signal that a CASE'S
+    // CURRENT LEG moved. Without this consumer the durable transfer is written
+    // but its successor is never woken — the old reviewer's latch is correctly
+    // retired, so the pending leg is left with no recipient at all. Re-read the
+    // moved leg, then run it through the SAME trusted notifier/route used at
+    // creation; the transfer route picks the Leader, never the former reviewer.
+    // `human-current-leg` is re-read too, but its native-human route is a
+    // deliberate no-op: human delivery is out of band via team.resolveControl,
+    // and this consumer does not claim a Host human wake.
     const alpha6ReviewEventSink = alpha6Wiring.mode === 'alpha6' && alpha6RequestNotification !== undefined
         ? (event) => {
             if (event.kind !== 'current-leg-transferred' && event.kind !== 'human-current-leg')

@@ -98,3 +98,36 @@ root. Fix commit: `90937099d`; integration merge: `f842c6821`.
 The same re-review noted only defense-in-depth P3s that are not reachable for
 a PA/A6 ask (the case-less row path; `PlannedWake.templateId` feeding only the
 plan fingerprint) and did not run the full gate.
+
+## Independent review of the recipient/refusal delta
+
+A read-only reviewer examined `b4d4d21e..8114db4b7` (product delta =
+`fd7a5d6c1`, the `reviewEvents` consumer). Verdict: **PASS WITH NOTES**, no
+P0/P1 product or authority defect. The consumer is notification-only, re-reads
+the durable row, never mints or consumes an approval, and cannot misdeliver the
+transferred leg (target is always Leader; `native-human` is a no-op).
+
+P2 findings and disposition:
+
+1. **Human-wake overstatement** — fixed in the matrix (row 13 now says
+   authority/decidability PASS, Host human wake NOT_REACHED) and in the
+   `root.ts`/built-dist comment, which no longer claims the human successor is
+   woken.
+2. **Stale matrix gate/HEAD text** — matrix now pins `4e569e757`; the heading
+   and closing verdict no longer say all remaining rows are NOT_REACHED.
+3. **Stop assertions** — the raw run contains the `CONTROL_REQUEST_DECIDED`
+   rejection; `stop.md` states it. The A6-12 label was not tightened in code,
+   so treat the assertion as weaker than the evidence narrative.
+4. **Exception causality** — `leader-exception.md` now says only the PA leg is
+   the discriminator; the guard uses the ordinary legacy Leader path.
+5. **Fence annotation** — stale L598/L787/L1191/L1815 comments replaced with
+   the recorded L614/L803/L1304/L1935.
+6. **Raw runs untracked** — `a6-handoff-only-r6`, `a6-human-r9`,
+   `a6-stop-r3`, `a6-exception-r2`, `a6-recipients-r6/r12` are committed
+   (tokens redacted).
+7. **No unit test for the new sink** — still open; the E2E and the code
+   argument above are the current evidence.
+
+Residual risks accepted: notification failure is reported, not retried;
+Officer/human branches of the sink are currently unreachable; the same-session
+queued-wake gap remains row 15 BLOCKED/PARTIAL.

@@ -21,8 +21,8 @@ shifted one v5 identity from L1815 to L1819. The fence baseline was re-recorded 
 changed. Earlier census attempts hit the two known pre-existing 1 ms races
 (`alpha5-glob-backend` X3, `alpha5-search-backend` P11); the final run is clean.
 
-The C1 kit v5 identities moved to L598/L787/L1191/L1815 when the env-gated recipient
-fixtures were added; `blueprint-fence-baseline-606a0be7.txt` was re-recorded in the open
+The C1 kit v5 identities moved to L614/L803/L1304/L1935 when the env-gated recipient,
+human, exception and Stop fixtures were added; `blueprint-fence-baseline-606a0be7.txt` was re-recorded in the open
 for exactly those four identities (same sources/fixtures, no new offending content).
 
 ## Earlier product-gated HEAD
