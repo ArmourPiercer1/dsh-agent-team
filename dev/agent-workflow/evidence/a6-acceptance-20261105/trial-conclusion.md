@@ -1,8 +1,8 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06. Gate HEAD: `fedd641ed` (9/9 local, gate log, census 677/8832;
+Date: 2026-11-06. Gate HEAD: `d6c0e8528` (9/9 local, 290.6 s, census 677/8832;
 `gate.md`); docs after this file are docs-only. Evidence HEAD at the gate:
-`fedd641ed`. Branch `alpha6/int-20261103`, rollback tag
+`d6c0e8528`. Branch `alpha6/int-20261103`, rollback tag
 `a6-int-pre-585-20261105` (peeled `ccc9294f4e37c230841924713a9624e1553c545a`).
 No master merge, no un-draft, no production switch.
 

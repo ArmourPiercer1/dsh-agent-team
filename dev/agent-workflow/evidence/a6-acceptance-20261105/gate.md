@@ -1,16 +1,18 @@
 # Gate record
 
-## Final acceptance HEAD — `fedd641ed`
+## Final acceptance HEAD — `d6c0e8528`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS**, 0 skip, seconds see log
+- Result: **9/9 PASS**, 0 skip, **290.6 s**
 - Census: **677 files / 8832 legs** (two new marker unit tests), `COUNTS MOVED,
   SET DID NOT`, 0 new reds
 - Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
 - Blueprint fence: no new offending path; kit identities re-recorded at
   L619/L808/L1729/L2417 (same fixtures)
-- Log: `.drill/ci-gate-fedd641ed.log` (untracked local artifact)
+- Log: `.drill/ci-gate-d6c0e8528.log` (untracked local artifact)
+- `fedd641ed` was 7/9 only because four owner-field dist mirrors were left
+  uncommitted; `d6c0e8528` adds them and is clean 9/9.
 - Product delta since `1e50d55fc`: real resume re-plan (actual delegable legs,
   never an empty scan), atomic/existence-based Sticky Stop marker + unit tests.
   Boot recovery stays strictly own-root after the second review showed a
