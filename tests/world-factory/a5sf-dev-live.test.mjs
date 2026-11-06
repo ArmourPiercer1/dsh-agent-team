@@ -29,6 +29,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'no
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRunRecord } from './lib/run-record.mjs'
+import { TEST_USE_BASELINE_SHA as HOST_SHA } from '../paths.mjs'
 import {
   AcceptanceClaimError,
   DEFAULT_RECORD_CLASS,
@@ -92,7 +93,7 @@ function devRecord(dir, { ledger = join(dir, 'ledger.jsonl'), leaseRoot } = {}) 
     selectedCases: ['read:allowed-inside-ceiling'],
     ledgerPath: ledger,
     recordClass: 'DEV-LIVE',
-    bindings: { teamSha: HEAD, leaseRoot: leaseRoot ?? join(dir, 'leases') },
+    bindings: { teamSha: HEAD, hostSha: HOST_SHA, leaseRoot: leaseRoot ?? join(dir, 'leases') },
   })
 }
 
@@ -103,7 +104,7 @@ function c2Record(dir, { ledger = join(dir, 'ledger.jsonl'), claim = null } = {}
     selectedCases: ['read:allowed-inside-ceiling'],
     ledgerPath: ledger,
     ...(claim === null ? {} : { candidateClaim: claim }),
-    bindings: { teamSha: HEAD, authority: { pointerPath: 'dev/engineering/current-authority.json' } },
+    bindings: { teamSha: HEAD, hostSha: HOST_SHA, authority: { pointerPath: 'dev/engineering/current-authority.json' } },
   })
 }
 
