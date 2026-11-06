@@ -246,3 +246,15 @@ master `3313bdf08`、`hostSha` = pin `639ed0153972…`、`authority` = `as202611
 严格档现 `findings=0`。
 
 这是**记录格式缺陷，不是测量缺陷**：P0 翻转、MA/MB 变异控制、boot02/boot03 的 4/4 结论一字未改。
+
+## 2026-11-10 — PR 门禁抓到的两个真缺陷（已修，测量结论未变）
+
+1. **矩阵行被写坏**：M-09 那一行在追加 DEV-LIVE 备注时被拆成两行（行的 ⑥ 单元格后接了换行），
+   `state-freshness` 判 `matrix row "bash transient (M-09)" has 5 cells, expected 9`。已把两行重新合成一行 9 单元格。
+   这类破损只有机器读表格时才会现形——肉眼看 markdown 渲染仍是"一行"。
+2. **两个新 lint 身份**：`a5sf-realm-row.mjs` 里的 `URL`、`confined-bash-tool.mjs` 里的 `setTimeout`/`clearTimeout`
+   在仓库 ESLint 配置下是 `no-undef`（本仓库该配置**不**声明 node globals）。改为从 `node:url` / `node:timers`
+   显式 import，而不是往基线里加身份——基线是"人类跑 `pnpm lint` 时看到的集合"，往里加就等于把缺陷当常态。
+
+两处都是**仪器/格式缺陷，不是测量缺陷**：P0 翻转、MA/MB 变异控制、boot02/boot03 的 4/4 一字未改，
+`a5sf-pd12-bash-governance` 7/7、`a5sf-sub-contract` 15/15、`pnpm -r typecheck` rc 0。
