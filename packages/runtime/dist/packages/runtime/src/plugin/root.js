@@ -1808,7 +1808,13 @@ export function createTeamProductionRoot(params) {
                     alpha6WakeCoordinators.set(mapKey, coordinator);
                 }
                 alpha6WakeBySession.set(input.targetSessionId, coordinator);
-                const intent = alpha6WakeIntents?.forKey(key);
+                const baseIntent = alpha6WakeIntents?.forKey(key);
+                const intent = baseIntent === undefined
+                    ? undefined
+                    : {
+                        ...baseIntent,
+                        persistQueued: (row) => baseIntent.persistQueued({ ...row, ownerRootSessionId: rootSid }),
+                    };
                 const result = await dispatchLatch({
                     plan: { wakes: [wake], humanLegIds: [], held: [] },
                     rootSessionId: requestRoot,
@@ -1953,7 +1959,7 @@ export function createTeamProductionRoot(params) {
             if (coordinator === undefined)
                 return false;
             const key = coordinator.state.key;
-            await alpha6WakeIntents.markStopped(key, targetSessionId);
+            await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid);
             const transition = coordinator.dispatch({ type: 'stop' });
             if (transition.outcome !== 'applied')
                 return true;
@@ -2005,7 +2011,7 @@ export function createTeamProductionRoot(params) {
                 // stopped (an ordinary human chat on a live latch) must NOT
                 // fabricate a "ready" scan or deliver a spurious wake.
                 if (coordinator.state.stopped)
-                    await alpha6WakeIntents.markStopped(key, targetSessionId);
+                    await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid);
                 return !coordinator.state.stopped;
             }
             // Re-plan the ACTUAL pending work (never an empty synthetic scan):
@@ -2042,10 +2048,11 @@ export function createTeamProductionRoot(params) {
             // already withdrawn). Register its latch as stopped so an explicit
             // resume can find it; this grants nothing and delivers nothing.
             for (const marker of await alpha6WakeIntents.listStopped()) {
-                const markerTeam = repos.teamSessions.get(marker.key.rootSessionId);
-                if (markerTeam === undefined)
+                // Strict own-root guard: a durable row from another Team (or a
+                // previous world sharing this HOME) is never ours to clear/adopt.
+                if (marker.key.rootSessionId !== rootSid)
                     continue;
-                if (marker.key.sessionGeneration !== markerTeam.generation)
+                if (marker.key.sessionGeneration !== config.generation)
                     continue;
                 const targetSessionId = marker.targetSessionId;
                 if (targetSessionId === undefined)
@@ -2065,10 +2072,11 @@ export function createTeamProductionRoot(params) {
                 // or clear a row whose Team is not live in THIS process; the row's
                 // own root is the Team root, which is not necessarily the boot
                 // root this plugin instance was mounted under.
-                const intentTeam = repos.teamSessions.get(intent.key.rootSessionId);
-                if (intentTeam === undefined)
+                // Strict own-root guard: another Team's durable row (or a previous
+                // world) is not adopted or cleared by this instance.
+                if (intent.key.rootSessionId !== rootSid)
                     continue;
-                if (intent.key.sessionGeneration !== intentTeam.generation) {
+                if (intent.key.sessionGeneration !== config.generation) {
                     // A generation bump invalidates the old latch identity. Withdraw
                     // its native message (when the member is still bound) and clear
                     // the row; keep it if the Inbox cannot confirm the withdrawal.

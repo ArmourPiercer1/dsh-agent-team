@@ -26,6 +26,8 @@ import { createFileWakeIntentStore } from './wake-intent-store.js'
 export interface StoppedWakeMarker {
   readonly key: ReviewWakeKey
   readonly targetSessionId?: string
+  /** The mount root that wrote the marker (owner guard for boot recovery). */
+  readonly ownerRootSessionId?: string
 }
 
 export interface WakeIntentDirectory {
@@ -46,7 +48,7 @@ export interface WakeIntentDirectory {
   isStopped(key: ReviewWakeKey): Promise<boolean>
   readStopped(key: ReviewWakeKey): Promise<StoppedWakeMarker | null>
   listStopped(): Promise<readonly StoppedWakeMarker[]>
-  markStopped(key: ReviewWakeKey, targetSessionId?: string): Promise<void>
+  markStopped(key: ReviewWakeKey, targetSessionId?: string, ownerRootSessionId?: string): Promise<void>
   clearStopped(key: ReviewWakeKey): Promise<void>
 }
 
@@ -75,8 +77,10 @@ export function createFileWakeIntentDirectory(directory: string): WakeIntentDire
       try {
         await access(this.stoppedPathFor(key) as string)
         return true
-      } catch {
-        return false
+      } catch (error) {
+        // Absent is the ONLY non-stop answer. EACCES/EIO/EMFILE/... must keep
+        // the Stop closed rather than re-waking a stopped reviewer.
+        return (error as NodeJS.ErrnoException).code !== 'ENOENT'
       }
     },
     async readStopped(key) {
@@ -111,10 +115,12 @@ export function createFileWakeIntentDirectory(directory: string): WakeIntentDire
       }
       return markers
     },
-    async markStopped(key, targetSessionId) {
-      const marker: StoppedWakeMarker = targetSessionId === undefined
-        ? { key }
-        : { key, targetSessionId }
+    async markStopped(key, targetSessionId, ownerRootSessionId) {
+      const marker: StoppedWakeMarker = {
+        key,
+        ...(targetSessionId === undefined ? {} : { targetSessionId }),
+        ...(ownerRootSessionId === undefined ? {} : { ownerRootSessionId }),
+      }
       // Atomic replace: a crash must leave either the old marker or the full
       // new one, never a truncated JSON that reads as "not stopped".
       const path = this.stoppedPathFor(key) as string

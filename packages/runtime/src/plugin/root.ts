@@ -2598,7 +2598,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             alpha6WakeCoordinators.set(mapKey, coordinator)
           }
           alpha6WakeBySession.set(input.targetSessionId, coordinator)
-          const intent = alpha6WakeIntents?.forKey(key)
+          const baseIntent = alpha6WakeIntents?.forKey(key)
+          const intent = baseIntent === undefined
+            ? undefined
+            : {
+                ...baseIntent,
+                persistQueued: (row: Parameters<typeof baseIntent.persistQueued>[0]) =>
+                  baseIntent.persistQueued({ ...row, ownerRootSessionId: rootSid }),
+              }
           const result = await dispatchLatch({
             plan: { wakes: [wake], humanLegIds: [], held: [] },
             rootSessionId: requestRoot,
@@ -2743,7 +2750,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           const coordinator = alpha6WakeBySession.get(targetSessionId)
           if (coordinator === undefined) return false
           const key = coordinator.state.key
-          await alpha6WakeIntents.markStopped(key, targetSessionId)
+          await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid)
           const transition = coordinator.dispatch({ type: 'stop' })
           if (transition.outcome !== 'applied') return true
           for (const effect of transition.effects) {
@@ -2791,7 +2798,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             // Only a real applied resume re-plans. A coordinator that was not
             // stopped (an ordinary human chat on a live latch) must NOT
             // fabricate a "ready" scan or deliver a spurious wake.
-            if (coordinator.state.stopped) await alpha6WakeIntents.markStopped(key, targetSessionId)
+            if (coordinator.state.stopped) await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid)
             return !coordinator.state.stopped
           }
           // Re-plan the ACTUAL pending work (never an empty synthetic scan):
@@ -2829,9 +2836,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           // already withdrawn). Register its latch as stopped so an explicit
           // resume can find it; this grants nothing and delivers nothing.
           for (const marker of await alpha6WakeIntents.listStopped()) {
-            const markerTeam = repos.teamSessions.get(marker.key.rootSessionId)
-            if (markerTeam === undefined) continue
-            if (marker.key.sessionGeneration !== markerTeam.generation) continue
+            // Strict own-root guard: a durable row from another Team (or a
+            // previous world sharing this HOME) is never ours to clear/adopt.
+            if (marker.key.rootSessionId !== rootSid) continue
+            if (marker.key.sessionGeneration !== config.generation) continue
             const targetSessionId = marker.targetSessionId
             if (targetSessionId === undefined) continue
             const mapKey = `${marker.key.rootSessionId}\u0000${marker.key.reviewerInstanceId}\u0000${String(marker.key.sessionGeneration)}`
@@ -2848,9 +2856,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             // or clear a row whose Team is not live in THIS process; the row's
             // own root is the Team root, which is not necessarily the boot
             // root this plugin instance was mounted under.
-            const intentTeam = repos.teamSessions.get(intent.key.rootSessionId)
-            if (intentTeam === undefined) continue
-            if (intent.key.sessionGeneration !== intentTeam.generation) {
+            // Strict own-root guard: another Team's durable row (or a previous
+            // world) is not adopted or cleared by this instance.
+            if (intent.key.rootSessionId !== rootSid) continue
+            if (intent.key.sessionGeneration !== config.generation) {
               // A generation bump invalidates the old latch identity. Withdraw
               // its native message (when the member is still bound) and clear
               // the row; keep it if the Inbox cannot confirm the withdrawal.

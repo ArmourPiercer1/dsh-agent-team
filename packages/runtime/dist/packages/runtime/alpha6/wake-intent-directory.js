@@ -40,8 +40,10 @@ export function createFileWakeIntentDirectory(directory) {
                 await access(this.stoppedPathFor(key));
                 return true;
             }
-            catch {
-                return false;
+            catch (error) {
+                // Absent is the ONLY non-stop answer. EACCES/EIO/EMFILE/... must keep
+                // the Stop closed rather than re-waking a stopped reviewer.
+                return error.code !== 'ENOENT';
             }
         },
         async readStopped(key) {
@@ -81,10 +83,12 @@ export function createFileWakeIntentDirectory(directory) {
             }
             return markers;
         },
-        async markStopped(key, targetSessionId) {
-            const marker = targetSessionId === undefined
-                ? { key }
-                : { key, targetSessionId };
+        async markStopped(key, targetSessionId, ownerRootSessionId) {
+            const marker = {
+                key,
+                ...(targetSessionId === undefined ? {} : { targetSessionId }),
+                ...(ownerRootSessionId === undefined ? {} : { ownerRootSessionId }),
+            };
             // Atomic replace: a crash must leave either the old marker or the full
             // new one, never a truncated JSON that reads as "not stopped".
             const path = this.stoppedPathFor(key);

@@ -1156,11 +1156,10 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   }
 
   if (A6_INBOX) {
-    // Native-Inbox reconciliation: the Officer is BUSY, so the review wake is
-    // ACCEPTED into the native Inbox but cannot be claimed. SIGKILL the Host,
-    // restart, and prove boot recovery reads the durable intent + the native
-    // Inbox truth: no duplicate wake, no loss. Then a human message starts the
-    // cold turn, which claims the queued wake exactly once.
+    // Native-Inbox reconciliation: the wake turn is held open (30 s mock think
+    // time) AFTER the native Inbox CLAIMED the wake; SIGKILL the Host and
+    // restart. Boot recovery must discard the consumed intent without a
+    // duplicate, while the durable pending Control row survives.
     const markerDir = join(HOME, 'alpha6-wake-intents')
     const intentDeadline = Date.now() + 120_000
     let wakeRows = []
@@ -1177,6 +1176,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const intentBefore = wakeRows.length === 0
       ? null
       : JSON.parse(readFileSync(join(markerDir, wakeRows[0]), 'utf8'))
+    const pendingBefore = readControlLedger(CREATE_ROOT_A6).requests.filter(
+      (r) => !readControlLedger(CREATE_ROOT_A6).decisions.some((d) => d.requestId === r.requestId),
+    ).map((r) => r.requestId)
     let restartError = null
     let wakesAfterRestart = wakesBefore
     let rowsAfterRestart = wakeRows
@@ -1240,9 +1242,10 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       && rowsAfterRestart.length === 0
       && wakesAfterRestart <= wakesBefore + 1
       && wakesAfterDrain <= wakesBefore + 1
-      && pendingAfter.length > 0
+      && pendingBefore.length > 0
+      && pendingBefore.every((id) => pendingAfter.some((r) => r.requestId === id))
     check('A6-25', 'a wake claimed by a crashed turn is reconciled without duplicate: the stale intent is discarded and the durable pending request survives', inboxOk,
-      `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
+      `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} pendingBefore=${pendingBefore.length} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
     writeEvidence('a6-inbox-reconcile.json', {
       busySeen,
       wakesBefore,
@@ -1251,6 +1254,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       intentBefore,
       rowsAfterRestart,
       rowsAfterDrain,
+      pendingBefore,
       restartError,
       mockRequests: mock.requests.length,
     })
