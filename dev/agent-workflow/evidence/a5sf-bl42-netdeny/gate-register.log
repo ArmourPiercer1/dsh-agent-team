@@ -1,0 +1,19 @@
+✔ the register parses into rows and a summary table (0.595157ms)
+✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.448369ms)
+✔ (d) every row has all required fields exactly once (0.734621ms)
+✔ (d) every row declares one consequence class from the closed set, and the table agrees (0.301791ms)
+✔ (a) every finding id is still present in the evidence file that originated it (5.436592ms)
+✔ §6 declarations map one-to-one onto live register rows (0.134845ms)
+✔ (b) every anchor resolves and still contains the symbol the row claims (5.113461ms)
+✔ the register names the evidence it digests and does not claim a boot (0.185461ms)
+✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (0.508162ms)
+✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (3.435975ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.27016
+rc=0

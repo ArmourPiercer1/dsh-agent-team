@@ -9,13 +9,29 @@ pack("@Qi"), prctl(PR_SET_NO_NEW_PRIVS) before landlock_restrict_self.
 Scope discipline (identical to the PoC lanes): the process that runs this
 script confines ITSELF and its children ONLY (P1 entry self-lock; P2 = fork
 WITHOUT exec, then the child self-locks). It writes nothing outside the
-scratch directory it is handed, touches no sysctl/module/namespace, and its
-authoritative capability answer comes from the bare GET_VERSION syscall plus
-REAL enforcement legs — never from an existence check.
+scratch directory it is handed and touches no sysctl/module. BL-42 adds ONE
+capability: a confined child MAY be placed in a fresh network namespace
+(`CLONE_NEWUSER|CLONE_NEWNET`, unprivileged, owned by the child itself — no
+system-wide setting, no host interface, no external process). That namespace
+is created by the confined child for the confined child; the launcher never
+changes the namespace of anything it does not spawn, and it states
+`applied: true` only after reading the child's own `/proc/<pid>/ns/net`
+inode back. Its authoritative capability answer comes from the bare
+GET_VERSION syscall plus REAL enforcement legs — never from an existence check.
 
 Modes:
   --abi-probe
   --enforce-leg {selective,denyall,badhandled} --scratch DIR
+  --net-leg --scratch DIR
+      (BL-42: the network-enforcement leg. The launcher — in the HOST network
+      namespace — binds a loopback TCP listener and a loopback UDP socket,
+      forks a CONTROL child that connects to both (and proves the bytes arrived
+      by echoing a nonce), then forks a DENY child that enters a fresh
+      network namespace and attempts the same two calls. `NET-DENY-CONFIRMED`
+      requires: the deny child's namespace inode differs from the host's, both
+      of its calls fail with a KERNEL/TRANSPORT errno, and the listener's own
+      accept/receive counters did NOT move. The counters are read in the parent
+      process — an out-of-band transport observation, not a flag.)
   --fd-close --scratch DIR [--fd-plan-json JSON]
   --confined-exec --policy FILE --out-dir DIR     (P1: self-lock, then execve
                                                   the untrusted argv; NEVER
@@ -112,7 +128,289 @@ def restrict(rs):
     return r
 
 
+# ---------------------------------------------------------------------------
+# BL-42 — THE NETWORK NAMESPACE MECHANISM
+#
+# One mechanism, measured, never inferred: a fresh `CLONE_NEWUSER|CLONE_NEWNET`
+# pair created by the confined child for itself. The new network namespace is
+# owned by the new user namespace, which is why an UNPRIVILEGED process can
+# create it (no CAP_SYS_ADMIN on the host, no setuid helper, no bwrap
+# dependency) — and why it needs no system setting: `unshare(2)` either returns
+# 0 (the namespace exists, and the child can read its own inode back) or an
+# errno (the mechanism did not happen, and everything downstream refuses).
+#
+# WHAT THIS MECHANISM COVERS, stated so it cannot be read as more:
+#   covered   TCP/UDP connect+send to any address, IPv4 AND IPv6, raw sockets,
+#             AF_UNIX ABSTRACT sockets (the abstract namespace is per-netns),
+#             and the loopback interface itself (this namespace's `lo` is a
+#             different, down device — there is no route to the host's).
+#   NOT covered  AF_UNIX *pathname* sockets: they are filesystem objects, not
+#             network destinations, so a path the effective lane grants stays
+#             reachable. That is a Landlock/lane question, not this one, and it
+#             is disclosed rather than papered over.
+#   NOT covered  an inherited socket FD. The confined child closes every fd the
+#             policy did not declare; a DECLARED fd that happens to be a socket
+#             would cross the boundary, so `refuse_inherited_sockets()` below
+#             refuses that case outright instead of assuming it away.
+CLONE_NEWUSER = 0x10000000
+CLONE_NEWNET = 0x40000000
+
+
+def net_ns_inode_of(pid=None):
+    """The inode of a process's network namespace (the namespace's identity)."""
+    path = "/proc/self/ns/net" if pid is None else f"/proc/{pid}/ns/net"
+    try:
+        return os.stat(path).st_ino
+    except OSError:
+        return None
+
+
+def enter_netns():
+    """Put THIS process in a fresh user+network namespace. Never partial.
+
+    Returns {"applied": True, "net_ns_inode": N, "host_net_ns_inode": M} on
+    success or {"applied": False, "reason": ..., "errno": ...} on failure. A
+    failure is a FAILURE: the caller must not exec a payload under a deny claim
+    it could not apply.
+    """
+    host_ino = net_ns_inode_of()
+    # The kernel's OWN precondition for an unprivileged uid_map/gid_map write is
+    # that the writer is dumpable; a process that entered this tree through a
+    # wrapper which cleared it would otherwise get EPERM on the map (measured).
+    # This does not weaken NoNewPrivs: it is re-read and reported below.
+    libc.prctl(4, 1, 0, 0, 0)  # PR_SET_DUMPABLE
+    # The identity to map is the one BEFORE the namespace switch: inside an
+    # unmapped user namespace `geteuid()` reports the overflow id (65534), and a
+    # map written from that value is refused EPERM (measured on this host).
+    uid, gid = os.geteuid(), os.getegid()
+    r = libc.unshare(ctypes.c_int(CLONE_NEWUSER | CLONE_NEWNET))
+    if r != 0:
+        err = ctypes.get_errno()
+        return {"applied": False, "reason": "unshare(CLONE_NEWUSER|CLONE_NEWNET) refused", "errno": EN.errorcode.get(err, err), "strerror": os.strerror(err)}
+    try:
+        with open("/proc/self/setgroups", "w") as f:
+            f.write("deny")
+    except OSError:
+        pass  # older kernels have no setgroups file; gid_map write below decides
+    for path, line in (("/proc/self/uid_map", f"{uid} {uid} 1"), ("/proc/self/gid_map", f"{gid} {gid} 1")):
+        try:
+            with open(path, "w") as f:
+                f.write(line)
+        except OSError as ex:
+            return {"applied": False, "reason": f"writing {path} refused", "errno": EN.errorcode.get(ex.errno, ex.errno), "strerror": ex.strerror}
+    ino = net_ns_inode_of()
+    if ino is None or host_ino is None or ino == host_ino:
+        return {"applied": False, "reason": "the process did not move to a distinct network namespace", "net_ns_inode": ino, "host_net_ns_inode": host_ino}
+    return {"applied": True, "mechanism": "netns", "net_ns_inode": ino, "host_net_ns_inode": host_ino, "no_new_privs": _no_new_privs()}
+
+
+def _no_new_privs():
+    """The child's own NoNewPrivs bit, read from /proc (a fact, not a claim)."""
+    try:
+        for line in open("/proc/self/status"):
+            if line.startswith("NoNewPrivs:"):
+                return line.split(":")[1].strip() == "1"
+    except OSError:
+        pass
+    return None
+
+
+def inherited_socket_fds():
+    """The fds (>2) this process holds that are SOCKETS, read from /proc.
+
+    Used by the deny lane's fd gate: the fd-closure law removes undeclared fds,
+    and a DECLARED socket fd would be a live transport that a network namespace
+    cannot revoke. Refused, never reasoned away.
+    """
+    out = []
+    try:
+        for name in os.listdir("/proc/self/fd"):
+            try:
+                fd = int(name)
+            except ValueError:
+                continue
+            if fd <= 2:
+                continue
+            try:
+                target = os.readlink(f"/proc/self/fd/{fd}")
+            except OSError:
+                continue
+            if target.startswith("socket:"):
+                out.append({"fd": fd, "target": target})
+    except OSError:
+        pass
+    return out
+
+
+def _connect_once(port, nonce, tcp=True):
+    """One connect/send attempt, returning the kernel's answer (never raising)."""
+    import socket
+    try:
+        if tcp:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(3.0)
+            s.connect(("127.0.0.1", int(port)))
+            s.sendall(nonce.encode())
+            s.close()
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(3.0)
+            s.sendto(nonce.encode(), ("127.0.0.1", int(port)))
+            s.close()
+    except OSError as ex:
+        return {"ok": False, "errno": EN.errorcode.get(ex.errno, ex.errno), "strerror": ex.strerror}
+    return {"ok": True}
+
+
+def _net_child(pipe_w, port_tcp, port_udp, nonce, deny):
+    """The forked transport-attempt child: CONTROL (deny=False) or DENY."""
+    try:
+        ns = {"applied": False, "reason": "not attempted"}
+        if deny:
+            ns = enter_netns()
+            if not ns.get("applied"):
+                os.write(pipe_w, (json.dumps({"net": ns}) + "\n").encode())
+                os._exit(0)
+        if not deny:
+            ns = {"applied": False, "reason": "control child — no namespace change", "net_ns_inode": net_ns_inode_of(), "host_net_ns_inode": net_ns_inode_of()}
+        tcp = _connect_once(port_tcp, nonce, tcp=True)
+        udp = _connect_once(port_udp, nonce, tcp=False)
+        os.write(pipe_w, (json.dumps({"net": ns, "tcp": tcp, "udp": udp}) + "\n").encode())
+    except OSError:
+        pass
+    os._exit(0)
+
+
+def mode_net_leg(scratch):
+    """BL-42 — the measured network-enforcement leg (see the module docstring)."""
+    import select
+    import socket
+    os.makedirs(scratch, exist_ok=True)
+    nonce = os.urandom(12).hex()
+    tcp_srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    tcp_srv.bind(("127.0.0.1", 0))
+    tcp_srv.listen(8)
+    tcp_srv.setblocking(False)
+    udp_srv = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_srv.bind(("127.0.0.1", 0))
+    udp_srv.setblocking(False)
+    port_tcp = tcp_srv.getsockname()[1]
+    port_udp = udp_srv.getsockname()[1]
+    host_ino = net_ns_inode_of()
+    accepted = []      # one entry per accepted TCP connection (the bytes it carried)
+    datagrams = []     # one entry per UDP datagram received
+
+    def drain(timeout=1.5):
+        """Accept/receive everything already there, bounded (out-of-band counts)."""
+        end = None
+        import time
+        end = time.time() + timeout
+        while time.time() < end:
+            r, _, _ = select.select([tcp_srv, udp_srv], [], [], 0.1)
+            if not r:
+                continue
+            for sock in r:
+                if sock is tcp_srv:
+                    while True:
+                        try:
+                            conn, _ = tcp_srv.accept()
+                        except OSError:
+                            break
+                        try:
+                            conn.settimeout(1.0)
+                            accepted.append(conn.recv(64).decode(errors="replace"))
+                        except OSError:
+                            accepted.append("")
+                        finally:
+                            conn.close()
+                else:
+                    while True:
+                        try:
+                            data, _ = udp_srv.recvfrom(64)
+                        except OSError:
+                            break
+                        datagrams.append(data.decode(errors="replace"))
+            if accepted or datagrams:
+                # one more short sweep so a second packet is not missed
+                continue
+
+    def run_child(deny):
+        r_fd, w_fd = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            os.close(r_fd)
+            _net_child(w_fd, port_tcp, port_udp, nonce, deny)
+        os.close(w_fd)
+        buf = b""
+        while True:
+            try:
+                chunk = os.read(r_fd, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            buf += chunk
+        os.close(r_fd)
+        try:
+            os.waitpid(pid, 0)
+        except OSError:
+            pass
+        try:
+            return json.loads(buf.decode().strip().split("\n")[-1])
+        except (ValueError, IndexError):
+            return {"net": {"applied": False, "reason": "child answer unparseable"}, "tcp": {"ok": None}, "udp": {"ok": None}}
+
+    before_tcp, before_udp = len(accepted), len(datagrams)
+    control = run_child(False)
+    drain(1.5)
+    control_tcp, control_udp = len(accepted) - before_tcp, len(datagrams) - before_udp
+    control_nonce_ok = nonce in accepted[before_tcp:before_tcp + control_tcp] and nonce in datagrams[before_udp:before_udp + control_udp]
+
+    deny_before_tcp, deny_before_udp = len(accepted), len(datagrams)
+    deny = run_child(True)
+    drain(1.5)
+    deny_tcp, deny_udp = len(accepted) - deny_before_tcp, len(datagrams) - deny_before_udp
+
+    net = deny.get("net", {}) if isinstance(deny, dict) else {}
+    deny_tcp_answer = deny.get("tcp", {}) if isinstance(deny, dict) else {}
+    deny_udp_answer = deny.get("udp", {}) if isinstance(deny, dict) else {}
+    ns_distinct = bool(net.get("applied")) and net.get("net_ns_inode") is not None and net.get("net_ns_inode") != net.get("host_net_ns_inode")
+    tcp_refused = deny_tcp_answer.get("ok") is False and isinstance(deny_tcp_answer.get("errno"), str)
+    udp_refused = deny_udp_answer.get("ok") is False and isinstance(deny_udp_answer.get("errno"), str)
+
+    checks = [
+        {"name": "CONTROL tcp reaches the listener", "expect": "CONNECTED", "got": "CONNECTED" if control.get("tcp", {}).get("ok") is True else "REFUSED", "match": control.get("tcp", {}).get("ok") is True},
+        {"name": "CONTROL udp reaches the listener", "expect": "DELIVERED", "got": "DELIVERED" if control.get("udp", {}).get("ok") is True else "FAILED", "match": control.get("udp", {}).get("ok") is True},
+        {"name": "CONTROL listener counted the control traffic", "expect": "1/1", "got": f"{control_tcp}/{control_udp}", "match": control_tcp == 1 and control_udp == 1 and control_nonce_ok},
+        {"name": "DENY child moved to a distinct net namespace", "expect": "DISTINCT", "got": "DISTINCT" if ns_distinct else str(net.get("reason", "SAME")), "match": ns_distinct},
+        {"name": "DENY tcp refused by the kernel", "expect": "ERRNO", "got": deny_tcp_answer.get("errno") or "connected", "match": tcp_refused},
+        {"name": "DENY udp refused by the kernel", "expect": "ERRNO", "got": deny_udp_answer.get("errno") or "delivered", "match": udp_refused},
+        {"name": "DENY listener counter unchanged (tcp)", "expect": "0", "got": str(deny_tcp), "match": deny_tcp == 0},
+        {"name": "DENY listener counter unchanged (udp)", "expect": "0", "got": str(deny_udp), "match": deny_udp == 0},
+    ]
+    verdict = "NET-DENY-CONFIRMED" if all(c["match"] for c in checks) else "NO-ENFORCEMENT"
+    emit({
+        "kind": "net-leg",
+        "verdict": verdict,
+        "checks": checks,
+        "mechanism": "netns" if verdict == "NET-DENY-CONFIRMED" else None,
+        "host_net_ns_inode": host_ino,
+        "deny_net_ns_inode": net.get("net_ns_inode"),
+        "listener": {"port_tcp": port_tcp, "port_udp": port_udp, "accepted_total": len(accepted), "datagrams_total": len(datagrams)},
+        "control": {"tcp": control.get("tcp"), "udp": control.get("udp"), "accepted": control_tcp, "datagrams": control_udp, "nonce_matched": control_nonce_ok},
+        "deny": {"net": net, "tcp": deny_tcp_answer, "udp": deny_udp_answer, "accepted": deny_tcp, "datagrams": deny_udp},
+        "coverage": {
+            "covered": ["tcp", "udp", "ipv4", "ipv6", "raw", "af_unix_abstract", "loopback"],
+            "not_covered": ["af_unix_pathname", "inherited_socket_fds (refused by refuse_inherited_sockets)"],
+        },
+        "raw": list(RAW),
+    }, 0 if verdict == "NET-DENY-CONFIRMED" else 1)
+
+
 def chk(name, fn, expect):
+
+
     try:
         fn()
         got, det = "OK", ""
@@ -370,6 +668,7 @@ def build_ruleset(pol, abi, label):
 def mode_confined_exec(policy_path, out_dir):
     with open(policy_path) as f:
         pol = json.load(f)
+    net_deny = pol.get("network") == "deny"
     # The fd-3 reservation is computed BEFORE any fd is allocated here: a later
     # ruleset/policy fd could otherwise masquerade as an inherited channel and
     # the child would close the very ruleset it is about to restrict with.
@@ -392,19 +691,48 @@ def mode_confined_exec(policy_path, out_dir):
     for entry in pol.get("fd_plan", {}).get("declared", []):
         if isinstance(entry.get("fd"), int):
             keep.add(entry["fd"])
+    # BL-42: the child reports what it ACTUALLY applied (namespace facts) on a
+    # dedicated pipe BEFORE execve, so the parent's answer is a measurement of
+    # the payload's own process, not a restatement of the request.
+    net_r, net_w = os.pipe()
     pid = os.fork()
     if pid == 0:
         try:
+            os.close(net_r)
             out_fd = os.open(out_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
             err_fd = os.open(err_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
             os.dup2(out_fd, 1)
             os.dup2(err_fd, 2)
             keep2 = keep | {out_fd, err_fd}
             if pol.get("close_extra_fds", True):
-                close_all_except(keep2 | {rs})
+                # net_w is LAUNCHER-OWNED (it carries the namespace facts and is
+                # closed before execve); without it in the keep set this law would
+                # close the very pipe the measurement travels on.
+                close_all_except(keep2 | {rs, net_w})
             for leaky in reserve:  # unconditional: launcher-owned channels never reach the payload
                 try:
                     os.close(leaky)
+                except OSError:
+                    pass
+            if net_deny:
+                applied = enter_netns()
+                if applied.get("applied"):
+                    sockets = inherited_socket_fds()
+                    if sockets:
+                        applied = {"applied": False, "reason": "a declared inherited fd is a live socket, which a network namespace cannot revoke", "sockets": sockets}
+                        os.write(net_w, (json.dumps({"net": applied}) + "\n").encode())
+                        os._exit(125)
+                os.write(net_w, (json.dumps({"net": applied}) + "\n").encode())
+                try:
+                    os.close(net_w)
+                except OSError:
+                    pass
+                if not applied.get("applied"):
+                    os._exit(125)
+            else:
+                os.write(net_w, (json.dumps({"net": {"applied": False, "reason": "the policy requests no network confinement"}}) + "\n").encode())
+                try:
+                    os.close(net_w)
                 except OSError:
                     pass
             if restrict(rs) != 0:
@@ -415,9 +743,28 @@ def mode_confined_exec(policy_path, out_dir):
             os.execve(argv[0], argv, env)
         except OSError:
             os._exit(126)
+    os.close(net_w)
+    net_buf = b""
+    while True:
+        try:
+            chunk = os.read(net_r, 4096)
+        except OSError:
+            break
+        if not chunk:
+            break
+        net_buf += chunk
+    os.close(net_r)
+    try:
+        net_facts = json.loads(net_buf.decode().strip().split("\n")[-1]).get("net", {})
+    except (ValueError, IndexError):
+        net_facts = {"applied": False, "reason": "the payload child reported no namespace facts"}
     _, st = os.waitpid(pid, 0)
     rc = os.waitstatus_to_exitcode(st)
-    emit({"executed": True, "rc": rc, "pid": pid, "out_ref": out_path, "err_ref": err_path}, 0)
+    if net_deny and not net_facts.get("applied"):
+        # FAIL-CLOSED and NAMED: the deny lane did not run a network-capable
+        # child under a claim it could not keep.
+        emit({"network_unenforced": True, "network": net_facts, "rc": rc, "pid": pid, "raw": list(RAW)}, 4)
+    emit({"executed": True, "rc": rc, "pid": pid, "out_ref": out_path, "err_ref": err_path, "network": net_facts}, 0)
 
 
 # ---------------------------------------------------------------------------
@@ -477,15 +824,37 @@ def mode_confined_exec_stream(policy_path, out_dir, exit_passthrough=False):
     for entry in pol.get("fd_plan", {}).get("declared", []):
         if isinstance(entry.get("fd"), int):
             keep.add(entry["fd"])
+    net_deny = pol.get("network") == "deny"
+    net_r, net_w = os.pipe()
     pid = os.fork()
     if pid == 0:
         try:
+            os.close(net_r)
             hs_close()  # the handshake channel is launcher-owned — never crosses the boundary
             if pol.get("close_extra_fds", True):
                 # pipes 0/1/2 always survive (they ARE the streaming interface); everything
                 # above 2 that the policy did not declare is closed, exactly as on the
                 # one-shot arm (close_all_except only ever touches fds > 2).
-                close_all_except(keep | {rs})
+                close_all_except(keep | {rs, net_w})
+            if net_deny:
+                applied = enter_netns()
+                if applied.get("applied"):
+                    sockets = inherited_socket_fds()
+                    if sockets:
+                        applied = {"applied": False, "reason": "a declared inherited fd is a live socket, which a network namespace cannot revoke", "sockets": sockets}
+                os.write(net_w, (json.dumps({"net": applied}) + "\n").encode())
+                try:
+                    os.close(net_w)
+                except OSError:
+                    pass
+                if not applied.get("applied"):
+                    os._exit(125)
+            else:
+                os.write(net_w, (json.dumps({"net": {"applied": False, "reason": "the policy requests no network confinement"}}) + "\n").encode())
+                try:
+                    os.close(net_w)
+                except OSError:
+                    pass
             if restrict(rs) != 0:
                 os._exit(127)
             os.chdir(pol["cwd"])
@@ -494,8 +863,33 @@ def mode_confined_exec_stream(policy_path, out_dir, exit_passthrough=False):
             os.execve(argv[0], argv, env)
         except OSError:
             os._exit(126)
+    # parent: read the child's namespace facts FIRST (the handshake states what
+    # was applied, so it cannot claim more than the child measured).
+    os.close(net_w)
+    net_buf = b""
+    while True:
+        try:
+            chunk = os.read(net_r, 4096)
+        except OSError:
+            break
+        if not chunk:
+            break
+        net_buf += chunk
+    os.close(net_r)
+    try:
+        net_facts = json.loads(net_buf.decode().strip().split("\n")[-1]).get("net", {})
+    except (ValueError, IndexError):
+        net_facts = {"applied": False, "reason": "the payload child reported no namespace facts"}
+    if net_deny and not net_facts.get("applied"):
+        hs_write({"network_unenforced": True, "network": net_facts})
+        hs_close()
+        try:
+            os.waitpid(pid, 0)
+        except OSError:
+            pass
+        sys.exit(4)
     # parent: handshake, then ZERO hot handles on the payload pipes (0/1/2), then supervise.
-    hs_write({"stream": True, "pid": pid})
+    hs_write({"stream": True, "pid": pid, "network": net_facts})
     hs_close()
     hs_close_quiet(0, 1, 2)
     _, st = os.waitpid(pid, 0)
@@ -553,6 +947,8 @@ def main():
         mode_enforce_leg(a[1], flag("--scratch"))
     elif a[0] == "--fd-close":
         mode_fd_close(flag("--scratch"), flag("--fd-plan-json"))
+    elif a[0] == "--net-leg":
+        mode_net_leg(flag("--scratch"))
     elif a[0] == "--confined-exec":
         mode_confined_exec(flag("--policy"), flag("--out-dir"))
     elif a[0] == "--confined-exec-stream":

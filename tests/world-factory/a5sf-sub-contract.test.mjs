@@ -150,16 +150,16 @@ const CASES = [
     run: armNonShellProgramUnaffected,
   },
   {
-    title: 'P3-PROBE-SHAPE: the real probe says network-destination=unsupported with mechanism/evidence null; absence is a capability gap',
+    title: 'P3-PROBE-SHAPE (BL-42 flip): the real probe says network-destination=enforced WITH a mechanism and a realm-bound evidence row; absence is still a capability gap',
     label: 'p3-probe',
     options: {},
     run: armProbeShape,
   },
   {
-    title: 'P3-DENY-REFUSES-BEFORE-SPAWN: a network=deny lane is NETWORK_UNCONFINED_REALM with zero provider calls and no measurement claim',
+    title: 'P3-DENY-KERNEL-REFUSED (BL-42 flip): a network=deny lane now reaches the provider once and its child runs in a DISTINCT netns — the refusal moved from our admission to the kernel',
     label: 'p3-deny',
     options: { shellClass: { programs: ['bash'] }, network: 'deny' },
-    run: armNetworkDenyRefuses,
+    run: armNetworkDenyKernelRefused,
   },
   {
     title: 'P4-WRITE-AXIS-ATTRIBUTION: a write outside the write lane is spawn:write/IO_WRITE_DENIED while the READ axis allows the same path',
@@ -411,29 +411,41 @@ async function armProbeShape(world) {
   const { probeNetworkDenial } = world.seams.subprocess
   const { network } = world.seams
 
+  // BL-42 FLIP. This arm used to pin `unsupported` with `mechanism: null` and
+  // `evidence: null` — the pre-fix truth. The mechanism now exists, so the same
+  // real provider probe must answer `enforced` AND carry the two things that
+  // make that word evidence rather than intent: a mechanism and a bound
+  // evidence row. The absence arms below are UNCHANGED (they are what keeps the
+  // answer honest when there is nothing to measure).
   const probe = await probeNetworkDenial(world.counted.provider)
   assert.equal(probe.dimension, 'network-destination')
-  assert.equal(probe.level, 'unsupported')
-  assert.match(probe.note, /landlock ABI v7/)
-  assert.match(probe.note, /not a general no-network guarantee/)
+  assert.equal(probe.level, 'enforced', `probe note: ${probe.note}`)
+  assert.match(String(probe.mechanism), /netns/)
+  assert.match(String(probe.evidence), /^evidence:\/\//)
   assert.ok(probe.rows.length >= 1)
   const row = probe.rows.find((candidate) => candidate.dimension === 'network-destination')
   assert.ok(row !== undefined, 'the probe must return a network-destination row')
-  assert.equal(row.level, 'unsupported')
-  // The row is a CAPABILITY statement: nothing was measured for this dimension.
-  assert.equal(row.mechanism, null)
-  assert.equal(row.evidence, null)
-  assert.match(String(row.note), /not a general no-network guarantee/)
+  assert.equal(row.level, 'enforced')
+  assert.notEqual(row.mechanism, null, 'a row without a mechanism is not evidence')
+  assert.notEqual(row.evidence, null, 'a row without an evidence reference is not evidence')
+  assert.match(String(row.realmId), /^realm-a5sf-sub-contract-p3-probe$/, 'the evidence row is bound to THIS realm')
+  assert.match(String(row.trustRoot), /^sha256:[0-9a-f]{16}#/, 'the evidence row is bound to the launcher trust root')
+  assert.match(String(row.note), /NET-DENY-CONFIRMED/, 'the note is the MEASUREMENT the row is based on')
+  assert.match(String(row.note), /listener counter unchanged/)
 
-  // The shipped gate agrees, independently of the face.
-  const gate = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract')
-  assert.equal(gate.ok, false)
-  assert.equal(gate.error.code, 'IO_POLICY_UNSUPPORTED')
-  assert.match(String(gate.error.message), /no provider in this lane demonstrates full network deny/)
+  // The shipped gate agrees, independently of the face: a PROOF admits, and a
+  // bare level still does not.
+  const noProof = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract')
+  assert.equal(noProof.ok, false)
+  assert.equal(noProof.error.code, 'IO_POLICY_UNSUPPORTED')
+  assert.match(String(noProof.error.message), /no provider in this lane demonstrates full network deny/)
+  const proved = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract', { mechanism: 'netns', evidence: 'evidence://x/1', netNsInode: 1, hostNetNsInode: 2 })
+  assert.equal(proved.ok, true)
   const gateRow = network.networkProbeRow(7, 'realm-a5sf-sub-contract')
   assert.equal(gateRow.dimension, 'network-destination')
   assert.equal(gateRow.level, 'unsupported')
   assert.match(String(gateRow.note), /landlock ABI v7/)
+  assert.equal(gateRow.mechanism, null)
 
   // ABSENCE IS NOT A MEASUREMENT. No probe, a refusing probe, and a probe with
   // no network row are all "enforcement cannot be proven" — never "zero
@@ -455,32 +467,39 @@ async function armProbeShape(world) {
   assert.equal(throwingProbe.level, 'unsupported')
   assert.match(throwingProbe.note, /threw/)
 
-  for (const candidate of [probe, noProbe, refusedProbe, missingRow, throwingProbe]) {
+  // BL-42: a bare `enforced` LEVEL is not evidence either.
+  const bareLevel = await probeNetworkDenial({ probe: async () => ({ ok: true, value: [{ dimension: 'network-destination', level: 'enforced', note: 'trust me' }] }) })
+  assert.equal(bareLevel.level, 'unsupported')
+  assert.match(bareLevel.note, /NO mechanism/)
+
+  for (const candidate of [probe, noProbe, refusedProbe, missingRow, throwingProbe, bareLevel]) {
     assertCapabilityNotMeasurement(candidate.note, 'a probe note')
   }
 }
 
-async function armNetworkDenyRefuses(world) {
+async function armNetworkDenyKernelRefused(world) {
   assert.equal(world.effective.network.access, 'deny', 'the lane under test must request network=deny')
+  // The command reports the namespace it ACTUALLY runs in and whether the
+  // loopback is reachable at all in it. The claim being tested is that the OS,
+  // not the admission layer, is now the boundary.
   const spawned = await world.spawn(spawnSpec({
-    argv: ['/bin/bash', '-c', 'printf NETWORK-DENIED'],
+    argv: ['/bin/bash', '-c', "python3 -c \"import os,socket;s=socket.socket();s.settimeout(2);print('NS',os.stat('/proc/self/ns/net').st_ino)\ntry:\n s.connect(('127.0.0.1',9));print('CONNECTED')\nexcept OSError as e:print('ERR',e.errno,e.strerror)\""],
     cwd: world.fixtures.inside,
     shell: shellDeclaration(),
   }))
-  assert.equal(spawned.code, 'NETWORK_UNCONFINED_REALM', `got ${spawned.code}`)
-  assert.equal(spawned.after, spawned.before, 'a network-denied spawn must not reach the provider')
-  assert.equal(spawned.after, 0)
-  assert.equal(world.counted.requests.length, 0, 'no SpawnRequest may be built under an unenforced deny')
-  const detail = String(spawned.error?.message ?? spawned.error?.detail ?? '')
-  assert.match(detail, /network-destination='unsupported'/)
-  assert.match(detail, /network=deny/)
-  assert.match(detail, /capability probe reports/)
-  assertCapabilityNotMeasurement(detail, 'the network refusal')
+  // BL-42 FLIP: this arm used to assert NETWORK_UNCONFINED_REALM with ZERO
+  // provider calls, because no backend proved enforcement. The backend now
+  // does, so the face ADMITS the spawn exactly once and the kernel refuses the
+  // child. The pre-fix refusal is still measured — against a launcher without
+  // the mechanism — in `a5sf-bl42-netdeny.test.mjs` arm P0.
+  assert.equal(spawned.error, undefined, `the deny lane must now be admitted: ${spawned.code ?? ''}`)
+  assert.equal(spawned.after - spawned.before, 1, 'exactly one provider spawn')
+  const text = String(spawned.text ?? '')
+  assert.match(text, /^NS \d+$/m, `the child must report the namespace it ran in: ${text}`)
+  const childNs = Number(/^NS (\d+)$/m.exec(text)?.[1] ?? NaN)
+  assert.ok(Number.isFinite(childNs), `unparsable namespace line: ${text}`)
+  assert.match(text, /ERR (101|111|113) /, `the child's own attempt must carry a kernel errno: ${text}`)
 }
-
-// ---------------------------------------------------------------------------
-// P4 — write-lane ordering and attribution
-// ---------------------------------------------------------------------------
 
 async function armWriteAxisAttribution(world) {
   const beforeFacts = world.facts.length

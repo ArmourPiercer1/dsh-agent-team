@@ -1,0 +1,77 @@
+{
+  "schema": "a5sf-bl42-mutation-controls/1",
+  "at": "2026-11-06T19:47:56.333Z",
+  "arms": "tests/world-factory/a5sf-bl42-netdeny.test.mjs",
+  "mutantCount": 2,
+  "baseline": {
+    "arms": {
+      "A1": "GREEN",
+      "A2": "GREEN",
+      "A2b": "GREEN",
+      "A3": "GREEN",
+      "P0": "GREEN",
+      "A5": "GREEN",
+      "A6": "GREEN"
+    },
+    "rc": 0
+  },
+  "controls": [
+    {
+      "id": "MA-mechanism-not-applied",
+      "description": "the launcher never enters the network namespace (the pre-BL-42 behaviour)",
+      "expectedRed": [
+        "A1",
+        "A2",
+        "A3",
+        "A5"
+      ],
+      "observedRed": [
+        "A1",
+        "A2",
+        "A3",
+        "A5"
+      ],
+      "expectedGreen": [
+        "A2b",
+        "P0",
+        "A6"
+      ],
+      "observedGreen": [
+        "A2b",
+        "P0",
+        "A6"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "id": "MB-probe-honesty-removed",
+      "description": "the shared probe HARD-CODES `enforced` for the network dimension instead of reading the backend's own level (the intent reported as the measurement)",
+      "expectedRed": [
+        "A2b",
+        "P0"
+      ],
+      "observedRed": [
+        "A2b",
+        "P0"
+      ],
+      "expectedGreen": [
+        "A1",
+        "A2",
+        "A3",
+        "A5",
+        "A6"
+      ],
+      "observedGreen": [
+        "A1",
+        "A2",
+        "A3",
+        "A5",
+        "A6"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ],
+  "verdict": "PASS"
+}

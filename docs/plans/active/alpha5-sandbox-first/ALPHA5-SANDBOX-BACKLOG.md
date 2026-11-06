@@ -336,6 +336,23 @@ read/write/chmod root）+ `team-sandbox/src/terminal.ts` 的持久进程领域�
 functional" 需要实测拒绝 egress/DNS/connect（0 connect）+ allow 路径仍工作 + 负控；③ Web
 service-level 的 deny 拒绝**不得**被推广成「任意子进程已被网络隔离」；④ 本面 live 半场在 BL-42
 落地前只能验「拒绝路径」，不能验「离线可用」。
+> **2026-11-11 BL-42 注记（只追加）**：真实 OS/进程边界 deny 后端**已有候选实现**（draft PR
+> `BL42-NETDENY`，分支 `task/a5sf-bl42-netdeny-20261111`，**未合并**）。机制 = 每个受限子进程一个非特权
+> network namespace（`unshare(CLONE_NEWUSER|CLONE_NEWNET)`），launcher 自建、子进程自有；**实测**而非
+> 推断：同一调用的对照子进程到达 loopback listener（`accepted=1`、nonce 匹配），deny 子进程的
+> `connect`/`sendto` 得 `ENETUNREACH`、listener 计数 `0/0`、其 `/proc/self/ns/net` inode 与 host 不同。
+> provider 的 network 行因此可为 `enforced`，但**只在** mechanism 非空 + 绑定 realm/trustRoot 的
+> `evidence://` 行存在时才被共享 probe 接受（只有 level 的 `enforced` 仍判 `unsupported`）；无
+> `NetworkEnforcementProof` 时 `evaluateNetworkRequirement('deny')` 仍返回 `IO_POLICY_UNSUPPORTED`。
+> 负控保留并每次重测：把机制从 launcher 移除 ⇒ probe 回 `unsupported`、deny 车道仍在**准入层**
+> `NETWORK_UNCONFINED_REALM` 拒绝、0 provider 调用；变异控制 MA（机制不施加）令 A1/A2/A3/A5 红、
+> P0/A2b/A6 绿，MB（probe 硬编码 `enforced`）令 A2b/P0 红、其余绿。**未证**：`AF_UNIX` pathname
+> socket、继承 socket fd（改为直接拒绝，不再尝试容纳）、DNS 仅作为 loopback 形状的 UDP 传输、
+> `network: restricted` 未动、**0 次启动 / 无 `DEV-LIVE` 行**、§7 item 5 的 live Host 半场未做。
+> 因此本注记**不移动任何矩阵等级或 `V@B`**，也不构成 BL-17/18 的 feature 验收（owner 裁决 ②：拒绝启动
+> 不算通过；这里的验收点是「真实的 deny 子进程被内核拒绝 + allow 路径仍工作 + 负控」）。
+> 证据 `dev/agent-workflow/evidence/a5sf-bl42-netdeny/README.md`。
+
 
 #### P1 — 基础体系（G1）
 

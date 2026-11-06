@@ -166,9 +166,17 @@ export function fakeProvider({ network = 'unsupported' } = {}) {
     },
   }
   if (network !== 'absent') {
+    // BL-42: an `enforced` answer must come WITH a mechanism and an evidence
+    // row (the shared probe refuses a bare level). The hypothetical backend
+    // below is therefore a *proven* one; the unproven shape has its own arm.
     provider.probe = async () => ({
       ok: true,
-      value: [{ dimension: 'network-destination', level: network, note: `fake provider probe: network-destination=${network}` }],
+      value: [{
+        dimension: 'network-destination',
+        level: network,
+        note: `fake provider probe: network-destination=${network}`,
+        ...(network === 'enforced' ? { mechanism: 'fake-netns (fixture)', evidence: 'evidence://fake/bl42-bash' } : {}),
+      }],
     })
   }
   return provider

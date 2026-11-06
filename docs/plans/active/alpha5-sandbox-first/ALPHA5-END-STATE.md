@@ -124,6 +124,18 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 > `OPEN`，按只追加纪律**不改那一格**；同时上表 PD-13 行也仍写 `OPEN`，而登记册中 PD-13 已于 PR
 > **#642** 闭合（master 提交 `c91c72bca`）。两处均以登记册为准。真实用户侧的产品默认（Team 以
 > operator 启动目录为 workspace）**未变**，PD-14 关掉的是我们 World 测出的那条可写路径。
+> **2026-11-11 追加（BL-42，只追加）**：**网络 deny 后端已有候选实现**——draft PR `BL42-NETDENY`
+> （分支 `task/a5sf-bl42-netdeny-20261111`，**未合并**，**0 次启动**）。机制 = 每个受限子进程一个非特权
+> network namespace，由 launcher 自身创建并**实测**：对照子进程连上 loopback listener（`accepted=1`、nonce
+> 匹配），deny 子进程 `connect`/`sendto` 得 `ENETUNREACH`、listener 计数 `0/0`，子进程自己的
+> `/proc/self/ns/net` inode 与 host 不同；capability row 由 `unsupported` 变 `enforced`（带 mechanism +
+> 绑定 realm/trustRoot 的 `evidence://` 行）。**没有 mechanism 或没有 evidence 的 `enforced` 仍是
+> `unsupported`**；把机制从 launcher 移除后 probe 回到 `unsupported`、deny 车道仍在准入层
+> `NETWORK_UNCONFINED_REALM` 拒绝且 0 provider 调用（负控每次重测）。**未证**：`AF_UNIX` pathname
+> socket、继承 socket fd（改为直接拒绝）、DNS 仅按 loopback 形状的 UDP 传输被测；§7 item 5 的 live Host
+> 半场未做。因此本条**不改变任何 grade / `V@B` / release 状态**，矩阵与 §7 的 live 口径按原文保留。
+> 证据 `dev/agent-workflow/evidence/a5sf-bl42-netdeny/README.md`（§7 逐项表：严格读法 **4/5**）。
+
 
 `PRODUCT-DEBT-REGISTER.md` 把 PD-7/PD-9 写成 “draft PR #619/#620”；`git log origin/master` 显示两者
 已 squash 合入（提交号见上表）。这是**状态更新，不是内容改写**。

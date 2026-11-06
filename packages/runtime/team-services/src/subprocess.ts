@@ -198,6 +198,15 @@ export interface ConfinedCapabilityRow {
   readonly dimension: string
   readonly level: string
   readonly note?: string | undefined
+  /**
+   * BL-42 — the mechanism the backend names for this row (required for an
+   * `enforced` network answer). Optional here because the OTHER dimensions
+   * keep their historical three-field shape; the probe treats a missing
+   * mechanism on `network-destination: enforced` as `unsupported`.
+   */
+  readonly mechanism?: string | null | undefined
+  /** BL-42 — the recorded evidence reference for this row, when it carries one. */
+  readonly evidence?: string | null | undefined
 }
 
 /** The one provider method a confined spawn needs. */
@@ -964,6 +973,14 @@ export interface ConfinedNetworkCapabilityProbe {
   readonly level: 'enforced' | 'unsupported'
   /** The probe's own note (or why no row was available). */
   readonly note: string
+  /**
+   * BL-42 — the mechanism the backend named for an `enforced` answer. `null`
+   * for every `unsupported` answer (and for an `enforced` row that named none,
+   * which is itself treated as `unsupported`).
+   */
+  readonly mechanism?: string | null
+  /** BL-42 — the evidence reference the backend's row carried, or `null`. */
+  readonly evidence?: string | null
   /** The raw capability rows the backend returned (empty when it has no probe). */
   readonly rows: readonly ConfinedCapabilityRow[]
 }
@@ -1008,10 +1025,26 @@ export async function probeNetworkDenial(provider: NetworkCapabilityProbeCarrier
   if (row === undefined) {
     return unsupported('the confined provider reported no network-destination capability row; enforcement cannot be proven')
   }
+  // BL-42 — A LEVEL ALONE IS NOT EVIDENCE. The bar (§7 item 1) asks for a
+  // mechanism AND a recorded evidence row, so an `enforced` answer without both
+  // is treated as `unsupported`: this is what stops "the code intends to
+  // enforce" from ever being read as "the mechanism was applied". The real
+  // provider now supplies both from its own measured net leg; a fixture or a
+  // future backend that cannot is refused by the same gate.
+  if (row.level === 'enforced') {
+    if (typeof row.mechanism !== 'string' || row.mechanism.trim() === '') {
+      return unsupported(`the confined provider reported network-destination='enforced' with NO mechanism — a level without a mechanism is not evidence; enforcement cannot be proven`)
+    }
+    if (typeof row.evidence !== 'string' || row.evidence.trim() === '') {
+      return unsupported(`the confined provider reported network-destination='enforced' with mechanism '${row.mechanism}' but NO evidence row — an unrecorded mechanism is not evidence; enforcement cannot be proven`)
+    }
+  }
   return Object.freeze({
     dimension: 'network-destination' as const,
     level: row.level === 'enforced' ? 'enforced' as const : 'unsupported' as const,
     note: typeof row.note === 'string' && row.note !== '' ? row.note : `probe reported network-destination='${row.level}'`,
+    mechanism: typeof row.mechanism === 'string' && row.mechanism !== '' ? row.mechanism : null,
+    evidence: typeof row.evidence === 'string' && row.evidence !== '' ? row.evidence : null,
     rows: Object.freeze([...rows]),
   })
 }

@@ -33,7 +33,7 @@ import { refuse } from './contract-stub.js';
 import { advancePhase } from './phases.js';
 import { compileFdPlan, fdPlanToPayload } from './fd-inheritance.js';
 import { evaluateNetworkRequirement } from './network.js';
-import { createLauncherDeps, probeToCapabilities, runAbiProbe, runAvailabilityPreflight, runEnforcementLeg, verifyLauncherIntegrity, ENFORCEMENT_LEGS, } from './probe-abi.js';
+import { createLauncherDeps, probeToCapabilities, runAbiProbe, runAvailabilityPreflight, runEnforcementLeg, runNetworkLeg, verifyLauncherIntegrity, ENFORCEMENT_LEGS, } from './probe-abi.js';
 import { recordLegEvidence, verifyHardProfileEvidence } from './realm-evidence.js';
 const EVIDENCE_BASE = 'evidence://a5p4/probe';
 /** R1: the launcher's record is `{pid,rc}` — a few dozen bytes. Anything
@@ -77,6 +77,31 @@ function readExitRecord(outDir, expectedPid) {
         return { form: 'pid-mismatch', recordPid: rec.pid };
     return { form: 'recorded', rc: rec.rc, pid: rec.pid };
 }
+/**
+ * BL-42 — derive the `deny` admission proof from the capture rows.
+ *
+ * A row that says `enforced` without BOTH a non-empty mechanism and an evidence
+ * reference is NOT a proof: it is the "probe says so because the code intends
+ * it" defect, and it yields `null` here so the gate refuses. The inodes come
+ * from the row's own note-free fields? They do not exist on the row, so they are
+ * re-read from the captured net leg by the caller-independent reader below.
+ */
+function networkProofOf(rows, net) {
+    const row = rows.find((candidate) => candidate.dimension === 'network-destination');
+    if (row === undefined || row.level !== 'enforced')
+        return null;
+    if (typeof row.mechanism !== 'string' || row.mechanism.trim() === '')
+        return null;
+    if (typeof row.evidence !== 'string' || row.evidence.trim() === '')
+        return null;
+    const netNsInode = net?.denyNetNsInode ?? null;
+    const hostNetNsInode = net?.hostNetNsInode ?? null;
+    // The namespace identities are MEASURED; a row without them is not a proof
+    // (a provider whose leg did not report inodes cannot have confirmed one).
+    if (typeof netNsInode !== 'number' || typeof hostNetNsInode !== 'number' || netNsInode === hostNetNsInode)
+        return null;
+    return { mechanism: row.mechanism, evidence: row.evidence, netNsInode, hostNetNsInode };
+}
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export function createConfinedProcessProvider(opts) {
     // Accessor casts: the runtime program carries the plugin node-min ambient
@@ -104,7 +129,11 @@ export function createConfinedProcessProvider(opts) {
             const legs = {};
             for (const leg of ENFORCEMENT_LEGS)
                 legs[leg] = runEnforcementLeg(launcher, leg, join(opts.scratchRoot, `probe-${stamp}`, leg));
-            return { abiVersion: abi.abiVersion, legs };
+            // BL-42: the network leg is its own mechanism and its own observation; it
+            // is run here (once per provider instance, with the same launcher bytes
+            // the other legs use) so the capability row it feeds is a measurement.
+            const net = runNetworkLeg(launcher, join(opts.scratchRoot, `probe-${stamp}`, 'net'));
+            return { abiVersion: abi.abiVersion, legs, net };
         },
     };
     const plans = new Map();
@@ -313,8 +342,8 @@ export function createConfinedProcessProvider(opts) {
         const facts = deps.probeFacts();
         const evidenceRef = `${EVIDENCE_BASE}/${opts.realmId}/${Date.now().toString(36)}`;
         const legs = Object.entries(facts.legs).map(([leg, v]) => recordLegEvidence(leg, v?.verdict ?? 'MIXED/FAILED', evidenceRef, ['--enforce-leg', leg]));
-        const rows = probeToCapabilities({ kind: facts.abiVersion === null ? 'abi-unavailable' : 'abi-available', abiVersion: facts.abiVersion, rawLines: [], syscall: 'landlock_create_ruleset(NULL,0,GET_VERSION)' }, facts.legs, { realmId: opts.realmId, trustRoot: opts.trustRoot, evidenceRef });
-        captured = { rows, evidence: { realmId: opts.realmId, trustRoot: opts.trustRoot, abiVersion: facts.abiVersion, legs, capabilities: rows } };
+        const rows = probeToCapabilities({ kind: facts.abiVersion === null ? 'abi-unavailable' : 'abi-available', abiVersion: facts.abiVersion, rawLines: [], syscall: 'landlock_create_ruleset(NULL,0,GET_VERSION)' }, facts.legs, { realmId: opts.realmId, trustRoot: opts.trustRoot, evidenceRef }, facts.net ?? null);
+        captured = { rows, evidence: { realmId: opts.realmId, trustRoot: opts.trustRoot, abiVersion: facts.abiVersion, legs, capabilities: rows }, net: facts.net ?? null };
         return { ok: true, value: rows };
     }
     /** prepare(): every gate BEFORE any process exists; compiles the launcher policy. */
@@ -328,12 +357,16 @@ export function createConfinedProcessProvider(opts) {
         if (request.realmId !== opts.realmId) {
             return refuse('IO_POLICY_UNSUPPORTED', `realm confusion: request carries realm '${request.realmId}', this provider is bound to '${opts.realmId}'`);
         }
-        const net = evaluateNetworkRequirement(request.networkProfile, request.realmId);
-        if (!net.ok)
-            return net;
+        // BL-42 — THE ORDER IS THE POINT. The provider's own probe runs FIRST, so the
+        // `deny` gate below is answered by a MEASURED capability row (mechanism +
+        // evidence + namespace inodes from the net leg) instead of by an intention.
+        // A `deny` request without that row refuses here, before any plan exists.
         const p = await probe();
         if (!p.ok)
             return p;
+        const net = evaluateNetworkRequirement(request.networkProfile, request.realmId, networkProofOf(captured?.rows ?? [], captured?.net ?? null));
+        if (!net.ok)
+            return net;
         if (captured !== null && captured.evidence.abiVersion === null) {
             // The authoritative probe measured NO landlock ABI on this host.
             // Confinement is impossible and the naked-spawn arm does not exist.
@@ -391,6 +424,9 @@ export function createConfinedProcessProvider(opts) {
             })),
             fd_plan: fdPlanToPayload(compiled.plan),
             close_extra_fds: true,
+            // BL-42: present ONLY for a deny lane the probe has already proved, so
+            // every other policy file stays byte-identical to its pre-BL-42 form.
+            ...(request.networkProfile === 'deny' ? { network: 'deny' } : {}),
         };
         writeFileSync(policyPath, JSON.stringify(policy));
         const plan = Object.freeze({ planId, phase: 'prepared', request, policyPath, outDir, fdPlan: compiled.plan });
@@ -433,6 +469,11 @@ export function createConfinedProcessProvider(opts) {
         if (answer['abi_unavailable'] === true) {
             return refuse('SANDBOX_UNAVAILABLE', 'the confined launcher measured no landlock ABI at exec time and refused to run the payload unconfined');
         }
+        if (answer['network_unenforced'] === true) {
+            const netFacts = typeof answer['network'] === 'object' && answer['network'] !== null ? answer['network'] : {};
+            return refuse('SANDBOX_UNAVAILABLE', `confined spawn refused: the deny lane could not apply the network mechanism (${String(netFacts['reason'] ?? 'no reason reported')}); `
+                + 'a network-capable child is never run under a deny claim this launcher could not keep');
+        }
         const readOut = (ref) => {
             if (typeof ref !== 'string')
                 return '';
@@ -458,7 +499,23 @@ export function createConfinedProcessProvider(opts) {
         });
         auditSettledLease(lease); // spawnSync semantics: born terminal — straight to the audit ledger
         const pid = typeof answer['pid'] === 'number' ? answer['pid'] : 0;
-        const receipt = Object.freeze({ lease, processIdentity: `pid:${pid}:${plan.planId}` });
+        // BL-42: the child reported what it APPLIED (namespace inodes) before execve;
+        // it rides the receipt so a consumer can cite the applied mechanism per
+        // spawn instead of re-reading the probe.
+        const netApplied = typeof answer['network'] === 'object' && answer['network'] !== null ? answer['network'] : null;
+        const receipt = Object.freeze({
+            lease,
+            processIdentity: `pid:${pid}:${plan.planId}`,
+            ...(netApplied !== null && netApplied['applied'] === true
+                ? {
+                    network: Object.freeze({
+                        mechanism: typeof netApplied['mechanism'] === 'string' ? netApplied['mechanism'] : 'netns',
+                        netNsInode: typeof netApplied['net_ns_inode'] === 'number' ? netApplied['net_ns_inode'] : null,
+                        hostNetNsInode: typeof netApplied['host_net_ns_inode'] === 'number' ? netApplied['host_net_ns_inode'] : null,
+                    }),
+                }
+                : {}),
+        });
         return { ok: true, value: Object.freeze({ receipt, output: Object.freeze({ stdout, stderr, combined: stdout + stderr }), lease }) };
     }
     /** spawn(): prepare + execute as ONE call (the frozen seam's shape). */
@@ -505,6 +562,10 @@ export function createConfinedProcessProvider(opts) {
             await Promise.race([proc.exit.catch(() => undefined), sleep(2_000)]);
             if (handshake?.['abi_unavailable'] === true) {
                 return refuse('SANDBOX_UNAVAILABLE', 'the confined launcher measured no landlock ABI at stream-exec time and refused to run the payload unconfined');
+            }
+            if (handshake?.['network_unenforced'] === true) {
+                const netFacts = typeof handshake['network'] === 'object' && handshake['network'] !== null ? handshake['network'] : {};
+                return refuse('SANDBOX_UNAVAILABLE', `streaming launcher could not apply the network mechanism (${String(netFacts['reason'] ?? 'no reason reported')}) — no handle is issued under a deny claim it could not keep`);
             }
             return refuse('SANDBOX_UNAVAILABLE', `streaming launcher handshake missing, unparsable or timed out (${String(handshakeTimeoutMs)}ms) — no streaming handle is issued`);
         }

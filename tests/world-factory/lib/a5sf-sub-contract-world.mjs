@@ -287,6 +287,7 @@ export async function makeSubContractWorld({
   network = 'allow',
   laneRoots = {},
   withNativeModule = true,
+  launcherOverride = null,
 }) {
   const seams = await loadSubContractSeams(repoRoot)
   const {
@@ -339,11 +340,19 @@ export async function makeSubContractWorld({
   bindScopeParent(agentKey, standingKey)
 
   const realmId = `realm-a5sf-sub-contract-${label}`
+  // BL-42 mutation control: a World may point the SAME product provider at a
+  // DIFFERENT launcher (a mutant copy), pinned to the copy's own bytes. That is
+  // how "the mechanism was removed" is measured on the real seam instead of
+  // simulated: the provider is the product's, only the trusted bytes differ.
+  const launcherPath = launcherOverride === null ? launcher : launcherOverride.path
+  const launcherPin = launcherOverride === null
+    ? launcherSha256
+    : createHash('sha256').update(readFileSync(launcherOverride.path)).digest('hex')
   const raw = providerModule.createConfinedProcessProvider({
     realmId,
-    trustRoot: `sha256:${launcherSha256.slice(0, 16)}#${launcher}`,
+    trustRoot: `sha256:${launcherPin.slice(0, 16)}#${launcherPath}`,
     scratchRoot: join(dir, 'scratch'),
-    assembly: { launcherPath: launcher, launcherSha256, minAbiVersion: 3 },
+    assembly: { launcherPath, launcherSha256: launcherPin, minAbiVersion: 3 },
   })
   const counted = countingProvider(raw)
 
