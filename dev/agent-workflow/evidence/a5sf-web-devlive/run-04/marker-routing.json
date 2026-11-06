@@ -1,0 +1,438 @@
+{
+  "decidedBy": "the driver's own decide() log, aligned 1:1 with the mock request order",
+  "markers": {
+    "discovery": "MK_BL18_DISC",
+    "create": "MK_BL18_CREATE",
+    "fetch": "MK_BL18_FETCH",
+    "search": "MK_BL18_SEARCH",
+    "collect": "MK_BL18_COLLECT"
+  },
+  "requests": [
+    {
+      "seq": 1,
+      "tools": [],
+      "markers": [
+        "MK_BL18_DISC"
+      ],
+      "wholeTurnKind": "title",
+      "routed": {
+        "seq": 1,
+        "mockSeq": 1,
+        "at": "2026-11-06T08:49:10.941Z",
+        "wholeTurnKind": "title",
+        "lastUserKind": null,
+        "effectiveKind": "title",
+        "markers": [],
+        "servedCount": 1,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 2,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_DISC"
+      ],
+      "wholeTurnKind": "discovery",
+      "routed": {
+        "seq": 2,
+        "mockSeq": 2,
+        "at": "2026-11-06T08:49:10.943Z",
+        "wholeTurnKind": "discovery",
+        "lastUserKind": null,
+        "effectiveKind": "discovery",
+        "markers": [],
+        "servedCount": 1,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 3,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_CREATE"
+      ],
+      "wholeTurnKind": "create",
+      "routed": {
+        "seq": 3,
+        "mockSeq": 3,
+        "at": "2026-11-06T08:49:11.458Z",
+        "wholeTurnKind": "create",
+        "lastUserKind": "create",
+        "effectiveKind": "create",
+        "markers": [
+          "MK_BL18_CREATE"
+        ],
+        "servedCount": 1,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 4,
+      "tools": [],
+      "markers": [
+        "MK_BL18_CREATE"
+      ],
+      "wholeTurnKind": "title",
+      "routed": {
+        "seq": 4,
+        "mockSeq": 4,
+        "at": "2026-11-06T08:49:11.459Z",
+        "wholeTurnKind": "title",
+        "lastUserKind": "title",
+        "effectiveKind": "title",
+        "markers": [
+          "MK_BL18_CREATE"
+        ],
+        "servedCount": 2,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 5,
+      "tools": [],
+      "markers": [
+        "MK_BL18_FETCH"
+      ],
+      "wholeTurnKind": "title",
+      "routed": {
+        "seq": 5,
+        "mockSeq": 5,
+        "at": "2026-11-06T08:49:11.687Z",
+        "wholeTurnKind": "title",
+        "lastUserKind": "title",
+        "effectiveKind": "title",
+        "markers": [
+          "MK_BL18_FETCH"
+        ],
+        "servedCount": 3,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 6,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "web_fetch",
+        "web_search",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_FETCH"
+      ],
+      "wholeTurnKind": "fetch",
+      "routed": {
+        "seq": 6,
+        "mockSeq": 6,
+        "at": "2026-11-06T08:49:11.688Z",
+        "wholeTurnKind": "fetch",
+        "lastUserKind": "fetch",
+        "effectiveKind": "fetch",
+        "markers": [
+          "MK_BL18_FETCH"
+        ],
+        "servedCount": 1,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "web_fetch"
+      }
+    },
+    {
+      "seq": 7,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "web_fetch",
+        "web_search",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_FETCH"
+      ],
+      "wholeTurnKind": "fetch",
+      "routed": {
+        "seq": 7,
+        "mockSeq": 7,
+        "at": "2026-11-06T08:49:11.744Z",
+        "wholeTurnKind": "fetch",
+        "lastUserKind": null,
+        "effectiveKind": "fetch",
+        "markers": [
+          "MK_BL18_FETCH"
+        ],
+        "servedCount": 2,
+        "disposition": "exhausted",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 8,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_CREATE"
+      ],
+      "wholeTurnKind": "create",
+      "routed": {
+        "seq": 8,
+        "mockSeq": 8,
+        "at": "2026-11-06T08:49:11.869Z",
+        "wholeTurnKind": "create",
+        "lastUserKind": null,
+        "effectiveKind": "create",
+        "markers": [
+          "MK_BL18_CREATE"
+        ],
+        "servedCount": 2,
+        "disposition": "exhausted",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 9,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "web_fetch",
+        "web_search",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_SEARCH"
+      ],
+      "wholeTurnKind": "search",
+      "routed": {
+        "seq": 9,
+        "mockSeq": 9,
+        "at": "2026-11-06T08:49:12.246Z",
+        "wholeTurnKind": "search",
+        "lastUserKind": "search",
+        "effectiveKind": "search",
+        "markers": [
+          "MK_BL18_SEARCH"
+        ],
+        "servedCount": 1,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "web_search"
+      }
+    },
+    {
+      "seq": 10,
+      "tools": [],
+      "markers": [
+        "MK_BL18_SEARCH"
+      ],
+      "wholeTurnKind": "title",
+      "routed": {
+        "seq": 10,
+        "mockSeq": 10,
+        "at": "2026-11-06T08:49:12.247Z",
+        "wholeTurnKind": "title",
+        "lastUserKind": "title",
+        "effectiveKind": "title",
+        "markers": [
+          "MK_BL18_SEARCH"
+        ],
+        "servedCount": 4,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 11,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "web_fetch",
+        "web_search",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_SEARCH"
+      ],
+      "wholeTurnKind": "search",
+      "routed": {
+        "seq": 11,
+        "mockSeq": 11,
+        "at": "2026-11-06T08:49:12.308Z",
+        "wholeTurnKind": "search",
+        "lastUserKind": null,
+        "effectiveKind": "search",
+        "markers": [
+          "MK_BL18_SEARCH"
+        ],
+        "servedCount": 2,
+        "disposition": "exhausted",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 12,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_BL18_CREATE"
+      ],
+      "wholeTurnKind": "create",
+      "routed": {
+        "seq": 12,
+        "mockSeq": 12,
+        "at": "2026-11-06T08:49:12.450Z",
+        "wholeTurnKind": "create",
+        "lastUserKind": null,
+        "effectiveKind": "create",
+        "markers": [
+          "MK_BL18_CREATE"
+        ],
+        "servedCount": 3,
+        "disposition": "exhausted",
+        "replyKind": "text",
+        "toolName": null
+      }
+    }
+  ],
+  "routingHeld": {
+    "discoveryBeforeCreate": true,
+    "fetchServedOnce": true,
+    "searchServedOnce": true,
+    "noWrongLane": true
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

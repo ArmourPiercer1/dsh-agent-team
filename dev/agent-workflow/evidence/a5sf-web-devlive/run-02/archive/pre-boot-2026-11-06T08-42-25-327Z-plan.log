@@ -1,0 +1,51 @@
+[2026-11-06T08:27:20.903Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive
+[2026-11-06T08:27:20.904Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T08:27:20.904Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-06T08:27:20.904Z] pinned module present: tool-fs -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js
+[2026-11-06T08:27:20.904Z] pinned module present: persistent-bash -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js
+[2026-11-06T08:27:20.951Z] offer row imports; exports apply + name
+[2026-11-06T08:27:20.951Z] marker routing table present
+[2026-11-06T08:27:20.954Z] HEAD=953b65a59cfdc4938c72e31f0db5f059dd3c0401
+[2026-11-06T08:27:20.962Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-06T08:27:20.965Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-06T08:27:20.995Z] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-06T08:27:20.999Z] row handoff: emitted=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"] world=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"]
+[2026-11-06T08:27:21.003Z] blueprints written into the World blueprintDir and re-parsed from disk
+[2026-11-06T08:27:21.003Z] row identity check: {"ok":true}
+[2026-11-06T08:27:21.032Z] preflight bundle written: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/dev/agent-workflow/evidence/a5sf-web-devlive/preflight-bundle.json cases=2 head=953b65a59cfdc4938c72e31f0db5f059dd3c0401 pointerSha256=31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a
+[2026-11-06T08:27:21.033Z] plan world torn down: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-27-20Z","releasedPorts":[],"killedPids":[],"notes":[]}
+[2026-11-06T08:27:21.033Z] PLAN OK — zero Host starts spent
+[2026-11-06T08:27:44.429Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive
+[2026-11-06T08:27:44.429Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T08:27:44.429Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-06T08:27:44.430Z] pinned module present: tool-fs -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js
+[2026-11-06T08:27:44.430Z] pinned module present: persistent-bash -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js
+[2026-11-06T08:27:44.461Z] offer row imports; exports apply + name
+[2026-11-06T08:27:44.461Z] marker routing table present
+[2026-11-06T08:27:44.464Z] HEAD=634f8d595fcc39d8cc495ad8d35e072416cfeb19
+[2026-11-06T08:27:44.473Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-06T08:27:44.476Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-06T08:27:44.508Z] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-06T08:27:44.512Z] row handoff: emitted=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"] world=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"]
+[2026-11-06T08:27:44.516Z] blueprints written into the World blueprintDir and re-parsed from disk
+[2026-11-06T08:27:44.516Z] row identity check: {"ok":true}
+[2026-11-06T08:27:44.550Z] preflight bundle written: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/dev/agent-workflow/evidence/a5sf-web-devlive/preflight-bundle.json cases=2 head=634f8d595fcc39d8cc495ad8d35e072416cfeb19 pointerSha256=31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a
+[2026-11-06T08:27:44.551Z] plan world torn down: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-27-44Z","releasedPorts":[],"killedPids":[],"notes":[]}
+[2026-11-06T08:27:44.551Z] PLAN OK — zero Host starts spent
+[2026-11-06T08:42:13.260Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive
+[2026-11-06T08:42:13.261Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T08:42:13.261Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-06T08:42:13.261Z] pinned module present: tool-fs -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js
+[2026-11-06T08:42:13.261Z] pinned module present: persistent-bash -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js
+[2026-11-06T08:42:13.291Z] offer row imports; exports apply + name
+[2026-11-06T08:42:13.291Z] marker routing table present
+[2026-11-06T08:42:13.294Z] HEAD=a6b82ee805530d45a19bde3f12f0c72b342c60bd
+[2026-11-06T08:42:13.302Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-06T08:42:13.305Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-06T08:42:13.337Z] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-06T08:42:13.341Z] row handoff: emitted=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"] world=["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"]
+[2026-11-06T08:42:13.345Z] blueprints written into the World blueprintDir and re-parsed from disk
+[2026-11-06T08:42:13.345Z] row identity check: {"ok":true}
+[2026-11-06T08:42:13.378Z] preflight bundle written: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/dev/agent-workflow/evidence/a5sf-web-devlive/preflight-bundle.json cases=2 head=a6b82ee805530d45a19bde3f12f0c72b342c60bd pointerSha256=31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a
+[2026-11-06T08:42:13.379Z] plan world torn down: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-42-13Z","releasedPorts":[],"killedPids":[],"notes":[]}
+[2026-11-06T08:42:13.379Z] PLAN OK — zero Host starts spent

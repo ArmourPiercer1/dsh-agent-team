@@ -1,0 +1,61 @@
+{
+  "gate": "poll",
+  "fixedDefect": "boot #5 single-probe 404-while-pending aborted the world and the teardown was reported as `TeamDomain is closed` (PD-11 masking); this gate polls and keeps every body",
+  "timeoutMs": 240000,
+  "elapsedMs": 507,
+  "probeCount": 2,
+  "kind": "ready",
+  "final": {
+    "seq": 2,
+    "at": "2026-11-06T08:49:10.850Z",
+    "elapsedMs": 507,
+    "status": 200,
+    "body": {
+      "ok": true,
+      "boot": 1,
+      "ready": true,
+      "rootSessionId": "session-a5sf-web-devlive-team",
+      "liveSessions": [
+        "session-a5sf-web-devlive-anchor"
+      ],
+      "toolCount": 15
+    }
+  },
+  "status": 200,
+  "body": {
+    "ok": true,
+    "boot": 1,
+    "ready": true,
+    "rootSessionId": "session-a5sf-web-devlive-team",
+    "liveSessions": [
+      "session-a5sf-web-devlive-anchor"
+    ],
+    "toolCount": 15
+  },
+  "probes": [
+    {
+      "seq": 1,
+      "at": "2026-11-06T08:49:10.347Z",
+      "elapsedMs": 4,
+      "status": 404,
+      "body": null
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-06T08:49:10.850Z",
+      "elapsedMs": 507,
+      "status": 200,
+      "body": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-a5sf-web-devlive-team",
+        "liveSessions": [
+          "session-a5sf-web-devlive-anchor"
+        ],
+        "toolCount": 15
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "a5sf-web-devlive/deny-face/1",
+  "at": "2026-11-06T08:44:46.500Z",
+  "caseId": "web-deny-fetch",
+  "question": "Does the governed realm deliver a confined `web` face to this legacy Member, and does the deny lane refuse at the FACE — one typed guard fact, zero provider entries — when the model calls the tool?",
+  "caseClass": "admission-refusal",
+  "member": {
+    "instanceId": "inst-0khuuyv12140",
+    "childSessionId": "session-team-child-35b60fd7493a48b531dccf4ef3afd425",
+    "templateId": "webworker-fetch",
+    "label": "webdev-fetch",
+    "legacy": true,
+    "capabilitiesAbsent": true,
+    "note": "the webworker template in the authored main blueprint carries NO capabilities block -> permissionPolicy absent -> A2C-2 does not run"
+  },
+  "preset": {
+    "member": "a5sf-web-devlive-webworker",
+    "module": "@deepseek-ai/dsh-tool-web",
+    "tools": [
+      "web_fetch",
+      "web_search"
+    ],
+    "leader": "a5sf-web-devlive-leader"
+  },
+  "surface": {
+    "memberToolsFromModelRequest": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "web_fetch",
+      "web_search",
+      "write"
+    ],
+    "hasWebFetch": true,
+    "hasWebSearch": true,
+    "source": "the `tools` array the mock recorded on this Member turn's own model request"
+  },
+  "initiation": "model-tool-call",
+  "call": {
+    "tool": "web_fetch",
+    "arguments": {
+      "url": "https://example.test/legal/page"
+    },
+    "status": null,
+    "isError": false,
+    "refusalText": null,
+    "refusalTextSource": null
+  },
+  "result": {
+    "guardFacts": [],
+    "guardFactCount": 0,
+    "expectedMethod": "web:fetch",
+    "providerEntries": {
+      "fetch": 0,
+      "search": 0,
+      "transport": 0,
+      "dns": 0,
+      "connect": 0,
+      "total": 0,
+      "rows": []
+    },
+    "hostWebEntries": 0,
+    "hostWebRows": [],
+    "before": {
+      "facts": 0,
+      "entries": 0,
+      "hostWeb": 0
+    }
+  },
+  "claim": {
+    "caseClass": "admission-refusal",
+    "claimsConfinement": false,
+    "osLevelNetworkIsolationClaimed": false,
+    "wording": "The refusal is a pre-provider admission fact: the shipped guard refused before the provider was entered, so zero provider entries is a counter of our own admission code, not an OS observation. This does NOT prove network confinement or isolation."
+  },
+  "checks": {
+    "memberIsLegacy": true,
+    "memberSurfaceHasPair": true,
+    "modelTurnRan": true,
+    "initiationIsModelCall": true,
+    "memberTurnObserved": true,
+    "exactlyOneFact": false,
+    "typedCode": false,
+    "decisionDeny": false,
+    "zeroProviderEntries": true,
+    "zeroHostWebEntries": true,
+    "refusalNamesCapability": false,
+    "typedRefusalFact": false
+  },
+  "verdict": "REFUTED",
+  "limits": {
+    "wording": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "Refusing to fetch is a statement about our own admission code, made before the OS was asked. The provider is a fake boundary; the OS was never asked to deny anything.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

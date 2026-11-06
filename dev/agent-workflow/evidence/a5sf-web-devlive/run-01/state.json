@@ -1,0 +1,130 @@
+{
+  "status": 200,
+  "body": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "session-a5sf-web-devlive-team",
+    "teamSession": {
+      "rootSessionId": "session-a5sf-web-devlive-team",
+      "blueprintId": "team.a5sf.web.devlive.main",
+      "revision": "1",
+      "contentHash": "sha256:5b6018604b12628632d35b29bcd2fea2ef6671bd0a8ad928b3dff0c8a84a1e26",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "createdAt": "2026-11-06T08:28:11.706Z",
+      "generation": 4
+    },
+    "members": [
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": [],
+      "abandonments": []
+    },
+    "activity": [],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "session-a5sf-web-devlive-anchor": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-a5sf-web-devlive-team": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        }
+      }
+    },
+    "observations": [
+      "a5p1-guard: dispatcher-preparing agent=session-a5sf-web-devlive-team to=PREPARING",
+      "a5p1-guard: guard-installed agent=session-a5sf-web-devlive-team scope=session-a5sf-web-devlive-team",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/pre-execute armed=1 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/post-execute armed=2 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/result armed=3 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/execute armed=4 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools.guard armed=5 required=5",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-web-devlive-team verified=0 surface=7",
+      "a5p1-guard: published-surface-unverified agent=session-a5sf-web-devlive-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+      "a5p1-guard: surface-inherited agent=session-a5sf-web-devlive-team verified=0",
+      "a5p1-guard: dispatcher-active agent=session-a5sf-web-devlive-team to=ACTIVE",
+      "a5p1-guard: agent-published agent=session-a5sf-web-devlive-team surface=7 masked=2 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-a5sf-web-devlive-team",
+      "alpha2-artifact-grant: shell-result-observer installed"
+    ]
+  }
+}

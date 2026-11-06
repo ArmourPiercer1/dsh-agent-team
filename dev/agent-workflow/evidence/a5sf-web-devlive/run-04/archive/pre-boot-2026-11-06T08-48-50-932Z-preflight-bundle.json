@@ -1,0 +1,565 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "Web face DEV-LIVE — legacy-Member web deny lane (face WIRING; no confinement claim)",
+  "sources": {
+    "note": "Derived from this driver at the exact HEAD the run executes on. The declared leader surface is the LEADER preset surface (persona + tool-fs + persistent shell; NO tool-web) plus the two World rows minus the discovery-first deny list; the web pair is surfaced on the MEMBER preset (tool-web) and is what route-C shadows. Every case is class admission-refusal: one guard fact, zero provider entries, claimsConfinement=false. The refusal is pre-provider and pre-OS; this bundle makes no network-isolation claim.",
+    "driver": "dev/agent-workflow/evidence/a5sf-web-devlive/run-boot.mjs",
+    "providerRow": "dev/agent-workflow/evidence/a5sf-web-devlive/a5sf-web-offer-row.mjs",
+    "markerMock": "dev/agent-workflow/evidence/a5sf-bl18-live/bl18-marker-mock.mjs",
+    "assemblyProof": "dev/agent-workflow/evidence/a5sf-bl18-live/README.md",
+    "limit": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked."
+  },
+  "candidate": {
+    "head": "2a250587a04e4e741a135ec05ae36359da3ea1d0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "productTreeProof": []
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "devlive-web-1",
+    "scope": "DEV-LIVE",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed by the Web-face implementer: dev-live scope authorisation for the Web face",
+    "face": "Web",
+    "world": "a5sfwebdv",
+    "allocationItem": "Web face development loop — live wiring of the confined web face and the NETWORK_UNCONFINED_REALM deny lane",
+    "boundCommit": "2a250587a04e4e741a135ec05ae36359da3ea1d0",
+    "priorRows": 0,
+    "plannedStarts": 1,
+    "maxStarts": 2,
+    "aborts": 0,
+    "note": "scope=DEV-LIVE: reusable authorisation, no cumulative cap; one fresh lease per run; maxStarts here only bounds this single planned start for the zero-boot preflight"
+  },
+  "runRecord": {
+    "teamSha": "2a250587a04e4e741a135ec05ae36359da3ea1d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "recordClass": "DEV-LIVE",
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    },
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+        "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+      },
+      "osLevelNetworkIsolationClaimed": false
+    }
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "web"
+    ],
+    "distFaces": {
+      "web": true,
+      "fs": true,
+      "subprocess": false
+    },
+    "hostModules": [
+      {
+        "path": "tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js",
+        "exists": true,
+        "role": "the pinned @deepseek-ai/dsh-tool-web module route-C re-mounts on the realm scope"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-web-devlive/a5sf-web-offer-row.mjs",
+        "exists": true,
+        "role": "the teamA5sfRealm provider: one compiled Member + the confined web face"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-web-devlive/run-boot.mjs",
+        "exists": true,
+        "role": "this driver"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-bl18-live/bl18-marker-mock.mjs",
+        "exists": true,
+        "role": "the marker routing table"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-bl18-web-offer",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-web-devlive-leader",
+        "preset-a5sf-web-devlive-webworker"
+      ],
+      "worldRowIds": [
+        "a5sf-bl18-web-offer",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-web-devlive-leader",
+        "preset-a5sf-web-devlive-webworker"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "fixtures": {
+    "web-deny-fetch": {
+      "url": "https://example.test/legal/page",
+      "tool": "web_fetch"
+    },
+    "web-deny-search": {
+      "queries": [
+        "a5sf bl18 deny lane"
+      ],
+      "tool": "web_search"
+    },
+    "workspace": "tests/homes/<world>/workspace"
+  },
+  "policy": {
+    "kind": "capability-lane",
+    "network": "deny",
+    "networkAccess": "deny",
+    "networkProbeEnforced": false,
+    "effectiveReadAllow": [
+      "tests/homes/<world>/workspace"
+    ],
+    "effectiveWriteAllow": [
+      "tests/homes/<world>/workspace"
+    ],
+    "effectiveNetwork": [
+      "deny"
+    ],
+    "note": "the ceiling is deny; the tool restriction is deny; the ONE compiler (compileEffectiveIo) intersects them. The provider probe reports network-destination=unsupported, so the shipped guard admits the refusal at the face. Refusing to fetch is not network isolation: it is a statement about our admission code, made before the OS was asked.",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "web-deny-fetch",
+      "face": "web",
+      "axis": "network",
+      "locator": "https://example.test/legal/page",
+      "guardFactKey": "web-deny-fetch",
+      "expected": "deny",
+      "method": "fetch",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-deny-fetch"
+      ],
+      "observable": "pre-provider-refusal",
+      "expectedCode": "NETWORK_UNCONFINED_REALM",
+      "expectedFact": {
+        "method": "web:fetch",
+        "decision": "deny",
+        "decidedBy": "NETWORK_UNCONFINED_REALM"
+      },
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0
+      },
+      "caseClass": "admission-refusal",
+      "guardFacts": 1,
+      "refusalNaming": "capability",
+      "claimsConfinement": false,
+      "note": "the Member model turn calls web_fetch on the declared URL; the confined web face refuses at admission, before the fake boundary is entered"
+    },
+    {
+      "id": "web-deny-search",
+      "face": "web",
+      "axis": "network",
+      "locator": "queries=[\"a5sf bl18 deny lane\"]",
+      "guardFactKey": "web-deny-search",
+      "expected": "deny",
+      "method": "fetch",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-deny-search"
+      ],
+      "observable": "pre-provider-refusal",
+      "expectedCode": "NETWORK_UNCONFINED_REALM",
+      "expectedFact": {
+        "method": "web:search",
+        "decision": "deny",
+        "decidedBy": "NETWORK_UNCONFINED_REALM"
+      },
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0
+      },
+      "caseClass": "admission-refusal",
+      "guardFacts": 1,
+      "refusalNaming": "capability",
+      "claimsConfinement": false,
+      "note": "the Member model turn calls web_search with the declared queries; the confined web face refuses at admission, before the fake boundary is entered"
+    }
+  ],
+  "driver": {
+    "note": "Discovery-first: the anchor leader is prompted and the mock records its model-facing surface; the main blueprint denies every non-managed, non-team, non-safe unmanaged name from that surface. Members are delegated from the SAME template (legacy, no capabilities) two times so each item marker rides a turn whose whole history contains that one item marker. `captures` are full bodies; `captureLimits.body.maxChars=null` declares unbounded retention.",
+    "steps": [
+      {
+        "id": "pre-boot-refusals",
+        "canFail": false
+      },
+      {
+        "id": "compose-rows",
+        "produces": [
+          "rows"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "boot-host",
+        "produces": [
+          "host"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "health-gate",
+        "requires": [
+          "host"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "discover-leader-surface",
+        "requires": [
+          "host"
+        ],
+        "produces": [
+          "leader-surface"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "mock-requests"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "write-main-blueprint",
+        "requires": [
+          "leader-surface"
+        ],
+        "produces": [
+          "blueprint"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "create-team",
+        "requires": [
+          "blueprint"
+        ],
+        "produces": [
+          "team-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-fetch-member",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "item1-fetch-deny",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "guard-facts",
+          "provider-entries"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-search-member",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "item2-search-deny",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "guard-facts",
+          "provider-entries"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "member-state-readback",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "teardown",
+        "canFail": false
+      }
+    ],
+    "plannedCases": [
+      "web-deny-fetch",
+      "web-deny-search"
+    ],
+    "caseManifest": {
+      "source": "dev/agent-workflow/evidence/a5sf-web-devlive/run-boot.mjs",
+      "cases": [
+        "web-deny-fetch",
+        "web-deny-search"
+      ]
+    },
+    "blueprint": {
+      "leader": {
+        "tools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_delegate",
+          "u5_canary",
+          "u6fs_probe",
+          "write"
+        ],
+        "builtinToolDeny": "discovery-first",
+        "teamTools": [
+          "team_archive_member",
+          "team_delegate"
+        ],
+        "managed": [
+          "read",
+          "read_image",
+          "write",
+          "edit",
+          "lsp",
+          "bash",
+          "pwsh"
+        ],
+        "safeUnmanaged": [
+          "todo_write"
+        ],
+        "worldRows": {
+          "u5-canary": [
+            "u5_canary"
+          ],
+          "u6-fs-probe-host": [
+            "u6fs_probe"
+          ]
+        },
+        "presetTools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    },
+    "caller": {
+      "kind": "member",
+      "strict": false,
+      "templateId": "webworker-fetch",
+      "templates": [
+        "webworker-fetch",
+        "webworker-search"
+      ],
+      "preset": {
+        "module": "@deepseek-ai/dsh-tool-web",
+        "tools": [
+          "web_fetch",
+          "web_search"
+        ]
+      },
+      "note": "legacy (non-strict) Member: each of the two Member templates declares NO capabilities block, so permissionPolicy is absent and A2C-2 does not run; the MEMBER preset surfaces the pair so route-C can shadow it (route-C refuses to ADD a name). One template per case so each case owns a distinct Member instance (a second delegation on the same template reuses the settled Member)."
+    }
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-web-devlive-anchor",
+    "teamRoot": "session-a5sf-web-devlive-team",
+    "createRoot": "session-a5sf-web-devlive-team",
+    "stateQueryRoot": "session-a5sf-web-devlive-team",
+    "toolRouteRoot": "session-a5sf-web-devlive-team",
+    "archiveRoot": "session-a5sf-web-devlive-team",
+    "oracleRoot": "session-a5sf-web-devlive-team",
+    "directiveRoot": "session-a5sf-web-devlive-team",
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.web.devlive.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.web.devlive.main",
+        "members": 2
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "web-deny-fetch",
+        "memberIdentity": "inst-bl18-web-fetch",
+        "toolBindingIdentity": "team/web"
+      },
+      {
+        "caseId": "web-deny-search",
+        "memberIdentity": "inst-bl18-web-search",
+        "toolBindingIdentity": "team/web"
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "@deepseek-ai/dsh-tool-web",
+      "path": "tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js",
+      "inject": [
+        "tools",
+        "web",
+        "systemPrompt"
+      ],
+      "requiredConfig": [],
+      "config": {
+        "fetch": true,
+        "search": true,
+        "searchTimeoutMs": 60000
+      },
+      "expectedTools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "role": "the pinned native module route-C re-mounts on the governed realm scope (its ctx.web resolves the confined face)"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "limits": {
+    "wording": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "The refusal is a pre-provider admission fact. The provider is a fake boundary with no socket, no DNS, no proxy; zero provider entries is a counter. The OS was never asked, so nothing here proves, and nothing here may claim, network confinement or isolation.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

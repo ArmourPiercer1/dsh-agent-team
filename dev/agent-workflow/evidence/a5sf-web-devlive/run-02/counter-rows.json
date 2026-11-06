@@ -1,0 +1,13 @@
+{
+  "providerEntries": [
+    {
+      "at": "2026-11-06T08:44:46.744Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-0by65v91chnx",
+      "level": "unsupported"
+    }
+  ],
+  "hostWebRows": [],
+  "note": "provider entries must be empty for a pre-provider refusal; hostWebRows empty proves the inherited host web service was never consulted",
+  "osLevelNetworkIsolationClaimed": false
+}

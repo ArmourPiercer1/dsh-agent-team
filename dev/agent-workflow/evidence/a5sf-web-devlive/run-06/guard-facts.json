@@ -1,0 +1,32 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-51-47Z/a5sf-consult.jsonl",
+  "facts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0khuuyv12140",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-bl18:inst-0khuuyv12140:g1",
+      "method": "web:fetch",
+      "locator": "https://example.test/legal/page",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 1,
+      "observedAt": "2026-11-06T08:52:18.127Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0by65v91chnx",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-bl18:inst-0by65v91chnx:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 1,
+      "observedAt": "2026-11-06T08:52:18.659Z"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

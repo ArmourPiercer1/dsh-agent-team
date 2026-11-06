@@ -1,0 +1,34 @@
+{
+  "providerEntries": [],
+  "capabilityProbes": [
+    {
+      "at": "2026-11-06T08:49:11.726Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-0khuuyv12140",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-06T08:49:12.291Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-0by65v91chnx",
+      "level": "unsupported"
+    }
+  ],
+  "allCounterRows": [
+    {
+      "at": "2026-11-06T08:49:11.726Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-0khuuyv12140",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-06T08:49:12.291Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-0by65v91chnx",
+      "level": "unsupported"
+    }
+  ],
+  "hostWebRows": [],
+  "note": "provider entries (leg=provider-entry: an actual fetch/search/transport/dns/connect entry) must be empty for a pre-provider refusal; capability probes (leg=capability-probe) are the guard's own question to the backend and are not entries; hostWebRows empty proves the inherited host web service was never consulted",
+  "osLevelNetworkIsolationClaimed": false
+}

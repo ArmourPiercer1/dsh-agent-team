@@ -1,0 +1,39 @@
+{
+  "archivedAt": "2026-11-06T08:27:50.661Z",
+  "reason": "archive-before-start: a second run must never overwrite the first run's evidence",
+  "head": "634f8d595fcc39d8cc495ad8d35e072416cfeb19",
+  "authorityPointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+  "files": [
+    {
+      "name": "preflight-bundle.json",
+      "bytes": 16076,
+      "sha256": "588d4075d82a0610f643cd25bf19ac7384100711a0648099f0f673ea44d4d45a"
+    },
+    {
+      "name": "preflight.log",
+      "bytes": 2307,
+      "sha256": "ec2d2b6a08b116de1e375fb7cfda7e2fc9b11c9d29853f88991948d4fdbb8e00"
+    },
+    {
+      "name": "plan.log",
+      "bytes": 5252,
+      "sha256": "191fe182eaa9bdc94da7e97c201d50f1372a4c265d271f4a2f0aac863e93b0c4"
+    },
+    {
+      "name": "grant.json",
+      "bytes": 530,
+      "sha256": "87584b253ae7dfa20d02c7c2dca6a20a847aaf6895dd89a4da116f2b1fb9289f"
+    },
+    {
+      "name": "run-boot.mjs",
+      "bytes": 74408,
+      "sha256": "5a1122de23268878cdc132bfddf1f9e76acbf6aa3b9cbe4b7d0b5c42c3eeb567"
+    },
+    {
+      "name": "a5sf-bl18-web-offer-row.mjs",
+      "bytes": 10263,
+      "sha256": "4204b174d10160f46dd744b34f781de3595fcf08ca2aaf7017dd48d795fbb762"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}
