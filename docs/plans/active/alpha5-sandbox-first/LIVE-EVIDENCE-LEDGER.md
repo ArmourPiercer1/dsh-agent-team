@@ -18,6 +18,14 @@
 
 ---
 
+> **【2026-11-09 owner 裁决：本账作为正式预算已关闭】** 这份账记录的是**候选分配**（P2-04 的 5 次
+> start）的历史；算术仍是 **5 allocated / 5 spent / 0 remain**，且**不再有**“下一次候选分配”。
+> 自 2026-11-09 起，开发用的真实 Host 启动改记为 **`DEV-LIVE`**：面级 `scope: "dev-live"`
+> authorisation 即由 Capability Implementer 自行授权、可反复启动（每机 2 并发、无固定累计上限），
+> **不得**计入本账的候选分配，也**不得**被读成候选证据——`DEV-LIVE` 记录**永不**产出 `V@B=yes`。
+> 正式候选验收仍走 `CANDIDATE-C2`（不可变 SHA + Authority + Host + Oracle + 独立裁决）。
+> 协议 = `docs/ROUTER_RULES.md` §0.1 第 4 条；操作页 = `docs/DEV-LIVE-OPERATOR-GUIDE.md`。
+
 ## 0. 六个词，各一行（给第一次读这个项目的人）
 
 - **`V@B`**（verified-at-baseline）：某一行的证据是否产自**当前权威快照的 baseline 树**；只有 `yes` 才算
@@ -58,6 +66,8 @@ live 结论（current）0   两条历史结论被 #606 的 Q7 撤回；BL-17 两
 ```
 
 **Arithmetic: 5 allocated · 5 spent · 0 remain · 0 live verdicts that remain current.**
+（2026-11-09：这是**候选分配**的历史算术。之后出现的开发启动一律 `DEV-LIVE`，不进入本式，
+也不产生新的候选分配。）
 
 一句话后果：**Alpha.5 没有任何一个 live 性质仍被证明；矩阵里每一个等级都只靠 host-free 臂加上
 明文拒绝（declared refusal）支撑。**

@@ -25,6 +25,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { appendCappedLine } from '../canary/ledger-cap.mjs'
+import { DEFAULT_RECORD_CLASS, assertCandidateClaim, assertRecordClass, assessCandidateClaim } from './acceptance-claim.mjs'
 
 /** FIX-T T3: the shared host-start budget ledger is a bounded artifact —
  *  1 MiB is ~4k entries against a per-session budget of single digits; past
@@ -99,26 +100,37 @@ export function overallVerdict(cases) {
  * @param {string[]} bindings.selectedCases case ids this run intended to execute
  * @param {object} bindings.bindings Team/Host/config/World digests
  * @param {string} [bindings.ledgerPath] host-start budget ledger (JSONL)
+ * @param {string} [bindings.recordClass] `DEV-LIVE` | `CANDIDATE-C2` (default C2:
+ *        every pre-2026-11-09 caller keeps its historical class)
+ * @param {object} [bindings.candidateClaim] a frozen-candidate claim this run
+ *        intends to make (e.g. `{ verifiedAtBaseline: true }`). `finalize()`
+ *        REFUSES it when the record class is `DEV-LIVE` — the hard rule of the
+ *        2026-11-09 ruling.
  */
-export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerPath }) {
+export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerPath, recordClass = DEFAULT_RECORD_CLASS, candidateClaim = null }) {
   const cases = new Map()
   const record = {
     schema: 'u5-run-record/1',
     runId,
     suite,
+    recordClass: assertRecordClass(recordClass),
     startedAt: new Date().toISOString(),
     selectedCases: [...selectedCases],
     bindings,
     cases: [],
     hostStarts: { ledgerPath: ledgerPath ?? null, thisRunCount: 0, thisRunEntries: [] },
   }
+  if (candidateClaim !== null) record.candidateClaim = candidateClaim
   let finalized = null
   /** Set by `markAborted()`; a non-null value makes `finalize()` refuse to
    *  compute anything softer than FAIL for `overall`. */
   let abort = null
 
   const logHostStart = (entry) => {
-    const e = { at: new Date().toISOString(), runId, suite, ...entry }
+    // The record class is stamped on EVERY ledger row (intent + start), and it
+    // comes from the RECORD, never from the entry: a caller cannot label one
+    // row DEV-LIVE and another CANDIDATE-C2 inside one run.
+    const e = { at: new Date().toISOString(), runId, suite, recordClass: record.recordClass, ...entry, recordClass: record.recordClass }
     record.hostStarts.thisRunCount += 1
     record.hostStarts.thisRunEntries.push(e)
     if (ledgerPath !== undefined && ledgerPath !== null) {
@@ -172,6 +184,15 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
         if (!cases.has(id)) cases.set(id, { id, verdict: 'FAIL', at: new Date().toISOString(), detail: { reason: 'selected case produced no verdict (fail-closed)' } })
       }
       record.cases = [...cases.values()]
+      // The record-class claim rule (owner ruling 2026-11-09): a DEV-LIVE run
+      // may never satisfy a V@B=yes / frozen-candidate claim. This is checked
+      // on the record's OWN declared claim and disclosed on EVERY record, so a
+      // downstream matrix reader has a machine-readable refusal instead of
+      // having to know the class rule.
+      const claimVerdict = record.candidateClaim === undefined
+        ? assessCandidateClaim({ recordClass: record.recordClass, record })
+        : assertCandidateClaim({ record, verifiedAtBaseline: record.candidateClaim?.verifiedAtBaseline === true })
+      record.candidateClaimEligibility = claimVerdict
       // The abort override: an aborted run is FAIL, no matter how its cases read.
       record.overall = abort === null ? overallVerdict(record.cases) : 'FAIL'
       record.partial = abort !== null
@@ -212,7 +233,10 @@ export function formatSummary(record) {
   // impossible for it, and a reader must not have to open the JSON to learn that
   // the grade covers only the cases the run reached.
   const partial = r.partial === true ? ` partial=true abortedAt=${String(r.abortedAt ?? r.abort?.stage ?? 'unknown')}` : ''
-  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}${partial}`
+  // A development-boot record says so on the summary line (CANDIDATE-C2 adds
+  // nothing, so every pre-existing line keeps its exact shape).
+  const classTag = r.recordClass === 'DEV-LIVE' ? ' recordClass=DEV-LIVE (not candidate evidence)' : ''
+  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}${partial}${classTag}`
 }
 
 /**
