@@ -1847,9 +1847,14 @@ export function createTeamProductionRoot(params) {
     const alpha6ReviewWakeTurnEnd = alpha6Wiring.mode === 'alpha6'
         ? async (targetSessionId) => {
             const coordinator = alpha6WakeBySession.get(targetSessionId);
-            if (coordinator === undefined || coordinator.state.status !== 'running')
+            // A resumed latch is idle and waiting for the explicit user turn to
+            // finish before its post-turn rescan may deliver the still-pending
+            // work. Stop outranks the rescan; a queued wake still owns its row.
+            if (coordinator === undefined || coordinator.state.stopped)
                 return;
-            const releasedWakeId = coordinator.state.wakeId;
+            if (coordinator.state.status === 'queued')
+                return;
+            const releasedWakeId = coordinator.state.status === 'running' ? coordinator.state.wakeId : null;
             const requestRoot = coordinator.state.key.rootSessionId;
             const readAndRelease = async () => {
                 // The FRESH authoritative read answering the post-turn rescan: the
@@ -1911,7 +1916,7 @@ export function createTeamProductionRoot(params) {
                 }
                 catch (error) {
                     lastError = error;
-                    if (coordinator.state.status !== 'running')
+                    if (coordinator.state.stopped)
                         break;
                 }
             }
@@ -1948,7 +1953,7 @@ export function createTeamProductionRoot(params) {
             if (coordinator === undefined)
                 return false;
             const key = coordinator.state.key;
-            await alpha6WakeIntents.markStopped(key);
+            await alpha6WakeIntents.markStopped(key, targetSessionId);
             const transition = coordinator.dispatch({ type: 'stop' });
             if (transition.outcome !== 'applied')
                 return true;
@@ -1976,15 +1981,39 @@ export function createTeamProductionRoot(params) {
      */
     const alpha6WakeUserResume = alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
         ? async (targetSessionId) => {
-            const coordinator = alpha6WakeBySession.get(targetSessionId);
-            if (coordinator === undefined)
-                return false;
+            let coordinator = alpha6WakeBySession.get(targetSessionId);
+            if (coordinator === undefined) {
+                // The Stop cleared the intent row, so a fresh boot has no
+                // coordinator to find. Rebuild it from the durable marker itself;
+                // this grants nothing and delivers nothing until resume clears it.
+                const stoppedMarkers = await alpha6WakeIntents.listStopped();
+                const marker = stoppedMarkers
+                    .find((entry) => entry.targetSessionId === targetSessionId);
+                if (marker === undefined)
+                    return false;
+                coordinator = createLatchCoordinator(marker.key);
+                coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true });
+                const mapKey = `${marker.key.rootSessionId}\u0000${marker.key.reviewerInstanceId}\u0000${String(marker.key.sessionGeneration)}`;
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+                alpha6WakeBySession.set(targetSessionId, coordinator);
+            }
             const key = coordinator.state.key;
             await alpha6WakeIntents.clearStopped(key);
             const transition = coordinator.dispatch({ type: 'resume' });
             if (transition.outcome === 'refused' && coordinator.state.stopped) {
-                await alpha6WakeIntents.markStopped(key);
+                await alpha6WakeIntents.markStopped(key, targetSessionId);
                 return false;
+            }
+            // The explicit user turn is the resume. Immediately re-plan the SAME
+            // pending work through the normal dispatch path so the wake is not
+            // stranded until an unrelated WorkChanged happens to fire.
+            if (alpha6DispatchWake !== undefined) {
+                await alpha6DispatchWake({
+                    rootSessionId: key.rootSessionId,
+                    reviewerInstanceId: key.reviewerInstanceId,
+                    targetSessionId,
+                    currentLegIds: [],
+                }).catch(() => undefined);
             }
             return true;
         }
@@ -1993,6 +2022,21 @@ export function createTeamProductionRoot(params) {
         alpha6WakeIntents !== undefined &&
         live.reviewWakeInbox !== undefined
         ? async () => {
+            // A durable Sticky Stop may exist with NO intent row (the wake was
+            // already withdrawn). Register its latch as stopped so an explicit
+            // resume can find it; this grants nothing and delivers nothing.
+            for (const marker of await alpha6WakeIntents.listStopped()) {
+                const targetSessionId = marker.targetSessionId;
+                if (targetSessionId === undefined)
+                    continue;
+                const mapKey = `${marker.key.rootSessionId}\u0000${marker.key.reviewerInstanceId}\u0000${String(marker.key.sessionGeneration)}`;
+                if (alpha6WakeCoordinators.has(mapKey))
+                    continue;
+                const coordinator = createLatchCoordinator(marker.key);
+                coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true });
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+                alpha6WakeBySession.set(targetSessionId, coordinator);
+            }
             // ONE row per latch: adopt each independently; a row whose native
             // Inbox message is gone is discarded by the recovery protocol.
             for (const intent of await alpha6WakeIntents.list()) {

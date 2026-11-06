@@ -1180,7 +1180,10 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     // boot it again, and prove the Stop survives and no wake is re-delivered.
     let restartError = null
     let markersAfterRestart = []
+    let markersAfterResume = []
     let wakesAfterRestart = wakesAfter
+    let wakesAfterResume = wakesAfter
+    let executedAfterResume = false
     try {
       const offset = statSync(booted.instanceLog).size
       const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
@@ -1202,6 +1205,36 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       const rows2 = existsSync(markerDir) ? readdirSync(markerDir) : []
       markersAfterRestart = rows2.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
       wakesAfterRestart = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      // Explicit resume: a real user prompt on the stopped Officer Session.
+      // The host maps `inbox/claimed` user source to resume, clears the marker
+      // and re-plans the still-pending work through the normal dispatch path.
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no restart boot URL for resume')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for resume')
+      const resumed = await remoteCall(origin2, cookie2, 'member.send', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'human', humanId: CREATE_ROOT_A6 },
+        recipientInstanceId: officer.instanceId,
+        body: 'C1_A6_RESUME',
+        requestToken: `c1-a6-resume-${String(Date.now())}`,
+      }, 'c1a6resume', 4)
+      writeEvidence('a6-sticky-resume-prompt.json', resumed.body ?? resumed)
+      const execDeadline = Date.now() + 60_000
+      while (Date.now() < execDeadline) {
+        if (existsSync(FILE_A6_ALLOW)) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      const rows3 = existsSync(markerDir) ? readdirSync(markerDir) : []
+      markersAfterResume = rows3.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      wakesAfterResume = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      executedAfterResume = existsSync(FILE_A6_ALLOW)
+        && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
       if (h2.alive()) h2.child.kill('SIGKILL')
     } catch (error) {
       restartError = String(error?.message ?? error)
@@ -1209,8 +1242,16 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const restartOk = restartError === null && markersAfterRestart.length === 1 && wakesAfterRestart === wakesAfter
     check('A6-23', 'the Sticky Stop survives a real Host restart and does not re-deliver the withdrawn wake', restartOk,
       `restart=${restartError ?? 'ok'} markers=${markersAfterRestart.join(',')} wakes=${wakeSeen}->${wakesAfterRestart}`)
-    writeEvidence('a6-sticky-stop.json', { cancel: cancel.body ?? cancel, rows, stoppedRows, wakeRows, wakeSeen, wakesAfter, markersAfterRestart, wakesAfterRestart, restartError })
-    return ok && restartOk
+    // Scheme A: the original approval call lost its context across the
+    // restart, so the resumed wake may still be delivered and decided, but
+    // the historical call must NOT be revived/executed. Resume proves
+    // marker clearing + re-plan, not replay.
+    const resumeOk = restartError === null && markersAfterResume.length === 0
+      && wakesAfterResume > wakesAfterRestart && !executedAfterResume
+    check('A6-24', 'an explicit user interaction clears the durable Stop and re-plans the wake without reviving the historical call', resumeOk,
+      `markers=${markersAfterResume.join(',')} wakes=${wakesAfterRestart}->${wakesAfterResume} historicalExecuted=${String(executedAfterResume)}`)
+    writeEvidence('a6-sticky-stop.json', { cancel: cancel.body ?? cancel, rows, stoppedRows, wakeRows, wakeSeen, wakesAfter, markersAfterRestart, wakesAfterRestart, markersAfterResume, wakesAfterResume, executedAfterResume, restartError })
+    return ok && restartOk && resumeOk
   }
   if (A6_TIMEOUT_MS > 0) {
     await new Promise((resolve) => setTimeout(resolve, A6_TIMEOUT_MS + 8000))
@@ -1236,8 +1277,8 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const lateDecision = pa === null ? null : after.decisions.find((d) => d.requestId === pa.requestId) ?? null
     const lateConsumption = pa === null ? null : after.consumptions.find((c) => c.requestId === pa.requestId) ?? null
     const lateFile = existsSync(FILE_A6_ALLOW)
-    check('A6-20', 'a late allow after the wait timed out cannot revive the dead call: it is fail-closed or left unspent, never executed or consumed',
-      lateDecision !== null && lateConsumption === null && !lateFile,
+    check('A6-20', 'a late allow after the wait timed out is recorded fail-closed, never consumed or executed',
+      lateDecision?.decision === 'deny' && lateConsumption === null && !lateFile,
       `decision=${String(lateDecision?.decision)} reason=${String(lateDecision?.reason)} consumed=${String(lateConsumption !== null)} executed=${String(lateFile)}`)
     writeEvidence('a6-timeout.json', { timeoutMs: A6_TIMEOUT_MS, pa, paDecision, paConsumption, executed, late: late?.body ?? late, lateDecision, lateConsumption, lateFile })
     return pa !== null && paDecision === null && paConsumption === null && !executed && lateDecision !== null && lateConsumption === null && !lateFile
@@ -1422,13 +1463,19 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       }, 'c1a6disc', 4)
       const entries = page.body?.result?.value?.data?.entries ?? []
       const serialized = JSON.stringify(entries)
-      const requestFact = entries.find((entry) => entry?.factType === 'control-request-recorded'
-        && JSON.stringify(entry?.payload ?? {}).includes(humanLeg.requestId)) ?? null
+      // Remote-only discovery: the human leg's request id is learned from the
+      // ledger page itself (NOT from the local control-ledger file).
+      const remoteHumanFact = entries.find((entry) => entry?.factType === 'control-request-recorded'
+        && entry?.payload?.reviewAuthority === 'human-user'
+        && entry?.payload?.requestId !== undefined) ?? null
+      const remoteHumanId = remoteHumanFact?.payload?.requestId ?? null
       const projectionData = projection.body?.result?.value?.data?.projection ?? {}
       humanDiscovery = {
-        requestId: humanLeg.requestId,
-        requestFactVisible: requestFact !== null,
-        requestIdOccurrences: serialized.split(humanLeg.requestId).length - 1,
+        localRequestId: humanLeg.requestId,
+        remoteOnlyRequestId: remoteHumanId,
+        remoteDiscoveryAgrees: remoteHumanId === humanLeg.requestId,
+        requestFactVisible: remoteHumanFact !== null,
+        requestIdOccurrences: remoteHumanId === null ? 0 : serialized.split(remoteHumanId).length - 1,
         pendingControlCount: projectionData.ledger?.pendingControlCount ?? null,
         page: page.body ?? page,
         projection: projection.body ?? projection,
@@ -1438,7 +1485,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     if (humanLeg !== null) {
       const response = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
         teamSessionId: CREATE_ROOT_A6,
-        requestId: humanLeg.requestId,
+        requestId: humanDiscovery?.remoteOnlyRequestId ?? humanLeg.requestId,
         decision: 'allow',
         note: 'c1 smoke A6 human final approval',
       }, 'c1a6h', 4)
@@ -1604,6 +1651,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
 let mockWakeSeq = 0
 let a6HandoffPhase = false
 let a6HumanPhase = A6_HUMAN || A6_STOP
+let a6ResumePhase = false
 function makeDecide() {
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
@@ -1618,6 +1666,10 @@ function makeDecide() {
     if (lastUser.includes(MK_A6_HANDOFF) && !lastUser.startsWith('[team-review-wake')) {
       a6HandoffPhase = true
     }
+    if (lastUser.includes('C1_A6_RESUME')) {
+      a6ResumePhase = true
+      return { kind: 'text', content: 'C1_A6_RESUMED' }
+    }
     const tools = toolMsgsOf(req).length
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
       return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
@@ -1628,7 +1680,7 @@ function makeDecide() {
     // (or the first pending id for a merged wake).
     if (lastUser.startsWith('[team-review-wake')) {
       if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
-      if (A6_STICKY_STOP) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
+      if (A6_STICKY_STOP && !a6ResumePhase) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
       const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
         ?? /requestId=([^\]\s]+)/.exec(lastUser)?.[1]
         ?? ''

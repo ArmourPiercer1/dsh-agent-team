@@ -1,5 +1,11 @@
 import type { ReviewWakeKey } from '../review-wake/index.js';
 import type { PersistedReviewWakeIntent, ReviewWakeIntentStore } from './wake-intent.js';
+/** One durable Sticky Stop marker. It carries no decision/authority, only the
+ * latch identity and the reviewer Session it stopped. */
+export interface StoppedWakeMarker {
+    readonly key: ReviewWakeKey;
+    readonly targetSessionId?: string;
+}
 export interface WakeIntentDirectory {
     /** The narrow store bound to ONE latch identity. */
     forKey(key: ReviewWakeKey): ReviewWakeIntentStore;
@@ -16,7 +22,9 @@ export interface WakeIntentDirectory {
     /** The marker path (diagnostics / tests). */
     stoppedPathFor(key: ReviewWakeKey): string;
     isStopped(key: ReviewWakeKey): Promise<boolean>;
-    markStopped(key: ReviewWakeKey): Promise<void>;
+    readStopped(key: ReviewWakeKey): Promise<StoppedWakeMarker | null>;
+    listStopped(): Promise<readonly StoppedWakeMarker[]>;
+    markStopped(key: ReviewWakeKey, targetSessionId?: string): Promise<void>;
     clearStopped(key: ReviewWakeKey): Promise<void>;
 }
 export declare function createFileWakeIntentDirectory(directory: string): WakeIntentDirectory;

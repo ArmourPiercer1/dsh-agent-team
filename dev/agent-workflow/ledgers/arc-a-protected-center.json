@@ -262,6 +262,12 @@
       "sha256": "4cffb4f0c2c6bee31ea82a0c17b127fc1ec59a220750c2fab6b6ccb101c63e8c",
       "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 bounded approval wait",
       "reason": "Named Alpha.6 center-interface addition: the opt-in v5 PA case-leg now supplies the configured bounded wait (alpha6WaitTimeoutMs, default 600000 ms) to the existing bridge deps, so a wait that outlives its client stops waiting instead of pinning the turn. It does not decide, mint, consume or execute; the durable request keeps its original meaning. v4/default and non-A6 rows are byte-identical."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "0c97dab93d94370fbf508278980a443becdd5ed04ea5d8d4d55a7ef1be08ba86",
+      "pr": "PR #585 (isolated Alpha.6 integration; named center-interface change)",
+      "reason": "Alpha.6 bounded wait reaches the production PA assembly (alpha6WaitTimeoutMs), and the Stop/Resume provenance law is enforced at the two seams that can lie: team-internal work/messaging/root deliveries now carry a plugin source instead of the human source, and internal cancels carry the hook cause instead of user. The messaging port keeps the human source only for an attribution with fromHumanId; no authorization, Grant, or execution law changes."
     }
   ]
 }

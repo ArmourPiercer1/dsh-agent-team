@@ -11,7 +11,7 @@
  *
  * @module packages/runtime/alpha6/wake-intent-directory
  */
-import { access, readdir, rm, writeFile } from 'node:fs/promises'
+import { readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ReviewWakeKey } from '../review-wake/index.js'
 import type {
@@ -19,6 +19,13 @@ import type {
   ReviewWakeIntentStore,
 } from './wake-intent.js'
 import { createFileWakeIntentStore } from './wake-intent-store.js'
+
+/** One durable Sticky Stop marker. It carries no decision/authority, only the
+ * latch identity and the reviewer Session it stopped. */
+export interface StoppedWakeMarker {
+  readonly key: ReviewWakeKey
+  readonly targetSessionId?: string
+}
 
 export interface WakeIntentDirectory {
   /** The narrow store bound to ONE latch identity. */
@@ -36,7 +43,9 @@ export interface WakeIntentDirectory {
   /** The marker path (diagnostics / tests). */
   stoppedPathFor(key: ReviewWakeKey): string
   isStopped(key: ReviewWakeKey): Promise<boolean>
-  markStopped(key: ReviewWakeKey): Promise<void>
+  readStopped(key: ReviewWakeKey): Promise<StoppedWakeMarker | null>
+  listStopped(): Promise<readonly StoppedWakeMarker[]>
+  markStopped(key: ReviewWakeKey, targetSessionId?: string): Promise<void>
   clearStopped(key: ReviewWakeKey): Promise<void>
 }
 
@@ -60,15 +69,45 @@ export function createFileWakeIntentDirectory(directory: string): WakeIntentDire
       return join(directory, `stopped-${keyHash(key)}.json`)
     },
     async isStopped(key) {
+      return (await this.readStopped(key)) !== null
+    },
+    async readStopped(key) {
       try {
-        await access(this.stoppedPathFor(key) as string)
-        return true
+        const parsed = JSON.parse(await readFile(this.stoppedPathFor(key) as string, 'utf8')) as Partial<StoppedWakeMarker>
+        if (parsed.key === undefined) return null
+        return parsed.targetSessionId === undefined
+          ? { key: parsed.key }
+          : { key: parsed.key, targetSessionId: parsed.targetSessionId }
       } catch {
-        return false
+        return null
       }
     },
-    async markStopped(key) {
-      await writeFile(this.stoppedPathFor(key) as string, '{"stopped":true}\n', 'utf8')
+    async listStopped() {
+      let names: string[]
+      try {
+        names = await readdir(directory)
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+        throw error
+      }
+      const markers: StoppedWakeMarker[] = []
+      for (const name of names.filter((entry) => entry.startsWith('stopped-') && entry.endsWith('.json')).sort()) {
+        try {
+          const parsed = JSON.parse(await readFile(join(directory, name), 'utf8')) as Partial<StoppedWakeMarker>
+          if (parsed.key !== undefined) {
+            markers.push(parsed.targetSessionId === undefined
+              ? { key: parsed.key }
+              : { key: parsed.key, targetSessionId: parsed.targetSessionId })
+          }
+        } catch { /* an unreadable marker never becomes a Stop */ }
+      }
+      return markers
+    },
+    async markStopped(key, targetSessionId) {
+      const marker: StoppedWakeMarker = targetSessionId === undefined
+        ? { key }
+        : { key, targetSessionId }
+      await writeFile(this.stoppedPathFor(key) as string, `${JSON.stringify({ stopped: true, ...marker })}\n`, 'utf8')
     },
     async clearStopped(key) {
       await rm(this.stoppedPathFor(key) as string, { force: true })
