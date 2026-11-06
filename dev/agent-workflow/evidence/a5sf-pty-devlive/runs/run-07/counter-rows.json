@@ -1,0 +1,764 @@
+{
+  "realmMembers": [
+    {
+      "at": "2026-11-06T11:09:16.487Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-054vaf000o03",
+      "templateId": "worker",
+      "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:09:17.571Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-0v93y6i1hns7",
+      "templateId": "worker2",
+      "sessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:09:18.883Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-0vzx5580rczo",
+      "templateId": "nether",
+      "sessionId": "session-team-child-e523f17a1dc02d55d6e8f51801c75ea0",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "deny",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    }
+  ],
+  "confinedSpawnAttempts": [
+    {
+      "at": "2026-11-06T11:09:18.607Z",
+      "leg": "confined-spawn-attempt",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/write-only/secret-kernel.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside"
+    },
+    {
+      "at": "2026-11-06T11:09:18.818Z",
+      "leg": "confined-spawn-attempt",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside"
+    }
+  ],
+  "confinedSpawns": [
+    {
+      "at": "2026-11-06T11:09:18.802Z",
+      "leg": "confined-spawn",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/write-only/secret-kernel.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside",
+      "pid": 333
+    },
+    {
+      "at": "2026-11-06T11:09:18.846Z",
+      "leg": "confined-spawn",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside",
+      "pid": 335
+    }
+  ],
+  "baseSpawns": [
+    {
+      "at": "2026-11-06T11:09:15.731Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:15.778Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:15.844Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.287Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.314Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.384Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.625Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.654Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.714Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.365Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.426Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.528Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.598Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.749Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.786Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.848Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.235Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.295Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.382Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.439Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:19.010Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:19.039Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:19.103Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    }
+  ],
+  "allRows": [
+    {
+      "at": "2026-11-06T11:09:14.535Z",
+      "leg": "base-subprocess-counter-installed",
+      "baseCtor": "LocalSubprocessRuntime",
+      "note": "test composition instrumentation; records only the inherited service arm"
+    },
+    {
+      "at": "2026-11-06T11:09:15.731Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:15.778Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:15.844Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.287Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.314Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.384Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.487Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-054vaf000o03",
+      "templateId": "worker",
+      "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:09:16.625Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.654Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:16.714Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.365Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.426Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.528Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.571Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-0v93y6i1hns7",
+      "templateId": "worker2",
+      "sessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:09:17.598Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.749Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.786Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:17.848Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.235Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.295Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.382Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.439Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:18.607Z",
+      "leg": "confined-spawn-attempt",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/write-only/secret-kernel.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside"
+    },
+    {
+      "at": "2026-11-06T11:09:18.802Z",
+      "leg": "confined-spawn",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/write-only/secret-kernel.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside",
+      "pid": 333
+    },
+    {
+      "at": "2026-11-06T11:09:18.811Z",
+      "leg": "confined-exit",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/write-only/secret-kernel.txt\""
+      ],
+      "pid": 333,
+      "code": 1,
+      "signal": ""
+    },
+    {
+      "at": "2026-11-06T11:09:18.818Z",
+      "leg": "confined-spawn-attempt",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside"
+    },
+    {
+      "at": "2026-11-06T11:09:18.846Z",
+      "leg": "confined-spawn",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\""
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside",
+      "pid": 335
+    },
+    {
+      "at": "2026-11-06T11:09:18.861Z",
+      "leg": "confined-exit",
+      "realm": "member:inst-054vaf000o03",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-08-59Z/workspace/lane/inside/mode.txt\""
+      ],
+      "pid": 335,
+      "code": 0,
+      "signal": ""
+    },
+    {
+      "at": "2026-11-06T11:09:18.883Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-0vzx5580rczo",
+      "templateId": "nether",
+      "sessionId": "session-team-child-e523f17a1dc02d55d6e8f51801c75ea0",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "deny",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:09:19.010Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:19.039Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:09:19.103Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    }
+  ],
+  "note": "test-composition instrumentation: every confined provider spawn attempt and every inherited-base `subprocess.spawn` call. A `bash` call that produced no confined-spawn-attempt did not come from the confined face.",
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,224 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pty-devlive-2026-11-06T11-04-21-262Z",
+  "suite": "a5sf-pty-devlive",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-06T11:04:21.262Z",
+  "selectedCases": [
+    "member-terminal-face",
+    "same-pty-multi-command",
+    "product-shell-read-unlanned",
+    "write-only-read-denied",
+    "chmod-gap",
+    "network-deny-refusal"
+  ],
+  "bindings": {
+    "teamSha": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfptydv",
+    "face": "Shell-PTY",
+    "worldLine": "a5sfptydv",
+    "recordClass": "DEV-LIVE",
+    "grantScope": "DEV-LIVE",
+    "grantId": "devlive-pty-shell-1",
+    "candidateClaimEligibility": "DEV-LIVE record: never eligible for a V@B=yes or any frozen-candidate claim (enforced by run-record.mjs#finalize)",
+    "sink": "world-home a5sf-consult.jsonl (copy: guard-facts.json)",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261105r2",
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+      },
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+    },
+    "providerComposition": "test row a5sf-pty-realm-provider-row.mjs (the product has no v3-blueprint -> compiled-lane bridge at this base); the intersection is the product algebra intersectPathRuleSets",
+    "laneAlgebra": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets",
+    "toolCaller": "test-composition tool a5sf-pty-bash-probe-tool.mjs (calls the shipped confined face; decides nothing), mounted on the preset AND shadowed by the realm",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "member-terminal-face",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:04:42.884Z",
+      "service": "@deepseek-ai/dsh-terminal — `TerminalSessionService` (pinned host 0.639ed01539)",
+      "pid": 2,
+      "ttyNr": 34816,
+      "fd0": "/dev/pts/0",
+      "serviceSessionId": "pty-1",
+      "realmHasTerminalsFace": false,
+      "confinedSpawnForBash": 0,
+      "failedChecks": [],
+      "artifact": "item1-member-terminal-face.json"
+    },
+    {
+      "id": "same-pty-multi-command",
+      "verdict": "FAIL",
+      "at": "2026-11-06T11:04:43.483Z",
+      "pid": 2,
+      "sessions": [
+        0,
+        0
+      ],
+      "ttyNrs": [
+        34816,
+        34816
+      ],
+      "controlPid": 2,
+      "controlServiceSessionId": "pty-2",
+      "failedChecks": [
+        "shareEnvAcrossCalls",
+        "shareCwdAcrossCalls"
+      ],
+      "artifact": "item2-same-pty-multi-command.json"
+    },
+    {
+      "id": "product-shell-read-unlanned",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:04:43.483Z",
+      "bytesReturned": true,
+      "observed": "allow",
+      "laneExpectation": "deny",
+      "locus": "product preset / legacy PTY (no a5sf guard consultation)",
+      "failedChecks": [],
+      "artifact": "item3-product-shell-read.json"
+    },
+    {
+      "id": "write-only-read-denied",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:04:43.490Z",
+      "fact": "IO_READ_DENIED",
+      "axis": "read",
+      "providerCalls": 0,
+      "bytesReturned": false,
+      "failedChecks": [],
+      "artifact": "item4-write-only-read-denied.json"
+    },
+    {
+      "id": "chmod-gap",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:04:43.692Z",
+      "modeBefore": "644",
+      "modeAfter": "600",
+      "finding": "CHMOD_GAP_REPRODUCED",
+      "failedChecks": [],
+      "artifact": "item5-chmod-gap.json"
+    },
+    {
+      "id": "network-deny-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:04:43.958Z",
+      "typedCode": "NETWORK_UNCONFINED_REALM",
+      "processes": 0,
+      "bodyRan": false,
+      "failedChecks": [],
+      "artifact": "item6-network-deny-refusal.json"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-04/run-ledger.jsonl",
+    "thisRunCount": 3,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T11:04:21.263Z",
+        "runId": "a5sf-pty-devlive-2026-11-06T11-04-21-262Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-pty-shell-1",
+        "grantId": "devlive-pty-shell-1",
+        "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed to the Shell/PTY face implementer: dev-live scope authorisation for the Shell-PTY face",
+        "face": "Shell-PTY",
+        "worldLine": "a5sfptydv",
+        "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T11:04:27.686Z",
+        "runId": "a5sf-pty-devlive-2026-11-06T11-04-21-262Z",
+        "suite": "a5sf-pty-devlive",
+        "recordClass": "DEV-LIVE",
+        "world": "u5a5sfptydv-20261106T11-04-21Z",
+        "phase": "a5sf-pty-devlive-boot1"
+      },
+      {
+        "at": "2026-11-06T11:04:47.095Z",
+        "runId": "a5sf-pty-devlive-2026-11-06T11-04-21-262Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "dev-live-outcome",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-outcome",
+        "world": "a5sfptydv",
+        "grantId": "devlive-pty-shell-1",
+        "face": "Shell-PTY",
+        "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+        "overall": "FAIL",
+        "cases": [
+          {
+            "id": "member-terminal-face",
+            "verdict": "PASS"
+          },
+          {
+            "id": "same-pty-multi-command",
+            "verdict": "FAIL"
+          },
+          {
+            "id": "product-shell-read-unlanned",
+            "verdict": "PASS"
+          },
+          {
+            "id": "write-only-read-denied",
+            "verdict": "PASS"
+          },
+          {
+            "id": "chmod-gap",
+            "verdict": "PASS"
+          },
+          {
+            "id": "network-deny-refusal",
+            "verdict": "PASS"
+          }
+        ],
+        "teardown": {
+          "host": {
+            "wasRunning": true,
+            "pid": 42,
+            "killed": true,
+            "portFree": true
+          },
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-04-21Z",
+          "releasedPorts": [
+            3186,
+            3495,
+            3186
+          ],
+          "killedPids": [
+            42
+          ],
+          "notes": []
+        }
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pty-devlive-boot1",
+      "world": "u5a5sfptydv-20261106T11-04-21Z",
+      "port": 3186,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-04/logs/u5a5sfptydv-20261106T11-04-21Z/instance-port3186.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pty-devlive-2026-11-06T11-04-21-262Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-06T11:04:47.094Z",
+  "osLevelNetworkIsolationClaimed": false
+}

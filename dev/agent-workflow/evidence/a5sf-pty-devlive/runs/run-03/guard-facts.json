@@ -1,0 +1,33 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-01-32Z/a5sf-consult.jsonl",
+  "facts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-054vaf000o03",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-pty:inst-054vaf000o03:g1",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-01-32Z/workspace/lane/write-only/secret-face.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 1,
+      "observedAt": "2026-11-06T11:01:55.093Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-054vaf000o03",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-pty:inst-054vaf000o03:g1",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-01-32Z/workspace/lane/inside",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-06T11:01:55.104Z"
+    }
+  ],
+  "locus": "the shipped a5sf guard consult sink (fail-closed)",
+  "osLevelNetworkIsolationClaimed": false
+}

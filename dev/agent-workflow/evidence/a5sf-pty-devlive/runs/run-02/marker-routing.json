@@ -1,0 +1,113 @@
+{
+  "decidedBy": "the driver's own decide() log, appended per model request",
+  "markers": {
+    "discovery": "MK_PTY_DISC",
+    "create": "MK_PTY_CREATE",
+    "worker": "MK_PTY_WKR1",
+    "worker2": "MK_PTY_WKR2",
+    "netdeny": "MK_PTY_NET"
+  },
+  "routingLog": [
+    {
+      "seq": 1,
+      "mockSeq": 1,
+      "at": "2026-11-06T11:00:38.251Z",
+      "effective": "title",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 2,
+      "mockSeq": 2,
+      "at": "2026-11-06T11:00:38.253Z",
+      "effective": "MK_PTY_DISC",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 3,
+      "mockSeq": 3,
+      "at": "2026-11-06T11:00:38.766Z",
+      "effective": "MK_PTY_CREATE",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 4,
+      "mockSeq": 4,
+      "at": "2026-11-06T11:00:38.767Z",
+      "effective": "title",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 5,
+      "mockSeq": 5,
+      "at": "2026-11-06T11:00:39.040Z",
+      "effective": "title",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 6,
+      "mockSeq": 6,
+      "at": "2026-11-06T11:00:39.041Z",
+      "effective": "MK_PTY_WKR1",
+      "servedCount": 1,
+      "disposition": "tool-call",
+      "replyKind": "tool-call",
+      "toolName": "bash"
+    },
+    {
+      "seq": 7,
+      "mockSeq": 7,
+      "at": "2026-11-06T11:00:39.398Z",
+      "effective": "MK_PTY_WKR1",
+      "servedCount": 2,
+      "disposition": "tool-call",
+      "replyKind": "tool-call",
+      "toolName": "bash"
+    },
+    {
+      "seq": 8,
+      "mockSeq": 8,
+      "at": "2026-11-06T11:00:39.521Z",
+      "effective": "MK_PTY_WKR1",
+      "servedCount": 3,
+      "disposition": "tool-call",
+      "replyKind": "tool-call",
+      "toolName": "bash"
+    },
+    {
+      "seq": 9,
+      "mockSeq": 9,
+      "at": "2026-11-06T11:00:39.647Z",
+      "effective": "MK_PTY_WKR1",
+      "servedCount": 4,
+      "disposition": "done",
+      "replyKind": "text",
+      "toolName": null
+    },
+    {
+      "seq": 10,
+      "mockSeq": 10,
+      "at": "2026-11-06T11:00:39.798Z",
+      "effective": "MK_PTY_CREATE",
+      "servedCount": 0,
+      "disposition": "harmless-text",
+      "replyKind": "text",
+      "toolName": null
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

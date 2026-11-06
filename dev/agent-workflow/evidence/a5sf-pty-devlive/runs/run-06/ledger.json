@@ -1,0 +1,179 @@
+{
+  "schema": "a5sf-pty-devlive/ledger/1",
+  "recordClass": "DEV-LIVE",
+  "ledgerPath": "run-ledger.jsonl",
+  "plannedStarts": 1,
+  "aborts": 0,
+  "boots": 1,
+  "arithmetic": "boots === plannedStarts - aborts",
+  "holds": true,
+  "rows": [
+    {
+      "at": "2026-11-06T11:07:21.088Z",
+      "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "budget-intent",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-intent",
+      "world": "intent:devlive-pty-shell-1",
+      "grantId": "devlive-pty-shell-1",
+      "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed to the Shell/PTY face implementer: dev-live scope authorisation for the Shell-PTY face",
+      "face": "Shell-PTY",
+      "worldLine": "a5sfptydv",
+      "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-06T11:07:31.978Z",
+      "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+      "suite": "a5sf-pty-devlive",
+      "recordClass": "DEV-LIVE",
+      "world": "u5a5sfptydv-20261106T11-07-21Z",
+      "phase": "a5sf-pty-devlive-boot1"
+    },
+    {
+      "at": "2026-11-06T11:08:02.823Z",
+      "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "dev-live-outcome",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-outcome",
+      "world": "a5sfptydv",
+      "grantId": "devlive-pty-shell-1",
+      "face": "Shell-PTY",
+      "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+      "overall": "PASS",
+      "cases": [
+        {
+          "id": "member-terminal-face",
+          "verdict": "PASS"
+        },
+        {
+          "id": "same-pty-multi-command",
+          "verdict": "PASS"
+        },
+        {
+          "id": "product-shell-read-unlanned",
+          "verdict": "PASS"
+        },
+        {
+          "id": "write-only-read-denied",
+          "verdict": "PASS"
+        },
+        {
+          "id": "chmod-gap",
+          "verdict": "PASS"
+        },
+        {
+          "id": "network-deny-refusal",
+          "verdict": "PASS"
+        }
+      ],
+      "teardown": {
+        "host": {
+          "wasRunning": true,
+          "pid": 42,
+          "killed": true,
+          "portFree": true
+        },
+        "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-07-21Z",
+        "releasedPorts": [
+          3185,
+          3494,
+          3185
+        ],
+        "killedPids": [
+          42
+        ],
+        "notes": []
+      }
+    }
+  ],
+  "intentRow": {
+    "at": "2026-11-06T11:07:21.088Z",
+    "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "budget-intent",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-intent",
+    "world": "intent:devlive-pty-shell-1",
+    "grantId": "devlive-pty-shell-1",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed to the Shell/PTY face implementer: dev-live scope authorisation for the Shell-PTY face",
+    "face": "Shell-PTY",
+    "worldLine": "a5sfptydv",
+    "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "plannedStarts": 1
+  },
+  "bootRow": {
+    "at": "2026-11-06T11:07:31.978Z",
+    "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+    "suite": "a5sf-pty-devlive",
+    "recordClass": "DEV-LIVE",
+    "world": "u5a5sfptydv-20261106T11-07-21Z",
+    "phase": "a5sf-pty-devlive-boot1"
+  },
+  "outcomeRow": {
+    "at": "2026-11-06T11:08:02.823Z",
+    "runId": "a5sf-pty-devlive-2026-11-06T11-07-21-087Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "dev-live-outcome",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-outcome",
+    "world": "a5sfptydv",
+    "grantId": "devlive-pty-shell-1",
+    "face": "Shell-PTY",
+    "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "overall": "PASS",
+    "cases": [
+      {
+        "id": "member-terminal-face",
+        "verdict": "PASS"
+      },
+      {
+        "id": "same-pty-multi-command",
+        "verdict": "PASS"
+      },
+      {
+        "id": "product-shell-read-unlanned",
+        "verdict": "PASS"
+      },
+      {
+        "id": "write-only-read-denied",
+        "verdict": "PASS"
+      },
+      {
+        "id": "chmod-gap",
+        "verdict": "PASS"
+      },
+      {
+        "id": "network-deny-refusal",
+        "verdict": "PASS"
+      }
+    ],
+    "teardown": {
+      "host": {
+        "wasRunning": true,
+        "pid": 42,
+        "killed": true,
+        "portFree": true
+      },
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-07-21Z",
+      "releasedPorts": [
+        3185,
+        3494,
+        3185
+      ],
+      "killedPids": [
+        42
+      ],
+      "notes": []
+    }
+  },
+  "devLiveOutcomeRecorded": true,
+  "note": "one fresh dev-live lease: intent row + start row written before the spawn, outcome row written after teardown; no cumulative cap is claimed or consumed; at most 2 dev Hosts machine-wide (DEV_LIVE_SLOT_LIMIT)",
+  "osLevelNetworkIsolationClaimed": false
+}

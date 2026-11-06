@@ -1,0 +1,163 @@
+{
+  "schema": "a5sf-pty-devlive/same-pty-multi-command/1",
+  "at": "2026-11-06T11:11:00.506Z",
+  "caseId": "same-pty-multi-command",
+  "question": "Do several commands in one Member session share ONE backend PTY, or does each command spawn?",
+  "initiation": "the Member's own model turn: the mock issued two sequential `bash` calls",
+  "member": {
+    "instanceId": "inst-054vaf000o03",
+    "childSessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "templateId": "worker"
+  },
+  "commandPlan": {
+    "setup": "echo \"A5SF_PTY_START_CWD=$(pwd)\"; export A5SF_PTY_SHARED=A5SF_PTY_SHARED_5c31; cd \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside\"; echo \"A5SF_PTY_RUN=1\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\"",
+    "read": "echo \"A5SF_PTY_RUN=2\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\"",
+    "control": "echo \"A5SF_PTY_RUN=2C\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\""
+  },
+  "commands": [
+    "echo \"A5SF_PTY_START_CWD=$(pwd)\"; export A5SF_PTY_SHARED=A5SF_PTY_SHARED_5c31; cd \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside\"; echo \"A5SF_PTY_RUN=1\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\"",
+    "echo \"A5SF_PTY_RUN=2\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\""
+  ],
+  "channels": {
+    "first": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "psSess": "0",
+      "psTty": "?",
+      "ttyCmd": "/dev/console",
+      "fd0": "/dev/pts/0",
+      "self": {
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 34816,
+        "ttyMajor": 136,
+        "ttyMinor": 0
+      },
+      "outerProc": {
+        "readable": true,
+        "comm": "bash",
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 0,
+        "fd0": "/dev/null",
+        "cmdline": "bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive && node dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs --evidence dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-08 > /dev/null 2>&1; echo \"EXIT=$?\""
+      },
+      "outerProcNote": "non-gating: the driver reads /proc/<pid> in ITS OWN PID namespace. The shell's `$$` is namespace-local on this World (the host runs inside the platform sandbox), so this field is recorded to SHOW the namespace boundary, not to prove or disprove the PTY."
+    },
+    "second": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "psSess": "0",
+      "psTty": "?",
+      "ttyCmd": "/dev/console",
+      "fd0": "/dev/pts/0",
+      "self": {
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 34816,
+        "ttyMajor": 136,
+        "ttyMinor": 0
+      },
+      "outerProc": {
+        "readable": true,
+        "comm": "bash",
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 0,
+        "fd0": "/dev/null",
+        "cmdline": "bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive && node dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs --evidence dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-08 > /dev/null 2>&1; echo \"EXIT=$?\""
+      },
+      "outerProcNote": "non-gating: the driver reads /proc/<pid> in ITS OWN PID namespace. The shell's `$$` is namespace-local on this World (the host runs inside the platform sandbox), so this field is recorded to SHOW the namespace boundary, not to prove or disprove the PTY."
+    }
+  },
+  "control": {
+    "member": {
+      "instanceId": "inst-0v93y6i1hns7",
+      "childSessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "templateId": "worker2"
+    },
+    "command": "echo \"A5SF_PTY_RUN=2C\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"; echo \"A5SF_PTY_SHARED_SEEN=${A5SF_PTY_SHARED:-UNSET}\"",
+    "channel": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "psSess": "0",
+      "psTty": "?",
+      "ttyCmd": "/dev/console",
+      "fd0": "/dev/pts/1",
+      "self": {
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 34817,
+        "ttyMajor": 136,
+        "ttyMinor": 1
+      },
+      "outerProc": {
+        "readable": true,
+        "comm": "bash",
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 0,
+        "fd0": "/dev/null",
+        "cmdline": "bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive && node dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs --evidence dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-08 > /dev/null 2>&1; echo \"EXIT=$?\""
+      },
+      "outerProcNote": "non-gating: the driver reads /proc/<pid> in ITS OWN PID namespace. The shell's `$$` is namespace-local on this World (the host runs inside the platform sandbox), so this field is recorded to SHOW the namespace boundary, not to prove or disprove the PTY."
+    },
+    "serviceWitness": {
+      "ok": true,
+      "status": 200,
+      "httpError": null,
+      "owner": {
+        "id": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+        "sessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use"
+      },
+      "backends": [
+        "shell"
+      ],
+      "sessions": [
+        {
+          "sessionId": "pty-2",
+          "type": "shell",
+          "pid": 243,
+          "status": {
+            "kind": "running"
+          }
+        }
+      ],
+      "shellSessions": [
+        {
+          "sessionId": "pty-2",
+          "type": "shell",
+          "pid": 243,
+          "status": {
+            "kind": "running"
+          }
+        }
+      ],
+      "errors": []
+    },
+    "purpose": "a second Member on the SAME World, running the READ command verbatim: it must see UNSET and its own start directory. Without this arm the measured Member's `SHARED_SEEN` could be read as a global fact rather than as continuity of ONE shell. The DISCRIMINATOR is the PTY service's own owner-scoped session identity (two agents cannot share one owner-scoped session), because the in-namespace pids of two different Members can both read `2`."
+  },
+  "locus": {
+    "layer": "Product preset (inherited legacy-generation PTY)",
+    "service": "@deepseek-ai/dsh-terminal"
+  },
+  "checks": {
+    "twoCommandsInOneMemberTurn": true,
+    "samePid": true,
+    "sameTtyDevice": true,
+    "shareEnvAcrossCalls": true,
+    "shareCwdAcrossCalls": true,
+    "controlDidNotSeeTheState": true,
+    "notARespawn": true,
+    "controlTurnRanBash": true,
+    "controlOwnsADifferentServiceSession": true,
+    "controlServicePidDiffers": true
+  },
+  "verdict": "PASS",
+  "limits": {
+    "note": "same pid/session/tty is PTY identity, not process-tree confinement; the shell is the legacy persistent shell the preset mounts",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

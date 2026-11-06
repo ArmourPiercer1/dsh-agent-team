@@ -1,0 +1,35 @@
+{
+  "schema": "a5sf-pty-devlive/product-shell-read-unlanned/1",
+  "at": "2026-11-06T11:01:55.089Z",
+  "caseId": "product-shell-read-unlanned",
+  "question": "On the Product path, does a read attempt refuse on the read axis and return no bytes?",
+  "laneExpectation": {
+    "declared": "deny",
+    "why": "the write-only root is writable and declared unreadable; the bundle tables expected=deny for the LANE"
+  },
+  "observed": {
+    "decision": "allow",
+    "bytesReturned": true,
+    "exitStatus": "0"
+  },
+  "command": "cat /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-01-32Z/workspace/lane/write-only/secret-product.txt",
+  "invocation": "the Member's own model turn (mock-issued `bash` call #3)",
+  "locus": {
+    "layer": "Product preset (inherited legacy-generation PTY)",
+    "detail": "the confined write-only lane is NEVER consulted on this path: no a5sf guard fact names the locator, and the shell reads the file inside the child process"
+  },
+  "contrast": "the SAME locator class through the confined face (write-only-read-denied) is refused with IO_READ_DENIED and zero bytes — the two answers differ because the LAYERS differ",
+  "checks": {
+    "readExecuted": true,
+    "bytesReturned": true,
+    "exitZero": true,
+    "noGuardFactForProductRead": true
+  },
+  "verdict": "PASS",
+  "verdictMeaning": "PASS = the proposition in the bundle's judgeProposition is proven: the product shell returns the bytes, i.e. the confined read axis is NOT on the product shell path. It is NOT a pass of the lane expectation.",
+  "limits": {
+    "note": "this says the a5sf read axis is absent from the product shell path; it says nothing about OS-level file permissions the process happens to have",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,723 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "at": "2026-11-06T11:08:59.690Z",
+  "face": "Shell-PTY",
+  "world": "a5sfptydv",
+  "mode": "plan",
+  "candidate": {
+    "head": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "recordClass": "DEV-LIVE",
+    "note": "DEV-LIVE development tree (owner ruling 2026-11-09). This bundle can never fund a CANDIDATE-C2 start."
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "devlive-pty-shell-1",
+    "scope": "DEV-LIVE",
+    "grantedBy": "owner 2026-11-09 ruling (dev-live workflow) + this lane's dev-live-grant.json",
+    "face": "Shell-PTY",
+    "world": "a5sfptydv",
+    "boundCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "plannedStarts": 1,
+    "priorRows": 0,
+    "maxStarts": 2
+  },
+  "runRecord": {
+    "teamSha": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "recordClass": "DEV-LIVE",
+    "suite": "a5sf-pty-devlive",
+    "selectedCases": [
+      "member-terminal-face",
+      "same-pty-multi-command",
+      "product-shell-read-unlanned",
+      "write-only-read-denied",
+      "chmod-gap",
+      "network-deny-refusal"
+    ],
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0,
+      "path": "<evidence-dir>/run-ledger.jsonl",
+      "arithmetic": "bootRows === plannedStarts - aborts; the projection declares the PLANNED arithmetic (one boot, no abort) and the run writes its own ledger.json next to it"
+    },
+    "bindings": {
+      "face": "Shell-PTY",
+      "worldLine": "a5sfptydv",
+      "grantScope": "DEV-LIVE",
+      "recordClass": "DEV-LIVE",
+      "candidateClaimEligibility": "DEV-LIVE record: never eligible for V@B=yes or any frozen-candidate claim (enforced by run-record.mjs#finalize)",
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        }
+      }
+    }
+  },
+  "fixtures": {
+    "member-terminal-face": {
+      "kind": "file-in-read-lane",
+      "locator": "tests/homes/<world>/workspace/lane/inside/pty-identity.txt",
+      "bytes": 45
+    },
+    "same-pty-multi-command": {
+      "kind": "file-in-read-lane",
+      "locator": "tests/homes/<world>/workspace/lane/inside/pty-shared.txt",
+      "bytes": 43
+    },
+    "product-shell-read-unlanned": {
+      "kind": "file-in-write-only-lane",
+      "locator": "tests/homes/<world>/workspace/lane/write-only/secret-product.txt",
+      "token": "<SECRET_PRODUCT>"
+    },
+    "write-only-read-denied": {
+      "kind": "file-in-write-only-lane",
+      "locator": "tests/homes/<world>/workspace/lane/write-only/secret-face.txt",
+      "token": "<SECRET_FACE>"
+    },
+    "chmod-gap": {
+      "kind": "file-in-read-lane-outside-write-lane",
+      "locator": "tests/homes/<world>/workspace/lane/inside/mode.txt",
+      "modeBefore": "644",
+      "modeWanted": "600"
+    },
+    "network-deny-refusal": {
+      "kind": "member-lane",
+      "templateId": "nether",
+      "networkAccess": "deny"
+    },
+    "workspace": "tests/homes/<world>/workspace",
+    "note": "planted by the driver AFTER the World exists (plantFixtures()): three readable files inside the read lane, four write-only files whose bytes are the tokens the judges look for. The tokens are generated per run and recorded in the run's fixtures.json, never in this bundle."
+  },
+  "sources": {
+    "driver": "dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs",
+    "providerRow": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-realm-provider-row.mjs",
+    "probeTool": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-bash-probe-tool.mjs",
+    "preset": "tests/kits/_shared/preset-seam.mjs # smokePresetPlugins + persistentShellGroup (pty + terminal-bash + tool-bash-persistent)",
+    "probePresetRow": "the SAME bash_probe module is declared on the member preset AND in a5sfNativeToolModules: route C refuses an attach that ADDS a model-visible name, so the preset declaration is what makes the realm shadow surface-neutral",
+    "note": "Five cases are tabled. The sixth (network-deny-refusal) is declared in driver.untabledCases: the shared schema's network branch requires a WEB caller declaration, which a Shell-PTY network refusal does not have; it is judged by the driver with the same strictness (see CASES/UNTABLED_CASES in run-boot.mjs)."
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "fs",
+      "subprocess"
+    ],
+    "distFaces": {
+      "fs": true,
+      "subprocess": true,
+      "web": false
+    },
+    "hostModules": [
+      {
+        "path": "../../tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js",
+        "role": "the pinned @deepseek-ai/dsh-tool-bash-persistent the MEMBER PRESET mounts (Q1's tool)"
+      },
+      {
+        "path": "../../tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
+        "role": "the pinned @deepseek-ai/dsh-tool-fs the member preset mounts"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-realm-provider-row.mjs",
+        "role": "the teamA5sfRealm provider: one compiled Member + the confined subprocess face + the confined-spawn counter"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-bash-probe-tool.mjs",
+        "role": "the bash_probe caller (preset mount + realm shadow)"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-session-observer.mjs",
+        "role": "the pty_observe witness, mounted INSIDE the shell group so it reads the SAME isolated terminals instance the bash tool used"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs",
+        "role": "this driver"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-pty-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-pty-base"
+      ],
+      "worldRowIds": [
+        "a5sf-pty-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-pty-base"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-pty-root",
+    "teamRoot": "session-a5sf-pty-team",
+    "createRoot": "session-a5sf-pty-team",
+    "stateQueryRoot": "session-a5sf-pty-team",
+    "toolRouteRoot": "session-a5sf-pty-team",
+    "archiveRoot": "session-a5sf-pty-team",
+    "oracleRoot": "session-a5sf-pty-team",
+    "directiveRoot": "session-a5sf-pty-team",
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.pty.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.pty.main",
+        "members": 3
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "member-terminal-face",
+        "memberIdentity": "member-worker",
+        "toolBindingIdentity": "team/pty-shell"
+      },
+      {
+        "caseId": "same-pty-multi-command",
+        "memberIdentity": "member-worker",
+        "toolBindingIdentity": "team/pty-shell"
+      },
+      {
+        "caseId": "product-shell-read-unlanned",
+        "memberIdentity": "member-worker",
+        "toolBindingIdentity": "team/pty-shell"
+      },
+      {
+        "caseId": "write-only-read-denied",
+        "memberIdentity": "member-worker",
+        "toolBindingIdentity": "team/pty-shell"
+      },
+      {
+        "caseId": "chmod-gap",
+        "memberIdentity": "member-worker",
+        "toolBindingIdentity": "team/pty-shell"
+      },
+      {
+        "caseId": "network-deny-refusal",
+        "memberIdentity": "member-nether",
+        "toolBindingIdentity": "team/pty-shell"
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "bash_probe",
+      "path": "dev/agent-workflow/evidence/a5sf-pty-devlive/a5sf-pty-bash-probe-tool.mjs",
+      "face": "subprocess",
+      "inject": [
+        "tools",
+        "subprocess"
+      ],
+      "expectedTools": [
+        "bash_probe"
+      ],
+      "requiresConfig": [
+        "ledgerPath",
+        "program"
+      ],
+      "config": {
+        "ledgerPath": "<world-home>/confined-probe.jsonl",
+        "program": "/bin/bash",
+        "mount": "realm"
+      },
+      "note": "also declared on the member preset (presetLedgerPath) with a DIFFERENT ledger, so a call that did not reach the realm is visible"
+    }
+  ],
+  "policy": {
+    "kind": "shell-class",
+    "network": "deny",
+    "networkAccess": "allow",
+    "networkProbeEnforced": false,
+    "effectiveReadAllow": [
+      "tests/homes/<world>/workspace/lane/inside"
+    ],
+    "effectiveWriteAllow": [
+      "tests/homes/<world>/workspace/lane/write-only"
+    ],
+    "ceiling": {
+      "read": [
+        "tests/homes/<world>/workspace"
+      ],
+      "write": [
+        "tests/homes/<world>/workspace"
+      ]
+    },
+    "restriction": {
+      "read": [
+        "tests/homes/<world>/workspace/lane/inside"
+      ],
+      "write": [
+        "tests/homes/<world>/workspace/lane/write-only"
+      ]
+    },
+    "shellClass": {
+      "programs": [
+        "bash"
+      ]
+    },
+    "networkDenyMember": {
+      "templateId": "nether",
+      "networkAccess": "deny"
+    },
+    "note": "effective = ceiling ∩ restriction, computed by the product algebra in the provider row (intersectPathRuleSets) over test-composition fixtures. The WRITE lane is a strict subset of the READ lane: `lane/inside` is readable and NOT writable, `lane/write-only` is writable and NOT readable. The worker's network access is `allow`; only the `nether` Member's realm declares `deny`. `networkAccess: allow` here is the worker's lane, and no tabled case grades the network axis.",
+    "laneExpectationMapping": "case.expected is the LANE's declared expectation. `product-shell-read-unlanned` (axis read) and `chmod-gap` (axis write) are locators the declared lane DENIES; their judges record whether the PRODUCT PATH / the OS profile actually delivers that denial. A PASS there means the proposition stated in `judgeProposition` was proven, NOT that the lane served the call.",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "member-terminal-face",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "tests/homes/<world>/workspace/lane/inside/pty-identity.txt",
+      "guardFactKey": "member-terminal-face",
+      "expected": "allow",
+      "method": "bash",
+      "collector": "pty-observation",
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "locus"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "member-terminal-face"
+      ],
+      "judgeProposition": "the Member's own model turn calls `bash` and the call is served by the PRESET persistent-shell stack (pinned dsh-terminal + dsh-terminal-bash) on a real PTY, with the governed realm answering NO terminal face and the confined subprocess provider recording NO spawn for it",
+      "note": "the disposition (allow inside the read lane) is incidental; the observable is WHICH layer served the call"
+    },
+    {
+      "id": "same-pty-multi-command",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "tests/homes/<world>/workspace/lane/inside/pty-shared.txt",
+      "guardFactKey": "same-pty-multi-command",
+      "expected": "allow",
+      "method": "bash",
+      "collector": "pty-observation",
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "control"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "same-pty-multi-command"
+      ],
+      "judgeProposition": "two bash commands in ONE Member turn share one backend PTY (same pid, session and tty) and a SECOND Member gets a different one",
+      "note": "the disposition (allow inside the read lane) is incidental; the observable is PTY identity across commands and across Members"
+    },
+    {
+      "id": "product-shell-read-unlanned",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "tests/homes/<world>/workspace/lane/write-only/secret-product.txt",
+      "guardFactKey": "product-shell-read-unlanned",
+      "expected": "deny",
+      "method": "bash",
+      "collector": "pty-observation",
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "locus"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "product-shell-read-unlanned"
+      ],
+      "judgeProposition": "the Member's own `bash` reads a file the confined write-only lane declares unreadable and RETURNS ITS BYTES — i.e. the confined read axis is not on the product shell path",
+      "note": "the bundle's expected=deny is the LANE's expectation; the judge records what the product path does and names the locus"
+    },
+    {
+      "id": "write-only-read-denied",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "tests/homes/<world>/workspace/lane/write-only/secret-face.txt",
+      "guardFactKey": "write-only-read-denied",
+      "expected": "deny",
+      "method": "bash_probe",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "write-only-read-denied"
+      ],
+      "expectedCode": "IO_READ_DENIED",
+      "expectedFact": {
+        "method": "spawn",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED"
+      },
+      "judgeProposition": "a declared read of a write-only root is refused on the READ axis (IO_READ_DENIED), zero provider calls, zero bytes",
+      "note": "supplementary arm (not a case): the SAME body with the write-only root DECLARED as a read is admitted and the OS profile refuses the read — that separates the admission axis from the kernel"
+    },
+    {
+      "id": "chmod-gap",
+      "face": "subprocess",
+      "axis": "write",
+      "locator": "tests/homes/<world>/workspace/lane/inside/mode.txt",
+      "guardFactKey": "chmod-gap",
+      "expected": "deny",
+      "method": "bash_probe",
+      "collector": "os-effect",
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "locus"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "chmod-gap"
+      ],
+      "judgeProposition": "a `chmod` with NO chmod declaration changes the mode of an in-read/out-write file, because neither the admission (nothing declared) nor the OS profile (Landlock has no chmod right) covers it",
+      "note": "the disclosure under test; a REFUTED verdict (mode unchanged) would be the BETTER product outcome and is recorded as such"
+    }
+  ],
+  "driver": {
+    "note": "Discovery-first leader blueprint + polling health gate (both inherited from the web lane). The probe tool is on the member preset AND in a5sfNativeToolModules; two ledgers make the LOCUS observable. `captures` are full bodies; `captureLimits.body.maxChars=null` declares unbounded retention.",
+    "blueprint": {
+      "leader": {
+        "tools": [
+          "bash",
+          "bash_probe",
+          "edit",
+          "pty_observe",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_delegate",
+          "write"
+        ],
+        "builtinToolDeny": "discovery-first",
+        "teamTools": [
+          "team_archive_member",
+          "team_delegate"
+        ],
+        "managed": [
+          "read",
+          "read_image",
+          "write",
+          "edit",
+          "lsp",
+          "bash",
+          "pwsh"
+        ],
+        "safeUnmanaged": [
+          "todo_write"
+        ],
+        "presetTools": [
+          "bash",
+          "bash_probe",
+          "edit",
+          "pty_observe",
+          "read",
+          "read_image",
+          "write"
+        ],
+        "note": "the LEADER and the MEMBER share one preset id in this lane (the smoke preset + the bash_probe caller), so the leader surface is the member preset surface plus the two team tools. `builtinToolDeny: discovery-first` = the deny list is COMPUTED at run time from the anchor leader's own model request (the web lane's fix for A2C-2: BL-17 boot #4 died at team.create on an uncovered unmanaged name). `bash_probe` classifies unmanaged, so the run-time deny list covers it; the MEMBER is legacy/non-strict, keeps the preset name, and route C therefore shadows an EXISTING name instead of adding one."
+      }
+    },
+    "caseManifest": {
+      "cases": [
+        "member-terminal-face",
+        "same-pty-multi-command",
+        "product-shell-read-unlanned",
+        "write-only-read-denied",
+        "chmod-gap"
+      ]
+    },
+    "plannedCases": [
+      "member-terminal-face",
+      "same-pty-multi-command",
+      "product-shell-read-unlanned",
+      "write-only-read-denied",
+      "chmod-gap"
+    ],
+    "untabledCases": [
+      {
+        "id": "network-deny-refusal",
+        "reason": "SHARED-SCHEMA-LIMIT",
+        "detail": "the only tabled network class is admission-refusal, and checkDriverCallerSurface then REQUIRES a legacy Member whose preset surfaces web_fetch+web_search through the pinned web module. A Shell-PTY network refusal has a subprocess caller and no web preset; tabling it would force a false caller declaration. Judged by the driver with the same strictness; declared here and in the run record so it is not hidden.",
+        "judgedBy": "the driver's network-deny judge (typed code NETWORK_UNCONFINED_REALM, 0 confined spawn attempts, 0 bytes, and — a LOCUS fact, not a defect — 0 guard-consult facts because the shipped face throws on this branch before the guard)"
+      }
+    ],
+    "steps": [
+      {
+        "id": "preconditions",
+        "canFail": false
+      },
+      {
+        "id": "dev-live-grant",
+        "produces": [
+          "grant"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "compose-rows",
+        "produces": [
+          "rows"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "boot-host",
+        "produces": [
+          "host"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "health-gate",
+        "requires": [
+          "host"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "discover-leader-surface",
+        "requires": [
+          "host"
+        ],
+        "produces": [
+          "leader-surface"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "mock-requests"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "write-main-blueprint",
+        "requires": [
+          "leader-surface"
+        ],
+        "produces": [
+          "blueprint"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "create-team",
+        "requires": [
+          "blueprint"
+        ],
+        "produces": [
+          "team-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "state-open"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "live-leader-gate",
+        "requires": [
+          "state-open"
+        ],
+        "produces": [
+          "live-leader-gate"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-worker",
+        "requires": [
+          "live-leader-gate"
+        ],
+        "produces": [
+          "member-worker"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "member-bash-calls",
+        "requires": [
+          "member-worker"
+        ],
+        "produces": [
+          "pty-observations"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "mock-requests",
+          "tool-results"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-worker2-control",
+        "requires": [
+          "live-leader-gate"
+        ],
+        "produces": [
+          "member-worker2"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "confined-probes",
+        "requires": [
+          "pty-observations"
+        ],
+        "produces": [
+          "confined-probes",
+          "guard-facts",
+          "confined-spawns"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "guard-facts",
+          "confined-spawns"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "teardown",
+        "requires": [
+          "confined-probes"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      }
+    ]
+  },
+  "limit": {
+    "wording": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

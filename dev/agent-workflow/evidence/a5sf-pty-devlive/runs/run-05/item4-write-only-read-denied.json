@@ -1,0 +1,104 @@
+{
+  "schema": "a5sf-pty-devlive/write-only-read-denied/1",
+  "at": "2026-11-06T11:07:05.168Z",
+  "caseId": "write-only-read-denied",
+  "question": "With a write lane but no read lane, does a read attempt refuse on the READ axis and return no bytes?",
+  "answer": "YES on the confined subprocess face",
+  "axis": "read",
+  "fact": {
+    "name": "IO_READ_DENIED",
+    "method": "spawn",
+    "decision": "deny",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt",
+    "decidedBy": "IO_READ_DENIED"
+  },
+  "refusalReasonCodes": {
+    "errorInfo": null,
+    "probeRow": "IO_READ_DENIED",
+    "messagePrefix": null,
+    "guardFact": "IO_READ_DENIED"
+  },
+  "refusalText": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt' is outside every allow subtree of the lane",
+  "invocation": "driver-initiated tool route call on the Member session (`bash_probe`), i.e. the same agent scope a model tool call executes in",
+  "probe": {
+    "label": "write-only-read",
+    "request": {
+      "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt"
+      ],
+      "writes": null,
+      "chmod": null
+    },
+    "memberSession": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "memberInstanceId": "inst-054vaf000o03",
+    "status": 200,
+    "ok": false,
+    "errorMessage": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt' is outside every allow subtree of the lane",
+    "errorInfo": null,
+    "codes": {
+      "errorInfo": null,
+      "probeRow": "IO_READ_DENIED",
+      "messagePrefix": null,
+      "guardFact": "IO_READ_DENIED"
+    },
+    "typedCode": "IO_READ_DENIED",
+    "value": null,
+    "facts": [
+      {
+        "schema": "a5sf-guard-consult/1",
+        "realm": "member",
+        "memberIdentity": "inst-054vaf000o03",
+        "toolBindingIdentity": null,
+        "policyRevision": "a5sf-pty:inst-054vaf000o03:g1",
+        "method": "spawn",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED",
+        "sequence": 1,
+        "observedAt": "2026-11-06T11:07:05.161Z"
+      }
+    ],
+    "confinedSpawnRows": [],
+    "realmProbeRows": [
+      {
+        "at": "2026-11-06T11:07:05.163Z",
+        "tool": "bash_probe",
+        "mount": "realm",
+        "program": "/bin/bash",
+        "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt\"",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/inside",
+        "reads": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt"
+        ],
+        "writes": [],
+        "chmod": [],
+        "stage": "done-rejected",
+        "code": "IO_READ_DENIED",
+        "name": "TeamIoDenial",
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-06-30Z/workspace/lane/write-only/secret-face.txt' is outside every allow subtree of the lane"
+      }
+    ],
+    "presetProbeRows": [],
+    "locus": "confined subprocess face (shipped admission + P1-07 OS profile)"
+  },
+  "checks": {
+    "readAxisFactIsTyped": true,
+    "refusalCarriesATypedReason": true,
+    "refusedOnReadAxis": true,
+    "zeroProcesses": true,
+    "zeroBytes": true,
+    "reachedTheConfinedFace": true
+  },
+  "verdict": "PASS",
+  "locus": {
+    "layer": "a5sf admission (the shipped confined `subprocess` face guard), before any provider call",
+    "notTheOs": "zero provider calls: the refusal happened before the OS was asked"
+  },
+  "limits": {
+    "note": "an admission refusal is a statement about our admission code, not about OS confinement",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}
