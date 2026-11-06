@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-06T11:07:58.665Z",
+  "witness": {
+    "ok": true,
+    "status": 200,
+    "httpError": null,
+    "owner": {
+      "id": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "sessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use"
+    },
+    "backends": [
+      "shell"
+    ],
+    "sessions": [
+      {
+        "sessionId": "pty-2",
+        "type": "shell",
+        "pid": 244,
+        "status": {
+          "kind": "running"
+        }
+      }
+    ],
+    "shellSessions": [
+      {
+        "sessionId": "pty-2",
+        "type": "shell",
+        "pid": 244,
+        "status": {
+          "kind": "running"
+        }
+      }
+    ],
+    "errors": []
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

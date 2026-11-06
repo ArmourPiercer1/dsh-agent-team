@@ -1,0 +1,6 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-00-03Z/a5sf-consult.jsonl",
+  "facts": [],
+  "abortedAt": "member-bash-calls",
+  "osLevelNetworkIsolationClaimed": false
+}

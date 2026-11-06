@@ -1,0 +1,6 @@
+[2026-11-06T11:10:20.479Z] PLAN (host-free). head=79a19bd4c09b1770f71df89ea571da994c2364d0 hostPin=639ed015397290b3745d163aafe02ffee4aa3f84 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T11:10:20.480Z] row identity: {"ok":true}
+[2026-11-06T11:10:20.519Z] blueprints parsed: anchor=1 member, main=3 members, leader builtinToolDeny=["x"]
+[2026-11-06T11:10:20.521Z] identity roots: {"ok":true,"root":"session-a5sf-pty-team","bootRoot":"session-a5sf-pty-root","rootsCoincide":false,"productionRowRootChecked":false,"directiveRootChecked":false,"toolRouteRootIsLabel":true}
+[2026-11-06T11:10:20.561Z] shared preflight: exit=0 verdict=PASS summary=PASS 18/18 checks
+[2026-11-06T11:10:20.561Z] PLAN OK

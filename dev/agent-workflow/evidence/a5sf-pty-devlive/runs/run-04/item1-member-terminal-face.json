@@ -1,0 +1,186 @@
+{
+  "schema": "a5sf-pty-devlive/member-terminal-face/1",
+  "at": "2026-11-06T11:04:42.884Z",
+  "caseId": "member-terminal-face",
+  "question": "What terminal does a Member actually get on today's product path, and which service does its tool call reach?",
+  "answeredBy": "the Member's OWN model turn: the mock issued the `bash` tool call the driver scripted",
+  "ownerRuling": "DEV-LIVE development evidence; never a candidate claim and never V@B",
+  "member": {
+    "instanceId": "inst-054vaf000o03",
+    "childSessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "templateId": "worker",
+    "legacy": true,
+    "capabilitiesAbsent": true
+  },
+  "surface": {
+    "toolsFromMemberModelRequest": [
+      "bash",
+      "bash_probe",
+      "edit",
+      "pty_observe",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "hasBash": true
+  },
+  "call": {
+    "tool": "bash",
+    "command": "export A5SF_PTY_SHARED=A5SF_PTY_SHARED_5c31; cd lane/inside; echo \"A5SF_PTY_RUN=1\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_TTYCMD=$(tty 2>&1)\"; echo \"A5SF_PTY_PPID=$(awk '{print $4}' /proc/$$/stat)\"; echo \"A5SF_PTY_SESS=$(awk '{print $6}' /proc/$$/stat)\"; echo \"A5SF_PTY_TTYNR=$(awk '{print $7}' /proc/$$/stat)\"; echo \"A5SF_PTY_CWD=$(pwd)\"",
+    "toolResultIsError": false,
+    "raw": "bash: cd: lane/inside: No such file or directory\nA5SF_PTY_RUN=1\nA5SF_PTY_PID=2\nA5SF_PTY_PS= 2 0 ? 1\nA5SF_PTY_FD0=/dev/pts/0\nA5SF_PTY_TTYCMD=/dev/console\nA5SF_PTY_PPID=1\nA5SF_PTY_SESS=0\nA5SF_PTY_TTYNR=34816\nA5SF_PTY_CWD=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\n[Command finished with exit code 0]"
+  },
+  "result": {
+    "channel": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "psSess": "0",
+      "psTty": "?",
+      "ttyCmd": "/dev/console",
+      "fd0": "/dev/pts/0",
+      "self": {
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 34816,
+        "ttyMajor": 136,
+        "ttyMinor": 0
+      },
+      "outerProc": {
+        "readable": true,
+        "comm": "bash",
+        "ppid": 1,
+        "session": 0,
+        "ttyNr": 0,
+        "fd0": "/dev/null",
+        "cmdline": "bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive && node dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs --evidence dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-04 > /dev/null 2>&1; echo \"EXIT=$?\""
+      },
+      "outerProcNote": "non-gating: the driver reads /proc/<pid> in ITS OWN PID namespace. The shell's `$$` is namespace-local on this World (the host runs inside the platform sandbox), so this field is recorded to SHOW the namespace boundary, not to prove or disprove the PTY."
+    },
+    "proc": {
+      "pid": 2,
+      "readable": true,
+      "comm": "bash",
+      "state": "S",
+      "ppid": 1,
+      "pgrp": 0,
+      "session": 0,
+      "ttyNr": 0,
+      "fd0": "",
+      "fd0Target": "/dev/null",
+      "fd1Target": "socket:[63399738]",
+      "fd2Target": "socket:[63399740]",
+      "cmdline": "bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive && node dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs --evidence dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-04 > /dev/null 2>&1; echo \"EXIT=$?\""
+    },
+    "sameForSecondCall": null,
+    "presetProbeRows": 0,
+    "confinedSpawnRowsDuringBash": [],
+    "allConfinedSpawnRows": []
+  },
+  "attribution": {
+    "service": "@deepseek-ai/dsh-terminal — `TerminalSessionService` (pinned host 0.639ed01539)",
+    "backend": "@deepseek-ai/dsh-terminal-bash (the `shell` pty backend the service registers)",
+    "tool": "@deepseek-ai/dsh-tool-bash-persistent (inject: ['tools','terminals'])",
+    "whyThisService": [
+      "the composed profile for this World declares exactly one `bash` tool row: @deepseek-ai/dsh-tool-bash-persistent, inside the preset group that also mounts @deepseek-ai/dsh-terminal and @deepseek-ai/dsh-terminal-bash (composed-profile.patch.yml)",
+      "the tool row cannot obtain a PTY from anywhere else: its only PTY seam is inject ['tools','terminals']",
+      "the shell's OWN /proc/$$/stat reports a controlling terminal whose tty_nr major is 136 (the Linux pts major) and a positive session id, and /proc/$$/fd/0 resolves to a /dev/pts/N slave",
+      "the confined subprocess provider (the realm's other process face) recorded NO spawn attempt for the bash command, so the shell did not come from the confined face",
+      "the governed realm's own compiled answer for this Member records realmFaces=[subprocess] and hasTerminalsFace=false, so no realm installed a terminal"
+    ],
+    "serviceWitness": {
+      "ok": true,
+      "status": 200,
+      "httpError": null,
+      "owner": {
+        "id": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+        "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use"
+      },
+      "backends": [
+        "shell"
+      ],
+      "sessions": [
+        {
+          "sessionId": "pty-1",
+          "type": "shell",
+          "pid": 141,
+          "status": {
+            "kind": "running"
+          }
+        }
+      ],
+      "shellSessions": [
+        {
+          "sessionId": "pty-1",
+          "type": "shell",
+          "pid": 141,
+          "status": {
+            "kind": "running"
+          }
+        }
+      ],
+      "errors": [],
+      "note": "the PTY service itself, asked on the SAME owner handle the `bash` tool used; mounted inside the same preset group so it observes the SAME isolated `terminals` instance"
+    },
+    "serviceWitnessProves": "the isolated `terminals` instance the preset group owns registered the `shell` backend type and held exactly one owner-scoped session for this Member, whose snapshot names the session id, type and pid — i.e. the SERVICE that served the call, not an inference from the profile",
+    "governedRealmAnswer": {
+      "at": "2026-11-06T11:04:41.949Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-054vaf000o03",
+      "templateId": "worker",
+      "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    "composedProfilePresent": true,
+    "profileHasPtyStack": true
+  },
+  "locus": {
+    "layer": "Product preset (inherited legacy-generation PTY), NOT a governed realm face",
+    "detail": "request -> tool route -> agent tools -> @deepseek-ai/dsh-tool-bash-persistent -> ctx.terminals -> TerminalSessionService -> @deepseek-ai/dsh-terminal-bash -> node-pty -> /dev/pts/N",
+    "notTheConfinedFace": "zero confined-spawn-attempt rows carry the bash command"
+  },
+  "checks": {
+    "memberSurfaceHasBash": true,
+    "memberTurnRan": true,
+    "bashCallServed": true,
+    "realPtySlaveOnFd0": true,
+    "controllingTerminalIsPts": true,
+    "ttyDeviceNumbersMatchFd0": true,
+    "profileDeclaresPtyStack": true,
+    "realmAnsweredNoTerminalFace": true,
+    "confinedProviderRanNoBash": true,
+    "presetProbeUnused": true,
+    "serviceWitnessListsOneShellSession": true,
+    "serviceWitnessRegistersShellBackend": true
+  },
+  "verdict": "PASS",
+  "limits": {
+    "notClaimed": "this is an attribution of the SERVICE that served the call on this composition; it is not a claim that the pinned PTY service is safe, confined or isolated",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

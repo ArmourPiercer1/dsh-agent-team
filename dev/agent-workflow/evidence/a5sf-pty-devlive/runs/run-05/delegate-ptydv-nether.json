@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-a5sf-pty-team",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-0vzx5580rczo",
+        "templateId": "nether",
+        "childSessionId": "session-team-child-e523f17a1dc02d55d6e8f51801c75ea0",
+        "operationId": "op-0hw4inu0fb3zft057nqvo0oc",
+        "replayed": false,
+        "ledgerSequence": 13,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 14,
+        "workSettled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "ptydv-delegate-nether"
+    }
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

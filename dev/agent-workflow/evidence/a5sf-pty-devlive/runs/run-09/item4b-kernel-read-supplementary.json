@@ -1,0 +1,115 @@
+{
+  "schema": "a5sf-pty-devlive/kernel-read-supplementary/1",
+  "at": "2026-11-06T11:11:59.705Z",
+  "caseId": null,
+  "supplementary": true,
+  "notACase": true,
+  "why": "not a case: it observes the OS profile AFTER an admitted call. It is tabled nowhere in the preflight bundle and adds no row to the run record; it exists to pin the LOCUS of the read refusal (admission vs kernel).",
+  "answer": "the admission admits a DECLARED read of the write-only root and the OS profile refuses the read (no bytes)",
+  "probe": {
+    "label": "kernel-read-supplementary",
+    "request": {
+      "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/write-only/secret-kernel.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside"
+      ],
+      "writes": null,
+      "chmod": null
+    },
+    "memberSession": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "memberInstanceId": "inst-054vaf000o03",
+    "status": 200,
+    "ok": true,
+    "errorMessage": "",
+    "errorInfo": null,
+    "codes": {
+      "errorInfo": null,
+      "probeRow": null,
+      "messagePrefix": null,
+      "guardFact": null
+    },
+    "typedCode": null,
+    "value": {
+      "ok": true,
+      "exitCode": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/write-only/secret-kernel.txt: Permission denied\n",
+      "truncated": false
+    },
+    "facts": [
+      {
+        "schema": "a5sf-guard-consult/1",
+        "realm": "member",
+        "memberIdentity": "inst-054vaf000o03",
+        "toolBindingIdentity": null,
+        "policyRevision": "a5sf-pty:inst-054vaf000o03:g1",
+        "method": "spawn",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside",
+        "decision": "allow",
+        "decidedBy": "ALLOW",
+        "sequence": 2,
+        "observedAt": "2026-11-06T11:11:59.511Z"
+      }
+    ],
+    "confinedSpawnRows": [
+      {
+        "at": "2026-11-06T11:11:59.514Z",
+        "leg": "confined-spawn-attempt",
+        "realm": "member:inst-054vaf000o03",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/write-only/secret-kernel.txt\""
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside"
+      },
+      {
+        "at": "2026-11-06T11:11:59.693Z",
+        "leg": "confined-spawn",
+        "realm": "member:inst-054vaf000o03",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/write-only/secret-kernel.txt\""
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside",
+        "pid": 315
+      }
+    ],
+    "realmProbeRows": [
+      {
+        "at": "2026-11-06T11:11:59.703Z",
+        "tool": "bash_probe",
+        "mount": "realm",
+        "program": "/bin/bash",
+        "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/write-only/secret-kernel.txt\"",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside",
+        "reads": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-11-19Z/workspace/lane/inside"
+        ],
+        "writes": [],
+        "chmod": [],
+        "stage": "completed",
+        "exitCode": 1,
+        "signal": null,
+        "stdoutBytes": 0,
+        "stderrBytes": 183,
+        "stdoutTruncated": false
+      }
+    ],
+    "presetProbeRows": [],
+    "locus": "confined subprocess face (shipped admission + P1-07 OS profile)"
+  },
+  "checks": {
+    "admitted": true,
+    "childRan": true,
+    "noSecretBytes": true,
+    "childReportedFailure": true
+  },
+  "locus": {
+    "layer": "P1-07 Landlock OS profile (kernel), after admission"
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

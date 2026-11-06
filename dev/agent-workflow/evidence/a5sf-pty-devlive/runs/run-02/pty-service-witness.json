@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-06T11:00:39.816Z",
+  "witness": {
+    "ok": true,
+    "status": 200,
+    "httpError": null,
+    "owner": {
+      "id": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use"
+    },
+    "backends": [
+      "shell"
+    ],
+    "sessions": [
+      {
+        "sessionId": "pty-1",
+        "type": "shell",
+        "pid": 141,
+        "status": {
+          "kind": "running"
+        }
+      }
+    ],
+    "shellSessions": [
+      {
+        "sessionId": "pty-1",
+        "type": "shell",
+        "pid": 141,
+        "status": {
+          "kind": "running"
+        }
+      }
+    ],
+    "errors": [],
+    "note": "the PTY service itself, asked on the SAME owner handle the `bash` tool used; mounted inside the same preset group so it observes the SAME isolated `terminals` instance"
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

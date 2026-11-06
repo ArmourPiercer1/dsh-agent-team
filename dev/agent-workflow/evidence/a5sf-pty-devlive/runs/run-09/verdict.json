@@ -1,0 +1,52 @@
+{
+  "schema": "a5sf-pty-devlive/verdict/1",
+  "at": "2026-11-06T11:12:03.147Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pty-devlive-2026-11-06T11-11-19-623Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "abortedAt": null,
+  "partial": false,
+  "cases": [
+    {
+      "id": "member-terminal-face",
+      "verdict": "PASS"
+    },
+    {
+      "id": "same-pty-multi-command",
+      "verdict": "PASS"
+    },
+    {
+      "id": "product-shell-read-unlanned",
+      "verdict": "PASS"
+    },
+    {
+      "id": "write-only-read-denied",
+      "verdict": "PASS"
+    },
+    {
+      "id": "chmod-gap",
+      "verdict": "PASS"
+    },
+    {
+      "id": "network-deny-refusal",
+      "verdict": "PASS"
+    }
+  ],
+  "tabledCases": [
+    "member-terminal-face",
+    "same-pty-multi-command",
+    "product-shell-read-unlanned",
+    "write-only-read-denied",
+    "chmod-gap"
+  ],
+  "untabledCases": [
+    "network-deny-refusal"
+  ],
+  "devLiveOutcomeRecorded": true,
+  "limit": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+  "osLevelNetworkIsolationClaimed": false
+}

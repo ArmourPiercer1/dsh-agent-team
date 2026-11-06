@@ -1,0 +1,77 @@
+{
+  "realmLedger": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/confined-probe.jsonl",
+  "presetLedger": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/preset-probe.jsonl",
+  "realmRows": [
+    {
+      "at": "2026-11-06T10:55:05.352Z",
+      "tool": "bash_probe",
+      "mount": "realm",
+      "program": "/bin/bash",
+      "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-face.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-face.txt"
+      ],
+      "writes": [],
+      "chmod": [],
+      "stage": "done-rejected",
+      "code": "IO_READ_DENIED",
+      "name": "TeamIoDenial",
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-face.txt' is outside every allow subtree of the lane"
+    },
+    {
+      "at": "2026-11-06T10:55:05.360Z",
+      "tool": "bash_probe",
+      "mount": "realm",
+      "program": "/bin/bash",
+      "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-kernel.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+      ],
+      "writes": [],
+      "chmod": [],
+      "stage": "done-rejected",
+      "code": "IO_READ_DENIED",
+      "name": "TeamIoDenial",
+      "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only' is outside every allow subtree of the lane"
+    },
+    {
+      "at": "2026-11-06T10:55:05.526Z",
+      "tool": "bash_probe",
+      "mount": "realm",
+      "program": "/bin/bash",
+      "body": "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside/mode.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "reads": [],
+      "writes": [],
+      "chmod": [],
+      "stage": "completed",
+      "exitCode": 0,
+      "signal": null,
+      "stdoutBytes": 4,
+      "stderrBytes": 0,
+      "stdoutTruncated": false
+    },
+    {
+      "at": "2026-11-06T10:55:05.761Z",
+      "tool": "bash_probe",
+      "mount": "realm",
+      "program": "/bin/bash",
+      "body": "echo A5SF_NET_BODY_RAN",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside"
+      ],
+      "writes": [],
+      "chmod": [],
+      "stage": "done-rejected",
+      "code": "NETWORK_UNCONFINED_REALM",
+      "name": "ConfinedSubprocessRefusal",
+      "message": "NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (the confined provider exposes no capability probe, so network enforcement cannot be proven); refusing before any process instead of running a network-capable child under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this spawn"
+    }
+  ],
+  "presetRows": [],
+  "note": "the LOCUS witness: a call served by the PRESET definition writes to presetLedger and no guard fact; a call served by the realm shadow writes to realmLedger",
+  "osLevelNetworkIsolationClaimed": false
+}

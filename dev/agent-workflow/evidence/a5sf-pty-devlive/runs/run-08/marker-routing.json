@@ -1,0 +1,510 @@
+{
+  "decidedBy": "the driver's own decide() log, aligned 1:1 with the mock request order",
+  "markers": {
+    "discovery": "MK_PTY_DISC",
+    "create": "MK_PTY_CREATE",
+    "worker": "MK_PTY_WKR1",
+    "worker2": "MK_PTY_WKR2",
+    "netdeny": "MK_PTY_NET"
+  },
+  "requests": [
+    {
+      "seq": 1,
+      "tools": [],
+      "markers": [
+        "MK_PTY_DISC"
+      ],
+      "routed": {
+        "seq": 1,
+        "mockSeq": 1,
+        "at": "2026-11-06T11:10:58.007Z",
+        "effective": "title",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 2,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_DISC"
+      ],
+      "routed": {
+        "seq": 2,
+        "mockSeq": 2,
+        "at": "2026-11-06T11:10:58.009Z",
+        "effective": "MK_PTY_DISC",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 3,
+      "tools": [],
+      "markers": [
+        "MK_PTY_CREATE"
+      ],
+      "routed": {
+        "seq": 3,
+        "mockSeq": 3,
+        "at": "2026-11-06T11:10:58.509Z",
+        "effective": "title",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 4,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_CREATE"
+      ],
+      "routed": {
+        "seq": 4,
+        "mockSeq": 4,
+        "at": "2026-11-06T11:10:58.510Z",
+        "effective": "MK_PTY_CREATE",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 5,
+      "tools": [],
+      "markers": [
+        "MK_PTY_WKR1"
+      ],
+      "routed": {
+        "seq": 5,
+        "mockSeq": 5,
+        "at": "2026-11-06T11:10:58.744Z",
+        "effective": "title",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 6,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR1"
+      ],
+      "routed": {
+        "seq": 6,
+        "mockSeq": 6,
+        "at": "2026-11-06T11:10:58.744Z",
+        "effective": "MK_PTY_WKR1",
+        "servedCount": 1,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "bash"
+      }
+    },
+    {
+      "seq": 7,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR1"
+      ],
+      "routed": {
+        "seq": 7,
+        "mockSeq": 7,
+        "at": "2026-11-06T11:10:59.090Z",
+        "effective": "MK_PTY_WKR1",
+        "servedCount": 2,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "bash"
+      }
+    },
+    {
+      "seq": 8,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR1"
+      ],
+      "routed": {
+        "seq": 8,
+        "mockSeq": 8,
+        "at": "2026-11-06T11:10:59.213Z",
+        "effective": "MK_PTY_WKR1",
+        "servedCount": 3,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "bash"
+      }
+    },
+    {
+      "seq": 9,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR1"
+      ],
+      "routed": {
+        "seq": 9,
+        "mockSeq": 9,
+        "at": "2026-11-06T11:10:59.337Z",
+        "effective": "MK_PTY_WKR1",
+        "servedCount": 4,
+        "disposition": "done",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 10,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_CREATE"
+      ],
+      "routed": {
+        "seq": 10,
+        "mockSeq": 10,
+        "at": "2026-11-06T11:10:59.493Z",
+        "effective": "MK_PTY_CREATE",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 11,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR2"
+      ],
+      "routed": {
+        "seq": 11,
+        "mockSeq": 11,
+        "at": "2026-11-06T11:10:59.733Z",
+        "effective": "MK_PTY_WKR2",
+        "servedCount": 1,
+        "disposition": "tool-call",
+        "replyKind": "tool-call",
+        "toolName": "bash"
+      }
+    },
+    {
+      "seq": 12,
+      "tools": [],
+      "markers": [
+        "MK_PTY_WKR2"
+      ],
+      "routed": {
+        "seq": 12,
+        "mockSeq": 12,
+        "at": "2026-11-06T11:10:59.734Z",
+        "effective": "title",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 13,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_WKR2"
+      ],
+      "routed": {
+        "seq": 13,
+        "mockSeq": 13,
+        "at": "2026-11-06T11:11:00.120Z",
+        "effective": "MK_PTY_WKR2",
+        "servedCount": 2,
+        "disposition": "exhausted",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 14,
+      "tools": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_delegate",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_CREATE"
+      ],
+      "routed": {
+        "seq": 14,
+        "mockSeq": 14,
+        "at": "2026-11-06T11:11:00.257Z",
+        "effective": "MK_PTY_CREATE",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 15,
+      "tools": [],
+      "markers": [
+        "MK_PTY_NET"
+      ],
+      "routed": {
+        "seq": 15,
+        "mockSeq": 15,
+        "at": "2026-11-06T11:11:00.890Z",
+        "effective": "title",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    },
+    {
+      "seq": 16,
+      "tools": [
+        "bash",
+        "bash_probe",
+        "edit",
+        "pty_observe",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "markers": [
+        "MK_PTY_NET"
+      ],
+      "routed": {
+        "seq": 16,
+        "mockSeq": 16,
+        "at": "2026-11-06T11:11:00.890Z",
+        "effective": "MK_PTY_NET",
+        "servedCount": 0,
+        "disposition": "harmless-text",
+        "replyKind": "text",
+        "toolName": null
+      }
+    }
+  ],
+  "titleTurnsNeverConsumedAScript": true,
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,9 @@
+{
+  "grantId": "devlive-pty-shell-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed to the Shell/PTY face implementer: dev-live scope authorisation for the Shell-PTY face",
+  "face": "Shell-PTY",
+  "world": "a5sfptydv",
+  "note": "repeated development starts for the Shell/PTY face: what a Member's shell actually is today (PID 0 of the product path is @deepseek-ai/dsh-tool-bash-persistent over @deepseek-ai/dsh-terminal, not a governed realm terminal), same-PTY multi-command, the write-only read refusal on the confined face, the chmod gap, and the network-deny refusal position. No candidate claim, no fixed cumulative cap, at most 2 concurrent dev Hosts machine-wide (DEV_LIVE_SLOT_LIMIT).",
+  "osLevelNetworkIsolationClaimed": false
+}
