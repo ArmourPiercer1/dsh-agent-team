@@ -14,8 +14,9 @@
 > their own text and status.
 >
 > **As measured by the four rounds, no row below lets a Member cross its compiled lane on a face
-> that is wired today.** Two rows (PD-1, PD-2) are holes that become live the day the Shell-PTY
-> face is wired (PD-3); everything else is a capability loss, a false record, or a weak citation.
+> that is wired today.** PD-1 was fixed on 2026-11-09 under an owner ruling (generation-scoped
+> revocation, see §2); PD-2 remains a hole that becomes live the day the Shell-PTY face is wired
+> (PD-3); everything else is a capability loss, a false record, or a weak citation.
 >
 > Date 2026-11-07 · base `origin/master` @ `f082a28c0` · 0 boots · `CORE_PATCH_BUDGET = 0`.
 
@@ -49,7 +50,7 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 
 | id | face | debt | consequence | decision |
 |---|---|---|---|---|
-| PD-1 (F3) | Shell-PTY | Revocation does not bind a Member that owns no shell yet | governance hole | semantics |
+| PD-1 (F3) | Shell-PTY | Revocation does not bind a Member that owns no shell yet **(FIXED)** | governance hole | semantics |
 | PD-2 (F2) | Shell-PTY | The deferred PTY refusal fires after a legacy session is allocated | governance hole | semantics |
 | PD-3 (GAP-PTY-CONTRACT-1) | Shell-PTY | There is no confined terminal face, so the refusal is total | behavioural divergence | semantics |
 | PD-4 (P5) | Subprocess | The confined child drops upstream's proxy overlay | behavioural divergence | semantics |
@@ -74,34 +75,51 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 
 ### PD-1 (F3) — revocation does not bind a Member that owns no shell yet
 
+> **2026-11-09 owner ruling (this supersedes the earlier deferral in this row, which is kept below
+> and annotated, not deleted).** Chosen semantics: **keep generation-scoped isolation.** `revoke`
+> must receive a trusted member identity including `teamId`, `memberInstanceId` and
+> `instanceGeneration`, so it can record the revocation key even when the member owns no live
+> domain. A permanent `memberInstanceId`-wide tombstone is **rejected**: it would block a
+> legitimately re-created generation, contradicting the lifecycle arm that requires re-creation to
+> be able to acquire. The ruling also requires the in-flight `spawn()` race to be closed: a revoke
+> that lands during an awaited spawn must reap the late creation before it can be published.
+
 - **source**: `F3` in [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §4
-- **true today**: `revoke(memberInstanceId)` records a revoked generation key only for members
-  that already own a live domain, so a member with no shell at the moment of the revoke is never
-  recorded and `acquire` afterwards succeeds with one real port allocation.
-- **not true**: that revoking a member in a generation prevents that member from opening a shell
-  in that generation; and that `revoke` is member-scoped rather than "the domains I could see".
-- **security consequence**: **governance hole** — revocation is the act by which the authority
-  withdraws; a Member can obtain the very thing that was withdrawn. No other row lets a Member
-  gain a capability the authority refused.
-- **current backstop**: none inside the debt's own path. The whole face is unreachable from a
-  governed realm today (`RealmServiceFaces` has no `terminals`, PD-3), so no product composition
-  reaches `revoke`/`acquire`.
-- **smallest honest fix**: `packages/runtime/team-sandbox/src/terminal.ts` — carry the generation
-  in `revoke()`'s signature, or record an owner-scoped revocation that does not require a live
-  domain (~10–20 lines plus the arm). Changes public API → owner decision.
-- **proof**: `P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY` flips from a finding arm to a refusal
-  assertion (post-revoke `acquire` → `DOMAIN_REVOKED`, 0 port calls); `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL`
-  and `P5-KILL-ONE-NOT-THE-OTHER` stay green.
-- **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs)
-  is the executable pin (`KNOWN-DEFECT PD-1:` — no live domain at revoke, acquire afterwards,
-  prove the acquired domain is usable, plus the WITH-domain contrast and this row's coupling). The
-  arm is **deliberately green today**: it asserts the escape still succeeds and prints
-  `PD1-ESCAPE-REPRODUCED`. When PD-1 is fixed it turns **red on purpose**, with a message that
-  names this row and says the register needs updating; it also reds if this row is deleted or
-  downgraded from `governance hole`. Mechanism and negative control:
-  [PD-1-revocation-escape](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-1-revocation-escape/README.md).
-- **blocked by**: an owner API ruling (where the generation comes from); not the boot budget.
-- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L249-L258` contains `async revoke(memberInstanceId?: string` ; `packages/runtime/team-sandbox/src/terminal.ts#L168-L169` contains `revokedMembers.has(memberKey(identity))`
+- **true today**: **fixed.** Before this fix `revoke(memberInstanceId)` recorded a revoked generation
+  key only for members that already owned a live domain, so a member with no shell at the moment of
+  the revoke was never recorded and `acquire` afterwards succeeded with one real port allocation.
+  `revoke` now takes the trusted identity (generation included), records the generation
+  unconditionally before its first await, and re-checks that key after `spawn()` resolves but before
+  the domain is published.
+- **not true**: that a revoked generation can still open a shell by owning none at revoke time, that
+  `revoke` is "the domains I could see", or that the fix is a member-wide tombstone — a new
+  generation of the same member still acquires.
+- **security consequence**: **governance hole** — historical class, closed by this fix. Revocation is
+  the act by which the authority withdraws; before the fix a Member could obtain the very thing that
+  was withdrawn. No other row lets a Member gain a capability the authority refused.
+- **current backstop**: none was possible inside the debt's own path; the whole face is still
+  unreachable from a governed realm today (`RealmServiceFaces` has no `terminals`, PD-3), so the
+  fix's arms are host-free and no product composition reaches `revoke`/`acquire` yet.
+- **smallest honest fix**: **landed.** `packages/runtime/team-sandbox/src/terminal.ts` — `revoke`
+  takes `TrustedMemberIdentity`, records `memberKey(identity)` unconditionally (throwing
+  `TerminalRevokeRefusalError` / `REVOKE_IDENTITY_UNTRUSTED` for an incomplete identity instead of
+  guessing), and re-checks the key after the awaited `spawn()` before `domains.set`, reaping the
+  spawned shell and returning `DOMAIN_REVOKED` if the generation was revoked meanwhile. The
+  `packages/**` caller (`packages/runtime/test/a5sf-terminal-lifecycle.test.ts`) passes `IDENTITY`
+  (generation 1, its existing constant).
+- **owner ruling (2026-11-09)**: Revocation is generation-scoped: `revoke` takes the trusted member identity (teamId, memberInstanceId, instanceGeneration) and records that generation's revocation key unconditionally, even when the member owns no live domain; a new generation of the same member may acquire, and a spawn that completes after the revoke is reaped before publication.
+- **proof**: `PD-1 REFUSAL` (post-revoke `acquire` → `DOMAIN_REVOKED`, 0 port allocations);
+  `PD-1 CONTRAST (live domain)` (a visible shell is killed and refused — the control that says
+  revocation is not inert); `PD-1 IN-FLIGHT` (a revoke during an awaited `spawn()` reaps the late
+  creation: 0 usable domains, SIGKILL observed, `DOMAIN_REVOKED`); `PD-1 CONTRAST (new generation)`
+  (the acceptance property: a re-created generation may acquire); `PD-1 REGISTER` (this row stays
+  FIXED and names the arms). `packages/runtime/test/a5sf-terminal-lifecycle.test.ts` — including its
+  "a member re-created at a NEW generation may acquire again after revocation" arm — stays green.
+- **blocked by**: ~~an owner API ruling (where the generation comes from)~~ **superseded 2026-11-09** —
+  the owner ruled generation-scoped isolation; not the boot budget.
+- **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs) — arms `PD-1 REFUSAL`, `PD-1 CONTRAST (live domain)`, `PD-1 IN-FLIGHT`, `PD-1 CONTRAST (new generation)`, `PD-1 REGISTER`; negative control and race-window transcript in the evidence README.
+- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L285` contains `async revoke(identity: TrustedMemberIdentity` ; `packages/runtime/team-sandbox/src/terminal.ts#L298` contains `revokedMembers.add(revokedKey)` ; `packages/runtime/team-sandbox/src/terminal.ts#L239` contains `revokedMembers.has(memberKey(identity))`
+- **status**: FIXED — branch `task/a5sf-pd1-fix-20261109`, base `fb9584da5733918113b1dbd01b08d6931cfb1ddb`, draft PR **#629** (first line `PD1-FIX`; merge placeholder until it lands). Evidence: [a5sf-pd1-fix](../../../../dev/agent-workflow/evidence/a5sf-pd1-fix/README.md).
 
 ### PD-2 (F2) — the deferred PTY refusal fires after a legacy session is allocated
 
@@ -245,7 +263,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `P5-KILL-ONE-NOT-THE-OTHER` changes its asserted status for the non-re-acquired binding from
   `active` to `stale`; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay green.
 - **blocked by**: nothing; a host-free arm carries it; not the boot budget.
-- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L236` contains `function assertCurrent(domainId: string)` ; `packages/runtime/team-sandbox/src/terminal.ts#L269-L270` contains `list(): readonly TerminalDomain[]`
+- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L272` contains `function assertCurrent(domainId: string)` ; `packages/runtime/team-sandbox/src/terminal.ts#L312` contains `list(): readonly TerminalDomain[]`
 - **status**: FIXED — branch `task/a5sf-pd7-20261107`, fix commit `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (draft PR #619, first line `PD-7-FIX`). Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
 
 ### PD-8 (F1) — the shutdown receipt cannot tell an exit from a kill
@@ -266,7 +284,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **proof**: `P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES` asserts three distinct outcomes;
   `P2-HOST-DISTINGUISHES-OUTCOMES` (pinned service) stays green.
 - **blocked by**: an owner API ruling; not the boot budget.
-- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `export interface PtyHandle` ; `packages/runtime/team-sandbox/src/terminal.ts#L284` contains `killed: domain.status === 'terminated'`
+- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `export interface PtyHandle` ; `packages/runtime/team-sandbox/src/terminal.ts#L327` contains `killed: domain.status === 'terminated'`
 
 ### PD-9 (GAP-PTY-CONTRACT-2) — P1's "write" and "read" are a command gate and an audit
 
@@ -327,7 +345,8 @@ Ranked by **what a Member could do**, not by fix size:
 
 1. **PD-1 before PD-2.** Only these two pass the hole test. PD-1 first because revocation is the
    act by which the authority withdraws: a withdrawal a Member can outrun is the one failure a
-   governance system cannot absorb. PD-2 second because the forbidden object (a live legacy PTY)
+   governance system cannot absorb. **(PD-1 was fixed 2026-11-09 — this ranking is the historical
+   rationale, not an open instruction.)** PD-2 second because the forbidden object (a live legacy PTY)
    does exist inside a governed realm, but no model-facing handle reaches it — the hole is at the
    composition boundary, not in a tool.
 2. **PD-3 third although it grants nothing.** It is the only backstop keeping PD-1/PD-2 latent
