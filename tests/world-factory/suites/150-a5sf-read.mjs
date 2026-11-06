@@ -46,6 +46,22 @@
  * another commit / too small for the declared boots. A refusal happens BEFORE
  * any ledger write, any World creation and any spawn.
  *
+ * 2026-11-09 OWNER RULING — TWO GRANT SCOPES, ONE GATE.
+ * Development boots are no longer a fixed-cumulative, Integration-Owner-only
+ * activity. A `dev-live` scope authorisation (a grant row with
+ * `scope: "dev-live"`) authorises an IMPLEMENTER to start real Hosts
+ * repeatedly on its own authority, inside its own isolated test World, for a
+ * named face — provided every start still registers a ledger row and the
+ * machine-wide cap of {@link DEV_LIVE_SLOT_LIMIT} concurrent dev Hosts holds.
+ * The per-run `CANDIDATE-C2` grant is unchanged: it still needs
+ * `maxStarts` + `boundCommit`, still reserves a row, still spends at most the
+ * granted number of starts, and a dev-live grant can NEVER satisfy it (scopes
+ * never cross: `GRANT_SCOPE_MISMATCH`). `preRegisterDevLiveBudget()` is the
+ * dev-live half; `preRegisterBudget()` dispatches on the grant's own scope and
+ * is what `run()` uses. A dev-live start additionally requires the run record
+ * to be labelled `recordClass: "DEV-LIVE"` — a class that can never produce a
+ * `V@B=yes` claim (`lib/acceptance-claim.mjs`).
+ *
  * `maxStarts` counts SHARED-LEDGER ROWS, not spawns: the pre-registration row
  * this file appends is a BUDGET RESERVATION on that same ledger, so a grant of
  * `maxStarts` permits `maxStarts - 1` boots (BL-14 needs ONE boot ⇒ 2). There
@@ -73,7 +89,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readSync, openSync, c
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { hostStartBudgetPosition } from '../lib/run-record.mjs'
+import { VERDICT_SEVERITY, hostStartBudgetPosition } from '../lib/run-record.mjs'
+import { acquireDevLiveSlot } from '../lib/dev-live-slots.mjs'
 
 export const SUITE_NAME = 'a5sf-read'
 
@@ -130,7 +147,19 @@ export const A5SF_READ_GATE_REASONS = Object.freeze([
   'GRANT_HEAD_UNKNOWN',
   'LEDGER_UNAVAILABLE',
   'INTENT_NOT_RECORDED',
+  // 2026-11-09: the two scopes never cross. A dev-live grant cannot unlock a
+  // candidate run and vice versa; the face/world a dev-live grant names must
+  // match the caller's declared face/world.
+  'GRANT_SCOPE_MISMATCH',
+  'GRANT_FACE_MISMATCH',
+  'GRANT_WORLD_MISMATCH',
+  // A DEV-LIVE record is required for a dev-live grant, and a CANDIDATE-C2
+  // record for a candidate grant: class and scope are bound both ways.
+  'RECORD_CLASS_MISMATCH',
 ])
+
+/** The two grant scopes (owner ruling 2026-11-09). */
+export const A5SF_GRANT_SCOPES = Object.freeze(['DEV-LIVE', 'CANDIDATE-C2'])
 
 export class A5sfReadGateError extends Error {
   /**
@@ -209,17 +238,53 @@ export function readBudgetGrant(grantPath) {
   const grant = grants[0]
   const malformed = (field, why) => ({ ok: false, reason: 'GRANT_MALFORMED', detail: `budget grant '${path}' field '${field}' ${why}` })
   if (!isNonBlank(grant.grantId)) return malformed('grantId', 'must be a non-blank string')
-  if (!Number.isInteger(grant.maxStarts) || grant.maxStarts < 1) return malformed('maxStarts', `must be a positive integer (got ${JSON.stringify(grant.maxStarts)})`)
   if (!isNonBlank(grant.grantedBy)) return malformed('grantedBy', 'must name who granted the budget (a non-blank string)')
-  if (!SHA40.test(String(grant.boundCommit ?? ''))) return malformed('boundCommit', 'must be a full 40-hex commit sha')
+  // Scope defaulting is deliberate: every pre-2026-11-09 grant row has no
+  // `scope` field and MUST keep behaving exactly as the per-run C2 grant.
+  const scope = grant.scope === undefined ? 'CANDIDATE-C2' : grant.scope
+  if (!A5SF_GRANT_SCOPES.includes(scope)) return malformed('scope', `must be one of ${A5SF_GRANT_SCOPES.join(' | ')} (got ${JSON.stringify(grant.scope)})`)
+
+  if (scope === 'CANDIDATE-C2') {
+    // ── the unchanged per-run candidate grant ──────────────────────────────
+    if (!Number.isInteger(grant.maxStarts) || grant.maxStarts < 1) return malformed('maxStarts', `must be a positive integer (got ${JSON.stringify(grant.maxStarts)})`)
+    if (!SHA40.test(String(grant.boundCommit ?? ''))) return malformed('boundCommit', 'must be a full 40-hex commit sha')
+    return {
+      ok: true,
+      source: path,
+      grant: Object.freeze({
+        grantId: grant.grantId,
+        scope: 'CANDIDATE-C2',
+        maxStarts: grant.maxStarts,
+        grantedBy: grant.grantedBy,
+        boundCommit: String(grant.boundCommit),
+        face: null,
+        world: null,
+        note: isNonBlank(grant.note) ? grant.note : null,
+      }),
+    }
+  }
+
+  // ── the dev-live scope authorisation (2026-11-09) ────────────────────────
+  // No fixed cumulative cap and no per-start human approval: the authorisation
+  // is for a FACE, inside the implementer's own isolated World, and repeats
+  // until it is revoked. Stale extra fields are not silently accepted: a
+  // dev-live row that also carries `boundCommit` is fine (it is recorded), but
+  // a bad one is still malformed rather than ignored.
+  if (!isNonBlank(grant.face)) return malformed('face', 'must name the capability face this dev-live authorisation covers')
+  if (!isNonBlank(grant.world)) return malformed('world', "must name the isolated test World line (or '*') this authorisation is confined to")
+  if (grant.maxStarts !== undefined && (!Number.isInteger(grant.maxStarts) || grant.maxStarts < 1)) return malformed('maxStarts', `when present on a dev-live grant must be a positive integer (got ${JSON.stringify(grant.maxStarts)})`)
+  if (grant.boundCommit !== undefined && !SHA40.test(String(grant.boundCommit))) return malformed('boundCommit', 'when present on a dev-live grant must be a full 40-hex commit sha (it is recorded, not used as a cap)')
   return {
     ok: true,
     source: path,
     grant: Object.freeze({
       grantId: grant.grantId,
-      maxStarts: grant.maxStarts,
+      scope: 'DEV-LIVE',
+      maxStarts: grant.maxStarts ?? null,
       grantedBy: grant.grantedBy,
-      boundCommit: String(grant.boundCommit),
+      boundCommit: grant.boundCommit === undefined ? null : String(grant.boundCommit),
+      face: String(grant.face),
+      world: String(grant.world),
       note: isNonBlank(grant.note) ? grant.note : null,
     }),
   }
@@ -264,6 +329,15 @@ export async function preRegisterReadBudget({ grantPath, headCommit, runRecord, 
   const read = readBudgetGrant(grantPath)
   if (!read.ok) throw new A5sfReadGateError('BUDGET_NOT_GRANTED', read.reason, read.detail, { grantPath: grantPath ?? null })
   const { grant } = read
+
+  // Scope is a one-way door: a dev-live authorisation can never pay for a
+  // frozen-candidate run (and the candidate path must not be loosened).
+  if (grant.scope !== 'CANDIDATE-C2') {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_SCOPE_MISMATCH', `grant '${grant.grantId}' is scope=${grant.scope}; a CANDIDATE-C2 run needs a per-run candidate grant (scope defaults to CANDIDATE-C2) and a dev-live authorisation cannot stand in for it`, { grant })
+  }
+  if (runRecord?.record?.recordClass !== undefined && runRecord.record.recordClass !== 'CANDIDATE-C2') {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'RECORD_CLASS_MISMATCH', `grant '${grant.grantId}' is scope=CANDIDATE-C2 but the run record is recordClass=${String(runRecord.record.recordClass)}; a candidate claim can only be carried by a CANDIDATE-C2 record`, { grant, recordClass: runRecord.record.recordClass })
+  }
 
   // The grant is bound to ONE commit: a grant issued for another tree is not a
   // grant for this run (the evidence it authorises is a different artifact).
@@ -394,6 +468,231 @@ export async function preRegisterReadBudget({ grantPath, headCommit, runRecord, 
     },
   })
   return lease
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// the dev-live scope authorisation (owner ruling 2026-11-09)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE DEV-LIVE PRE-REGISTRATION GATE. Same ledger, same run record, same
+ * WorldFactory — only the AUTHORISATION changes: a `scope: "dev-live"` grant
+ * authorises repeated starts inside its face/world without a human per-start
+ * approval. Three things are still mandatory, so this is a relaxation of
+ * authorisation, not of evidence:
+ *
+ *   1. every start registers a ledger row (the intent row below, then the
+ *      harness's own start row, then the caller's outcome row);
+ *   2. the run record must be `recordClass: "DEV-LIVE"` (a class that can
+ *      never produce a `V@B=yes` claim — `lib/acceptance-claim.mjs`);
+ *   3. one of the {@link DEV_LIVE_SLOT_LIMIT} machine-wide dev-Host slots must
+ *      be acquired before the spawn (`lib/dev-live-slots.mjs`).
+ *
+ * There is NO cumulative cap and NO `boundCommit` equality check: a
+ * development branch moves while the implementation is being developed. The
+ * commit actually executed is still recorded in the intent row (`headCommit`),
+ * so the ledger says which version each development start ran.
+ *
+ * @param {object} input
+ * @param {string} input.grantPath recorded dev-live scope authorisation
+ * @param {string} input.headCommit the commit this start executes (it is recorded)
+ * @param {object} input.runRecord the run record that OWNS the shared ledger
+ * @param {string} input.face capability face the caller declares
+ * @param {string} input.world isolated World line the caller declares
+ * @param {string} [input.leaseRoot] shared lease root (defaults to the run record's `bindings.leaseRoot`)
+ * @param {number} [input.requiredBoots] boots this lease intends to spend (default 1)
+ */
+export async function preRegisterDevLiveBudget({ grantPath, headCommit, runRecord, face, world, leaseRoot, requiredBoots = 1 } = {}) {
+  const read = readBudgetGrant(grantPath)
+  if (!read.ok) throw new A5sfReadGateError('BUDGET_NOT_GRANTED', read.reason, read.detail, { grantPath: grantPath ?? null })
+  const { grant } = read
+  if (grant.scope !== 'DEV-LIVE') {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_SCOPE_MISMATCH', `grant '${grant.grantId}' is scope=${grant.scope}; a development boot needs a scope=DEV-LIVE authorisation (a per-run CANDIDATE-C2 grant is not reusable and is not accepted here)`, { grant })
+  }
+  if (!isNonBlank(face)) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_FACE_MISMATCH', 'the caller must declare the capability face it is developing; a dev-live authorisation is scoped to one face', { grant })
+  }
+  if (grant.face !== String(face)) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_FACE_MISMATCH', `grant '${grant.grantId}' authorises face '${grant.face}', but this start declares '${String(face)}'; a dev-live authorisation never widens to another face`, { grant, face })
+  }
+  if (!isNonBlank(world)) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_WORLD_MISMATCH', 'the caller must declare the isolated World line this start uses; a dev-live authorisation is confined to its own world', { grant })
+  }
+  if (grant.world !== '*' && grant.world !== String(world)) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_WORLD_MISMATCH', `grant '${grant.grantId}' authorises world '${grant.world}', but this start declares '${String(world)}'`, { grant, world })
+  }
+  if (!isNonBlank(headCommit) || !SHA40.test(String(headCommit))) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_HEAD_UNKNOWN', 'the development version could not be resolved (git rev-parse HEAD); every dev-live row must record the version it ran', { grant })
+  }
+  const ledgerPath = runRecord?.record?.hostStarts?.ledgerPath
+  if (runRecord === null || typeof runRecord !== 'object' ||
+      typeof runRecord.logHostStart !== 'function' || typeof runRecord.ledgerStartCount !== 'function' ||
+      !isNonBlank(ledgerPath)) {
+    throw new A5sfReadGateError(
+      'BUDGET_NOT_GRANTED',
+      'LEDGER_UNAVAILABLE',
+      'preRegisterDevLiveBudget needs the run record that owns the SHARED host-start ledger (logHostStart + ledgerStartCount + record.hostStarts.ledgerPath); a dev-live start still registers a ledger row',
+      { grant },
+    )
+  }
+  if (runRecord?.record?.recordClass !== 'DEV-LIVE') {
+    throw new A5sfReadGateError(
+      'BUDGET_NOT_GRANTED',
+      'RECORD_CLASS_MISMATCH',
+      `grant '${grant.grantId}' is scope=DEV-LIVE but the run record is recordClass=${String(runRecord?.record?.recordClass)}; create the record with recordClass:'DEV-LIVE' (runner: --record-class DEV-LIVE) — a development boot must be labelled as such so it can never be read as candidate evidence`,
+      { grant, recordClass: runRecord?.record?.recordClass ?? null },
+    )
+  }
+
+  const resolvedLeaseRoot = isNonBlank(leaseRoot) ? String(leaseRoot) : (runRecord?.record?.bindings?.leaseRoot ?? null)
+  if (!isNonBlank(resolvedLeaseRoot)) {
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'LEDGER_UNAVAILABLE', 'the run record carries no bindings.leaseRoot and no leaseRoot was supplied; the 2-concurrent dev-Host cap is a machine-wide counter and needs the shared lease root', { grant })
+  }
+
+  // The row: one per dev-live lease, on the SAME ledger as every other start.
+  const intentEntry = runRecord.logHostStart({
+    kind: 'budget-intent',
+    scope: 'dev-live',
+    phase: `${SUITE_NAME}-dev-live-intent`,
+    world: `intent:${grant.grantId}`,
+    suite: SUITE_NAME,
+    grantId: grant.grantId,
+    grantedBy: grant.grantedBy,
+    face: grant.face,
+    worldLine: grant.world,
+    headCommit: String(headCommit),
+    plannedStarts: requiredBoots,
+  })
+
+  let booted = 0
+  let slot = null
+  let finished = false
+
+  const releaseSlot = () => {
+    if (slot === null) return false
+    const released = slot.release()
+    slot = null
+    return released
+  }
+  // Crash safety: the pid-liveness sweep in `lib/dev-live-slots.mjs` is the
+  // primary recovery path; this handler merely frees the slot on a clean exit.
+  process.once('exit', () => {
+    try {
+      releaseSlot()
+    } catch {
+      /* best effort on exit */
+    }
+  })
+
+  const lease = Object.freeze({
+    grant,
+    scope: 'DEV-LIVE',
+    grantPath: read.source,
+    headCommit,
+    face: grant.face,
+    world,
+    ledgerPath,
+    intentEntry,
+    requiredBoots,
+    /** The shared ledger rows for this grant's dev-live intent. */
+    intentRows() {
+      return ledgerRows(ledgerPath).filter((row) => row?.kind === 'budget-intent' && row?.grantId === grant.grantId)
+    },
+    /**
+     * Spend ONE start: re-verify the intent row, take a machine slot (refusing
+     * a third concurrent dev Host), then invoke `fn`. There is no cumulative
+     * cap; there IS the 2-concurrent cap and the one-intent-per-lease rule.
+     */
+    async boot(fn) {
+      if (typeof fn !== 'function') throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'INTENT_NOT_RECORDED', 'lease.boot needs the boot thunk (in a real run: () => harness.boot({world}))')
+      if (finished) throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `the dev-live lease '${grant.grantId}' is finished; open a new lease (a dev-live authorisation may be reused, a spent lease may not)`, { grant })
+      if (lease.intentRows().length === 0) {
+        throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'INTENT_NOT_RECORDED', `grant '${grant.grantId}' has no dev-live pre-registration row on the shared ledger; a boot without a reservation is refused`)
+      }
+      if (booted >= requiredBoots) {
+        throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `dev-live lease '${grant.grantId}' declared ${String(requiredBoots)} boot(s) and already spent ${String(booted)}; repeated starts use repeated leases, not an unbounded single lease`, { grant, requiredBoots })
+      }
+      if (slot === null) {
+        slot = acquireDevLiveSlot({
+          leaseRoot: resolvedLeaseRoot,
+          runId: String(runRecord.record.runId),
+          face: grant.face,
+          world: String(world),
+          headCommit: String(headCommit),
+        })
+      }
+      booted += 1
+      try {
+        return await fn()
+      } catch (error) {
+        // A failed boot holds no Host: give the slot back instead of leaking it.
+        releaseSlot()
+        throw error
+      }
+    },
+    bootsSpent() {
+      return booted
+    },
+    /** True while this run holds one of the machine slots. */
+    holdsSlot() {
+      return slot !== null
+    },
+    /** Release the machine slot early (teardown); idempotent. */
+    releaseSlot,
+    /**
+     * Record the OUTCOME row a dev-live run owes the ledger and release its
+     * slot. `cases` / `overall` come from the run record; `teardown` is the
+     * World teardown receipt. It is a ledger row, not a grade.
+     */
+    finish({ cases = [], overall = null, teardown = null } = {}) {
+      if (finished) return null
+      finished = true
+      const entry = runRecord.logHostStart({
+        kind: 'dev-live-outcome',
+        scope: 'dev-live',
+        phase: `${SUITE_NAME}-dev-live-outcome`,
+        world: String(world),
+        suite: SUITE_NAME,
+        grantId: grant.grantId,
+        face: grant.face,
+        headCommit: String(headCommit),
+        overall,
+        cases,
+        teardown,
+      })
+      releaseSlot()
+      return entry
+    },
+    get finished() {
+      return finished
+    },
+  })
+  return lease
+}
+
+/**
+ * Scope dispatcher: reads the recorded authorisation, then hands the call to
+ * the matching gate. A CANDIDATE-C2 grant takes the UNCHANGED
+ * `preRegisterReadBudget` path; a DEV-LIVE grant takes the repeated-start path.
+ * No grant ⇒ the C2 path's `GRANT_ABSENT` refusal (zero writes, zero spawns).
+ *
+ * @param {object} input
+ * @param {string} [input.grantPath]
+ * @param {string} input.headCommit
+ * @param {object} input.runRecord
+ * @param {number} [input.requiredBoots]
+ * @param {number} [input.maxHostStarts]
+ * @param {string} [input.face] required for dev-live
+ * @param {string} [input.world] required for dev-live
+ * @param {string} [input.leaseRoot]
+ */
+export async function preRegisterBudget({ grantPath, headCommit, runRecord, requiredBoots = 1, maxHostStarts, face = null, world = null, leaseRoot = null } = {}) {
+  const read = readBudgetGrant(grantPath)
+  if (!read.ok) throw new A5sfReadGateError('BUDGET_NOT_GRANTED', read.reason, read.detail, { grantPath: grantPath ?? null })
+  if (read.grant.scope === 'DEV-LIVE') {
+    return preRegisterDevLiveBudget({ grantPath, headCommit, runRecord, face, world, leaseRoot, requiredBoots })
+  }
+  return preRegisterReadBudget({ grantPath, headCommit, runRecord, requiredBoots, maxHostStarts })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -930,13 +1229,19 @@ async function run(opts = {}, ctx = {}) {
   //    missing install seam refuses before the grant gate reserves a row.
   const driverSpec = await resolveReadDriver(opts)
 
-  // 2) The budget gate: no grant ⇒ zero starts, zero ledger writes.
+  // 2) The authorisation gate: no grant ⇒ zero starts, zero ledger writes.
+  //    A CANDIDATE-C2 grant takes the unchanged per-run path; a DEV-LIVE grant
+  //    may be reused for repeated starts inside its declared face/world.
   const headCommit = isNonBlank(opts.headCommit) ? String(opts.headCommit) : resolveHeadCommit(repoRoot)
-  const lease = await preRegisterReadBudget({
+  const face = isNonBlank(opts.face) ? String(opts.face) : 'FS Provider'
+  const worldLine = String(opts.line ?? 'a5sf-read')
+  const lease = await preRegisterBudget({
     grantPath: opts.grant ?? process.env.A5SF_BUDGET_GRANT,
     headCommit,
     runRecord: record,
     requiredBoots: 1,
+    face,
+    world: worldLine,
   })
 
   // 3) The World + the one boot, through the merged harness (dynamic import so
@@ -948,7 +1253,7 @@ async function run(opts = {}, ctx = {}) {
     suite: SUITE_NAME,
     line: String(opts.line ?? 'a5sf-read'),
     runRecord: record,
-    maxHostStarts: lease.maxStarts,
+    ...(lease.maxStarts === null || lease.maxStarts === undefined ? {} : { maxHostStarts: lease.maxStarts }),
   })
   let driver = null
   if (typeof driverSpec.createReadDriver === 'function') {
@@ -956,6 +1261,31 @@ async function run(opts = {}, ctx = {}) {
   }
   const world = await harness.createWorld({ line: String(opts.line ?? 'a5sf-read') })
   if (Array.isArray(opts.worlds)) opts.worlds.push(world)
+  // A dev-live run owes the ledger an OUTCOME row carrying the World teardown
+  // receipt (owner ruling 2026-11-09: version, env, cases, result, teardown).
+  // The runner owns teardown, so the lease records the outcome when teardown
+  // actually happens; `lease.finish()` also releases the 2-concurrent slot.
+  if (lease.scope === 'DEV-LIVE' && typeof lease.finish === 'function') {
+    const originalTeardown = world.teardown.bind(world)
+    world.teardown = async (teardownOpts = {}) => {
+      let receipt = null
+      try {
+        receipt = await originalTeardown(teardownOpts)
+        return receipt
+      } finally {
+        try {
+          const observed = record?.record?.cases ?? []
+          const overall = observed.reduce((worst, c) => {
+            const v = c?.verdict ?? 'FAIL'
+            return (VERDICT_SEVERITY[v] ?? VERDICT_SEVERITY.FAIL) > (VERDICT_SEVERITY[worst] ?? 0) ? v : worst
+          }, 'PASS')
+          lease.finish({ overall, cases: observed, teardown: receipt })
+        } catch (error) {
+          if (record !== undefined) record.record.devLiveOutcomeError = String(error?.message ?? error)
+        }
+      }
+    }
+  }
   await world.startMock({
     decide: () => ({ content: 'a5sf-read: the mock only bootstraps the Host; the read is driven through the Provider' }),
   })
@@ -1036,7 +1366,8 @@ if (invokedDirectly) {
       const grant = flag('--grant') ?? process.env.A5SF_BUDGET_GRANT
       const read = readBudgetGrant(grant)
       if (!read.ok) throw new A5sfReadGateError('BUDGET_NOT_GRANTED', read.reason, read.detail)
-      process.stdout.write(`A5SF-READ-LIVE grant=${read.grant.grantId} maxStarts=${read.grant.maxStarts} boundCommit=${read.grant.boundCommit}\n`)
+      const g = read.grant
+      process.stdout.write(`A5SF-READ-LIVE grant=${g.grantId} scope=${g.scope}${g.scope === 'DEV-LIVE' ? ` face=${String(g.face)} world=${String(g.world)}` : ` maxStarts=${String(g.maxStarts)} boundCommit=${String(g.boundCommit)}`}\n`)
       process.stdout.write('A5SF-READ-LIVE refused: this CLI does not boot; run it through u5-canary-runner.mjs --suite a5sf-read (see the evidence README).\n')
       process.exitCode = 2
     } catch (error) {

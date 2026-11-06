@@ -224,8 +224,8 @@ verifiedFor: <candidate-id>@<40-hex sha>
 |---|---|---|
 | 载体 | `master`（连续） | 冻结 head（`task/a5sf-candidate-<date>` 的某个 commit） |
 | 接收什么 | 文档、证据、测试基础设施；产品改动按正常 PR 逐一合入 | **不再接收产品改动**；只做 C2 验收 |
-| 什么时候花 boot | 不花（boot 只在候选轨/指定 live 任务上花） | 一次冻结、一次（或少数几次）批量 Host 验收 |
-| 谁是 owner | Integration Owner | Integration Owner 启动，Acceptance-Reviewer 判 |
+| 什么时候花 boot | **开发启动（`DEV-LIVE`）在此轨由各面 implementer 自行授权**，只用于开发/调试，不产生 `V@B=yes`；候选 boot 不在此轨 | 一次冻结、一次（或少数几次）批量 Host 验收（`CANDIDATE-C2`） |
+| 谁是 owner | Integration Owner 管集成与共享接线；各面 dev-live 启动由 Capability Implementer 自授权（2026-11-09） | Integration Owner 启动，Acceptance-Reviewer 判 |
 | 退出条件 | 每个 PR 全门绿 | 候选被接受（合入 `master`）或放弃（证据保留、判定作废） |
 
 ### 8.1 分支、冻结与合并规则
@@ -279,11 +279,35 @@ Q7 本身**不得放松**：它是“当前验证必须关于会合入的树”�
 - 因此：**两条轨道的划分仍然成立，但"集成轨被候选指针卡住"这个症状已消失**。剩余的真实成本
   只有 §8.2 那一条（冻结窗口内的产品合并次数），以及 `verifiedFor` 尚无 gate 复核这一条待办。
 
+### 8.4 开发启动的组织学（2026-11-09 owner 裁决）
+
+本节取代此前“boot 只在候选轨/指定 live 任务上花、且只有 Integration Owner 授权”的读法。
+**改的是授权与职责，不是隔离与验收**：
+
+1. **dev-live 自授权**：Capability Implementer 持有某面的 `scope: "dev-live"` authorisation 后，
+   可在**自己的隔离 test World** 内**反复、自行授权**启动真实 Host（开发、调试、正/负测试）。
+   **无固定累计上限**，**不需要** Integration Owner 逐次批准。
+2. **不包含**：稳定实例 `:3080`、真实外部系统、共享 Authority 指针、release candidate。
+3. **Integration Owner** 不再逐面执行 boot 调试；保留共享产品接线、PR 集成、资源调度与
+   **冻结候选验收**。`C2` 仍由 Integration Owner 启动、Acceptance-Reviewer 独立判。
+4. **并发**：每台机器同时最多 **2** 个开发 Host（`DEV_LIVE_SLOT_LIMIT`；测得资源后再调）。
+5. **重试纪律**：同一失败原因、没有新诊断信息、连续 **3 次** ⇒ 停止盲试并升级（取代总次数上限）。
+6. **两类记录**：`DEV-LIVE`（开发分支运行；可用于开发与 PR review，**永不**产出 `V@B=yes`）与
+   `CANDIDATE-C2`（冻结候选；不可变 SHA + Authority + Host + Oracle + 独立裁决）。
+   `DEV-LIVE` 是记录标签，不是等级词；`ENFORCE-PARTIAL` 等词表与 Q7 均不变。
+7. **保留不变**：Host 隔离（`tests/homes/`、自己的 workspace、自己的日志）、port lease、按身份
+   teardown、可追溯记录、独立 Reviewer、CI、Q7；start 前 `scripts/a5sf-preflight.mjs` 仍须 PASS。
+8. **落地**：`150-a5sf-read.mjs#preRegisterDevLiveBudget`（gate）、`lib/acceptance-claim.mjs`
+   （`V@B` 拒绝）、`lib/dev-live-slots.mjs`（2 并发）、`docs/DEV-LIVE-OPERATOR-GUIDE.md`（操作页）。
+   先试点 FS/Search 与 Web，再 Shell/PTY 及其余面。
+
 
 ## 9. 下一批可执行任务（2026-11-06）
 
 规则：**每个共享文件只有一个 owner**；一个任务 = 一个最小纵切；`C1` = host-free 验收，
-`C2` = live 验收；`boot` = 是否需要 Host 启动（当前剩 3 次：BL-17 live、BL-18 live、一次重试）。
+`C2` = live 验收；`boot` = 是否需要 Host 启动。**2026-11-09 起**：BL-17/BL-18 的 live 半场是
+**dev-live 工作**，不再受“剩余 3 次 boot”的固定预算约束，也不再需要逐次 owner 批准；它们仍受
+2 并发上限、preflight、隔离与 3 次同因升级约束。**正式候选 C2 仍需冻结 + 独立复核 + 独立验收。**
 **产品文件（`packages/**`）的任何一行改动都必须由 Capability Implementer 以独立 PR 提交**；
 本表只是分配，不是开工授权。
 

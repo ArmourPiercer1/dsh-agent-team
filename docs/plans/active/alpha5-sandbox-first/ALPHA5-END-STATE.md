@@ -21,10 +21,16 @@
 
 外部审查与 owner 同日裁决，逐条记录，因为它们改变本文件的结论边界：
 
-1. **Boot 预算：有条件预授权 3 次。** 生效条件是两个，缺一不可：**(i) `TeamDomain is closed` 得到 host-free 归因**；
-   **(ii) 存在真正可区分的启动前负控**（能在启动前判定这一类失败，而不是又一条静态门禁）。在两者满足之前，
-   这 3 次**不可用**，预算实际状态仍是 **0/5 已耗尽**。跟踪：
-   `dev/agent-workflow/evidence/a5sf-domain-attrib/`。
+1. **Boot 预算（2026-11-09 被 dev-live 裁决取代，原文保留为历史）：有条件预授权 3 次。** 生效条件是
+   两个，缺一不可：**(i) `TeamDomain is closed` 得到 host-free 归因**；**(ii) 存在真正可区分的启动前
+   负控**（能在启动前判定这一类失败，而不是又一条静态门禁）。在两者满足之前，这 3 次**不可用**。
+   跟踪：`dev/agent-workflow/evidence/a5sf-domain-attrib/`。
+   > **【2026-11-09 owner 裁决：本条作为正式预算已关闭】** 五次 P2-04 start 池的算术（5 allocated /
+   > 5 spent / 0 remain）**只作为候选分配的历史**继续有效；它**不再**是未来开发的预算约束。开发启动
+   > 改记为 **`DEV-LIVE`**：由持有面级 `scope: "dev-live"` authorisation 的 Capability Implementer
+   > 自行授权、可反复启动、无固定累计上限（每机 2 并发），**不得**计入、也不得从任何候选分配中扣除。
+   > `CANDIDATE-C2` 仍需冻结 + 独立复核 + 独立验收。协议 = `docs/ROUTER_RULES.md` §0.1 第 4 条，
+   > 操作页 = `docs/DEV-LIVE-OPERATOR-GUIDE.md`。
 2. **报告节奏：** 60 轮不再作为收口点，正式阶段性开发报告须在**第 75 轮之前**提交；报告**不等于** Alpha.5 通过验收、
    也不等于停工，之后可继续开发。本文件因此是**阶段性**陈述，不是发布结论。
 3. **PD-1：批准"代际明确"的撤销接口**（`revoke` 接收受信 member 身份，含 `teamId`/`memberInstanceId`/

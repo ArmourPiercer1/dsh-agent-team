@@ -28,7 +28,13 @@
  * Usage:
  *   node tests/world-factory/u5-canary-runner.mjs --suite core --line r1 \
  *     --evidence <dir> [--run-record <json>] [--budget-ledger <jsonl>] \
- *     [--max-host-starts 15] [--keep-home]
+ *     [--max-host-starts 15] [--record-class DEV-LIVE|CANDIDATE-C2] [--keep-home]
+ *
+ * `--record-class DEV-LIVE` labels the run as development-boot evidence (owner
+ * ruling 2026-11-09). Such a run may use a reusable `scope: "dev-live"` grant
+ * and is subject to the 2-concurrent dev-Host cap; it can never produce a
+ * `V@B=yes` claim. The default (CANDIDATE-C2) keeps the per-run candidate
+ * grant semantics unchanged.
  *
  * Opt-in only: nothing under vitest roots collects this; live Host work runs
  * only when a human/agent invokes this file explicitly.
@@ -128,7 +134,7 @@ const CANARY_VOLATILE = ['at', 'world']
 const SHADOW_VOLATILE = ['at', 'world', 'scope', 'callId']
 
 export function parseArgs(argv) {
-  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: DEFAULT_MAX_HOST_STARTS, keepHome: false, only: null, holdUntil: null, probeLog: null }
+  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: DEFAULT_MAX_HOST_STARTS, recordClass: 'CANDIDATE-C2', keepHome: false, only: null, holdUntil: null, probeLog: null }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--suite') out.suite = String(argv[++i])
@@ -137,6 +143,7 @@ export function parseArgs(argv) {
     else if (a === '--run-record') out.runRecord = String(argv[++i])
     else if (a === '--budget-ledger') out.budgetLedger = String(argv[++i])
     else if (a === '--max-host-starts') out.maxHostStarts = Number(argv[++i])
+    else if (a === '--record-class') out.recordClass = String(argv[++i])
     else if (a === '--keep-home') out.keepHome = true
     else if (a === '--only') out.only = String(argv[++i])
     else if (a === '--hold-until') out.holdUntil = String(argv[++i])
@@ -146,6 +153,7 @@ export function parseArgs(argv) {
   if (!Object.keys(SUITE_CASES).includes(out.suite)) throw new Error(`unknown suite: ${out.suite}`)
   if (out.evidence === null) throw new Error('--evidence is required (raw logs/RUN records live outside git)')
   if (!Number.isInteger(out.maxHostStarts) || out.maxHostStarts < 1) throw new Error('bad --max-host-starts')
+  if (!['DEV-LIVE', 'CANDIDATE-C2'].includes(out.recordClass)) throw new Error(`bad --record-class: ${out.recordClass} (DEV-LIVE | CANDIDATE-C2)`)
   if (out.only !== null && !SUITE_CASES[out.suite].includes(out.only)) throw new Error(`--only ${out.only} is not a case of suite ${out.suite}`)
   return out
 }
@@ -927,6 +935,7 @@ export async function runSuite(opts) {
     suite,
     selectedCases: selected,
     ledgerPath: budgetLedger,
+    recordClass: opts.recordClass,
     bindings: {
       teamSha,
       teamTreeClean: git(['status', '--porcelain', '--untracked-files=no'], REPO_ROOT) === '',
