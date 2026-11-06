@@ -67,6 +67,24 @@ export const TERMINAL_REFUSAL_CODES = [
 
 export type TerminalRefusalCode = (typeof TERMINAL_REFUSAL_CODES)[number]
 
+/**
+ * `revoke`'s identity refusal. A revoke that cannot name a whole trusted
+ * generation must FAIL CLOSED: recording a guessed generation (or a
+ * `memberInstanceId`-wide tombstone) would either miss the real generation or
+ * block a legitimately re-created one. The caller gets a typed throw, never a
+ * silent no-op.
+ */
+export const TERMINAL_REVOKE_REFUSAL_CODE = 'REVOKE_IDENTITY_UNTRUSTED' as const
+
+export class TerminalRevokeRefusalError extends Error {
+  readonly code = TERMINAL_REVOKE_REFUSAL_CODE
+
+  constructor(detail: string) {
+    super(detail)
+    this.name = 'TerminalRevokeRefusalError'
+  }
+}
+
 export interface TerminalRefusal {
   readonly ok: false
   readonly code: TerminalRefusalCode
@@ -112,8 +130,12 @@ export interface TerminalDomainRegistry {
   acquire(spec: TerminalAcquireSpec): Promise<{ ok: true; value: TerminalAcquireReceipt } | TerminalRefusal>
   /** Re-check the CURRENT revision before a command runs in `domainId`. */
   assertCurrent(domainId: string): { ok: true; revision: string } | TerminalRefusal
-  /** Tighten/withdraw: domains of a member (or all) become stale and die. */
-  revoke(memberInstanceId?: string, reason?: string): Promise<readonly string[]>
+  /**
+   * Revoke ONE GENERATION of one member. The trusted identity supplies the
+   * generation, so the key is recorded even when the member owns no live
+   * domain (PD-1). The identity is rejected as a whole if it is incomplete.
+   */
+  revoke(identity: TrustedMemberIdentity, reason?: string): Promise<readonly string[]>
   list(): readonly TerminalDomain[]
   shutdown(): Promise<TerminalShutdownReceipt>
 }
@@ -208,6 +230,20 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
           pid: pty.pid,
           status: 'active',
         }
+        // PD-1 RACE WINDOW — `revoke` can land while `spawn()` is awaited. The
+        // gate at the top of `acquire` ran BEFORE the await, and the domain is
+        // not in `domains` yet, so `revoke` cannot see it in its kill loop.
+        // Re-check the generation's revocation key BEFORE publishing; a late
+        // creation that lost the race must be reaped and refused, never made
+        // eligible for execution.
+        if (revokedMembers.has(memberKey(identity))) {
+          await killDomain(domain, 'revocation landed while the shell was being created')
+          return Object.freeze({
+            ok: false,
+            code: 'DOMAIN_REVOKED' as const,
+            detail: `'${identity.memberInstanceId}' was revoked while its shell was being created; the spawned shell was reaped`,
+          })
+        }
         domains.set(key, domain)
         return Object.freeze({
           ok: true,
@@ -246,20 +282,27 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
   return Object.freeze({
     acquire,
     assertCurrent,
-    async revoke(memberInstanceId?: string, reason = 'revoked'): Promise<readonly string[]> {
-      // Mark revocation BEFORE the first await: an `acquire` interleaving with
-      // the kill loop must already observe the member as revoked, otherwise it
-      // can spawn a shell that survives this call.
-      if (memberInstanceId !== undefined) {
-        for (const domain of domains.values()) {
-          if (domain.owner.identity.memberInstanceId === memberInstanceId) {
-            revokedMembers.add(memberKey(domain.owner.identity))
-          }
-        }
+    async revoke(identity: TrustedMemberIdentity, reason = 'revoked'): Promise<readonly string[]> {
+      // FAIL CLOSED: a call that cannot supply the generation must not guess
+      // one (a guessed key misses the real generation) and must not fall back
+      // to a member-wide tombstone (that would block a re-created generation).
+      if (!identity || !identity.teamId || !identity.memberInstanceId || !Number.isFinite(identity.instanceGeneration)) {
+        throw new TerminalRevokeRefusalError(
+          'revoke needs a complete trusted member identity (teamId, memberInstanceId, instanceGeneration); an incomplete identity is refused rather than guessed',
+        )
       }
+      const revokedKey = memberKey(identity)
+      // PD-1 FIX — record the generation UNCONDITIONALLY, before the first
+      // await, including when the member owns no live domain. This is the key
+      // `acquire` consults at the gate above (and again after `spawn`).
+      revokedMembers.add(revokedKey)
       const killed: string[] = []
       for (const domain of [...domains.values()]) {
-        if (memberInstanceId !== undefined && domain.owner.identity.memberInstanceId !== memberInstanceId) continue
+        if (memberKey(domain.owner.identity) !== revokedKey) continue
+        // Defence in depth: keep the historical live-domain record too, so a
+        // visible domain's generation is revoked even if the unconditional
+        // record above were ever skipped.
+        revokedMembers.add(memberKey(domain.owner.identity))
         await killDomain(domain, reason)
         domains.delete(keyOf(domain.owner))
         killed.push(domain.domainId)

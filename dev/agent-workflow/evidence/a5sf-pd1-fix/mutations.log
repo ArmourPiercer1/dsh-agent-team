@@ -1,0 +1,8 @@
+PASS baseline (unmutated): all five arms green: exit=0 expected=green red=[]
+MUTATED A packages/runtime/team-sandbox/src/terminal.ts: 7fb3941bd4438f84a75bfc7bff8576b832f294face422704fd5852360acab232 -> c2792e8300b4ea5b90fcf5c85220a71a2d6728dd9f28e91352a847582e47ad0e (removed the unconditional recording line)
+PASS mutation A (revert ONLY the new recording line): exactly PD-1 REFUSAL reds: exit=1 expected=red red=[PD-1 REFUSAL]
+MUTATED B packages/runtime/team-sandbox/src/terminal.ts: 7fb3941bd4438f84a75bfc7bff8576b832f294face422704fd5852360acab232 -> 9f9488f34e7363e27861cb6c7696f95b1360877f95d3dfdd33177b23f94d3a5f (disabled the post-await re-check)
+PASS mutation B (disable ONLY the post-await re-check): exactly PD-1 IN-FLIGHT reds: exit=1 expected=red red=[PD-1 IN-FLIGHT]
+RESTORED packages/runtime/team-sandbox/src/terminal.ts: sha256=7fb3941bd4438f84a75bfc7bff8576b832f294face422704fd5852360acab232 bytes-identical=yes git-diff-equals-start=yes
+PASS restored: all five arms green again: exit=0 expected=green red=[]
+PD1-MUTATION-CONTROL-PASS

@@ -13,7 +13,12 @@ export { createTeamConfinedRunner, RUNNER_REFUSAL_CODES } from './runner.js'
 export type { ConfinedProcessProvider, RunnerRefusal, TeamExecutionRequest, TeamRunner } from './runner.js'
 export { toSubprocessHandle } from './subprocess.js'
 export type { ConfinedSubprocessHandle } from './subprocess.js'
-export { createTerminalDomainRegistry, TERMINAL_REFUSAL_CODES } from './terminal.js'
+export {
+  createTerminalDomainRegistry,
+  TERMINAL_REFUSAL_CODES,
+  TERMINAL_REVOKE_REFUSAL_CODE,
+  TerminalRevokeRefusalError,
+} from './terminal.js'
 export type {
   PtyHandle,
   TerminalAcquireReceipt,

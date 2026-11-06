@@ -142,7 +142,7 @@ describe('P1-08 terminal domain lifecycle', () => {
       return pty
     }
     await registry.acquire(spec(factory, { policyRevision: 'rev-1' }))
-    await registry.revoke(IDENTITY.memberInstanceId, 'archived')
+    await registry.revoke(IDENTITY, 'archived')
     const nextGeneration = { ...IDENTITY, instanceGeneration: 2 }
     const acquired = await registry.acquire({
       ...spec(factory, { policyRevision: 'rev-1' }),
@@ -161,7 +161,7 @@ describe('P1-08 terminal domain lifecycle', () => {
     }
     const created = await registry.acquire(spec(factory))
     expect(created.ok).toBe(true)
-    const killed = await registry.revoke(IDENTITY.memberInstanceId, 'member archived')
+    const killed = await registry.revoke(IDENTITY, 'member archived')
     expect(killed).toHaveLength(1)
     expect(ptys[0]?.kills).toContain('SIGKILL')
     expect(await registry.acquire(spec(factory))).toMatchObject({ ok: false, code: 'DOMAIN_REVOKED' })

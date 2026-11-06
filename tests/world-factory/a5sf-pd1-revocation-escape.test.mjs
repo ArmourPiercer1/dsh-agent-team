@@ -1,57 +1,48 @@
 /**
- * a5sf-pd1-revocation-escape.test.mjs — the **PD-1 acceptance arm**: an
- * executable DEFECT PIN for the revocation escape recorded in
- * `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` §2 (PD-1 (F3)).
+ * a5sf-pd1-revocation-escape.test.mjs — the **PD-1 acceptance arms**.
  *
- * THIS ARM IS NOT A GUARANTEE. Read the discipline before changing it:
+ * PD-1 (F3) in `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md`
+ * was: `revoke(memberInstanceId)` recorded a revoked generation key only for
+ * members that already owned a live domain, so a member that owned NO shell at
+ * revoke time was never recorded and an `acquire` afterwards succeeded.
  *
- *   1. IT ASSERTS THE DEFECT, NOT THE CONTRACT. Today
- *      `revoke(memberInstanceId)` records a revoked generation key only for
- *      members that already own a live domain (`terminal.ts:249-258`), and its
- *      signature carries no generation. A member that owns NO shell at revoke
- *      time is therefore never recorded, and an `acquire` AFTERWARDS succeeds
- *      — one real port-allocation request, a live `active` domain whose
- *      per-command gate (`assertCurrent`) admits. The arm goes green by
- *      printing `PD1-ESCAPE-REPRODUCED`.
+ * The owner ruling of 2026-11-09 chose **generation-scoped isolation**:
+ * `revoke` takes the trusted member identity (teamId, memberInstanceId,
+ * instanceGeneration) and records that generation's key unconditionally; a
+ * legitimate NEW generation of the same member may still acquire. A permanent
+ * `memberInstanceId`-wide tombstone was explicitly rejected because it would
+ * block re-creation.
  *
- *   2. WHEN PD-1 IS FIXED THIS ARM MUST TURN RED ON PURPOSE. The failure
- *      message is the handover contract: it names the register row and says
- *      the register needs updating. Red here means "the record caught up with
- *      the code", not "a regression".
+ * ARMS (one contract, four observations):
  *
- *   3. IT IS COUPLED TO THE REGISTER. A separate case reds if
- *      `PRODUCT-DEBT-REGISTER.md` no longer carries the PD-1 row classified
- *      `governance hole`, or no longer points at this arm as its acceptance
- *      criterion. A defect pin that survives the deletion of its own record is
- *      worse than no pin.
+ *   1. `PD-1 REFUSAL` — a member that owns NO live shell at revoke time is
+ *      refused afterwards with `DOMAIN_REVOKED` and **0 port allocations**.
+ *   2. `PD-1 CONTRAST (live domain)` — the same member WITH a live shell at
+ *      revoke time is killed and refused afterwards. This is the control that
+ *      stops a red on arm 1 from being read as "revocation does nothing".
+ *   3. `PD-1 IN-FLIGHT` — a revoke that lands while `spawn()` is awaited must
+ *      reap the late creation BEFORE it is published: `0 usable domains`, the
+ *      injected PTY is SIGKILLed, and the acquire returns `DOMAIN_REVOKED`.
+ *      The fixture keeps a live shell on another binding so this arm isolates
+ *      the post-await re-check from the unconditional recording line (the
+ *      negative control relies on that separation).
+ *   4. `PD-1 CONTRAST (new generation)` — a member re-created at a NEW
+ *      generation may acquire after the old generation was revoked. This is
+ *      the property the owner insisted must survive; if it ever reds, the fix
+ *      has slid into the rejected member-wide tombstone.
  *
- *   4. IT CARRIES ITS OWN CONTRAST. The same member WITH a live domain at
- *      revoke time is killed and refused afterwards — so a red on the escape
- *      case cannot be confused with "revocation does nothing here at all".
+ * ARM 5 is the register coupling: the row must be `FIXED`, carry the ruling
+ * semantics sentence, and name these arms. A pin that outlives its own record
+ * is worse than no pin.
  *
- *   5. IT HAS A NEGATIVE CONTROL. `mutation-control.mjs` in the evidence
- *      directory records the generation unconditionally in-process, which
- *      makes the escape impossible; the same arm run with
- *      `A5SF_PD1_EXPECT=fixed` then asserts the closed outcome and is GREEN.
- *      The product source is restored byte-for-byte. See
- *      `dev/agent-workflow/evidence/a5sf-product-debt/PD-1-revocation-escape/`.
- *
- * SURFACE. The arm imports the PRODUCT PACKAGE ENTRY
+ * SURFACE. The arms import the PRODUCT PACKAGE ENTRY
  * (`packages/runtime/team-sandbox/src/index.ts`, the public export of
- * `createTerminalDomainRegistry`), not the private module file and not a test
- * double of the registry. There is no product mount for a terminal face today
- * (`RealmServiceFaces` has no `terminals` — PD-3), so the package entry is the
- * deepest reachable product surface for this lifecycle; the evidence README
- * states that scoping plainly. The PTY port (`PtyHandle`) is the seam the
- * module itself injects and is a recorder: no real OS PTY is created, and the
- * arm does not claim one.
- *
- * ZERO Host boots, ZERO ports, no DSH_HOME, no `tests/homes/**`, no pinned host
- * checkout: the module under test is the repo's own TS source, loaded through
- * the repo's type-stripping hook.
+ * `createTerminalDomainRegistry`). The PTY port (`PtyHandle`) is a recorder:
+ * no real OS PTY is created and no boot, port or DSH_HOME is used. "Usable"
+ * means the injected port was asked to `spawn` and the per-command gate
+ * (`assertCurrent`) would admit; `PtyHandle` has no byte channel (PD-9).
  *
  * Run: node --test tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
- * Control: A5SF_PD1_EXPECT=fixed node --test ... (only the mutation driver sets it)
  */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -67,21 +58,9 @@ const REGISTER_REL = 'docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGIST
 const ARM_REL = 'tests/world-factory/a5sf-pd1-revocation-escape.test.mjs'
 const PRODUCT_ENTRY_REL = 'packages/runtime/team-sandbox/src/index.ts'
 
-/** The one machine-readable line the pin prints when the escape is reproduced. */
-const ESCAPE_TOKEN = 'PD1-ESCAPE-REPRODUCED'
-/** The control's line: printed only under the mutation, when the escape is closed. */
-const CLOSED_TOKEN = 'PD1-ESCAPE-CLOSED'
-
-/** `fixed` is set ONLY by the negative-control driver; the pin's default mode is `escape`. */
-const EXPECT = process.env.A5SF_PD1_EXPECT ?? 'escape'
-assert.ok(['escape', 'fixed'].includes(EXPECT), `A5SF_PD1_EXPECT must be "escape" or "fixed", got "${EXPECT}"`)
-
-const HANDOVER =
-  'PD-1 NO LONGER ESCAPES — this RED is the arm doing its job, not a regression. ' +
-  `PD-1 in ${REGISTER_REL} (row "PD-1 (F3) — revocation does not bind a Member that owns no shell yet") ` +
-  'is now FIXED in the code: a Member that owned no live domain at revoke time is refused when it ' +
-  'acquires afterwards. The register needs updating (re-classify or remove the governance-hole row, ' +
-  'retire or invert this KNOWN-DEFECT pin, and keep the WITH-domain contrast case green).'
+/** The owner ruling's semantics sentence, kept verbatim in the register. */
+const SEMANTICS_SENTENCE =
+  "Revocation is generation-scoped: `revoke` takes the trusted member identity (teamId, memberInstanceId, instanceGeneration) and records that generation's revocation key unconditionally, even when the member owns no live domain; a new generation of the same member may acquire, and a spawn that completes after the revoke is reaped before publication."
 
 /** Cache the product module per process; the loader hook must be installed first. */
 let productModule
@@ -92,39 +71,43 @@ async function loadProduct() {
   return productModule
 }
 
-let tokenPrinted = false
-function emitOnce(token) {
-  if (tokenPrinted) return
-  tokenPrinted = true
-  process.stdout.write(`${token}\n`)
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+async function until(predicate, what) {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (predicate()) return
+    await tick()
+  }
+  throw new Error(`PD-1 fixture: timed out waiting for ${what}`)
 }
 
 /**
  * One host-free world: the REAL product registry over an injected `PtyHandle`
- * recorder. `allocations` counts `spawn` requests — i.e. how many times a real
- * backend would have had to allocate a PTY.
+ * recorder. `allocations` counts `spawn` requests; `kills` records every
+ * signal the registry sent to a recorded shell.
  */
 async function makeWorld() {
   const product = await loadProduct()
   const allocations = []
   const kills = []
-  let pid = 4000
+  let pid = 7000
   const registry = product.createTerminalDomainRegistry({
     currentRevision: () => 'rev-1',
-    now: () => '2026-11-07T00:00:00.000Z',
+    now: () => '2026-11-09T00:00:00.000Z',
     isTrustedMember: () => true,
   })
 
-  function acquire(identity, binding = 'binding-shell', policyRevision = 'rev-1') {
+  function acquire(identity, binding = 'binding-shell', { gate } = {}) {
     pid += 1
     const label = `${identity.memberInstanceId}/${binding}`
     return registry.acquire({
       owner: { identity, toolBindingIdentity: binding },
       sessionHandle: `session-${binding}`,
-      policyRevision,
+      policyRevision: 'rev-1',
       backend: 'pty-recorder',
       spawn: async () => {
         allocations.push(label)
+        if (gate !== undefined) await gate
         let alive = true
         return {
           pid,
@@ -148,70 +131,40 @@ const MEMBER = Object.freeze({
   templateId: 'worker',
   instanceGeneration: 1,
 })
+const NEXT_GENERATION = Object.freeze({ ...MEMBER, instanceGeneration: 2 })
 
 // ---------------------------------------------------------------------------
-// 1. THE DEFECT PIN — the escape itself.
+// 1. THE FIXED CONTRACT — a member with NO live shell is still bound.
 // ---------------------------------------------------------------------------
 
-test('KNOWN-DEFECT PD-1: a member that owns NO live shell at revoke time can acquire one afterwards (the escape)', async () => {
+test('PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations)', async () => {
   const world = await makeWorld()
 
   // The authority withdraws BEFORE the member ever holds a shell.
-  const killed = await world.registry.revoke(MEMBER.memberInstanceId, 'member archived')
+  const killed = await world.registry.revoke(MEMBER, 'member archived')
   assert.deepEqual(killed, [], 'PD-1 fixture: there is no live domain to kill at revoke time')
   assert.equal(world.allocations.length, 0, 'PD-1 fixture: no port allocation happened before the revoke')
 
-  const acquired = await world.acquire(MEMBER, 'binding-late')
-  const domainId = acquired.ok ? acquired.value.domainId : undefined
-  const gate = acquired.ok ? world.registry.assertCurrent(domainId) : undefined
-
-  if (EXPECT === 'fixed') {
-    // NEGATIVE CONTROL / post-fix mode: the mutation (or a real fix) records the
-    // revocation unconditionally. The same fixture must now observe a refusal.
-    assert.equal(acquired.ok, false, 'PD-1 control: the escape must be impossible under an unconditional revocation record')
-    assert.equal(acquired.code, 'DOMAIN_REVOKED', `PD-1 control: expected DOMAIN_REVOKED, got ${JSON.stringify(acquired)}`)
-    assert.equal(world.allocations.length, 0, 'PD-1 control: a refused acquire must not reach the port at all')
-    assert.equal(world.registry.list().length, 0, 'PD-1 control: no domain may exist after a refused acquire')
-    process.stdout.write(`PD1-CONTROL-REFUSAL code=${acquired.code} allocations=${world.allocations.length} domains=${world.registry.list().length}\n`)
-    emitOnce(CLOSED_TOKEN)
-    return
-  }
-
-  // THE PIN. If this assertion ever fails, PD-1 was fixed: the message is the
-  // handover contract, not an ordinary assertion failure.
-  assert.equal(acquired.ok, true, HANDOVER)
-  assert.equal(acquired.value.reused, false, 'the post-revoke acquire is a NEW domain, not a reuse of something older')
-
-  // "Usable" here means exactly two things, and the evidence README says so:
-  // (a) the injected port was asked to allocate exactly once (a real backend
-  //     would have opened a real shell), and
-  // (b) the per-command gate — `assertCurrent`, the product's only
-  //     command-admission check for a live domain — ADMITS.
-  // It does NOT mean a command ran: `PtyHandle` carries no write/read channel
-  // (`terminal.ts:51-57`), so no command can be run by this registry.
-  assert.equal(world.allocations.length, 1, 'the revoked member obtained one real port-allocation request')
-  assert.equal(world.registry.list().length, 1, 'the acquired domain is live in the registry')
-  const domain = world.registry.list()[0]
-  assert.equal(domain.status, 'active', 'the acquired domain reports status "active"')
-  assert.equal(domain.owner.identity.memberInstanceId, MEMBER.memberInstanceId, 'the live domain belongs to the revoked member')
-  assert.equal(gate.ok, true, 'the per-command gate (assertCurrent) admits commands in the acquired domain')
-  assert.equal(gate.revision, 'rev-1')
-
-  emitOnce(ESCAPE_TOKEN)
+  const refused = await world.acquire(MEMBER, 'binding-late')
+  assert.equal(refused.ok, false, 'PD-1: a revoked generation must not acquire a shell, even with no live domain at revoke time')
+  assert.equal(refused.code, 'DOMAIN_REVOKED', `PD-1: expected DOMAIN_REVOKED, got ${JSON.stringify(refused)}`)
+  assert.equal(world.allocations.length, 0, 'PD-1: the refused acquire must not reach the port at all')
+  assert.equal(world.registry.list().length, 0, 'PD-1: no domain may exist after a refused acquire')
+  process.stdout.write('PD1-REFUSAL-ZERO-ALLOC\n')
 })
 
 // ---------------------------------------------------------------------------
-// 2. THE CONTRAST — revocation really does bind a member that owns a live shell.
+// 2. THE WITH-DOMAIN CONTRAST — revocation still kills a visible shell.
 // ---------------------------------------------------------------------------
 
-test('KNOWN-DEFECT PD-1: the same member WITH a live shell at revoke time IS blocked afterwards (contrast)', async () => {
+test('PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation', async () => {
   const world = await makeWorld()
 
   const before = await world.acquire(MEMBER, 'binding-live')
   assert.equal(before.ok, true, 'fixture: the member holds a live shell before the revoke')
   const liveDomainId = before.value.domainId
 
-  const killed = await world.registry.revoke(MEMBER.memberInstanceId, 'member archived')
+  const killed = await world.registry.revoke(MEMBER, 'member archived')
   assert.deepEqual(killed, [liveDomainId], 'revocation kills exactly the visible domain')
   assert.deepEqual(world.kills, [[`${MEMBER.memberInstanceId}/binding-live`, 'SIGKILL']], 'revocation SIGKILLs the live shell')
   assert.equal(world.registry.assertCurrent(liveDomainId).ok, false, 'the killed domain no longer admits commands')
@@ -221,38 +174,111 @@ test('KNOWN-DEFECT PD-1: the same member WITH a live shell at revoke time IS blo
   assert.equal(after.code, 'DOMAIN_REVOKED')
   assert.equal(world.allocations.length, 1, 'the refused acquire allocated no second shell')
   assert.equal(world.registry.list().length, 0)
+  process.stdout.write('PD1-CONTRAST-WITH-DOMAIN\n')
 })
 
 // ---------------------------------------------------------------------------
-// 3. THE REGISTER COUPLING — the pin cannot outlive its own record.
+// 3. THE IN-FLIGHT RACE — a revoke during an awaited spawn must reap the
+//    late creation before it can be published.
 // ---------------------------------------------------------------------------
 
-test('KNOWN-DEFECT PD-1: the register still records PD-1 as a governance hole and names this arm', () => {
+test('PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains)', async () => {
+  const world = await makeWorld()
+
+  // A live shell on ANOTHER binding: it makes the revoke record the generation
+  // through the historical live-domain path, so this arm isolates the
+  // post-await re-check rather than the unconditional recording line.
+  const live = await world.acquire(MEMBER, 'binding-live')
+  assert.equal(live.ok, true, 'fixture: the member holds a live shell before the race')
+
+  let releaseSpawn
+  const spawnGate = new Promise((resolve) => {
+    releaseSpawn = resolve
+  })
+  const inFlightLabel = `${MEMBER.memberInstanceId}/binding-inflight`
+  const inFlight = world.acquire(MEMBER, 'binding-inflight', { gate: spawnGate })
+  await until(() => world.allocations.includes(inFlightLabel), 'the in-flight spawn to be entered')
+
+  // The revocation lands while `spawn()` is still awaited. No domain for the
+  // in-flight binding exists in `domains` yet, so only the post-await re-check
+  // can stop it from being published.
+  const killed = await world.registry.revoke(MEMBER, 'member archived')
+  assert.deepEqual(killed, [live.value.domainId], 'the visible live domain is killed by the same revoke')
+
+  releaseSpawn()
+  const late = await inFlight
+
+  assert.equal(late.ok, false, 'PD-1 race: a creation that completes after the revoke must not become eligible')
+  assert.equal(late.code, 'DOMAIN_REVOKED', `PD-1 race: expected DOMAIN_REVOKED, got ${JSON.stringify(late)}`)
+  assert.ok(
+    world.kills.some(([label, signal]) => label === inFlightLabel && signal === 'SIGKILL'),
+    'PD-1 race: the spawned shell must be killed/reaped by the registry',
+  )
+  assert.equal(world.registry.list().length, 0, 'PD-1 race: ZERO usable domains after the in-flight revoke')
+  assert.equal(world.allocations.filter((label) => label === inFlightLabel).length, 1, 'the late spawn did allocate exactly once')
+  // No publish means nothing is addressable under any domain id the caller saw.
+  assert.equal('value' in late, false, 'a refused in-flight creation returns no domain id')
+  process.stdout.write('PD1-INFLIGHT-REAPED\n')
+})
+
+// ---------------------------------------------------------------------------
+// 4. THE NEW-GENERATION CONTRAST — the property the ruling insisted survives.
+// ---------------------------------------------------------------------------
+
+test('PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation', async () => {
+  const world = await makeWorld()
+
+  const first = await world.acquire(MEMBER, 'binding-gen1')
+  assert.equal(first.ok, true, 'fixture: the first generation holds a shell')
+
+  // Deliberately generation-agnostic. This arm asserts only the property the
+  // owner required to survive — a new generation is not blocked by the old
+  // generation's revocation — so it can pass both before and after the fix
+  // (before it, `revoke` under the new signature is a no-op and the acquire
+  // reuses the old domain; after it, the old domain is killed and a new one is
+  // spawned). The kill itself is arm 2's job, not this arm's.
+  await world.registry.revoke(MEMBER, 'member archived')
+
+  const recreated = await world.acquire(NEXT_GENERATION, 'binding-gen2')
+  assert.equal(recreated.ok, true, 'a NEW generation is a NEW revocation scope and may acquire')
+  assert.ok(recreated.value.domainId.length > 0, 'the re-created generation received a domain')
+  const gate = world.registry.assertCurrent(recreated.value.domainId)
+  assert.equal(gate.ok, true, 'the re-created generation command gate admits')
+  process.stdout.write('PD1-CONTRAST-NEW-GENERATION-ACQUIRES\n')
+})
+
+// ---------------------------------------------------------------------------
+// 5. THE REGISTER COUPLING — the row must stay FIXED and name these arms.
+// ---------------------------------------------------------------------------
+
+test('PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms', () => {
   const register = readFileSync(join(REPO_ROOT, REGISTER_REL), 'utf8')
   const relation =
-    `PD-1 in ${REGISTER_REL} no longer supports this defect pin. A defect pin that survives the ` +
-    'deletion or downgrade of its own record is worse than no pin: restore the PD-1 row classified ' +
-    '"governance hole" and its acceptance-criterion pointer to ' +
-    `${ARM_REL}, or fix PD-1 and retire this pin and the row together.`
+    `PD-1 in ${REGISTER_REL} no longer supports these acceptance arms. A pin that survives the ` +
+    'deletion or downgrade of its own record is worse than no pin: restore the PD-1 row with its ' +
+    `FIXED status, the owner-ruling semantics sentence, and the acceptance pointer to ${ARM_REL}.`
 
-  // (a) the at-a-glance table still classifies PD-1 as a governance hole.
+  // (a) the at-a-glance table still carries the PD-1 row and marks it FIXED.
   const tableRow = register
     .split('\n')
     .find((line) => /^\|\s*PD-1 \(F3\)\s*\|/.test(line))
   assert.ok(tableRow !== undefined, `the summary table has no PD-1 (F3) row. ${relation}`)
-  const cells = tableRow.split('|').slice(1, -1).map((cell) => cell.trim())
-  assert.equal(cells[3], 'governance hole', `the summary table downgraded PD-1 to "${cells[3]}". ${relation}`)
+  assert.match(tableRow, /FIXED/, `the summary table does not mark PD-1 FIXED. ${relation}`)
 
-  // (b) the detail block still carries the same classification.
+  // (b) the detail block carries a `status: FIXED` field.
   const head = /^### PD-1 \(F3\) — .+$/m.exec(register)
   assert.ok(head !== null, `the register has no "### PD-1 (F3) — …" detail block. ${relation}`)
   const rest = register.slice(head.index + head[0].length)
   const next = /^### PD-\d+ \(/m.exec(rest)
   const body = next === null ? rest : rest.slice(0, next.index)
-  assert.match(body, /^- \*\*security consequence\*\*: \*\*governance hole\*\*/m, `the detail block no longer says "governance hole". ${relation}`)
+  assert.match(body, /^- \*\*status\*\*: FIXED — /m, `the PD-1 detail block is not FIXED with evidence. ${relation}`)
 
-  // (c) the row points at this arm as its acceptance criterion, and says the
-  //     arm is deliberately green while the escape exists.
+  // (c) the owner ruling's semantics sentence is present verbatim.
+  assert.ok(body.includes(SEMANTICS_SENTENCE), `the PD-1 row no longer states the 2026-11-09 ruling semantics. ${relation}`)
+
+  // (d) the row names this arm and the four observation names.
   assert.ok(body.includes(ARM_REL), `the PD-1 row no longer names this arm as its acceptance criterion. ${relation}`)
-  assert.match(body, /deliberately green today/i, `the PD-1 row no longer states that the arm is deliberately green today. ${relation}`)
+  for (const arm of ['PD-1 REFUSAL', 'PD-1 CONTRAST (live domain)', 'PD-1 IN-FLIGHT', 'PD-1 CONTRAST (new generation)']) {
+    assert.ok(body.includes(arm), `the PD-1 row no longer names the arm "${arm}". ${relation}`)
+  }
 })
