@@ -1,0 +1,11 @@
+{
+  "grantId": "grant-a5sf-bl17-live2-e0f18df3b702",
+  "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\"), allocation #2 = BL-17 live half; this run is start 4 of 5. After it: 1 start remains (BL-18 live or an FS/Search re-validation, owner call).",
+  "allocationItem": "P2-04 boot #4 of 5 — BL-17 live half (Shell-PTY face)",
+  "boundCommit": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+  "priorRows": 0,
+  "plannedStarts": 1,
+  "maxStarts": 2,
+  "aborts": 0,
+  "note": "maxStarts = prior shared-ledger rows + 1 pre-registration (intent) row + 1 boot; the BL-14 gate counts shared-ledger rows, not spawns"
+}

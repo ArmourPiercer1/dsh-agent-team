@@ -1,0 +1,29 @@
+{
+  "schema": "a5sf-bl17-live2/same-pty/1",
+  "item": 1,
+  "question": "Do several commands inside ONE Member's single terminal share one backend PTY (same pid/session), rather than a spawn per command?",
+  "verdict": "NOT_REACHED",
+  "reason": "RUN_ABORTED_AT_TEAM_CREATE",
+  "observed": {
+    "hostBooted": true,
+    "health": { "status": 200, "ok": true, "toolCount": 15, "rootSessionId": "session-a5sf-bl17-team", "liveSessions": ["session-a5sf-bl17-root"] },
+    "modelRequests": 0,
+    "bashCalls": 0,
+    "memberSessions": 0
+  },
+  "plannedObservable": [
+    "two sequential `bash` tool calls on one Member's child session",
+    "both report the same `$$` / `ps -o sess=` / `ps -o tty=`",
+    "zero confined-spawn counter rows for the two calls"
+  ],
+  "whatWouldProveIt": [
+    "one Member, one terminal, two sequential commands, byte-identical pid + session + tty in both results",
+    "the same test on a second Member must show a DIFFERENT pid/session (the negative control that distinguishes sharing from a global shell)",
+    "an explicit disclosure that this is the inherited HOST terminal (no governed realm installs a terminal face; TERMINALS_LEGACY_PTY_REFUSED), so it proves the host PTY service's sharing, not a confined PTY"
+  ],
+  "honestLimits": [
+    "This run proves nothing about PTY sharing: no member existed (team.create was refused), so no terminal was ever allocated.",
+    "Even a future PASS would not be confined-face proof; it would observe the Member's inherited host terminal.",
+    "The `bash` tool is absent from the composed leader surface assertion only in the sense that no model request was made; toolCount=15 is the health route's count, not a surface enumeration."
+  ]
+}

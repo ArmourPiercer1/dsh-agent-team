@@ -1,0 +1,29 @@
+{
+  "schema": "a5sf-bl17-live2/network-deny-refusal/1",
+  "item": 4,
+  "question": "On a Member whose effective policy is `network.access = deny`, is a live `bash_probe` call refused at ADMISSION with zero processes?",
+  "verdict": "NOT_REACHED",
+  "reason": "RUN_ABORTED_AT_TEAM_CREATE",
+  "observed": {
+    "refusalCode": null,
+    "providerCalls": 0,
+    "confinedSpawnAttempts": 0,
+    "bodyRan": false,
+    "note": "Nothing was attempted: the netdeny Member was never delegated because team.create was refused. The zero counts are the absence of a run, not a refusal position."
+  },
+  "plannedObservable": [
+    "typed `NETWORK_UNCONFINED_REALM` from the face's own capability probe",
+    "zero provider calls and zero confined-spawn attempts during the call",
+    "the body's marker absent from the result (the body never ran)"
+  ],
+  "whatWouldProveIt": [
+    "the typed code and the zero-process counters, recorded in one artefact",
+    "the reason the refusal exists: the provider's `network-destination` probe reports `unsupported` on this host (mechanism: null, evidence: null), so the face refuses to spawn rather than run unconfined"
+  ],
+  "quotedBar": "dev/agent-workflow/evidence/a5sf-subprocess-face/README.md §7 (quoted, not re-derived): refusing to spawn is NOT evidence of network isolation; it is a statement about our own admission code, made before the OS was asked. A claim would require all of (1) a capability row with a mechanism and recorded evidence bound to the realm id and launcher trust root, covering TCP and UDP, IPv6, raw sockets, AF_UNIX, inherited FDs and out-of-band routes; (2) a real child attempt that would otherwise reach the network and fails inside the deny lane with a kernel/transport denial; (3) a positive control on the same invocation without the confinement that succeeds and is observed on the wire; (4) an out-of-band observation of the transport itself (not 'zero transport entries' in a probe result); (5) a second consumer path on the live Host preset. Until 1-5 exist, the strongest honest statement is: on this host, a `network: deny` lane refuses at the admission layer with zero processes, because the provider's own probe reports `network-destination: unsupported`; the OS was never asked to deny anything.",
+  "osLevelNetworkIsolationClaimed": false,
+  "honestLimits": [
+    "This run makes no refusal-position observation at all, let alone an isolation claim.",
+    "Even a future PASS on item 4 would be a refusal-position result only; points 1-5 of the quoted bar remain absent on this host."
+  ]
+}

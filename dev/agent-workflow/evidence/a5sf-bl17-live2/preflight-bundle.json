@@ -1,0 +1,424 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "BL-17 live half, boot 4 of 5 (Shell-PTY face; one Member terminal + one network-deny Member)",
+  "sources": {
+    "note": "Derived from the driver plan at the exact HEAD this run executes on. The CHMOD case is an ALLOWED call (axis read, inside the read lane) whose body performs an UNDECLARED chmod; the gap is measured on the file mode, not on an admission disposition. `plannedCases` lists only the three cases the shared schema can table; the network-deny case is a REFUSAL-POSITION observation and is hand-checked by the driver (see policy.note).",
+    "driver": "dev/agent-workflow/evidence/a5sf-bl17-live2/run-boot.mjs",
+    "providerRow": "dev/agent-workflow/evidence/a5sf-bl17-live2/a5sf-bl17-live-realm-provider-row.mjs",
+    "toolModule": "dev/agent-workflow/evidence/a5sf-bl17-live2/a5sf-bl17-bash-probe-tool.mjs"
+  },
+  "driver": {
+    "note": "Step order as the driver actually executes it. `canFail` is declared for steps whose failure is diagnosed from an HTTP status/body; infrastructure steps that throw synchronously before any ledger row are covered by the run log, not by a route body.",
+    "steps": [
+      {
+        "id": "compose-rows",
+        "produces": [
+          "rows"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "boot-host",
+        "produces": [
+          "host"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "health-gate",
+        "requires": [
+          "host"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "read-pre-create-state",
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "create-team",
+        "produces": [
+          "team-session",
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "delegate-worker",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "item1-same-pty",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "item2-write-only-read",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "item2b-write-only-kernel-read",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "item3-chmod-gap",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "delegate-netdeny",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "item4-network-deny",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "teardown",
+        "canFail": false
+      }
+    ]
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "subprocess"
+    ],
+    "distFaces": {
+      "subprocess": true,
+      "fs": true,
+      "web": true
+    },
+    "hostModules": [
+      {
+        "path": "tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js",
+        "exists": true
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-bl17-live2/a5sf-bl17-bash-probe-tool.mjs",
+        "exists": true
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-bl17-live2/a5sf-bl17-live-realm-provider-row.mjs",
+        "exists": true
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-bl17-live-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-bl17-base"
+      ],
+      "worldRowIds": [
+        "a5sf-bl17-live-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-bl17-base"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-bl17-root",
+    "teamRoot": "session-a5sf-bl17-team",
+    "createRoot": "session-a5sf-bl17-team",
+    "stateQueryRoot": "session-a5sf-bl17-team",
+    "toolRouteRoot": "session-a5sf-bl17-team",
+    "archiveRoot": "session-a5sf-bl17-team",
+    "oracleRoot": "session-a5sf-bl17-team",
+    "directiveRoot": "session-a5sf-bl17-team",
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.bl17.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.bl17.main",
+        "members": 2
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "shell-positive",
+        "memberIdentity": "worker",
+        "toolBindingIdentity": "team/bl17-shell"
+      },
+      {
+        "caseId": "write-only-read",
+        "memberIdentity": "worker",
+        "toolBindingIdentity": "team/bl17-shell"
+      },
+      {
+        "caseId": "chmod-gap",
+        "memberIdentity": "worker",
+        "toolBindingIdentity": "team/bl17-shell"
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "@deepseek-ai/dsh-tool-bash-persistent",
+      "inject": [
+        "tools",
+        "terminals"
+      ],
+      "requiredConfig": [],
+      "config": {},
+      "role": "the Member preset terminal (item 1); NOT mounted on a governed realm"
+    },
+    {
+      "name": "a5sf-bl17-bash-probe",
+      "inject": [
+        "tools",
+        "subprocess"
+      ],
+      "requiredConfig": [],
+      "config": {
+        "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/dev/agent-workflow/evidence/a5sf-bl17-live2/bash-probe-ledger.jsonl"
+      },
+      "role": "the composition caller of the confined face (items 2-4)"
+    }
+  ],
+  "policy": {
+    "effectiveReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside"
+    ],
+    "effectiveWriteAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/write-only"
+    ],
+    "networkAccess": "allow",
+    "dispositions": {
+      "shell-positive": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      },
+      "write-only-read": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "chmod-gap": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      }
+    },
+    "note": "the network-deny case is NOT in `cases`: the shared schema grades a network case only as a connection-denial plan (`networkProbeEnforced`), while this run plans a REFUSAL-POSITION observation (zero provider calls). It is hand-checked in the driver and reported separately."
+  },
+  "cases": [
+    {
+      "id": "shell-positive",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside",
+      "guardFactKey": "shell-positive",
+      "expected": "allow",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "corpus": [
+        "shell-positive"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true
+    },
+    {
+      "id": "write-only-read",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/write-only/secret.txt",
+      "guardFactKey": "write-only-read",
+      "expected": "deny",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "corpus": [
+        "write-only-read"
+      ],
+      "deniedBy": "restriction",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true
+    },
+    {
+      "id": "chmod-gap",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside/mode.txt",
+      "guardFactKey": "chmod-gap",
+      "expected": "allow",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "corpus": [
+        "chmod-gap"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true
+    }
+  ],
+  "plannedCases": [
+    "shell-positive",
+    "write-only-read",
+    "chmod-gap"
+  ],
+  "fixtures": {
+    "shell-positive": {
+      "caseId": "shell-positive",
+      "member": "worker",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside",
+      "command": "echo \"pid=$$\"; ps -o pid=,sess=,tty=,cmd= -p $$; echo \"shell=persistent\"",
+      "route": "bash (the Member preset terminal; inherited host PTY, not a confined face)"
+    },
+    "write-only-read": {
+      "caseId": "write-only-read",
+      "member": "worker",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/write-only/secret.txt",
+      "declaredRead": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/write-only/secret.txt",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside",
+      "route": "bash_probe (the composition caller of the confined face)"
+    },
+    "chmod-gap": {
+      "caseId": "chmod-gap",
+      "member": "worker",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside/mode.txt",
+      "declaredRead": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside/mode.txt",
+      "declaredWrites": [],
+      "declaredChmod": [],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-22Z/workspace/lane/inside",
+      "route": "bash_probe (the composition caller of the confined face)"
+    }
+  },
+  "candidate": {
+    "head": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "frozen": false
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "grant-a5sf-bl17-live2-e0f18df3b702",
+    "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\"), allocation #2 = BL-17 live half; this run is start 4 of 5",
+    "boundCommit": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+    "priorRows": 0,
+    "plannedStarts": 1,
+    "maxStarts": 2,
+    "aborts": 0
+  },
+  "runRecord": {
+    "teamSha": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+        "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+      }
+    },
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    }
+  }
+}

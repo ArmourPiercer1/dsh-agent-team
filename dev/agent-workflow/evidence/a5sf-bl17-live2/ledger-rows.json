@@ -1,0 +1,25 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/dev/agent-workflow/evidence/a5sf-bl17-live2/run-ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-06T02:21:57.591Z",
+      "runId": "a5sf-bl17-live2-2026-11-06T02-21-57-562Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-bl17-live2-e0f18df3b702",
+      "grantId": "grant-a5sf-bl17-live2-e0f18df3b702",
+      "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\"), allocation #2 = BL-17 live half; this run is start 4 of 5. After it: 1 start remains (BL-18 live or an FS/Search re-validation, owner call).",
+      "boundCommit": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-06T02:22:04.035Z",
+      "runId": "a5sf-bl17-live2-2026-11-06T02-21-57-562Z",
+      "suite": "a5sf-bl17-live2",
+      "world": "u5a5sfbl17-20261106T02-21-57Z",
+      "phase": "a5sf-bl17-live2-boot1"
+    }
+  ]
+}
