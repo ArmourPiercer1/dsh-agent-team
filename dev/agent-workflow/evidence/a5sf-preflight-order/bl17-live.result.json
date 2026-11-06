@@ -1,0 +1,116 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "verdict": "UNKNOWN",
+  "checks": [
+    {
+      "id": "assembly.usable",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.roots",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.blueprints",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.member-tool-binding",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.authority",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "native.module-config",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.paths",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.fifo",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "cases.isolation",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "bundle.case-coverage",
+      "verdict": "UNKNOWN",
+      "findings": [],
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver plan, so the planned-case list is unknown; coverage cannot be certified (UNKNOWN, not PASS)"
+    },
+    {
+      "id": "driver.gate-order",
+      "verdict": "UNKNOWN",
+      "findings": [],
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver.steps list; step ORDER cannot be certified (the bundle is not failed: an evidence bundle that predates this schema is UNKNOWN, not PASS)"
+    },
+    {
+      "id": "driver.log-capture",
+      "verdict": "UNKNOWN",
+      "findings": [],
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver.steps list; failure-body capture cannot be certified (UNKNOWN, not PASS)"
+    },
+    {
+      "id": "collector.shape",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.candidate",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.grant",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.run-record",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "unknown": [
+    {
+      "id": "bundle.case-coverage",
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver plan, so the planned-case list is unknown; coverage cannot be certified (UNKNOWN, not PASS)"
+    },
+    {
+      "id": "driver.gate-order",
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver.steps list; step ORDER cannot be certified (the bundle is not failed: an evidence bundle that predates this schema is UNKNOWN, not PASS)"
+    },
+    {
+      "id": "driver.log-capture",
+      "reason": "DRIVER_PLAN_UNDECLARED",
+      "detail": "the bundle declares no driver.steps list; failure-body capture cannot be certified (UNKNOWN, not PASS)"
+    }
+  ],
+  "summary": "UNKNOWN 13/16 checks unknown=bundle.case-coverage,driver.gate-order,driver.log-capture",
+  "inputs": {
+    "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live",
+    "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostPrefixRemapped": true
+  }
+}

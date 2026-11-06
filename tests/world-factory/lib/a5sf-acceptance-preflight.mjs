@@ -1142,6 +1142,16 @@ export function judgeAcceptanceRow(caseId, sample = {}) {
 // verdict; the test in `tests/world-factory/a5sf-acceptance-preflight.test.mjs`
 // carries the aliased two-case negative control and one mutation per check.
 //
+// ORDER CHECKS (2026-11-08, five instrument defects / zero boots). The first
+// 13 checks grade CONTENT, and they all passed 13/13 immediately before BL-17
+// boot 3 burned an allocation on a gate that ran before `team.create`. Three
+// checks now grade the plan's DECLARED ORDER and its inputs: `driver.gate-order`
+// (a step's `requires` token must be produced by an earlier step),
+// `driver.log-capture` (a fail-capable step must declare a body capture), and
+// `bundle.case-coverage` (planned cases exist exactly once and have fixture
+// rows). They read declarations, never route strings, and a bundle that
+// predates the declaration is `UNKNOWN` — visibly not `PASS`.
+//
 // WHAT IT IS NOT: it does not replace the per-row judges above, and it does
 // not decide a row. It answers one question — "would spending a start on this
 // plan teach us anything, or would it burn a boot on a defect of the instrument?"
@@ -1161,14 +1171,23 @@ export const PREFLIGHT_CHECK_IDS = Object.freeze([
   'policy.paths',
   'policy.fifo',
   'cases.isolation',
+  'bundle.case-coverage',
+  'driver.gate-order',
+  'driver.log-capture',
   'collector.shape',
   'wiring.candidate',
   'wiring.grant',
   'wiring.run-record',
 ])
 
-/** The verdict vocabulary. Two words, because a preflight cannot "probably" pass. */
-export const PREFLIGHT_VERDICTS = Object.freeze(['PASS', 'FAIL'])
+/**
+ * The verdict vocabulary. `UNKNOWN` is deliberately NOT a synonym for `PASS`:
+ * it means the bundle did not declare the fact a check needs, so the check
+ * could not decide. A reader must be able to tell "this plan is safe to start"
+ * from "this plan never said", and the CLI exits non-zero for both (0 is
+ * reserved for `PASS`). See {@link runZeroBootPreflight}.
+ */
+export const PREFLIGHT_VERDICTS = Object.freeze(['PASS', 'FAIL', 'UNKNOWN'])
 
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
 const nonBlank = (v) => typeof v === 'string' && v.trim() !== ''
@@ -1545,6 +1564,340 @@ export function checkCollectorShape(bundle) {
 }
 
 /**
+ * THE DRIVER PLAN — the ORDER half of the preflight.
+ *
+ * Defect 5 (BL-17 boot 3, 2026-11-06) was not a bad check and not a bad route:
+ * the driver gated on `GET /__p6t6/state` BEFORE `team.create`, and that route
+ * throws `TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND` on a root with no team session
+ * (`packages/runtime/src/plugin/root.ts:3770-3777`). The gate could never open,
+ * so the start produced no usable verdict.
+ *
+ * A route-string matcher would catch exactly that driver and no future one.
+ * These checks therefore read a DECLARED PRECONDITION: a step may say
+ * `requires: ["team-session"]`, and another step must say
+ * `produces: ["team-session"]` EARLIER in the list. The token is plan-owned;
+ * `team-session`, `member` and `control-state` are the current vocabulary, but
+ * the check is generic over any token, so the next driver can declare a new
+ * artifact without editing this module.
+ *
+ * SCHEMA TOLERANCE. Today's evidence bundles predate the plan block and must
+ * never be rewritten as evidence. A bundle with no plan is therefore
+ * `UNKNOWN`, never `PASS` (and never `FAIL`): the preflight says "this bundle
+ * did not declare the step order, so I cannot certify it", which is visibly
+ * different from "the order is correct".
+ *
+ * Canonical shape (a driver may add fields):
+ *
+ *   "driver": {
+ *     "steps": [
+ *       {"id": "create", "produces": ["team-session"], "canFail": true, "captures": ["status", "body"]},
+ *       {"id": "state-gate", "requires": ["team-session"], "canFail": true, "captures": ["status", "body"]}
+ *     ],
+ *     "plannedCases": ["read-a"]
+ *   }
+ *
+ * `bundle.driverPlan` / `bundle.plan` and a bare `driver: []` are accepted as
+ * alias shapes because the check must not depend on the first driver's spelling.
+ */
+
+/** Where a driver plan may live, in priority order. */
+export const DRIVER_PLAN_KEYS = Object.freeze(['driver', 'driverPlan', 'plan'])
+
+/**
+ * Read the declared driver plan, tolerating the three accepted locations.
+ *
+ * @param {object} bundle
+ * @returns {{plan: object, source: string}|null} null when no step list is declared.
+ */
+export function readDriverPlan(bundle) {
+  for (const key of DRIVER_PLAN_KEYS) {
+    const candidate = bundle?.[key]
+    if (Array.isArray(candidate)) return { plan: { steps: candidate }, source: `bundle.${key}` }
+    if (isObject(candidate) && Array.isArray(candidate.steps)) return { plan: candidate, source: `bundle.${key}` }
+  }
+  return null
+}
+
+/** Normalise a declared token list. Returns null for a malformed declaration,
+ *  so a typo is a red finding instead of an empty list that passes. */
+function tokenList(value) {
+  if (value === undefined || value === null) return []
+  if (typeof value === 'string') return value.trim() === '' ? [] : [value.trim()]
+  if (Array.isArray(value)) {
+    const tokens = []
+    for (const entry of value) {
+      if (!nonBlank(entry)) return null
+      tokens.push(String(entry).trim())
+    }
+    return tokens
+  }
+  return null
+}
+
+/** The fields a step must expose for the two order checks; invalid steps are findings. */
+function readableSteps(steps, findings, checkName) {
+  const out = []
+  for (let index = 0; index < steps.length; index += 1) {
+    const step = steps[index]
+    if (!isObject(step)) {
+      findings.push(finding('DRIVER_STEP_INVALID', `${checkName}: step ${String(index + 1)} is not an object: ${JSON.stringify(step)}`))
+      continue
+    }
+    const id = nonBlank(step.id) ? String(step.id).trim() : `#${String(index + 1)}`
+    const requires = tokenList(step.requires)
+    const produces = tokenList(step.produces)
+    if (requires === null) {
+      findings.push(finding('DRIVER_STEP_REQUIRES_INVALID', `${checkName}: step ${JSON.stringify(id)} declares requires=${JSON.stringify(step.requires)}; requires must be a string or an array of non-blank tokens`))
+      continue
+    }
+    if (produces === null) {
+      findings.push(finding('DRIVER_STEP_PRODUCES_INVALID', `${checkName}: step ${JSON.stringify(id)} declares produces=${JSON.stringify(step.produces)}; produces must be a string or an array of non-blank tokens`))
+      continue
+    }
+    out.push({ index, id, step, requires, produces })
+  }
+  return out
+}
+
+/**
+ * `driver.gate-order` — a step that REQUIRES a post-create artifact must run
+ * after the step that PRODUCES it.
+ *
+ * This is the check that would have stopped BL-17 boot 3 before the start. It
+ * is driven only by `requires`/`produces`; it never inspects an action, route
+ * or label, so a renamed route or a different transport cannot evade it.
+ *
+ * @param {object} bundle
+ * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
+ */
+export function checkDriverGateOrder(bundle) {
+  const findings = []
+  const declared = readDriverPlan(bundle)
+  if (declared === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLAN_UNDECLARED',
+      detail: 'the bundle declares no driver.steps list; step ORDER cannot be certified (the bundle is not failed: an evidence bundle that predates this schema is UNKNOWN, not PASS)',
+    }
+  }
+  const steps = declared.plan.steps
+  if (steps.length === 0) {
+    findings.push(finding('DRIVER_STEPS_EMPTY', `${declared.source}.steps is empty; a plan with no steps cannot declare an order`))
+    return { findings }
+  }
+  const readable = readableSteps(steps, findings, 'driver.gate-order')
+  const producers = new Map()
+  for (const entry of readable) {
+    for (const token of entry.produces) {
+      if (!producers.has(token)) producers.set(token, entry)
+    }
+  }
+  const withRequires = readable.filter((entry) => entry.requires.length > 0)
+  if (findings.length === 0 && withRequires.length === 0) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PRECONDITIONS_UNDECLARED',
+      detail: `${declared.source}.steps declares no requires token, so there is no declared order constraint to grade; declare e.g. requires: ["team-session"] on a post-create gate`,
+    }
+  }
+  for (const entry of withRequires) {
+    for (const token of entry.requires) {
+      const producer = producers.get(token)
+      if (producer === undefined) {
+        findings.push(finding(
+          'DRIVER_PRECONDITION_UNPRODUCED',
+          `step ${JSON.stringify(entry.id)} requires ${JSON.stringify(token)} but NO step declares produces: ${JSON.stringify([token])}; the gate can never open (the BL-17 boot-3 defect class)`,
+          { stepId: entry.id, requires: token },
+        ))
+      } else if (producer.index >= entry.index) {
+        findings.push(finding(
+          'DRIVER_PRECONDITION_OUT_OF_ORDER',
+          `step ${JSON.stringify(entry.id)} requires ${JSON.stringify(token)}, produced by step ${JSON.stringify(producer.id)} at position ${String(producer.index + 1)}, but the requiring step is at position ${String(entry.index + 1)}; the gate runs BEFORE its precondition exists (BL-17 boot 3: state gate before team.create)`,
+          { stepId: entry.id, requires: token, producedBy: producer.id, producerIndex: producer.index, stepIndex: entry.index },
+        ))
+      }
+    }
+  }
+  return { findings }
+}
+
+/**
+ * `driver.log-capture` — every gate/step that can fail must declare a captured
+ * BODY, so a failed start is diagnosable from the record.
+ *
+ * Defect 5's second half: the pre-create state body was never recorded, so the
+ * first reading looked like a product stall. The check does not demand a
+ * particular transport; it demands that the plan says `captures: ["body"]` on
+ * every step it marks `canFail: true` (or `gate: true`, or that declares a
+ * `requires` precondition, which by construction can fail).
+ *
+ * @param {object} bundle
+ * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
+ */
+export function checkDriverLogCapture(bundle) {
+  const findings = []
+  const declared = readDriverPlan(bundle)
+  if (declared === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLAN_UNDECLARED',
+      detail: 'the bundle declares no driver.steps list; failure-body capture cannot be certified (UNKNOWN, not PASS)',
+    }
+  }
+  const steps = declared.plan.steps
+  const readable = readableSteps(steps, findings, 'driver.log-capture')
+  const failCapable = readable.filter((entry) => entry.step.canFail === true || entry.step.gate === true || entry.requires.length > 0)
+  if (readable.length === 0) {
+    // `driver.gate-order` owns the empty/malformed plan finding; this check must
+    // not add collateral, so it reports that it has nothing to grade.
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_STEPS_EMPTY',
+      detail: `${declared.source}.steps has no readable step; failure-body capture cannot be graded`,
+    }
+  }
+  if (failCapable.length === 0) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_FAIL_STEPS_UNDECLARED',
+      detail: `${declared.source}.steps marks no step canFail/gate and declares no requires precondition; failure-body capture cannot be graded`,
+    }
+  }
+  for (const entry of failCapable) {
+    const declaredCaptures = entry.step.captures ?? entry.step.capture
+    const captures = Array.isArray(declaredCaptures)
+      ? declaredCaptures.map((value) => String(value).trim())
+      : (typeof declaredCaptures === 'string' ? [declaredCaptures.trim()] : [])
+    const hasBody = entry.step.capturedBody === true || captures.includes('body')
+    if (!hasBody) {
+      findings.push(finding(
+        'DRIVER_GATE_BODY_NOT_CAPTURED',
+        `step ${JSON.stringify(entry.id)} can fail but does not declare captures: ["body"]; a failed gate would leave no diagnostic body (BL-17 boot 3's second half)`,
+        { stepId: entry.id, captures },
+      ))
+    }
+  }
+  return { findings }
+}
+
+/**
+ * `bundle.case-coverage` — every PLANNED case is in the case table exactly once,
+ * and every case in the table has a fixture row.
+ *
+ * This is the "missing `over-sample-cap` glob results" class: a case whose
+ * declared inputs are not in the fixture set is not a product question. The
+ * planned list must be SEPARATE from `bundle.cases`, or the check would prove
+ * only that the table equals itself.
+ *
+ * Exactly-once is intentionally checked here AND in `cases.isolation`
+ * (`CASE_ID_DUPLICATED`). The owner has not retired either; a duplicate is a
+ * defect of both families, and keeping both means a future refactor of one
+ * cannot silently drop the guarantee.
+ *
+ * @param {object} bundle
+ * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
+ */
+export function checkCaseCoverage(bundle) {
+  const findings = []
+  const declared = readDriverPlan(bundle)
+  if (declared === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLAN_UNDECLARED',
+      detail: 'the bundle declares no driver plan, so the planned-case list is unknown; coverage cannot be certified (UNKNOWN, not PASS)',
+    }
+  }
+  const plan = declared.plan
+  const planned = plan.plannedCases ?? plan.cases ?? bundle?.plannedCases
+  if (planned === undefined) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLANNED_CASES_UNDECLARED',
+      detail: `${declared.source} declares no plannedCases list; the case table cannot be checked against a plan that is not stated`,
+    }
+  }
+  if (!Array.isArray(planned)) {
+    findings.push(finding('DRIVER_PLANNED_CASES_INVALID', `${declared.source}.plannedCases is not an array: ${JSON.stringify(planned)}`))
+    return { findings }
+  }
+  const plannedIds = []
+  for (const entry of planned) {
+    const id = typeof entry === 'string'
+      ? entry.trim()
+      : (isObject(entry) && nonBlank(entry.id) ? String(entry.id).trim() : '')
+    if (!nonBlank(id)) {
+      findings.push(finding('DRIVER_PLANNED_CASES_INVALID', `${declared.source}.plannedCases contains an entry with no id: ${JSON.stringify(entry)}`))
+      continue
+    }
+    plannedIds.push(id)
+  }
+  if (plannedIds.length === 0) {
+    findings.push(finding('BUNDLE_PLANNED_CASES_EMPTY', `${declared.source}.plannedCases is empty; a plan that plans no case cannot be coverage-graded`))
+    return { findings }
+  }
+  const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
+  const counts = new Map()
+  for (const c of cases) {
+    if (!isObject(c) || !nonBlank(c.id)) continue
+    const id = String(c.id)
+    counts.set(id, (counts.get(id) ?? 0) + 1)
+  }
+  for (const id of plannedIds) {
+    const count = counts.get(id) ?? 0
+    if (count === 0) {
+      findings.push(finding(
+        'CASE_PLANNED_MISSING',
+        `planned case ${JSON.stringify(id)} is absent from bundle.cases; the run would report a case it never planned, or spend a start on an untabled row (the missing over-sample-cap glob-results class)`,
+        { caseId: id },
+      ))
+    } else if (count > 1) {
+      findings.push(finding(
+        'CASE_PLANNED_DUPLICATED',
+        `planned case ${JSON.stringify(id)} appears ${String(count)} times in bundle.cases; a planned case must be tabled exactly once`,
+        { caseId: id, count },
+      ))
+    }
+  }
+  const fixtures = bundle?.fixtures
+  let fixtureIds = null
+  if (Array.isArray(fixtures)) {
+    fixtureIds = new Set()
+    for (const row of fixtures) {
+      if (!isObject(row)) continue
+      const id = nonBlank(row.caseId) ? String(row.caseId) : (nonBlank(row.id) ? String(row.id) : '')
+      if (nonBlank(id)) fixtureIds.add(id)
+    }
+  } else if (isObject(fixtures)) {
+    fixtureIds = new Set(Object.keys(fixtures).filter((key) => nonBlank(key)))
+  } else if (fixtures === undefined) {
+    findings.push(finding('BUNDLE_FIXTURES_UNDECLARED', 'bundle.fixtures is absent; no case can be proven to have a fixture row, so the case inputs are unverified (the missing over-sample-cap glob-results class)'))
+  } else {
+    findings.push(finding('BUNDLE_FIXTURES_INVALID', `bundle.fixtures is neither an array of rows nor an object keyed by case id: ${JSON.stringify(fixtures)}`))
+  }
+  if (fixtureIds !== null) {
+    if (fixtureIds.size === 0) findings.push(finding('BUNDLE_FIXTURES_EMPTY', 'bundle.fixtures declares no row'))
+    for (const c of cases) {
+      if (!isObject(c) || !nonBlank(c.id)) continue
+      if (!fixtureIds.has(String(c.id))) {
+        findings.push(finding(
+          'CASE_FIXTURE_MISSING',
+          `case ${JSON.stringify(String(c.id))} has no row in bundle.fixtures; its declared inputs are not in the fixture set (the missing over-sample-cap glob-results class)`,
+          { caseId: String(c.id) },
+        ))
+      }
+    }
+  }
+  return { findings }
+}
+
+/**
  * CANDIDATE SHA + GRANT + RUN-RECORD WIRING.
  *
  * The three identities must agree before a start: the candidate commit the
@@ -1630,14 +1983,27 @@ export function checkCandidateWiring(bundle) {
  * stop. Every check's findings are returned, not just the first, because an
  * operator fixing an instrument should see all of its defects in one pass.
  *
+ * `UNKNOWN` is the third top-level answer, and it is NOT a pass. It means at
+ * least one check could not decide because the bundle did not declare the fact
+ * it grades (today: a plan-less evidence bundle). `PASS` requires every check
+ * to be `PASS`; `UNKNOWN` blocks a start just as `FAIL` does, but it says the
+ * instrument did not answer rather than that the plan is defective. A bundle
+ * that cannot be certified is never silently promoted.
+ *
  * @param {object} bundle
  * @param {{fileExists?: (rel: string) => boolean, now?: () => Date}} [options]
- * @returns {{schema: string, verdict: 'PASS'|'FAIL', checks: object[], findings: object[], summary: string}}
+ * @returns {{schema: string, verdict: 'PASS'|'FAIL'|'UNKNOWN', checks: object[], findings: object[], unknown: object[], summary: string}}
  */
 export function runZeroBootPreflight(bundle, options = {}) {
   const checks = []
   const add = (id, result) => {
-    checks.push(Object.freeze({ id, verdict: result.findings.length === 0 ? 'PASS' : 'FAIL', findings: Object.freeze(result.findings) }))
+    const verdict = result.findings.length > 0 ? 'FAIL' : (result.unknown === true ? 'UNKNOWN' : 'PASS')
+    checks.push(Object.freeze({
+      id,
+      verdict,
+      findings: Object.freeze(result.findings),
+      ...(verdict === 'UNKNOWN' ? { reason: result.reason ?? 'UNDECLARED', detail: result.detail ?? '' } : {}),
+    }))
   }
   if (!isObject(bundle)) {
     return Object.freeze({
@@ -1670,6 +2036,9 @@ export function runZeroBootPreflight(bundle, options = {}) {
   add('policy.paths', { findings: policy.findings.filter((f) => f.code !== 'POLICY_FIFO_OUTSIDE_LANE') })
   add('policy.fifo', { findings: policy.findings.filter((f) => f.code === 'POLICY_FIFO_OUTSIDE_LANE') })
   add('cases.isolation', checkCaseIsolation(bundle.cases))
+  add('bundle.case-coverage', checkCaseCoverage(bundle))
+  add('driver.gate-order', checkDriverGateOrder(bundle))
+  add('driver.log-capture', checkDriverLogCapture(bundle))
   add('collector.shape', checkCollectorShape(bundle))
   const wiring = checkCandidateWiring(bundle)
   add('wiring.candidate', { findings: wiring.findings.filter((f) => f.code.startsWith('CANDIDATE')) })
@@ -1678,13 +2047,21 @@ export function runZeroBootPreflight(bundle, options = {}) {
 
   const findings = Object.freeze(checks.flatMap((c) => c.findings))
   const passed = checks.filter((c) => c.verdict === 'PASS').length
-  const verdict = findings.length === 0 ? 'PASS' : 'FAIL'
+  const unknownChecks = checks.filter((c) => c.verdict === 'UNKNOWN')
+  const verdict = findings.length > 0 ? 'FAIL' : (unknownChecks.length > 0 ? 'UNKNOWN' : 'PASS')
   const blocks = findings.length === 0 ? '' : ` blocks=${[...new Set(findings.map((f) => f.code))].join(',')}`
+  // The PASS/FAIL line keeps its historical shape (`PASS n/m checks[ blocks=…]`).
+  // UNKNOWN grows a tail naming the undecidable checks, so a reader cannot
+  // mistake it for PASS by looking at the token alone.
+  const unknownTail = unknownChecks.length === 0
+    ? ''
+    : ` unknown=${unknownChecks.map((c) => c.id).join(',')}`
   return Object.freeze({
     schema: ZERO_BOOT_PREFLIGHT_SCHEMA,
     verdict,
     checks: Object.freeze(checks),
     findings,
-    summary: `${verdict} ${String(passed)}/${String(checks.length)} checks${blocks}`,
+    unknown: Object.freeze(unknownChecks.map((c) => Object.freeze({ id: c.id, reason: c.reason, detail: c.detail }))),
+    summary: `${verdict} ${String(passed)}/${String(checks.length)} checks${blocks}${unknownTail}`,
   })
 }

@@ -196,6 +196,124 @@
       ]
     }
   ],
+  "driver": {
+    "source": "test fixture (the plan-order contract is declared, not inferred)",
+    "steps": [
+      {
+        "id": "boot",
+        "label": "harness.boot",
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "create-team",
+        "label": "team.create",
+        "canFail": true,
+        "produces": [
+          "team-session"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "create-member",
+        "label": "team.create_member",
+        "canFail": true,
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "read-control-state",
+        "label": "GET /__p6t6/state",
+        "canFail": true,
+        "requires": [
+          "team-session",
+          "member"
+        ],
+        "produces": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "run-cases",
+        "label": "dispatch the nine cases",
+        "canFail": true,
+        "requires": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      }
+    ],
+    "plannedCases": [
+      "read-a",
+      "read-b",
+      "read-c",
+      "w4a",
+      "w4b",
+      "search-row1",
+      "search-row2",
+      "search-row3",
+      "search-row5"
+    ]
+  },
+  "fixtures": [
+    {
+      "caseId": "read-a",
+      "input": "/w/workspace/lane/inside/needle.txt"
+    },
+    {
+      "caseId": "read-b",
+      "input": "/w/workspace/lane/fs/outside-restriction.txt"
+    },
+    {
+      "caseId": "read-c",
+      "input": "/w/ceiling-outside/secret.txt"
+    },
+    {
+      "caseId": "w4a",
+      "input": "/w/workspace/lane/inside/w4a.txt"
+    },
+    {
+      "caseId": "w4b",
+      "input": "/w/workspace/w4b.txt"
+    },
+    {
+      "caseId": "search-row1",
+      "input": "/w/workspace/lane/inside"
+    },
+    {
+      "caseId": "search-row2",
+      "input": "/w/ceiling-outside"
+    },
+    {
+      "caseId": "search-row3",
+      "input": "/w/workspace/lane/outside-restriction.txt"
+    },
+    {
+      "caseId": "search-row5",
+      "input": "/w/workspace/lane/inside/invalid-pattern"
+    }
+  ],
   "identity": {
     "bootRoot": "session-a5sf-candidate1-root",
     "teamRoot": "session-a5sf-candidate1-team",

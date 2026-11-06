@@ -43,7 +43,13 @@
  *   DSH-A5SF-PREFLIGHT {"schema":"a5sf-zero-boot-preflight/1","verdict":…}
  *
  * Exit codes: 0 = PASS, 1 = FAIL, 2 = the bundle could not be read (a usage or
- * I/O error is not a verdict about a plan).
+ * I/O error is not a verdict about a plan), 3 = UNKNOWN (the bundle did not
+ * declare a fact a check grades, e.g. no `driver.steps`; NEVER a pass).
+ *
+ * `UNKNOWN` exists so an old evidence bundle is not rewritten and is not
+ * silently promoted: its plan order/capture/coverage cannot be certified, so
+ * the command refuses to say PASS. It is distinct from FAIL because the bundle
+ * is not accused of a defect; it is simply undecidable.
  *
  * @module scripts/a5sf-preflight
  */
@@ -149,7 +155,8 @@ function main(argv) {
   // result itself stays immutable).
   const graded = { ...result, inputs: { repo, hostRoot, hostPrefixRemapped: hostRoot !== null } }
   emit(graded, { pretty: opts.pretty })
-  return result.verdict === 'PASS' ? 0 : 1
+  if (result.verdict === 'PASS') return 0
+  return result.verdict === 'UNKNOWN' ? 3 : 1
 }
 
 process.exitCode = main(process.argv.slice(2))

@@ -1,0 +1,114 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "id": "assembly.usable",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.roots",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.blueprints",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.member-tool-binding",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.authority",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "native.module-config",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.paths",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.fifo",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "cases.isolation",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "bundle.case-coverage",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.gate-order",
+      "verdict": "FAIL",
+      "findings": [
+        {
+          "code": "DRIVER_PRECONDITION_OUT_OF_ORDER",
+          "detail": "step \"read-control-state\" requires \"team-session\", produced by step \"create-team\" at position 3, but the requiring step is at position 1; the gate runs BEFORE its precondition exists (BL-17 boot 3: state gate before team.create)",
+          "stepId": "read-control-state",
+          "requires": "team-session",
+          "producedBy": "create-team",
+          "producerIndex": 2,
+          "stepIndex": 0
+        }
+      ]
+    },
+    {
+      "id": "driver.log-capture",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "collector.shape",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.candidate",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.grant",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.run-record",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "findings": [
+    {
+      "code": "DRIVER_PRECONDITION_OUT_OF_ORDER",
+      "detail": "step \"read-control-state\" requires \"team-session\", produced by step \"create-team\" at position 3, but the requiring step is at position 1; the gate runs BEFORE its precondition exists (BL-17 boot 3: state gate before team.create)",
+      "stepId": "read-control-state",
+      "requires": "team-session",
+      "producedBy": "create-team",
+      "producerIndex": 2,
+      "stepIndex": 0
+    }
+  ],
+  "unknown": [],
+  "summary": "FAIL 15/16 checks blocks=DRIVER_PRECONDITION_OUT_OF_ORDER",
+  "inputs": {
+    "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-order",
+    "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostPrefixRemapped": true
+  }
+}
