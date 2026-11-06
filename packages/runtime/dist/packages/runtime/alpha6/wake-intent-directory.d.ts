@@ -5,6 +5,8 @@ import type { PersistedReviewWakeIntent, ReviewWakeIntentStore } from './wake-in
 export interface StoppedWakeMarker {
     readonly key: ReviewWakeKey;
     readonly targetSessionId?: string;
+    /** The mount root that wrote the marker (owner guard for boot recovery). */
+    readonly ownerRootSessionId?: string;
 }
 export interface WakeIntentDirectory {
     /** The narrow store bound to ONE latch identity. */
@@ -24,7 +26,7 @@ export interface WakeIntentDirectory {
     isStopped(key: ReviewWakeKey): Promise<boolean>;
     readStopped(key: ReviewWakeKey): Promise<StoppedWakeMarker | null>;
     listStopped(): Promise<readonly StoppedWakeMarker[]>;
-    markStopped(key: ReviewWakeKey, targetSessionId?: string): Promise<void>;
+    markStopped(key: ReviewWakeKey, targetSessionId?: string, ownerRootSessionId?: string): Promise<void>;
     clearStopped(key: ReviewWakeKey): Promise<void>;
 }
 export declare function createFileWakeIntentDirectory(directory: string): WakeIntentDirectory;
