@@ -8088,3 +8088,28 @@ strict Member 不能承载 web_fetch/web_search（surfaced ⇒ A2C-2 fatal；den
   `dev/agent-workflow/evidence/a5sf-bl18-live2/`。矩阵 **不加指针**（M-14/M-15 无 grade/V@B 变更）。
 - 未决（无第六次 start 可用）：`TeamDomain is closed` 是 row 组合触发还是 product boot-phase 缺陷，一次
   start 无法区分；README §6 记下“若还有一次 start”所需的 host-free 复现路径，并明确说明不存在。
+
+## 2026-11-10 — MATRIX-LIVE-FIX：矩阵 / STATUS 的 DEV-LIVE dated 注记（0 boot，无 grade / `V@B` 变更）
+
+- **任务**：四面已有稳定 `DEV-LIVE` 结果之后，`TOOL-ACCEPTANCE-MATRIX.md` 仍写 Shell-PTY “live 半场未证，
+  零 case 到达”、Web live 半场“零启动”，在**低估**方向过期；同时矩阵必须仍是等级表。本任务只做**dated
+  注记**，不重判、不升级。
+- **矩阵**（`docs/plans/active/alpha5-sandbox-first/TOOL-ACCEPTANCE-MATRIX.md`）：新增 **§1.3（2026-11-10
+  DEV-LIVE 注记）**，按 FS/Search（run-3/run-4，14 行 13 PASS / 0 FAIL / 1 `NOT_REACHED`）、Subprocess
+  （boot 10/11，shipped executor serves `bash`；`network: deny` 只拒绝该 face 自己的调用）、Shell-PTY
+  （run-08/run-09，Member 的 shell 是继承的 legacy PTY，该路径在 realm 之外）、Web（run-06/run-07，seam 在
+  legacy/non-strict Member 自己的 tool call 上 live 到达，deny lane 1 条 guard fact / 0 provider entry）
+  四面各写“证明了什么 / 没有证明什么 / 两个治理洞”与不变式项（PD-12 = ceiling term、PD-13 =
+  ToolRestriction term）。M-01/M-02/M-03/M-06/M-07/M-08/M-09/M-13/M-14/M-15 的 ⑥ 各追加一句 dated 指针；
+  **⑧ / ⑨ 一个字符未动**（四行仍 `NEEDS_REVALIDATION` / `V@B=no`，`M-03` 仍 `ENFORCE-PARTIAL`/`no`，
+  `M-08`/`M-09`/`M-13`/`M-14`/`M-15` 仍 `NOT_WIRED`/`no`）。§1.2.1 的旧句子逐字保留，§1.3 明写它们是
+  **P2-04 候选池**时点的历史真话，`DEV-LIVE` 是另一条记录类别。主矩阵 q5 区域仍 21 行 × 9 格。
+- **STATUS**（`docs/STATUS.md`）：顶部新增 dated CURRENT 快照（2026-11-10）：四面稳定 `DEV-LIVE`、31 次
+  dev-live 启动（Web 7 / FS 4 / PTY 9 / Sub 11）、PD-12/PD-13 为 governance hole、`release BLOCKED`、
+  五次 P2-04 正式池已关闭而开发启动改为 `DEV-LIVE` 自授权。旧段未改写。
+- **边界**：`DEV-LIVE` 不是 `CANDIDATE-C2` claim，不移动 `V@B`，不关闭 G2–G5。**0 boot**；无代码、无
+  `.github/**`、无 grade 变更。
+- **门（本地）**：`node scripts/doc-checks.mjs` rc 0；`node scripts/ci-pr-gate.mjs --only state-freshness`
+  pass（round 58、matrix rows 21 claimed 0）；`node tests/s2-authority/candidate-track-negative-control.test.mjs`
+  ALL GREEN 4/4；`git diff --check` rc 0。
+- **交付**：分支 `task/a5sf-matrix-fix-20261110`，draft PR 首行 `MATRIX-LIVE-FIX`；不 merge、不 settle。
