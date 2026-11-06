@@ -181,3 +181,34 @@ test('the register names the evidence it digests and does not claim a boot', () 
     assert.ok(text.includes(`evidence/${face}/README.md`), `the register no longer cites ${face}`)
   }
 })
+
+test('PD-9: the PTY layer-B arms never claim a byte channel for the product registry', () => {
+  // `PtyHandle` is pid/backend/descendants()/kill() — no write, no read. The
+  // product P1 property is a command gate plus a descendant audit. The pinned
+  // host service DOES have a channel, so its explicitly `*-HOST-*` arms may say
+  // so; a product-registry arm that grows WRITE/READ in its title would revive
+  // the exact citation defect PD-9 removed.
+  const ptyTest = readFileSync(join(ROOT, 'tests/world-factory/a5sf-pty-contract.test.mjs'), 'utf8')
+  const ptyReadme = readFileSync(join(ROOT, 'dev/agent-workflow/evidence/a5sf-pty-face/README.md'), 'utf8')
+
+  const productTitles = [...ptyTest.matchAll(/title: '(P[1-5]-[^']+)'/g)]
+    .map((m) => m[1])
+    .filter((title) => !title.startsWith('P1-HOST-') && !title.startsWith('P2-HOST-') && !title.startsWith('P3-HOST-') && !title.startsWith('P5-HOST-'))
+  assert.ok(productTitles.length >= 10, `expected the product-registry PTY arms, found ${productTitles.length}`)
+  for (const title of productTitles) {
+    assert.doesNotMatch(title, /\b(?:WRITE|READ)\b/i, `PD-9: arm "${title}" names a byte channel the product PtyHandle does not have`)
+  }
+  assert.ok(
+    productTitles.some((title) => title.startsWith('P1-COMMAND-REQUEST-GATE-')),
+    'PD-9: the P1 gate arm must name the command gate (P1-COMMAND-REQUEST-GATE-…)',
+  )
+  assert.ok(
+    ptyReadme.includes('`PtyHandle` has no write or read channel; "write"/"read" in earlier revisions of this face meant the command gate and the descendant audit.'),
+    'PD-9: a5sf-pty-face/README.md must state the retired vocabulary once',
+  )
+  assert.match(
+    rows.find((row) => row.id === 'PD-9').body,
+    /^- \*\*status\*\*: FIXED — /m,
+    'PD-9 must stay FIXED with its branch/commit evidence',
+  )
+})
