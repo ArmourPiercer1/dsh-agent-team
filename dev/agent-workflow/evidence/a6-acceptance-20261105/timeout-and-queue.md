@@ -34,14 +34,20 @@ Positive real-Host evidence that exists today:
   after cancel, no consumption, no execution.
 - `a6-human-r9`: escalation → human leg → allow → one consumption → execution.
 
-Open native-Inbox gap (unchanged, **not waived**):
+Queued wake after a transfer (the `a6-recipients-r22` gap) is **closed and
+re-proven** on the current line:
 
-- `a6-recipients-r22`: after a direct prompt to the same Officer child Session, the
-  native handle reports `idle`; a `followup` changes it to `running`, yet no model
-  turn is produced for the queued team wake (PA
-  `ctrl-1gcrjbd0vlh1060aqietb1e8` stays pending). Clean handoff in a fresh lifetime
-  is green, so this is a queued-wake/turn-start problem, not transfer routing.
+- `a6-recipients-r22` was the pre-fix trace: the Officer handoff row existed but
+  the successor was never woken, so PA `ctrl-1gcrjbd0vlh1060aqietb1e8` stayed
+  pending and the mock saw no new model turn.
+- The production fix is the transfer-event consumer (`fd7a5d6c1`): a durable
+  `control-current-leg-transferred` re-reads control state and dispatches the
+  successor wake through the same Router/Coordinator/Inbox path.
+- `a6-handoff-r7` on this line: transfer `case-11ums140z0c3xf0fcpbwm0kj` →
+  successor wake → Leader allow → exactly one consumption → execution
+  (`A6-8` PASS). No duplicate message was injected; the Inbox message is the
+  only delivery record.
 
-No run yet covers: Sticky Stop, the four crash windows (before request write, after
-request write before notify, after allow before consume, after consume before
-result), or cold-start Inbox reconciliation. Those remain **BLOCKED / PARTIAL**.
+Now covered: Sticky Stop (`a6-sticky-stop-r3`), bounded timeout
+(`a6-timeout-r4`), all four crash windows (`crash-and-inbox.md`). Cold-start
+native-Inbox replay is still not positively exercised.

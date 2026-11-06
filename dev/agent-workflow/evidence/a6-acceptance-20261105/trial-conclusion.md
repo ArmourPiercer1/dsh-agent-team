@@ -24,6 +24,8 @@ No master merge, no un-draft, no production switch.
 | Bounded wait expires: request stays pending, late allow cannot revive | PASS | `a6-timeout-r4`, A6-19/20 |
 | Human leg is discoverable over the remote-only ledger/projection | PASS | `a6-human-r12`, A6-21 |
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r3`, A6-22/23 |
+| Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r5`, A6-2..6 |
+| Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r7`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
 
 Full local gate: 9/9, census 677/8830, identity set identical to
