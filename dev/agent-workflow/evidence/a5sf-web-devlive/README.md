@@ -213,8 +213,12 @@ OS was never asked.
 Every driver-written JSON carries `osLevelNetworkIsolationClaimed: false`
 (per-case item, health, ledger, verdict, teardown, guard-facts, counter-rows,
 surface, marker-routing, mock-requests, pre-boot, the raw-response envelopes,
-and the run record). **Nothing here claims network confinement or isolation,
-and nothing here may be cited for either.**
+and the run record). Runs 01–05 predate the driver revision that stamps the
+flag at the top level of every file; in those runs it is carried in the
+run-level verdict, the item's `claim`/`limits` block, `health`, `ledger`,
+`teardown` and `run-record.bindings`. Runs 06/07 — the stable pair — carry it
+at the top level of every driver-written JSON. **Nothing here claims network
+confinement or isolation, and nothing here may be cited for either.**
 
 Also not proven, and not addressed by this loop:
 
