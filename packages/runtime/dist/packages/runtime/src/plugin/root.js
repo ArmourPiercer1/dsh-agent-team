@@ -2000,20 +2000,36 @@ export function createTeamProductionRoot(params) {
             const key = coordinator.state.key;
             await alpha6WakeIntents.clearStopped(key);
             const transition = coordinator.dispatch({ type: 'resume' });
-            if (transition.outcome === 'refused' && coordinator.state.stopped) {
-                await alpha6WakeIntents.markStopped(key, targetSessionId);
-                return false;
+            if (transition.outcome !== 'applied') {
+                // Only a real applied resume re-plans. A coordinator that was not
+                // stopped (an ordinary human chat on a live latch) must NOT
+                // fabricate a "ready" scan or deliver a spurious wake.
+                if (coordinator.state.stopped)
+                    await alpha6WakeIntents.markStopped(key, targetSessionId);
+                return !coordinator.state.stopped;
             }
-            // The explicit user turn is the resume. Immediately re-plan the SAME
-            // pending work through the normal dispatch path so the wake is not
-            // stranded until an unrelated WorkChanged happens to fire.
-            if (alpha6DispatchWake !== undefined) {
-                await alpha6DispatchWake({
+            // Re-plan the ACTUAL pending work (never an empty synthetic scan):
+            // read the durable ledger through the same collect + route path the
+            // boot rebuild uses, and deliver only when a real leg exists.
+            if (alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
+                const current = controlRef.current;
+                const requests = (await current.readControlState(key.rootSessionId)).requests;
+                const fresh = await collectAlpha6DelegableLegs({
                     rootSessionId: key.rootSessionId,
                     reviewerInstanceId: key.reviewerInstanceId,
-                    targetSessionId,
-                    currentLegIds: [],
-                }).catch(() => undefined);
+                    readRequests: async () => requests,
+                    reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                    resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                    route: alpha6Router.route,
+                });
+                if (fresh.length > 0) {
+                    await alpha6DispatchWake({
+                        rootSessionId: key.rootSessionId,
+                        reviewerInstanceId: key.reviewerInstanceId,
+                        targetSessionId,
+                        currentLegIds: fresh.map((entry) => entry.requestId),
+                    });
+                }
             }
             return true;
         }
@@ -2026,6 +2042,11 @@ export function createTeamProductionRoot(params) {
             // already withdrawn). Register its latch as stopped so an explicit
             // resume can find it; this grants nothing and delivers nothing.
             for (const marker of await alpha6WakeIntents.listStopped()) {
+                const markerTeam = repos.teamSessions.get(marker.key.rootSessionId);
+                if (markerTeam === undefined)
+                    continue;
+                if (marker.key.sessionGeneration !== markerTeam.generation)
+                    continue;
                 const targetSessionId = marker.targetSessionId;
                 if (targetSessionId === undefined)
                     continue;
@@ -2041,14 +2062,17 @@ export function createTeamProductionRoot(params) {
             // Inbox message is gone is discarded by the recovery protocol.
             for (const intent of await alpha6WakeIntents.list()) {
                 // A shared intent path may carry another Team's rows. Never adopt
-                // or clear them from this root.
-                if (intent.key.rootSessionId !== rootSid)
+                // or clear a row whose Team is not live in THIS process; the row's
+                // own root is the Team root, which is not necessarily the boot
+                // root this plugin instance was mounted under.
+                const intentTeam = repos.teamSessions.get(intent.key.rootSessionId);
+                if (intentTeam === undefined)
                     continue;
-                if (intent.key.sessionGeneration !== config.generation) {
+                if (intent.key.sessionGeneration !== intentTeam.generation) {
                     // A generation bump invalidates the old latch identity. Withdraw
                     // its native message (when the member is still bound) and clear
                     // the row; keep it if the Inbox cannot confirm the withdrawal.
-                    const staleMember = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                    const staleMember = await repos.memberInstances.get(intent.key.rootSessionId, intent.key.reviewerInstanceId);
                     const staleSessionId = staleMember?.childSessionId;
                     let removable = true;
                     if (typeof staleSessionId === 'string' && staleSessionId.length > 0) {
@@ -2085,7 +2109,7 @@ export function createTeamProductionRoot(params) {
                     }
                     continue;
                 }
-                const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                const member = await repos.memberInstances.get(intent.key.rootSessionId, intent.key.reviewerInstanceId);
                 const targetSessionId = member?.childSessionId;
                 if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
                     // No child session means no native Inbox can ever hold this

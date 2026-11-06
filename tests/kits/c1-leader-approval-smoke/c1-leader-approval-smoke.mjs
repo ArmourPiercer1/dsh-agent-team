@@ -309,6 +309,7 @@ const A6_STOP = process.env['C1_A6_STOP'] === '1'
 const A6_CRASH = ['1', 'allow', 'consume', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
 const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
+const A6_INBOX = process.env['C1_A6_INBOX'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1154,6 +1155,108 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     return false
   }
 
+  if (A6_INBOX) {
+    // Native-Inbox reconciliation: the Officer is BUSY, so the review wake is
+    // ACCEPTED into the native Inbox but cannot be claimed. SIGKILL the Host,
+    // restart, and prove boot recovery reads the durable intent + the native
+    // Inbox truth: no duplicate wake, no loss. Then a human message starts the
+    // cold turn, which claims the queued wake exactly once.
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const intentDeadline = Date.now() + 120_000
+    let wakeRows = []
+    let wakesBefore = 0
+    while (Date.now() < intentDeadline) {
+      wakeRows = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesBefore = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      if (wakeRows.length > 0 && wakesBefore > 0) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    const busySeen = mock.requests.some((r) => lastUserTextOf(r).includes('C1_A6_BUSY'))
+    const intentBefore = wakeRows.length === 0
+      ? null
+      : JSON.parse(readFileSync(join(markerDir, wakeRows[0]), 'utf8'))
+    let restartError = null
+    let wakesAfterRestart = wakesBefore
+    let rowsAfterRestart = wakeRows
+    let wakesAfterDrain = wakesBefore
+    let rowsAfterDrain = wakeRows
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      rowsAfterRestart = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesAfterRestart = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no boot URL after inbox crash')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for inbox crash')
+      // Boot recovery must reconcile the crashed claim from the durable
+      // ledger: one replacement wake, never a duplicate of the consumed one.
+      const replacementDeadline = Date.now() + 90_000
+      while (Date.now() < replacementDeadline) {
+        wakesAfterDrain = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+        if (wakesAfterDrain > wakesAfterRestart) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      rowsAfterDrain = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+    const pendingAfter = ledgerAfter.requests.filter(
+      (r) => !ledgerAfter.decisions.some((d) => d.requestId === r.requestId),
+    )
+    // Honest scope: the crashed claim must not be duplicated, the stale intent
+    // row must be reconciled away, and the durable pending request must remain
+    // (the wake is advisory; the row is the work). A boot-time replacement
+    // wake is allowed but not required by this assertion.
+    const inboxOk = restartError === null && intentBefore !== null
+      && rowsAfterRestart.length === 0
+      && wakesAfterRestart <= wakesBefore + 1
+      && wakesAfterDrain <= wakesBefore + 1
+      && pendingAfter.length > 0
+    check('A6-25', 'a wake claimed by a crashed turn is reconciled without duplicate: the stale intent is discarded and the durable pending request survives', inboxOk,
+      `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
+    writeEvidence('a6-inbox-reconcile.json', {
+      busySeen,
+      wakesBefore,
+      wakesAfterRestart,
+      wakesAfterDrain,
+      intentBefore,
+      rowsAfterRestart,
+      rowsAfterDrain,
+      restartError,
+      mockRequests: mock.requests.length,
+    })
+    return inboxOk
+  }
+
   if (A6_STICKY_STOP) {
     const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
     let wakeSeen = 0
@@ -1653,7 +1756,7 @@ let a6HandoffPhase = false
 let a6HumanPhase = A6_HUMAN || A6_STOP
 let a6ResumePhase = false
 function makeDecide() {
-  return function decide({ req }) {
+  return async function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
     if (typeof firstMsg?.content === 'string'
       && (firstMsg.content.startsWith('Create a concise title') || firstMsg.content.startsWith('Generate the session title'))) {
@@ -1674,11 +1777,21 @@ function makeDecide() {
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
       return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
     }
+    // (2c) keep the Officer BUSY on a long tool turn so the review wake is
+    // ACCEPTED into the native Inbox but cannot be claimed yet.
+    if (lastUser.includes('C1_A6_BUSY')) {
+      return tools === 0
+        ? toolCall('bash', bashArgs('sleep 45 && echo c1-a6-busy-done'))
+        : { kind: 'text', content: 'C1_A6_BUSY_DONE' }
+    }
 
     // (2a) the Alpha.6 Officer wake. Both the guard ask and the plane PA ask
     // arrive here; each turn lists and resolves exactly the id its text names
     // (or the first pending id for a merged wake).
     if (lastUser.startsWith('[team-review-wake')) {
+      // A6-INBOX: hold the wake turn open long enough to SIGKILL the Host
+      // AFTER the native Inbox claimed the message.
+      if (A6_INBOX) await new Promise((resolve) => setTimeout(resolve, 30_000))
       if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
       if (A6_STICKY_STOP && !a6ResumePhase) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
       const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
@@ -1794,6 +1907,46 @@ function makeDecide() {
       }
     }
     if (lastUser.includes(MK_A6)) {
+      if (A6_INBOX) {
+        switch (tools) {
+          case 0: return toolCall('team_create_member', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-officer-${RUN_STAMP}`,
+            delegationTemplateId: 'officer',
+            label: 'officer',
+          })
+          case 1: return toolCall('team_create_member', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-worker-${RUN_STAMP}`,
+            delegationTemplateId: 'worker',
+            label: 'w-a6',
+          })
+          case 2: {
+            const officerId = extractInstanceId(toolMsgsOf(req)[0]?.content)
+            if (officerId === null) return { kind: 'text', content: `C1_A6_OFFICER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+            return toolCall('team_send_message', {
+              rootSessionId: CREATE_ROOT_A6,
+              requestToken: `c1-a6-busy-${RUN_STAMP}`,
+              recipientInstanceId: officerId,
+              body: 'C1_A6_BUSY',
+            })
+          }
+          case 3: {
+            const workerId = extractInstanceId(toolMsgsOf(req)[1]?.content)
+            if (workerId === null) return { kind: 'text', content: `C1_A6_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[1]?.content).slice(0, 300)}` }
+            return toolCall('team_delegate', {
+              rootSessionId: CREATE_ROOT_A6,
+              requestToken: `c1-a6-delegate-${RUN_STAMP}`,
+              delegationInstanceId: workerId,
+              label: 'w-a6',
+              prompt: MK_A6MEM,
+              async: true,
+            })
+          }
+          case 4: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+          default: return { kind: 'text', content: `C1_A6_LEADER_FALLTHROUGH tools=${String(tools)}` }
+        }
+      }
       switch (tools) {
         case 0: return toolCall('team_create_member', {
           rootSessionId: CREATE_ROOT_A6,

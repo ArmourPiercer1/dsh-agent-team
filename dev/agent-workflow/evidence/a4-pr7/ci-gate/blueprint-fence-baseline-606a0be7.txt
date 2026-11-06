@@ -25,6 +25,9 @@
 # RE-RECORDED (2026-11-06, A6 resume probe): the same kit gained the
 #   env-gated post-restart resume probe, moving its last two v5 identities
 #   L1579->L1626 and L2212->L2264. Same two fixtures, no new offending content.
+# RE-RECORDED (2026-11-06, A6 Inbox reconcile probe): the same kit gained the
+#   env-gated native-Inbox crash/reconcile mode, moving the four identities to
+#   L619, L808, L1729, L2417. Same sources/fixtures; no new offending content.
 # command:     node scripts/verify-blueprint-version-clean.mjs   (exit 1, "dirty-or-unknown")
 # lines:       every OFFENDING/UNKNOWN line, verbatim, sorted; one identity per line.
 #
@@ -44,7 +47,7 @@ OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
 OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
 OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
 OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1
-OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L618=v5, L807=v5, L1626=v5, L2264=v5
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L619=v5, L808=v5, L1729=v5, L2417=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4

@@ -11,7 +11,8 @@
  *
  * @module packages/runtime/alpha6/wake-intent-directory
  */
-import { readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { access, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createFileWakeIntentStore } from './wake-intent-store.js';
 /** Stable FNV-1a hash of the latch identity; no clock, no randomness. */
@@ -33,7 +34,15 @@ export function createFileWakeIntentDirectory(directory) {
             return join(directory, `stopped-${keyHash(key)}.json`);
         },
         async isStopped(key) {
-            return (await this.readStopped(key)) !== null;
+            // Existence is the Stop. A marker written by an older build (no key) or
+            // left mid-write must still stop: read-side fail-closed, never open.
+            try {
+                await access(this.stoppedPathFor(key));
+                return true;
+            }
+            catch {
+                return false;
+            }
         },
         async readStopped(key) {
             try {
@@ -76,7 +85,12 @@ export function createFileWakeIntentDirectory(directory) {
             const marker = targetSessionId === undefined
                 ? { key }
                 : { key, targetSessionId };
-            await writeFile(this.stoppedPathFor(key), `${JSON.stringify({ stopped: true, ...marker })}\n`, 'utf8');
+            // Atomic replace: a crash must leave either the old marker or the full
+            // new one, never a truncated JSON that reads as "not stopped".
+            const path = this.stoppedPathFor(key);
+            const tmp = `${path}.tmp-${randomUUID()}`;
+            await writeFile(tmp, `${JSON.stringify({ stopped: true, ...marker })}\n`, 'utf8');
+            await rename(tmp, path);
         },
         async clearStopped(key) {
             await rm(this.stoppedPathFor(key), { force: true });

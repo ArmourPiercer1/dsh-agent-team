@@ -251,3 +251,38 @@ describe('A6 stale-row prune (post-plan, under the caller held latch lock)', () 
     expect(cleared).toEqual(['wake-clear-fail'])
   })
 })
+
+describe('A6 durable Sticky Stop marker', () => {
+  let dir: string
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'a6-sticky-marker-'))
+  })
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true })
+  })
+
+  it('round-trips the latch key and reviewer session', async () => {
+    const directory = createFileWakeIntentDirectory(dir)
+    await directory.markStopped(KEY, 'session-reviewer-child')
+    await expect(directory.isStopped(KEY)).resolves.toBe(true)
+    await expect(directory.readStopped(KEY)).resolves.toEqual({
+      key: KEY,
+      targetSessionId: 'session-reviewer-child',
+    })
+    await expect(directory.listStopped()).resolves.toEqual([
+      { key: KEY, targetSessionId: 'session-reviewer-child' },
+    ])
+    await directory.clearStopped(KEY)
+    await expect(directory.isStopped(KEY)).resolves.toBe(false)
+  })
+
+  it('honors a marker whose JSON cannot carry a key (older build or torn write)', async () => {
+    const directory = createFileWakeIntentDirectory(dir)
+    await writeFile(directory.stoppedPathFor(KEY) as string, '{"stopped":tru', 'utf8')
+    // Existence is the Stop: the read side is fail-closed, never open.
+    await expect(directory.isStopped(KEY)).resolves.toBe(true)
+    await expect(directory.readStopped(KEY)).resolves.toBeNull()
+  })
+})
