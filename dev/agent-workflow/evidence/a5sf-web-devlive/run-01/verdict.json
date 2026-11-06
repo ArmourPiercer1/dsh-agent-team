@@ -1,0 +1,29 @@
+{
+  "schema": "a5sf-web-devlive/verdict/1",
+  "at": "2026-11-06T08:32:12.679Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-web-devlive-2026-11-06T08-27-50-659Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "grantId": "devlive-web-1",
+  "face": "Web",
+  "world": "a5sfwebdv",
+  "overall": "FAIL",
+  "abortedAt": "item2-search-deny",
+  "partial": true,
+  "cases": [
+    {
+      "id": "web-deny-fetch",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "FAIL"
+    }
+  ],
+  "devLiveOutcomeRecorded": true,
+  "limit": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+  "osLevelNetworkIsolationClaimed": false
+}

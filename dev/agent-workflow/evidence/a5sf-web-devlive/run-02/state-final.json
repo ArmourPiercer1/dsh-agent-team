@@ -1,0 +1,297 @@
+{
+  "status": 200,
+  "body": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "session-a5sf-web-devlive-team",
+    "teamSession": {
+      "rootSessionId": "session-a5sf-web-devlive-team",
+      "blueprintId": "team.a5sf.web.devlive.main",
+      "revision": "1",
+      "contentHash": "sha256:9a0cf7100d8a1d8fb71035fb944ba805666be69292d7b05a0b51695a7dc39930",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "createdAt": "2026-11-06T08:42:45.840Z",
+      "generation": 14
+    },
+    "members": [
+      {
+        "instanceId": "inst-0by65v91chnx",
+        "templateId": "webworker-search",
+        "label": "webdev-search",
+        "childSessionId": "session-team-child-acd05b22b5e3e0d8e61e510bd114fccb",
+        "lifecycle": "SETTLED",
+        "activityVersion": 3
+      },
+      {
+        "instanceId": "inst-0khuuyv12140",
+        "templateId": "webworker-fetch",
+        "label": "webdev-fetch",
+        "childSessionId": "session-team-child-35b60fd7493a48b531dccf4ef3afd425",
+        "lifecycle": "SETTLED",
+        "activityVersion": 3
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": [],
+      "abandonments": []
+    },
+    "activity": [
+      {
+        "globalSequence": 5,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-0khuuyv12140",
+        "subject": "work-unit",
+        "sequence": 1,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "webdev-delegate-webdev-fetch",
+        "requestToken": "webdev-delegate-webdev-fetch"
+      },
+      {
+        "globalSequence": 6,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-0khuuyv12140",
+        "subject": "work-unit",
+        "sequence": 2,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "webdev-delegate-webdev-fetch",
+        "requestToken": "webdev-delegate-webdev-fetch"
+      },
+      {
+        "globalSequence": 10,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-0by65v91chnx",
+        "subject": "work-unit",
+        "sequence": 1,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "webdev-delegate-webdev-search",
+        "requestToken": "webdev-delegate-webdev-search"
+      },
+      {
+        "globalSequence": 11,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-0by65v91chnx",
+        "subject": "work-unit",
+        "sequence": 2,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "webdev-delegate-webdev-search",
+        "requestToken": "webdev-delegate-webdev-search"
+      }
+    ],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "session-a5sf-web-devlive-anchor": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-a5sf-web-devlive-team": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-team-child-35b60fd7493a48b531dccf4ef3afd425": {
+          "instanceId": "inst-0khuuyv12140",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-team-child-acd05b22b5e3e0d8e61e510bd114fccb": {
+          "instanceId": "inst-0by65v91chnx",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-web-devlive-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        }
+      }
+    },
+    "observations": [
+      "a5p1-guard: dispatcher-preparing agent=session-a5sf-web-devlive-team to=PREPARING",
+      "a5p1-guard: guard-installed agent=session-a5sf-web-devlive-team scope=session-a5sf-web-devlive-team",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/pre-execute armed=1 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/post-execute armed=2 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/result armed=3 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools/execute armed=4 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-web-devlive-team seam=tools.guard armed=5 required=5",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-web-devlive-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-web-devlive-team verified=0 surface=7",
+      "a5p1-guard: published-surface-unverified agent=session-a5sf-web-devlive-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+      "a5p1-guard: surface-inherited agent=session-a5sf-web-devlive-team verified=0",
+      "a5p1-guard: dispatcher-active agent=session-a5sf-web-devlive-team to=ACTIVE",
+      "a5p1-guard: agent-published agent=session-a5sf-web-devlive-team surface=7 masked=2 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-a5sf-web-devlive-team",
+      "alpha2-artifact-grant: shell-result-observer installed",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-web-devlive-team tool=team_delegate callId=webdev-delegate-webdev-fetch inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-web-devlive-team callId=webdev-delegate-webdev-fetch inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-web-devlive-team tool=team_delegate callId=webdev-delegate-webdev-fetch inFlight=0",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-web-devlive-team tool=team_delegate callId=webdev-delegate-webdev-search inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-web-devlive-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-web-devlive-team callId=webdev-delegate-webdev-search inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-web-devlive-team tool=team_delegate callId=webdev-delegate-webdev-search inFlight=0"
+    ]
+  }
+}

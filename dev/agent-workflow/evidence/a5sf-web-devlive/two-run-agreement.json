@@ -1,0 +1,153 @@
+{
+  "schema": "a5sf-web-devlive/two-run-agreement/1",
+  "purpose": "two consecutive runs of the final driver that agree on every case verdict and on every decisive observation",
+  "runs": [
+    "run-06",
+    "run-07"
+  ],
+  "pair": [
+    {
+      "run": "run-06",
+      "artifactDir": "dev/agent-workflow/evidence/a5sf-web-devlive/run-06",
+      "head": "77ece3d16ba7705d1a39633507963f9b8541b39d",
+      "recordClass": "DEV-LIVE",
+      "overall": "PASS",
+      "candidateClaimEligibility": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+      "health": {
+        "probes": [
+          {
+            "status": 404,
+            "ok": null,
+            "elapsedMs": 3
+          },
+          {
+            "status": 200,
+            "ok": true,
+            "elapsedMs": 506
+          }
+        ],
+        "elapsedMs": 506
+      },
+      "ledger": {
+        "boots": 1,
+        "intentRows": 1,
+        "outcomeRecorded": true
+      },
+      "teardown": {
+        "port": 3186,
+        "portClosed": true,
+        "homeRemoved": true
+      },
+      "cases": [
+        {
+          "id": "web-deny-fetch",
+          "verdict": "PROVEN",
+          "guardFactCount": 1,
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "decision": "deny",
+          "method": "web:fetch",
+          "locator": "https://example.test/legal/page",
+          "providerEntries": 0,
+          "capabilityProbes": 1,
+          "hostWebEntries": 0,
+          "refusalNamesCapability": true,
+          "memberSurfaceHasPair": true,
+          "memberInstanceId": "inst-0khuuyv12140",
+          "memberTemplate": "webworker-fetch"
+        },
+        {
+          "id": "web-deny-search",
+          "verdict": "PROVEN",
+          "guardFactCount": 1,
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "decision": "deny",
+          "method": "web:search",
+          "locator": "<search:malformed-request>",
+          "providerEntries": 0,
+          "capabilityProbes": 1,
+          "hostWebEntries": 0,
+          "refusalNamesCapability": true,
+          "memberSurfaceHasPair": true,
+          "memberInstanceId": "inst-0by65v91chnx",
+          "memberTemplate": "webworker-search"
+        }
+      ]
+    },
+    {
+      "run": "run-07",
+      "artifactDir": "dev/agent-workflow/evidence/a5sf-web-devlive/run-07",
+      "head": "77ece3d16ba7705d1a39633507963f9b8541b39d",
+      "recordClass": "DEV-LIVE",
+      "overall": "PASS",
+      "candidateClaimEligibility": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+      "health": {
+        "probes": [
+          {
+            "status": 404,
+            "ok": null,
+            "elapsedMs": 2
+          },
+          {
+            "status": 200,
+            "ok": true,
+            "elapsedMs": 506
+          }
+        ],
+        "elapsedMs": 506
+      },
+      "ledger": {
+        "boots": 1,
+        "intentRows": 1,
+        "outcomeRecorded": true
+      },
+      "teardown": {
+        "port": 3183,
+        "portClosed": true,
+        "homeRemoved": true
+      },
+      "cases": [
+        {
+          "id": "web-deny-fetch",
+          "verdict": "PROVEN",
+          "guardFactCount": 1,
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "decision": "deny",
+          "method": "web:fetch",
+          "locator": "https://example.test/legal/page",
+          "providerEntries": 0,
+          "capabilityProbes": 1,
+          "hostWebEntries": 0,
+          "refusalNamesCapability": true,
+          "memberSurfaceHasPair": true,
+          "memberInstanceId": "inst-0khuuyv12140",
+          "memberTemplate": "webworker-fetch"
+        },
+        {
+          "id": "web-deny-search",
+          "verdict": "PROVEN",
+          "guardFactCount": 1,
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "decision": "deny",
+          "method": "web:search",
+          "locator": "<search:malformed-request>",
+          "providerEntries": 0,
+          "capabilityProbes": 1,
+          "hostWebEntries": 0,
+          "refusalNamesCapability": true,
+          "memberSurfaceHasPair": true,
+          "memberInstanceId": "inst-0by65v91chnx",
+          "memberTemplate": "webworker-search"
+        }
+      ]
+    }
+  ],
+  "agreement": {
+    "caseVerdictsAgree": true,
+    "guardFactCountsAgree": true,
+    "providerEntriesAgree": true,
+    "typedCodesAgree": true,
+    "healthShapeAgrees": true,
+    "note": "ports differ because the port lease is per start; the health-gate SHAPE (404 then 200 {ok:true}) and every case fact agree."
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

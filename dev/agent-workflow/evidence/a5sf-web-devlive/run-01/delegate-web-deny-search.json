@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-a5sf-web-devlive-team",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "work-admitted",
+        "instanceId": "inst-0khuuyv12140",
+        "fromLifecycle": "SETTLED",
+        "lifecycleCommitted": true,
+        "sequence": 8,
+        "settled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "webdev-delegate-webdev-search"
+    }
+  }
+}

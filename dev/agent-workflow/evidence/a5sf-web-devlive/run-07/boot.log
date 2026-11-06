@@ -1,0 +1,32 @@
+[2026-11-06T08:52:36.438Z] BOOT MODE — exactly ONE Host start. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive
+[2026-11-06T08:52:36.439Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T08:52:36.442Z] HEAD=77ece3d16ba7705d1a39633507963f9b8541b39d
+[2026-11-06T08:52:36.442Z] preflight PASS 18/18; authority pointer sha256=31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a
+[2026-11-06T08:52:36.443Z] dev-live authorisation: grantId=devlive-web-1 face=Web world=a5sfwebdv
+[2026-11-06T08:52:36.443Z] dev-live lease open: intent row written; grant=devlive-web-1 face=Web world=a5sfwebdv slotHeld=false
+[2026-11-06T08:52:36.445Z] archive-before-start: 6 file(s) under archive/
+[2026-11-06T08:52:36.448Z] row handoff: ["a5sf-bl18-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-web-devlive-leader","preset-a5sf-web-devlive-webworker"]
+[2026-11-06T08:52:42.968Z] mock started on port 3492
+[2026-11-06T08:52:55.695Z] BOOTED port=3183 (lease bootsSpent=1) log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/dev/agent-workflow/evidence/a5sf-web-devlive/run-07/logs/u5a5sfwebdv-20261106T08-52-36Z/instance-port3183.log
+[2026-11-06T08:52:55.707Z] authenticated (token never recorded)
+[2026-11-06T08:52:56.213Z] health 200 ready=true liveSessions=["session-a5sf-web-devlive-anchor"] after 506ms (2 probe(s))
+[2026-11-06T08:52:56.233Z] discovery prompt status=200 (accepted after 19ms)
+[2026-11-06T08:52:56.634Z] discovery surface (22): ["bash","edit","read","read_image","team_archive_member","team_collect","team_create_member","team_delegate","team_follow_up","team_grant_permission","team_inspect_config","team_list_members","team_list_pending_control","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_revoke_permission","team_send_message","u5_canary","u6fs_probe","write"]
+[2026-11-06T08:52:56.634Z] discovery-first deny list: ["u5_canary","u6fs_probe"]
+[2026-11-06T08:52:56.638Z] main blueprint parsed; builtinToolDeny=["u5_canary","u6fs_probe"]
+[2026-11-06T08:52:56.846Z] team.create ok on session-a5sf-web-devlive-team
+[2026-11-06T08:52:56.850Z] state-gate open: blueprint=team.a5sf.web.devlive.main members=1
+[2026-11-06T08:52:56.851Z] live leader gate open: liveSessions=["session-a5sf-web-devlive-anchor","session-a5sf-web-devlive-team"]
+[2026-11-06T08:52:56.852Z] leader create turn observed=true (harmless no-tool reply by design)
+[2026-11-06T08:52:56.977Z] delegate webdev-fetch: status=200 body={"ok":true,"value":{"status":"executed","action":"delegate","rootSessionId":"session-a5sf-web-devlive-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0khuuyv12140","templateId":"webworker-fetch","childSessionId":"session-team-child-35b60fd7493a48b531dccf4ef3afd425","operationId":"op-06lboxj103wa0g03b4lhp0mq","replayed":false,"ledgerSequence":3,"admissionCode":"ADMISSION_OPEN","workSequence":4,"workSettled":false,"workStatus":"admitted"},"requestToken":"webdev-delegate-webdev-fetch"}}
+[2026-11-06T08:52:56.992Z] member webdev-fetch: instanceId=inst-0khuuyv12140 childSessionId=session-team-child-35b60fd7493a48b531dccf4ef3afd425 lifecycle=RUNNING
+[2026-11-06T08:52:57.394Z] case web-deny-fetch: PASS {"initiation":"model-tool-call","guardFactCount":1,"decidedBy":"NETWORK_UNCONFINED_REALM","providerEntries":0,"hostWebEntries":0,"memberSurfaceHasPair":true,"refusalNamesCapability":true,"artifact":"item-web-deny-fetch.json"}
+[2026-11-06T08:52:57.529Z] delegate webdev-search: status=200 body={"ok":true,"value":{"status":"executed","action":"delegate","rootSessionId":"session-a5sf-web-devlive-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0by65v91chnx","templateId":"webworker-search","childSessionId":"session-team-child-acd05b22b5e3e0d8e61e510bd114fccb","operationId":"op-1bo8hja1nkzqy90j8t2ek1h5","replayed":false,"ledgerSequence":8,"admissionCode":"ADMISSION_OPEN","workSequence":9,"workSettled":false,"workStatus":"admitted"},"requestToken":"webdev-delegate-webdev-search"}}
+[2026-11-06T08:52:57.549Z] member webdev-search: instanceId=inst-0by65v91chnx childSessionId=session-team-child-acd05b22b5e3e0d8e61e510bd114fccb lifecycle=RUNNING
+[2026-11-06T08:52:57.949Z] case web-deny-search: PASS {"initiation":"model-tool-call","guardFactCount":1,"decidedBy":"NETWORK_UNCONFINED_REALM","providerEntries":0,"hostWebEntries":0,"memberSurfaceHasPair":true,"refusalNamesCapability":true,"artifact":"item-web-deny-search.json"}
+[2026-11-06T08:52:57.955Z] member state readback: [{"label":"webdev-search","lifecycle":"SETTLED","childSessionId":"session-team-child-acd05b22b5e3e0d8e61e510bd114fccb"},{"label":"webdev-fetch","lifecycle":"SETTLED","childSessionId":"session-team-child-35b60fd7493a48b531dccf4ef3afd425"},{"label":"leader","lifecycle":"undefined","childSessionId":"undefined"}]
+[2026-11-06T08:52:58.073Z] teardown: portClosed=true homeRemoved=true
+[2026-11-06T08:52:58.074Z] ledger: boots=1 planned=1 aborts=0 outcome=1
+[2026-11-06T08:52:58.074Z] RUN-SUMMARY run=a5sf-web-devlive-2026-11-06T08-52-36-443Z suite=a5sf-web-devlive overall=PASS cases=2 PASS:2 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-06T08:52:58.074Z] run record: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/dev/agent-workflow/evidence/a5sf-web-devlive/run-07/run-record.json
+[2026-11-06T08:52:58.074Z] OVERALL=PASS

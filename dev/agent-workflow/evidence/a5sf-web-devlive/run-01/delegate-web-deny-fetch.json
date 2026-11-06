@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-a5sf-web-devlive-team",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-0khuuyv12140",
+        "templateId": "webworker",
+        "childSessionId": "session-team-child-35b60fd7493a48b531dccf4ef3afd425",
+        "operationId": "op-06lboxj103wa0g03b4lhp0mq",
+        "replayed": false,
+        "ledgerSequence": 3,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 4,
+        "workSettled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "webdev-delegate-webdev-fetch"
+    }
+  }
+}
