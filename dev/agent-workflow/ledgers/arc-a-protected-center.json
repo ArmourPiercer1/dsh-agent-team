@@ -256,6 +256,12 @@
       "sha256": "80311d3e207c9a83f7ea9fd7f8ca50907681e16f16a94a5820d6834f8bc40845",
       "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 isolated integration E2E correction",
       "reason": "Same correction, two narrow wires: (1) the presented approval/landing edge uses the durable decision's exercised reviewerAuthority when present; (2) an A6 PA leg requests the ALLOW effect (not the pending ask token), so the consumption-point authority recheck can answer it. The allow effect is inside the a6:true bridge branch; the landing presenter is gated by durable decision evidence and falls back to the old decider rung when absent. Legacy PA rows and the resolver table are unchanged. Real-Host evidence: dev/agent-workflow/evidence/a6-officer-host."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "4cffb4f0c2c6bee31ea82a0c17b127fc1ec59a220750c2fab6b6ccb101c63e8c",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 bounded approval wait",
+      "reason": "Named Alpha.6 center-interface addition: the opt-in v5 PA case-leg now supplies the configured bounded wait (alpha6WaitTimeoutMs, default 600000 ms) to the existing bridge deps, so a wait that outlives its client stops waiting instead of pinning the turn. It does not decide, mint, consume or execute; the durable request keeps its original meaning. v4/default and non-A6 rows are byte-identical."
     }
   ]
 }
