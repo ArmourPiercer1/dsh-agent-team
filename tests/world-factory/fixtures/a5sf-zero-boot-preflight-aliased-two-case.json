@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-zero-boot-preflight/1",
-  "label": "NEGATIVE CONTROL \u2014 the candidate-1 allocation #1 alias, reproduced",
+  "label": "NEGATIVE CONTROL — the candidate-1 allocation #1 alias, reproduced",
   "sources": {
     "note": "Deliberately aliased two-case fixture. `read-b` and `search-row3` declare the SAME locator and the SAME guard-fact key, exactly as candidate-1 allocation #1 did; each judge collects facts by locator, so each case sees the other's deny fact. The expected verdict is FAIL with CASE_LOCATOR_ALIASED and CASE_GUARD_KEY_ALIASED; every other check must stay green so the red is attributable to the alias and not to collateral damage.",
     "planRows": "dev/agent-workflow/evidence/a5sf-candidate1/plan-rows.json",
@@ -291,7 +291,7 @@
     "plannedStarts": 1,
     "aborts": 0,
     "boundCommit": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
-    "grantedBy": "owner, 2026-11-06 (\"\u6279\u51c65\u6b21P2-04\u9884\u7b97\"), allocation #4 of 5 (retry of #1), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+    "grantedBy": "owner, 2026-11-06 (\"批准5次P2-04预算\"), allocation #4 of 5 (retry of #1), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
   },
   "runRecord": {
     "teamSha": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
@@ -443,5 +443,123 @@
         "effective": "allow"
       }
     }
-  }
+  },
+  "driver": {
+    "source": "test fixture (same declared plan as the clean fixture; the alias is the only defect)",
+    "steps": [
+      {
+        "id": "boot",
+        "label": "harness.boot",
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "create-team",
+        "label": "team.create",
+        "canFail": true,
+        "produces": [
+          "team-session"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "create-member",
+        "label": "team.create_member",
+        "canFail": true,
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "read-control-state",
+        "label": "GET /__p6t6/state",
+        "canFail": true,
+        "requires": [
+          "team-session",
+          "member"
+        ],
+        "produces": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "run-cases",
+        "label": "dispatch the nine cases",
+        "canFail": true,
+        "requires": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ]
+      }
+    ],
+    "plannedCases": [
+      "read-a",
+      "read-b",
+      "read-c",
+      "w4a",
+      "w4b",
+      "search-row1",
+      "search-row2",
+      "search-row3",
+      "search-row5"
+    ]
+  },
+  "fixtures": [
+    {
+      "caseId": "read-a",
+      "input": "/w/workspace/lane/inside/needle.txt"
+    },
+    {
+      "caseId": "read-b",
+      "input": "/w/workspace/lane/fs/outside-restriction.txt"
+    },
+    {
+      "caseId": "read-c",
+      "input": "/w/ceiling-outside/secret.txt"
+    },
+    {
+      "caseId": "w4a",
+      "input": "/w/workspace/lane/inside/w4a.txt"
+    },
+    {
+      "caseId": "w4b",
+      "input": "/w/workspace/w4b.txt"
+    },
+    {
+      "caseId": "search-row1",
+      "input": "/w/workspace/lane/inside"
+    },
+    {
+      "caseId": "search-row2",
+      "input": "/w/ceiling-outside"
+    },
+    {
+      "caseId": "search-row3",
+      "input": "/w/workspace/lane/outside-restriction.txt"
+    },
+    {
+      "caseId": "search-row5",
+      "input": "/w/workspace/lane/inside/invalid-pattern"
+    }
+  ]
 }

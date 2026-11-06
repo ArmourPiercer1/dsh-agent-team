@@ -24,7 +24,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -56,6 +56,8 @@ import {
   REALM_INVALIDATED_CODE,
   toRunVerdict,
   PREFLIGHT_CHECK_IDS,
+  PREFLIGHT_VERDICTS,
+  readDriverPlan,
   runZeroBootPreflight,
 } from './lib/a5sf-acceptance-preflight.mjs'
 
@@ -1119,7 +1121,7 @@ test('D16 --host-root redirects the pristine-checkout prefix and grades the same
     const withHost = spawnSync(process.execPath, [cli, '--bundle', fileURLToPath(CLEAN_FIXTURE), '--repo', repo, '--host-root', host], { encoding: 'utf8' })
     const verdict = JSON.parse(withHost.stdout.trim().slice('DSH-A5SF-PREFLIGHT '.length))
     assert.equal(verdict.verdict, 'PASS', JSON.stringify(verdict.findings))
-    assert.equal(verdict.summary, 'PASS 13/13 checks')
+    assert.equal(verdict.summary, `PASS ${PREFLIGHT_CHECK_IDS.length}/${PREFLIGHT_CHECK_IDS.length} checks`)
     assert.equal(verdict.inputs.hostPrefixRemapped, true)
     assert.equal(verdict.inputs.hostRoot, host)
     assert.equal(withHost.status, 0)
@@ -1140,5 +1142,152 @@ test('D17 an empty --host-root still fails assembly.usable: the flag redirects t
     assert.deepEqual(verdict.findings.map((f) => f.code), ['ASSEMBLY_HOST_MODULE_MISSING', 'ASSEMBLY_HOST_MODULE_MISSING'])
   } finally {
     rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// E. THE ORDER CHECKS (2026-11-08, five instrument defects / zero boots)
+//
+// Each new check has a NEGATIVE CONTROL that turns EXACTLY that check red. The
+// controls are also written under
+// `dev/agent-workflow/evidence/a5sf-preflight-order/negative-controls/`, so a
+// reader can inspect the exact JSON without running the suite.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The ids of the checks that produced a FAIL. */
+const failedCheckIds = (result) => result.checks.filter((c) => c.verdict === 'FAIL').map((c) => c.id)
+
+test('D18 NEGATIVE CONTROL driver.gate-order: a state gate before team.create is RED, and only that check', () => {
+  const result = mutate(CLEAN, (b) => {
+    const steps = b.driver.steps
+    const gate = steps.find((step) => step.id === 'read-control-state')
+    // The exact BL-17 boot-3 shape: the state read asks for a team session that
+    // has not been created yet. `requires` is declared; no route string is read.
+    gate.requires = ['team-session']
+    b.driver.steps = [gate, ...steps.filter((step) => step.id !== 'read-control-state')]
+  })
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['driver.gate-order'])
+  assert.deepEqual(codesOf(result), ['DRIVER_PRECONDITION_OUT_OF_ORDER'])
+  assert.match(result.findings[0].detail, /BL-17 boot 3/)
+  assert.equal(result.findings[0].stepId, 'read-control-state')
+  assert.equal(result.findings[0].producedBy, 'create-team')
+})
+
+test('D19 NEGATIVE CONTROL driver.log-capture: a fail-capable step with no body capture is RED, and only that check', () => {
+  const result = mutate(CLEAN, (b) => {
+    // `create-member` can fail (it is a gate with a precondition) but records
+    // only the status; a failure would leave no diagnostic body.
+    const step = b.driver.steps.find((entry) => entry.id === 'create-member')
+    step.captures = ['status']
+  })
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['driver.log-capture'])
+  assert.deepEqual(codesOf(result), ['DRIVER_GATE_BODY_NOT_CAPTURED'])
+  assert.equal(result.findings[0].stepId, 'create-member')
+  assert.match(result.findings[0].detail, /BL-17 boot 3's second half/)
+})
+
+test('D20 NEGATIVE CONTROL bundle.case-coverage: a planned case absent from the table and a case with no fixture row are RED, and only that check', () => {
+  const result = mutate(CLEAN, (b) => {
+    // The missing over-sample-cap glob-results class, in both directions: a
+    // planned row that is not tabled, and a tabled row with no fixture.
+    b.driver.plannedCases.push('over-sample-cap-row')
+    b.fixtures = b.fixtures.filter((row) => row.caseId !== 'read-a')
+  })
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['bundle.case-coverage'])
+  assert.deepEqual([...new Set(codesOf(result))].sort(), ['CASE_FIXTURE_MISSING', 'CASE_PLANNED_MISSING'])
+  assert.equal(result.findings.find((f) => f.code === 'CASE_PLANNED_MISSING').caseId, 'over-sample-cap-row')
+  assert.equal(result.findings.find((f) => f.code === 'CASE_FIXTURE_MISSING').caseId, 'read-a')
+})
+
+test('D21 an undeclared driver plan is UNKNOWN, never PASS, and is visibly distinct from a defect', () => {
+  const undeclared = structuredClone(CLEAN)
+  delete undeclared.driver
+  const result = runZeroBootPreflight(undeclared, PRESENT)
+  assert.equal(result.verdict, 'UNKNOWN')
+  assert.deepEqual(result.findings, [], 'an undeclared plan is not accused of a defect')
+  assert.deepEqual(
+    result.checks.filter((c) => c.verdict === 'UNKNOWN').map((c) => c.id),
+    ['bundle.case-coverage', 'driver.gate-order', 'driver.log-capture'],
+  )
+  assert.equal(result.checks.filter((c) => c.verdict === 'PASS').length, PREFLIGHT_CHECK_IDS.length - 3)
+  assert.match(result.summary, /^UNKNOWN \d+\/16 checks unknown=/)
+  assert.deepEqual(result.unknown.map((u) => u.reason), [
+    'DRIVER_PLAN_UNDECLARED',
+    'DRIVER_PLAN_UNDECLARED',
+    'DRIVER_PLAN_UNDECLARED',
+  ])
+  assert.ok(PREFLIGHT_VERDICTS.includes('UNKNOWN'))
+  assert.notEqual(result.verdict, 'PASS')
+})
+
+test('D22 the plan is schema-tolerant (driverPlan alias) and an unproduced precondition is RED', () => {
+  const alias = structuredClone(CLEAN)
+  alias.driverPlan = alias.driver
+  delete alias.driver
+  assert.equal(runZeroBootPreflight(alias, PRESENT).verdict, 'PASS')
+  assert.equal(readDriverPlan(alias)?.source, 'bundle.driverPlan')
+
+  const unproduced = mutate(CLEAN, (b) => {
+    b.driver.steps.find((step) => step.id === 'create-team').produces = []
+  })
+  assert.deepEqual(failedCheckIds(unproduced), ['driver.gate-order'])
+  assert.ok(codesOf(unproduced).every((code) => code === 'DRIVER_PRECONDITION_UNPRODUCED'))
+  assert.ok(unproduced.findings.some((f) => f.requires === 'team-session'))
+})
+
+test('D23 cases.isolation already refuses a shared GUARD KEY with different locators (no duplicate check added)', () => {
+  const result = mutate(CLEAN, (b) => {
+    // Locators stay different; only the guard-fact key aliases. This is the
+    // extension the directive asked to verify: it was already covered by
+    // `cases.isolation`, so no second check was invented.
+    b.cases[1].guardFactKey = b.cases[0].guardFactKey
+  })
+  assert.deepEqual(failedCheckIds(result), ['cases.isolation'])
+  assert.deepEqual(codesOf(result), ['CASE_GUARD_KEY_ALIASED'])
+  assert.equal(result.findings[0].guardFactKey, 'read-a')
+})
+
+test('D24 the CLI exits 3 for UNKNOWN (never 0) and still prints one line', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const repo = fileURLToPath(new URL('../..', import.meta.url))
+  const root = mkdtempSync(join(tmpdir(), 'a5sf-preflight-unknown-'))
+  const host = join(root, 'host')
+  try {
+    for (const rel of CLEAN.assembly.hostModules.map((m) => m.path)) {
+      const abs = join(host, rel.slice('tests/deepseek-harness-test-use/'.length))
+      mkdirSync(dirname(abs), { recursive: true })
+      mkdirSync(abs, { recursive: true })
+    }
+    const bundle = structuredClone(CLEAN)
+    delete bundle.driver
+    const bundlePath = join(root, 'undeclared-plan.json')
+    writeFileSync(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`, 'utf8')
+    const run = spawnSync(process.execPath, [cli, '--bundle', bundlePath, '--repo', repo, '--host-root', host], { encoding: 'utf8' })
+    assert.equal(run.status, 3, run.stderr)
+    const lines = run.stdout.trim().split('\n')
+    assert.equal(lines.length, 1)
+    const verdict = JSON.parse(lines[0].slice('DSH-A5SF-PREFLIGHT '.length))
+    assert.equal(verdict.verdict, 'UNKNOWN')
+    assert.equal(verdict.unknown.length, 3)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('D25 the committed negative-control bundles are load-bearing: each reds exactly its own check', () => {
+  const controls = [
+    ['driver-gate-order.bundle.json', 'driver.gate-order', ['DRIVER_PRECONDITION_OUT_OF_ORDER']],
+    ['driver-log-capture.bundle.json', 'driver.log-capture', ['DRIVER_GATE_BODY_NOT_CAPTURED']],
+    ['bundle-case-coverage.bundle.json', 'bundle.case-coverage', ['CASE_FIXTURE_MISSING', 'CASE_PLANNED_MISSING']],
+  ]
+  for (const [file, checkId, codes] of controls) {
+    const bundle = JSON.parse(readFileSync(new URL(`../../dev/agent-workflow/evidence/a5sf-preflight-order/negative-controls/${file}`, import.meta.url), 'utf8'))
+    const result = runZeroBootPreflight(bundle, PRESENT)
+    assert.equal(result.verdict, 'FAIL', file)
+    assert.deepEqual(failedCheckIds(result), [checkId], file)
+    assert.deepEqual([...new Set(codesOf(result))].sort(), [...codes].sort(), file)
   }
 })

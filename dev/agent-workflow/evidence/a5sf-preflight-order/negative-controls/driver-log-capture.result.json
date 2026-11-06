@@ -1,0 +1,112 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "id": "assembly.usable",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.roots",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.blueprints",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.member-tool-binding",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.authority",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "native.module-config",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.paths",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.fifo",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "cases.isolation",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "bundle.case-coverage",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.gate-order",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.log-capture",
+      "verdict": "FAIL",
+      "findings": [
+        {
+          "code": "DRIVER_GATE_BODY_NOT_CAPTURED",
+          "detail": "step \"create-member\" can fail but does not declare captures: [\"body\"]; a failed gate would leave no diagnostic body (BL-17 boot 3's second half)",
+          "stepId": "create-member",
+          "captures": [
+            "status"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collector.shape",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.candidate",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.grant",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.run-record",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "findings": [
+    {
+      "code": "DRIVER_GATE_BODY_NOT_CAPTURED",
+      "detail": "step \"create-member\" can fail but does not declare captures: [\"body\"]; a failed gate would leave no diagnostic body (BL-17 boot 3's second half)",
+      "stepId": "create-member",
+      "captures": [
+        "status"
+      ]
+    }
+  ],
+  "unknown": [],
+  "summary": "FAIL 15/16 checks blocks=DRIVER_GATE_BODY_NOT_CAPTURED",
+  "inputs": {
+    "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-order",
+    "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostPrefixRemapped": true
+  }
+}
