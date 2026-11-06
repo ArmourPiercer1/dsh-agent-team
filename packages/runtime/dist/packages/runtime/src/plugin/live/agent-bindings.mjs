@@ -4858,7 +4858,12 @@ export function createAgentBindings(deps) {
       }
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
-        source: { kind: 'user' },
+        // Only a HUMAN sender (the closed attribution's fromHumanId) is a
+        // human interaction; a Leader/model relay must never clear a human
+        // Sticky Stop on the recipient.
+        source: input.attribution.fromHumanId === undefined
+          ? { kind: 'plugin:dsh-agent-team' }
+          : { kind: 'user' },
       })
       // Success boundary = inbox acceptance: NO whenIdle, NO
       // ensureMaterialized (the turn's durable log is materialized by the
@@ -4916,7 +4921,7 @@ export function createAgentBindings(deps) {
         : args.prompt
       const message = createUserMessage({
         content: [{ type: 'text', text: `[team-work requestToken=${args.requestToken}] ${text}` }],
-        source: { kind: 'user' },
+        source: { kind: 'plugin:dsh-agent-team' },
       })
       handle.agent.followup(message)
       const signal = args.signal
@@ -4927,13 +4932,13 @@ export function createAgentBindings(deps) {
         typeof signal.removeEventListener === 'function'
       ) {
         if (signal.aborted) {
-          handle.agent.cancel({ kind: 'user' })
+          handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
           throw signal.reason ?? new Error('team work delivery aborted')
         }
         let onAbort
         const aborted = new Promise((_, reject) => {
           onAbort = () => {
-            handle.agent.cancel({ kind: 'user' })
+            handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
             reject(signal.reason ?? new Error('team work delivery aborted'))
           }
           signal.addEventListener('abort', onAbort, { once: true })
@@ -5117,7 +5122,7 @@ export function createAgentBindings(deps) {
     }
     const message = createUserMessage({
       content: [{ type: 'text', text }],
-      source: { kind: 'user' },
+      source: { kind: 'plugin:dsh-agent-team' },
     })
     handle.agent.followup(message)
     await handle.agent.whenIdle()
@@ -5475,7 +5480,7 @@ export function createAgentBindings(deps) {
     )
     const handle = row !== undefined ? liveAgents.get(String(row.childSessionId)) : undefined
     if (handle === undefined) return // no activity in flight: no-op by contract
-    handle.agent.cancel({ kind: 'user' })
+    handle.agent.cancel({ kind: 'hook', reason: 'team-member-interrupt' })
   }
 
   // T12-M3: the typed fail-closed error for a drain that cannot ESTABLISH
