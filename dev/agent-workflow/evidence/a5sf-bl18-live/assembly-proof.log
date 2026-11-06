@@ -1,0 +1,46 @@
+a5sf BL-18 assembly proof — host-free (zero boots)
+repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-ready
+host tree (read-only)=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/deepseek-harness-test-use
+
+== A. product config path — the predicted composition refusal ==
+A1 config-path ceiling deny   → NETWORK_UNCONFINED_REALM (composition, before any scope/face)
+   message: NETWORK_UNCONFINED_REALM: a5sfMemberPolicies.members[0].ceiling.network narrows the network axis (mode="deny"); the Member realm installs no web face, so the narrowing could not be…
+A2 config-path binding deny  → NETWORK_UNCONFINED_REALM (same gate, line 548-555)
+
+== B. teamA5sfRealm seam — mounts, and the denial is AT THE FACE ==
+B1 row mounted, faces = {"fs":"confined","web":"mounted","subprocess":null}
+B2 compiled network axis = deny (compileEffectiveIo output)
+B3 face.fetch refused: NETWORK_UNCONFINED_REALM / provider fetches=0 dns=0 connects=0
+B4 one guard fact: method=web:fetch decision=deny decidedBy=NETWORK_UNCONFINED_REALM
+B5 face.search refused: NETWORK_UNCONFINED_REALM / provider searches=0
+
+== C. the real caller — pinned tool-web through route-C + ToolRuntime ==
+C1 route-C attached the real module; surface={web_fetch,web_search}
+C2 web_fetch through ToolRuntime → isError=true refusal at face; provider fetches=0; fact decidedBy=NETWORK_UNCONFINED_REALM
+
+== C2. no preset web — route-C refuses to ADD the pair ==
+C2 route-C refused without a preset web row: agent-bindings: the configured a5sfNativeToolModules would CHANGE the Member's model-visible tool surface (added: ["web_search","web_fetch"]; removed:…
+
+== D. caller analysis — A2C-2 on the declared surfaces ==
+D1 strict surface with web_fetch → ok=false class=known-sensitive-unmanaged
+D2 strict surface with web_fetch DENIED → ok=true (coverage clean, and the tool is hidden)
+D3 plane-owned web_fetch → ok=true (only via the plane web family, which owns its own transport — NOT the realm face)
+D4 source: coverage gate keyed on capabilities.permissions; deny only in selective mode; realm mounts on any non-root session
+
+== E. the two refusal positions, quoted from source ==
+E  product-assembly.ts ceiling deny refusal: line 869
+E  product-assembly.ts binding deny refusal: line 551
+E  web.ts face guard (deny lane + probe): line 148
+E  web.ts refusal throw: line 160
+E  mount.ts composition refusal (module injects web, no face): line 0
+E  a5sf-realm-row.mjs presence check (declared face cannot mount): line 619
+
+== VERDICT ==
+PROVEN HOST-FREE: (A) the product config path refuses a network-deny ceiling/binding at
+composition with NETWORK_UNCONFINED_REALM; (B) the teamA5sfRealm seam row MOUNTS a governed
+realm carrying the compiled web face and refuses the fetch/search AT THE FACE with the same
+typed word, zero provider/DNS/connect, one fact per call; (C) the REAL pinned tool-web module,
+attached through the row route-C and driven through the REAL ToolRuntime, reaches that same
+face refusal; (C2) route-C REFUSES the module when the preset does not already surface the
+pair; (D) A2C-2 classifies web_fetch/web_search as known-sensitive-unmanaged, so the leader
+must deny them and a strict Member cannot surface them either.
