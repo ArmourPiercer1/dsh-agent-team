@@ -8052,3 +8052,18 @@ BL-18/BL-39/BL-42 三行与 master **逐字相同**（脚本比对）——第�
 **门（本地）**：`doc-checks` 0、`docs-sync --check` 0、`state-freshness` pass（`round 58 = newest record`，
 drift 35 paths、claimed 0）、46 条 node:test 全绿、预检干净 PASS 13/13 / 别名 FAIL 12/13（唯一红
 `cases.isolation`）。**0 boot**。
+
+**2026-11-08 PREFLIGHT-REFUSAL（0 boot）**：共享零启动预检补齐三处仪器缺口。① `caseClass:
+"admission-refusal"` 作为第四类 case，按“一条 guard fact + 精确 typed code + fetch/search/transport/dns/
+connect 全零 + 拒绝命名 capability + 显式 claimsConfinement:false”判定；observable 缺失即 FAIL（非
+UNKNOWN），该类永不能满足 network-confinement 行，措辞固定为 “admission refusal … NOT network
+confinement and NOT isolation”。未声明该类的 case 仍走原 connection-denial 分支（逐字节不变）。②
+`bundle.case-coverage` 改读 driver 自己的 case 清单（显式 `driver.caseManifest`/`driverCases`，或
+`sources.driver` 路径里的顶层 `CASES` 字面量）：driver 声明而 `cases` 未列出 → `BUNDLE_CASE_UNDECLARED`；
+计划清单完全未声明 → UNKNOWN。③ 第 18 项检查 `driver.caller-surface` 编码 BL-18 readiness 的 caller 事实：
+strict Member 不能承载 web_fetch/web_search（surfaced ⇒ A2C-2 fatal；denied ⇒ route-C 拒绝 ADD），故 caller
+必须是 preset 已 surfacing 该 pair 的 legacy/non-strict Member。证据
+`dev/agent-workflow/evidence/a5sf-refusal/`：BL-18 真话 bundle 由 FAIL 16/18 → **PASS 18/18**；BL-17
+`a5sf-bl17-live2`（及其 archive 副本）由 `PASS 16/16` → **FAIL `BUNDLE_CASE_UNDECLARED`**
+（`network-deny-refusal`）。负控四条，各只红一项，bundle+CLI payload 均被测试复读。0 boot、无 grade/V@B、
+无产品改动。

@@ -1162,6 +1162,14 @@ export function judgeAcceptanceRow(caseId, sample = {}) {
 // does not declare is `UNKNOWN` — the same three-valued rule as the order
 // checks, and `driver.log-capture`'s new retention clause follows it too.
 //
+// REFUSAL / CASE-MANIFEST / CALLER CHECKS (2026-11-08, BL-18 readiness / zero
+// boots). Three further gaps are closed in this file: `policy.paths` accepts
+// `caseClass: "admission-refusal"` under a decidable contract (§ THE FOURTH
+// CASE CLASS), `bundle.case-coverage` reads the DRIVER's own case manifest so a
+// case omitted from `cases` is `BUNDLE_CASE_UNDECLARED`, and the 18th check
+// `driver.caller-surface` encodes the only web-caller composition BL-18 found
+// reachable (a legacy/non-strict Member whose preset surfaces the pair).
+//
 // WHAT IT IS NOT: it does not replace the per-row judges above, and it does
 // not decide a row. It answers one question — "would spending a start on this
 // plan teach us anything, or would it burn a boot on a defect of the instrument?"
@@ -1184,6 +1192,7 @@ export const PREFLIGHT_CHECK_IDS = Object.freeze([
   'bundle.case-coverage',
   'driver.gate-order',
   'driver.leader-surface',
+  'driver.caller-surface',
   'driver.log-capture',
   'collector.shape',
   'wiring.candidate',
@@ -1286,6 +1295,188 @@ export function checkCaseIsolation(cases) {
   return { ok: findings.length === 0, findings }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// THE FOURTH CASE CLASS — `admission-refusal` (2026-11-08, BL-18 readiness)
+//
+// WHAT WAS WRONG. `policy.paths` had exactly one network rule: a network deny
+// is only measurable when `networkProbeEnforced === true` (the call is ADMITTED
+// and the transport denies downstream, so "zero connects" is an observation).
+// BL-18's case is the other position: the call is REFUSED by our own admission
+// code at the face, BEFORE `provider.fetch`, so the probe reports `unsupported`
+// and there is no connection to deny. The truthful bundle was FAIL 16/17 and the
+// only PASS was the same plan asserting `networkProbeEnforced: true`, an
+// enforcement claim this host does not have.
+//
+// WHAT THE CLASS ADDS, AND WHAT IT REFUSES TO ADD. A case may declare
+// `caseClass: "admission-refusal"`; it is then graded on a DIFFERENT contract:
+// one guard fact, the exact typed code, zero provider entries across every
+// channel, and a refusal that names the CAPABILITY rather than an observation.
+// It must carry `claimsConfinement: false`, it can never satisfy a
+// network-confinement row ({@link caseSatisfiesNetworkConfinementRow}), and its
+// wording says "admission refusal" so no reader can lift it to "isolated".
+//
+// THE OLD RULE IS UNTOUCHED. A case that does not declare this class traverses
+// the ORIGINAL connection-denial branch byte-identically, including
+// `POLICY_NETWORK_PROBE_NOT_ENFORCED`. The class cannot be used to excuse a
+// connection-denial claim: there is no field on the new path that admits a
+// network-confinement claim.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The closed case-class vocabulary. An UNSPECIFIED case keeps the old rule. */
+export const CASE_CLASSES = Object.freeze(['connection-denial', 'admission-refusal'])
+
+/** The class name itself is part of the verdict wording (never "isolated"). */
+export const ADMISSION_REFUSAL_CLASS = 'admission-refusal'
+
+/** The only observable an admission-refusal case may claim. */
+export const ADMISSION_REFUSAL_OBSERVABLE = 'pre-provider-refusal'
+
+/** The refusal must name the CAPABILITY, not a downstream observation. */
+export const ADMISSION_REFUSAL_NAMING = 'capability'
+
+/** Every provider channel that must stay at zero: fetch/search/transport/DNS/connect. */
+export const ADMISSION_REFUSAL_PROVIDER_CHANNELS = Object.freeze(['fetch', 'search', 'transport', 'dns', 'connect'])
+
+/**
+ * The product line each caller fact comes from (Task 3, BL-18 readiness).
+ * A check may not paraphrase these: a reviewer greps the cited line.
+ */
+export const CALLER_SURFACE_CITATIONS = Object.freeze({
+  sensitive: 'packages/runtime/operation-permission/permission-coverage.ts:158-159',
+  classifier: 'packages/runtime/operation-permission/permission-coverage.ts:294-317',
+  strictPolicy: 'packages/runtime/src/plugin/live/agent-bindings.mjs:2472',
+  realmMemberOnly: 'packages/runtime/src/plugin/live/agent-bindings.mjs:2598',
+  denySelectiveOnly: 'packages/runtime/src/plugin/live/agent-bindings.mjs:2981',
+  routeCAddRefusal: 'packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1040-1053',
+  presetWebPair: 'tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml:137-141',
+})
+
+/** The two names route-C can shadow only when the preset already surfaces them. */
+export const SURFACE_WEB_TOOL_PAIR = Object.freeze(['web_fetch', 'web_search'])
+
+/** The preset module that surfaces the pair in the pinned host's `standard` preset. */
+export const SURFACE_WEB_PRESET_MODULE = '@deepseek-ai/dsh-tool-web'
+
+/**
+ * The exact wording a passing admission-refusal case uses. Deliberately says
+ * "admission refusal" and "NOT network confinement"; it never says "isolated".
+ *
+ * @param {string} id
+ * @param {string} code
+ * @returns {string}
+ */
+export function admissionRefusalWording(id, code) {
+  return `case ${String(id)}: admission refusal (${String(code)}) — a decision made by our own admission code before any provider/transport entry; NOT network confinement and NOT isolation`
+}
+
+/**
+ * Can this case satisfy a NETWORK-CONFINEMENT row? Never, when it is an
+ * admission-refusal case — even if it carries a row label that says so. This is
+ * the one predicate a row collector must ask; a case in the class is a statement
+ * about admission, not about the OS/transport.
+ *
+ * @param {object} c
+ * @returns {boolean}
+ */
+export function caseSatisfiesNetworkConfinementRow(c) {
+  if (!isObject(c)) return false
+  if (c.caseClass === ADMISSION_REFUSAL_CLASS) return false
+  if (String(c.axis ?? '') !== 'network') return false
+  if (c.claimsConfinement === false) return false
+  return c.networkProbeEnforced === true
+}
+
+/** A typed refusal code: the product's closed `A5SF_*` / `*_REALM` shape. */
+const TYPED_CODE = /^[A-Z][A-Z0-9_]{2,}$/
+
+/** A row label that would lift an admission refusal to a confinement claim. */
+const CONFINEMENT_ROW_LABEL = /confinement|isolat/i
+
+/**
+ * Grade one `admission-refusal` case. Every missing observable is a FINDING
+ * (never UNKNOWN): the class exists precisely so the host-free verdict is
+ * decidable.
+ */
+function checkAdmissionRefusalCase(c, policy, findings, notes) {
+  const id = String(c.id)
+  const code = nonBlank(c.expectedCode) ? String(c.expectedCode) : ''
+  // Notes are case-local: a finding from an EARLIER case must not suppress this
+  // case's PASS wording.
+  const priorFindings = findings.length
+  if (String(c.axis ?? '') !== 'network') {
+    findings.push(finding('POLICY_CASE_CLASS_AXIS', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but axis=${JSON.stringify(c.axis)}; an admission refusal is a NETWORK-face refusal, so the class is network-only`))
+    return
+  }
+  if (String(c.expected ?? '') !== 'deny') {
+    findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but expected=${JSON.stringify(c.expected)}; an admission refusal is a DENY observation`))
+  }
+  if (String(policy.networkAccess ?? '') !== 'deny') {
+    findings.push(finding('POLICY_EXPECTATION_CONTRADICTS_LANE', `case ${id} claims an admission refusal on the network axis but policy.networkAccess=${JSON.stringify(policy.networkAccess)}; the lane would not refuse it`))
+  }
+  // CONFINEMENT IS THE ONE THING THIS CLASS MUST NOT BUY. `claimsConfinement`
+  // must be PRESENT and FALSE: absence is not a declaration, and `true` is the
+  // claim this class exists to forbid.
+  if (c.claimsConfinement !== false) {
+    findings.push(finding(
+      'POLICY_ADMISSION_REFUSAL_CONFINEMENT_CLAIM',
+      `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but claimsConfinement=${JSON.stringify(c.claimsConfinement)}; the class must carry an explicit false — an admission refusal is NOT network confinement and may never satisfy a confinement row`,
+      { caseId: id, claimsConfinement: c.claimsConfinement },
+    ))
+  }
+  for (const field of ['networkConfinement', 'confinement', 'isolation', 'satisfiesConfinementRow']) {
+    if (c[field] === true) {
+      findings.push(finding('POLICY_ADMISSION_REFUSAL_CONFINEMENT_CLAIM', `case ${id} declares ${field}: true alongside caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)}; an admission refusal cannot claim confinement/isolation`, { caseId: id, field }))
+    }
+  }
+  for (const field of ['row', 'matrixRow', 'satisfiesRow']) {
+    if (nonBlank(c[field]) && CONFINEMENT_ROW_LABEL.test(String(c[field]))) {
+      findings.push(finding('POLICY_ADMISSION_REFUSAL_CONFINEMENT_CLAIM', `case ${id} targets the confinement/isolation row ${JSON.stringify(c[field])}; a case in class ${JSON.stringify(ADMISSION_REFUSAL_CLASS)} may never satisfy a network-confinement row`, { caseId: id, field, row: String(c[field]) }))
+    }
+  }
+  // One guard fact.
+  if (c.guardFacts !== 1) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but guardFacts=${JSON.stringify(c.guardFacts)}; the class is graded on exactly ONE guard fact`))
+  }
+  if (String(c.collector ?? '') !== 'guard-fact') {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but collector=${JSON.stringify(c.collector)}; the observable is one guard fact (collector: "guard-fact")`))
+  }
+  // The exact typed code, carried by the fact itself.
+  if (!TYPED_CODE.test(code)) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but expectedCode=${JSON.stringify(c.expectedCode)}; an admission refusal must name a typed code`))
+  }
+  const fact = isObject(c.expectedFact) ? c.expectedFact : null
+  if (fact === null) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but no expectedFact object; the one guard fact (method/decision/decidedBy) is the grading input`))
+  } else {
+    if (!nonBlank(fact.method)) findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} expectedFact.method is blank; the guard fact must name the call path`))
+    if (String(fact.decision ?? '') !== 'deny') findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} expectedFact.decision=${JSON.stringify(fact.decision)}; an admission refusal is a deny fact`))
+    if (code !== '' && String(fact.decidedBy ?? '') !== code) findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} expectedFact.decidedBy=${JSON.stringify(fact.decidedBy)} does not equal expectedCode=${JSON.stringify(code)}; the fact must carry the EXACT typed code`))
+  }
+  if (String(c.observable ?? '') !== ADMISSION_REFUSAL_OBSERVABLE) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but observable=${JSON.stringify(c.observable)}; the class observes ${JSON.stringify(ADMISSION_REFUSAL_OBSERVABLE)}`))
+  }
+  // The refusal names the CAPABILITY, not an observation.
+  if (String(c.refusalNaming ?? '') !== ADMISSION_REFUSAL_NAMING) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but refusalNaming=${JSON.stringify(c.refusalNaming)}; the refusal must name the CAPABILITY (${JSON.stringify(ADMISSION_REFUSAL_NAMING)}), not a downstream observation`))
+  }
+  // Zero provider entries on every channel.
+  const entries = c.providerEntries
+  if (!isObject(entries)) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but providerEntries=${JSON.stringify(entries)}; declare an object with fetch/search/transport/dns/connect all 0`))
+  } else {
+    for (const channel of ADMISSION_REFUSAL_PROVIDER_CHANNELS) {
+      if (entries[channel] !== 0) {
+        findings.push(finding('POLICY_ADMISSION_REFUSAL_INCOMPLETE', `case ${id} providerEntries.${channel}=${JSON.stringify(entries[channel])}; an admission refusal must show ZERO provider entries on every channel (${ADMISSION_REFUSAL_PROVIDER_CHANNELS.join('/')})`))
+      }
+    }
+  }
+  // A probe-enforcement claim is a confinement claim in disguise.
+  if (c.networkProbeEnforced === true) {
+    findings.push(finding('POLICY_ADMISSION_REFUSAL_PROBE_CLAIM', `case ${id} declares networkProbeEnforced: true alongside caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)}; the call is refused BEFORE the provider, so there is no enforced transport to claim`))
+  }
+  if (findings.length === priorFindings) notes.push(admissionRefusalWording(id, code))
+}
+
 /**
  * POLICY-COMPUTED PATH / FIFO / PERMISSION EXPECTATIONS.
  *
@@ -1303,15 +1494,16 @@ export function checkCaseIsolation(cases) {
  *    exists (BL-16 attempt 6, 2026-11-04).
  *
  * @param {object} bundle
- * @returns {{ok: boolean, findings: object[]}}
+ * @returns {{ok: boolean, findings: object[], notes?: string[]}}
  */
 export function checkPolicyPaths(bundle) {
   const findings = []
+  const notes = []
   const policy = isObject(bundle?.policy) ? bundle.policy : null
   const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
   if (policy === null) {
     findings.push(finding('POLICY_UNDECLARED', 'the bundle carries no policy block; the path/permission expectations cannot be graded'))
-    return { ok: false, findings }
+    return { ok: false, findings, notes }
   }
   const readLane = Array.isArray(policy.effectiveReadAllow) ? policy.effectiveReadAllow : []
   const writeLane = Array.isArray(policy.effectiveWriteAllow) ? policy.effectiveWriteAllow : []
@@ -1326,6 +1518,17 @@ export function checkPolicyPaths(bundle) {
       continue
     }
     const axis = String(c.axis ?? 'read')
+    // THE NEW CLASS IS A SEPARATE CONTRACT. An UNSPECIFIED (or
+    // "connection-denial") case falls through to the original branch below,
+    // byte-identically, including `POLICY_NETWORK_PROBE_NOT_ENFORCED`.
+    if (c.caseClass !== undefined && c.caseClass !== null && c.caseClass !== ADMISSION_REFUSAL_CLASS && c.caseClass !== 'connection-denial') {
+      findings.push(finding('POLICY_CASE_CLASS_UNKNOWN', `case ${id} declares caseClass=${JSON.stringify(c.caseClass)}; the closed set is ${CASE_CLASSES.join('|')} (or unspecified for the connection-denial rule)`))
+      continue
+    }
+    if (c.caseClass === ADMISSION_REFUSAL_CLASS) {
+      checkAdmissionRefusalCase(c, policy, findings, notes)
+      continue
+    }
     if (axis === 'network') {
       // The network axis has no destination granularity this round: a deny
       // exercise is only measurable if the lane declares deny AND the backend
@@ -1374,7 +1577,7 @@ export function checkPolicyPaths(bundle) {
       findings.push(finding('POLICY_FIFO_OUTSIDE_LANE', `the cancellation FIFO ${JSON.stringify(fifo)} is outside the effective read lane; a confined spawn of it is refused at admission, so the cancellation window never exists (BL-16 attempt 6)`))
     }
   }
-  return { ok: findings.length === 0, findings }
+  return { ok: findings.length === 0, findings, notes }
 }
 
 /**
@@ -2030,6 +2233,138 @@ export function checkDriverLeaderSurface(bundle) {
   return { findings }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// `driver.caller-surface` — the CALLER a web face can actually reach
+//
+// BL-18 readiness established four product facts; the preflight could grade
+// none of them. A web face is reachable ONLY when the caller is a
+// legacy/non-strict Member whose preset already surfaces `web_fetch`/
+// `web_search`:
+//
+//   1. both names are KNOWN_SENSITIVE_UNMANAGED and classify FATAL
+//      (`permission-coverage.ts:158-159`, classifier `:294-317`);
+//   2. `permissionPolicy = boundTemplate.capabilities?.permissions`
+//      (`agent-bindings.mjs:2472`), so a STRICT Member either dies at A2C-2
+//      (name surfaced) or, when denied, loses the name from the post-deny
+//      surface and route-C refuses to ADD it (`a5sf-realm-row.mjs:1040-1053`);
+//   3. `builtinToolDeny` is applied only in selective mode
+//      (`agent-bindings.mjs:2981`), which is why the legacy Member keeps the
+//      preset pair;
+//   4. the realm mounts only for a Member, never the root session
+//      (`agent-bindings.mjs:2598`), so the LEADER cannot be the caller.
+//
+// The preset fact: the pinned host's `standard` preset mounts
+// `@deepseek-ai/dsh-tool-web` with `fetch: true`
+// (`tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml:137-141`).
+// A smoke-shaped preset that omits it makes the attach refuse — the tool pair
+// must ALREADY be on the surface for route-C to shadow it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Where the caller declaration may live, in priority order. */
+export function readCallerDeclaration(bundle) {
+  const declared = readDriverPlan(bundle)
+  const plan = declared?.plan ?? null
+  for (const candidate of [plan?.caller, plan?.blueprint?.caller, bundle?.caller, bundle?.driverCaller]) {
+    if (isObject(candidate)) return candidate
+  }
+  return null
+}
+
+/**
+ * `driver.caller-surface` — can the declared caller reach the web face?
+ *
+ * Not applicable (PASS, with a note) when the bundle tables no web/network
+ * case. Otherwise the bundle MUST declare a caller; a web plan whose caller is
+ * unstated is `UNKNOWN`, never PASS. A strict Member is RED for the two reasons
+ * above; a preset that does not surface both names is RED; a leader caller is
+ * RED because no realm mounts for the root session.
+ *
+ * @param {object} bundle
+ * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string, notes?: string[]}}
+ */
+export function checkDriverCallerSurface(bundle) {
+  const findings = []
+  const notes = []
+  const declared = readDriverPlan(bundle)
+  if (declared === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLAN_UNDECLARED',
+      detail: 'the bundle declares no driver plan; the web caller surface cannot be certified (UNKNOWN, not PASS)',
+    }
+  }
+  const cases = Array.isArray(bundle?.cases) ? bundle.cases : []
+  const webCases = cases.filter((c) => isObject(c) && (String(c.face ?? '') === 'web' || String(c.axis ?? '') === 'network'))
+  if (webCases.length === 0) {
+    return { findings, notes: ['driver.caller-surface: no web/network case is tabled; there is no web caller to certify (not applicable)'] }
+  }
+  const caller = readCallerDeclaration(bundle)
+  if (caller === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_CALLER_UNDECLARED',
+      detail: `the bundle tables ${String(webCases.length)} web/network case(s) but declares no caller block (driver.caller / caller); whether a web face is reachable cannot be certified from silence (UNKNOWN, not PASS)`,
+    }
+  }
+  const kind = String(caller.kind ?? caller.role ?? '')
+  if (kind !== 'member') {
+    findings.push(finding(
+      'DRIVER_CALLER_NOT_A_MEMBER',
+      `the declared web caller kind=${JSON.stringify(caller.kind ?? caller.role)}; the realm mounts only for a Member (${CALLER_SURFACE_CITATIONS.realmMemberOnly}), so a leader/root caller reaches the INHERITED host tool, not the confined face`,
+      { kind },
+    ))
+  }
+  const strict = caller.strict
+  if (strict !== false) {
+    findings.push(finding(
+      'DRIVER_CALLER_STRICT_MEMBER',
+      `the declared web caller strict=${JSON.stringify(strict)}; a STRICT Member cannot carry web_fetch/web_search — surfaced ⇒ A2C-2 fatal (${CALLER_SURFACE_CITATIONS.sensitive}, classifier ${CALLER_SURFACE_CITATIONS.classifier}), denied ⇒ route-C refuses to ADD it (${CALLER_SURFACE_CITATIONS.routeCAddRefusal}); the caller must be legacy/non-strict (strict: false)`,
+      { strict },
+    ))
+  }
+  if (isObject(caller.capabilities) && caller.capabilities.permissions !== undefined) {
+    findings.push(finding(
+      'DRIVER_CALLER_STRICT_MEMBER',
+      `the declared web caller carries capabilities.permissions; permissionPolicy is boundTemplate.capabilities?.permissions (${CALLER_SURFACE_CITATIONS.strictPolicy}), so this IS the strict mode whose surfaced pair is A2C-2 fatal — the legacy caller must omit the capabilities block`,
+      { field: 'capabilities.permissions' },
+    ))
+  }
+  const preset = isObject(caller.preset) ? caller.preset : null
+  if (preset === null) {
+    findings.push(finding('DRIVER_CALLER_PRESET_UNDECLARED', `the declared web caller has no preset block; route-C shadows the pair only when the preset ALREADY surfaces it (${CALLER_SURFACE_CITATIONS.routeCAddRefusal}), so the surfacing preset is a required fact`))
+  } else {
+    if (String(preset.module ?? '') !== SURFACE_WEB_PRESET_MODULE) {
+      findings.push(finding(
+        'DRIVER_CALLER_PRESET_MISSING',
+        `the declared caller preset module=${JSON.stringify(preset.module)}; the pinned host's standard preset surfaces the pair via ${JSON.stringify(SURFACE_WEB_PRESET_MODULE)} (${CALLER_SURFACE_CITATIONS.presetWebPair})`,
+        { module: preset.module },
+      ))
+    }
+    const tools = surfaceNameList(preset.tools ?? preset.surfaces)
+    if (tools === null) {
+      findings.push(finding('DRIVER_CALLER_PRESET_MISSING', `the declared caller preset does not list its tools/surfaces: ${JSON.stringify(preset.tools ?? preset.surfaces)}; the pair must be visible BEFORE the attach`))
+    } else {
+      for (const name of SURFACE_WEB_TOOL_PAIR) {
+        if (!tools.includes(name)) {
+          findings.push(finding(
+            'DRIVER_CALLER_PRESET_MISSING',
+            `the declared caller preset does not surface ${JSON.stringify(name)}; route-C refuses to ADD a name (${CALLER_SURFACE_CITATIONS.routeCAddRefusal}), so the confined face never attaches and the refusal is unmeasurable`,
+            { toolName: name },
+          ))
+        }
+      }
+    }
+  }
+  if (findings.length === 0) {
+    notes.push(
+      `driver.caller-surface: legacy/non-strict Member caller confirmed — the preset surfaces ${SURFACE_WEB_TOOL_PAIR.join('+')} (${CALLER_SURFACE_CITATIONS.presetWebPair}), permissionPolicy is absent so A2C-2 does not run (${CALLER_SURFACE_CITATIONS.strictPolicy}), builtinToolDeny is selective-only (${CALLER_SURFACE_CITATIONS.denySelectiveOnly}), and the realm mounts for a Member (${CALLER_SURFACE_CITATIONS.realmMemberOnly})`,
+    )
+  }
+  return { findings, notes }
+}
+
 /**
  * The minimum number of body characters a fail-capable step must be able to
  * keep. Not a transport detail: the BL-17 boot-4 `team.create` body was sliced
@@ -2159,6 +2494,92 @@ export function checkDriverLogCapture(bundle) {
 }
 
 /**
+ * Extract the case ids a driver source declares for itself.
+ *
+ * WHY THE BUNDLE'S OWN `plannedCases` IS NOT ENOUGH (BL-17, 2026-11-08). BL-17's
+ * `PASS 16/16` tabled exactly three cases and hand-checked a FOURTH case
+ * (`network-deny-refusal`) in the driver. Its `plannedCases` had been narrowed
+ * to the tabled subset, so `bundle.case-coverage` compared the shrunken list to
+ * itself and passed. "The plan does not contain this case" was therefore
+ * indistinguishable from "this case is fine" — the very case the boot was spent
+ * on was outside the instrument.
+ *
+ * The driver's own case manifest is the authority, and for a driver it is a
+ * top-level `CASES` string-literal list. This reader is deliberately narrow: one
+ * declaration, string literals only, no evaluation, no import. A source whose
+ * list cannot be read is a FINDING (`BUNDLE_CASE_PLAN_UNREADABLE`), not a pass.
+ *
+ * @param {string} text
+ * @returns {string[] | null}
+ */
+export function parseDriverCaseManifest(text) {
+  if (typeof text !== 'string' || text.trim() === '') return null
+  const matches = [...text.matchAll(/(?:^|\n)\s*(?:export\s+)?const\s+CASES\s*=\s*(?:Object\.freeze\s*\(\s*)?\[([\s\S]*?)\]/gu)]
+  if (matches.length !== 1) return null
+  const body = matches[0][1]
+  const ids = [...body.matchAll(/['"]([^'"]+)['"]/gu)].map((m) => m[1].trim()).filter((id) => id !== '')
+  return ids.length === 0 ? null : [...new Set(ids)]
+}
+
+/** A `sources.driver` value that is a PATH, not prose. Historical evidence
+ *  bundles use that key for a human sentence ("…/run-boot.mjs
+ *  (mainBlueprintYaml)"); a sentence is not a readable plan and must not turn a
+ *  bundle that predates this check into UNKNOWN. An explicit
+ *  `driver.caseManifest.source` is always treated as a path and must be
+ *  readable. */
+function isDriverSourcePath(value) {
+  const text = String(value)
+  return !/\s/u.test(text) && !/[()]/u.test(text) && /\.(?:mjs|cjs|js|mts|ts)$/u.test(text)
+}
+
+/** Where the driver's own case manifest may be declared. */
+function readDriverCaseManifest(bundle, declared, probe) {
+  const plan = declared.plan
+  const explicit = plan.caseManifest?.cases ?? plan.driverCases ?? bundle?.driverCases
+  const explicitSource = plan.caseManifest?.source ?? plan.caseSource
+  const legacySource = bundle?.sources?.driver
+  const source = nonBlank(explicitSource)
+    ? explicitSource
+    : (nonBlank(legacySource) && isDriverSourcePath(legacySource) ? legacySource : undefined)
+  const ids = []
+  if (Array.isArray(explicit)) {
+    for (const entry of explicit) {
+      const id = typeof entry === 'string' ? entry.trim() : (isObject(entry) && nonBlank(entry.id) ? String(entry.id).trim() : '')
+      if (nonBlank(id)) ids.push(id)
+    }
+  }
+  if (!nonBlank(source)) return { ids: [...new Set(ids)], source: null }
+  if (typeof probe.readFile !== 'function') {
+    return {
+      ids: [...new Set(ids)],
+      source: String(source),
+      unknown: true,
+      reason: 'DRIVER_CASE_PLAN_UNREADABLE',
+      detail: `the driver case manifest source ${JSON.stringify(String(source))} is declared but this invocation cannot read it; the driver's case list cannot be certified (UNKNOWN, not PASS)`,
+    }
+  }
+  let text
+  try {
+    text = probe.readFile(String(source))
+  } catch (error) {
+    return {
+      ids: [...new Set(ids)],
+      source: String(source),
+      findings: [finding('BUNDLE_CASE_PLAN_UNREADABLE', `the driver case manifest source ${JSON.stringify(String(source))} could not be read (${String(error?.message ?? error)}); a declared plan that cannot be read is not a plan that passes`, { source: String(source) })],
+    }
+  }
+  const parsed = parseDriverCaseManifest(text)
+  if (parsed === null) {
+    return {
+      ids: [...new Set(ids)],
+      source: String(source),
+      findings: [finding('BUNDLE_CASE_PLAN_UNREADABLE', `the driver case manifest source ${JSON.stringify(String(source))} declares no single top-level CASES string-literal list; the driver's case list cannot be certified`, { source: String(source) })],
+    }
+  }
+  return { ids: [...new Set([...ids, ...parsed])], source: String(source) }
+}
+
+/**
  * `bundle.case-coverage` — every PLANNED case is in the case table exactly once,
  * and every case in the table has a fixture row.
  *
@@ -2167,15 +2588,22 @@ export function checkDriverLogCapture(bundle) {
  * planned list must be SEPARATE from `bundle.cases`, or the check would prove
  * only that the table equals itself.
  *
+ * TWO CASE LISTS, TWO CODES (2026-11-08). `plannedCases` is the legacy list and
+ * keeps `CASE_PLANNED_MISSING`. The DRIVER's own manifest — `driver.plannedCases`
+ * was not trusted after BL-17; `driver.caseManifest`, `driver.driverCases` or the
+ * `sources.driver` top-level `CASES` literal — uses `BUNDLE_CASE_UNDECLARED`: a
+ * case the driver says it will run but the bundle never tabled.
+ *
  * Exactly-once is intentionally checked here AND in `cases.isolation`
  * (`CASE_ID_DUPLICATED`). The owner has not retired either; a duplicate is a
  * defect of both families, and keeping both means a future refactor of one
  * cannot silently drop the guarantee.
  *
  * @param {object} bundle
+ * @param {{readFile?: (rel: string) => string}} [probe]
  * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
  */
-export function checkCaseCoverage(bundle) {
+export function checkCaseCoverage(bundle, probe = {}) {
   const findings = []
   const declared = readDriverPlan(bundle)
   if (declared === null) {
@@ -2187,21 +2615,21 @@ export function checkCaseCoverage(bundle) {
     }
   }
   const plan = declared.plan
+  const manifest = readDriverCaseManifest(bundle, declared, probe)
+  if (Array.isArray(manifest.findings)) findings.push(...manifest.findings)
   const planned = plan.plannedCases ?? plan.cases ?? bundle?.plannedCases
-  if (planned === undefined) {
+  if (planned === undefined && manifest.ids.length === 0) {
     return {
       findings,
       unknown: true,
-      reason: 'DRIVER_PLANNED_CASES_UNDECLARED',
-      detail: `${declared.source} declares no plannedCases list; the case table cannot be checked against a plan that is not stated`,
+      reason: manifest.unknown === true ? manifest.reason : 'DRIVER_PLANNED_CASES_UNDECLARED',
+      detail: manifest.unknown === true
+        ? manifest.detail
+        : `${declared.source} declares no plannedCases list and no driver case manifest; the case table cannot be checked against a plan that is not stated`,
     }
   }
-  if (!Array.isArray(planned)) {
-    findings.push(finding('DRIVER_PLANNED_CASES_INVALID', `${declared.source}.plannedCases is not an array: ${JSON.stringify(planned)}`))
-    return { findings }
-  }
   const plannedIds = []
-  for (const entry of planned) {
+  for (const entry of (Array.isArray(planned) ? planned : [])) {
     const id = typeof entry === 'string'
       ? entry.trim()
       : (isObject(entry) && nonBlank(entry.id) ? String(entry.id).trim() : '')
@@ -2211,7 +2639,7 @@ export function checkCaseCoverage(bundle) {
     }
     plannedIds.push(id)
   }
-  if (plannedIds.length === 0) {
+  if (plannedIds.length === 0 && manifest.ids.length === 0) {
     findings.push(finding('BUNDLE_PLANNED_CASES_EMPTY', `${declared.source}.plannedCases is empty; a plan that plans no case cannot be coverage-graded`))
     return { findings }
   }
@@ -2234,6 +2662,29 @@ export function checkCaseCoverage(bundle) {
       findings.push(finding(
         'CASE_PLANNED_DUPLICATED',
         `planned case ${JSON.stringify(id)} appears ${String(count)} times in bundle.cases; a planned case must be tabled exactly once`,
+        { caseId: id, count },
+      ))
+    }
+  }
+  // THE DRIVER'S OWN CASE MANIFEST. BL-17's `PASS 16/16` never graded the
+  // `network-deny-refusal` case it spent the boot on: that case was absent from
+  // `cases` AND from the narrowed `plannedCases`, so the table equalled itself.
+  // A case the DRIVER declares it will run is now a stop if the bundle does not
+  // table it — "the plan does not contain this case" is no longer silent.
+  const plannedSet = new Set(plannedIds)
+  for (const id of manifest.ids) {
+    if (plannedSet.has(id)) continue
+    const count = counts.get(id) ?? 0
+    if (count === 0) {
+      findings.push(finding(
+        'BUNDLE_CASE_UNDECLARED',
+        `the driver case manifest ${manifest.source === null ? '' : `(${JSON.stringify(manifest.source)}) `}declares case ${JSON.stringify(id)} but bundle.cases does not table it; the run would observe a case the preflight never graded (BL-17: the deny case was omitted from cases and excluded from plannedCases, so PASS 16/16 certified nothing about it)`,
+        { caseId: id, source: manifest.source },
+      ))
+    } else if (count > 1) {
+      findings.push(finding(
+        'BUNDLE_CASE_DUPLICATED',
+        `driver-declared case ${JSON.stringify(id)} appears ${String(count)} times in bundle.cases; a declared case must be tabled exactly once`,
         { caseId: id, count },
       ))
     }
@@ -2266,6 +2717,9 @@ export function checkCaseCoverage(bundle) {
         ))
       }
     }
+  }
+  if (findings.length === 0 && manifest.unknown === true) {
+    return { findings, unknown: true, reason: manifest.reason, detail: manifest.detail }
   }
   return { findings }
 }
@@ -2376,6 +2830,7 @@ export function runZeroBootPreflight(bundle, options = {}) {
       verdict,
       findings: Object.freeze(result.findings),
       ...(verdict === 'UNKNOWN' ? { reason: result.reason ?? 'UNDECLARED', detail: result.detail ?? '' } : {}),
+      ...(Array.isArray(result.notes) && result.notes.length > 0 ? { notes: Object.freeze(result.notes) } : {}),
     }))
   }
   if (!isObject(bundle)) {
@@ -2406,12 +2861,13 @@ export function runZeroBootPreflight(bundle, options = {}) {
   add('identity.authority', { findings: identity.findings.filter((f) => f.code.startsWith('IDENTITY_AUTHORITY') || f.code === 'IDENTITY_UNDECLARED') })
   add('native.module-config', checkNativeModuleConfig(bundle))
   const policy = checkPolicyPaths(bundle)
-  add('policy.paths', { findings: policy.findings.filter((f) => f.code !== 'POLICY_FIFO_OUTSIDE_LANE') })
+  add('policy.paths', { findings: policy.findings.filter((f) => f.code !== 'POLICY_FIFO_OUTSIDE_LANE'), notes: policy.notes })
   add('policy.fifo', { findings: policy.findings.filter((f) => f.code === 'POLICY_FIFO_OUTSIDE_LANE') })
   add('cases.isolation', checkCaseIsolation(bundle.cases))
-  add('bundle.case-coverage', checkCaseCoverage(bundle))
+  add('bundle.case-coverage', checkCaseCoverage(bundle, { readFile: options.readFile }))
   add('driver.gate-order', checkDriverGateOrder(bundle))
   add('driver.leader-surface', checkDriverLeaderSurface(bundle))
+  add('driver.caller-surface', checkDriverCallerSurface(bundle))
   add('driver.log-capture', checkDriverLogCapture(bundle))
   add('collector.shape', checkCollectorShape(bundle))
   const wiring = checkCandidateWiring(bundle)
