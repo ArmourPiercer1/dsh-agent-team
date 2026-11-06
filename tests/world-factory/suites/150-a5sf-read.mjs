@@ -1022,7 +1022,14 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
     let readError = null
     if (decision.lane === 'allow') {
       try {
-        read = driver.read({ locator: step.locator, ...(step.window === undefined ? {} : { window: step.window }) })
+        // THE DOCUMENTED INSTALL STEP, made real (2026-11-06). A live driver
+        // mounts the compiled effective policy for THIS Member before its first
+        // read; a driver without `install` (the dry one) is unchanged. Without
+        // this call the live contract could not name the Member it mounted.
+        if (typeof driver.install === 'function') {
+          await driver.install({ identity: decision.member, effective: decision.effective })
+        }
+        read = await driver.read({ locator: step.locator, ...(step.window === undefined ? {} : { window: step.window }) })
       } catch (error) {
         readError = String(error?.message ?? error)
       }
@@ -1209,6 +1216,23 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
 export async function runDryScenario({ repoRoot, evidenceDir }) {
   const driver = createDryDriver()
   const result = await runScenario({ mode: 'dry', repoRoot, evidenceDir, driver })
+  return { ...result, driver }
+}
+
+/**
+ * The LIVE-SEAM half of the same scene, with a caller-supplied live driver and
+ * NO Host boot. `runScenario` never touches a World (the reads go through the
+ * driver's own mounted realm), so this is the CI-safe way to exercise the seam
+ * the suite's `--live` path documents: it proves the driver measures, while the
+ * `run()` path remains the one that additionally boots a Host.
+ *
+ * @param {{repoRoot: string, evidenceDir: string, driver: object}} input
+ */
+export async function runLiveSeamScenario({ repoRoot, evidenceDir, driver }) {
+  if (driver === null || typeof driver !== 'object' || typeof driver.read !== 'function') {
+    throw new A5sfReadGateError('LIVE_SEAM_UNAVAILABLE', 'DRIVER_INVALID', 'runLiveSeamScenario needs a driver with read()')
+  }
+  const result = await runScenario({ mode: 'live', repoRoot, evidenceDir, driver })
   return { ...result, driver }
 }
 
