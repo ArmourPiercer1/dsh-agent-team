@@ -1,0 +1,21 @@
+{
+  "worldId": "u5a5sfbl17-20261106T00-16-23Z",
+  "homePatch": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/cordis.patch.yml",
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace"
+  },
+  "laneInside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/inside",
+  "writeOnly": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/write-only",
+  "secret": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/write-only/secret.txt",
+  "modeFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/inside/mode.txt",
+  "homeOutside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/realm-outside",
+  "claims": {
+    "positive": "A5SF_BL17_SHELL_OK_u5a5sfbl17-20261106T00-16-23Z",
+    "secret": "A5SF_BL17_WRITE_ONLY_SECRET_u5a5sfbl17-20261106T00-16-23Z"
+  },
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/a5sf-consult.jsonl",
+  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/confined-counter.jsonl",
+  "probeLedgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/bash-probe-ledger.jsonl",
+  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/lane-report.json"
+}

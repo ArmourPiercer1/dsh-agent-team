@@ -1,0 +1,27 @@
+[2026-11-06T00:16:23.749Z] BOOT MODE — exactly ONE Host start. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T00:16:23.750Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-06T00:16:23.753Z] HEAD=572a7625dd83548d32f889ca0cc51bf6ac278efd
+[2026-11-06T00:16:23.754Z] pre-boot row identity check: {"ok":true}
+[2026-11-06T00:16:23.754Z] grant materialised: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/grant.json maxStarts=2 boundCommit=572a7625dd83548d32f889ca0cc51bf6ac278efd
+[2026-11-06T00:16:23.784Z] candidate asserted: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-06T00:16:23.785Z] intent row written; bootsSpent=0
+[2026-11-06T00:16:23.788Z] row handoff: emitted=["a5sf-bl17-live-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-bl17-base"] world=["a5sf-bl17-live-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-bl17-base"]
+[2026-11-06T00:16:23.829Z] fixtures: lane=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/inside writeOnly=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/write-only secret=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/write-only/secret.txt modeFile=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z/workspace/lane/inside/mode.txt
+[2026-11-06T00:16:30.230Z] mock started on 3494
+[2026-11-06T00:16:43.530Z] BOOTED port=3184 (lease bootsSpent=1) log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/logs/u5a5sfbl17-20261106T00-16-23Z/instance-port3184.log
+[2026-11-06T00:16:43.543Z] authenticated (token never recorded)
+[2026-11-06T00:16:43.949Z] p6t6 health=true hostAlive=true
+[2026-11-06T00:18:14.107Z] p6t6 state (rootSessionId=session-a5sf-bl17-team)=false
+[2026-11-06T00:18:14.107Z] RUN FAILED: Error: the anchor team never settled; team.create cannot run
+    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/run-boot.mjs:694:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/run-boot.mjs:1054:3
+[2026-11-06T00:18:14.108Z] case shell-positive: NOT_REACHED {"reason":"RUN_ABORTED","detail":"the anchor team never settled; team.create cannot run"}
+[2026-11-06T00:18:14.108Z] case write-only-read: NOT_REACHED {"reason":"RUN_ABORTED","detail":"the anchor team never settled; team.create cannot run"}
+[2026-11-06T00:18:14.108Z] case chmod-gap: NOT_REACHED {"reason":"RUN_ABORTED","detail":"the anchor team never settled; team.create cannot run"}
+[2026-11-06T00:18:14.108Z] case network-deny-refusal: NOT_REACHED {"reason":"RUN_ABORTED","detail":"the anchor team never settled; team.create cannot run"}
+[2026-11-06T00:18:14.214Z] teardown: {"host":{"wasRunning":true,"pid":55,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z","releasedPorts":[3184,3494,3184],"killedPids":[55],"notes":[]}
+[2026-11-06T00:18:14.215Z] process seam: {"hostPid":null,"hostChildExitCode":null,"portStillListening":false,"worldTeardown":{"host":{"wasRunning":true,"pid":55,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-16-23Z","releasedPorts":[3184,3494,3184],"killedPids":[55],"notes":[]},"homeExistsAfterTeardown":false,"note":"the Host child is the process this run spawned; the World teardown kills it and releases the port. portStillListening=true would be an orphan."}
+[2026-11-06T00:18:14.215Z] ledger rows (2): budget-intent:grant-a5sf-bl17-live-572a7625dd83 | a5sf-bl17-live-boot1:u5a5sfbl17-20261106T00-16-23Z
+[2026-11-06T00:18:14.216Z] RUN-SUMMARY run=a5sf-bl17-live-2026-11-06T00-16-23-754Z suite=a5sf-bl17-live overall=NOT_REACHED cases=4 NOT_REACHED:4 worlds=none
+[2026-11-06T00:18:14.216Z] bootsSpent=1 overall=NOT_REACHED failure=the anchor team never settled; team.create cannot run
