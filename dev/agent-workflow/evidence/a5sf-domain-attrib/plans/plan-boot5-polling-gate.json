@@ -1,0 +1,84 @@
+{
+  "planId": "boot5-five-rows-polling-gate",
+  "note": "Boot #5's plan with the ONE change that would have prevented the wasted start: the readiness gate polls until the health route answers (200 ok:true / ok:false) or bootTimeoutMs expires, and treats 404 as PENDING rather than as failure. This is the actionable fix for the driver; it is a plan change, not a product change.",
+  "homeFresh": true,
+  "bootPhase": "create",
+  "runtimeReload": {
+    "possible": false,
+    "why": "no plugin install/enable and no profile write is declared during the boot window"
+  },
+  "rows": [
+    {
+      "id": "u5-canary",
+      "kind": "host-row",
+      "module": "./u5-canary-plugin.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe"
+    },
+    {
+      "id": "u6-fs-probe-host",
+      "kind": "host-row",
+      "module": "./u6-fs-probe-host.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe"
+    },
+    {
+      "id": "a5sf-bl18-web-offer",
+      "kind": "host-row",
+      "module": "file:///.../a5sf-bl18-web-offer-row.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "host-service"
+    },
+    {
+      "id": "dsh-agent-team",
+      "kind": "product-row",
+      "module": "file:///.../packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "team-domain+product"
+    },
+    {
+      "id": "p6t6-team-tools",
+      "kind": "host-row",
+      "module": "file:///.../packages/tools/harness/plugin.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe-routes"
+    },
+    {
+      "id": "preset-a5sf-bl18-leader",
+      "kind": "preset",
+      "module": "@deepseek-ai/dsh-agent-preset",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "declarative"
+    },
+    {
+      "id": "preset-a5sf-bl18-webworker",
+      "kind": "preset",
+      "module": "@deepseek-ai/dsh-agent-preset",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "declarative"
+    }
+  ],
+  "readiness": {
+    "gate": "poll-until-ready-or-timeout",
+    "bootSettlesAsync": true,
+    "probeGatedOnReady": false,
+    "probeAtMs": null,
+    "timeoutMs": 240000,
+    "routeRegisteredWhen": "same route, but 404 is treated as pending and re-probed",
+    "source": "the fix: replace run-boot.mjs:938-941's single fetch with the existing waitFor() helper, bounded by bootTimeoutMs"
+  }
+}

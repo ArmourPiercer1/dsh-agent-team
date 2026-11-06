@@ -1,0 +1,90 @@
+{
+  "planId": "boot5-five-rows",
+  "note": "The composition boot #5 actually ran (evidence/a5sf-bl18-live2 composed profile), transcribed row for row, plus the readiness gate it ran under. Module paths point at the a5sf-bl18-live worktree that produced the run; moduleCheck is 'skip' because that worktree is not this one and the plan is a historical record.",
+  "homeFresh": true,
+  "bootPhase": "create",
+  "runtimeReload": {
+    "possible": false,
+    "why": "no plugin install/enable and no profile write is declared during the boot window"
+  },
+  "rows": [
+    {
+      "id": "u5-canary",
+      "kind": "host-row",
+      "module": "./u5-canary-plugin.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe"
+    },
+    {
+      "id": "u6-fs-probe-host",
+      "kind": "host-row",
+      "module": "./u6-fs-probe-host.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe"
+    },
+    {
+      "id": "a5sf-bl18-web-offer",
+      "kind": "host-row",
+      "module": "file:///.../a5sf-bl18-web-offer-row.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "host-service"
+    },
+    {
+      "id": "dsh-agent-team",
+      "kind": "product-row",
+      "module": "file:///.../packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "team-domain+product"
+    },
+    {
+      "id": "p6t6-team-tools",
+      "kind": "host-row",
+      "module": "file:///.../packages/tools/harness/plugin.mjs",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "probe-routes"
+    },
+    {
+      "id": "preset-a5sf-bl18-leader",
+      "kind": "preset",
+      "module": "@deepseek-ai/dsh-agent-preset",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "declarative"
+    },
+    {
+      "id": "preset-a5sf-bl18-webworker",
+      "kind": "preset",
+      "module": "@deepseek-ai/dsh-agent-preset",
+      "required": true,
+      "moduleCheck": "skip",
+      "fault": null,
+      "declares": "declarative"
+    }
+  ],
+  "readiness": {
+    "gate": "single-probe",
+    "bootSettlesAsync": true,
+    "probeGatedOnReady": false,
+    "probeAtMs": 13800,
+    "routeRegisteredWhen": "p6t6 /__p6t6/health exists only once teamRoot.ready settles (packages/tools/harness/plugin.mjs:326-341); while pending the route is 404",
+    "source": "run-boot.mjs:938-941 \u2014 ONE fetchJson of /__p6t6/health with a 30s HTTP timeout, throw on any non-200; the boot wait itself (tests/characterization/lib/instance.mjs:114) resolves on the 'dsh web: <url>' line, not on team readiness",
+    "recordedOutcome": {
+      "health": {
+        "status": 404,
+        "body": null
+      },
+      "abortedDuring": "health-gate"
+    }
+  }
+}
