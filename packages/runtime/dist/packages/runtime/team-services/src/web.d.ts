@@ -33,6 +33,17 @@
  * lane reports `enforced`, so a `network: deny` web call is always refused
  * before the wire — the honest product state, not a documented limitation.
  *
+ * PD-15 — THE PROOF IS BOUND TO THE FACE. An `enforced` row is evidence about
+ * the face that MEASURED it. BL-42's mechanism is a per-child network namespace
+ * created by the confined launcher; this transport runs IN-PROCESS and never
+ * enters that namespace, so the subprocess lane's proof is not evidence about
+ * this face. A deny call is therefore admitted only when the provider also
+ * offers a `networkProof` whose `face` is `'web'`; a proof minted for another
+ * face is refused with `NETWORK_PROOF_FACE_MISMATCH`, and an unnamed proof is
+ * refused rather than defaulted. No proof shape makes this face OS-isolated —
+ * a `web`-face proof can only ever be a SERVICE-LEVEL statement, and a future
+ * transport that rides a confined child is the only path to an OS-level one.
+ *
  * REDIRECT / PROXY — WHAT THE REFUSAL COVERS, AND WHAT IT DOES NOT. The refusal
  * is POSITIONED before the provider is entered, so a deny lane has no request
  * that could be redirected and no dispatcher that could resolve a proxy: both
@@ -56,6 +67,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 import type { ProviderResult } from '../../sandbox-provider/index.js';
+import { type NetworkEnforcementProof } from '../../sandbox-provider/index.js';
 import type { EffectiveIoPolicy } from '../../member-io-policy/src/types.js';
 import type { FsGuard } from './fs.js';
 import { type GuardConsultObserver } from './guard-observability.js';
@@ -98,6 +110,17 @@ export interface ConfinedWebProvider {
     fetch(request: unknown, signal?: AbortSignal): Promise<unknown>;
     search?(request: unknown, signal?: AbortSignal): Promise<unknown>;
     probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>;
+    /**
+     * PD-15 — the face-bound proof this provider stands behind, or `null`/absent.
+     *
+     * A capability ROW is not enough for the web face: a row produced by the
+     * confined process lane is evidence about a child in a network namespace, and
+     * this transport runs in-process. The provider must therefore name BOTH the
+     * mechanism and the face it was measured for; the guard admits only a proof
+     * whose `face` is `'web'`. Lacking one, the call is refused — never admitted
+     * on the strength of another face's measurement.
+     */
+    networkProof?: () => NetworkEnforcementProof | null | Promise<NetworkEnforcementProof | null>;
 }
 /** A Provider constructor Cordis can mount as the `web` service. */
 export type WebProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => ConfinedWebProvider;

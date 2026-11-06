@@ -57,6 +57,18 @@ export const TEAM_IO_DENIAL_CODES = [
    * are raised at different stages, but the token names one fact.
    */
   'NETWORK_UNCONFINED_REALM',
+  /**
+   * PD-15 (2026-11-11) — the web face was offered a network-enforcement proof
+   * minted for a DIFFERENT service face (today: the subprocess face's netns
+   * proof). The proof is real; it is evidence about another boundary. The
+   * in-process web transport cannot ride the launcher's per-child namespace, so
+   * admitting the call on that proof would turn a measured subprocess fact into
+   * a false web claim. A code of its own (rather than
+   * `NETWORK_UNCONFINED_REALM`) because the facts differ: that one says "nothing
+   * proved this face", this one says "a proof exists, for the wrong face", and
+   * the audit trail must tell them apart.
+   */
+  'NETWORK_PROOF_FACE_MISMATCH',
 ] as const
 
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number]

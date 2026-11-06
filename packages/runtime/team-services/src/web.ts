@@ -33,6 +33,17 @@
  * lane reports `enforced`, so a `network: deny` web call is always refused
  * before the wire — the honest product state, not a documented limitation.
  *
+ * PD-15 — THE PROOF IS BOUND TO THE FACE. An `enforced` row is evidence about
+ * the face that MEASURED it. BL-42's mechanism is a per-child network namespace
+ * created by the confined launcher; this transport runs IN-PROCESS and never
+ * enters that namespace, so the subprocess lane's proof is not evidence about
+ * this face. A deny call is therefore admitted only when the provider also
+ * offers a `networkProof` whose `face` is `'web'`; a proof minted for another
+ * face is refused with `NETWORK_PROOF_FACE_MISMATCH`, and an unnamed proof is
+ * refused rather than defaulted. No proof shape makes this face OS-isolated —
+ * a `web`-face proof can only ever be a SERVICE-LEVEL statement, and a future
+ * transport that rides a confined child is the only path to an OS-level one.
+ *
  * REDIRECT / PROXY — WHAT THE REFUSAL COVERS, AND WHAT IT DOES NOT. The refusal
  * is POSITIONED before the provider is entered, so a deny lane has no request
  * that could be redirected and no dispatcher that could resolve a proxy: both
@@ -57,6 +68,11 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import type { ProviderResult } from '../../sandbox-provider/index.js'
+import {
+  evaluateNetworkRequirement,
+  NETWORK_PROOF_FACE_MISMATCH,
+  type NetworkEnforcementProof,
+} from '../../sandbox-provider/index.js'
 import type { EffectiveIoPolicy } from '../../member-io-policy/src/types.js'
 import type { FsGuard } from './fs.js'
 import { observeGuard, type GuardConsultObserver } from './guard-observability.js'
@@ -108,6 +124,17 @@ export interface ConfinedWebProvider {
   fetch(request: unknown, signal?: AbortSignal): Promise<unknown>
   search?(request: unknown, signal?: AbortSignal): Promise<unknown>
   probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>
+  /**
+   * PD-15 — the face-bound proof this provider stands behind, or `null`/absent.
+   *
+   * A capability ROW is not enough for the web face: a row produced by the
+   * confined process lane is evidence about a child in a network namespace, and
+   * this transport runs in-process. The provider must therefore name BOTH the
+   * mechanism and the face it was measured for; the guard admits only a proof
+   * whose `face` is `'web'`. Lacking one, the call is refused — never admitted
+   * on the strength of another face's measurement.
+   */
+  networkProof?: () => NetworkEnforcementProof | null | Promise<NetworkEnforcementProof | null>
 }
 
 /** A Provider constructor Cordis can mount as the `web` service. */
@@ -154,17 +181,63 @@ export function createWebNetworkGuard(
     // network refusal (the face does not invent a second class of deny).
     if (effective.network.access !== 'deny') return
     // The capability: BL-17's probe, imported. Only an explicit `enforced`
-    // answer admits the call; everything else is the closed `unsupported`.
+    // answer proceeds; everything else is the closed `unsupported`.
     const capability = await probeNetworkDenial(provider)
-    if (capability.level === 'enforced') return
+    if (capability.level !== 'enforced') {
+      throw new TeamIoDenial(
+        'NETWORK_UNCONFINED_REALM',
+        `the effective lane requests network=deny, but the web provider's capability probe reports `
+          + `${capability.dimension}='${capability.level}' (${capability.note}); refusing before any provider call `
+          + 'instead of fetching under a deny claim this host cannot enforce. A backend that proves '
+          + "'enforced' is the only configuration that admits this call",
+        { memberIdentity: effective.memberIdentity, method, target },
+      )
+    }
+    // PD-15 — A LEVEL (OR A ROW) IS NOT A FACE-BOUND PROOF. The pre-fix guard
+    // returned here, which is the hole #645 found: a composition that handed
+    // the web face the SUBPROCESS lane's realm-bound `enforced` row admitted a
+    // deny `web_fetch` into ordinary host egress, because the in-process web
+    // transport cannot ride the launcher's per-child netns. Ask for a proof
+    // that names its face and refuse anything minted for another one.
+    const proof = await readNetworkProof(provider)
+    const admission = evaluateNetworkRequirement('deny', effective.memberIdentity, proof, 'web')
+    if (admission.ok) return
+    const refusal = admission.error.details?.['refusal']
+    if (refusal === NETWORK_PROOF_FACE_MISMATCH) {
+      throw new TeamIoDenial(
+        NETWORK_PROOF_FACE_MISMATCH,
+        `the effective lane requests network=deny, but the web provider offered a network-enforcement proof minted for `
+          + `a different face (${admission.error.message}); an in-process web transport cannot inherit the confined `
+          + `launcher's network namespace, so another face's measurement is not evidence about this face — refusing `
+          + 'before any provider call (PD-15)',
+        { memberIdentity: effective.memberIdentity, method, target },
+      )
+    }
     throw new TeamIoDenial(
       'NETWORK_UNCONFINED_REALM',
-      `the effective lane requests network=deny, but the web provider's capability probe reports `
-        + `${capability.dimension}='${capability.level}' (${capability.note}); refusing before any provider call `
-        + 'instead of fetching under a deny claim this host cannot enforce. A backend that proves '
-        + "'enforced' is the only configuration that admits this call",
+      `the effective lane requests network=deny, and the web provider's probe reports 'enforced' (${capability.note}), `
+        + `but it offered no face-bound proof for the 'web' face (${admission.error.message}); a capability level alone `
+        + 'does not prove this face, so the call is refused before any provider call',
       { memberIdentity: effective.memberIdentity, method, target },
     )
+  }
+}
+
+/**
+ * Read the provider's optional face-bound proof. Absence, a throw or a
+ * non-object answer are all the SAME closed answer (`null`): the guard then
+ * refuses with `NETWORK_UNCONFINED_REALM` instead of inventing a proof. The
+ * proof's own shape is validated by {@link evaluateNetworkRequirement}; nothing
+ * here "fixes up" a malformed proof into an admissible one.
+ */
+async function readNetworkProof(provider: ConfinedWebProvider): Promise<NetworkEnforcementProof | null> {
+  const read = provider.networkProof
+  if (typeof read !== 'function') return null
+  try {
+    const proof = await read.call(provider)
+    return proof !== null && typeof proof === 'object' ? proof : null
+  } catch {
+    return null
   }
 }
 

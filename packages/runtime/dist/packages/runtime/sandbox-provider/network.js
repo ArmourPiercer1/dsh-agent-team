@@ -22,6 +22,14 @@
  * capability row itself carries. Without it, `deny` is refused with the same
  * code and the same words as before — the closed answer, never a default-allow.
  *
+ * PD-15 (2026-11-11) — AND THE PROOF IS BOUND TO THE FACE THAT CONSUMES IT.
+ * BL-42's measurement is about a confined CHILD; a face that runs in-process
+ * (the web transport) cannot inherit that child's namespace, so the same proof
+ * must not admit it. The proof names its `face`; the evaluator receives the
+ * consumer's face and refuses a mismatch (or an unnamed proof) with
+ * {@link NETWORK_PROOF_FACE_MISMATCH}. This is why `deny` cannot be satisfied
+ * by "some other face proved it": realm binding alone is not face binding.
+ *
  * Purity: no `node:*`, no I/O.
  *
  * @module @dsh-agent-team/runtime/sandbox-provider/network
@@ -54,18 +62,69 @@ export const NETNS_COVERAGE = Object.freeze({
     ]),
 });
 /**
- * Gate a network profile BEFORE any process exists. `undefined` claims nothing;
- * `deny` requires a measured {@link NetworkEnforcementProof}; `restricted` is
- * still refused on this lane's provider set; anything else is outside the closed
- * set.
+ * PD-15 — the closed set of service faces that can CONSUME a network
+ * enforcement proof. The names are the realm's own service-face names
+ * (`RealmServiceFaces` in `team-services`); `fs` and `terminals` have no
+ * network dimension of their own, so they are not members.
+ *
+ * Why the face is part of the proof: BL-42's mechanism is a per-child network
+ * namespace created by the confined launcher. It is a statement about a
+ * SUBPROCESS the launcher started. The confined `web` face executes in-process
+ * and can never inherit that namespace, so the subprocess face's proof is not
+ * evidence about the web face — it is evidence about a different boundary. A
+ * proof that does not name its face cannot be checked against the consumer, and
+ * a default ("assume the consumer is the producer") is exactly the replay hole
+ * PD-15 closes.
  */
-export function evaluateNetworkRequirement(profile, realmId, proof) {
+export const NETWORK_ENFORCEMENT_FACES = ['subprocess', 'web'];
+/**
+ * PD-15 — the typed discriminator for "this proof was minted for a DIFFERENT
+ * face than the one consuming it". It rides `ProviderError.details.refusal`
+ * (the provider code set mirrors the frozen §5 vocabulary and must not grow)
+ * and is used directly as a `TeamIoDenial` code by the web face, whose per-call
+ * vocabulary is this repository's own.
+ */
+export const NETWORK_PROOF_FACE_MISMATCH = 'NETWORK_PROOF_FACE_MISMATCH';
+/** True when `value` names a face in the closed set (runtime narrowing). */
+export function isNetworkEnforcementFace(value) {
+    return typeof value === 'string' && NETWORK_ENFORCEMENT_FACES.includes(value);
+}
+/**
+ * Gate a network profile BEFORE any process exists. `undefined` claims nothing;
+ * `deny` requires a measured {@link NetworkEnforcementProof} whose `face` is
+ * the CONSUMER's face; `restricted` is still refused on this lane's provider
+ * set; anything else is outside the closed set.
+ *
+ * `consumerFace` is the face asking the question. A caller that cannot name its
+ * own face cannot have its proof checked, so a `deny` admission without one is
+ * refused — never defaulted.
+ */
+export function evaluateNetworkRequirement(profile, realmId, proof, consumerFace) {
     if (profile === undefined)
         return { ok: true, value: null };
     if (profile === 'deny') {
         if (proof !== undefined && proof !== null
             && typeof proof.mechanism === 'string' && proof.mechanism.trim() !== ''
             && typeof proof.evidence === 'string' && proof.evidence.trim() !== '') {
+            // PD-15 — THE PROOF BELONGS TO A FACE, NOT TO A REALM. An unnamed proof is
+            // refused (not defaulted); a proof minted for another face is a replay
+            // and is refused with the typed discriminator.
+            if (!isNetworkEnforcementFace(proof.face)) {
+                return refuse('IO_POLICY_UNSUPPORTED', `network profile 'deny' was offered a proof that names no enforceable face in realm '${realmId ?? '<unbound>'}': a proof without a face cannot be bound to the consumer, so it is refused (PD-15) instead of defaulted`, { details: { refusal: NETWORK_PROOF_FACE_MISMATCH, proofFace: String(proof.face ?? '<absent>'), consumerFace: String(consumerFace ?? '<absent>') } });
+            }
+            if (!isNetworkEnforcementFace(consumerFace)) {
+                return refuse('IO_POLICY_UNSUPPORTED', `network profile 'deny' was evaluated without a consumer face in realm '${realmId ?? '<unbound>'}': the proof names '${proof.face}', but nothing names the face asking, so the binding cannot be checked (PD-15)`, { details: { refusal: NETWORK_PROOF_FACE_MISMATCH, proofFace: proof.face, consumerFace: String(consumerFace ?? '<absent>') } });
+            }
+            if (proof.face !== consumerFace) {
+                return refuse('IO_POLICY_UNSUPPORTED', `network profile 'deny' was offered a proof minted for the '${proof.face}' face while the '${consumerFace}' face is asking (realm '${realmId ?? '<unbound>'}'); the mechanism is evidence about the face that produced it, not about the caller — refused (${NETWORK_PROOF_FACE_MISMATCH})`, { details: { refusal: NETWORK_PROOF_FACE_MISMATCH, proofFace: proof.face, consumerFace } });
+            }
+            // A `subprocess` proof without the namespace identity it claims is not a
+            // measurement; a `web` proof may not claim one at all today (service-level).
+            if (proof.face === 'subprocess'
+                && (typeof proof.netNsInode !== 'number' || typeof proof.hostNetNsInode !== 'number'
+                    || proof.netNsInode === proof.hostNetNsInode)) {
+                return refuse('IO_POLICY_UNSUPPORTED', `network profile 'deny' was offered a 'subprocess' proof without two DISTINCT measured namespace inodes in realm '${realmId ?? '<unbound>'}': a face with no measured identity is not evidence (PD-15)`, { details: { refusal: 'NETWORK_PROOF_INCOMPLETE', proofFace: proof.face, consumerFace } });
+            }
             return { ok: true, value: null };
         }
         return refuse('IO_POLICY_UNSUPPORTED', `network profile 'deny' is not offered in realm '${realmId ?? '<unbound>'}': no provider in this lane demonstrates full network deny (PoC-4b); Landlock TCP bits do not count, and a mechanism without a recorded applied-evidence row is not a mechanism`);

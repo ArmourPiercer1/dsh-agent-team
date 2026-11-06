@@ -1,0 +1,453 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15
+
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/a5p4-network-closure.test.ts (7 tests) 3ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 80ms
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-2 zero-flip: webEnabled ABSENT — the mount is web-free by shape (no rows, no claims, no lines, zero wire)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-3 explicit webEnabled:false behaves EXACTLY like absent (opt-in law)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch default-deny dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-6 ask lane + DENYING leg: typed refusal, zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-6 ask lane + DENYING leg: typed refusal, zero wire
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-6 ask lane + DENYING leg: typed refusal, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_URL_USERINFO_FORBIDDEN dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-8 closed args: unknown parameters refused (NO escalation lane), zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-limit dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-denied reason=off-destination dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TIMEOUT dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=1 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch:u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch:u7f-c1-realm-1 grantId=grant:90e6cd33af3efc6dcb65f6d468d63cc4 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch:u7f-c1-realm-1 grantId=grant:90e6cd33af3efc6dcb65f6d468d63cc4 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch cancelled-at-pa-edge dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:b0820ec7ab0fad1da7a43063fa3f9131 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:0447cb0ab369e0819368407f62b66f2e53585541f5fefbc2e5d1f3ced7cae432:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-search-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search RAN seq=1 sources=1 provider=u7f-c1-test-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-search-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search pa-refused code=APPROVAL_DENIED provider=u7f-c1-test-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-4 invalid provider mount is REFUSED AT THE MOUNT (fail closed) — a broken provider never half-rides
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_URL_INVALID dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_DESTINATION_NON_PUBLIC dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:6f4eb8315317e1ed8ee77a4f5d54d9073099e0b3942455042dcb2735267512e7:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:90340c6e91f131ccb91c7a0d99776c66 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:90340c6e91f131ccb91c7a0d99776c66 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:6f4eb8315317e1ed8ee77a4f5d54d9073099e0b3942455042dcb2735267512e7:g0
+
+ ✓ packages/runtime/test/a5p4-provider.test.ts (16 tests) 3314ms
+     ✓ confines the untrusted argv under a scratch policy: deny-path read refused inside the child, allowed write ok  3267ms
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=502 bytes=0 hops=0 dest=http://127.0.0.2:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:bf6faf43e1555554a856e054a5136baca9364b223e49d76c41f295a2d0cdc82c:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:f25867100f07a27f71c16b04833a7a9a effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:f25867100f07a27f71c16b04833a7a9a caseId=tadm:u7f-test-team-root:u7f-instance:sha256:bf6faf43e1555554a856e054a5136baca9364b223e49d76c41f295a2d0cdc82c:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_DESTINATION_NON_PUBLIC dest=https://mixed.example
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:17d796b64f2aa36db707b0d10b098346910e4099147afd24a43962fb5790241a:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:652bf00a31d3262434c88bb65a906688 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:652bf00a31d3262434c88bb65a906688 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:17d796b64f2aa36db707b0d10b098346910e4099147afd24a43962fb5790241a:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://localhost:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:df220601e4fe82d532013909444f79da27bd13b2f5da976cae5869cbe9c21ba5:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:32a4ee1b5bdf9b34aa77e7e4e8fbb6d0 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:32a4ee1b5bdf9b34aa77e7e4e8fbb6d0 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:df220601e4fe82d532013909444f79da27bd13b2f5da976cae5869cbe9c21ba5:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://rebind2.example
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-fetch-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:17d796b64f2aa36db707b0d10b098346910e4099147afd24a43962fb5790241a:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:652bf00a31d3262434c88bb65a906688 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-fetch-u7f-c1-realm-1 grantId=grant:652bf00a31d3262434c88bb65a906688 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:17d796b64f2aa36db707b0d10b098346910e4099147afd24a43962fb5790241a:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=1 dest=http://localhost:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-search-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+[dsh-agent-team] web-search: governed-web-search RAN seq=1 sources=1 provider=u7f-c1-port-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-web-search-u7f-c1-realm-1 approvalCaseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-web-search-u7f-c1-realm-1 grantId=grant:76a1a7bbd10c25367c4899d51f1bec68 caseId=tadm:u7f-test-team-root:u7f-instance:sha256:8aaeecc75e33129f9fad20be6482f5368635d1986b684f60e0cb19fc806c374b:g0
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_SEARCH_DESTINATION_DENIED provider=u7f-c1-port-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix disclosure — consent text names the grant scope > D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=u7f-c1-realm templateId=u7f-tpl
+
+ ✓ packages/runtime/test/u7f-web-c1.test.ts (30 tests) 4132ms
+     ✓ D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)  2993ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 9752ms
+     ✓ exposes the native SubprocessHandle shape and accumulates output  3240ms
+     ✓ does NOT consume the streams unless capture is requested  3261ms
+     ✓ refuses when the backend cannot enforce the profile (no naked process)  3234ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 29334ms
+     ✓ (i) an in-lane search inside a git worktree returns the match; one allow fact carries the disclosure  3248ms
+     ✓ (i-MUTATION) remove the two flags at the provider boundary: the same arm goes RED with the live stderr  3262ms
+     ✓ (ii) `.git` is still refused at ADMISSION as a search root (one deny fact, zero processes)  3236ms
+     ✓ (ii-KERNEL) the kernel still denies a direct `.git` read (raw provider, admission bypassed)  3245ms
+     ✓ (iii) a lane that INCLUDES the worktree root keeps ordinary .gitignore semantics  3220ms
+     ✓ (iii-MUTATION) forcing the flags onto that lane makes the ignored file appear  3262ms
+     ✓ (iv) an invalid pattern still surfaces the REAL rg stderr and exit 2  3261ms
+     ✓ (v) the flags change neither the fact count nor the process count  3270ms
+     ✓ refuses a shell body at ADMISSION (0 processes, one fact), then measures the KERNEL allowance directly  3265ms
+
+ Test Files  7 passed (7)
+      Tests  103 passed (103)
+   Start at  05:18:41
+   Duration  29.89s (transform 1.90s, setup 0ms, import 1.76s, tests 46.62s, environment 0ms)
+

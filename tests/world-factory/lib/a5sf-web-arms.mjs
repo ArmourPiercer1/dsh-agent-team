@@ -137,7 +137,7 @@ export function effectiveOf(seams, { network = 'allow' } = {}) {
  *   'enforced'    (a hypothetical backend; only the probe-load-bearing arm uses it)
  *   'absent'      (a provider with no probe at all)
  */
-export function fakeWebBoundary({ probeLevel = 'unsupported', body = 'BL18-MOCK-BODY' } = {}) {
+export function fakeWebBoundary({ probeLevel = 'unsupported', body = 'BL18-MOCK-BODY', networkProof = null } = {}) {
   const fetches = []
   const searches = []
   const boundary = {
@@ -182,6 +182,10 @@ export function fakeWebBoundary({ probeLevel = 'unsupported', body = 'BL18-MOCK-
       }
     }
   }
+  // PD-15: an optionally face-bound proof, as a composition would hand one to
+  // its web transport. The proof is a fixture value (this boundary measures no
+  // network); the arms use it to prove WHICH proof the guard accepts.
+  if (networkProof !== null) boundary.networkProof = async () => networkProof
   return boundary
 }
 
@@ -305,6 +309,7 @@ export async function makeGovernedRealm(seams, {
   network = 'allow',
   withWebFace = true,
   probeLevel = 'unsupported',
+  networkProof = null,
   body,
   // LAYER B (web contract): the boundary is replacable so a contract arm can
   // record the ORDER of the guard/provider edge and the exact arguments the
@@ -322,7 +327,7 @@ export async function makeGovernedRealm(seams, {
   await root.plugin(BaseFs, {})
   const agentKey = { session: { header: {} } }
   const agent = seams.createScope(root, agentKey)
-  const boundary = injectedBoundary ?? fakeWebBoundary({ probeLevel, ...(body === undefined ? {} : { body }) })
+  const boundary = injectedBoundary ?? fakeWebBoundary({ probeLevel, networkProof, ...(body === undefined ? {} : { body }) })
   const facts = []
   const realm = await seams.mountA5sfRealm({
     root: agent.ctx,

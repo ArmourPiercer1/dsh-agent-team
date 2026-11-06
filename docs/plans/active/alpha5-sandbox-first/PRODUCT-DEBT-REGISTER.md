@@ -75,9 +75,10 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1's "write" and "read" were a command gate and an audit **(FIXED)** | evidence-quality | correctness |
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | Every real `web_search` fact records a malformed marker | evidence-quality | semantics |
 | PD-11 (D1) | Boot | A shared-domain teardown is reported as `TeamDomain is closed` and the detached boot keeps writing into it | evidence-quality | semantics |
-| PD-12 (Q5) | Subprocess | `network: deny` never governs the model-visible `bash`; the child runs with no network namespace | governance hole | semantics |
+| PD-12 (Q5) | Subprocess | `network: deny` never governs the model-visible `bash`; the child runs with no network namespace **(FIXED)** | governance hole | semantics |
 | PD-13 (READ-AXIS) | Shell-PTY | The terminal path has no read axis: a Member's own shell read a write-only-lane secret and returned its bytes **(FIXED)** | governance hole | semantics |
 | PD-14 (SANDBOX-ROOT) | Subprocess | A Member session's sandbox root is the pinned host checkout, not the World workspace **(FIXED)** | behavioural divergence | semantics |
+| PD-15 (FACE-BOUND-PROOF) | Web | A network-enforcement proof is not bound to the face that consumes it **(FIXED)** | governance hole | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
@@ -108,6 +109,8 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 > 共享的 pinned checkout 上。已知残余（产品默认的风险、读边界未动、`config.workspaceRoot` 对 Team
 > session 不再可达、十二个 assembly 未逐一起机）逐条写在该行 `status` 与
 > `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md` §9，**`V@B` 不因此变动**。
+
+> **2026-11-11（PD15-FIX，docs-only 审计；只追加，不改任何既有行文）**：本册的 `status` 行与 at-a-glance 表此前不一致——PD-12/PD-13/PD-14 写 “draft PR, no merge”，但三者都已是 `origin/master` 的祖先（`550815c97`/#640、`c91c72bca`/#642、`47316541a`/#643），且表里 PD-13/PD-14 标 `(FIXED)` 而 PD-12 没标；用同一条 `git merge-base --is-ancestor` 核对其余 `FIXED` 行又发现 PD-1（draft #629 → `d7d6a8e00`/#629）、PD-7（分支 commit `e37f9520f…` 非祖先 → squash `572a7625d`/#619）、PD-9（分支 commit `7182b8f76…` 非祖先 → squash `bab33c4c6`/#620）的状态行同样过期。该不一致由一条 **docs-only lane** 发现（#645 review 同时点名），本 lane（`task/a5sf-pd15-face-bound-proof-20261111`）按逐行核对结果改正了 status 行与 at-a-glance 表；没有 `UNVERIFIED` 行，历史 dated 注记保留原文。
 
 ## 2. The rows
 
@@ -157,7 +160,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   the owner ruled generation-scoped isolation; not the boot budget.
 - **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs) — arms `PD-1 REFUSAL`, `PD-1 CONTRAST (live domain)`, `PD-1 IN-FLIGHT`, `PD-1 CONTRAST (new generation)`, `PD-1 REGISTER`; negative control and race-window transcript in the evidence README.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L285` contains `async revoke(identity: TrustedMemberIdentity` ; `packages/runtime/team-sandbox/src/terminal.ts#L298` contains `revokedMembers.add(revokedKey)` ; `packages/runtime/team-sandbox/src/terminal.ts#L239` contains `revokedMembers.has(memberKey(identity))`
-- **status**: FIXED — branch `task/a5sf-pd1-fix-20261109`, base `fb9584da5733918113b1dbd01b08d6931cfb1ddb`, draft PR **#629** (first line `PD1-FIX`; merge placeholder until it lands). Evidence: [a5sf-pd1-fix](../../../../dev/agent-workflow/evidence/a5sf-pd1-fix/README.md).
+- **status**: FIXED — branch `task/a5sf-pd1-fix-20261109`, base `fb9584da5733918113b1dbd01b08d6931cfb1ddb`, merged at **`d7d6a8e00`** as PR **#629** (first line `PD1-FIX`). Evidence: [a5sf-pd1-fix](../../../../dev/agent-workflow/evidence/a5sf-pd1-fix/README.md).
 
 ### PD-2 (F2) — the deferred PTY refusal fires after a legacy session is allocated
 
@@ -321,7 +324,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `active` to `stale`; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay green.
 - **blocked by**: nothing; a host-free arm carries it; not the boot budget.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L272` contains `function assertCurrent(domainId: string)` ; `packages/runtime/team-sandbox/src/terminal.ts#L312` contains `list(): readonly TerminalDomain[]`
-- **status**: FIXED — branch `task/a5sf-pd7-20261107`, fix commit `e37f9520f984e466a75f027823f4acb5b4f3d3ec` (draft PR #619, first line `PD-7-FIX`). Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
+- **status**: FIXED — branch `task/a5sf-pd7-20261107`, merged at squash commit **`572a7625d`** as PR **#619** (first line `PD-7-FIX`); the branch fix commit `e37f9520f…` is not an ancestor of master. Evidence: [PD-7-stale-active](../../../../dev/agent-workflow/evidence/a5sf-product-debt/PD-7-stale-active/README.md).
 
 ### PD-8 (F1) — the shutdown receipt cannot tell an exit from a kill
 
@@ -374,7 +377,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   extra case is this guard).
 - **blocked by**: nothing for the rename; the channel itself is PD-3's build.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]` ; `tests/world-factory/a5sf-pty-contract.test.mjs#L98` contains `P1-ONE-ALLOCATE-PER-SESSION`
-- **status**: FIXED — branch `task/a5sf-pd9-20261108`, fix commit `7182b8f7678123eaeccfbe603533c990d0706586` (draft PR #620, first line `PD-9-FIX`). Correction note: [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §3 (PD-9).
+- **status**: FIXED — branch `task/a5sf-pd9-20261108`, merged at squash commit **`bab33c4c6`** as PR **#620** (first line `PD-9-FIX`); the branch fix commit `7182b8f76…` is not an ancestor of master. Correction note: [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §3 (PD-9).
 
 ### PD-10 (GAP-WEB-CONTRACT-1) — every real `web_search` fact records a malformed marker
 
@@ -394,7 +397,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **proof**: the web-search arm asserts `queries:1`, one fact per query, and that the query text is
   still absent; `P4-SHARED-GUARD-BOTH-PATHS` and `P1-GUARD-BEFORE-PROVIDER` stay green.
 - **blocked by**: owner approval; not the boot budget.
-- **anchors**: `packages/runtime/team-services/src/web.ts#L240` contains `function declaredUrlOf` ; `packages/runtime/team-services/src/web.ts#L246` contains `queries:${String(queries.length)}` ; `packages/runtime/team-services/src/web.ts#L249` contains `<${kind}:malformed-request>`
+- **anchors**: `packages/runtime/team-services/src/web.ts#L313` contains `function declaredUrlOf` ; `packages/runtime/team-services/src/web.ts#L319` contains `queries:${String(queries.length)}` ; `packages/runtime/team-services/src/web.ts#L322` contains `<${kind}:malformed-request>`
 - **2026-11-10 LIVE-EVIDENCE annotation (append-only; the fields above are not edited)** — two
   evidence-quality items, folded here rather than given rows of their own, because both say the
   same thing PD-10 says: *the record does not say what it appears to say*.
@@ -522,13 +525,13 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `tests/world-factory/a5sf-pd12-bash-governance.test.mjs` and
   `dev/agent-workflow/evidence/a5sf-pd12-fix/mutation-controls.mjs`.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (an `enforced` network backend), plus the owner's decision to expose `bash` through the face at all.
-- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1446` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L222` contains `readonly subprocess: ConfinedSubprocessSurface | null`
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1446` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L234` contains `readonly subprocess: ConfinedSubprocessSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ceiling term** —
   for that Member the compiled ceiling says `network: deny`, yet the effective I/O of the Member's
   model-visible tool set includes a network-capable child, because the ceiling is compiled per
   **face** while the ToolRestriction bound `bash` to an executor that never enters that face; the
   intersection was computed on a mechanism the call does not traverse.
-- **status**: FIXED — 2026-11-10, branch `task/a5sf-pd12-fix-20261110` (draft PR, no merge), DEV-LIVE boots 02/03 of `a5sf-pd12-fix` (agreeing pair) plus boots 10/11 of the subprocess lane as the pre-fix pin; 0 candidate starts. Residuals (1)–(5) above; **PD-13 was not closed** by this fix.
+- **status**: FIXED — 2026-11-10, branch `task/a5sf-pd12-fix-20261110`, merged at **`550815c97`** as PR **#640** (first line `PD12-FIX`), DEV-LIVE boots 02/03 of `a5sf-pd12-fix` (agreeing pair) plus boots 10/11 of the subprocess lane as the pre-fix pin; 0 candidate starts. Residuals (1)–(5) above; **PD-13 was not closed** by this fix.
 - **2026-11-11 annotation**: PD-13 IS closed now — its confined terminal face puts a read axis on the
   Member's own shell (PD-13 row above). This row's fix and PD-13's fix compose: PD-12 routes the shell
   into a confined face for the network axis, PD-13 gives that face per-command read attribution. Both
@@ -582,13 +585,13 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   declare a terminal face in a shipped composition (no product composition declares one yet, so the
   shipped product still has no confined shell — residual (4)). [BL-42](ALPHA5-SANDBOX-BACKLOG.md)'s
   network backend is unrelated to this row.
-- **anchors**: `packages/runtime/team-services/src/terminal.ts#L530-L535` contains `for (const locator of shellReadIntentsOf(text, session.cwd))` ; `packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L914-L926` contains `confinedTerminalSpecOf` ; `packages/runtime/team-services/src/types.ts#L243` contains `readonly terminals: ConfinedTerminalSurface | null`
+- **anchors**: `packages/runtime/team-services/src/terminal.ts#L530-L535` contains `for (const locator of shellReadIntentsOf(text, session.cwd))` ; `packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L914-L926` contains `confinedTerminalSpecOf` ; `packages/runtime/team-services/src/types.ts#L255` contains `readonly terminals: ConfinedTerminalSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ToolRestriction
   term** — route C shadows only the tools it re-registers (the FS/search pair); `bash` is not one of
   them, so the Member's `bash` is served by the preset's own tool row, carries the preset's legacy
   PTY, and no lane is consulted at all; the ceiling's read denial is not evaluated, so the
   intersection is not merely wrong, it is never taken on this path.
-- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd13-terminal-20261111` (draft PR, no merge). The
+- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd13-terminal-20261111`, merged at **`c91c72bca`** as PR **#642** (first line `PD13-FIX`). The
   face, the route-C `bash` shadow and the double-terminal refusal are proven host-free (pin flip +
   13 arms + two mutation controls) and on real Hosts (DEV-LIVE pair in
   `dev/agent-workflow/evidence/a5sf-pd13-fix/`). Residuals: (1) a DYNAMIC read (`$(…)`, backticks, a
@@ -642,8 +645,21 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   and 10–11 stay as the historical measurement.
 - **blocked by**: an owner decision on what a Member session's sandbox root should be; the World-side change is test infrastructure, not product, and touches no `packages/**`.
 - **anchors**: `tests/world-factory/lib/u7-fsmut-assembly.mjs#L273-L278` contains `for member sessions that is the factory's` ; `tests/world-factory/lib/team-workspace.mjs#L135-L135` contains `export function bindTeamDefaultWorkspace` ; `tests/world-factory/lib/world-factory.mjs#L587-L587` contains `#teamWorkspaceRows(rows)` ; `tests/world-factory/a5sf-pd14-sandbox-root.test.mjs#L251-L251` contains `test('P0 PD-14 defect pin`
-- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd14-sandbox-root-20261111` (draft PR, first line `PD14-FIX`, no merge). **The fix is the FIXTURE layer and only the fixture layer**: `tests/world-factory/lib/team-workspace.mjs` binds every Team-shaped row that declares no workspace to the World's own `workspaceDir` (and REFUSES a declaration pointing into the pinned checkout or outside the World home), called from `TestWorld.startHost`'s one row-composition point. No `packages/**` file changed and no upstream byte was touched. **Why not the product:** for a real operator link 1 of the chain *is* their project directory, and the root `cordis.patch.yml` documents that launch-directory default together with the `defaultWorkspace` override that this fix uses; changing it would alter what real users get, justified by nothing PD-14 measured. **Why not a `sandbox-policy` row:** boots 6–7 already measured it — it needs `name` restated and still loses to the session cwd, because the pinned resolver prefers `session.header.cwd`. Proof: `tests/world-factory/a5sf-pd14-sandbox-root.test.mjs` — P0 is the defect pin (GREEN pre-fix, RED post-fix; `pin-before.log` / `pin-after.log`), D1 the provider's own resolved root, D2 the real child's `pwd` + its own `/proc/self/mountinfo` (one `rw` mount at the World workspace, ZERO mounts at/under the pinned checkout, and `--bind <world ws> <world ws>` in the pinned backend's argv), D3 the write boundary (in-root write succeeds, outside write refused `Read-only file system`), F1 the disclosure that the pinned checkout stays READABLE (`--ro-bind / /`), C1 the product-side negative control (an explicitly configured `workspaceRoot` still wins for a call without a session cwd), C2 the fixture-side one (a World that declares its own workspace keeps it), C3/C4 the two refusals, S1 surface neutrality, S2 locus, Z1 the pinned tree's porcelain empty after every arm. Evidence: `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md` (0 boots — the fix touches no product path, so no `DEV-LIVE` run was manufactured). Residuals: (1) the shipped product still roots a Team at the operator's launch directory, so a real Host launched from a non-workspace directory still confines a Member there — a product question this row did not measure and does not close; (2) the read boundary is untouched (`--ro-bind / /`), the pinned checkout stays readable at its absolute path; (3) `config.workspaceRoot` is now unreachable for Team sessions (the pinned resolver prefers the session cwd, which every Team session now has), exercised only for cwd-less calls (C1); (4) the twelve affected assemblies were not booted — the change is one documented config field each, `u6-arc-d` already declared it, and `u7-fsmut`'s oracle that pinned the wrong root is ANNOTATED rather than weakened.
+- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd14-sandbox-root-20261111`, merged at **`47316541a`** as PR **#643** (first line `PD14-FIX`). **The fix is the FIXTURE layer and only the fixture layer**: `tests/world-factory/lib/team-workspace.mjs` binds every Team-shaped row that declares no workspace to the World's own `workspaceDir` (and REFUSES a declaration pointing into the pinned checkout or outside the World home), called from `TestWorld.startHost`'s one row-composition point. No `packages/**` file changed and no upstream byte was touched. **Why not the product:** for a real operator link 1 of the chain *is* their project directory, and the root `cordis.patch.yml` documents that launch-directory default together with the `defaultWorkspace` override that this fix uses; changing it would alter what real users get, justified by nothing PD-14 measured. **Why not a `sandbox-policy` row:** boots 6–7 already measured it — it needs `name` restated and still loses to the session cwd, because the pinned resolver prefers `session.header.cwd`. Proof: `tests/world-factory/a5sf-pd14-sandbox-root.test.mjs` — P0 is the defect pin (GREEN pre-fix, RED post-fix; `pin-before.log` / `pin-after.log`), D1 the provider's own resolved root, D2 the real child's `pwd` + its own `/proc/self/mountinfo` (one `rw` mount at the World workspace, ZERO mounts at/under the pinned checkout, and `--bind <world ws> <world ws>` in the pinned backend's argv), D3 the write boundary (in-root write succeeds, outside write refused `Read-only file system`), F1 the disclosure that the pinned checkout stays READABLE (`--ro-bind / /`), C1 the product-side negative control (an explicitly configured `workspaceRoot` still wins for a call without a session cwd), C2 the fixture-side one (a World that declares its own workspace keeps it), C3/C4 the two refusals, S1 surface neutrality, S2 locus, Z1 the pinned tree's porcelain empty after every arm. Evidence: `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md` (0 boots — the fix touches no product path, so no `DEV-LIVE` run was manufactured). Residuals: (1) the shipped product still roots a Team at the operator's launch directory, so a real Host launched from a non-workspace directory still confines a Member there — a product question this row did not measure and does not close; (2) the read boundary is untouched (`--ro-bind / /`), the pinned checkout stays readable at its absolute path; (3) `config.workspaceRoot` is now unreachable for Team sessions (the pinned resolver prefers the session cwd, which every Team session now has), exercised only for cwd-less calls (C1); (4) the twelve affected assemblies were not booted — the change is one documented config field each, `u6-arc-d` already declared it, and `u7-fsmut`'s oracle that pinned the wrong root is ANNOTATED rather than weakened.
 
+
+### PD-15 (FACE-BOUND-PROOF) — a network-enforcement proof is not bound to the face that consumes it
+
+- **source**: [a5sf-pd15-face-bound-proof/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd15-face-bound-proof/README.md) (finding recorded there from #645's review of BL-42; the `FACE-BOUND-PROOF` id names this row).
+- **true today**: **fixed, and the fix is the binding it names.** Before PD-15 the confined `web` face admitted a `network: deny` call on ANY backend whose capability row said `enforced` with a non-empty mechanism and an evidence reference. BL-42's proof already carried the realm and the trust root, but no face; a composition that handed the web transport the SUBPROCESS lane's realm-bound proof would therefore have admitted a deny `web_fetch` into ordinary host egress, while the netns the proof describes only ever covered a child the launcher started. `NetworkEnforcementProof` now carries a required `face` (`subprocess` | `web`), `evaluateNetworkRequirement` takes the consumer's face and refuses a proof minted for another one (or an unnamed proof, or a caller that cannot name its face) with the typed `NETWORK_PROOF_FACE_MISMATCH` discriminator, and the web guard requires a `networkProof()` whose face is `web`.
+- **not true**: not true that a web-face proof is an OS-level statement — the web transport is in-process and no proof shape makes it OS-isolated; not true that "a `network: deny` web call cannot be admitted on another face's proof" implies "web egress is refused by the OS"; not true that fixing the replay closes BL-42's live web half or moves a grade / `V@B` / matrix ⑧⑨ cell.
+- **security consequence**: **governance hole** — latent, not measured. No in-tree composition handed a cross-face proof to the web provider (the web path still reports `unsupported`), so the hole was never live; if it had been, a Member's deny `web_fetch` would have made an ordinary host connection under a claim whose evidence was measured on a different boundary. It was fixed while latent because a latent hole closes with a typed check and a pin, not with a live round.
+- **current backstop**: the typed `NETWORK_PROOF_FACE_MISMATCH` refusal before any provider call (zero fetches, zero DNS, zero connects, zero proxy lookups, one guard fact), the face mismatch being checked in the ONE evaluator both faces share, and the composition-time absence of any web provider that mints a `web`-face proof. A `web`-face proof is a SERVICE-LEVEL statement only; BL-42's netns remains subprocess-only.
+- **smallest honest fix**: name the face on the proof, pass the consumer's face into `evaluateNetworkRequirement`, and have the web guard demand a proof for its own face instead of accepting a level; done in `packages/runtime/sandbox-provider/network.ts` + `provider.ts` + `packages/runtime/team-services/src/web.ts` (+ the code in `types.ts`). No upstream patch; `CORE PATCH BUDGET = 0`.
+- **proof**: `tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs` — `P0` is the defect pin (GREEN pre-fix, RED post-fix; `pin-before.log` / `pin-after.log` in the evidence dir), `D1` the typed mismatch refusal with zero egress, `D2` an `enforced` row alone refused as `NETWORK_UNCONFINED_REALM`, `A1` a web-face proof still admits on the web face, `A2` a subprocess-face proof still admits on the subprocess face and not the other way round, `A3` a subprocess proof with no measured namespace identity refused, `T1` face tampering / no face / unknown face / no consumer face all refused. BL-42's own end-to-end suite (`a5sf-bl42-netdeny.test.mjs`, real launcher, real netns, real child) stays green and is the negative control that the subprocess lane was not weakened.
+- **blocked by**: nothing upstream; residuals are stated rather than blocking: (1) the web transport is IN-PROCESS, so a face-bound proof for the web face can only ever be a **service-level** statement — no proof shape makes the web face OS-isolated today, and a future web transport riding a confined child is the only path to an OS-level sentence; (2) the proof is self-described, so a composition that deliberately mints a false `face: 'web'` proof is caught by review/composition, not by the field — face binding stops replay, not perjury; (3) `network: restricted` is untouched (no mechanism, still refused at admission); (4) no live Host was booted and no composition supplies a web-face proof, so an admitted deny `web_fetch` would still be ordinary host egress.
+- **anchors**: `packages/runtime/sandbox-provider/network.ts#L102` contains `NETWORK_PROOF_FACE_MISMATCH` ; `packages/runtime/sandbox-provider/network.ts#L147-L147` contains `export function evaluateNetworkRequirement` ; `packages/runtime/team-services/src/web.ts#L137-L137` contains `networkProof?` ; `packages/runtime/sandbox-provider/provider.ts#L377-L377` contains `face: 'subprocess'` ; `tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs#L120-L120` contains `P0 PD-15 defect pin`
+- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd15-face-bound-proof-20261111`, draft PR first line `PD15-FIX` (no merge; PR number lands with the PR). Host-free only: **0 boots**, no `DEV-LIVE`, no candidate start. Evidence: [a5sf-pd15-face-bound-proof/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd15-face-bound-proof/README.md). Residuals (1)–(4) above; **no grade, `V@B`, or matrix ⑧/⑨ cell changed**.
 
 ## 3. Ranking rationale
 
@@ -771,9 +787,9 @@ files on this tree, so the declarations were deleted rather than left to rot. Th
 every cited evidence file exists in the tree and still mentions the finding id, and any future
 §6 declaration reds the moment its path lands. A `DEV-LIVE` row is never aggregated into a matrix
 cell: that record class carries no `V@B`, and the run-record finalizer refuses the conversion by
-construction. PD-12 is `FIXED` with residuals; PD-13 and PD-14 are `FIXED` too (2026-11-11, both
-draft PRs: `task/a5sf-pd13-terminal-20261111` and `task/a5sf-pd14-sandbox-root-20261111`, the latter
-fixture-only with 0 boots).
+construction. PD-12 is `FIXED` with residuals (`550815c97`, #640); PD-13 (`c91c72bca`, #642) and PD-14
+(`47316541a`, #643, fixture-only with 0 boots) are `FIXED` too — all three are ancestors of
+`origin/master` and their `status` lines carry the merge commit.
 
 Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 `node scripts/doc-checks.mjs`, `git diff --check`.

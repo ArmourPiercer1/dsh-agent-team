@@ -85,6 +85,10 @@ function readExitRecord(outDir, expectedPid) {
  * it" defect, and it yields `null` here so the gate refuses. The inodes come
  * from the row's own note-free fields? They do not exist on the row, so they are
  * re-read from the captured net leg by the caller-independent reader below.
+ *
+ * PD-15 — the proof is minted with `face: 'subprocess'` because THIS provider
+ * measured it on a child it launched; the gate at `prepare()` names the same
+ * face as the consumer, so a proof from any other face cannot be replayed here.
  */
 function networkProofOf(rows, net) {
     const row = rows.find((candidate) => candidate.dimension === 'network-destination');
@@ -100,7 +104,7 @@ function networkProofOf(rows, net) {
     // (a provider whose leg did not report inodes cannot have confirmed one).
     if (typeof netNsInode !== 'number' || typeof hostNetNsInode !== 'number' || netNsInode === hostNetNsInode)
         return null;
-    return { mechanism: row.mechanism, evidence: row.evidence, netNsInode, hostNetNsInode };
+    return { face: 'subprocess', mechanism: row.mechanism, evidence: row.evidence, netNsInode, hostNetNsInode };
 }
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export function createConfinedProcessProvider(opts) {
@@ -364,7 +368,7 @@ export function createConfinedProcessProvider(opts) {
         const p = await probe();
         if (!p.ok)
             return p;
-        const net = evaluateNetworkRequirement(request.networkProfile, request.realmId, networkProofOf(captured?.rows ?? [], captured?.net ?? null));
+        const net = evaluateNetworkRequirement(request.networkProfile, request.realmId, networkProofOf(captured?.rows ?? [], captured?.net ?? null), 'subprocess');
         if (!net.ok)
             return net;
         if (captured !== null && captured.evidence.abiVersion === null) {
