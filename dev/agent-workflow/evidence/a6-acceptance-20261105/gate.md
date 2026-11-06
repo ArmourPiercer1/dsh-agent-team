@@ -1,5 +1,16 @@
 # Gate record
 
+## Final acceptance HEAD — `212c4fba2`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **375.9 s**
+- Census: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`, identity set
+  identical to `nine-root-u7-1-old-reds.md`, 0 new reds, 0 collection errors
+- Log: `.drill/ci-gate-212c4fba2.log` (untracked local artifact)
+- Earlier `a4453050f`: 9/9, 304.1 s (`.drill/ci-gate-a4453050f.log`)
+- Both runs isolated; the concurrent-census corruption caveat still applies.
+
 ## Final recipient-probe HEAD
 
 - HEAD: `a1868f878` (product fix `fd7a5d6c1` + recipient/refusal/Stop and four crash-window probes + fence re-record)
