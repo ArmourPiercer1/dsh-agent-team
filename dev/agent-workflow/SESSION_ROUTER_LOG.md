@@ -8113,3 +8113,55 @@ strict Member 不能承载 web_fetch/web_search（surfaced ⇒ A2C-2 fatal；den
   pass（round 58、matrix rows 21 claimed 0）；`node tests/s2-authority/candidate-track-negative-control.test.mjs`
   ALL GREEN 4/4；`git diff --check` rc 0。
 - **交付**：分支 `task/a5sf-matrix-fix-20261110`，draft PR 首行 `MATRIX-LIVE-FIX`；不 merge、不 settle。
+
+## 2026-11-06T06:20Z — 用户批准 5 次 P2-04 boot 预算（新分配，覆盖已耗尽的 10/10）
+
+用户原话：「批准5次P2-04预算」。这是**独立于 2026-11-05 那笔 10 次分配**的新授权，`go-no-go` 不得把两笔混合计数。
+
+分配意图（每次启动必须换回最多证据，且事前写定，不许事后追加理由）：
+
+| # | 用途 | 成功后解锁 |
+|---|---|---|
+| 1 | 候选冻结 + 当前产品树 FS/Search 回归（M-01/M-02/M-06/M-07） | 四行 `V@B` 由 `no` 恢复为实测，试用候选具备新鲜度 |
+| 2 | BL-17 live 半场（同 PTY 多命令、写-only 读拒绝、`chmod` 缺口复现） | BL-17 由 BACKEND-PARTIAL 升为实测 |
+| 3 | BL-18 live 半场（deny 车道 `strace` 零 connect/零 DNS） | BL-18 的"零连接"从对象级升级为内核级 |
+| 4–5 | 预留给上述任一次失败重试；**不得用于新增验收面** | — |
+
+纪律不变：port 族 3180（`:3080` 不可触碰）、`DSH_HOME=tests/homes/<world>`（必须工作区内）、
+每 run 一份 `grant.json`、`bootRows === plannedStarts - aborts`、archive-before-start、driver 以受管后台作业运行。
+**未用满的启动次数到期作废，不得结转。**
+
+## 2026-11-06T12:40Z — Q7 的结构性后果：在流动的 master 上，live 断言天生是时点的
+
+allocation #1/#4 把 M-01/M-02/M-06/M-07 抬到 `V@B=yes`（11/11，判官 blob 逐项相同，`productTreeProof` 钉住），
+**下一次产品合并（#606，28 条产品路径）就把四条全部作废**——`state-freshness` 以 Q7 点名要求撤回。三次红门禁
+同因，lane 正确选择撤回而不是改 pin；我提的三个假设（suite 总数、census 身份、manifest 严格度）全部被日志推翻。
+
+**结论（不要再用"冻结分支"自我安慰）**：gate 比较的是 `baseline` 快照 vs **master HEAD** 的产品面。因此只要
+master 还在接收产品改动，任何 `V@B=yes` 都会在下次产品合并后失效——把候选做成一条不被合并的分支**救不了**这个
+gate，因为断言仍以 master HEAD 为比较对象。
+
+正确的读法：`V@B=yes` 的含义是"**在该 baseline 树上**被测过"，不是"永久有效"。开发期它必然反复失效，这是
+Q7 在起作用，不是缺陷。**唯一的持久窗口是 P5 的发布候选冻结**：在那一刻切 baseline、跑全部 live 验收、然后发布；
+之后不再接收产品改动，断言才真正稳定。
+
+**由此得到的预算纪律（已据此调整）**：不要把启动次数花在"树马上还会动"的时刻。因此：
+- allocation #2（BL-17 live）与 #5 **暂缓**，等下面这条 host-free 接线落地；
+- allocation #3（BL-18 live）同样等它——§8 五步 `BLOCKED` 的真因就是 row config 不转发 `web` face；
+- **先做接线（host-free），再一次性花启动**，否则每次都要重新测，而每次重测都要再花一次预算。
+
+## 2026-11-06T15:40Z — 我的协调错误：baseline 快照必须钉在 master 可达的提交上
+
+#607 发布了 `as20261105r2`，其 baseline = `1484fa4ee`（候选分支上的提交），但**该提交从未成为 master 的祖先**。
+`state-freshness` Q4 与 census `PIN PRECHECK` 判的正是这条祖先关系，于是 **master 本身变红**，所有 PR 连带变红；
+而提交进去的 `dev/engineering/current-state.json` 又断言 `baseline_is_ancestor_of_head: true`，与实际计算相悖
+（`STALE_GENERATED_VIEW`）。
+
+**错在我**：合 #607 时我只看了 CI 绿与 settle，没有验证快照钉的提交 master 能否到达。快照语义要求 baseline 是
+"当前候选树"，而可达性是它能为任何 PR 服务的前提。
+
+修法 = **真合并提交**（`fix/a5sf-baseline-ancestry` → #609），内容为空（候选分支树与 master 逐字节相同
+`84ea9d8a`），只为建立祖先边。**必须用 merge 而非 squash**：squash 会复制树却丢掉祖先边，pin 依然不可达。
+
+规则（写死，后续所有快照）：**发布快照前先验证 `git merge-base --is-ancestor <baseline> master`；
+候选若在独立分支上，必须先把该分支以真合并并入 master，快照才能钉它。**
