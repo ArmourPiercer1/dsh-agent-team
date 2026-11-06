@@ -2,7 +2,7 @@
 
 **文档状态**：执行路由协议 / 对当前会话主代理与其拉起的全部子代理有约束力
 **适用任务**：Agent Team vNext 无人值守长开发任务（`dsh-agent-team` 独立仓库重构）
-**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）；2026-10-29 R-DM-1 裁决轮（见 §8.5）；2026-10-30 R-DM-1 机器执法轮（见 §8.5.6，审计 P1-1）；2026-10-30 证据绑定禁 rebase 轮（见 §8.5.7，审计 P0）；2026-10-30（真实 UTC）R-CLOCK-1 时钟锚点轮（见 §8.5.8，外部日常审计；注意：本行此前两处「2026-10-30 轮」及审计 #3 起若干日志头为会话日历（真实 UTC=标签−1 天），映射正本 = `dev/agent-workflow/gates/CLOCK-ANCHOR-20261030.md` §3）
+**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）；2026-10-29 R-DM-1 裁决轮（见 §8.5）；2026-10-30 R-DM-1 机器执法轮（见 §8.5.6，审计 P1-1）；2026-10-30 证据绑定禁 rebase 轮（见 §8.5.7，审计 P0）；2026-10-30（真实 UTC）R-CLOCK-1 时钟锚点轮（见 §8.5.8，外部日常审计；注意：本行此前两处「2026-10-30 轮」及审计 #3 起若干日志头为会话日历（真实 UTC=标签−1 天），映射正本 = `dev/agent-workflow/gates/CLOCK-ANCHOR-20261030.md` §3）；2026-11-09 dev-live 启动授权裁决轮（见 §0.1 第 4 条）
 
 > 本文档是把 vNext 开发计划作为**无人值守长任务**运行的路由与门禁协议。
 > 它只规定四件事：**谁执行、允许尝试几次、门禁如何验收、状态如何流转**。
@@ -47,7 +47,7 @@
 | 角色 | 拥有什么 | 不得做什么 |
 |---|---|---|
 | **Capability Implementer** | 一个能力面的产品实现 + 该面的 C1 测试 + 自己的证据目录 | 不得触碰共享 Host 装配、产品入口、Authority、Member 生命周期；不得改等级/`V@B`；不得改 Q7/CI |
-| **Integration Owner** | 集成轨（`master`）、候选轨的冻结与启动、**唯一**可改共享 Host 装配/产品入口/Authority/Member 生命周期的人 | 不得代做面实现；不得在没有 PASS preflight 时花一次 start |
+| **Integration Owner** | 集成轨（`master`）、候选轨的冻结与**候选**启动、**唯一**可改共享 Host 装配/产品入口/Authority/Member 生命周期的人 | 不得代做面实现；不得在没有 PASS preflight 时花一次 start；**不再**逐面执行开发 boot 调试（2026-11-09 起归 Capability Implementer 的 dev-live 自授权） |
 | **Acceptance-Reviewer** | 独立判定 A/B/C 三层，复跑探针与负控，产出 verdict | 不得是同一 PR 的实现者；不得改矩阵等级（等级是 owner 资产的编辑权） |
 
 **规则（本阶段全部 PR 适用）：**
@@ -61,9 +61,37 @@
    合入。理由：面的共享边界一旦写错，所有骑在其上的工具一起错，事后补测买不回已经花掉的 boot。
 3. **面内独占**：一个批次内一个面一个 implementer；跨面的改动归 Integration Owner，不得由一个面的
    implementer 顺手改另一个面的共享边界。
-4. **boot 与 preflight**：只有 Integration Owner 授权 start；start 之前必须有一段
-   `scripts/a5sf-preflight.mjs` 的 PASS（零 boot，见计划 §9 T-01）。没有 bundle 的 driver 运行
-   视为 driver 缺陷，不是“环境问题”。
+4. **boot 与 preflight（2026-11-09 owner 裁决；取代下方历史条款）**：
+
+   > **【2026-11-09 owner 裁决：下一条被取代，原文保留为历史依据】** 原文：「4. **boot 与 preflight**：
+   > 只有 Integration Owner 授权 start；start 之前必须有一段 `scripts/a5sf-preflight.mjs` 的 PASS
+   > （零 boot，见计划 §9 T-01）。没有 bundle 的 driver 运行视为 driver 缺陷，不是“环境问题”。」
+   > 历史理由（每次真实 Host 启动都是稀缺的共享资源，只有集成者掌握全局预算与调度）在当期**只对
+   > 候选启动**继续成立；它**不再**适用于开发启动。以下为取代条款。
+
+   - **开发启动自授权（DEV-LIVE）**：Capability Implementer 一旦持有某个能力面的 **scope
+     authorisation**（`scope: "dev-live"` 的 grant 行，具名 face 与隔离 test World），即可在**自己的
+     隔离测试 World 内**、**反复且自行授权**启动真实 Host，用于开发、调试与正向/负向测试；**不再需要**
+     Integration Owner 逐次批准，也**没有**固定累计次数上限。
+   - **明确排除**：该自授权**不包含**触碰稳定实例（`:3080`）、真实外部系统、共享 Authority 指针、
+     release candidate。这些仍归 Integration Owner / owner。
+   - **并发上限**：每台机器同时最多 **2** 个开发 Host（初始值，按实测资源再调整；`DEV_LIVE_SLOT_LIMIT`
+     是唯一机器可读来源）。
+   - **重试纪律**：**同一失败原因**且**没有新的诊断信息**连续 **3 次** ⇒ 停止盲试并按 §5 升级。这
+     取代按总次数的限制（不再有“总共只能 N 次”的预算算术）。
+   - **Integration Owner 职责**：保留共享产品接线、PR 集成、资源调度与**冻结候选验收**；不再逐面执行
+     boot 调试。
+   - **两类记录**：`DEV-LIVE`（开发分支运行；可用于开发与 PR review，**永不**能在 master 上产出
+     `V@B=yes`）与 `CANDIDATE-C2`（冻结候选验收，绑定不可变 SHA + Authority + Host + Oracle + 独立
+     裁决）。`DEV-LIVE` 是**工程记录标签**，**不是**验收矩阵词汇里的新等级词（`ENFORCE-PARTIAL` 等
+     等级词不变）。
+   - **保留不变**：Host 隔离（`tests/homes/` 下自己的 `DSH_HOME`、自己的 workspace、自己的日志）、
+     port lease、按身份 teardown、可追溯记录、独立 Reviewer、CI、Q7。start 之前仍必须有
+     `scripts/a5sf-preflight.mjs` 的 PASS；没有 bundle 的 driver 运行仍是 driver 缺陷，不是“环境问题”。
+     **正式候选 C2 仍需冻结、独立复核与独立验收。**
+   - 操作手册：`docs/DEV-LIVE-OPERATOR-GUIDE.md`（一页）；机器实现：
+     `tests/world-factory/suites/150-a5sf-read.mjs#preRegisterDevLiveBudget`、
+     `tests/world-factory/lib/acceptance-claim.mjs`、`tests/world-factory/lib/dev-live-slots.mjs`。
 5. **三层与两类证据**：A = 面 × 轴安全矩阵，B = 逐工具契约，C = 冻结候选跨面真 Host。`C1` = host-free，
    `C2` = live；两者互补、不可互替。判定口径见 `ALPHA5-SANDBOX-BACKLOG.md` §0.1 与
    `current-implementation-plan.md` §7（候选轨机制）与 §8（两轨的组织方式）。

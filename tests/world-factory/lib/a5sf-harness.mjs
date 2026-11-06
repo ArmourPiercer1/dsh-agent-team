@@ -73,6 +73,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { TEST_USE_BASELINE_SHA } from '../../paths.mjs'
 import { DEFAULT_MAX_HOST_STARTS, hostStartBudgetPosition } from './run-record.mjs'
+import { assertDevLiveSlotHeld } from './dev-live-slots.mjs'
 import { createOracle, oraclePaths } from './oracle.mjs'
 import { TestWorldFactory } from './world-factory.mjs'
 
@@ -303,7 +304,16 @@ export function createA5sfHarness(opts = {}) {
         )
       }
       const position = budget()
-      if (position.exhausted) {
+      // 2026-11-09 owner ruling: a DEV-LIVE record has NO fixed cumulative cap
+      // and does NOT consult the shared ledger position (the ledger is still
+      // written, but a reused dev ledger must not silently become a budget).
+      // It has a different precondition: one of the 2 machine-wide dev-Host
+      // slots must already be held by this run, so a third concurrent dev Host
+      // is refused at the ONE spawn chokepoint even if a caller bypassed the
+      // dev-live gate. CANDIDATE-C2 keeps the unchanged `used >= max` check.
+      if (runRecord.record?.recordClass === 'DEV-LIVE') {
+        assertDevLiveSlotHeld({ leaseRoot: factory.leaseRoot, runId: String(runRecord.record.runId) })
+      } else if (position.exhausted) {
         throw new A5sfHarnessError(
           'BUDGET_EXHAUSTED',
           `the shared host-start ledger already holds ${String(position.used)} >= ${String(maxHostStarts)} starts; refusing to boot ${world.id}`,

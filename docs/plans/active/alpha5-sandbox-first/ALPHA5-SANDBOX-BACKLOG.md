@@ -82,6 +82,14 @@ BL-24/BL-25 的括号里。
 与 C 层的必要条件。**C1 永远不能替代 C2**，C2 也不能替代 C1（一个只能 live 才能发现的产品缺陷，
 与一个本该 host-free 却花了 boot 才发现的 driver 缺陷，是两类成本）。
 
+> **2026-11-09 owner 裁决（dev-live）**：BL-17 / BL-18 的 live 半场**不再**是
+> “allocation #2/#3 的固定预算待办”，也不再需要 Integration Owner 逐次批准。它们是
+> **dev-live 工作**：对应面的 Capability Implementer 持有 `scope: "dev-live"` authorisation
+> 后可在自己的隔离 World 内反复启动真实 Host，无固定累计上限；每次 start 仍写
+> `DEV-LIVE` 账本行、仍受每机 2 并发上限与 preflight 约束，且**永不**能产出
+> `V@B=yes`。正式候选 C2 仍需冻结 + 独立复核 + 独立验收。
+> 操作页 = `docs/DEV-LIVE-OPERATOR-GUIDE.md`；协议 = `docs/ROUTER_RULES.md` §0.1 第 4 条。
+
 **条目台账（不复制等级；状态文字仍在各条自身）**：
 
 | 条目 | Face | C1（host-free） | C2（live） | 需要 boot | 说明 |
@@ -102,8 +110,8 @@ BL-24/BL-25 的括号里。
 | BL-14 | fs | 有 | 有（历史，已撤回） | 是 | read live 8/8 在 `44babbfcf`；`#606` 后 `V@B=no` |
 | BL-15 | fs | 有 | 有（历史，已撤回） | 是 | write live 两半；同上 |
 | BL-16 | subprocess | 有 | 有（历史，已撤回） | 是 | grep/glob 六行 PASS + 候选 11/11；`#606` 后撤回 |
-| BL-17 | shell-pty | 有 | — | **是（allocation #2，暂缓）** | shell-class 准入/写轴/网络探针/旧代 PTY 拒用 host-free 已证 |
-| BL-18 | web | 有 | — | **是（allocation #3，暂缓）** | deny 车道 provider 之前拒绝；web face 转发已由 `#608`（`52a95fe0b`）落地，**live 半场仍未测** |
+| BL-17 | shell-pty | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #2 预算已不再是约束）** | shell-class 准入/写轴/网络探针/旧代 PTY 拒用 host-free 已证 |
+| BL-18 | web | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #3 预算已不再是约束）** | deny 车道 provider 之前拒绝；web face 转发已由 `#608`（`52a95fe0b`）落地，**live 半场仍未测** |
 | BL-19 | external | — | — | 否（先 C1） | run_code/PTC：无 routed-native 接入面（矩阵 M-11） |
 | BL-20 | subprocess | — | — | 否（先 C1） | 通用 launcher 端到端；机制已在 P1-07 实测 |
 | BL-21 | cross | 部分（源半） | — | 是（runtime 半） | 来源清单：runtime 枚举需 boot |

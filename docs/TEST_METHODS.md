@@ -138,3 +138,54 @@ node tests/world-factory/provision-host-sandbox.mjs --manifest   # 打印 pin
 3. 环境状态**永不计入 PASS**：`overallVerdict` 的 `VERDICT_SEVERITY` 顺序本轮未改，`SKIP/REFUSED/ENV_BLOCK` 仍不是 PASS，ENV_BLOCK 仍使 `overall != PASS` 且退出码 1。
 4. 摘要不符是供给链事件不是环境态：预检**抛出**并拒绝启动 Host，而非记成 `unusable` 继续跑。
 5. 套件不得为变绿放宽沙箱、替换原生工具或 patch 宿主（CORE PATCH BUDGET = 0）。
+
+## 10. Host 启动授权：`DEV-LIVE` 与 `CANDIDATE-C2`（2026-11-09 owner 裁决）
+
+本节把 `docs/ROUTER_RULES.md` §0.1 第 4 条落到测试基础设施上。**它只改启动授权，不改隔离、
+证据与验收**：正文 §1–§9 的端口、`DSH_HOME`、干净树、原生沙箱资产与 verdict 规则全部继续有效。
+
+### 10.1 两类授权，互不通用
+
+| | **DEV-LIVE**（开发启动） | **CANDIDATE-C2**（冻结候选验收） |
+|---|---|---|
+| 授权形态 | `scope: "dev-live"` 的 grant 行：`{grantId, scope, grantedBy, face, world}` | 每次运行一条 grant：`{grantId, maxStarts, grantedBy, boundCommit}`（无 `scope` 字段的旧行默认此类型） |
+| 谁授权 | Capability Implementer **自授权**，前提是 owner 已给该面一个 scope authorisation | owner / Integration Owner 按候选冻结发放 |
+| 次数 | **无固定累计上限**；同一授权可反复开新 lease | `maxStarts`（含 1 行预登记）：仍是每次运行固定、失败不结转 |
+| 绑定 | 绑 **face + 隔离 test World**；运行时的 commit 记入 `headCommit`，不要求等于签发时 commit | 绑 **不可变 SHA**（`boundCommit`）+ Authority + Host + Oracle |
+| 并发 | 每台机器最多 **2** 个 dev Host（`DEV_LIVE_SLOT_LIMIT`） | 由 Integration Owner 调度 |
+| 记录类别 | `recordClass: "DEV-LIVE"`；**永不**能产出 `V@B=yes` | `recordClass: "CANDIDATE-C2"`；仍走既有 C2 全部检查 |
+| 仍禁止 | `:3080` 稳定实例、真实外部系统、共享 Authority 指针、release candidate | 同左 |
+
+**scope 不互跨**：dev-live grant 交给候选门 ⇒ `GRANT_SCOPE_MISMATCH`；候选 grant 交给开发门 ⇒
+同样拒绝；记录类别与 scope 必须一致（`RECORD_CLASS_MISMATCH`）。候选路径的
+`maxStarts` / `boundCommit` / 预登记 / 预算位置检查**一个都没有放宽**。
+
+### 10.2 每次 dev-live start 仍须登记的内容
+
+账本（与候选同一个 `run-record.mjs` 写入器、同一个 JSONL）逐行带 `recordClass`：
+
+1. `budget-intent` — `grantId` / `grantedBy` / `face` / `world` / `headCommit`（版本）/ `plannedStarts`；
+2. 启动行 — harness 在 **spawn 之前**写入的 `world` / `phase` / `suite`（环境 = 该隔离 World 的
+   `DSH_HOME` 与 port lease，仍由 WorldFactory 记录）；
+3. `dev-live-outcome` — `overall` / `cases` / `teardown`（World teardown receipt），由
+   `lease.finish({...})` 写入并同时释放并发槽。
+
+RUN record 另带 `recordClass` 与 `candidateClaimEligibility`（机器可读的“本记录能否支撑候选断言”）。
+
+### 10.3 隔离、teardown、证据（不变）
+
+- 每个 dev Host 用**自己的** `tests/homes/<world>`、自己的 workspace、自己的日志；
+- 端口仍从 `tests/paths.mjs` 的测试段租用，`3080` 永不租给 World；
+- teardown 仍按**身份**（pid + startedAt）杀进程、释放 lease、删 home；
+- 崩溃恢复：并发槽按 `pidAlive` 判 stale 并回收（死 pid 立即回收；不可解析文件 >60 s 视为残留；
+  4 h TTL 仅作兜底）；
+- 独立 Reviewer、CI 与 Q7 不变。
+
+### 10.4 重试纪律（取代总次数上限）
+
+同一失败原因且**没有新的诊断信息**连续 **3 次** ⇒ 停止盲试，按 `ROUTER_RULES.md` §5 升级并写清：
+失败原因、已排除的假设、下一条需要的新事实。**不再**用“总共只能 N 次启动”的算术。
+
+### 10.5 一页操作手册
+
+实现者按 `docs/DEV-LIVE-OPERATOR-GUIDE.md` 执行（如何自授权、写什么、禁止什么、3 次后如何升级）。
