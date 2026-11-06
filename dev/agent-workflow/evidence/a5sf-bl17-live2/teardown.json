@@ -1,0 +1,25 @@
+{
+  "hostPid": null,
+  "hostChildExitCode": null,
+  "portStillListening": false,
+  "worldTeardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 33,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live2/tests/homes/u5a5sfbl17-20261106T02-21-57Z",
+    "releasedPorts": [
+      3184,
+      3494,
+      3184
+    ],
+    "killedPids": [
+      33
+    ],
+    "notes": []
+  },
+  "homeExistsAfterTeardown": false,
+  "note": "the Host child is the process this run spawned; the World teardown kills it and releases the port. portStillListening=true would be an orphan."
+}

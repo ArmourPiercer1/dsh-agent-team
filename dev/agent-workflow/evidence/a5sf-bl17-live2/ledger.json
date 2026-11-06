@@ -1,0 +1,20 @@
+{
+  "schema": "a5sf-bl17-live2/ledger/1",
+  "ledgerPath": "dev/agent-workflow/evidence/a5sf-bl17-live2/run-ledger.jsonl",
+  "plannedStarts": 1,
+  "aborts": 0,
+  "intentRows": 1,
+  "boots": 1,
+  "arithmetic": "boots === plannedStarts - aborts => 1 === 1 - 0",
+  "holds": true,
+  "rows": [
+    { "kind": "budget-intent", "phase": "a5sf-read-intent", "world": "intent:grant-a5sf-bl17-live2-e0f18df3b702", "at": "2026-11-06T02:21:57.591Z" },
+    { "kind": "boot", "phase": "a5sf-bl17-live2-boot1", "world": "u5a5sfbl17-20261106T02-21-57Z", "at": "2026-11-06T02:22:04.035Z" }
+  ],
+  "budgetAfterThisRun": {
+    "startsRemaining": 1,
+    "earmark": "BL-18 live or an FS/Search re-validation (owner call, not this lane's)",
+    "retryPerformed": false
+  },
+  "note": "The shared ledger counts ROWS, not spawns: 1 pre-registration intent + 1 boot. The grant's maxStarts=2 covers exactly those two rows. The boot row exists because the Host really started (port 3184, health 200); the run is therefore a spent start, reported as NOT_REACHED rather than as an abort row."
+}

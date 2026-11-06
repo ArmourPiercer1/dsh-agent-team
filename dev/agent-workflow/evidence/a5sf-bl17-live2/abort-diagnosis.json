@@ -1,0 +1,67 @@
+{
+  "schema": "a5sf-bl17-live2/abort-diagnosis/1",
+  "at": "2026-11-06T02:22:18.124Z",
+  "runId": "a5sf-bl17-live2-2026-11-06T02-21-57-562Z",
+  "boot": "P2-04 boot #4 of 5 — BL-17 live half (Shell-PTY face)",
+  "head": "e0f18df3b702370cd50b475d18b8d9758a1fe9d0",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "port": 3184,
+  "abort": {
+    "step": "team.create",
+    "driverStep": "create-team (declared produces: team-session, member)",
+    "httpStatus": 200,
+    "transportNote": "team.create answers 200 with result.ok=false; the driver's createOk test is `status === 200 && body.result.ok === true`, so the refusal was correctly treated as a failure.",
+    "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+    "innerCode": "alpha2-permission-coverage-unmanaged-tools",
+    "instanceId": "inst-leader",
+    "bodyObserved": "{\"type\":\"server-response\",\"rpcId\":\"a5sfbl17-ilbaet56xk\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5sf-bl17-team' failed: permission coverage gate failed for instance 'inst-leader': 2 unmanaged tool(s) on the final model-facing surface: u5_canary (unknown-unm",
+    "bodyObservedIsTruncated": true,
+    "truncationDetail": "run.log slices the body to 400 chars and the thrown Error to 300 chars; both end inside `u5_canary (unknown-unm`. The full body was NOT captured. This is a measured instance of the residual half of `driver.log-capture`: the plan declared captures:[\"status\",\"body\"], the preflight PASSes that declaration, and the driver still truncates at runtime.",
+    "bodyReconstructedFromProductCode": "team.create: starting the root (leader) agent for 'session-a5sf-bl17-team' failed: permission coverage gate failed for instance 'inst-leader': 2 unmanaged tool(s) on the final model-facing surface: u5_canary (unknown-unmanaged), u6fs_probe (unknown-unmanaged) (code: alpha2-permission-coverage-unmanaged-tools)",
+    "reconstructionSource": "packages/runtime/operation-permission/errors.ts:424-431 (permissionCoverageUnmanagedMessage: `name (classification)` joined by ', ' + closed code) plus the observed prefix, count and classification prefix. `u5_canary (unknown-unm...` IS in the observed bytes; `u6fs_probe` and its classification are INFERRED from the observed `2 unmanaged tool(s)`, the World's other always-composed test row (u6-fs-probe-host registers u6fs_probe), and the canonical b2 coverage comment in tests/world-factory/lib/u6-fs-assembly.mjs:154-162. Flagged as a reconstruction, not an observation."
+  },
+  "rootCause": {
+    "class": "run construction (driver / composition), not product behaviour",
+    "what": "The driver's main.yaml declares the leader with `capabilities.builtinToolDeny: []`, while the World always composes the `u5-canary` and `u6-fs-probe-host` test rows (composed profile: log lines 1-5). Those two rows put `u5_canary` and `u6fs_probe` on the leader's final model-facing surface.",
+    "why": "The product's A2C-2 permission coverage gate refuses to start the root agent when any model-facing tool is neither allowed, asked, nor denied — `unknown-unmanaged` is exactly that state. So `team.create` was refused before a leader session existed, and no member, no delegate, no tool call, and no PTY ever ran.",
+    "where": "dev/agent-workflow/evidence/a5sf-bl17-live2/run-boot.mjs, mainBlueprintYaml(), the line `'    builtinToolDeny: []'` (line 152 of the copied driver).",
+    "canonicalPatternNotFollowed": [
+      "tests/world-factory/lib/u6-fs-assembly.mjs:154-162 — `mainBlueprintYaml(denyList)` puts EVERY unmanaged name on the final model-facing surface into `builtinToolDeny`, with the measured b2 comment: deny is coverage here, not a call site.",
+      "tests/world-factory/suites/040-u6-arc-a.mjs:159-161 — discovery prompt first, read `surfaceNamesOf(mock request)`, compute `denyList = surface.filter(not team_ && not MANAGED && not SAFE_UNMANAGED)`, write main.yaml, then `team.create`.",
+      "tests/world-factory/u7-tbash.test.mjs:43 — the minimal form: `a.writeMainBlueprint(['web_fetch'])`."
+    ],
+    "notProduct": "The gate produced the documented diagnostic with the documented inner code and named both tools. Nothing here contradicts any host-free arm: the arms never claim a coverage-clean leader surface, and the a5sf-bash README §8 checklist (which starts at the native module mount) does not mention the world's canary/probe rows at all.",
+    "whyThisIsTheSixthInstrumentDefect": "Boot #3 died one step earlier (pre-create state gate). This run's fixed driver passed that point (the pre-create state read is diagnostic-only and really did continue: see `preCreateState` below), then died at the first step the boot-3 run never reached. Each fix moves the failure to the next unexercised construction step."
+  },
+  "preCreateState": {
+    "observed": true,
+    "status": 500,
+    "body": "{\"error\":\"ControlService: no TeamSession record for root session 'session-a5sf-bl17-team'\"}",
+    "reading": "The fixed driver's diagnostic half is verified live: the route is non-200 on a root with no team session, the error is the documented TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND family, and the driver did NOT gate on it (it proceeded to team.create). Boot #3's root-cause diagnosis is therefore confirmed by direct observation, not just by code reading. The post-create state gate was never reached, so the gate-order fix itself still has no live confirmation."
+  },
+  "preflightCouldNotSee": {
+    "verdictItGave": "PASS 16/16 (including driver.gate-order PASS, driver.log-capture PASS, bundle.case-coverage PASS) — a genuine PASS on everything it declares, and still insufficient.",
+    "blindSpot": "The bundle declares blueprint IDs and member counts (`identity.blueprints`) but never the leader's model-facing tool surface nor its permission coverage. The driver's blueprint text lives inside the driver; it is not a bundle fact. No check compares `builtinToolDeny` against the World's always-composed test rows (`u5-canary`, `u6-fs-probe-host`), and the driver never discovers the surface before create.",
+    "whatWouldHaveCaughtIt": [
+      "A `driver.leader-surface` check over a declared `driver.blueprint.leaderSurface = { tools: [...], builtinToolDeny: [...], managed: [...] }` requiring every non-team tool in the declared surface to be covered. The world rows are known before boot (the factory composes them), so this is a host-free-checkable declaration.",
+      "Or a declared step `discover-leader-surface` whose `produces: ['leader-surface']` must precede `create-team`, with the create step's `requires: ['leader-surface']` — the same declared-precondition mechanism as driver.gate-order, extended to the surface fact.",
+      "Neither exists today. This is the same structural lesson as boot #3: a content-complete bundle can still omit the fact that the next gate consumes."
+    ]
+  },
+  "fixCandidates": {
+    "minimal": "Add the World's always-composed test tools to the leader's `builtinToolDeny` in mainBlueprintYaml(): `- u5_canary`, `- u6fs_probe` (precedent: u7-tbash.test.mjs:43, and the u6-fs-assembly helper's measured b2 note).",
+    "robust": "Adopt the discovery-first pattern (040-u6-arc-a.mjs:159-161): one prompt to the leader, read the surfaced tool names from the mock request, compute the deny list (excluding `team_*`, managed names and safe-unmanaged names), write main.yaml, then create. This survives a preset/row change that adds another tool.",
+    "eitherWay": "Both are driver/composition changes only; no product change is needed or licensed. CORE_PATCH_BUDGET stays 0."
+  },
+  "budget": {
+    "plannedStarts": 1,
+    "intentRows": 1,
+    "boots": 1,
+    "aborts": 0,
+    "arithmetic": "boots === plannedStarts - aborts -> 1 === 1 - 0",
+    "arithmeticHolds": true,
+    "startsRemainingAfterThisRun": 1,
+    "remainingEarmark": "BL-18 live or an FS/Search re-validation (owner call; NOT this lane's)",
+    "retry": "None performed. The driver refuses a second boot in this directory (`priorBoots >= 1`), and no retry was attempted on this agent's authority."
+  }
+}
