@@ -131,3 +131,26 @@ P2 findings and disposition:
 Residual risks accepted: notification failure is reported, not retried;
 Officer/human branches of the sink are currently unreachable; the same-session
 queued-wake gap remains row 15 BLOCKED/PARTIAL.
+
+## Review at gated `212c4fba2` — BLOCK, and the response at `1e50d55fc`
+
+A second read-only review (code head `212c4fba2`) returned **BLOCK, no P0**.
+The authority/execution plane was found clean; the findings were at the new
+Stop/resume boundary and process level.
+
+| Finding | Response |
+| --- | --- |
+| P1-1 internal cancels request `{kind:'user'}`, so a tool/parent abort or archive interrupt could create a Sticky Stop | FIXED: the team's own aborts now request `{kind:'hook', reason:'team-work-delivery-aborted'}` and interrupts `{kind:'hook', reason:'team-member-interrupt'}`; only a real `session/cancel` reaches `user`. |
+| P1-2 team/model deliveries carry `source.kind==='user'`, so a Leader message could clear a human Stop | FIXED: internal work/messaging/root deliveries carry `plugin:dsh-agent-team`; the messaging port keeps `user` only when the attribution carries `fromHumanId`. Team-internal messages no longer resume. |
+| P1-3 post-restart resume was a silent no-op (no coordinator after the Stop cleared the intent row) and the marker survived | FIXED: the marker now stores the latch key + reviewer `targetSessionId`; boot registers stopped latches from markers, and resume rebuilds the latch from the marker on demand, clears it, dispatches `resume`, then re-plans through `alpha6DispatchWake`. `A6-24` PASS. |
+| P1-4 the tree was not at the gated head while docs claimed clean | FIXED: product + kit + ARC override committed at `f68dc137c`, dist glue/fence/docs at `1e50d55fc`; full gate **9/9** at `1e50d55fc` on a clean tracked tree. |
+| P2-1 A6-22/23 labels over-claim “withdraw the queued row” (the mock had consumed the wake) | DISCLOSED, not over-claimed: the probes prove the durable marker, no post-restart re-delivery, and (now) resume; queued-vs-claimed row withdrawal is not separately asserted. |
+| P2-2 A6-20 accepted any durable decision | FIXED: it now requires `decision==='deny'` plus no consumption/execution; `a6-timeout-r5` PASS. |
+| P2-3 A6-21 used the local ledger id | FIXED: the id is learned from the remote `team.getLedgerPage` fact itself (`remoteOnlyRequestId`); `a6-human-r13` PASS. |
+| P2-4 stale matrix/gate/timeout docs | FIXED in this docs commit (HEAD `1e50d55fc`, new gate, wiring/resume status). |
+| P3 swallowed `markStopped` failure | Accepted as a filesystem-only fail-open for Stop, disclosed; no authority effect (a missing Stop is fail-open for *stopping*, never for allow). |
+
+The reviewer's unverified list is addressed by the new Host runs: normal
+`a6-normal-r6`, handoff `a6-handoff-r8`, timeout `a6-timeout-r5`, human
+`a6-human-r13`, Sticky Stop/resume `a6-sticky-stop-r12`, and the gate above.
+New-call-after-resume chaining and crash settlement remain open (below).

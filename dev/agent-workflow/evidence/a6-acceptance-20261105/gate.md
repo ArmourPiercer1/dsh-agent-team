@@ -1,6 +1,23 @@
 # Gate record
 
-## Final acceptance HEAD — `212c4fba2`
+## Final acceptance HEAD — `1e50d55fc`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **362.8 s**
+- Census: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`, 0 new reds,
+  0 collection errors
+- Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
+- Blueprint fence: no new offending path; kit identities L618/L807/L1626/L2264
+  re-recorded in the open (same sources/fixtures)
+- Log: `.drill/ci-gate-1e50d55fc.log` (untracked local artifact)
+- The first attempt at product head `f68dc137c` was 6/9: the kit edit moved the
+  two v5 identities (fence), the dist glue mirror was not yet placed
+  (artifacts-at-head), and the dirty docs tree tripped the two A4-PR7 merge-gate
+  census tests. `1e50d55fc` fixes all three and is the 9/9 above.
+- Both runs isolated; the concurrent-census corruption caveat still applies.
+
+## Earlier acceptance HEAD — `212c4fba2`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`

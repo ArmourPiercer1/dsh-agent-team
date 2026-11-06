@@ -1,7 +1,7 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `a1868f878` (product fix `fd7a5d6c1` plus the
-  recipient/refusal probes; full gate 9/9 in `gate.md`).
+- **Integrated code HEAD under test:** `1e50d55fc` (durable Stop/resume +
+  trusted cancel/message provenance; full gate 9/9 in `gate.md`).
 - **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
   `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
   `a6-exception-r2`, `a6-human-r9`, `a6-handoff-only-r6` and `a6-stop-r3`, whose
@@ -39,7 +39,7 @@
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on `4e569e757`; the evidence commits after
+Full local gate **9/9 PASS, zero skips** on `1e50d55fc`; the evidence commits after
 it change docs/evidence only. `gate.md` records the exact SHA and outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.

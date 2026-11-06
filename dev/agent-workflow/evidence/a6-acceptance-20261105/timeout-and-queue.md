@@ -1,4 +1,4 @@
-# Timeout, queue/claim/release and crash-window status (exact HEAD 8114db4b7)
+# Timeout, queue/claim/release and crash-window status (exact HEAD 1e50d55fc)
 
 This file records what is **not** reachable yet, so the acceptance matrix does not
 silently promote a unit test or a synthetic timer to product evidence.
