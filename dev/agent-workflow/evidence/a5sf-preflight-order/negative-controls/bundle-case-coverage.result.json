@@ -1,0 +1,116 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "verdict": "FAIL",
+  "checks": [
+    {
+      "id": "assembly.usable",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.roots",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.blueprints",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.member-tool-binding",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.authority",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "native.module-config",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.paths",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.fifo",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "cases.isolation",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "bundle.case-coverage",
+      "verdict": "FAIL",
+      "findings": [
+        {
+          "code": "CASE_PLANNED_MISSING",
+          "detail": "planned case \"over-sample-cap-row\" is absent from bundle.cases; the run would report a case it never planned, or spend a start on an untabled row (the missing over-sample-cap glob-results class)",
+          "caseId": "over-sample-cap-row"
+        },
+        {
+          "code": "CASE_FIXTURE_MISSING",
+          "detail": "case \"read-a\" has no row in bundle.fixtures; its declared inputs are not in the fixture set (the missing over-sample-cap glob-results class)",
+          "caseId": "read-a"
+        }
+      ]
+    },
+    {
+      "id": "driver.gate-order",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.log-capture",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "collector.shape",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.candidate",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.grant",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.run-record",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "findings": [
+    {
+      "code": "CASE_PLANNED_MISSING",
+      "detail": "planned case \"over-sample-cap-row\" is absent from bundle.cases; the run would report a case it never planned, or spend a start on an untabled row (the missing over-sample-cap glob-results class)",
+      "caseId": "over-sample-cap-row"
+    },
+    {
+      "code": "CASE_FIXTURE_MISSING",
+      "detail": "case \"read-a\" has no row in bundle.fixtures; its declared inputs are not in the fixture set (the missing over-sample-cap glob-results class)",
+      "caseId": "read-a"
+    }
+  ],
+  "unknown": [],
+  "summary": "FAIL 15/16 checks blocks=CASE_PLANNED_MISSING,CASE_FIXTURE_MISSING",
+  "inputs": {
+    "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-order",
+    "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostPrefixRemapped": true
+  }
+}
