@@ -1,0 +1,169 @@
+{
+  "allRows": [
+    {
+      "at": "2026-11-06T11:00:37.041Z",
+      "leg": "base-subprocess-counter-installed",
+      "baseCtor": "LocalSubprocessRuntime",
+      "note": "test composition instrumentation; records only the inherited service arm"
+    },
+    {
+      "at": "2026-11-06T11:00:38.177Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.215Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.271Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.716Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.740Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.789Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:38.869Z",
+      "leg": "realm-member",
+      "memberInstanceId": "inst-054vaf000o03",
+      "templateId": "worker",
+      "sessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+      "teamRootSessionId": "session-a5sf-pty-team",
+      "bindPath": "fresh-member",
+      "networkAccess": "allow",
+      "realmFaces": [
+        "subprocess"
+      ],
+      "hasTerminalsFace": false,
+      "note": "the governed realm answer for this Member; no terminal face exists in RealmServiceFaces (PD-3), so this list is the whole confined surface"
+    },
+    {
+      "at": "2026-11-06T11:00:38.988Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "--show-toplevel",
+        "--absolute-git-dir",
+        "--git-path",
+        "objects"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:39.014Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:39.058Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:39.651Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:39.698Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    },
+    {
+      "at": "2026-11-06T11:00:39.772Z",
+      "leg": "base-spawn",
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--all",
+        "--ignore-errors"
+      ],
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "instance": false
+    }
+  ],
+  "abortedAt": "member-bash-calls",
+  "osLevelNetworkIsolationClaimed": false
+}

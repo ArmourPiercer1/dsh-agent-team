@@ -1,0 +1,82 @@
+{
+  "schema": "a5sf-pty-devlive/same-pty-multi-command/1",
+  "at": "2026-11-06T10:55:05.345Z",
+  "caseId": "same-pty-multi-command",
+  "question": "Do several commands in one Member session share ONE backend PTY, or does each command spawn?",
+  "initiation": "the Member's own model turn: the mock issued two sequential `bash` calls",
+  "member": {
+    "instanceId": "inst-054vaf000o03",
+    "childSessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "templateId": "worker"
+  },
+  "commands": [
+    "echo \"A5SF_PTY_RUN=1\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_CWD=$(pwd)\"",
+    "echo \"A5SF_PTY_RUN=2\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_CWD=$(pwd)\""
+  ],
+  "channels": {
+    "first": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "sess": "0",
+      "tty": "?",
+      "fd0": "/dev/pts/0",
+      "procSession": 0,
+      "procTtyNr": 0,
+      "procFd0": "/dev/null",
+      "procPpid": 1,
+      "procComm": "bash"
+    },
+    "second": {
+      "pid": 2,
+      "ps": "2 0 ? 1",
+      "sess": "0",
+      "tty": "?",
+      "fd0": "/dev/pts/0",
+      "procSession": 0,
+      "procTtyNr": 0,
+      "procFd0": "/dev/null",
+      "procPpid": 1,
+      "procComm": "bash"
+    }
+  },
+  "control": {
+    "member": {
+      "instanceId": "inst-0v93y6i1hns7",
+      "childSessionId": "session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89",
+      "templateId": "worker2"
+    },
+    "command": "echo \"A5SF_PTY_RUN=2C\"; echo \"A5SF_PTY_PID=$$\"; echo \"A5SF_PTY_PS=$(ps -o pid=,sess=,tty=,ppid= -p $$ | tr -s \" \")\"; echo \"A5SF_PTY_FD0=$(readlink /proc/$$/fd/0)\"; echo \"A5SF_PTY_CWD=$(pwd)\"",
+    "channel": {
+      "pid": null,
+      "ps": null,
+      "sess": null,
+      "tty": null,
+      "fd0": null,
+      "procSession": null,
+      "procTtyNr": null,
+      "procFd0": null,
+      "procPpid": null,
+      "procComm": null
+    },
+    "purpose": "a second Member on the SAME World: if the two Members shared one shell, \"same pid\" would be a global fact rather than a per-Member one"
+  },
+  "locus": {
+    "layer": "Product preset (inherited legacy-generation PTY)",
+    "service": "@deepseek-ai/dsh-terminal"
+  },
+  "checks": {
+    "twoCommandsInOneMemberTurn": true,
+    "samePid": true,
+    "sameSession": true,
+    "sameTty": true,
+    "notARespawn": true,
+    "secondMemberHasDifferentPty": false,
+    "secondMemberDifferentTty": false
+  },
+  "verdict": "FAIL",
+  "limits": {
+    "note": "same pid/session/tty is PTY identity, not process-tree confinement; the shell is the legacy persistent shell the preset mounts",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

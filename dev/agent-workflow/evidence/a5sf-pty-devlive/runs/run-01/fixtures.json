@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-06T10:51:28.445Z",
+  "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace",
+  "lanes": {
+    "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+    "writeOnly": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+  },
+  "files": {
+    "laneInside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+    "writeOnly": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only",
+    "mode": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside/mode.txt",
+      "mode": "644"
+    },
+    "presetProbeLedger": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/preset-probe.jsonl",
+    "realmProbeLedger": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/confined-probe.jsonl"
+  },
+  "secrets": {
+    "product": "A5SF_PTY_SECRET_PRODUCT_4f1c",
+    "face": "A5SF_PTY_SECRET_FACE_9b27",
+    "kernel": "A5SF_PTY_SECRET_KERNEL_7d43",
+    "writeOnly": "A5SF_PTY_SECRET_WRITEONLY_1e88"
+  },
+  "homePin": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/cordis.patch.yml",
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace"
+  },
+  "rows": [
+    "a5sf-pty-realm",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-pty-base"
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

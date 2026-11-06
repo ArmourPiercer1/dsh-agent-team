@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-a5sf-pty-team",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-054vaf000o03",
+        "templateId": "worker",
+        "childSessionId": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+        "operationId": "op-0v0dmha1nombpt0avz66o1u6",
+        "replayed": false,
+        "ledgerSequence": 3,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 4,
+        "workSettled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "ptydv-delegate-worker"
+    }
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

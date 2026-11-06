@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-06T11:10:20.561Z",
+  "head": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+  "rows": [
+    "a5sf-pty-realm",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-pty-base"
+  ],
+  "patchBytes": 7412,
+  "patchSha256": "345f729da1d7c1ae8c25978852391c5f92d4cfee21c0a5e696d2a4db43d6a842",
+  "osLevelNetworkIsolationClaimed": false
+}

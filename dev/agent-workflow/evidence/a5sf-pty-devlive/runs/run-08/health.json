@@ -1,0 +1,50 @@
+{
+  "gate": "poll",
+  "fixedDefect": "a single 404-while-pending probe aborts the world and the world teardown is then reported as `TeamDomain is closed` (PD-11 masking); this gate polls and keeps every body",
+  "timeoutMs": 240000,
+  "elapsedMs": 507,
+  "probeCount": 2,
+  "kind": "ready",
+  "final": {
+    "seq": 2,
+    "at": "2026-11-06T11:10:57.923Z",
+    "elapsedMs": 507,
+    "status": 200,
+    "body": {
+      "ok": true,
+      "boot": 1,
+      "ready": true,
+      "rootSessionId": "session-a5sf-pty-team",
+      "liveSessions": [
+        "session-a5sf-pty-root"
+      ],
+      "toolCount": 15
+    }
+  },
+  "probes": [
+    {
+      "seq": 1,
+      "at": "2026-11-06T11:10:57.419Z",
+      "elapsedMs": 3,
+      "status": 404,
+      "body": null
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-06T11:10:57.923Z",
+      "elapsedMs": 507,
+      "status": 200,
+      "body": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-a5sf-pty-team",
+        "liveSessions": [
+          "session-a5sf-pty-root"
+        ],
+        "toolCount": 15
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

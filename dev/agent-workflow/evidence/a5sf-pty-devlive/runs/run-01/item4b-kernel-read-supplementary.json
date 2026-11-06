@@ -1,0 +1,75 @@
+{
+  "schema": "a5sf-pty-devlive/kernel-read-supplementary/1",
+  "at": "2026-11-06T10:55:05.362Z",
+  "caseId": null,
+  "supplementary": true,
+  "notACase": true,
+  "why": "not a case: it observes the OS profile AFTER an admitted call. It is tabled nowhere in the preflight bundle and adds no row to the run record; it exists to pin the LOCUS of the read refusal (admission vs kernel).",
+  "answer": "see checks",
+  "probe": {
+    "label": "kernel-read-supplementary",
+    "request": {
+      "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-kernel.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+      ],
+      "writes": null,
+      "chmod": null
+    },
+    "memberSession": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "memberInstanceId": "inst-054vaf000o03",
+    "status": 200,
+    "ok": false,
+    "errorMessage": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only' is outside every allow subtree of the lane",
+    "errorInfo": null,
+    "typedCode": null,
+    "value": null,
+    "facts": [
+      {
+        "schema": "a5sf-guard-consult/1",
+        "realm": "member",
+        "memberIdentity": "inst-054vaf000o03",
+        "toolBindingIdentity": null,
+        "policyRevision": "a5sf-pty:inst-054vaf000o03:g1",
+        "method": "spawn",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED",
+        "sequence": 2,
+        "observedAt": "2026-11-06T10:55:05.360Z"
+      }
+    ],
+    "confinedSpawnRows": [],
+    "realmProbeRows": [
+      {
+        "at": "2026-11-06T10:55:05.360Z",
+        "tool": "bash_probe",
+        "mount": "realm",
+        "program": "/bin/bash",
+        "body": "cat \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-kernel.txt\"",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+        "reads": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+        ],
+        "writes": [],
+        "chmod": [],
+        "stage": "done-rejected",
+        "code": "IO_READ_DENIED",
+        "name": "TeamIoDenial",
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only' is outside every allow subtree of the lane"
+      }
+    ],
+    "presetProbeRows": [],
+    "locus": "confined subprocess face (shipped admission + P1-07 OS profile)"
+  },
+  "checks": {
+    "admitted": false,
+    "noSecretBytes": true,
+    "childFailed": false
+  },
+  "locus": {
+    "layer": "P1-07 Landlock OS profile (kernel), after admission"
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

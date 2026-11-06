@@ -1,0 +1,108 @@
+{
+  "schema": "a5sf-pty-devlive/chmod-gap/1",
+  "at": "2026-11-06T11:11:00.713Z",
+  "caseId": "chmod-gap",
+  "question": "Is the disclosed `chmod` gap reproducible on this tree?",
+  "disclosure": "Landlock has no chmod permission bit, so an UNDECLARED same-uid `chmod` is outside this admission's reach (ALPHA5-SANDBOX-BACKLOG BL-17 (3))",
+  "observed": {
+    "modeBefore": "644",
+    "modeAfter": "600",
+    "changed": true
+  },
+  "invocation": "driver-initiated `bash_probe` on the Member session, with NO `chmod` declaration",
+  "probe": {
+    "label": "chmod-gap",
+    "request": {
+      "body": "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside",
+      "reads": null,
+      "writes": null,
+      "chmod": null
+    },
+    "memberSession": "session-team-child-cdcb7199639ea72356ec83423273b39a",
+    "memberInstanceId": "inst-054vaf000o03",
+    "status": 200,
+    "ok": true,
+    "errorMessage": "",
+    "errorInfo": null,
+    "codes": {
+      "errorInfo": null,
+      "probeRow": null,
+      "messagePrefix": null,
+      "guardFact": null
+    },
+    "typedCode": null,
+    "value": {
+      "ok": true,
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "600\n",
+      "stderr": "",
+      "truncated": false
+    },
+    "facts": [],
+    "confinedSpawnRows": [
+      {
+        "at": "2026-11-06T11:11:00.678Z",
+        "leg": "confined-spawn-attempt",
+        "realm": "member:inst-054vaf000o03",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\""
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside"
+      },
+      {
+        "at": "2026-11-06T11:11:00.700Z",
+        "leg": "confined-spawn",
+        "realm": "member:inst-054vaf000o03",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\""
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside",
+        "pid": 317
+      }
+    ],
+    "realmProbeRows": [
+      {
+        "at": "2026-11-06T11:11:00.711Z",
+        "tool": "bash_probe",
+        "mount": "realm",
+        "program": "/bin/bash",
+        "body": "chmod 600 \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"; stat -c '%a' \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside/mode.txt\"",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside",
+        "reads": [],
+        "writes": [],
+        "chmod": [],
+        "stage": "completed",
+        "exitCode": 0,
+        "signal": null,
+        "stdoutBytes": 4,
+        "stderrBytes": 0,
+        "stdoutTruncated": false
+      }
+    ],
+    "presetProbeRows": [],
+    "locus": "confined subprocess face (shipped admission + P1-07 OS profile)"
+  },
+  "checks": {
+    "callCompleted": true,
+    "modeChanged": true,
+    "noChmodDeclaration": true,
+    "reachedTheConfinedFace": true
+  },
+  "verdict": "PASS",
+  "verdictMeaning": "GAP_REPRODUCED: the mode changed while neither the admission (nothing declared) nor the OS profile covered the chmod",
+  "finding": "CHMOD_GAP_REPRODUCED",
+  "locus": {
+    "layer": "neither admission nor kernel: the admission never saw it (no declaration) and the OS profile has no chmod right"
+  },
+  "limits": {
+    "note": "the read/write axis of the file is enforced; only the MODE change is outside the reach",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

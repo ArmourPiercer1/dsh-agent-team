@@ -1,0 +1,41 @@
+{
+  "discovery": {
+    "marker": "MK_PTY_DISC",
+    "tools": [
+      "bash",
+      "bash_probe",
+      "edit",
+      "pty_observe",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "toolsCount": 24
+  },
+  "denyList": [
+    "bash_probe",
+    "pty_observe",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "memberPresetSurfaceNote": "the LEADER preset is the same preset id as the member preset, so this surface is also the member preset surface minus the team tools",
+  "provenance": "the tool list the mock recorded on the ANCHOR leader's own model request",
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,117 @@
+{
+  "schema": "a5sf-pty-devlive/plan/1",
+  "at": "2026-11-06T11:10:20.561Z",
+  "head": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "preflight": {
+    "exit": 0,
+    "verdict": "PASS",
+    "summary": "PASS 18/18 checks",
+    "checks": [
+      {
+        "id": "assembly.usable",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.roots",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.blueprints",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.member-tool-binding",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.authority",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "native.module-config",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "policy.paths",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "policy.fifo",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "cases.isolation",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "bundle.case-coverage",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "driver.gate-order",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "driver.leader-surface",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "driver.caller-surface",
+        "verdict": "PASS",
+        "findings": [],
+        "notes": [
+          "driver.caller-surface: no web/network case is tabled; there is no web caller to certify (not applicable)"
+        ]
+      },
+      {
+        "id": "driver.log-capture",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "collector.shape",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.candidate",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.grant",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.run-record",
+        "verdict": "PASS",
+        "findings": []
+      }
+    ]
+  },
+  "tabledCases": [
+    "member-terminal-face",
+    "same-pty-multi-command",
+    "product-shell-read-unlanned",
+    "write-only-read-denied",
+    "chmod-gap"
+  ],
+  "untabledCases": [
+    "network-deny-refusal"
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}
