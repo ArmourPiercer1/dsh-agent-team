@@ -9,8 +9,9 @@ by this text).
 
 Two consecutive runs of the final driver agree on every verdict and every
 decisive observation (`run-06`, `run-07`; `two-run-agreement.json`). Seven real
-Hosts were started in the loop (data, not a budget); four produced a verdict
-on both cases; two of those were consecutive and agreeing.
+Hosts were started in the loop (data, not a budget): six runs produced a
+verdict on both cases, four of those are PASS, and the last two (06/07) are
+consecutive and agreeing.
 
 ---
 

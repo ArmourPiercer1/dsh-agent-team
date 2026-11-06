@@ -20,8 +20,9 @@ slots (`DEV_LIVE_SLOT_LIMIT`), respected throughout.
 
 - 7 starts; **7 Hosts booted, authenticated, created the team and were torn
   down** (port closed, home removed, no slot left).
-- **4** produced a verdict on both cases (runs 04–07); **2** of those are
-  consecutive and agreeing (06/07, the final driver).
+- **6** produced a verdict on both cases (runs 02–07); **4** of those are PASS
+  (runs 04–07); **2** PASS runs are consecutive and agreeing (06/07, the final
+  driver).
 - **3** were instrument-defect runs (01, 02, 03); each produced a *new
   diagnostic fact*, so none was a blind retry of the same cause. No cause was
   repeated 3 times; the retry/escalation rule was never triggered.
