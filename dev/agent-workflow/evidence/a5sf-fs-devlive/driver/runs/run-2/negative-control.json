@@ -1,0 +1,174 @@
+{
+  "sample": {
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-45-29Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261106T08-45-29Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261106T08-45-29Z"
+    },
+    "forbidden": [
+      "A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261106T08-45-29Z",
+      "A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261106T08-45-29Z"
+    ],
+    "guardFactsBeforeRealm": [],
+    "baseSpawns": [
+      {
+        "at": "2026-11-06T08:45:53.511Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "--show-toplevel",
+          "--absolute-git-dir",
+          "--git-path",
+          "objects"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:45:53.543Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "add",
+          "--all",
+          "--ignore-errors"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:45:53.586Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "write-tree"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:45:53.613Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+          "--no-config",
+          "--json",
+          "--regexp=A5SF_SEARCH_NEEDLE_u5u5a5sfdev1-20261106T08-45-29Z",
+          "--",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-45-29Z/workspace/lane/inside"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:45:53.657Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "add",
+          "--all",
+          "--ignore-errors"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:45:53.696Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "write-tree"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:47:54.220Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "add",
+          "--all",
+          "--ignore-errors"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:47:54.269Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "write-tree"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:47:54.298Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+          "--no-config",
+          "--json",
+          "--regexp=A5SF_SEARCH_OUTSIDE",
+          "--",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-45-29Z/ceiling-outside"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:47:54.338Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "add",
+          "--all",
+          "--ignore-errors"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      },
+      {
+        "at": "2026-11-06T08:47:54.386Z",
+        "leg": "base-spawn",
+        "argv": [
+          "/usr/bin/git",
+          "write-tree"
+        ],
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+        "instance": false
+      }
+    ],
+    "confinedSpawns": [],
+    "controlDone": false
+  },
+  "verdict": {
+    "verdict": "PROVEN",
+    "reason": "UNCONFINED_CONTROL_LEAKS",
+    "failed": [],
+    "checks": {
+      "controlSucceeded": true,
+      "controlLeaked": true,
+      "unconfinedRanOnTheInheritedService": true,
+      "noConfinedProcess": true,
+      "noGuardFactBeforeRealm": true
+    },
+    "detail": {
+      "result": {
+        "isError": false,
+        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-45-29Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261106T08-45-29Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261106T08-45-29Z"
+      },
+      "leakedTokens": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261106T08-45-29Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261106T08-45-29Z"
+      ],
+      "baseSpawns": 11,
+      "confinedSpawns": 0,
+      "guardFactsBeforeRealm": 0,
+      "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+    }
+  }
+}

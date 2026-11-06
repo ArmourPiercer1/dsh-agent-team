@@ -1,0 +1,1147 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "FS/Search dev-live start #4 — read/write/edit/grep/glob/read_image on current master (DEV-LIVE; development evidence, never a candidate claim)",
+  "sources": {
+    "note": "Built at run time from the World this start will boot. Development evidence only: recordClass DEV-LIVE can never produce V@B=yes.",
+    "driver": "driver/run-boot.mjs (real Host; CASES = SEARCH_CASES + FS_CASES + EDIT_CASES)",
+    "providerRow": "driver/a5sf-fs-devlive-realm-row.mjs",
+    "evidence": "dev/agent-workflow/evidence/a5sf-fs-devlive/README.md",
+    "limit": "A DEV-LIVE start is development evidence. It does not move V@B, does not become a candidate claim, and does not certify the matrix."
+  },
+  "candidate": {
+    "head": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "productTreeProof": []
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+    "pointer": {
+      "snapshot_version": "as20261105r2",
+      "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+    }
+  },
+  "grant": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/dev-live-grant.json",
+    "scope": "DEV-LIVE",
+    "face": "FS Provider",
+    "world": "u5a5sfdev1",
+    "grantId": "devlive-fs-search-1",
+    "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+    "boundCommit": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+    "priorRows": 10,
+    "plannedStarts": 1,
+    "maxStarts": 12,
+    "note": "recorded, NOT enforced under DEV-LIVE: the authorisation has no cumulative cap. maxStarts is the ledger arithmetic of this start (prior rows + intent + boot)."
+  },
+  "runRecord": {
+    "teamSha": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    },
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+      }
+    }
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "fs",
+      "subprocess"
+    ],
+    "distFaces": {
+      "fs": true,
+      "subprocess": true,
+      "web": false
+    },
+    "hostModules": [
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js",
+        "exists": false,
+        "role": "declared by the plan"
+      },
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs-search/lib/index.js",
+        "exists": false,
+        "role": "declared by the plan"
+      },
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/a5sf-fs-devlive-realm-row.mjs",
+        "exists": false,
+        "role": "declared by the plan"
+      },
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/run-boot.mjs",
+        "exists": false,
+        "role": "declared by the plan"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-fs-devlive-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-fs-devlive-base"
+      ],
+      "worldRowIds": [
+        "a5sf-fs-devlive-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-fs-devlive-base"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "fixtures": {
+    "live:search-row1-grep-in-lane-allowed": {
+      "caseId": "live:search-row1-grep-in-lane-allowed",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:search-row2-grep-outside-ceiling-refused": {
+      "caseId": "live:search-row2-grep-outside-ceiling-refused",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:search-row3-grep-outside-restriction-refused": {
+      "caseId": "live:search-row3-grep-outside-restriction-refused",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:search-row4-cancelled-search-settles-cancelled": {
+      "caseId": "live:search-row4-cancelled-search-settles-cancelled",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:search-row5-invalid-pattern-is-error": {
+      "caseId": "live:search-row5-invalid-pattern-is-error",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:search-row6-archive-boundary-no-callable-shadow": {
+      "caseId": "live:search-row6-archive-boundary-no-callable-shadow",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:row1-read-a-inside-both-allowed": {
+      "caseId": "live:row1-read-a-inside-both-allowed",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:row2-read-b-binding-deny-on-read-path": {
+      "caseId": "live:row2-read-b-binding-deny-on-read-path",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:row3-read-c-refused-no-widening": {
+      "caseId": "live:row3-read-c-refused-no-widening",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only": {
+      "caseId": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "live:row4b-write-b-ceiling-allowed-read-not-implied": {
+      "caseId": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "fs:edit-in-lane": {
+      "caseId": "fs:edit-in-lane",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "fs:edit-outside-ceiling": {
+      "caseId": "fs:edit-outside-ceiling",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    "fs:read-image-observation": {
+      "caseId": "fs:read-image-observation",
+      "inputs": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/pixel.png",
+        "bytes": 70
+      }
+    }
+  },
+  "policy": {
+    "effectiveReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside"
+    ],
+    "effectiveWriteAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace"
+    ],
+    "networkAccess": "deny",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/blocking.fifo",
+    "dispositions": {
+      "live:search-row2-grep-outside-ceiling-refused": {
+        "ceiling": "deny",
+        "restriction": "allow",
+        "effective": "deny"
+      },
+      "live:search-row3-grep-outside-restriction-refused": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "live:row2-read-b-binding-deny-on-read-path": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "live:row3-read-c-refused-no-widening": {
+        "ceiling": "deny",
+        "restriction": "allow",
+        "effective": "deny"
+      },
+      "fs:edit-outside-ceiling": {
+        "ceiling": "deny",
+        "restriction": "deny",
+        "effective": "deny"
+      }
+    },
+    "note": "effectiveReadAllow is ceiling ∩ restriction (the product algebra over fixture inputs); effectiveWriteAllow is the ceiling write lane because the binding declares no additional narrowing."
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-acceptance-root",
+    "teamRoot": "session-a5sf-acceptance-team",
+    "createRoot": "session-a5sf-acceptance-team",
+    "stateQueryRoot": "session-a5sf-acceptance-team",
+    "toolRouteRoot": "session-a5sf-acceptance-team",
+    "archiveRoot": "session-a5sf-acceptance-team",
+    "oracleRoot": "session-a5sf-acceptance-team",
+    "directiveRoot": "session-a5sf-acceptance-team",
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.cand1.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.cand1.main",
+        "members": 1
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "live:search-row1-grep-in-lane-allowed",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.search/grep"
+      },
+      {
+        "caseId": "live:search-row2-grep-outside-ceiling-refused",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.search/grep"
+      },
+      {
+        "caseId": "live:search-row3-grep-outside-restriction-refused",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.search/grep"
+      },
+      {
+        "caseId": "live:search-row4-cancelled-search-settles-cancelled",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.search/grep"
+      },
+      {
+        "caseId": "live:search-row5-invalid-pattern-is-error",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.search/grep"
+      },
+      {
+        "caseId": "live:row1-read-a-inside-both-allowed",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "live:row2-read-b-binding-deny-on-read-path",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "live:row3-read-c-refused-no-widening",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "fs:edit-in-lane",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "fs:edit-outside-ceiling",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "fs:read-image-observation",
+        "memberIdentity": "member-a5sf-worker",
+        "toolBindingIdentity": "dsh.fs/read"
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "@deepseek-ai/dsh-tool-fs",
+      "inject": [
+        "fs"
+      ],
+      "requiredConfig": [],
+      "config": {}
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "inject": [
+        "tools",
+        "systemPrompt",
+        "subprocess"
+      ],
+      "requiredConfig": [
+        "sampleOverCapGlobResults"
+      ],
+      "config": {
+        "sampleOverCapGlobResults": false
+      }
+    }
+  ],
+  "driver": {
+    "steps": [
+      {
+        "id": "preflight",
+        "produces": [],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "row-identity",
+        "produces": [],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "world-create",
+        "produces": [
+          "world"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "mock-start",
+        "requires": [
+          "world"
+        ],
+        "produces": [
+          "mock"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "host-boot",
+        "requires": [
+          "world",
+          "mock"
+        ],
+        "produces": [
+          "host"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "composition-handoff",
+        "requires": [
+          "host"
+        ],
+        "produces": [
+          "composed-profile"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "health-poll",
+        "requires": [
+          "composed-profile"
+        ],
+        "produces": [
+          "health"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "leader-grep-probe",
+        "requires": [
+          "health"
+        ],
+        "produces": [
+          "base-subprocess"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "negative-control",
+        "requires": [
+          "base-subprocess"
+        ],
+        "produces": [
+          "unconfined-search"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "team-create",
+        "requires": [
+          "unconfined-search"
+        ],
+        "produces": [
+          "team-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "team-state"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "member-install",
+        "requires": [
+          "team-state"
+        ],
+        "produces": [
+          "member-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-dispatch",
+        "requires": [
+          "member-session"
+        ],
+        "produces": [
+          "member-rows"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "cancellation-window",
+        "requires": [
+          "member-rows"
+        ],
+        "produces": [
+          "cancelled-search"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "evidence-collection",
+        "requires": [
+          "member-rows"
+        ],
+        "produces": [
+          "samples"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "glob-face",
+        "requires": [
+          "samples"
+        ],
+        "produces": [
+          "glob-samples"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "stop-and-probe",
+        "requires": [
+          "samples"
+        ],
+        "produces": [
+          "stopped-member"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "teardown",
+        "requires": [
+          "stopped-member"
+        ],
+        "produces": [
+          "teardown"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "outcome-row",
+        "requires": [
+          "teardown"
+        ],
+        "produces": [
+          "dev-live-outcome"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      }
+    ],
+    "plannedCases": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:edit-outside-ceiling",
+      "fs:read-image-observation"
+    ],
+    "driverCases": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:edit-outside-ceiling",
+      "fs:read-image-observation"
+    ],
+    "blueprint": {
+      "leader": {
+        "tools": [
+          "read",
+          "read_image",
+          "write",
+          "edit",
+          "lsp",
+          "bash",
+          "pwsh",
+          "grep",
+          "glob",
+          "todo_write",
+          "team_list_members",
+          "team_list_templates",
+          "team_inspect_config",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_collect",
+          "team_send_message",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_list_pending_control",
+          "team_archive_member",
+          "team_grant_permission",
+          "team_revoke_permission"
+        ],
+        "builtinToolDeny": "discovery-first",
+        "teamTools": [],
+        "worldRows": {},
+        "presetTools": [
+          "read",
+          "read_image",
+          "write",
+          "edit",
+          "lsp",
+          "bash",
+          "pwsh",
+          "grep",
+          "glob",
+          "todo_write",
+          "team_list_members",
+          "team_list_templates",
+          "team_inspect_config",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_collect",
+          "team_send_message",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_list_pending_control",
+          "team_archive_member",
+          "team_grant_permission",
+          "team_revoke_permission"
+        ]
+      }
+    },
+    "leaderSurface": {
+      "tools": [
+        "read",
+        "read_image",
+        "write",
+        "edit",
+        "lsp",
+        "bash",
+        "pwsh",
+        "grep",
+        "glob",
+        "todo_write",
+        "team_list_members",
+        "team_list_templates",
+        "team_inspect_config",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_collect",
+        "team_send_message",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_list_pending_control",
+        "team_archive_member",
+        "team_grant_permission",
+        "team_revoke_permission"
+      ],
+      "builtinToolDeny": "discovery-first",
+      "teamTools": []
+    }
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside",
+      "guardFactKey": "search.row1",
+      "route": "grep",
+      "input": {
+        "pattern": "<needle>",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside"
+      }
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "deny",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside",
+      "guardFactKey": "search.row2",
+      "deniedBy": "ceiling",
+      "route": "grep",
+      "input": {
+        "pattern": "<outside>",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside"
+      }
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "deny",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/outside-restriction.txt",
+      "guardFactKey": "search.row3",
+      "deniedBy": "restriction",
+      "route": "grep",
+      "input": {
+        "pattern": "<restricted>",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/outside-restriction.txt"
+      }
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/blocking.fifo",
+      "guardFactKey": "search.row4",
+      "route": "grep",
+      "input": {
+        "pattern": "<fifo>",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/blocking.fifo"
+      }
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/invalid",
+      "guardFactKey": "search.row5",
+      "route": "grep",
+      "input": {
+        "pattern": "A5SF_(",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/invalid"
+      }
+    },
+    {
+      "id": "live:search-row6-archive-boundary-no-callable-shadow",
+      "face": "non-data-plane",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/glob",
+      "guardFactKey": "search.row6",
+      "route": "team_archive",
+      "input": {}
+    },
+    {
+      "id": "live:row1-read-a-inside-both-allowed",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/needle.txt",
+      "guardFactKey": "fs.row1",
+      "route": "read",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/needle.txt"
+      }
+    },
+    {
+      "id": "live:row2-read-b-binding-deny-on-read-path",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "deny",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/fs/outside-restriction.txt",
+      "guardFactKey": "fs.row2",
+      "deniedBy": "restriction",
+      "route": "read",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/fs/outside-restriction.txt"
+      }
+    },
+    {
+      "id": "live:row3-read-c-refused-no-widening",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "deny",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside/secret.txt",
+      "guardFactKey": "fs.row3",
+      "deniedBy": "ceiling",
+      "route": "read",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside/secret.txt"
+      }
+    },
+    {
+      "id": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "write",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/w4a.txt",
+      "guardFactKey": "fs.row4a",
+      "route": "write",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/w4a.txt"
+      }
+    },
+    {
+      "id": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "write",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/w4b.txt",
+      "guardFactKey": "fs.row4b",
+      "route": "write",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/w4b.txt"
+      }
+    },
+    {
+      "id": "fs:edit-in-lane",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "write",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt",
+      "guardFactKey": "edit.in",
+      "route": "edit",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt"
+      }
+    },
+    {
+      "id": "fs:edit-outside-ceiling",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "write",
+      "expected": "deny",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside-edit/secret.txt",
+      "guardFactKey": "edit.out",
+      "deniedBy": "restriction",
+      "route": "edit",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside-edit/secret.txt"
+      }
+    },
+    {
+      "id": "fs:read-image-observation",
+      "face": "fs-search",
+      "corpus": [
+        "transcript",
+        "guard-facts",
+        "provider-counter"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/pixel.png",
+      "guardFactKey": "image.in",
+      "route": "read_image",
+      "input": {
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/pixel.png"
+      }
+    }
+  ]
+}

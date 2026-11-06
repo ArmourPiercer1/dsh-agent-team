@@ -1,0 +1,47 @@
+{
+  "schema": "a5sf-candidate1/plan-lanes/1",
+  "at": "2026-11-06T08:37:07.254Z",
+  "head": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+  "ceilingReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace"
+  ],
+  "restrictionReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/ceiling-outside"
+  ],
+  "effectiveReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside"
+  ],
+  "dispositions": {
+    "readA": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    },
+    "readB": {
+      "ceiling": "allow",
+      "restriction": "deny",
+      "effective": "deny"
+    },
+    "readC": {
+      "ceiling": "deny",
+      "restriction": "allow",
+      "effective": "deny"
+    },
+    "w4a": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    },
+    "w4b": {
+      "ceiling": "allow",
+      "restriction": "deny",
+      "effective": "deny"
+    },
+    "fifo": {
+      "ceiling": "allow",
+      "restriction": "allow",
+      "effective": "allow"
+    }
+  }
+}

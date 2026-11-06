@@ -1,0 +1,352 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-fs-devlive-2026-11-06T08-37-29-564Z",
+  "suite": "a5sf-fs-devlive",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-06T08:37:29.565Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-archive-boundary-no-callable-shadow",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-on-read-path",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied",
+    "fs:edit-in-lane",
+    "fs:edit-outside-ceiling",
+    "fs:read-image-observation"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "teamSha": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "u5a5sfdev1",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "recordClass": "DEV-LIVE",
+    "allocation": "DEV-LIVE pilot of the owner 2026-11-09 workflow ruling on the FS/Search face: repeated self-authorised development starts in an isolated World; development evidence only, never a candidate claim and never V@B",
+    "grantId": "devlive-fs-search-1",
+    "allocationItem": "FS/Search dev-live pilot: read/write/edit/grep/glob measured on current master",
+    "devLiveAuthorisation": {
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1",
+      "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap"
+    },
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-fs-devlive/driver/a5sf-fs-devlive-realm-row.mjs (the accepted search row + an fs ToolBinding, so one Member carries both faces)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous"
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.339Z",
+      "status": "judged",
+      "reason": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.339Z",
+      "status": "judged",
+      "reason": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.339Z",
+      "status": "judged",
+      "reason": "RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.339Z",
+      "status": "judged",
+      "reason": "INVALID_PATTERN_SURFACED_AS_TOOL_ERROR",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T08:42:52.343Z",
+      "status": "driver-aborted",
+      "reason": "NO_INTERRUPT_ROW4",
+      "missing": [
+        "interrupt"
+      ],
+      "sampleComplete": false,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:search-row6-archive-boundary-no-callable-shadow",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "driver-aborted",
+      "reason": "NO_SAMPLE",
+      "missing": [
+        "sample"
+      ],
+      "sampleComplete": false,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:row1-read-a-inside-both-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "READ_A_ALLOWED_AND_CONFINED",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:row2-read-b-binding-deny-on-read-path",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "BINDING_DENY_ON_READ_PATH",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:row3-read-c-refused-no-widening",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "REFUSED_WITHOUT_WIDENING",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_IN_LANE_READABLE",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "fs:edit-in-lane",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "CEILING_EDIT_ALLOWED_AND_CONFINED",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "fs:edit-outside-ceiling",
+      "verdict": "FAIL",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "EDIT_OUTSIDE_CLAUSE_FAILED",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    },
+    {
+      "id": "fs:read-image-observation",
+      "verdict": "PASS",
+      "at": "2026-11-06T08:42:52.344Z",
+      "status": "judged",
+      "reason": "READ_IMAGE_REFUSED_AT_THE_FACE",
+      "missing": [],
+      "sampleComplete": true,
+      "abortedAt": "delegate-dispatch",
+      "stage": "delegate-dispatch",
+      "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+      "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live",
+      "judgedAtStage": "abort:delegate-dispatch"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T08:37:29.596Z",
+        "runId": "a5sf-fs-devlive-2026-11-06T08-37-29-564Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T08:37:36.130Z",
+        "runId": "a5sf-fs-devlive-2026-11-06T08-37-29-564Z",
+        "suite": "a5sf-fs-devlive",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261106T08-37-29Z",
+        "phase": "a5sf-fs-devlive-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-fs-devlive-boot1",
+      "world": "u5u5a5sfdev1-20261106T08-37-29Z",
+      "port": 3184,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/logs/u5u5a5sfdev1-20261106T08-37-29Z/instance-port3184.log"
+    }
+  ],
+  "partial": true,
+  "abortedAt": "delegate-dispatch",
+  "abort": {
+    "stage": "delegate-dispatch",
+    "detail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+    "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live"
+  },
+  "runVerdict": {
+    "overall": "FAIL",
+    "partial": true,
+    "abortedAt": "delegate-dispatch",
+    "judged": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:edit-outside-ceiling",
+      "fs:read-image-observation"
+    ],
+    "passed": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:read-image-observation"
+    ],
+    "neverObserved": [
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row6-archive-boundary-no-callable-shadow"
+    ],
+    "note": "the run aborted, so it is FAIL even where a complete sample passed: a case PASS is not a run PASS, and a NOT_REACHED case is never a pass"
+  },
+  "abortDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-fs-devlive-2026-11-06T08-37-29-564Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-on-read-path",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied",
+    "fs:edit-in-lane",
+    "fs:edit-outside-ceiling",
+    "fs:read-image-observation"
+  ],
+  "neverObserved": [
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row6-archive-boundary-no-callable-shadow"
+  ],
+  "finishedAt": "2026-11-06T08:42:52.461Z"
+}

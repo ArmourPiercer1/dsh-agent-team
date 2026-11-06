@@ -1,0 +1,56 @@
+{
+  "worldId": "u5u5a5sfdev1-20261106T08-57-57Z",
+  "homePatch": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/cordis.patch.yml",
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace"
+  },
+  "fixtures": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace",
+    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside",
+    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/needle.txt",
+    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/outside-restriction.txt",
+    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside",
+    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside/secret.txt",
+    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside-glob",
+    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/invalid",
+    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/glob",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/blocking.fifo",
+    "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/needle.txt",
+    "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/fs/outside-restriction.txt",
+    "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside/secret.txt",
+    "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/w4a.txt",
+    "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/w4b.txt",
+    "editInLane": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/edit.txt",
+    "editOutside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside-edit/secret.txt",
+    "imageFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside/pixel.png",
+    "ceiling": {
+      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace",
+      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace"
+    },
+    "restrictionReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/workspace/lane/inside",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/ceiling-outside"
+    ],
+    "effectiveRead": "product intersection of ceiling ∩ restriction; the per-path dispositions are in lane-report.json probePaths.effectiveRead"
+  },
+  "claims": {
+    "needle": "A5SF_SEARCH_NEEDLE_u5u5a5sfdev1-20261106T08-57-57Z",
+    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261106T08-57-57Z",
+    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261106T08-57-57Z",
+    "outsidePattern": "A5SF_SEARCH_OUTSIDE",
+    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5u5a5sfdev1-20261106T08-57-57Z",
+    "restrictedPattern": "A5SF_SEARCH_RESTRICTION",
+    "fifoPattern": "A5SF_SEARCH_FIFO",
+    "w4aOrig": "A5SF_CAND1_W4A_ORIG_u5u5a5sfdev1-20261106T08-57-57Z",
+    "w4aNew": "A5SF_CAND1_WRITE_4A_u5u5a5sfdev1-20261106T08-57-57Z\n",
+    "w4bOrig": "A5SF_CAND1_W4B_ORIG_u5u5a5sfdev1-20261106T08-57-57Z",
+    "w4bNew": "A5SF_CAND1_WRITE_4B_u5u5a5sfdev1-20261106T08-57-57Z\n",
+    "editOrig": "A5SF_DEVLIVE_EDIT_ORIG_u5u5a5sfdev1-20261106T08-57-57Z",
+    "editNew": "A5SF_DEVLIVE_EDIT_NEW_u5u5a5sfdev1-20261106T08-57-57Z",
+    "editOutsideMutated": "A5SF_DEVLIVE_EDIT_OUTSIDE_MUTATED_u5u5a5sfdev1-20261106T08-57-57Z"
+  },
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/a5sf-consult.jsonl",
+  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/candidate-counter.jsonl",
+  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-57-57Z/lane-report.json"
+}

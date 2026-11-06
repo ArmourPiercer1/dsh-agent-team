@@ -1,0 +1,23 @@
+{
+  "schema": "a5sf-search-live/plan-paths/1",
+  "at": "2026-11-06T08:37:07.252Z",
+  "head": "953b65a59cfdc4938c72e31f0db5f059dd3c0401",
+  "ceilingReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace"
+  ],
+  "restrictionReadAllow": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/ceiling-outside"
+  ],
+  "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside",
+  "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside/needle.txt",
+  "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/outside-restriction.txt",
+  "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/ceiling-outside/secret.txt",
+  "outsideGlobFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/ceiling-outside-glob/secret.txt",
+  "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside/blocking.fifo",
+  "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside/needle.txt",
+  "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/fs/outside-restriction.txt",
+  "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/ceiling-outside/secret.txt",
+  "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/lane/inside/w4a.txt",
+  "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/.rowcheck/workspace/w4b.txt"
+}

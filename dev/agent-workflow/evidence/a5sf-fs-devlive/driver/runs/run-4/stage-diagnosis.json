@@ -1,0 +1,171 @@
+{
+  "schema": "a5sf-search-live/stage-diagnosis/1",
+  "at": "2026-11-06T08:42:52.340Z",
+  "error": "no search-live completeness rule for \"fs:edit-in-lane\" (known: live:search-row1-grep-in-lane-allowed, live:search-row2-grep-outside-ceiling-refused, live:search-row3-grep-outside-restriction-refused, live:search-row4-cancelled-search-settles-cancelled, live:search-row5-invalid-pattern-is-error, live:search-row6-archive-boundary-no-callable-shadow)",
+  "probe": {
+    "stage": "delegate-dispatch",
+    "stageDetail": "the leader delegate must deliver the worker script to the member session (a request carrying the team-work envelope)",
+    "hostReached": true,
+    "rows": [
+      "a5sf-fs-devlive-realm",
+      "dsh-agent-team",
+      "p6t6-team-tools",
+      "preset-a5sf-fs-devlive-base"
+    ],
+    "composedProfile": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/dev/agent-workflow/evidence/a5sf-fs-devlive/driver/logs/u5u5a5sfdev1-20261106T08-37-29Z/composed-profile-0561858497f5955babf732cf357cd38db5869ac2d0c58a05dfd212fab081ebbc.patch.yml",
+      "presentRowIds": [
+        "u5-canary",
+        "u6-fs-probe-host",
+        "a5sf-fs-devlive-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-fs-devlive-base"
+      ],
+      "missingRowIds": []
+    },
+    "counter": {
+      "install-fs": 0,
+      "install-subprocess": 0,
+      "base-spawn": 21,
+      "confined-spawn": 4,
+      "confined-exit": 4,
+      "confined-spawn-failed": 0
+    },
+    "laneReport": {
+      "schema": "a5sf-tool-binding-lane-report/1",
+      "kind": "search",
+      "computedBy": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets / matchLocator (the emitted product algebra; compileEffectiveIo is not in the host emitted set at this base)",
+      "bindingIdentity": "dsh.search/grep",
+      "fsBindingIdentity": "dsh.fs/read",
+      "ceiling": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        }
+      },
+      "restriction": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside",
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/ceiling-outside"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": "no-additional-narrowing"
+      },
+      "effective": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        }
+      },
+      "probePaths": [
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside/needle.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/outside-restriction.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/fs/outside-restriction.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/ceiling-outside/secret.txt",
+          "ceilingRead": "deny",
+          "restrictionRead": "allow",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/ceiling-outside-glob/secret.txt",
+          "ceilingRead": "deny",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside/blocking.fifo",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside/w4a.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/w4b.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "deny",
+          "effectiveRead": "deny"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside/edit.txt",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        },
+        {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-fs-devlive/tests/homes/u5u5a5sfdev1-20261106T08-37-29Z/workspace/lane/inside/pixel.png",
+          "ceilingRead": "allow",
+          "restrictionRead": "allow",
+          "effectiveRead": "allow"
+        }
+      ],
+      "note": "the CEILING and RESTRICTION inputs are test-composition fixtures (no product v3->compiled lane bridge at this base); the intersection and the dispositions are the product functions, called here. The confined `subprocess` face is a MEMBER-realm face (BL-17 refuses a binding-realm one), so its facts carry realm=member and toolBindingIdentity=null. The FS binding realm carries toolBindingIdentity=dsh.fs/read, so the same Member measures the accepted FS read/write rows on the same start."
+    },
+    "sinkFacts": 18,
+    "member": {
+      "visible": true,
+      "instanceId": "inst-04rpvjb0z9pv",
+      "hasSession": true
+    },
+    "mockRequests": 26,
+    "memberTurnSeen": true,
+    "toolUseNames": [
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_delegate",
+      "write"
+    ]
+  }
+}
