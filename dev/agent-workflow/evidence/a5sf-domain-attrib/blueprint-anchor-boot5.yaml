@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5sf.bl18.live2.anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5sf BL-18 anchor team. The driver measures your model-facing tool surface. MK_BL18_DISC. Reply with one short line and stop; call no tool."
+members:
+  - templateId: webworker
+    persona: "You are an a5sf BL-18 web worker. When the leader asks you to call a web tool, call it exactly once and report the exact error text."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

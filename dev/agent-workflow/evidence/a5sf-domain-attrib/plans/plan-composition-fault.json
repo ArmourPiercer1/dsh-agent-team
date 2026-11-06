@@ -1,0 +1,11 @@
+{
+  "planId": "synthetic-composition-fault",
+  "note": "The boot #5 plan plus ONE required row whose module does not exist — the synthetic plan that MUST be predicted to fail for the composition reason. This is what a required-plugin composition failure looks like statically, and E2 shows the product then reports the storage teardown as TeamDomain-closed instead of the real error.",
+  "homeFresh": true,
+  "bootPhase": "create",
+  "runtimeReload": { "possible": false, "why": "no reload declared" },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "module": "file:///.../packages/runtime/dist/packages/runtime/src/plugin/host.js", "required": true, "moduleCheck": "skip", "fault": null },
+    { "id": "injected-required-fault", "kind": "host-row", "module": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/dev/agent-workflow/evidence/a5sf-domain-attrib/plans/does-not-exist.mjs", "required": true, "moduleCheck": "assert", "fault": null }
+  ]
+}

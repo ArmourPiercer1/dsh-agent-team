@@ -1,0 +1,10 @@
+{
+  "planId": "resume-fresh",
+  "note": "bootPhase resume over a fresh home: the manifest exists but no baseline schema stamp does. Deterministic SCHEMA_STAMP_MISSING (E5b).",
+  "homeFresh": true,
+  "bootPhase": "resume",
+  "runtimeReload": { "possible": false, "why": "no reload declared" },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "required": true, "moduleCheck": "skip", "fault": null }
+  ]
+}

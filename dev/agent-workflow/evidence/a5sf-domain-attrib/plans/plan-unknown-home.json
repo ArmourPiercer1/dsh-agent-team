@@ -1,0 +1,9 @@
+{
+  "planId": "unknown-home",
+  "note": "homeFresh is unknown: the only honest pre-start answer is UNDETERMINED, because create vs resume is the axis that decides the deterministic classes.",
+  "bootPhase": "create",
+  "runtimeReload": { "possible": false },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "required": true, "moduleCheck": "skip", "fault": null }
+  ]
+}

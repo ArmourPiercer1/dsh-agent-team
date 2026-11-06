@@ -1,0 +1,10 @@
+{
+  "planId": "declared-reload-in-window",
+  "note": "A plan that DECLARES a runtime profile reload inside the boot window (e.g. client-hmr reacting to a profile patch write, or a plugin install). Statically this is the same mechanism class as a composition unwind: the storage-domain fiber is disposed under the detached Team bootstrap.",
+  "homeFresh": true,
+  "bootPhase": "create",
+  "runtimeReload": { "possible": true, "why": "client-hmr watches profiles/<name>/cordis.patch.yml and calls reconcileProfilePatches -> entry.update -> Fiber._reload on change" },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "required": true, "moduleCheck": "skip", "fault": null }
+  ]
+}
