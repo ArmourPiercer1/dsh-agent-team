@@ -1,5 +1,11 @@
 # STATUS — Team vNext 当前状态总览
 
+> **dated CURRENT 快照（2026-11-08，ALPHA5-CONSOLIDATE；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(1) 阶段终态与 live 账补齐**：新增 `docs/plans/active/alpha5-sandbox-first/LIVE-EVIDENCE-LEDGER.md`（P2-04 五次分配：**4 已花 / 1 未花 / 0 条 current live 结论**，逐次写清用途、成本、产出、为什么没产出、以及今天挡住同一失败的 host-free 检查）与同目录 `ALPHA5-END-STATE.md`（六个能力面 + cross-face + non-data-plane 的“Member 今天实际能做什么 / 最强真话 / 最弱未证 / 证据指针 / 阻塞”，外加 10 条产品债的当前状态）。
+> **(2) 更正本文件 2026-11-05T00:22Z 段的过期断言**：该段写 `M-06`/`M-07` “复位 `ENFORCE-PARTIAL` / `V@B=yes`”。同日合入 `#606`（`a5bd88b85`）后产品面移动 28 条路径，矩阵 §1.1 已按 Q7 把 `M-01`/`M-02`/`M-06`/`M-07` 四行全部置为 `NEEDS_REVALIDATION` / `V@B=no`。被更正的原句**照留不 rewrite**（只追加本条）。
+> **(3) 发布门位置**：**`release BLOCKED`**，七条具名阻塞见 `docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md` §0.3。BL-17 的两次 live 启动均 `NOT_REACHED`（零 case 到达），BL-18 的 live 半场零启动（allocation #5 在 NO-GO 时保留未花）。本轮 0 boots，无 grade / `V@B` 变更。
+> 日期分量 = 轮次指定日期 2026-11-08；本环境 `date -u` 实测 `2026-11-06T05:43Z`（容器时钟落后于轮次日期），记此以免读者把时钟差当成矛盾。
+
 > **dated CURRENT 快照（2026-11-05T00:22Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(1) 权威 baseline 重切（`as20261105r1`）**：`17ce7043…` → `1fd0d9fca…`（master #596 tip）。发布走 `publish-authority`（不可变快照）+ `switch-authority`（旧指针字节前置条件 + 原子写），指针 sha256 `b0ffcbbf…` → `2cba2673…`。回滚 = `git revert <switch commit>`；`as20261102r1` 保留不删。
 > **(2) 逐行结果（按树哈希证明，不按假设）**：`M-06`/`M-07`（grep/glob）实测树 `c658d974d` 的 `packages/**` 树哈希 `9609403c…` 与新 baseline 的 `packages/**` **相等**，复位 `ENFORCE-PARTIAL` / `V@B=yes`；`M-01`/`M-02`（read/write）实测树 `44babbfcf` 与新 baseline 的 `packages/**` **不相等**（116 个路径；glue `agent-bindings.mjs` sha256 `df9b46af…` ≠ `6d256096…`），**拒绝复位**，保持 `NEEDS_REVALIDATION` / `V@B=no`，需在新 baseline 上重跑 live。
