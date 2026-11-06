@@ -1,5 +1,12 @@
 # PD-1 — revocation escape: the acceptance pin
 
+> **SUPERSEDED 2026-11-09.** PD-1 is fixed by
+> [`task/a5sf-pd1-fix-20261109`](../../a5sf-pd1-fix/README.md). The defect pin was inverted into
+> contract arms (`PD-1 REFUSAL` / `PD-1 IN-FLIGHT` / the two contrasts), the old
+> `PD1-ESCAPE-REPRODUCED` mode no longer exists, and this directory's `mutation-control.mjs`
+> matches the pre-fix source and is not part of that fix's gates. Kept as history; do not run it
+> against the fixed `terminal.ts`.
+
 Task: **PD-1 acceptance arm** — an executable reproduction of the revocation escape recorded as
 PD-1 in [`PRODUCT-DEBT-REGISTER.md`](../../../../docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md).
 Branch `task/a5sf-pd1-20261107` (worktree `.worktrees/a5sf-pd1`), based on `origin/master` =

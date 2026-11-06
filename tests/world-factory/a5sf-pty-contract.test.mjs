@@ -107,7 +107,7 @@ const CASES = [
     run: armCommandGateAfterKill,
   },
   {
-    title: 'P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)',
+    title: 'P1-REVOKE-WITHOUT-DOMAIN-IS-STICKY: revoking a member that owns no live shell records the generation, so a later acquire is refused (PD-1 FIXED)',
     label: 'p1-revoke-empty',
     kind: 'registry',
     run: armRevokeWithoutDomain,
@@ -315,7 +315,7 @@ async function armCommandGateAfterKill(harness) {
 
   assert.equal(harness.registry.assertCurrent(domainId).ok, true, 'a live domain accepts a command')
 
-  const killed = await harness.registry.revoke(MEMBER)
+  const killed = await harness.registry.revoke(PTY_CONTRACT_IDENTITY)
   assert.deepEqual(killed, [domainId], 'the revoke reports the domain it terminated')
   assert.deepEqual(acquired.record.kills, ['SIGKILL'], 'one kill per terminal, with the hard signal')
 
@@ -324,7 +324,7 @@ async function armCommandGateAfterKill(harness) {
   assert.equal(afterKill.code, 'DOMAIN_REVOKED', 'a command after kill is a TYPED refusal, not an idempotent success')
   assert.equal(harness.allocations(), 1, 'a refused command must not allocate anything')
 
-  const secondKill = await harness.registry.revoke(MEMBER)
+  const secondKill = await harness.registry.revoke(PTY_CONTRACT_IDENTITY)
   assert.deepEqual(secondKill, [], 'a second revoke finds no domain: double-kill is an idempotent no-op')
   assert.deepEqual(acquired.record.kills, ['SIGKILL'], 'the second revoke must not signal the port again')
   assert.equal(harness.registry.list().length, 0)
@@ -340,21 +340,19 @@ async function armCommandGateAfterKill(harness) {
 }
 
 async function armRevokeWithoutDomain(harness) {
-  // FINDING, reported not fixed: `revoke(memberInstanceId)` records the
-  // generation ONLY for members that currently own a live domain
-  // (`terminal.ts:253-259`), and its signature carries no generation, so it
-  // cannot compute the revoked key for a member with no shell. A shell opened
-  // after the revoke therefore survives the revocation.
-  const killed = await harness.registry.revoke('member-with-no-shell')
+  // PD-1 FIXED (2026-11-09): `revoke` takes the trusted member identity
+  // (generation included) and records the generation unconditionally, so a
+  // member that owns NO live domain at revoke time is still bound. The port is
+  // never reached by the later acquire.
+  const member = { ...PTY_CONTRACT_IDENTITY, memberInstanceId: 'member-with-no-shell' }
+  const killed = await harness.registry.revoke(member)
   assert.deepEqual(killed, [], 'there is no domain to kill')
 
-  const acquired = await harness.acquire('bind-late', {
-    identity: { ...PTY_CONTRACT_IDENTITY, memberInstanceId: 'member-with-no-shell' },
-  })
-  assert.equal(acquired.result.ok, true, 'FINDING: the revoked generation can still acquire a shell')
-  assert.equal(harness.allocations(), 1, '...and the port really was asked to allocate')
-  assert.equal(harness.registry.list().length, 1)
-  assert.equal(harness.registry.assertCurrent(acquired.result.value.domainId).ok, true)
+  const acquired = await harness.acquire('bind-late', { identity: member })
+  assert.equal(acquired.result.ok, false, 'PD-1: the revoked generation must NOT acquire a shell')
+  assert.equal(acquired.result.code, 'DOMAIN_REVOKED')
+  assert.equal(harness.allocations(), 0, '...and the port was never asked to allocate')
+  assert.equal(harness.registry.list().length, 0)
 }
 
 async function armHostSessionLifecycle(world) {
@@ -637,7 +635,7 @@ async function armKillOneNotTheOther(harness) {
   // There is no per-domain kill on the registry: the only single-terminal kill is
   // the replace-on-tighten path above; bulk kill is member-scoped.
   assert.equal(typeof harness.registry.kill, 'undefined', 'the registry exposes no per-domain kill')
-  const revoked = await harness.registry.revoke(MEMBER)
+  const revoked = await harness.registry.revoke(PTY_CONTRACT_IDENTITY)
   assert.deepEqual([...revoked].sort(), [replacement.result.value.domainId, sibling.result.value.domainId].sort(), 'revoke(member) is member-scoped: it kills BOTH')
   assert.deepEqual(harness.recordFor('b').kills, ['SIGKILL'])
   assert.deepEqual(harness.recordFor('a-2').kills, ['SIGKILL'])

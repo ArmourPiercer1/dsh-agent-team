@@ -1,0 +1,104 @@
+# PD-1 GREEN — branch task/a5sf-pd1-fix-20261109, base fb9584da5 (origin/master)
+# 0 boots; host-free arms; pinned baseline tree used read-only for the pre-existing a5sf suite
+
+## 1. PD-1 acceptance arms (node --test --test-reporter=tap)
+TAP version 13
+# PD1-REFUSAL-ZERO-ALLOC
+# PD1-CONTRAST-WITH-DOMAIN
+# PD1-INFLIGHT-REAPED
+# PD1-CONTRAST-NEW-GENERATION-ACQUIRES
+# Subtest: PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations)
+ok 1 - PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations)
+  ---
+  duration_ms: 69.878673
+  type: 'test'
+  ...
+# Subtest: PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation
+ok 2 - PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation
+  ---
+  duration_ms: 0.371052
+  type: 'test'
+  ...
+# Subtest: PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains)
+ok 3 - PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains)
+  ---
+  duration_ms: 0.807783
+  type: 'test'
+  ...
+# Subtest: PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation
+ok 4 - PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation
+  ---
+  duration_ms: 0.32959
+  type: 'test'
+  ...
+# Subtest: PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms
+ok 5 - PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms
+  ---
+  duration_ms: 0.479558
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 130.5489
+
+## 2. debt-register guard
+✔ (b) every anchor resolves and still contains the symbol the row claims (3.67116ms)
+✔ the register names the evidence it digests and does not claim a boot (0.170994ms)
+✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (0.387343ms)
+✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (0.261325ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.895528
+
+## 3. runtime team-sandbox / a5sf vitest suite (13 files)
+
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 7ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 9ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 28ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 20ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 82ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 447ms
+ ✓ packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts (4 tests) 173ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (17 tests) 222ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 640ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 144ms
+ ✓ packages/runtime/test/a5sf-confined-subprocess.test.ts (36 tests) 1786ms
+ ✓ packages/runtime/test/a5sf-bl16-grep-realm.test.ts (10 tests) 2340ms
+     ✓ R6: live row 1 through the REAL grep tool — an in-lane worktree search returns the match (one allow fact, disclosure recorded)  330ms
+     ✓ R6m: MUTATION — stripping the two flags at the provider boundary reproduces the LIVE row-1 tool error verbatim  310ms
+
+ Test Files  13 passed (13)
+      Tests  196 passed (196)
+   Start at  14:21:29
+   Duration  3.14s (transform 4.29s, setup 0ms, import 5.75s, tests 5.90s, environment 1ms)
+
+
+## 4. all tests/world-factory/a5sf-* (measured)
+✔ PROBE-REUSE: the web face calls BL-17's probeNetworkDenial — it does not own a second probe (0.45463ms)
+✔ ORDINARY-DSH-FETCH: with NO Alpha.5 realm the host web_fetch fetches exactly as today (4.890859ms)
+✔ UNCHANGED-SHAPE: a network-allow realm returns BYTE-IDENTICAL model text to the ordinary host path (12.018843ms)
+✔ COMPOSITION: the web provider is a composition input, never a Member field (0.560581ms)
+ℹ tests 441
+ℹ suites 0
+ℹ pass 441
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2540.831663
+
+real	0m2.581s
+user	0m16.446s
+sys	0m4.337s

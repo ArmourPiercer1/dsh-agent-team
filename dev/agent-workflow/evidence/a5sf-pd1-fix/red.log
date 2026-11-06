@@ -1,0 +1,118 @@
+# PD-1 RED — base fb9584da5 (origin/master), new arms against the OLD terminal.ts
+# node --test --test-reporter=tap tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
+
+TAP version 13
+# PD1-CONTRAST-NEW-GENERATION-ACQUIRES
+# Subtest: PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations)
+not ok 1 - PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations)
+  ---
+  duration_ms: 69.715703
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:140:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    PD-1: a revoked generation must not acquire a shell, even with no live domain at revoke time
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:149:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation
+not ok 2 - PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation
+  ---
+  duration_ms: 0.518672
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:160:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    revocation kills exactly the visible domain
+    + actual - expected
+    
+    + []
+    - [
+    -   'terminal-1'
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'terminal-1'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:168:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains)
+not ok 3 - PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains)
+  ---
+  duration_ms: 0.429654
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:185:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    the visible live domain is killed by the same revoke
+    + actual - expected
+    
+    + []
+    - [
+    -   'terminal-1'
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'terminal-1'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:206:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation
+ok 4 - PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation
+  ---
+  duration_ms: 0.769567
+  type: 'test'
+  ...
+# Subtest: PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms
+not ok 5 - PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms
+  ---
+  duration_ms: 0.487823
+  type: 'test'
+  location: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:254:1'
+  failureType: 'testCodeFailure'
+  error: 'the summary table does not mark PD-1 FIXED. PD-1 in docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md no longer supports these acceptance arms. A pin that survives the deletion or downgrade of its own record is worse than no pin: restore the PD-1 row with its FIXED status, the owner-ruling semantics sentence, and the acceptance pointer to tests/world-factory/a5sf-pd1-revocation-escape.test.mjs.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '| PD-1 (F3) | Shell-PTY | Revocation does not bind a Member that owns no shell yet | governance hole | semantics |'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd1-fix/tests/world-factory/a5sf-pd1-revocation-escape.test.mjs:266:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 137.841616
