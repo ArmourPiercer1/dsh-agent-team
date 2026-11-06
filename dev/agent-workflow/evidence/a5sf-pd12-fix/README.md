@@ -237,3 +237,12 @@ Live lane:
 
 The driver is a **derived copy**: the accepted subprocess dev-live procedure with the two
 `bash`-path propositions replaced. No upstream tree was touched (`CORE PATCH BUDGET = 0`).
+
+## 2026-11-10 — 记录格式更正（未改任何测量事实）
+
+3 份 `run-record.json` 的 `bindings` 缺 `teamSha` / `hostSha` / `authority`，严格档 `EB3-RUN-MANIFEST --new` 判
+`RUN_SOURCE_UNRESOLVED` + `RUN_SCHEMA`（本地非严格档不报，与 #635 同一族）。已按实测值补齐：`teamSha` = 被测
+master `3313bdf08`、`hostSha` = pin `639ed0153972…`、`authority` = `as20261105r2` + 字节哈希 `31ac81fb…`。
+严格档现 `findings=0`。
+
+这是**记录格式缺陷，不是测量缺陷**：P0 翻转、MA/MB 变异控制、boot02/boot03 的 4/4 结论一字未改。
