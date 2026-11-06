@@ -1,0 +1,15 @@
+﹣ P0 PD-15 defect pin (PRE-FIX): a web provider handed the SUBPROCESS face's proof is admitted (0.375751ms) # SKIP
+✔ D1 FACE-MISMATCH: the subprocess face's proof does NOT admit a deny web fetch; typed NETWORK_PROOF_FACE_MISMATCH before any provider call (1.071969ms)
+✔ D2 LEVEL-ALONE: an `enforced` row with no face-bound proof is refused as NETWORK_UNCONFINED_REALM (a level is not a proof) (0.231799ms)
+✔ A1 WEB-FACE-PROOF-ADMITS: a proof minted for the web face admits the call on that face (service-level statement) (0.207904ms)
+✔ A2 SUBPROCESS-FACE-PROOF-STILL-ADMITS: the same evaluator admits a correctly bound subprocess proof on the subprocess face (0.163249ms)
+✔ A3 SUBPROCESS-PROOF-NEEDS-NAMESPACE: a subprocess proof with no measured namespace identity is refused (0.10033ms)
+✔ T1 TAMPER: changing or removing the face field reds the admission; no face is NOT defaulted to the consumer (0.347378ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 299.345989

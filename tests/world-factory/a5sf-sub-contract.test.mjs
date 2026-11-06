@@ -433,13 +433,13 @@ async function armProbeShape(world) {
   assert.match(String(row.note), /NET-DENY-CONFIRMED/, 'the note is the MEASUREMENT the row is based on')
   assert.match(String(row.note), /listener counter unchanged/)
 
-  // The shipped gate agrees, independently of the face: a PROOF admits, and a
-  // bare level still does not.
+  // The shipped gate agrees, on the face that measured it: a face-bound PROOF
+  // admits on its own face, and a bare level still does not (PD-15 added the face).
   const noProof = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract')
   assert.equal(noProof.ok, false)
   assert.equal(noProof.error.code, 'IO_POLICY_UNSUPPORTED')
   assert.match(String(noProof.error.message), /no provider in this lane demonstrates full network deny/)
-  const proved = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract', { mechanism: 'netns', evidence: 'evidence://x/1', netNsInode: 1, hostNetNsInode: 2 })
+  const proved = network.evaluateNetworkRequirement('deny', 'realm-a5sf-sub-contract', { face: 'subprocess', mechanism: 'netns', evidence: 'evidence://x/1', netNsInode: 1, hostNetNsInode: 2 }, 'subprocess')
   assert.equal(proved.ok, true)
   const gateRow = network.networkProbeRow(7, 'realm-a5sf-sub-contract')
   assert.equal(gateRow.dimension, 'network-destination')

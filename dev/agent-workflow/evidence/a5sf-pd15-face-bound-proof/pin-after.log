@@ -1,0 +1,55 @@
+✖ P0 PD-15 defect pin (PRE-FIX): a web provider handed the SUBPROCESS face's proof is admitted (2.230472ms)
+✔ D1 FACE-MISMATCH: the subprocess face's proof does NOT admit a deny web fetch; typed NETWORK_PROOF_FACE_MISMATCH before any provider call (0.321078ms)
+✔ D2 LEVEL-ALONE: an `enforced` row with no face-bound proof is refused as NETWORK_UNCONFINED_REALM (a level is not a proof) (0.169561ms)
+✔ A1 WEB-FACE-PROOF-ADMITS: a proof minted for the web face admits the call on that face (service-level statement) (0.218844ms)
+✔ A2 SUBPROCESS-FACE-PROOF-STILL-ADMITS: the same evaluator admits a correctly bound subprocess proof on the subprocess face (0.074942ms)
+✔ A3 SUBPROCESS-PROOF-NEEDS-NAMESPACE: a subprocess proof with no measured namespace identity is refused (0.151447ms)
+✔ T1 TAMPER: changing or removing the face field reds the admission; no face is NOT defaulted to the consumer (0.336497ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 301.621719
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:120:1
+✖ P0 PD-15 defect pin (PRE-FIX): a web provider handed the SUBPROCESS face's proof is admitted (2.230472ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: the deny web call was admitted on another face's proof
+  + actual - expected
+  
+  + TeamIoDenial: the effective lane requests network=deny, but the web provider offered a network-enforcement proof minted for a different face (network profile 'deny' was offered a proof minted for the 'subprocess' face while the 'web' face is asking (realm 'member-bl18-web'); the mechanism is evidence about the face that produced it, not about the caller — refused (NETWORK_PROOF_FACE_MISMATCH)); an in-process web transport cannot inherit the confined launcher's network namespace, so another face's measurement is not evidence about this face — refusing before any provider call (PD-15)
+  +     at webNetworkGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/web.ts:196:13)
+  +     at async observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/guard-observability.ts:173:7)
+  +     at async ConfinedWeb.fetch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/web.ts:273:7)
+  +     at async denyFetch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:98:5)
+  +     at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:121:31)
+  +     at async Test.run (node:internal/test_runner/test:1409:7)
+  +     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+  +   code: 'NETWORK_PROOF_FACE_MISMATCH',
+  +   memberIdentity: 'member-bl18-web',
+  +   method: 'web:fetch',
+  +   target: 'https://example.test/legal/page'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:122:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: TeamIoDenial: the effective lane requests network=deny, but the web provider offered a network-enforcement proof minted for a different face (network profile 'deny' was offered a proof minted for the 'subprocess' face while the 'web' face is asking (realm 'member-bl18-web'); the mechanism is evidence about the face that produced it, not about the caller — refused (NETWORK_PROOF_FACE_MISMATCH)); an in-process web transport cannot inherit the confined launcher's network namespace, so another face's measurement is not evidence about this face — refusing before any provider call (PD-15)
+        at webNetworkGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/web.ts:196:13)
+        at async observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/guard-observability.ts:173:7)
+        at async ConfinedWeb.fetch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/packages/runtime/team-services/src/web.ts:273:7)
+        at async denyFetch (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:98:5)
+        at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd15/tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs:121:31)
+        at async Test.run (node:internal/test_runner/test:1409:7)
+        at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3),
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -14,7 +14,7 @@ import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { EffectiveIoPolicy, PathRuleSet } from '../member-io-policy/src/types.js'
-import { createTeamConfinedRunner } from '../team-sandbox/src/runner.js'
+import { createTeamConfinedRunner, type ConfinedProcessProvider } from '../team-sandbox/src/runner.js'
 import { toSubprocessHandle } from '../team-sandbox/src/subprocess.js'
 import { createConfinedProcessProvider } from '../sandbox-provider/provider.js'
 
@@ -105,8 +105,25 @@ describe('P1-07 subprocess contract', () => {
   }, 30_000)
 
   it('refuses when the backend cannot enforce the profile (no naked process)', async () => {
-    const provider = createConfinedProcessProvider({ realmId: 'realm-sub2', trustRoot: 'git:a5sf:subprocess', scratchRoot: world })
-    const runner = createTeamConfinedRunner(provider)
+    // BL-42 changed the premise of this arm: the REAL provider can now measure
+    // and report `network-destination: enforced` on this host, so a deny request
+    // is no longer refused for lack of a mechanism. The runner's refusal path
+    // still has to exist for a backend that cannot enforce, so this arm asks the
+    // SAME measured provider for its real read/write rows and downgrades ONLY the
+    // network row — a backend with no network mechanism, which is exactly the
+    // shape the refusal is for.
+    const capable = createConfinedProcessProvider({ realmId: 'realm-sub2', trustRoot: 'git:a5sf:subprocess', scratchRoot: world })
+    const measured = await capable.probe()
+    if (!measured.ok) throw new Error('the real provider probe refused in this arm')
+    const incapable = {
+      probe: async () => ({
+        ok: true as const,
+        value: measured.value.map((row) => row.dimension === 'network-destination'
+          ? { ...row, level: 'unsupported' as const, mechanism: null, evidence: null }
+          : row),
+      }),
+    } as unknown as ConfinedProcessProvider
+    const runner = createTeamConfinedRunner(incapable)
     const refused = await runner.plan({
       policy: { ...POLICY, read: lane([workdir]), write: lane([workdir]), network: Object.freeze({ access: 'deny' }) },
       realmId: 'realm-sub2', bindingId: 'b', memberScope: 'm', grantFingerprint: 'sha256:sub-2',

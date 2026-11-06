@@ -191,15 +191,27 @@ test('DENY-PROBE-ABSENT: a backend with NO probe answers unsupported (closed), n
   assert.match(textOf(result), /capability probe/i)
 })
 
-test('PROBE-LOAD-BEARING: the refusal is the probe\'s ANSWER — a backend that proves `enforced` is admitted', async () => {
-  // This is the BL-17 law applied to the web lane: `deny` is admitted ONLY on
-  // an explicit `enforced` capability row. No backend in this tree reports it,
-  // which is why the product path above always refuses; this arm proves the
-  // probe result (not a hardcoded string) is what decides.
-  const world = await governed({ network: 'deny', probeLevel: 'enforced' })
+test('PROBE-LOAD-BEARING: the refusal is the probe\'s ANSWER plus THIS face\'s proof — an `enforced` row with a web-face proof is admitted', async () => {
+  // BL-17's law, narrowed by PD-15: `deny` is admitted only on an explicit
+  // `enforced` row AND a face-bound proof minted for the face asking. No backend
+  // in this tree reports either, which is why the product path above always
+  // refuses; this arm proves the probe result (not a hardcoded string) decides,
+  // and that a subprocess-face proof would NOT be accepted here (the dedicated
+  // PD-15 arms pin that).
+  const world = await governed({
+    network: 'deny',
+    probeLevel: 'enforced',
+    networkProof: {
+      face: 'web',
+      mechanism: 'service-level web transport (in-process; no OS boundary)',
+      evidence: 'evidence://fake/pd15-web-face',
+      netNsInode: null,
+      hostNetNsInode: null,
+    },
+  })
   await mountToolWeb(world)
   const result = await drive(world, 'web_fetch', { url: DECLARED_URL })
-  assert.equal(result.isError, false, `an enforced backend admits the call: ${textOf(result)}`)
+  assert.equal(result.isError, false, `an enforced backend with THIS face's proof admits the call: ${textOf(result)}`)
   assert.equal(world.boundary.probeCalls, 1, 'the probe was consulted')
   assert.equal(world.boundary.fetches.length, 1)
   const facts = world.facts.filter((fact) => fact.method === 'web:fetch')
