@@ -1,0 +1,8 @@
+{
+  "schema": "a5sf-bl18-live2/counters/1",
+  "at": "2026-11-06T05:07:52.962Z",
+  "providerEntries": [],
+  "hostWebRows": [],
+  "note": "both fake-boundary counters are empty because no Member existed and no web call was requested. This is NOT a measured refusal and NOT evidence of confinement.",
+  "osLevelNetworkIsolationClaimed": false
+}

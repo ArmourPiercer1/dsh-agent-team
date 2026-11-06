@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-06T05:07:32.754Z",
+  "head": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "worldId": "u5a5sfbl18l2-20261106T05-07-32Z",
+  "rows": [
+    "a5sf-bl18-web-offer",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-bl18-leader",
+    "preset-a5sf-bl18-webworker"
+  ],
+  "paths": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z/workspace",
+    "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z/a5sf-consult.jsonl",
+    "counter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z/web-provider.jsonl",
+    "hostWebCounter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z/host-web.jsonl"
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+    "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\") — this run is start 5 of 5, the LAST start; there is no retry, no sixth start, no reserve.",
+    "allocationItem": "P2-04 boot #5 of 5 — BL-18 live deny-lane wiring (web face)",
+    "boundCommit": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+    "priorRows": 0,
+    "plannedStarts": 1,
+    "maxStarts": 2,
+    "aborts": 0,
+    "note": "maxStarts = prior shared-ledger rows + 1 pre-registration (intent) row + 1 boot; the BL-14 gate counts shared-ledger rows, not spawns"
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

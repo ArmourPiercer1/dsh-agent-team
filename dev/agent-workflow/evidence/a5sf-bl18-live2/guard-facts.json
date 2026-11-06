@@ -1,0 +1,8 @@
+{
+  "schema": "a5sf-bl18-live2/guard-facts/1",
+  "at": "2026-11-06T05:07:52.962Z",
+  "sink": "tests/homes/u5a5sfbl18l2-20261106T05-07-32Z/a5sf-consult.jsonl (removed with the World home by teardown)",
+  "facts": [],
+  "note": "no guard consult occurred; the sink file was never created",
+  "osLevelNetworkIsolationClaimed": false
+}

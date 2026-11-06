@@ -1,0 +1,16 @@
+{
+  "schema": "a5sf-bl18-live2/marker-routing/1",
+  "at": "2026-11-06T05:07:52.962Z",
+  "decidedBy": "the driver's decide() log",
+  "markers": {
+    "discovery": "MK_BL18_DISC",
+    "create": "MK_BL18_CREATE",
+    "fetch": "MK_BL18_FETCH",
+    "search": "MK_BL18_SEARCH",
+    "collect": "MK_BL18_COLLECT"
+  },
+  "requests": [],
+  "routingHeld": null,
+  "note": "the mock recorded ZERO model requests: the Host never reached an agent turn, so no marker was sent or answered",
+  "osLevelNetworkIsolationClaimed": false
+}
