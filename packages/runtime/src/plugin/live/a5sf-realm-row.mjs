@@ -833,6 +833,7 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
     ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
+    ...(compiled.terminal === undefined ? {} : { terminal: compiled.terminal }),
     ...(web === undefined ? {} : { web }),
     ...(sink === undefined ? {} : { onGuardConsult: (fact) => sink.record(fact) }),
   }
@@ -882,6 +883,47 @@ function confinedBashSpecOf(realm, nativeSpecs, surface) {
 }
 
 /**
+ * The confined terminal `bash` native module (PD-13), resolved from THIS file's
+ * own location: the row rides the dist mirror beside it, so source and
+ * installed faces use the same relative specifier. Never a host path.
+ */
+const A5SF_CONFINED_TERMINAL_TOOL = new URL('./confined-terminal-tool.mjs', import.meta.url).href
+
+/**
+ * PD-13 — decide whether THIS realm's shell must be shadowed onto the confined
+ * `terminals` face, and answer the module spec to append.
+ *
+ * A confined terminal face SUPERSEDES the PD-12 `subprocess` shadow: both
+ * register the single name `bash`, so exactly one may run, and the terminal
+ * face is the stronger one (it admits each command's reads, compiles the same
+ * effective lane, and executes through the same confined process face). The
+ * conditions mirror PD-12's, each a refusal to guess:
+ *   1. the agent can SEE `bash` (the attach is surface-neutral: it replaces the
+ *      preset definition, never adds or removes a name);
+ *   2. the realm OWNS a confined `terminals` face. Without it the mount seam
+ *      would refuse a terminals-consuming module, and there would be no
+ *      confined face to route the call to;
+ *   3. the composition has not already configured a `bash` owner (this module,
+ *      the PD-12 module, or an entry declaring `expectedTools: ['bash']`).
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @returns {{url: string, expectedTools: readonly string[]} | undefined}
+ */
+function confinedTerminalSpecOf(realm, nativeSpecs, surface) {
+  if (!surface.has('bash')) return undefined
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null || faces.terminals === undefined || faces.terminals === null) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_CONFINED_TERMINAL_TOOL) return undefined
+    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
+    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
+  }
+  return Object.freeze({ url: A5SF_CONFINED_TERMINAL_TOOL, expectedTools: Object.freeze(['bash']) })
+}
+
+/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -925,8 +967,13 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // or an agent without `bash`, is left byte-identically alone: adding a name
   // would be a governance change this wiring must not make, and there is no
   // confined face to route the call to anyway.
-  const bashSpec = confinedBashSpecOf(realm, nativeSpecs, before)
-  const specs = bashSpec === undefined ? nativeSpecs : [...nativeSpecs, bashSpec]
+  // PD-13 (2026-11-11): a confined terminal face supersedes the PD-12 bash
+  // shadow — one `bash` name, one serving face, and the terminal face is the
+  // one with a read axis.
+  const terminalSpec = confinedTerminalSpecOf(realm, nativeSpecs, before)
+  const bashSpec = terminalSpec === undefined ? confinedBashSpecOf(realm, nativeSpecs, before) : undefined
+  const shadowSpec = terminalSpec ?? bashSpec
+  const specs = shadowSpec === undefined ? nativeSpecs : [...nativeSpecs, shadowSpec]
   if (specs.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,
   // not just the name set (a module that registers nothing, or registers late,

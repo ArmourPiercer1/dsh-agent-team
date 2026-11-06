@@ -1,0 +1,12 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-pd13-confined-terminal",
+  "summary": "PD-13 FIX: the confined terminal `bash` native tool module (`src/plugin/live/confined-terminal-tool.mjs`) is plain JS loaded through the route-C seam by the byte-copied realm row (`a5sf-realm-row.mjs`, placement 120), and the confined terminal face itself (`team-services/src/terminal.ts`) is emitted by tsc as usual. tsc never emits `.mjs`, so the tool module rides the dist mirror at its repo-relative layout; the realm row resolves it with `new URL('./confined-terminal-tool.mjs', import.meta.url)`, so without this entry the installed face would fail at member setup with ERR_MODULE_NOT_FOUND — not at build time.",
+  "migratedFrom": "new lane (PD-13 fix) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/confined-terminal-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-terminal-tool.mjs"
+    }
+  ]
+}

@@ -85,6 +85,24 @@ export const TEAM_SERVICE_INSTALL_CODES = [
      */
     'TERMINALS_LEGACY_PTY_REFUSED',
     /**
+     * PD-13 (2026-11-11) — a TERMINAL face was declared on a realm that owns no
+     * confined `subprocess` face, or whose declared shell class does not admit
+     * the terminal's program. The confined terminal face executes each command
+     * as a confined child of THAT face; without it the face would have to fall
+     * back to the inherited shell, which is the governance hole PD-13 records.
+     * Refused at install, before any Member scope exists.
+     */
+    'TERMINALS_UNCONFINED_REALM',
+    /**
+     * PD-13 (2026-11-11) — DOUBLE TERMINAL: the Member's preset already mounts a
+     * legacy `terminals` service and the realm would install a confined terminal
+     * face beside it. A Member never holds a governed and an ungoverned shell at
+     * once (the answer to "what is the Member's shell" must not fork), so the
+     * install is refused instead of shadowing one of the two. The composition
+     * removes the preset's persistent-shell/`dsh-terminal` row for Members.
+     */
+    'TERMINALS_DOUBLE_TERMINAL_REFUSED',
+    /**
      * PRODUCT ASSEMBLY (2026-11-05): a product declaration narrows the NETWORK
      * axis (a ceiling/restriction `network: deny`, or a `delegated-remote`
      * execution boundary) and this realm installs NO web face. Refused at

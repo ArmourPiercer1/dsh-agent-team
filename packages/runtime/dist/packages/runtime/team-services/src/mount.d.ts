@@ -42,7 +42,7 @@ import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdent
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
 import { type MemberServiceSpec, type ToolBindingRealm } from './install.js';
-import type { ConfinedSubprocessRealmSpec, ConfinedWebRealmSpec } from './install.js';
+import type { ConfinedSubprocessRealmSpec, ConfinedTerminalRealmSpec, ConfinedWebRealmSpec } from './install.js';
 import type { MemberIoInstallation } from './types.js';
 /** One Member to mount: identity + the ceiling compiled for that generation. */
 export interface A5sfRealmMember {
@@ -362,6 +362,13 @@ export interface MountA5sfRealmInput {
      * by the inherited host `ctx.web`.
      */
     readonly web?: ConfinedWebRealmSpec;
+    /**
+     * PD-13: the confined `terminals` face for this Member's isolated scope.
+     * Omitted = none is mounted (default-preserving), and a `terminals`-consuming
+     * native module is then refused at composition time — never silently served
+     * by the inherited, legacy-generation PTY service.
+     */
+    readonly terminal?: ConfinedTerminalRealmSpec;
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

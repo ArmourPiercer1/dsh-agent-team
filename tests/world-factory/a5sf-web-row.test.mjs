@@ -397,7 +397,9 @@ test('ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two
 test('ROW-NO-FACE: a realm that declares no web face is unchanged — web: null and the real tool-web module is refused typed', async () => {
   const world = await rowWorld({ withWebFace: false })
   assert.equal(world.error, undefined, 'a realm without a web face still mounts (default-preserving)')
-  assert.deepEqual(world.realm.installation.members[0].faces, { fs: 'confined', subprocess: null, web: null })
+  // PD-13 (2026-11-11): the faces answer is total, so the terminal axis is an
+  // explicit `null` here — this realm declares no terminal face either.
+  assert.deepEqual(world.realm.installation.members[0].faces, { fs: 'confined', subprocess: null, web: null, terminals: null })
   // The composition-time refusal is the shipped one, not a new decision point.
   const attachment = await attachToolWeb(world).then(() => undefined, (error) => error)
   assert.notEqual(attachment, undefined, 'the real tool-web module may not mount on a faceless realm')

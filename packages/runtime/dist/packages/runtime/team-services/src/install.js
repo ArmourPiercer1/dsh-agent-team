@@ -25,6 +25,7 @@ import { requireProviderCapabilities } from '../../member-io-policy/src/provider
 import { createConfinedFileSystemClass, createMemberFsGuard, } from './fs.js';
 import { createConfinedSubprocessClass, } from './subprocess.js';
 import { createConfinedWebClass, } from './web.js';
+import { createConfinedTerminalFace, } from './terminal.js';
 import { observeGuard } from './guard-observability.js';
 import { TeamServiceInstallError, } from './types.js';
 /** Member id → installed, per root Context. Guards double installation. */
@@ -134,6 +135,40 @@ export async function installMemberIoProviders(input) {
     if (input.web !== undefined && WebBase === undefined) {
         throw new TeamServiceInstallError('PROVIDER_UNAVAILABLE', 'a confined web face was declared but the root Context carries no `web` service to confine; a Member never falls back to the host web service');
     }
+    // 2d. PD-13: a DECLARED confined terminal face executes its commands THROUGH
+    // the realm's confined `subprocess` face (a PTY cannot ride the Landlock
+    // profile — `spawnTerminal` refuses one). A terminal face without that face,
+    // or whose program the declared shell class does not admit, would have to
+    // fall back to the inherited shell: the exact PD-13 hole. Refuse before any
+    // scope exists.
+    const terminalSpec = input.terminal;
+    if (terminalSpec !== undefined) {
+        if (typeof terminalSpec.program !== 'string' || !terminalSpec.program.startsWith('/')) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a confined terminal face needs an ABSOLUTE shell program (a PATH name is never admitted)');
+        }
+        if (input.subprocess === undefined) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a confined terminal face was declared but this realm installs no confined subprocess face; the terminal face executes'
+                + ' every command as a confined child of THAT face and never falls back to the inherited shell');
+        }
+        const programs = input.subprocess.shellClass?.programs;
+        const programName = terminalSpec.program.slice(terminalSpec.program.lastIndexOf('/') + 1).toLowerCase();
+        if (programs === undefined || !programs.includes(programName)) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', `the confined terminal face runs ${JSON.stringify(terminalSpec.program)}, but the realm's confined subprocess face declares`
+                + ` no shell class admitting ${JSON.stringify(programName)}; the terminal's commands could never be admitted, so the face`
+                + ' is refused instead of being mounted as a shell that cannot run');
+        }
+        // DOUBLE TERMINAL (PD-13, the fork this row exists to prevent): the Member
+        // must not hold a confined terminal AND an ungoverned legacy one. A preset
+        // that mounted `dsh-terminal`/`persistent-shell` leaves a live `terminals`
+        // service on an ancestor scope; installing the confined face beside it
+        // would make "what is the Member's shell" depend on which module asked.
+        // Refuse the install — the composition removes the legacy row for Members.
+        if (root.get('terminals') !== undefined) {
+            throw new TeamServiceInstallError('TERMINALS_DOUBLE_TERMINAL_REFUSED', 'the Member preset already mounts a legacy `terminals` service, and this realm would install a confined terminal face'
+                + ' beside it; a Member never holds a governed and an ungoverned shell at once. Remove the preset row\'s'
+                + ' persistent-shell/`dsh-terminal` row for Members, or do not declare the confined terminal face');
+        }
+    }
     // 3. Mount, tracking every fiber so a later failure can roll back.
     const installed = [];
     const rollback = async () => {
@@ -160,9 +195,15 @@ export async function installMemberIoProviders(input) {
         // BL-18: the web face nests on the SAME isolated chain (one service per
         // isolate call), so a native module mounted on THIS ctx resolves the
         // confined `web` exactly as it resolves the confined `fs`/`subprocess`.
-        const scoped = input.web === undefined
+        const withWeb = input.web === undefined
             ? withSubprocess
             : withSubprocess.isolate('web', Symbol(`member-web:${spec.identity.memberInstanceId}`));
+        // PD-13: the terminal face nests on the SAME isolated chain (one service
+        // per isolate call), so a routed shell module mounted on THIS ctx resolves
+        // the confined `terminals` and never the inherited PTY service.
+        const scoped = input.terminal === undefined
+            ? withWeb
+            : withWeb.isolate('terminals', Symbol(`member-terminals:${spec.identity.memberInstanceId}`));
         const guard = createMemberFsGuard(policy);
         // DEFAULT PATH = the original guard object (no wrapper, no extra call).
         const observed = input.onGuardConsult === undefined
@@ -224,6 +265,56 @@ export async function installMemberIoProviders(input) {
             }
             subprocess = mounted;
         }
+        // PD-13: the confined terminal face, mounted on the same isolated scope.
+        // It executes through the confined subprocess face mounted just above (the
+        // surface is passed by reference, never re-resolved: a "missing face" is an
+        // install-time refusal, not a late fallback).
+        let disposeTerminal;
+        let terminals;
+        const terminalSubprocess = input.subprocess;
+        if (terminalSpec !== undefined && terminalSubprocess !== undefined && subprocess !== undefined) {
+            const terminalEffective = terminalSubprocess.effective;
+            const terminalGuard = input.onGuardConsult === undefined
+                ? createMemberFsGuard(terminalEffective)
+                : observeGuard(createMemberFsGuard(terminalEffective), input.onGuardConsult, {
+                    realm: 'member',
+                    memberIdentity: spec.identity.memberInstanceId,
+                    toolBindingIdentity: null,
+                    policyRevision: policy.revision,
+                });
+            const terminalFace = createConfinedTerminalFace({
+                effective: terminalEffective,
+                program: terminalSpec.program,
+                shellClass: terminalSubprocess.shellClass,
+                guard: terminalGuard,
+                subprocess: subprocess,
+                ...(terminalSpec.maxOutputBytes === undefined ? {} : { maxOutputBytes: terminalSpec.maxOutputBytes }),
+                ...(terminalSpec.graceMs === undefined ? {} : { graceMs: terminalSpec.graceMs }),
+                ...(terminalSpec.motd === undefined ? {} : { motd: terminalSpec.motd }),
+            });
+            try {
+                const mountPlugin = scoped.plugin;
+                const fiber = await mountPlugin(terminalFace, {});
+                disposeTerminal = async () => {
+                    await fiber.dispose();
+                };
+            }
+            catch (error) {
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' confined terminal mount failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
+            const mountedTerminal = scoped.get('terminals');
+            if (mountedTerminal === undefined) {
+                await disposeTerminal?.();
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' mounted no confined terminal service`);
+            }
+            terminals = mountedTerminal;
+        }
         // BL-18: the confined web face, mounted on the same isolated scope.
         let disposeWeb;
         let web;
@@ -267,6 +358,10 @@ export async function installMemberIoProviders(input) {
             // explicit "this realm confines no web", which `mountNativeToolModules`
             // turns into a composition-time refusal for a `web`-consuming module.
             web: web ?? null,
+            // PD-13: and the same TOTAL answer on the terminal axis. `terminals:
+            // null` keeps the `terminals`-consuming module refusal in force; a
+            // non-null face is what makes a routed shell module admissible.
+            terminals: terminals ?? null,
         });
         const installation = Object.freeze({
             identity: spec.identity,
@@ -286,6 +381,8 @@ export async function installMemberIoProviders(input) {
                 INSTALLED.get(root)?.delete(spec.identity.memberInstanceId);
                 if (disposeWeb !== undefined)
                     await disposeWeb();
+                if (disposeTerminal !== undefined)
+                    await disposeTerminal();
                 if (disposeSubprocess !== undefined)
                     await disposeSubprocess();
                 await disposeMount();
@@ -370,7 +467,7 @@ export async function installToolBindingRealm(input) {
         fs: scoped.get('fs'),
         // BL-17: the total answer. This installer mounts `fs` only; saying so
         // explicitly is what lets the mount seam refuse a process consumer.
-        faces: Object.freeze({ fs: 'confined', subprocess: null, web: null }),
+        faces: Object.freeze({ fs: 'confined', subprocess: null, web: null, terminals: null }),
         dispose: async () => {
             if (disposed)
                 return;

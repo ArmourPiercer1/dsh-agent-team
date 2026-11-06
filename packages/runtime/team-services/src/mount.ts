@@ -54,7 +54,7 @@ import {
   type ToolBindingRealm,
   type ToolBindingRealmSpec,
 } from './install.js'
-import type { ConfinedSubprocessRealmSpec, ConfinedWebRealmSpec } from './install.js'
+import type { ConfinedSubprocessRealmSpec, ConfinedTerminalRealmSpec, ConfinedWebRealmSpec } from './install.js'
 import type { MemberIoInstallation } from './types.js'
 import { TeamServiceInstallError } from './types.js'
 
@@ -702,6 +702,13 @@ export interface MountA5sfRealmInput {
    * by the inherited host `ctx.web`.
    */
   readonly web?: ConfinedWebRealmSpec
+  /**
+   * PD-13: the confined `terminals` face for this Member's isolated scope.
+   * Omitted = none is mounted (default-preserving), and a `terminals`-consuming
+   * native module is then refused at composition time — never silently served
+   * by the inherited, legacy-generation PTY service.
+   */
+  readonly terminal?: ConfinedTerminalRealmSpec
 }
 
 export interface MountedA5sfRealm {
@@ -800,6 +807,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
     ...(input.subprocess === undefined ? {} : { subprocess: input.subprocess }),
     ...(input.web === undefined ? {} : { web: input.web }),
+    ...(input.terminal === undefined ? {} : { terminal: input.terminal }),
   })
 
   // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
@@ -1433,13 +1441,20 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           + ' general Member×Tool provider',
         )
       }
-      // BL-17 (2026-11-05) — 旧代 PTY 拒用. Same law on the terminal axis: a
-      // module that consumes `terminals` (the native persistent-bash path)
-      // would resolve the INHERITED, legacy-generation host PTY service. No
-      // realm owns a confined terminal face, so a governed Member is refused
-      // the path at composition time — before any fiber or tool definition.
-      const targetsLegacyPtyRealm = (mount: NativeToolModuleMount): boolean =>
-        declaredInjectionsOf(mount.module).includes('terminals')
+      // BL-17 (2026-11-05) — 旧代 PTY 拒用, PD-13 (2026-11-11) narrowed: a
+      // module that consumes `terminals` (the native persistent-bash path) is
+      // admissible ONLY on a realm that OWNS a confined terminal face. The
+      // answer comes from the realm's `faces` (a required, total answer), never
+      // from `target.get('terminals')` — that lookup returns the INHERITED
+      // legacy PTY when this realm mounted no shadow, which is exactly the
+      // silent widening this refusal replaces. `faces.terminals === null` keeps
+      // the original refusal byte-for-byte for every realm without the face.
+      const targetsLegacyPtyRealm = (mount: NativeToolModuleMount): boolean => {
+        if (!declaredInjectionsOf(mount.module).includes('terminals')) return false
+        const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity)
+        const faces = binding === undefined ? installation.members[0]?.faces : binding.faces
+        return faces === undefined || faces.terminals === null || faces.terminals === undefined
+      }
       for (const mount of modules) {
         if (!targetsLegacyPtyRealm(mount)) continue
         const binding = mount.toolBindingIdentity === undefined ? undefined : bindingRealmOf(mount.toolBindingIdentity)
@@ -1448,8 +1463,8 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           `native tool module '${moduleLabelOf(mount)}' injects \`terminals\`, but ${realmLabelOf(binding)} mounts no confined terminal face;`
           + ' refusing at composition time instead of letting the module resolve the inherited, legacy-generation host PTY service.'
           + ' A persistent shell is created outside the Member lane and its domain can outlive the policy revision it was opened'
-          + ' under (旧代 PTY), so a governed Member is never served by it. A future confined terminal backend has to install a'
-          + ' terminal face on the realm\'s own isolated scope; until then this path is refused, not documented as unused',
+          + ' under (旧代 PTY), so a governed Member is never served by it. A realm that must host a shell consumer has to install'
+          + ' the confined terminal face on its own isolated scope (PD-13); until then this path is refused, not documented as unused',
         )
       }
       // BL-18 (P2-05) — the network axis at the realm boundary. A module that
@@ -1629,13 +1644,17 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           // would otherwise mount and later resolve the inherited legacy PTY.
           const deferredTerminal = descendants.filter((created) => 'terminals' in created.inject)
           if (deferredTerminal.length > 0) {
-            throw new TeamServiceInstallError(
-              A5SF_TERMINALS_LEGACY_PTY_REFUSED,
-              `native tool module '${moduleLabelOf(mount)}' deferred a \`terminals\` injection`
-              + ` (${deferredTerminal.map((created) => `[${Object.keys(created.inject).join(',')}]`).join(', ')}),`
-              + ` but ${realmLabelOf(binding)} mounts no confined terminal face; refusing at composition time`
-              + ' instead of letting the child resolve the inherited, legacy-generation host PTY service',
-            )
+            const terminalFaces = binding === undefined ? installation.members[0]?.faces : binding.faces
+            const terminalAdmitted = terminalFaces !== undefined && terminalFaces.terminals !== null && terminalFaces.terminals !== undefined
+            if (!terminalAdmitted) {
+              throw new TeamServiceInstallError(
+                A5SF_TERMINALS_LEGACY_PTY_REFUSED,
+                `native tool module '${moduleLabelOf(mount)}' deferred a \`terminals\` injection`
+                + ` (${deferredTerminal.map((created) => `[${Object.keys(created.inject).join(',')}]`).join(', ')}),`
+                + ` but ${realmLabelOf(binding)} mounts no confined terminal face; refusing at composition time`
+                + ' instead of letting the child resolve the inherited, legacy-generation host PTY service',
+              )
+            }
           }
           // BL-18: the same deferred-injection law on the network axis. A module
           // that defers `ctx.inject(['web'], …)` would otherwise mount and later

@@ -1,0 +1,40 @@
+✖ P0 PD-13 defect pin (PRE-FIX): the Member shell reads the lane-denied secret and returns its bytes, with no guard fact naming it (19.823391ms)
+✔ D1 fix: the Member's bash read of a lane-denied path is IO_READ_DENIED, 0 bytes, 1 guard fact, 0 provider calls (9.104274ms)
+✔ D2 locus: the realm reports faces.terminals and the model-visible bash definition is the confined terminal module's (7.349965ms)
+✔ A1 allow lane: an in-lane read runs through the confined terminal face exactly once, with an ALLOW read fact (6.159862ms)
+✔ A2 write lane untouched: a redirection target is not a read, so an in-lane write still runs (5.447443ms)
+✔ A3 no path token: a command with no path-shaped operand produces no shellRead fact (6.435885ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (3.001491ms)
+✔ C1 control (shadow removed): the body read returns the secret bytes again (3.983553ms)
+✔ C2 control (no terminal face): bash keeps the PD-12 shape and the body read is not attributed (7.74341ms)
+✔ C3 control (terminal face without a subprocess face): refused at install with TERMINALS_UNCONFINED_REALM (1.792914ms)
+✔ C4 control (double terminal): a legacy preset terminal beside the confined face is refused, 0 legacy allocations (1.74795ms)
+✔ C5 control (no shell class): the terminal face refuses at install, because its commands could never be admitted (1.258463ms)
+✔ C6 declared weakness: a dynamic read (`$(...)`) is not attributed and is not refused at admission (6.655729ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 330.410319
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:454:1
+✖ P0 PD-13 defect pin (PRE-FIX): the Member shell reads the lane-denied secret and returns its bytes, with no guard fact naming it (19.823391ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: the Member's shell command executed
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:463:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

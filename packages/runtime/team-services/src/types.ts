@@ -20,7 +20,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js'
 import type { FsProviderSurface } from './fs.js'
-import type { ConfinedSubprocessSurface, ConfinedWebSurface } from './install.js'
+import type { ConfinedSubprocessSurface, ConfinedTerminalSurface, ConfinedWebSurface } from './install.js'
 
 /** Closed per-call denial vocabulary of an installed Provider. */
 export const TEAM_IO_DENIAL_CODES = [
@@ -93,6 +93,24 @@ export const TEAM_SERVICE_INSTALL_CODES = [
    * until then this is a refusal, not a documented "unused" path.
    */
   'TERMINALS_LEGACY_PTY_REFUSED',
+  /**
+   * PD-13 (2026-11-11) — a TERMINAL face was declared on a realm that owns no
+   * confined `subprocess` face, or whose declared shell class does not admit
+   * the terminal's program. The confined terminal face executes each command
+   * as a confined child of THAT face; without it the face would have to fall
+   * back to the inherited shell, which is the governance hole PD-13 records.
+   * Refused at install, before any Member scope exists.
+   */
+  'TERMINALS_UNCONFINED_REALM',
+  /**
+   * PD-13 (2026-11-11) — DOUBLE TERMINAL: the Member's preset already mounts a
+   * legacy `terminals` service and the realm would install a confined terminal
+   * face beside it. A Member never holds a governed and an ungoverned shell at
+   * once (the answer to "what is the Member's shell" must not fork), so the
+   * install is refused instead of shadowing one of the two. The composition
+   * removes the preset's persistent-shell/`dsh-terminal` row for Members.
+   */
+  'TERMINALS_DOUBLE_TERMINAL_REFUSED',
   /**
    * PRODUCT ASSEMBLY (2026-11-05): a product declaration narrows the NETWORK
    * axis (a ceiling/restriction `network: deny`, or a `delegated-remote`
@@ -211,6 +229,18 @@ export interface RealmServiceFaces {
    * `ctx.web` and fetch with zero guard facts.
    */
   readonly web: ConfinedWebSurface | null
+  /**
+   * PD-13 (2026-11-11): the confined `terminals` face mounted on this realm's
+   * isolated scope, or `null` — an EXPLICIT answer, never an omission.
+   *
+   * `null` means this Member's realm does NOT confine a terminal: the mount
+   * seam then refuses a `terminals`-consuming native module
+   * (`TERMINALS_LEGACY_PTY_REFUSED`) rather than letting it resolve the
+   * inherited, legacy-generation host PTY service. Non-null means a routed
+   * shell module mounted in this realm's scope speaks to the face installed
+   * here, whose per-command reads are admitted against the compiled lane.
+   */
+  readonly terminals: ConfinedTerminalSurface | null
 }
 
 /**

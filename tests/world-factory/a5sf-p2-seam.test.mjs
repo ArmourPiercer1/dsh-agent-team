@@ -294,7 +294,10 @@ if (!process.argv.includes(CHILD_FLAG)) {
     for (const realm of [realmDefault, realmUndefined, realmObserved]) {
       assert.deepEqual(Object.keys(realm).sort(), realmKeys)
       assert.equal(Object.isFrozen(realm), true)
-      assert.deepEqual(realm.faces, { fs: 'confined', subprocess: null, web: null })
+      // PD-13 (2026-11-11): `RealmServiceFaces` gained the TOTAL `terminals`
+      // answer; a binding realm owns no terminal face, so it answers `null`.
+      // The shape is still one frozen object on every path.
+      assert.deepEqual(realm.faces, { fs: 'confined', subprocess: null, web: null, terminals: null })
       assert.equal(realm.toolBindingIdentity, BINDING)
       assert.equal(realm.policyRevision, BINDING_REVISION)
       assert.deepEqual(JSON.parse(JSON.stringify(realm.identity)), { ...IDENTITY })

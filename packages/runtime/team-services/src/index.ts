@@ -21,6 +21,8 @@ export {
 export type {
   ConfinedSubprocessRealmSpec,
   ConfinedSubprocessSurface,
+  ConfinedTerminalRealmSpec,
+  ConfinedTerminalSurface,
   ConfinedWebRealmSpec,
   ConfinedWebSurface,
   InstallMemberIoProvidersInput,
