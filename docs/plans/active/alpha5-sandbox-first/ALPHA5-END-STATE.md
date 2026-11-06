@@ -30,7 +30,7 @@
 | **Non-data-plane**（M-19/M-20/M-21） | state 工具（`goal`/`todo`/`jobs`/`session`/`ask`）只经 Alpha.4 调用准入，本阶段不另设数据面上限；`present`/`skill`/附件读取若触文件则来源能力另算（`CONDITIONAL`）；未知同进程 JS 明确 `UNSUPPORTED`（`TRUSTED_ONLY`） | 本面对数据面**没有**可被面约束的 I/O，因此加一层上限只会制造伪保证；已知可能读用户文件的工具被标为 `CONDITIONAL` 而不是“无 I/O” | “`present`/`skill` 不会读任意文件。”——那正是 `CONDITIONAL` 的意思：**可能读**，且不在本阶段的读上界内 | 矩阵 §1.1.1 / M-19/M-20/M-21；`ALPHA5-SANDBOX-BACKLOG.md` §6 | B5（BL-25 批量条目未开始） |
 
 **读法**：每一行的“最强真话”都是 **host-free**（C1）或已被撤回的 live（C2†）；**没有一行**的最强真话
-是“今天在真实 Host 上成立”。这就是 §2.1 的算术（5 allocated / 4 spent / 0 current live verdicts）在
+是“今天在真实 Host 上成立”。这就是 §2.1 的算术（5 allocated / 5 spent / 0 remain / 0 current live verdicts）在
 表格里的样子。
 
 ## 2. 十条产品债：当前状态与 owner 决策
@@ -98,10 +98,11 @@
 
 ## 5. `UNVERIFIED`（本轮不能证实、也不猜的项）
 
-1. **`dev/agent-workflow/evidence/a5sf-bl18-live2/`**：委托文字要求阅读它，**该路径不存在**；全树只有
-   `a5sf-bl18-live/`。第 5 次启动从未发生，因此“BL-18 在 #626 之后启动会得到什么结果”是 `UNVERIFIED`。
+1. **`dev/agent-workflow/evidence/a5sf-bl18-live2/`**：第一版断言该路径不存在、第 5 次启动从未发生——
+   **这是错的**（写它时 base 不含 PR #627）。该目录存在且完整，第 5 次启动确实发生并在 boot 阶段中止，
+   四个 wiring 项为 **NOT PROVEN**（不是 `UNVERIFIED`）。详见 `LIVE-EVIDENCE-LEDGER.md` §2.1/§2.2。
 2. **“5 spent, 0 remain”**：与四份在册 README 的 4/5 算术冲突（`LIVE-EVIDENCE-LEDGER.md` §2.1）。
-   本文件采用 **5 allocated / 4 spent / 1 unspent**。
+   本文件采用 **5 allocated / 5 spent / 0 remain**（2026-11-09 更正：第 5 次启动已在 PR #627 上发生并中止于 boot 阶段，`a5sf-bl18-live2/` 存在；此前的 “1 unspent” 基于不含 #627 的树）。
 3. **真实 PTY 的 OS 级行为**（`/dev/pts/N`、session leader、`SIGKILL` 到进程组、zombie/fd 计数）：
    端口是注入的 double，任何 OS 级结论都未观测（`a5sf-pty-face/README.md` §5）。
 4. **真实 HTTP/DNS/redirect chain/proxy 行为**：所有 web 臂的传输是 recorder，没有 socket
