@@ -1,7 +1,8 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-05. Gate HEAD: `a1868f878` (9/9 local, `gate.md`); evidence HEAD
-after this file: docs-only. Branch `alpha6/int-20261103`, rollback tag
+Date: 2026-11-05. Gate HEAD: `212c4fba2` (9/9 local, 375.9 s, census 677/8830;
+`gate.md`); docs after this file are docs-only. Evidence HEAD at the gate:
+`212c4fba2`. Branch `alpha6/int-20261103`, rollback tag
 `a6-int-pre-585-20261105` (peeled `ccc9294f4e37c230841924713a9624e1553c545a`).
 No master merge, no un-draft, no production switch.
 
@@ -34,39 +35,40 @@ Full local gate: 9/9, census 677/8830, identity set identical to
 
 ## What is not proven
 
-- **Host human delivery**: `human-current-leg` routes to `native-human`, a
-  deliberate no-op. The human resolution above used the remote
-  `team.resolveControl` entry, not a Host wake.
+- **Host human PUSH delivery**: `human-current-leg` routes to `native-human`, a
+  deliberate no-op. Discovery/resolution is remote-only (`a6-human-r12`); no
+  active Host notification is claimed.
 - **Cancel racing the guard**: not injected; timeout and Stop are proven.
-- **Same-session queued wake**: after a direct prompt to the Officer,
-  `followup` reports running but no model turn consumes the queued wake
-  (`a6-recipients-r22`, row 15).
-- **Recovery of an approved call after crash**: the after-allow window leaves
-  an unconsumed allow, and the after-consume window leaves a spent allow with no
-  execution; neither is replayed/resumed. This is safe against duplicates but
-  loses the approved call (availability gap).
-- **Sticky Stop**: the coordinator semantics are implemented and unit-tested,
-  but production never dispatches `stop`/`resume`; Host `session/cancel` does
-  not reach the wake plane (`sticky-stop.md`). NOT_WIRED.
-- **Native Inbox reconciliation**: not injected.
+- **Recovery of an approved call after crash (availability)**: the after-allow
+  window leaves an unconsumed allow and the after-consume window leaves a spent
+  allow with no execution. Neither is replayed or resumed, by design (Scheme A),
+  so the approved call is lost rather than duplicated.
+- **Durable invalidation settlement**: crash recognition is fail-closed and no
+  replay occurs, but no new non-authorizing settlement row was added this round
+  to mark the original call invalid after restart.
+- **Explicit resume delivering a new wake**: the marker is cleared by an
+  explicit user message, but a post-resume WorkChanged delivery is not E2E
+  proven.
+- **Native Inbox cold-start replay**: not injected.
 - **Sink unit test**: not added; the E2E plus the code argument are the evidence.
 
 ## Decision
 
-**NO-GO for trial enablement, production enablement, master merge, or release.**
-The isolated line is accepted for the paths above and remains a DRAFT candidate.
-The blockers are liveness/recovery evidence, not a newly found authority
-violation: no double execution, no repeat consumption, and no lost approved call
-was observed in the runs that were executed.
+**NO-GO for production enablement, master merge, or release.** The isolated
+line is accepted for continued isolated internal trial / E2E under the opt-in
+`alpha6ReviewRouting` flag and a non-production workspace. It is a DRAFT
+candidate and must not be treated as an authority switch. The remaining
+limitations are availability/recovery and one resume-delivery proof, not a
+newly found authority violation: no double execution, no repeat consumption,
+no replay of an invalidated call, and no stale Grant reuse was observed.
 
 ## Conditions to revisit
 
-1. Fix or formally classify the same-session queued-wake gap, with a real Host
-   turn.
-2. Exercise the four crash windows and cold-start Inbox reconciliation, showing
-   no duplicate execution and no lost pending leg.
-3. Decide Sticky Stop semantics and exercise it.
+1. Ratify the two crash availability windows as accepted losses or add a
+   non-authorizing settlement row that marks the original call invalid.
+2. Prove explicit resume delivers a new WorkChanged wake.
+3. Exercise native Inbox cold-start reconciliation.
 4. Either wire a real Host human delivery path or explicitly ratify remote-only
-   human resolution.
-5. Add the sink wiring unit test and re-run the hosted CI, not only the local
-   9/9 gate.
+   as v1 (RULING 5 already allows remote-only for v1).
+5. Add the sink wiring unit test and re-run hosted CI, not only the local 9/9
+   gate.
