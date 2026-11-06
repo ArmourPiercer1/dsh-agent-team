@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-06T05:07:52.961Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 33,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z",
+    "releasedPorts": [
+      3184,
+      3494,
+      3184
+    ],
+    "killedPids": [
+      33
+    ],
+    "notes": []
+  },
+  "abortedDuring": "health-gate",
+  "port": 3184,
+  "portClosedAfterTeardown": true,
+  "homeRemoved": true,
+  "homePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/tests/homes/u5a5sfbl18l2-20261106T05-07-32Z",
+  "osLevelNetworkIsolationClaimed": false
+}

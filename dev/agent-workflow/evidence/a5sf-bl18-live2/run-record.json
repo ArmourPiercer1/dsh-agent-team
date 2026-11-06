@@ -1,0 +1,93 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+  "suite": "a5sf-bl18-live2",
+  "startedAt": "2026-11-06T05:07:32.712Z",
+  "selectedCases": [
+    "web-deny-fetch",
+    "web-deny-search"
+  ],
+  "bindings": {
+    "teamSha": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfbl18l2",
+    "sink": "world-home a5sf-consult.jsonl (copy: guard-facts.json)",
+    "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+    "allocationItem": "P2-04 boot #5 of 5 — BL-18 live deny-lane wiring (web face)",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261105r2",
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+      },
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+    },
+    "providerComposition": "test row a5sf-bl18-web-offer-row.mjs (the product has no v3-blueprint -> compiled-lane bridge at this base); the intersection is the ONE compiler compileEffectiveIo",
+    "laneAlgebra": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets",
+    "transport": "FAKE boundary: records then refuses every entry; probe reports network-destination=unsupported; no socket, no DNS, no proxy",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "web-deny-fetch",
+      "verdict": "FAIL",
+      "at": "2026-11-06T05:07:52.962Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "FAIL",
+      "at": "2026-11-06T05:07:52.962Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/dev/agent-workflow/evidence/a5sf-bl18-live2/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T05:07:32.713Z",
+        "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-bl18-live2-3c0f6292d9b7",
+        "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+        "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\") — this run is start 5 of 5, the LAST start; there is no retry, no sixth start, no reserve.",
+        "boundCommit": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T05:07:39.154Z",
+        "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+        "suite": "a5sf-bl18-live2",
+        "world": "u5a5sfbl18l2-20261106T05-07-32Z",
+        "phase": "a5sf-bl18-live2-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-bl18-live2-boot1",
+      "world": "u5a5sfbl18l2-20261106T05-07-32Z",
+      "port": 3184,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/dev/agent-workflow/evidence/a5sf-bl18-live2/logs/u5a5sfbl18l2-20261106T05-07-32Z/instance-port3184.log"
+    }
+  ],
+  "partial": true,
+  "abortedAt": "health-gate",
+  "abort": {
+    "stage": "health-gate",
+    "detail": null,
+    "error": "Error: health gate failed: status=404 body=null\n    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/dev/agent-workflow/evidence/a5sf-bl18-live2/run-boot.mjs:941:66)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-06T05:07:52.962Z"
+}

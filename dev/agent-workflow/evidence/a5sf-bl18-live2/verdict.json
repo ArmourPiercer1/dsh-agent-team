@@ -1,0 +1,19 @@
+{
+  "schema": "a5sf-bl18-live2/verdict/1",
+  "at": "2026-11-06T05:07:52.962Z",
+  "overall": "FAIL",
+  "abortedAt": "health-gate",
+  "partial": true,
+  "cases": [
+    {
+      "id": "web-deny-fetch",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "FAIL"
+    }
+  ],
+  "limit": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,51 @@
+{
+  "world": "u5a5sfbl18l2-20261106T05-06-54Z",
+  "handed": [
+    "a5sf-bl18-web-offer",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-bl18-leader",
+    "preset-a5sf-bl18-webworker"
+  ],
+  "rows": [
+    {
+      "id": "a5sf-bl18-web-offer",
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/dev/agent-workflow/evidence/a5sf-bl18-live2/a5sf-bl18-web-offer-row.mjs",
+      "hasConfig": true
+    },
+    {
+      "id": "dsh-agent-team",
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "hasConfig": true
+    },
+    {
+      "id": "p6t6-team-tools",
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl18-live/packages/tools/harness/plugin.mjs",
+      "hasConfig": false
+    },
+    {
+      "id": "preset-a5sf-bl18-leader",
+      "name": "@deepseek-ai/dsh-agent-preset",
+      "hasConfig": true
+    },
+    {
+      "id": "preset-a5sf-bl18-webworker",
+      "name": "@deepseek-ai/dsh-agent-preset",
+      "hasConfig": true
+    }
+  ],
+  "presets": [
+    "a5sf-bl18-leader",
+    "a5sf-bl18-webworker"
+  ],
+  "rootPresetId": "a5sf-bl18-leader",
+  "memberPresetId": "a5sf-bl18-webworker",
+  "candidate": {
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "source": "tests/paths.mjs#TEST_USE_BASELINE_SHA",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "asserted": true,
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

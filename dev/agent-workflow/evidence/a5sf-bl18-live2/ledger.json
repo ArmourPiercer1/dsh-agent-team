@@ -1,0 +1,51 @@
+{
+  "schema": "a5sf-bl18-live2/ledger/1",
+  "ledgerPath": "run-ledger.jsonl",
+  "plannedStarts": 1,
+  "aborts": 0,
+  "boots": 1,
+  "arithmetic": "boots === plannedStarts - aborts",
+  "holds": true,
+  "rows": [
+    {
+      "at": "2026-11-06T05:07:32.713Z",
+      "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-bl18-live2-3c0f6292d9b7",
+      "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+      "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\") — this run is start 5 of 5, the LAST start; there is no retry, no sixth start, no reserve.",
+      "boundCommit": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-06T05:07:39.154Z",
+      "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+      "suite": "a5sf-bl18-live2",
+      "world": "u5a5sfbl18l2-20261106T05-07-32Z",
+      "phase": "a5sf-bl18-live2-boot1"
+    }
+  ],
+  "intentRow": {
+    "at": "2026-11-06T05:07:32.713Z",
+    "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+    "suite": "a5sf-read",
+    "kind": "budget-intent",
+    "phase": "a5sf-read-intent",
+    "world": "intent:grant-a5sf-bl18-live2-3c0f6292d9b7",
+    "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+    "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\") — this run is start 5 of 5, the LAST start; there is no retry, no sixth start, no reserve.",
+    "boundCommit": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+    "plannedStarts": 1
+  },
+  "bootRow": {
+    "at": "2026-11-06T05:07:39.154Z",
+    "runId": "a5sf-bl18-live2-2026-11-06T05-07-32-712Z",
+    "suite": "a5sf-bl18-live2",
+    "world": "u5a5sfbl18l2-20261106T05-07-32Z",
+    "phase": "a5sf-bl18-live2-boot1"
+  },
+  "note": "the one planned start was written to the shared ledger (fail-closed: a crashed attempt still spends its row)",
+  "osLevelNetworkIsolationClaimed": false
+}
