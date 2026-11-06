@@ -83,6 +83,23 @@ Host + Oracle + 独立裁决），**不是**矩阵等级，**结构上不可能*
 **这一节的功效边界**：它把“四面在真实 Host 上做什么”从推断变成测量，但它**不**证明隔离、**不**证明
 candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每一面剩下的那句最弱的话。
 
+## 1.2 2026-11-11：BL-42 之后，每条受影响面的“最强真话 / 最弱未证”（只追加）
+
+本节只写在 BL-42（#644，`990becb07`）之后**变强或不变**的那一句；它不覆盖 §1/§1.1 的任何字节，也不
+新增等级或 `V@B`。BL-42 的证据是 **host-free 臂 + 本机 OS 实测，0 次启动、无 `DEV-LIVE` 行**；§7 计数
+是**严格 4/5 / 宽读 5/5**（item 5 的宽读 = PD-13 的 confined terminal face，同一个 process face；README
+要求的 live Host preset 没有做）。每一行都必须连读这两件事，否则 `enforced` 会被读成 `isolated`。
+
+| face | 2026-11-11 的最强真话（有证据） | 2026-11-11 的最弱未证（不能写） |
+|---|---|---|
+| **Subprocess** | 在本机上，confined `subprocess` 子进程的 `network: deny` 车道由 OS 拒绝并**被测量到**：对照子进程到达 loopback listener（`accepted=1`、nonce 匹配），deny 子进程 `accepted=0`、`connect`/`sendto` 得 `ENETUNREACH`、自身 netns inode 与 host 不同；provider 的 row 只有同时拿到 mechanism + 绑定 realm/trustRoot 的 `evidence://` 才可为 `enforced`，只有 level 仍判 `unsupported`。证据=`dev/agent-workflow/evidence/a5sf-bl42-netdeny/README.md` §2/§3/§6。§7 严格 **4/5**、宽读 5/5，**0 次启动**。 | **A Member's `bash` cannot reach the network.** 没有 boot、没有 shipped 组合声明该面；`AF_UNIX` pathname socket 在 netns 之外；继承 socket fd 是拒绝不是过滤；DNS 只按 loopback 形状的 UDP 被测；不允许非特权 userns 的 host 退回准入拒绝。 |
+| **Shell-PTY** | 截至本日，**同一个** confined 子进程机制能被 PD-13 的 confined terminal face 驱动到（`A5`：deny 侧 0 连接，control 侧 1 连接 + nonce 匹配），所以“终端面若走这个 process face，就有 OS 级网络拒绝”是一个**有臂**的命题；它仍只是 §7 的宽读 item 5。 | Member **实际**拿到的是 preset 继承的 legacy PTY，实测在 realm 之外（PD-13），它**不走**这个 netns；本面仍没有 shipped 组合声明 shell class；**0 次启动**；`enforced` 不能读成这个 shell 被隔离。 |
+| **Web** | 没有变强：`web_fetch`/`web_search` 的 `network: deny` 仍是 **service-level** 准入拒绝（face 上一条 guard fact、0 provider entry），证据=`dev/agent-workflow/evidence/a5sf-web-devlive/README.md` §3/§4。BL-42 的 netns **不覆盖**进程内 web transport。 | “Web 面被 OS 隔离”仍不可写；且 web guard 只问**它自己注入的** provider 的 `probe` 是否 `enforced`，proof 未绑定到 web 面——把 subprocess 的证明转交给 web provider 的组合会放行 deny 调用（树内无此组合，但这是结构缺口，不是保证）。 |
+| **Cross-face（发布）** | BL-42 关掉了“没有 OS/进程边界 deny 后端”这一条**后端**阻塞，且它是本机实测、可复现、有变异控制的（MA/MB 各自令受保护臂变红），§7 严格 4/5 / 宽读 5/5。 | `release BLOCKED` 不变：G2 读/写 **EXPIRED**、G3–G5 **NOT_STARTED**、没有 shipped composition 声明终端面或受治面；BL-42 **不**构成 BL-17/18 的 feature 验收（owner 裁决：拒绝启动不算通过），也**不**让任何 Member 的 `bash` 变成“不能上网”。 |
+
+**一句话**：`enforced` 描述的是**车道在本机被 OS 拒绝**；它不描述 Member、不描述产品接线、不描述隔离。
+这四行今天的最强真话都必须与 §7 的 **4/5（宽读 5/5）** 和 **0 次启动** 同时出现，否则就是升级。
+
 ## 2. 十条产品债：当前状态与 owner 决策
 
 状态词只有两个：**`FIXED`（有已合并 PR）** 与 **`OPEN`**。`PRODUCT-DEBT-REGISTER.md` 的正文仍是
@@ -135,6 +152,12 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 > socket、继承 socket fd（改为直接拒绝）、DNS 仅按 loopback 形状的 UDP 传输被测；§7 item 5 的 live Host
 > 半场未做。因此本条**不改变任何 grade / `V@B` / release 状态**，矩阵与 §7 的 live 口径按原文保留。
 > 证据 `dev/agent-workflow/evidence/a5sf-bl42-netdeny/README.md`（§7 逐项表：严格读法 **4/5**）。
+
+> **2026-11-11 追加（合并状态，只追加）**：上面两条 2026-11-11 注记写作时 BL-42 与 PD-14 还是 draft
+> PR；`git log origin/master` 现在显示它们都已 squash 合并——**PD-12 = `550815c97`（#640）、PD-13 =
+> `c91c72bca`（#642）、PD-14 = `47316541a`（#643）、BL-42 = `990becb07`（#644）**。因此“未合并”只描述
+> 写作时点；证据、残余与 `V@B`/grade 均不变。登记册里 PD-12/PD-13/PD-14 的 `status` 仍写 draft PR、
+> 未合并，属于同一类未同步的**状态文字**，本文件不改登记册。
 
 
 `PRODUCT-DEBT-REGISTER.md` 把 PD-7/PD-9 写成 “draft PR #619/#620”；`git log origin/master` 显示两者

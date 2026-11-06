@@ -216,3 +216,50 @@ Integration Owner 只保留共享装配、PR 集成、资源调度与冻结候�
 **Alpha.5 目前交付的是一个"机制正确、路径不完整"的沙箱内核**：编译、准入、拒绝归因、证据可复现性都已成立，
 并在真实 Host 上被四个面走到；**但它今天还不能保证一个成员的实际能力被其上界包含**——PD-12 的 `bash` 路径已修，PD-13 的读轴不是实现 bug，
 而是"上界作用于面、调用走另一条路"的结构性缺口。修复它们之后，Alpha.5 才有资格谈 G4/G5。
+
+---
+
+## 附录 B — 2026-11-11 附录：§2.3 的“没有网络隔离声明”已被**部分**取代（只追加；§2.3 原文不改）
+
+**这一条只追加在报告末尾，不编辑 §2.3 的任何字节。** §2.3 写于 2026-11-10，它的三条限定在当时是真的；
+BL-42（#644，`990becb07`）之后，第二条从“全真”变成“部分被取代”，第一、三条不变。
+
+### B.1 §2.3 第二条：哪半句仍然真，哪半句不再真
+
+原文（保留）：
+
+> **没有任何网络隔离声明**。所有网络结论都是"准入层拒绝、零进程、因为 provider 自己的能力探测报告
+> `network-destination: unsupported`"，OS 从未被要求拒绝任何东西。§7 的五个可观测项（非空 mechanism + 证据行、
+> 真实子进程被内核/传输拒绝、正控、带外传输观测、第二条消费路径）**一个都不具备**。
+
+- **不再真的半句**：对**本机一个 confined 子进程的 `network: deny` 车道**，“OS 从未被要求拒绝任何东西”不再
+  成立——OS 被要求了，并且拒绝被**带外测量**到了：同一 launcher 的对照子进程到达 loopback listener
+  （`accepted=1`、`datagrams=1`、nonce 匹配），deny 子进程 `accepted=0`、`connect`/`sendto` 得
+  `ENETUNREACH`、自身 `/proc/self/ns/net` inode 与 host 不同。§7 的五个可观测项现在按**严格 4/5**成立
+  （items 1–4），**宽读 5/5**（item 5 的 second consumer = PD-13 的 confined terminal face，同一个 process
+  face）。证据 = `dev/agent-workflow/evidence/a5sf-bl42-netdeny/README.md` §2/§3/§6。
+- **仍然真的半句**：**“没有任何网络隔离声明”仍然成立**。`enforced` 是**能力行**的值，描述“这个后端在本机
+  被要求拒绝且测量确认”，不描述产品里哪个 Member 的哪条调用会走到它，也不等于隔离。§7 的 item 5
+  **live Host 半场没有做**：BL-42 **0 次启动**、无 `DEV-LIVE` 行、无 shipped preset。AF_UNIX pathname
+  socket 在 netns 之外、继承 fd 是拒绝不是过滤、DNS 只按 loopback 形状的 UDP 被测、不允许非特权 userns
+  的 host 退回准入拒绝。
+- **仍然不 entitled 的句子**：**A Member's `bash` cannot reach the network.** 没有 boot，就没有关于
+  产品接线的结论；PD-12 的修复把 `bash` 送进 confined face，但该 face 的 deny 在**没有** proof 时仍然只是
+  准入拒绝，而 shipped 组合仍未声明该面。
+
+### B.2 §2.3 第一、三条（不变）
+
+- 第一条（`DEV-LIVE` 不是 `CANDIDATE-C2`、不产生 `V@B=yes`）**不变**：BL-42 连 `DEV-LIVE` 都不是，它是
+  host-free 臂加上一条本机 OS 测量；它没有 boot，也没有候选分配。
+- 第三条（web 传输是 recorder、PTY 端口是 double）**不变**：BL-42 没有给 web 面加 socket，也没有改变
+  PTY 注入端口。web face 的 deny 仍是 service-level 准入拒绝，不是 OS 网络拒绝；BL-42 的 netns 不覆盖
+  进程内 HTTP。
+
+### B.3 与本报告 §7 表的关系（同一读法）
+
+§7 的 Subprocess 行写“PD-12 的 deny 是 admission 拒绝，不是 OS 拒绝”“OS 从未被要求”——这两句在**写它们
+的树上**是真的，保留不改。今天要补一句：在**持有 netns 后端并拿到 proof** 的 confined 子进程车道上，
+deny 已经可以是 OS 拒绝（严格 4/5 / 宽读 5/5，0 次启动）；但**这不改变任何面级能力声明**，也不改变
+`release BLOCKED`。
+
+**一句话**：BL-42 让“OS 拒绝”这半句第一次有证据；它没有让“隔离”或“Member 的 `bash` 不能上网”有证据。
