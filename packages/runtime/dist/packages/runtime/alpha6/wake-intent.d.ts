@@ -105,5 +105,5 @@ export interface ReviewWakeRecoverResult {
  * A sticky Stop outranks an unclaimed wake: the intent is cleared and the
  * Inbox row is withdrawn when the port offers `remove`.
  */
-export declare function recoverReviewWake(coordinator: ReviewWakeCoordinator, store: ReviewWakeIntentStore, inbox: ReviewWakeInboxPort): Promise<ReviewWakeRecoverResult>;
+export declare function recoverReviewWake(coordinator: ReviewWakeCoordinator, store: ReviewWakeIntentStore, inbox: ReviewWakeInboxPort, stopped?: boolean): Promise<ReviewWakeRecoverResult>;
 //# sourceMappingURL=wake-intent.d.ts.map

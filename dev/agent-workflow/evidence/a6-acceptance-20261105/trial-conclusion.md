@@ -22,6 +22,8 @@ No master merge, no un-draft, no production switch.
 | Crash after the allow is consumed, before the result: no duplicate consumption/execution | PASS (no duplicate) | `a6-crash-consume-r2`, A6-16 |
 | Crash before the PA request write: no phantom request/consumption/execution | PASS | `a6-crash-before-r1`, A6-17 |
 | Bounded wait expires: request stays pending, late allow cannot revive | PASS | `a6-timeout-r4`, A6-19/20 |
+| Human leg is discoverable over the remote-only ledger/projection | PASS | `a6-human-r12`, A6-21 |
+| User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r3`, A6-22/23 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
 
 Full local gate: 9/9, census 677/8830, identity set identical to

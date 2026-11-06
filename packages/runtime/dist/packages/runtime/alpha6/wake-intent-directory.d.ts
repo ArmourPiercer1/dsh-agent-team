@@ -7,6 +7,17 @@ export interface WakeIntentDirectory {
     list(): Promise<readonly PersistedReviewWakeIntent[]>;
     /** The file path of one latch's row (diagnostics). */
     pathFor(key: ReviewWakeKey): string;
+    /**
+     * The durable Sticky Stop marker for one latch. It is a small presence
+     * file BESIDE the intent row (not a second approval ledger): `true` means a
+     * trusted user Stop outranks any persisted wake, and only an explicit
+     * resume interaction clears it. A missing marker is `false`.
+     */
+    /** The marker path (diagnostics / tests). */
+    stoppedPathFor(key: ReviewWakeKey): string;
+    isStopped(key: ReviewWakeKey): Promise<boolean>;
+    markStopped(key: ReviewWakeKey): Promise<void>;
+    clearStopped(key: ReviewWakeKey): Promise<void>;
 }
 export declare function createFileWakeIntentDirectory(directory: string): WakeIntentDirectory;
 //# sourceMappingURL=wake-intent-directory.d.ts.map

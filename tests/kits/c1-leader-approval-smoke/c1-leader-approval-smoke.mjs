@@ -138,7 +138,7 @@
 
 import { createHash } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, statSync, rmSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, statSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -308,6 +308,7 @@ const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
 const A6_CRASH = ['1', 'allow', 'consume', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
+const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1153,6 +1154,64 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     return false
   }
 
+  if (A6_STICKY_STOP) {
+    const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
+    let wakeSeen = 0
+    while (Date.now() < deadline) {
+      wakeSeen = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      if (wakeSeen > 0) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    const officer = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer')
+    const cancel = officer === undefined
+      ? { status: 0, body: { error: 'no officer child session' } }
+      : await apiCancel(booted.origin, booted.cookie, officer.childSessionId, 'c1a6sticky')
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const rows = existsSync(markerDir) ? readdirSync(markerDir) : []
+    const stoppedRows = rows.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+    const wakeRows = rows.filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+    const wakesAfter = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+    const cancelOk = cancel.status === 200 && cancel.body?.result?.ok === true
+    const ok = cancelOk && stoppedRows.length === 1 && wakeRows.length === 0 && wakesAfter === wakeSeen
+    check('A6-22', 'a real Host user Stop leaves a durable Sticky Stop marker, withdraws the queued wake row, and does not re-deliver', ok,
+      `cancel=${String(cancelOk)} markers=${stoppedRows.join(',')} wakeRows=${wakeRows.join(',')} wakes=${wakeSeen}->${wakesAfter}`)
+    // Cross-restart: the marker is a FILE, not process memory. Kill the Host,
+    // boot it again, and prove the Stop survives and no wake is re-delivered.
+    let restartError = null
+    let markersAfterRestart = []
+    let wakesAfterRestart = wakesAfter
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      const rows2 = existsSync(markerDir) ? readdirSync(markerDir) : []
+      markersAfterRestart = rows2.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      wakesAfterRestart = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const restartOk = restartError === null && markersAfterRestart.length === 1 && wakesAfterRestart === wakesAfter
+    check('A6-23', 'the Sticky Stop survives a real Host restart and does not re-deliver the withdrawn wake', restartOk,
+      `restart=${restartError ?? 'ok'} markers=${markersAfterRestart.join(',')} wakes=${wakeSeen}->${wakesAfterRestart}`)
+    writeEvidence('a6-sticky-stop.json', { cancel: cancel.body ?? cancel, rows, stoppedRows, wakeRows, wakeSeen, wakesAfter, markersAfterRestart, wakesAfterRestart, restartError })
+    return ok && restartOk
+  }
   if (A6_TIMEOUT_MS > 0) {
     await new Promise((resolve) => setTimeout(resolve, A6_TIMEOUT_MS + 8000))
     const ledger = readControlLedger(CREATE_ROOT_A6)
@@ -1335,6 +1394,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     return exited && pa !== null && afterRestart.error === null && !revived
   }
   let humanEscalation = null
+  let humanDiscovery = null
   let humanLeg = null
   let humanDecision = null
   let humanConsumption = null
@@ -1347,6 +1407,33 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       humanEscalation = humanLeg === null ? null : current.escalations.find((e) => e.approvalCaseId === humanLeg.approvalCaseId) ?? null
       if (humanLeg !== null) break
       await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    if (humanLeg !== null) {
+      // RULING 5: the human leg must be DISCOVERABLE through the remote
+      // surface alone, before any model turn names it. The durable ledger
+      // page is the read; the projection's pending counter is the summary.
+      const page = await remoteCall(booted.origin, booted.cookie, 'team.getLedgerPage', {
+        teamSessionId: CREATE_ROOT_A6,
+        afterSequence: 0,
+        limit: 500,
+      }, 'c1a6disc', 4)
+      const projection = await remoteCall(booted.origin, booted.cookie, 'team.getProjection', {
+        teamSessionId: CREATE_ROOT_A6,
+      }, 'c1a6disc', 4)
+      const entries = page.body?.result?.value?.data?.entries ?? []
+      const serialized = JSON.stringify(entries)
+      const requestFact = entries.find((entry) => entry?.factType === 'control-request-recorded'
+        && JSON.stringify(entry?.payload ?? {}).includes(humanLeg.requestId)) ?? null
+      const projectionData = projection.body?.result?.value?.data?.projection ?? {}
+      humanDiscovery = {
+        requestId: humanLeg.requestId,
+        requestFactVisible: requestFact !== null,
+        requestIdOccurrences: serialized.split(humanLeg.requestId).length - 1,
+        pendingControlCount: projectionData.ledger?.pendingControlCount ?? null,
+        page: page.body ?? page,
+        projection: projection.body ?? projection,
+      }
+      writeEvidence('a6-human-discovery.json', humanDiscovery)
     }
     if (humanLeg !== null) {
       const response = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
@@ -1460,6 +1547,10 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       && humanDecision?.decision === 'allow'
       && (humanDecision?.decider?.kind === 'human' || humanDecision?.decider?.role === 'human')
       && humanConsumption !== undefined
+    const discoveryOk = humanDiscovery !== null && humanDiscovery.requestFactVisible === true
+      && Number(humanDiscovery.pendingControlCount ?? 0) >= 1
+    check('A6-21', 'the pending human leg is discoverable over the remote-only ledger/projection surface before any resolve', discoveryOk,
+      `requestFact=${String(humanDiscovery?.requestFactVisible)} count=${String(humanDiscovery?.pendingControlCount)} occurrences=${String(humanDiscovery?.requestIdOccurrences)}`)
     check('A6-9', 'Officer escalated to the human leg; human allow executed the call once', humanOk,
       `escalation=${JSON.stringify(humanEscalation)} humanLeg=${JSON.stringify(humanLeg)} decision=${JSON.stringify(humanDecision)} consumed=${humanConsumption !== undefined} executed=${String(executed)}`)
     writeEvidence('a6-human.json', { escalation: humanEscalation, humanLeg, decision: humanDecision, consumption: humanConsumption, executed, execText })
@@ -1537,6 +1628,7 @@ function makeDecide() {
     // (or the first pending id for a merged wake).
     if (lastUser.startsWith('[team-review-wake')) {
       if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
+      if (A6_STICKY_STOP) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
       const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
         ?? /requestId=([^\]\s]+)/.exec(lastUser)?.[1]
         ?? ''

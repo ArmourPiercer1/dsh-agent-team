@@ -2173,6 +2173,35 @@ export async function apply(ctx, config) {
                 }, { global: true });
             }
         }
+        // Alpha.6 (opt-in only): the production producer for Sticky Stop. ONLY the
+        // user's own cancellation request reaches `turn/end` with
+        // `reason.kind==='aborted' && reason.reason.kind==='user'`; an ordinary tool
+        // Abort, a timeout or an internal cancel never maps to a global Stop. An
+        // explicit user message to the stopped reviewer is the only resume.
+        const alpha6WakeUserStop = builtRoot.alpha6WakeUserStop;
+        const alpha6WakeUserResume = builtRoot.alpha6WakeUserResume;
+        if ((alpha6WakeUserStop !== undefined || alpha6WakeUserResume !== undefined) &&
+            typeof ctx.on === 'function') {
+            const onSessionEvent = ctx.on.bind(ctx);
+            if (alpha6WakeUserStop !== undefined) {
+                onSessionEvent('session/event', (session, payload) => {
+                    if (payload.type !== 'turn/end')
+                        return;
+                    const reason = payload.data?.reason;
+                    if (reason?.kind !== 'aborted' || reason.reason?.kind !== 'user')
+                        return;
+                    void alpha6WakeUserStop(String(session.id)).catch(() => undefined);
+                }, { global: true });
+            }
+            if (alpha6WakeUserResume !== undefined) {
+                const onClaimed = ctx.on.bind(ctx);
+                onClaimed('agent/inbox/claimed', (payload) => {
+                    if (payload.message?.source?.kind !== 'user')
+                        return;
+                    void alpha6WakeUserResume(String(payload.agent.id)).catch(() => undefined);
+                }, { global: true });
+            }
+        }
         // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
         // --- one artifact-read authority per production root, built over the
         // --- OPEN domain's durable repositories (session identity + the

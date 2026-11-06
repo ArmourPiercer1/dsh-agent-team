@@ -33,3 +33,20 @@ the worker turn completed (`C1_A6_MEMBER_DONE`). The ledger ends 3 requests /
 - The human-current-leg production `reviewEvents` consumer still routes to the
   notifier, whose `native-human` recipient is a deliberate no-op; this run
   drives the human through the remote control entry, not through a Host wake.
+
+## Remote-only discoverability (this round)
+
+RULING 5 permits v1 without Host push, but requires the pending human leg to be
+discoverable/readable/resolvable over the real remote interface.
+
+Run `a6-human-r12` (root `session-c1-smoke-a6-2026-11-06T06-51-15`) proves the
+first half before any model turn names the id:
+
+- `team.getLedgerPage` (real remote RPC) returns the
+  `control-request-recorded` fact carrying the human leg `requestId`
+  (`requestFactVisible=true`, exactly one occurrence).
+- `team.getProjection` reports `ledger.pendingControlCount=1`.
+- `team.resolveControl` then resolves that id; the human allow executes once.
+
+`A6-21` PASS. This is *remotely discoverable*; it is not an active push
+notification, which v1 deliberately does not require.

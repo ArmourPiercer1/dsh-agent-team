@@ -11,7 +11,7 @@
  *
  * @module packages/runtime/alpha6/wake-intent-directory
  */
-import { readdir } from 'node:fs/promises';
+import { access, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createFileWakeIntentStore } from './wake-intent-store.js';
 /** Stable FNV-1a hash of the latch identity; no clock, no randomness. */
@@ -28,6 +28,24 @@ export function createFileWakeIntentDirectory(directory) {
     return {
         pathFor(key) {
             return join(directory, `wake-${keyHash(key)}.json`);
+        },
+        stoppedPathFor(key) {
+            return join(directory, `stopped-${keyHash(key)}.json`);
+        },
+        async isStopped(key) {
+            try {
+                await access(this.stoppedPathFor(key));
+                return true;
+            }
+            catch {
+                return false;
+            }
+        },
+        async markStopped(key) {
+            await writeFile(this.stoppedPathFor(key), '{"stopped":true}\n', 'utf8');
+        },
+        async clearStopped(key) {
+            await rm(this.stoppedPathFor(key), { force: true });
         },
         forKey(key) {
             return createFileWakeIntentStore({ filePath: this.pathFor(key) });

@@ -74,7 +74,7 @@ function sameKey(a, b) {
  * A sticky Stop outranks an unclaimed wake: the intent is cleared and the
  * Inbox row is withdrawn when the port offers `remove`.
  */
-export async function recoverReviewWake(coordinator, store, inbox) {
+export async function recoverReviewWake(coordinator, store, inbox, stopped) {
     const initialStatus = coordinator.state.status;
     const initialWakeId = coordinator.state.wakeId;
     const initialFingerprint = coordinator.state.observedWorkFingerprint;
@@ -98,7 +98,7 @@ export async function recoverReviewWake(coordinator, store, inbox) {
             adopted: false,
             wakeId: null,
             reason: 'absent',
-            transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+            transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
         };
     }
     if (!sameKey(intent.key, coordinator.state.key)) {
@@ -113,6 +113,7 @@ export async function recoverReviewWake(coordinator, store, inbox) {
             transition: coordinator.dispatch({
                 type: 'recover',
                 persistedWake: persistedFact(intent),
+                stopped,
             }),
         };
     }
@@ -142,7 +143,7 @@ export async function recoverReviewWake(coordinator, store, inbox) {
             adopted: false,
             wakeId: null,
             reason: 'absent',
-            transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+            transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
         };
     }
     if (changed())
@@ -150,6 +151,7 @@ export async function recoverReviewWake(coordinator, store, inbox) {
     const transition = coordinator.dispatch({
         type: 'recover',
         persistedWake: persistedFact(intent),
+        stopped,
     });
     if (coordinator.state.stopped) {
         // Sticky Stop outranks a persisted queued wake: withdraw it from the

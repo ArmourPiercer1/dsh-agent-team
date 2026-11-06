@@ -2589,6 +2589,12 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           let coordinator = alpha6WakeCoordinators.get(mapKey)
           if (coordinator === undefined) {
             coordinator = createLatchCoordinator(key)
+            // A durable Sticky Stop outranks this plan even when the earlier
+            // wake row is gone: adopt the marker into the new coordinator so a
+            // post-restart WorkChanged can never re-queue a stopped reviewer.
+            if (await alpha6WakeIntents?.isStopped(key) === true) {
+              coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true })
+            }
             alpha6WakeCoordinators.set(mapKey, coordinator)
           }
           alpha6WakeBySession.set(input.targetSessionId, coordinator)
@@ -2719,6 +2725,58 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
           })
         }
       : undefined
+  /**
+   * A TRUSTED user Stop, mapped onto the latch's Sticky Stop. Only the Host's
+   * `turn/end` with `reason.kind === 'aborted' && reason.reason.kind ===
+   * 'user'` calls this; ordinary tool aborts, timeouts and internal cancels do
+   * not. The marker is written BEFORE the reducer so a restart between the two
+   * cannot lose the Stop; an unclaimed queued wake is withdrawn and its intent
+   * row cleared, never replayed.
+   */
+  const alpha6WakeUserStop =
+    alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
+      ? async (targetSessionId: string): Promise<boolean> => {
+          const coordinator = alpha6WakeBySession.get(targetSessionId)
+          if (coordinator === undefined) return false
+          const key = coordinator.state.key
+          await alpha6WakeIntents.markStopped(key)
+          const transition = coordinator.dispatch({ type: 'stop' })
+          if (transition.outcome !== 'applied') return true
+          for (const effect of transition.effects) {
+            if (effect.kind !== 'withdraw-wake') continue
+            const inbox = live.reviewWakeInbox?.(targetSessionId)
+            try {
+              await inbox?.remove?.(effect.wakeId)
+              await alpha6WakeIntents.forKey(key).clear(effect.wakeId)
+            } catch {
+              // An unreadable Inbox keeps the durable row; recovery re-checks
+              // the marker and refuses to adopt the wake.
+            }
+          }
+          return true
+        }
+      : undefined
+  /**
+   * An EXPLICIT new user interaction with the stopped reviewer Session. This
+   * is the only production resume: WorkChanged never calls it. The marker is
+   * cleared FIRST so a crash after the in-memory resume cannot resurrect the
+   * Stop on the next boot.
+   */
+  const alpha6WakeUserResume =
+    alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
+      ? async (targetSessionId: string): Promise<boolean> => {
+          const coordinator = alpha6WakeBySession.get(targetSessionId)
+          if (coordinator === undefined) return false
+          const key = coordinator.state.key
+          await alpha6WakeIntents.clearStopped(key)
+          const transition = coordinator.dispatch({ type: 'resume' })
+          if (transition.outcome === 'refused' && coordinator.state.stopped) {
+            await alpha6WakeIntents.markStopped(key)
+            return false
+          }
+          return true
+        }
+      : undefined
   const alpha6RecoverWakeLatches =
     alpha6Wiring.mode === 'alpha6' &&
     alpha6WakeIntents !== undefined &&
@@ -2803,6 +2861,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
                 coordinator,
                 alpha6WakeIntents.forKey(intent.key),
                 live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false },
+                await alpha6WakeIntents.isStopped(intent.key),
               )
               // Only a row the protocol actually discarded may be rebuilt. An
               // unreadable Inbox, a concurrent state change, a refusal or a
@@ -4913,6 +4972,8 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ...(alpha6RecoverWakeLatches === undefined
       ? {}
       : { alpha6RecoverWakeLatches }),
+    ...(alpha6WakeUserStop === undefined ? {} : { alpha6WakeUserStop }),
+    ...(alpha6WakeUserResume === undefined ? {} : { alpha6WakeUserResume }),
     activity,
     fork,
     handoff,

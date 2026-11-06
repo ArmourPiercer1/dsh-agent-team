@@ -11,7 +11,7 @@
  *
  * @module packages/runtime/alpha6/wake-intent-directory
  */
-import { readdir } from 'node:fs/promises'
+import { access, readdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ReviewWakeKey } from '../review-wake/index.js'
 import type {
@@ -27,6 +27,17 @@ export interface WakeIntentDirectory {
   list(): Promise<readonly PersistedReviewWakeIntent[]>
   /** The file path of one latch's row (diagnostics). */
   pathFor(key: ReviewWakeKey): string
+  /**
+   * The durable Sticky Stop marker for one latch. It is a small presence
+   * file BESIDE the intent row (not a second approval ledger): `true` means a
+   * trusted user Stop outranks any persisted wake, and only an explicit
+   * resume interaction clears it. A missing marker is `false`.
+   */
+  /** The marker path (diagnostics / tests). */
+  stoppedPathFor(key: ReviewWakeKey): string
+  isStopped(key: ReviewWakeKey): Promise<boolean>
+  markStopped(key: ReviewWakeKey): Promise<void>
+  clearStopped(key: ReviewWakeKey): Promise<void>
 }
 
 /** Stable FNV-1a hash of the latch identity; no clock, no randomness. */
@@ -44,6 +55,23 @@ export function createFileWakeIntentDirectory(directory: string): WakeIntentDire
   return {
     pathFor(key) {
       return join(directory, `wake-${keyHash(key)}.json`)
+    },
+    stoppedPathFor(key: ReviewWakeKey) {
+      return join(directory, `stopped-${keyHash(key)}.json`)
+    },
+    async isStopped(key) {
+      try {
+        await access(this.stoppedPathFor(key) as string)
+        return true
+      } catch {
+        return false
+      }
+    },
+    async markStopped(key) {
+      await writeFile(this.stoppedPathFor(key) as string, '{"stopped":true}\n', 'utf8')
+    },
+    async clearStopped(key) {
+      await rm(this.stoppedPathFor(key) as string, { force: true })
     },
     forKey(key) {
       return createFileWakeIntentStore({ filePath: this.pathFor(key) })

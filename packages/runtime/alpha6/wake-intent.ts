@@ -146,6 +146,7 @@ export async function recoverReviewWake(
   coordinator: ReviewWakeCoordinator,
   store: ReviewWakeIntentStore,
   inbox: ReviewWakeInboxPort,
+  stopped?: boolean,
 ): Promise<ReviewWakeRecoverResult> {
   const initialStatus = coordinator.state.status
   const initialWakeId = coordinator.state.wakeId
@@ -170,7 +171,7 @@ export async function recoverReviewWake(
       adopted: false,
       wakeId: null,
       reason: 'absent',
-      transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+      transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
     }
   }
 
@@ -185,6 +186,7 @@ export async function recoverReviewWake(
       transition: coordinator.dispatch({
         type: 'recover',
         persistedWake: persistedFact(intent),
+        stopped,
       }),
     }
   }
@@ -213,7 +215,7 @@ export async function recoverReviewWake(
       adopted: false,
       wakeId: null,
       reason: 'absent',
-      transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+      transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
     }
   }
 
@@ -221,6 +223,7 @@ export async function recoverReviewWake(
   const transition = coordinator.dispatch({
     type: 'recover',
     persistedWake: persistedFact(intent),
+    stopped,
   })
 
   if (coordinator.state.stopped) {

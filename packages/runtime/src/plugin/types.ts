@@ -856,6 +856,13 @@ export interface TeamProductionRoot {
    * row is discarded and a later plan may deliver again.
    */
   readonly alpha6RecoverWakeLatches?: () => Promise<void>
+  /**
+   * Alpha.6 — a trusted user Stop for the reviewer's latch (durable marker +
+   * in-memory Sticky Stop). Ordinal tool aborts and timeouts never call it.
+   */
+  readonly alpha6WakeUserStop?: (targetSessionId: string) => Promise<boolean>
+  /** Alpha.6 — an explicit new user interaction clears the Stop. */
+  readonly alpha6WakeUserResume?: (targetSessionId: string) => Promise<boolean>
   /** A26 — the activity ledger (guarded progress writes + durable reads). */
   readonly activity: ActivityLedger
   /** A27 — the fork reconciliation (sidecar recognition + child team). */
