@@ -7472,3 +7472,12 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **纪律**：CORE PATCH BUDGET = 0；旧 v3/v4 解析与哈希零移动；PR1/PR3 零生产消费者；所有 PR 先跑 `node scripts/ci-pr-gate.mjs` 本地门（托管 CI 只在 master 触发，Alpha.6 draft PR 无 hosted check）；不把本地 vitest 绿冒充 CI 证据。
 - **下一步**：PR3 可由独立子代理并行实现；PR1 由主 Agent 实现；完成各自单测/类型检查/lane hygiene 后提交并推送实现分支，再开 stacked PR（base = PR #536 design branch）。
 - **Graph 修复（base 既有损坏，非本轮引入）**：`graph.yaml` 在 `alpha4_governance_20261007.a4_pr7_task7` 内已有 3 个重复 `s7_in_flight_lanes` key 和 2 处被换行截断的 closing quote；这使 base graph 本身无法被 YAML 解析。已按历史顺序改名 `s7_in_flight_lanes_round40/41` 与 `s7_4_lane_registry_round38`，并把断行引号收回行尾；内容未删，`node yaml.parse` 恢复通过。该修复属于仓库状态可读性，不改变任何任务语义。
+
+## 2026-11-05T~07:20Z（真实 UTC）— Alpha.6 授权轮：Wait Timeout / Sticky Stop / 远程 Human 发现（主 Agent）
+
+- **授权**：用户 2026-11-05 裁决允许隔离集成与真实 Host E2E；不批准生产启用、master 合并或发布。本轮未 push、未改 PR 状态。
+- **产品增量**：`alpha6WaitTimeoutMs`（默认 600000 ms，正数校验；超时不决定/不消费/不执行）；信任的 `turn/end` user-abort → 持久 Sticky Stop marker，仅显式用户消息 resume；`session/cancel` 的 user 因是唯一映射来源。ARC-A center override 已按名登记。
+- **真实 Host 证据**：`a6-timeout-r4`（PA 保持 pending，late allow fail-closed）、`a6-sticky-stop-r3`（marker 落盘、queued wake 撤回、SIGKILL 重启后不重投）、`a6-human-r12`（remote ledger page + projection 在 resolve 前发现 human leg）、`a6-normal-r5`、`a6-handoff-r7`（queued-wake 后继唤醒闭环）。
+- **门禁**：`CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"` 在 `212c4fba2` **9/9 PASS**，375.9 s，census 677f/8830l，`COUNTS MOVED, SET DID NOT`。
+- **仍未关闭**：两处 crash 可用性窗口（unconsumed allow / consumed-no-result）无 settlement 行；explicit resume 后 WorkChanged 新 wake 未 E2E；native Inbox 冷启动重放未验证；Host human push 明确不是 v1 要求。
+- **结论**：仍为 DRAFT / 不生产启用；可作为受控隔离内部试用候选，需保持 opt-in 与非生产工作区。
