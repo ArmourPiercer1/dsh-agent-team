@@ -38,6 +38,12 @@
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
 **`decision = correctness`** means the fix only makes the product report what it already does.
 
+> **2026-11-08 状态更新（ALPHA5-CONSOLIDATE；只追加，不改任何行文）**：PD-7 与 PD-9 的 `status`
+> 行写于两条 PR 还是 draft 的时候。`git log origin/master` 显示二者已 squash 合入：
+> **PD-7 = `572a7625d`（#619）**、**PD-9 = `bab33c4c6`（#620）**。因此按“FIXED 只在合并 PR 说了
+> 才算”的口径，这两行现在是 `FIXED`（有已合并 PR），其余 **8 行仍 `OPEN` 且仍待 owner 决策**。
+> 状态汇总表在 `ALPHA5-END-STATE.md` §2；本文件 §2 的逐条详情、验收条件与 anchors 一字未动。
+
 ## 2. The rows
 
 ### PD-1 (F3) — revocation does not bind a Member that owns no shell yet
