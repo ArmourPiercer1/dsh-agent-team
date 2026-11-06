@@ -1139,7 +1139,7 @@ async function boot() {
       blueprintId: BP_MAIN_ID,
       initialWork: { prompt: `${BL18_MARKERS.create}: reply with one short line. Call no tool.` },
     }, 'webdev-create', 1)
-    writeJson(join(OUT, 'create-team.json'), { status: created.status, body: created.body })
+    writeJson(join(OUT, 'create-team.json'), { status: created.status, body: created.body, osLevelNetworkIsolationClaimed: false })
     if (created.status !== 200 || created.body?.result?.ok !== true) {
       throw new Error(`team.create refused: status=${created.status} body=${JSON.stringify(created.body).slice(0, 1200)}`)
     }
@@ -1155,7 +1155,7 @@ async function boot() {
       return { status: st.status, body: st.body }
     }, 90_000)
     if (!stateW.hit) throw new Error('the created team never appeared on the directive root state route')
-    writeJson(join(OUT, 'state.json'), stateW.value)
+    writeJson(join(OUT, 'state.json'), { ...stateW.value, osLevelNetworkIsolationClaimed: false })
     log(`state-gate open: blueprint=${String(stateW.value.body.teamSession.blueprintId)} members=${(stateW.value.body.members ?? []).length}`)
 
     stage = 'live-leader-gate'
@@ -1211,7 +1211,7 @@ async function boot() {
         label,
         prompt: `${planCase.marker}: call the ${planCase.tool} tool exactly once with ${JSON.stringify(planCase.args)} and then report the exact error text. Call no other tool.`,
       }, CREATE_ROOT, callId)
-      writeJson(join(OUT, `delegate-${planCase.id}.json`), { status: delegated.status, body: delegated.body })
+      writeJson(join(OUT, `delegate-${planCase.id}.json`), { status: delegated.status, body: delegated.body, osLevelNetworkIsolationClaimed: false })
       log(`delegate ${label}: status=${delegated.status} body=${redact(JSON.stringify(delegated.body ?? null)).slice(0, 700)}`)
       if (delegated.status !== 200 || delegated.body?.ok !== true) {
         throw new Error(`team_delegate refused for ${label}: status=${delegated.status} body=${JSON.stringify(delegated.body).slice(0, 800)}`)
@@ -1334,6 +1334,7 @@ async function boot() {
         },
         checks,
         verdict,
+        osLevelNetworkIsolationClaimed: false,
         limits: {
           wording: LIMIT_SENTENCE,
           detail: 'Refusing to fetch is a statement about our own admission code, made before the OS was asked. The provider is a fake boundary; the OS was never asked to deny anything.',
@@ -1361,7 +1362,7 @@ async function boot() {
 
     stage = 'member-state-readback'
     const finalState = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
-    writeJson(join(OUT, 'state-final.json'), { status: finalState.status, body: finalState.body })
+    writeJson(join(OUT, 'state-final.json'), { status: finalState.status, body: finalState.body, osLevelNetworkIsolationClaimed: false })
     const members = finalState.status === 200 ? (finalState.body?.members ?? []) : []
     log(`member state readback: ${JSON.stringify(members.map((m) => ({ label: m.label, lifecycle: m.lifecycle, childSessionId: m.childSessionId })))}`)
 
@@ -1402,6 +1403,7 @@ async function boot() {
     writeJson(join(OUT, 'mock-requests.json'), {
       count: (world.mock?.requests ?? []).length,
       requests: world.mock?.requests ?? [],
+      osLevelNetworkIsolationClaimed: false,
     })
 
     stage = 'teardown'
@@ -1506,6 +1508,7 @@ async function boot() {
         : 'the one planned start was refused BEFORE any ledger row was written; the arithmetic records it as an abort, not a boot',
       osLevelNetworkIsolationClaimed: false,
     })
+    record.record.osLevelNetworkIsolationClaimed = false
     record.write(RUN_RECORD_PATH)
     log(`ledger: boots=${String(bootRows.length)} planned=1 aborts=${String(aborts)} outcome=${String(outcomeRows.length)}`)
     log(formatSummary(finalized))
