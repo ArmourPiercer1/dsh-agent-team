@@ -66,10 +66,19 @@ import {
   DRIVER_BODY_CAPTURE_MIN_CHARS,
   checkDriverLeaderSurface,
   checkDriverLogCapture,
+  checkDriverCallerSurface,
+  checkPolicyPaths,
+  checkCaseCoverage,
   classifyLeaderSurfaceTool,
   discoveryFirstDenyList,
   readDriverPlan,
   runZeroBootPreflight,
+  ADMISSION_REFUSAL_CLASS,
+  CALLER_SURFACE_CITATIONS,
+  SURFACE_WEB_TOOL_PAIR,
+  admissionRefusalWording,
+  caseSatisfiesNetworkConfinementRow,
+  parseDriverCaseManifest,
 } from './lib/a5sf-acceptance-preflight.mjs'
 import {
   buildLeaderSurfaceCapabilities,
@@ -1226,11 +1235,12 @@ test('D21 an undeclared driver plan is UNKNOWN, never PASS, and is visibly disti
   assert.deepEqual(result.findings, [], 'an undeclared plan is not accused of a defect')
   assert.deepEqual(
     result.checks.filter((c) => c.verdict === 'UNKNOWN').map((c) => c.id),
-    ['bundle.case-coverage', 'driver.gate-order', 'driver.leader-surface', 'driver.log-capture'],
+    ['bundle.case-coverage', 'driver.gate-order', 'driver.leader-surface', 'driver.caller-surface', 'driver.log-capture'],
   )
-  assert.equal(result.checks.filter((c) => c.verdict === 'PASS').length, PREFLIGHT_CHECK_IDS.length - 4)
-  assert.match(result.summary, /^UNKNOWN \d+\/17 checks unknown=/)
+  assert.equal(result.checks.filter((c) => c.verdict === 'PASS').length, PREFLIGHT_CHECK_IDS.length - 5)
+  assert.match(result.summary, /^UNKNOWN \d+\/18 checks unknown=/)
   assert.deepEqual(result.unknown.map((u) => u.reason), [
+    'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
@@ -1288,7 +1298,7 @@ test('D24 the CLI exits 3 for UNKNOWN (never 0) and still prints one line', () =
     assert.equal(lines.length, 1)
     const verdict = JSON.parse(lines[0].slice('DSH-A5SF-PREFLIGHT '.length))
     assert.equal(verdict.verdict, 'UNKNOWN')
-    assert.equal(verdict.unknown.length, 4)
+    assert.equal(verdict.unknown.length, 5)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
@@ -1576,4 +1586,198 @@ test('E11 the driver-side fix computes the same deny list and renders the canoni
   // are the SAME function, so the preflight verdict and the live declaration
   // cannot disagree about a name.
   assert.deepEqual(built.builtinToolDeny, discoveryFirstDenyList(leader.tools, { teamTools: leader.teamTools }))
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// F. THE FOURTH CASE CLASS, THE DRIVER CASE MANIFEST, AND THE CALLER FACT
+//    (2026-11-08, BL-18 readiness; zero boots)
+//
+// BL-18's truthful bundle could not PASS: its only observable is a refusal made
+// by our own admission code BEFORE any provider entry, and the old network rule
+// certificates only a connection-denial plan (`networkProbeEnforced: true`, an
+// enforcement this host's probe reports as unsupported). BL-17's `PASS 16/16`
+// was green for a different reason: the deny case was omitted from `cases` and
+// from the narrowed `plannedCases`, so the instrument compared the table to
+// itself. The controls below pin the two fixes and the caller fact that makes
+// the BL-18 lane reachable at all.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const REFUSAL_EVIDENCE = new URL('../../dev/agent-workflow/evidence/a5sf-refusal/', import.meta.url)
+const afterBundle = () => JSON.parse(readFileSync(new URL('bl18-after.bundle.json', REFUSAL_EVIDENCE), 'utf8'))
+const controlBundle = (file) => JSON.parse(readFileSync(new URL(`negative-controls/${file}`, REFUSAL_EVIDENCE), 'utf8'))
+/** The one CLI line in a committed payload (the BL-17 historical log also has
+ *  leading `#` comments; those are not the verdict). */
+const payloadOf = (file) => {
+  const line = readFileSync(new URL(file, REFUSAL_EVIDENCE), 'utf8').trim().split('\n')
+    .filter((entry) => entry.startsWith('DSH-A5SF-PREFLIGHT ')).pop()
+  assert.ok(line, `${file} carries no DSH-A5SF-PREFLIGHT line`)
+  return JSON.parse(line.slice('DSH-A5SF-PREFLIGHT '.length))
+}
+const repoReadFile = (rel) => readFileSync(new URL(`../../${rel}`, import.meta.url), 'utf8')
+
+test('F1 admission-refusal: the truthful BL-18 bundle PASSes, and its wording says ADMISSION REFUSAL (never isolated)', () => {
+  const bundle = afterBundle()
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.equal(result.verdict, 'PASS', JSON.stringify(result.findings))
+  assert.equal(result.summary, `PASS ${PREFLIGHT_CHECK_IDS.length}/${PREFLIGHT_CHECK_IDS.length} checks`)
+  const policy = result.checks.find((c) => c.id === 'policy.paths')
+  assert.equal(policy.verdict, 'PASS')
+  assert.equal(policy.notes.length, 2)
+  for (const note of policy.notes) {
+    assert.match(note, /admission refusal/)
+    assert.match(note, /NOT network confinement/)
+    assert.doesNotMatch(note, /\bisolated\b/)
+  }
+  assert.match(admissionRefusalWording('x', 'NETWORK_UNCONFINED_REALM'), /admission refusal/)
+  // The class can NEVER satisfy a network-confinement row — even when handed a
+  // row-shaped object that says it does.
+  for (const c of bundle.cases) {
+    assert.equal(caseSatisfiesNetworkConfinementRow(c), false)
+    assert.equal(caseSatisfiesNetworkConfinementRow({ ...c, row: 'network-confinement', satisfiesRow: true }), false)
+  }
+  assert.equal(bundle.cases.every((c) => c.caseClass === ADMISSION_REFUSAL_CLASS && c.claimsConfinement === false), true)
+})
+
+test('F2 NEGATIVE CONTROL admission-refusal-incomplete: an absent observable is FAIL (not UNKNOWN), exactly policy.paths', () => {
+  const bundle = controlBundle('admission-refusal-incomplete.bundle.json')
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['policy.paths'])
+  assert.deepEqual(codesOf(result), ['POLICY_ADMISSION_REFUSAL_INCOMPLETE'])
+  // Decidable, not undecidable: a declared class with missing observables is a
+  // defect of the plan, never silence.
+  assert.equal(result.unknown.length, 0)
+  assert.match(result.findings[0].detail, /providerEntries/)
+  const payload = payloadOf('negative-controls/admission-refusal-incomplete.payload.txt')
+  assert.equal(payload.summary, result.summary)
+  assert.deepEqual(payload.findings.map((f) => f.code), codesOf(result))
+})
+
+test('F3 NEGATIVE CONTROL admission-refusal-confinement-claim: claimsConfinement true (or absent) is RED, and the class cannot buy confinement', () => {
+  const bundle = controlBundle('admission-refusal-confinement-claim.bundle.json')
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['policy.paths'])
+  assert.deepEqual(codesOf(result), ['POLICY_ADMISSION_REFUSAL_CONFINEMENT_CLAIM'])
+  assert.match(result.findings[0].detail, /admission refusal is NOT network confinement/)
+  // Silence is not a declaration either.
+  const silent = structuredClone(afterBundle())
+  delete silent.cases[0].claimsConfinement
+  const silentResult = runZeroBootPreflight(silent, PRESENT)
+  assert.deepEqual(codesOf(silentResult), ['POLICY_ADMISSION_REFUSAL_CONFINEMENT_CLAIM'])
+  const payload = payloadOf('negative-controls/admission-refusal-confinement-claim.payload.txt')
+  assert.equal(payload.summary, result.summary)
+  assert.deepEqual(payload.findings.map((f) => f.code), codesOf(result))
+})
+
+test('F4 the connection-denial rule is byte-identical for existing/unspecified cases', () => {
+  const bundle = structuredClone(CLEAN)
+  const id = 'net-old-rule'
+  bundle.policy.networkAccess = 'deny'
+  bundle.cases = [{ id, axis: 'network', expected: 'deny', locator: 'https://example.test/x', networkProbeEnforced: false }]
+  const before = checkPolicyPaths(bundle)
+  assert.deepEqual(before.findings.map((f) => f.code), ['POLICY_NETWORK_PROBE_NOT_ENFORCED'])
+  bundle.cases[0].networkProbeEnforced = true
+  assert.deepEqual(checkPolicyPaths(bundle).findings, [])
+  // Explicit `connection-denial` traverses the SAME branch.
+  bundle.cases[0].networkProbeEnforced = false
+  bundle.cases[0].caseClass = 'connection-denial'
+  assert.deepEqual(checkPolicyPaths(bundle).findings.map((f) => f.code), ['POLICY_NETWORK_PROBE_NOT_ENFORCED'])
+  // An unknown class is RED, not silently treated as the old rule.
+  bundle.cases[0].caseClass = 'face-refusal'
+  assert.deepEqual(checkPolicyPaths(bundle).findings.map((f) => f.code), ['POLICY_CASE_CLASS_UNKNOWN'])
+})
+
+test('F5 bundle.case-coverage: BL-17 is now RED — its driver declares 4 cases, its cases table 3', () => {
+  // The driver source is the authority: `CASES` is a 4-id literal and the fourth
+  // (`network-deny-refusal`) is absent from both `cases` and `plannedCases`.
+  const source = readFileSync(new URL('../../dev/agent-workflow/evidence/a5sf-bl17-live2/run-boot.mjs', import.meta.url), 'utf8')
+  assert.deepEqual(parseDriverCaseManifest(source), ['shell-positive', 'write-only-read', 'chmod-gap', 'network-deny-refusal'])
+  const bundle = JSON.parse(readFileSync(new URL('../../dev/agent-workflow/evidence/a5sf-bl17-live2/preflight-bundle.json', import.meta.url), 'utf8'))
+  assert.equal(bundle.cases.length, 3)
+  assert.deepEqual(bundle.plannedCases, ['shell-positive', 'write-only-read', 'chmod-gap'])
+  const coverage = checkCaseCoverage(bundle, { readFile: repoReadFile })
+  assert.deepEqual(coverage.findings.map((f) => f.code), ['BUNDLE_CASE_UNDECLARED'])
+  assert.equal(coverage.findings[0].caseId, 'network-deny-refusal')
+  assert.equal(coverage.findings[0].source, 'dev/agent-workflow/evidence/a5sf-bl17-live2/run-boot.mjs')
+  assert.match(coverage.findings[0].detail, /PASS 16\/16 certified nothing about it/)
+  // The CLI payload is the same verdict: FAIL with the case-completeness finding.
+  const payload = payloadOf('bl17-after.payload.txt')
+  assert.equal(payload.verdict, 'FAIL')
+  assert.ok(payload.findings.some((f) => f.code === 'BUNDLE_CASE_UNDECLARED' && f.caseId === 'network-deny-refusal'))
+})
+
+test('F6 NEGATIVE CONTROL bundle-case-undeclared: a driver manifest case absent from cases is exactly one red', () => {
+  const bundle = controlBundle('bundle-case-undeclared.bundle.json')
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['bundle.case-coverage'])
+  assert.deepEqual(codesOf(result), ['BUNDLE_CASE_UNDECLARED'])
+  assert.equal(result.findings[0].caseId, 'web-transport-deny')
+  const payload = payloadOf('negative-controls/bundle-case-undeclared.payload.txt')
+  assert.equal(payload.summary, result.summary)
+  assert.deepEqual(payload.findings.map((f) => f.code), codesOf(result))
+  // An UNDECLARED plan case list is UNKNOWN, never PASS (the pre-class rule kept).
+  const undeclared = structuredClone(CLEAN)
+  delete undeclared.driver.plannedCases
+  const unknown = runZeroBootPreflight(undeclared, PRESENT)
+  assert.equal(unknown.checks.find((c) => c.id === 'bundle.case-coverage').verdict, 'UNKNOWN')
+})
+
+test('F7 driver.caller-surface: strict Member RED, leader RED, missing pair RED, legacy caller PASS', () => {
+  const strict = controlBundle('strict-member-caller.bundle.json')
+  const strictResult = runZeroBootPreflight(strict, PRESENT)
+  assert.equal(strictResult.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(strictResult), ['driver.caller-surface'])
+  assert.deepEqual(codesOf(strictResult), ['DRIVER_CALLER_STRICT_MEMBER'])
+  assert.ok(strictResult.findings[0].detail.includes(CALLER_SURFACE_CITATIONS.sensitive), 'the strict-caller finding cites the product registry')
+  const payload = payloadOf('negative-controls/strict-member-caller.payload.txt')
+  assert.equal(payload.summary, strictResult.summary)
+
+  const caller = afterBundle()
+  caller.driver.caller.kind = 'leader'
+  assert.deepEqual(codesOf(runZeroBootPreflight(caller, PRESENT)), ['DRIVER_CALLER_NOT_A_MEMBER'])
+
+  const missingPair = afterBundle()
+  missingPair.driver.caller.preset.tools = ['web_fetch']
+  assert.deepEqual(codesOf(runZeroBootPreflight(missingPair, PRESENT)), ['DRIVER_CALLER_PRESET_MISSING'])
+
+  const strictByCapabilities = afterBundle()
+  strictByCapabilities.driver.caller.capabilities = { permissions: { mode: 'selective' } }
+  assert.deepEqual(codesOf(runZeroBootPreflight(strictByCapabilities, PRESENT)), ['DRIVER_CALLER_STRICT_MEMBER'])
+
+  const undeclared = afterBundle()
+  delete undeclared.driver.caller
+  const unknown = runZeroBootPreflight(undeclared, PRESENT)
+  assert.equal(unknown.verdict, 'UNKNOWN')
+  assert.equal(unknown.checks.find((c) => c.id === 'driver.caller-surface').reason, 'DRIVER_CALLER_UNDECLARED')
+
+  // The passing declaration names every fact the check relies on.
+  const passing = runZeroBootPreflight(afterBundle(), PRESENT)
+  const note = passing.checks.find((c) => c.id === 'driver.caller-surface').notes.join(' ')
+  for (const citation of [CALLER_SURFACE_CITATIONS.strictPolicy, CALLER_SURFACE_CITATIONS.realmMemberOnly, CALLER_SURFACE_CITATIONS.presetWebPair]) {
+    assert.ok(note.includes(citation), `the PASS note must cite ${citation}`)
+  }
+  assert.deepEqual(SURFACE_WEB_TOOL_PAIR, ['web_fetch', 'web_search'])
+  assert.equal(checkDriverCallerSurface(afterBundle()).findings.length, 0)
+})
+
+test('F8 the committed before/after payloads prove the change: BL-18 FAIL -> PASS, BL-17 PASS -> FAIL', () => {
+  const bl18Before = payloadOf('bl18-before.payload.txt')
+  assert.equal(bl18Before.verdict, 'FAIL')
+  assert.ok(bl18Before.findings.every((f) => f.code === 'POLICY_NETWORK_PROBE_NOT_ENFORCED'))
+  assert.equal(bl18Before.findings.length, 2)
+
+  const bl18After = payloadOf('bl18-after.payload.txt')
+  assert.equal(bl18After.verdict, 'PASS')
+  assert.deepEqual(bl18After.findings, [])
+  assert.equal(bl18After.summary, 'PASS 18/18 checks')
+
+  const bl17Before = payloadOf('bl17-before.payload.txt')
+  assert.equal(bl17Before.verdict, 'PASS')
+  assert.equal(bl17Before.summary, 'PASS 16/16 checks')
+
+  const bl17After = payloadOf('bl17-after.payload.txt')
+  assert.equal(bl17After.verdict, 'FAIL')
+  assert.ok(bl17After.findings.some((f) => f.code === 'BUNDLE_CASE_UNDECLARED' && f.caseId === 'network-deny-refusal'))
 })

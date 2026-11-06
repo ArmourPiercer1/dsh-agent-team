@@ -149,7 +149,12 @@ function main(argv) {
     }
     return existsSync(resolve(repo, clean))
   }
-  const result = runZeroBootPreflight(bundle, { fileExists })
+  // The driver's own case manifest lives in the repo, not under the pristine
+  // host prefix: a `sources.driver` path (e.g. the BL-17 driver) must be read
+  // from `--repo`. The read is static (a top-level `CASES` literal); nothing is
+  // imported or executed.
+  const readFile = (rel) => readFileSync(resolve(repo, String(rel)), 'utf8')
+  const result = runZeroBootPreflight(bundle, { fileExists, readFile })
   // `runZeroBootPreflight` returns a frozen verdict; the probe inputs are
   // appended here so a reader can tell WHICH roots produced the answer (the
   // result itself stays immutable).
