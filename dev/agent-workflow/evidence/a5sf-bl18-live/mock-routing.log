@@ -1,0 +1,18 @@
+a5sf BL-18 mock routing — host-free (zero boots, zero sockets)
+routing table: {"title":"harmless text","discovery":"harmless text","create":"team_create tool call (once)","fetch":"web_fetch tool call (once)","search":"web_search tool call (once)","collect":"team_collect tool call (once)","fallback":"harmless text"}
+ORDINAL-SAFE: title → discovery → create → fetch → search → collect
+  tools: - → - → team_create → web_fetch → web_search → team_collect
+RETRY: discovery → discovery → create → fetch
+  tools: - → - → team_create → web_fetch
+DISCOVERY-FIRST: discovery → create → fetch → search → collect
+  tools: - → team_create → web_fetch → web_search → team_collect
+DUPLICATE: fetch → fetch
+  tools: web_fetch → -
+INTERLEAVED: title → create → title → fetch
+  tools: - → team_create → - → web_fetch
+PRECEDENCE: a request carrying both MK_BL18_FETCH and MK_BL18_CREATE routes to fetch
+  → the driver MUST NOT quote an item marker in the leader prompt; the delegate prompt is the only carrier.
+UNMARKED: harmless text, no tool call
+
+ROUTING-PROVEN: the table is marker-keyed; discovery-first, retries, duplicate markers and unmarked turns never fire a scripted tool call.
+NOT PROVEN (a boot must show): which markers the Host actually sends, and that final-mock-requests.json carries them in order.
