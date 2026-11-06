@@ -1,0 +1,208 @@
+# a5sf-face-decl-impact — the GOVERNED MEMBER PRESET exemplar (PROPOSAL).
+#
+# WHAT THIS FILE IS: the smallest composition that declares the confined
+# `terminals` face + the confined `subprocess` face for a Member, as an
+# INSTALLABLE bundle patch (this directory is the bundle: `package.json` +
+# this patch). Installed with `plugin_manager` `action: install_bundle`, it
+# adds two rows and overrides one:
+#
+#   1. `a5sf-governed-realm` (host row) — provides `teamA5sfRealm` from
+#      `a5sf-governed-realm.mjs`: the product declaration's compiled Members
+#      PLUS the two faces. The host reads it through the lazy accessor in
+#      `packages/runtime/src/plugin/host.ts` (`a5sfRealmProvider`).
+#   2. `preset-a5sf-governed-member` — the Member preset. It mounts the
+#      TRANSIENT `@deepseek-ai/dsh-tool-bash`, so the model-visible `bash` name
+#      exists and the route-C shadow can replace it. It deliberately mounts NO
+#      `persistent-shell` group.
+#   3. an override of the shipped `dsh-agent-team` row that selects the preset
+#      (`memberPresetId`) and enables the realm (`a5sfEvidencePath`).
+#
+# ─── WHAT IT GIVES UP (the cost this decision buys) ─────────────────────────
+#
+#   NETWORK: the shell it delivers still has the HOST network namespace.
+#     `network: deny` cannot reach this provider: the one product declaration
+#     parser refuses a narrowed network lane with `NETWORK_UNCONFINED_REALM`
+#     (`product-assembly.ts`, measured in `impact-table.json`
+#     probes.networkDenyRefusal) because the realm it knows about installs no
+#     web face. So BL-42's netns is NOT delivered here, and the product's
+#     network row stays `unsupported`. Making that reachable is a separate
+#     product change in `product-assembly.ts` (it must learn about a
+#     composition-declared process face), not a config edit.
+#
+#   NO PERSISTENT SHELL: each `bash` call is a fresh confined child. `cd` and
+#     `export` do not survive a call, there is no interactive stdin, and a
+#     shell `&` background job does not outlive the call. `workdir` replaces
+#     `cd`.
+#
+#   NO BACKGROUND JOBS / NO TIMEOUT PARAM / NO ESCALATION: the confined
+#     terminal tool registers `bash` with `command`, `description` and
+#     `workdir` only. Compared with the shipped default preset's transient
+#     `tool-bash`, the Member loses `run_in_background` (the job registry),
+#     per-call `timeoutMs`, `sandbox_permissions`/`justification`, and the
+#     structured result object. Compared with a `minimal`-style preset it also
+#     loses persistent state.
+#
+#   DYNAMIC READS ARE NOT ATTRIBUTED: `$(...)`, backticks and a path assembled
+#     from `$VAR` are not lexically attributable and are not refused at
+#     admission (PD-13 arm C6). The OS profile is their boundary.
+#
+#   READ ADMISSION CAN REFUSE A COMMAND THE MODEL THOUGHT WAS SAFE: any
+#     absolute path token outside the read lane is refused before the shell
+#     starts (PD-13's dev-live README §7 records `/proc/self/stat` being
+#     refused this way).
+#
+# ─── TWO SEAM GAPS THIS FILE HAS TO WORK AROUND (both are named, not hidden) ─
+#
+#   (a) `a5sfEvidencePath` is the ONLY enablement key that does not fork with a
+#       provided `teamA5sfRealm` service (`a5sfMemberPolicies` and
+#       `a5sfMemberAuthority` both set `memberPolicies`, and a row carrying
+#       both a declaration and a service throws). It is an EVIDENCE FILE PATH,
+#       so the machine-agnostic SHIPPED bundle layer (`cordis.patch.yml`, whose
+#       header states "no machine paths") cannot carry it. A neutral
+#       enablement key is a small product change in `a5sf-realm-row.mjs` +
+#       `plugins/types.ts`.
+#   (b) The override row replaces the WHOLE row config (the shipped layer's own
+#       documented override semantics), so every field of the team row has to
+#       be restated here. In the shipped layer this is one added key, not a
+#       restatement.
+#
+# The blueprint below is the MINIMUM the realm needs: `schemaVersion: 4` with a
+# `memberIoCeilings` family. The shipped blueprint is schemaVersion 3 and has no
+# such family, and the parser refuses a declaration against it
+# (`MEMBER_POLICY_WITHOUT_BLUEPRINT`) — so this exemplar also demonstrates that
+# the shipped team design must move to v4 to give any Member a ceiling. An
+# operator's real design carries its envelopes/quotas/requirements unchanged.
+
+- insert:
+    - id: "a5sf-governed-realm"
+      # Needs the proposal's `exports` entry in the ROOT package.json:
+      #   "./governed-realm": "./packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs"
+      name: "dsh-agent-team/governed-realm"
+      config:
+        realmId: "a5sf-governed-member"
+        scratchRoot: !!js process.env.A5SF_GOVERNED_SCRATCH ?? '/tmp/a5sf-governed-realm'
+        blueprintSource: &governedBlueprint |
+          ---
+          schemaVersion: 4
+          blueprintId: a5sf-governed-member
+          revision: "1"
+          leader:
+            templateId: leader
+            persona: "You lead this team."
+          members:
+            - templateId: worker
+              displayName: "Worker"
+              persona: "You are a worker on this team."
+          requirements: []
+          memberEnvelopes: []
+          policyStates: []
+          permissionMutationEnvelope:
+            rules: []
+          teamHardEnvelope:
+            rules: []
+          metadata: {}
+          # The Member ceiling the shell lane is compiled from. `network` MUST be
+          # `allow` in this round: `deny` is refused by the product parser before
+          # any realm exists (see the header). `ask`/`deny` are explicit because
+          # v4 declares no implicit defaults.
+          memberIoCeilings:
+            - templateId: worker
+              io:
+                read:
+                  mode: restricted
+                  allow: ["/tmp/a5sf-governed-workspace"]
+                  ask: []
+                  deny: []
+                write:
+                  mode: restricted
+                  allow: ["/tmp/a5sf-governed-workspace"]
+                  ask: []
+                  deny: []
+                network:
+                  mode: allow
+          ---
+        # The declaration the provider compiles. Same closed v4 vocabulary the
+        # team row's `a5sfMemberPolicies` uses; it lives HERE (not on the team
+        # row) because a declaration on the team row plus this service is the
+        # fork the row refuses.
+        memberPolicies:
+          schema: "a5sf-product-member-policies/1"
+          teamId: "a5sf-governed-member"
+          blueprintRevision: "1"
+          authority:
+            revision: "a4:governed-member:1"
+            admitted: true
+          members:
+            - templateId: worker
+              instanceGeneration: 1
+              ceiling:
+                read:
+                  mode: restricted
+                  allow: ["/tmp/a5sf-governed-workspace"]
+                  ask: []
+                  deny: []
+                write:
+                  mode: restricted
+                  allow: ["/tmp/a5sf-governed-workspace"]
+                  ask: []
+                  deny: []
+                network:
+                  mode: allow
+    - id: "preset-a5sf-governed-member"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-governed-member"
+        name: "Governed Member (confined shell)"
+        description: "Member preset whose bash is the confined terminal face: every command is a fresh confined child and every named read is admitted against the compiled read lane. No persistent state, no background jobs, network allow."
+        order: 50
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}. Each bash call runs in a fresh confined shell: pass `workdir` instead of using `cd`."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+          # TRANSIENT bash (not the persistent-shell group): the model-visible
+          # `bash` name must exist for the route-C shadow to replace it, and a
+          # `dsh-terminal` / `persistent-shell` row on an ancestor scope would
+          # make the realm install refuse with TERMINALS_DOUBLE_TERMINAL_REFUSED,
+          # i.e. the Member would not come up at all.
+          - id: "tool-bash"
+            name: "@deepseek-ai/dsh-tool-bash"
+
+# The team row override. WHOLE config replaced (documented semantics), so the
+# shipped fields are restated. `memberPresetId` is the one behavioural switch;
+# `a5sfEvidencePath` is the enablement gap (a).
+- id: "dsh-agent-team"
+  name: "dsh-agent-team/host"
+  config:
+    bootPhase: "create-or-open"
+    rootSessionId: "team-root"
+    blueprintSource: *governedBlueprint
+    seedMembers: []
+    generation: 1
+    deniedSelection: null
+    mcpServers: []
+    staticModel:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    environmentFacts:
+      - { domain: "tool", subject: "web", available: true, generation: 1 }
+      - { domain: "skill", subject: "base", available: true, generation: 1 }
+      - { domain: "persona", subject: "standard", available: true, generation: 1 }
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+    # The LEADER keeps the deployment default (standard); only Members are
+    # governed. A leader is not a MemberInstance and never gets a Member ceiling.
+    rootPresetId: "standard"
+    memberPresetId: "a5sf-governed-member"
+    # ENABLEMENT (gap (a)): the realm mounts iff one of a5sfEvidencePath /
+    # a5sfMemberPolicies / a5sfMemberAuthority is present; the service alone is
+    # not enough. This path is a deployment choice, never derived by the code.
+    a5sfEvidencePath: !!js process.env.A5SF_GOVERNED_FACTS ?? '/tmp/a5sf-governed-realm/guard-facts.jsonl'

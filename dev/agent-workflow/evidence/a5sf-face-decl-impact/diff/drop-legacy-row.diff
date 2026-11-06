@@ -1,0 +1,71 @@
+PROPOSAL — NOT APPLIED. This is the minimal "drop the legacy row" change a
+persistent-shell preset needs before a realm can declare the confined terminal
+face. It is a diff against `tests/kits/_shared/preset-seam.mjs` (OUR file, the
+one shape 19 kit/world assemblies mount), NOT against a pinned-host bundle.
+
+WHY IT IS NOT APPLIED HERE: it changes what 19 kits assert about the Member's
+shell (persistent state, PTY identity, `/dev/pts/N`) and none of those kits is
+the thing being decided. It is shown so the cost is visible, not to ship it.
+
+THE FAILURE IT PREVENTS (measured, not argued): if a preset keeps this group
+and the realm declares `terminal`, `installMemberIoProviders` throws
+`TERMINALS_DOUBLE_TERMINAL_REFUSED`
+(`packages/runtime/team-services/src/install.ts#L375-L386`) before any Member
+scope exists, and `agent-bindings.mjs` fails closed on a mount rejection — the
+Member is rolled back, not created with a missing shell. Pinned by
+`tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs` arm C4.
+
+--- a/tests/kits/_shared/preset-seam.mjs
++++ b/tests/kits/_shared/preset-seam.mjs
+@@ -98,21 +98,17 @@
+ export function persistentShellGroup({ timeoutMs = 300_000, bashDescription } = {}) {
+   return {
+-    id: 'persistent-shell',
+-    name: 'cordis:group',
+-    group: true,
+-    isolate: { terminals: true },
+-    config: [
+-      { id: 'pty', name: '@deepseek-ai/dsh-terminal' },
+-      { id: 'terminal-bash', name: '@deepseek-ai/dsh-terminal-bash', config: { timeoutMs } },
+-      {
+-        id: 'persistent-bash',
+-        name: '@deepseek-ai/dsh-tool-bash-persistent',
+-        config: {
+-          timeoutMs,
+-          ...(bashDescription !== undefined ? { description: bashDescription } : {}),
+-        },
+-      },
+-    ],
++    // The old group is REPLACED, not supplemented: one `bash` name, served by
++    // the transient host tool until the realm's route-C shadow re-registers it
++    // on the confined terminal face. Keeping `pty`/`terminal-bash` here leaves a
++    // live ancestor `terminals` service and the realm install refuses.
++    id: 'tool-bash',
++    name: '@deepseek-ai/dsh-tool-bash',
++    ...(bashDescription === undefined ? {} : { config: { description: bashDescription } }),
+   }
+ }
+@@
+ export function smokePresetPlugins({ personaText, cwdSuffix, bashTimeoutMs, bashDescription }) {
+@@
+-    persistentShellGroup({ ...(bashTimeoutMs !== undefined ? { timeoutMs: bashTimeoutMs } : {}), ...(bashDescription !== undefined ? { description: bashDescription } : {}) }),
++    persistentShellGroup({ ...(bashTimeoutMs !== undefined ? { timeoutMs: bashTimeoutMs } : {}), ...(bashDescription !== undefined ? { description: bashDescription } : {}) }),
+
+WHAT THIS COSTS (user-visible, per kit world):
+  - `cd`/`export` no longer survive a `bash` call; a second call starts in the
+    session cwd. Kits that assert a persisted cwd (`u6-*`, `u7-tbash-*`,
+    `a5-w7-*`) would need the `workdir` argument instead.
+  - no interactive stdin; a kit that sends a command and then types into the
+    same shell has nothing to type into.
+  - no `/dev/pts/N` identity to observe: `a5sf-pty-contract.test.mjs` and
+    `lib/a5sf-pty-contract-world.mjs` inject a real `TerminalSessionService`
+    port, so they keep working — but a world that asserts the Member's shell is
+    a PTY would assert something that is no longer true.
+  - `run_in_background`: the transient tool HAS it, the confined terminal tool
+    does not — so this direction keeps jobs and gains the read axis; the
+    governed preset still ends up without it after the shadow.
+
+FOR A PINNED-HOST PRESET (`minimal.patch.yml`) THE SAME EDIT IS FORBIDDEN:
+`CORE PATCH BUDGET = 0` — that file is upstream's and is never patched. An
+operator who wants the governed shell selects a preset like
+`exemplar/governed-member-preset.patch.yml` instead of editing the host bundle.

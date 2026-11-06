@@ -1,0 +1,12 @@
+{
+  "name": "@local/a5sf-governed-member",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PROPOSAL (evidence, not merged): the governed Member preset exemplar — confined terminal + confined subprocess faces, opt-in by memberPresetId.",
+  "dsh": {
+    "bundle": {
+      "patch": "./governed-member-preset.patch.yml"
+    }
+  }
+}

@@ -1,0 +1,798 @@
+{
+  "schema": "a5sf-face-decl-impact/1",
+  "task": "a5sf-face-decl-impact",
+  "branch": "task/a5sf-face-decl-impact-20261111",
+  "base": "origin/master @ 35f3a0d2f",
+  "boots": 0,
+  "recordClass": "IMPACT-ANALYSIS (no Host start, no live claim)",
+  "census": {
+    "inTree": [
+      {
+        "path": "cordis.patch.yml",
+        "kind": "composition-layer",
+        "rowIds": [
+          "dsh-agent-team",
+          "team-spill-local",
+          "dsh-agent-team-client"
+        ],
+        "presetIds": [],
+        "teamRowPresent": true,
+        "teamRowKeys": [
+          "blueprintSource",
+          "bootPhase",
+          "deniedSelection",
+          "environmentFacts",
+          "externalPolicyFacts",
+          "generation",
+          "mcpServers",
+          "rootSessionId",
+          "seedMembers",
+          "staticModel"
+        ],
+        "declaresA5sfKeys": [],
+        "declaresPresetId": [],
+        "shell": {
+          "terminalsProducer": false,
+          "persistentBash": false,
+          "transientBash": false,
+          "isolateRealms": []
+        }
+      },
+      {
+        "path": "opshome/.dsh/profiles/web/cordis.patch.yml",
+        "kind": "preset-declaration",
+        "rowIds": [
+          "dsh-agent-team",
+          "preset-u7as-base-20261030t12-22-33z",
+          "persona",
+          "tool-fs",
+          "tool-fs-search"
+        ],
+        "presetIds": [
+          "u7as-base-20261030t12-22-33z"
+        ],
+        "teamRowPresent": true,
+        "teamRowKeys": [
+          "blueprintDir",
+          "blueprintSource",
+          "bootPhase",
+          "deniedSelection",
+          "environmentFacts",
+          "externalPolicyFacts",
+          "generation",
+          "glueUrl",
+          "mcpServer",
+          "mcpServers",
+          "memberPresetId",
+          "rootPresetId",
+          "rootSessionId",
+          "seamUrl",
+          "seedMembers",
+          "staticModel",
+          "teamToolPlane"
+        ],
+        "declaresA5sfKeys": [],
+        "declaresPresetId": [
+          "memberPresetId",
+          "rootPresetId"
+        ],
+        "shell": {
+          "terminalsProducer": false,
+          "persistentBash": false,
+          "transientBash": false,
+          "isolateRealms": []
+        }
+      },
+      {
+        "path": "opshome/.dsh/profiles/web/cordis.yml",
+        "kind": "composition-layer",
+        "rowIds": [],
+        "presetIds": [],
+        "teamRowPresent": false,
+        "teamRowKeys": [],
+        "declaresA5sfKeys": [],
+        "declaresPresetId": [],
+        "shell": {
+          "terminalsProducer": false,
+          "persistentBash": false,
+          "transientBash": false,
+          "isolateRealms": []
+        }
+      },
+      {
+        "path": "packages/runtime/test/issue2-fixtures/presets/i2-standard/agent.cordis.yml",
+        "kind": "composition-layer",
+        "rowIds": [],
+        "presetIds": [],
+        "teamRowPresent": false,
+        "teamRowKeys": [],
+        "declaresA5sfKeys": [],
+        "declaresPresetId": [],
+        "shell": {
+          "terminalsProducer": false,
+          "persistentBash": false,
+          "transientBash": false,
+          "isolateRealms": []
+        }
+      }
+    ],
+    "jsPresetBuilders": [
+      {
+        "path": "packages/runtime/test/a5sf-provider-composition.test.ts",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": false,
+        "mentionsTransientBash": false,
+        "declaresIsolateTerminals": false
+      },
+      {
+        "path": "packages/runtime/test/live-persona-observer.test.ts",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": false,
+        "mentionsTransientBash": false,
+        "declaresIsolateTerminals": true
+      },
+      {
+        "path": "packages/testkit/test/rc2-kit-preset-seam.test.ts",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": true,
+        "mentionsTransientBash": true,
+        "declaresIsolateTerminals": true
+      },
+      {
+        "path": "tests/kits/_shared/preset-seam.mjs",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": true,
+        "mentionsTransientBash": true,
+        "declaresIsolateTerminals": true
+      },
+      {
+        "path": "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": true,
+        "mentionsTransientBash": true,
+        "declaresIsolateTerminals": true
+      },
+      {
+        "path": "tests/world-factory/a5sf-pty-contract.test.mjs",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": false,
+        "mentionsTransientBash": false,
+        "declaresIsolateTerminals": false
+      },
+      {
+        "path": "tests/world-factory/lib/a5sf-pty-contract-world.mjs",
+        "mentionsTerminals": true,
+        "mentionsPersistentBash": false,
+        "mentionsTransientBash": false,
+        "declaresIsolateTerminals": false
+      }
+    ],
+    "host": {
+      "hostTreePresent": true,
+      "hostTree": "tests/deepseek-harness-test-use",
+      "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "defaultPreset": "standard",
+      "registryRow": {
+        "id": "agent-preset-registry",
+        "name": "@deepseek-ai/dsh-agent-preset-registry",
+        "configKeys": [
+          "default"
+        ]
+      },
+      "hostHostLevelRows": {
+        "bundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app"
+        ],
+        "perBundle": {
+          "dsh-base": false,
+          "dsh-web-app": false
+        },
+        "terminalsProducerAtHostLevel": false,
+        "hostShellRows": [
+          {
+            "id": "tool-bash",
+            "name": "@deepseek-ai/dsh-tool-bash"
+          },
+          {
+            "id": "tool-pwsh",
+            "name": "@deepseek-ai/dsh-tool-pwsh"
+          }
+        ]
+      },
+      "presets": [
+        {
+          "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/cordis.patch.yml",
+          "kind": "host-preset",
+          "presetId": "cordis",
+          "shell": {
+            "terminalsProducer": false,
+            "persistentBash": false,
+            "transientBash": true,
+            "isolateRealms": [
+              "compaction",
+              "planMode",
+              "toolResultPruner",
+              "workflowEngine"
+            ]
+          },
+          "unconfinedHostShellRows": [
+            {
+              "id": "tool-bash",
+              "name": "@deepseek-ai/dsh-tool-bash",
+              "isolate": []
+            }
+          ]
+        },
+        {
+          "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/minimal.patch.yml",
+          "kind": "host-preset",
+          "presetId": "minimal",
+          "shell": {
+            "terminalsProducer": true,
+            "persistentBash": true,
+            "transientBash": false,
+            "isolateRealms": [
+              "terminals"
+            ]
+          },
+          "unconfinedHostShellRows": [
+            {
+              "id": "pty",
+              "name": "@deepseek-ai/dsh-terminal",
+              "isolate": []
+            },
+            {
+              "id": "persistent-bash",
+              "name": "@deepseek-ai/dsh-tool-bash-persistent",
+              "isolate": []
+            }
+          ]
+        },
+        {
+          "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/ptc.patch.yml",
+          "kind": "host-preset",
+          "presetId": "ptc",
+          "shell": {
+            "terminalsProducer": false,
+            "persistentBash": false,
+            "transientBash": true,
+            "isolateRealms": [
+              "compaction",
+              "planMode",
+              "toolResultPruner",
+              "workflowEngine"
+            ]
+          },
+          "unconfinedHostShellRows": [
+            {
+              "id": "tool-bash",
+              "name": "@deepseek-ai/dsh-tool-bash",
+              "isolate": []
+            }
+          ]
+        },
+        {
+          "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml",
+          "kind": "host-preset",
+          "presetId": "standard",
+          "shell": {
+            "terminalsProducer": false,
+            "persistentBash": false,
+            "transientBash": true,
+            "isolateRealms": [
+              "compaction",
+              "planMode",
+              "toolResultPruner",
+              "workflowEngine"
+            ]
+          },
+          "unconfinedHostShellRows": [
+            {
+              "id": "tool-bash",
+              "name": "@deepseek-ai/dsh-tool-bash",
+              "isolate": []
+            }
+          ]
+        }
+      ]
+    },
+    "blastRadius": {
+      "direct": [
+        "packages/runtime/test/a5sf-provider-composition.test.ts",
+        "packages/runtime/test/live-persona-observer.test.ts",
+        "packages/testkit/test/rc2-kit-preset-seam.test.ts",
+        "tests/kits/_shared/preset-seam.mjs",
+        "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+        "tests/world-factory/a5sf-pty-contract.test.mjs",
+        "tests/world-factory/lib/a5sf-pty-contract-world.mjs"
+      ],
+      "viaPresetSeam": [
+        "tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs",
+        "tests/kits/a5-w7-jobs-wiring/a5w7-kit.mjs",
+        "tests/kits/a5-w7m-m13-domain-veto/a5w7m-kit.mjs",
+        "tests/kits/a5p1diag/a5p1-kit.mjs",
+        "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+        "tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs",
+        "tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs",
+        "tests/world-factory/lib/u6-arc-a-assembly.mjs",
+        "tests/world-factory/lib/u6-arc-d-assembly.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/lib/u6-proc-assembly.mjs",
+        "tests/world-factory/lib/u7-census-assembly.mjs",
+        "tests/world-factory/lib/u7-fsmut-assembly.mjs",
+        "tests/world-factory/lib/u7-fui-assembly.mjs",
+        "tests/world-factory/lib/u7-pwsh-assembly.mjs",
+        "tests/world-factory/lib/u7-tbash-assembly.mjs",
+        "tests/world-factory/lib/u7f-web-assembly.mjs",
+        "tests/world-factory/lib/u7r3-uif4-assembly.mjs",
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs"
+      ],
+      "mentionsOnly": [
+        "packages/runtime/team-services/src/install.ts",
+        "packages/runtime/team-services/src/types.ts",
+        "tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs",
+        "tests/world-factory/lib/u6-jobs-assembly.mjs"
+      ],
+      "a5sfSuitesReadingShippedRow": [],
+      "namesPresetIds": [
+        "packages/runtime/agent-setup/preset/substrate-resolver.ts",
+        "packages/runtime/agent-setup/preset/types.ts",
+        "packages/runtime/dist/packages/runtime/agent-setup/preset/substrate-resolver.d.ts",
+        "packages/runtime/dist/packages/runtime/agent-setup/preset/types.d.ts",
+        "packages/runtime/dist/packages/runtime/requirement-facts/types.d.ts",
+        "packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs",
+        "packages/runtime/dist/packages/runtime/src/plugin/types.d.ts",
+        "packages/runtime/member-residency/harness/run.mjs",
+        "packages/runtime/requirement-facts/provider.ts",
+        "packages/runtime/requirement-facts/types.ts",
+        "packages/runtime/src/plugin/host.ts",
+        "packages/runtime/src/plugin/live/agent-bindings.mjs",
+        "packages/runtime/src/plugin/root.ts",
+        "packages/runtime/src/plugin/types.ts",
+        "packages/runtime/test/agent-presets-double.mjs",
+        "packages/runtime/test/d1-member-base-tools.test.ts",
+        "packages/runtime/test/issue2-real-preset-restriction.test.ts",
+        "packages/runtime/test/leader-recovery-next-boundary-exit.test.ts",
+        "packages/runtime/test/leader-template-required-boundary.test.ts",
+        "packages/runtime/test/mcp-target-materialization.test.ts",
+        "packages/runtime/test/persona-kind-provider-preflight.test.ts",
+        "packages/runtime/test/persona-runtime-substrate-equality.test.ts",
+        "packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts",
+        "packages/runtime/test/runtime-substrate-resolver.test.ts",
+        "packages/runtime/test/runtime-substrate-root-member-persona.test.ts",
+        "tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs",
+        "tests/kits/a5-w7-jobs-wiring/a5w7-kit.mjs",
+        "tests/kits/a5-w7m-m13-domain-veto/a5w7m-kit.mjs",
+        "tests/kits/a5p1diag/a5p1-kit.mjs",
+        "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+        "tests/kits/exec-contract-live-smoke/exec-contract-live-smoke.mjs",
+        "tests/kits/pr-c-mcp-isolation-smoke/pr-c-mcp-isolation-smoke.mjs",
+        "tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs",
+        "tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs",
+        "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+        "tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs",
+        "tests/kits/team-projection-recovery-smoke/team-projection-recovery-smoke.mjs",
+        "tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs",
+        "tests/world-factory/lib/u6-arc-a-assembly.mjs",
+        "tests/world-factory/lib/u6-arc-d-assembly.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/lib/u6-jobs-assembly.mjs",
+        "tests/world-factory/lib/u6-proc-assembly.mjs",
+        "tests/world-factory/lib/u7-census-assembly.mjs",
+        "tests/world-factory/lib/u7-fsmut-assembly.mjs",
+        "tests/world-factory/lib/u7-fui-assembly.mjs",
+        "tests/world-factory/lib/u7-pwsh-assembly.mjs",
+        "tests/world-factory/lib/u7-tbash-assembly.mjs",
+        "tests/world-factory/lib/u74a-jobs-assembly.mjs",
+        "tests/world-factory/lib/u7astore-assembly.mjs",
+        "tests/world-factory/lib/u7f-web-assembly.mjs",
+        "tests/world-factory/lib/u7fa-assembly.mjs",
+        "tests/world-factory/lib/u7r3-uif4-assembly.mjs",
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs"
+      ],
+      "a5sfSuitesTouchingLegacyTerminals": [
+        {
+          "suite": "tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs",
+          "citesDoubleTerminalRefusal": true,
+          "citesLegacyTerminals": true
+        }
+      ],
+      "a5sfSuiteCount": 30
+    }
+  },
+  "rows": [
+    {
+      "origin": "this-tree",
+      "path": "cordis.patch.yml",
+      "kind": "composition-layer",
+      "id": "dsh-agent-team",
+      "declaresToday": {
+        "rows": [
+          "dsh-agent-team",
+          "team-spill-local",
+          "dsh-agent-team-client"
+        ],
+        "teamRow": true,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": false,
+          "isolateRealms": []
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "a shipped module that provides `teamA5sfRealm` with { members, subprocess, terminal } (none exists; ~150 lines + one `exports` entry — see exemplar/a5sf-governed-realm.mjs)",
+        "a NEUTRAL enablement key (`a5sfRealmConfigOf` ignores the row unless a5sfEvidencePath/a5sfMemberPolicies/a5sfMemberAuthority is present; the first is a machine path the shipped layer forbids, the other two fork with the provided service)",
+        "a v4 blueprint with a `memberIoCeilings` family (the shipped blueprint is schemaVersion 3 and any declaration is refused MEMBER_POLICY_WITHOUT_BLUEPRINT)",
+        "a Member preset that mounts NO persistent shell (else TERMINALS_DOUBLE_TERMINAL_REFUSED) + `memberPresetId` selecting it"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "none for existing Members until their Team selects the governed preset: this layer inherits the deployment default (`standard`, transient) and the default does not move",
+        "a Member that DOES select it loses `run_in_background`, per-call `timeoutMs`, `sandbox_permissions`/`justification` and the structured result object (`cd`/`export` and interactive stdin were never there on `standard`)"
+      ]
+    },
+    {
+      "origin": "this-tree",
+      "path": "opshome/.dsh/profiles/web/cordis.patch.yml",
+      "kind": "preset-declaration",
+      "id": "u7as-base-20261030t12-22-33z",
+      "declaresToday": {
+        "rows": [
+          "dsh-agent-team",
+          "preset-u7as-base-20261030t12-22-33z",
+          "persona",
+          "tool-fs",
+          "tool-fs-search"
+        ],
+        "teamRow": true,
+        "a5sfKeys": [],
+        "presetIds": [
+          "memberPresetId",
+          "rootPresetId"
+        ],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": false,
+          "isolateRealms": []
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "a shipped module that provides `teamA5sfRealm` with { members, subprocess, terminal } (none exists; ~150 lines + one `exports` entry — see exemplar/a5sf-governed-realm.mjs)",
+        "a NEUTRAL enablement key (`a5sfRealmConfigOf` ignores the row unless a5sfEvidencePath/a5sfMemberPolicies/a5sfMemberAuthority is present; the first is a machine path the shipped layer forbids, the other two fork with the provided service)",
+        "a v4 blueprint with a `memberIoCeilings` family (the shipped blueprint is schemaVersion 3 and any declaration is refused MEMBER_POLICY_WITHOUT_BLUEPRINT)",
+        "a Member preset that mounts NO persistent shell (else TERMINALS_DOUBLE_TERMINAL_REFUSED) + `memberPresetId` selecting it"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "none for existing Members until their Team selects the governed preset: this layer inherits the deployment default (`standard`, transient) and the default does not move",
+        "a Member that DOES select it loses `run_in_background`, per-call `timeoutMs`, `sandbox_permissions`/`justification` and the structured result object (`cd`/`export` and interactive stdin were never there on `standard`)"
+      ]
+    },
+    {
+      "origin": "this-tree",
+      "path": "opshome/.dsh/profiles/web/cordis.yml",
+      "kind": "composition-layer",
+      "id": null,
+      "declaresToday": {
+        "rows": [],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": false,
+          "isolateRealms": []
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "nothing on the preset itself — the faces are installed by the realm, not by a preset row",
+        "a Member preset row id selected by the composition (`memberPresetId`)"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "none for existing Members until their Team selects the governed preset: this layer inherits the deployment default (`standard`, transient) and the default does not move",
+        "a Member that DOES select it loses `run_in_background`, per-call `timeoutMs`, `sandbox_permissions`/`justification` and the structured result object (`cd`/`export` and interactive stdin were never there on `standard`)"
+      ]
+    },
+    {
+      "origin": "this-tree",
+      "path": "packages/runtime/test/issue2-fixtures/presets/i2-standard/agent.cordis.yml",
+      "kind": "composition-layer",
+      "id": null,
+      "declaresToday": {
+        "rows": [],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": false,
+          "isolateRealms": []
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "nothing on the preset itself — the faces are installed by the realm, not by a preset row",
+        "a Member preset row id selected by the composition (`memberPresetId`)"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "none for existing Members until their Team selects the governed preset: this layer inherits the deployment default (`standard`, transient) and the default does not move",
+        "a Member that DOES select it loses `run_in_background`, per-call `timeoutMs`, `sandbox_permissions`/`justification` and the structured result object (`cd`/`export` and interactive stdin were never there on `standard`)"
+      ]
+    },
+    {
+      "origin": "host-bundle",
+      "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/cordis.patch.yml",
+      "kind": "host-preset",
+      "id": "cordis",
+      "declaresToday": {
+        "rows": [
+          "tool-bash"
+        ],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": true,
+          "isolateRealms": [
+            "compaction",
+            "planMode",
+            "toolResultPruner",
+            "workflowEngine"
+          ]
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "outside this tree: the pinned host bundle is read-only under CORE PATCH BUDGET = 0; a governed preset must be DECLARED IN THIS TREE, not by editing these files"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "`run_in_background` (job registry; long commands become collectable jobs)",
+        "`timeoutMs` per call",
+        "`sandbox_permissions` escalation + `justification` (when the deployment exposes them)",
+        "structured output object (the confined tool answers a JSON string with kind \"confined-terminal\")",
+        "nothing else: the transient host shell already has no `cd`/`export` persistence and no interactive stdin"
+      ]
+    },
+    {
+      "origin": "host-bundle",
+      "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/minimal.patch.yml",
+      "kind": "host-preset",
+      "id": "minimal",
+      "declaresToday": {
+        "rows": [
+          "pty",
+          "persistent-bash"
+        ],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": true,
+          "publishesTerminals": true,
+          "mountsTransientBash": false,
+          "isolateRealms": [
+            "terminals"
+          ]
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "outside this tree: the pinned host bundle is read-only under CORE PATCH BUDGET = 0; a governed preset must be DECLARED IN THIS TREE, not by editing these files"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": true,
+        "memberCreated": false,
+        "shellLeft": "none — the Member setup is rejected and rolled back",
+        "note": "TERMINALS_DOUBLE_TERMINAL_REFUSED at install; agent-bindings fails closed on a mount rejection, so the Member never comes up"
+      },
+      "capabilityLost": [
+        "`cd` / `export` state surviving across calls",
+        "interactive stdin",
+        "a shell `&` background job that survives the call",
+        "PTY session continuity (job control, /dev/pts identity)",
+        "`run_in_background` / `timeoutMs` / `sandbox_permissions` were never on the persistent tool"
+      ]
+    },
+    {
+      "origin": "host-bundle",
+      "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/ptc.patch.yml",
+      "kind": "host-preset",
+      "id": "ptc",
+      "declaresToday": {
+        "rows": [
+          "tool-bash"
+        ],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": true,
+          "isolateRealms": [
+            "compaction",
+            "planMode",
+            "toolResultPruner",
+            "workflowEngine"
+          ]
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "outside this tree: the pinned host bundle is read-only under CORE PATCH BUDGET = 0; a governed preset must be DECLARED IN THIS TREE, not by editing these files"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "`run_in_background` (job registry; long commands become collectable jobs)",
+        "`timeoutMs` per call",
+        "`sandbox_permissions` escalation + `justification` (when the deployment exposes them)",
+        "structured output object (the confined tool answers a JSON string with kind \"confined-terminal\")",
+        "nothing else: the transient host shell already has no `cd`/`export` persistence and no interactive stdin"
+      ]
+    },
+    {
+      "origin": "host-bundle",
+      "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml",
+      "kind": "host-preset",
+      "id": "standard",
+      "declaresToday": {
+        "rows": [
+          "tool-bash"
+        ],
+        "teamRow": false,
+        "a5sfKeys": [],
+        "presetIds": [],
+        "shell": {
+          "mountsPersistentShell": false,
+          "publishesTerminals": false,
+          "mountsTransientBash": true,
+          "isolateRealms": [
+            "compaction",
+            "planMode",
+            "toolResultPruner",
+            "workflowEngine"
+          ]
+        }
+      },
+      "toDeclareGovernedFaces": [
+        "outside this tree: the pinned host bundle is read-only under CORE PATCH BUDGET = 0; a governed preset must be DECLARED IN THIS TREE, not by editing these files"
+      ],
+      "consequence": {
+        "doubleTerminalRefused": false,
+        "memberCreated": true,
+        "shellLeft": "confined terminal face (`bash` served by the confined face)",
+        "note": "no ancestor `terminals` service — the install has nothing to collide with"
+      },
+      "capabilityLost": [
+        "`run_in_background` (job registry; long commands become collectable jobs)",
+        "`timeoutMs` per call",
+        "`sandbox_permissions` escalation + `justification` (when the deployment exposes them)",
+        "structured output object (the confined tool answers a JSON string with kind \"confined-terminal\")",
+        "nothing else: the transient host shell already has no `cd`/`export` persistence and no interactive stdin"
+      ]
+    }
+  ],
+  "probes": {
+    "compiledAnswerKeys": [
+      "members"
+    ],
+    "compiledAnswerCarriesFaces": [],
+    "networkDenyRefusal": {
+      "refused": true,
+      "code": "NETWORK_UNCONFINED_REALM",
+      "name": "TeamServiceInstallError"
+    },
+    "confinedSubprocessRefusal": {
+      "refused": true,
+      "code": "SUBPROCESS_UNCONFINED_REALM",
+      "name": "TeamServiceInstallError"
+    }
+  },
+  "exemplar": {
+    "module": "packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+    "patch": "dev/agent-workflow/evidence/a5sf-face-decl-impact/exemplar/governed-member-preset.patch.yml",
+    "checks": {
+      "filesPresent": true,
+      "relativeImports": [
+        {
+          "spec": "../../../team-services/src/product-assembly.js",
+          "resolvesInSource": true,
+          "resolvesInDist": true
+        },
+        {
+          "spec": "../../../sandbox-provider/provider.js",
+          "resolvesInSource": true,
+          "resolvesInDist": true
+        }
+      ],
+      "importsResolve": true,
+      "patchParses": true,
+      "providerRowPresent": true,
+      "presetRowPresent": true,
+      "teamRowPresent": true,
+      "mountsPersistentShell": false,
+      "publishesTerminals": false,
+      "presetId": "a5sf-governed-member",
+      "teamRowEnablesRealm": true,
+      "teamRowPresetIds": [
+        "rootPresetId",
+        "memberPresetId"
+      ],
+      "declaredTerminal": {
+        "program": "/bin/bash",
+        "shellClassPrograms": [
+          "bash"
+        ],
+        "declaresSubprocess": true,
+        "touchesLegacyTerminals": false
+      },
+      "programAbsolute": true,
+      "shellClassAdmitsProgram": true,
+      "declaresSubprocessFace": true,
+      "declaresNoLegacyTerminals": true
+    },
+    "ok": true,
+    "expectations": {
+      "mustBeTrue": [
+        "filesPresent",
+        "importsResolve",
+        "patchParses",
+        "providerRowPresent",
+        "presetRowPresent",
+        "teamRowPresent",
+        "teamRowEnablesRealm",
+        "programAbsolute",
+        "shellClassAdmitsProgram",
+        "declaresSubprocessFace",
+        "declaresNoLegacyTerminals"
+      ],
+      "mustBeFalse": [
+        "mountsPersistentShell",
+        "publishesTerminals"
+      ]
+    }
+  },
+  "recommendation": {
+    "answer": "YES, as an additional opt-in Member preset — not by replacing the deployment default in the same change",
+    "ownerSentence": "Owner authorises: ship a governed Member preset (`a5sf-governed-member`) beside the existing default, selected explicitly by an operator; the deployment default stays `standard`, and no existing Member changes behaviour until its Team selects the governed preset.",
+    "changesIf": "If Members must keep background jobs for long commands, the answer becomes NOT YET until `confined-terminal-tool.mjs` can hand a command to the job registry; the confined terminal face has no background mode today (each command is a fresh confined child, killed when the tool returns)."
+  }
+}
