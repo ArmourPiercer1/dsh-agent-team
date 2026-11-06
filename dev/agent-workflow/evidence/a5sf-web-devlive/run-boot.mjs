@@ -154,8 +154,8 @@ const CASES = ['web-deny-fetch', 'web-deny-search']
 
 const CASE_IDS = Object.freeze([...CASES])
 const PLAN_CASES = Object.freeze(CASES.map((id) => (id === 'web-deny-fetch'
-  ? { id, method: 'web:fetch', tool: 'web_fetch', args: { url: DECLARED_URL }, marker: BL18_MARKERS.fetch }
-  : { id, method: 'web:search', tool: 'web_search', args: { queries: [...DECLARED_SEARCH.queries] }, marker: BL18_MARKERS.search })))
+  ? { id, method: 'web:fetch', tool: 'web_fetch', args: { url: DECLARED_URL }, marker: BL18_MARKERS.fetch, memberTemplate: 'webworker-fetch' }
+  : { id, method: 'web:search', tool: 'web_search', args: { queries: [...DECLARED_SEARCH.queries] }, marker: BL18_MARKERS.search, memberTemplate: 'webworker-search' })))
 
 const SUITE = 'a5sf-web-devlive'
 const PLAN_ONLY = process.argv.includes('--plan')
@@ -463,9 +463,10 @@ export function buildPreflightBundle({ head, rowIds, workspaceLabel = 'tests/hom
       caller: {
         kind: 'member',
         strict: false,
-        templateId: MEMBER_TEMPLATE,
+        templateId: 'webworker-fetch',
+        templates: ['webworker-fetch', 'webworker-search'],
         preset: { module: '@deepseek-ai/dsh-tool-web', tools: ['web_fetch', 'web_search'] },
-        note: 'legacy (non-strict) Member: the template declares NO capabilities block, so permissionPolicy is absent and A2C-2 does not run; the MEMBER preset surfaces the pair so route-C can shadow it (route-C refuses to ADD a name).',
+        note: 'legacy (non-strict) Member: each of the two Member templates declares NO capabilities block, so permissionPolicy is absent and A2C-2 does not run; the MEMBER preset surfaces the pair so route-C can shadow it (route-C refuses to ADD a name). One template per case so each case owns a distinct Member instance (a second delegation on the same template reuses the settled Member).',
       },
     },
     identity: {
@@ -479,7 +480,7 @@ export function buildPreflightBundle({ head, rowIds, workspaceLabel = 'tests/hom
       directiveRoot: CREATE_ROOT,
       blueprints: [
         { blueprintId: BP_ANCHOR_ID, members: 1 },
-        { blueprintId: BP_MAIN_ID, members: 1 },
+        { blueprintId: BP_MAIN_ID, members: 2 },
       ],
       memberBindings: CASE_IDS.map((caseId, index) => ({
         caseId,
@@ -573,7 +574,7 @@ function rowsFor({ home, workspaceDir }) {
           writeAllow: [workspace],
           counterPath: join(home, 'web-provider.jsonl'),
           hostWebCounterPath: join(home, 'host-web.jsonl'),
-          networkDenyTemplates: [MEMBER_TEMPLATE],
+          networkDenyTemplates: ['webworker', 'webworker-fetch', 'webworker-search'],
           bindingIdentity: BINDING,
         },
       },
@@ -651,9 +652,12 @@ function mainBlueprintYaml(denyList) {
     '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
     'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - archive-member', '  deny: []',
     'members:',
-    '  - templateId: webworker',
-    '    displayName: "a5sf BL-18 web worker"',
-    `    persona: ${JSON.stringify('You are an a5sf BL-18 web worker. When the leader asks you to call a web tool, call it exactly once and report the exact error text. Do not call anything else.')}`,
+    '  - templateId: webworker-fetch',
+    '    displayName: "a5sf web dev-live fetch worker"',
+    `    persona: ${JSON.stringify('You are an a5sf web worker. When the leader asks you to call web_fetch, call it exactly once and report the exact error text. Do not call anything else.')}`,
+    '  - templateId: webworker-search',
+    '    displayName: "a5sf web dev-live search worker"',
+    `    persona: ${JSON.stringify('You are an a5sf web worker. When the leader asks you to call web_search, call it exactly once and report the exact error text. Do not call anything else.')}`,
     'memberEnvelopes: []', 'requirements: []', 'permissionMutationEnvelope:', '  rules: []',
     'teamHardEnvelope:', '  rules: []', 'policyStates: []', 'metadata: {}', '---', '',
   ].join('\n')
@@ -689,9 +693,15 @@ function assertBlueprintText(text, wantId, wantMembers, label) {
 
 function makeDecide(routingLog) {
   const served = new Map()
-  return function decide(request) {
-    const kind = routeKindOf(request)
-    const messages = Array.isArray(request?.body?.messages) ? request.body.messages : []
+  // The shipped mock calls `decide({ seq, req })` where `req` is the parsed
+  // body (packages/tools/harness/mock-deepseek.mjs:265). The inherited driver
+  // read its FIRST argument as the body, so every turn fell through to the
+  // harmless 'fallback' branch: boot #5 aborted at the health gate before this
+  // line was ever exercised. `req` is the request; the wrapper only carries
+  // the sequence number.
+  return function decide({ seq, req }) {
+    const kind = routeKindOf(req)
+    const messages = Array.isArray(req?.messages) ? req.messages : []
     let lastUser = ''
     for (let i = messages.length - 1; i >= 0; i -= 1) {
       if (messages[i]?.role !== 'user') continue
@@ -737,8 +747,9 @@ function makeDecide(routingLog) {
       // out of the deny lane (these markers are not cases).
       reply = { kind: 'text', text: 'Acknowledged. No tool call.' }
     }
-    routingLog.push({
+    const decision = {
       seq: routingLog.length + 1,
+      mockSeq: seq ?? null,
       at: new Date().toISOString(),
       wholeTurnKind: kind,
       lastUserKind: lastItem === undefined ? null : effective,
@@ -748,7 +759,22 @@ function makeDecide(routingLog) {
       disposition,
       replyKind: reply.kind,
       toolName: reply.kind === 'tool-call' ? reply.toolCalls[0].name : null,
-    })
+    }
+    routingLog.push(decision)
+    // Persist each decision AS IT HAPPENS: an abort later in the run must not
+    // destroy the routing record that explains an empty guard-fact set.
+    try {
+      writeJson(join(OUT, 'marker-routing.json'), {
+        decidedBy: 'the driver\'s own decide() log, appended per model request',
+        markers: BL18_MARKERS,
+        routingLog,
+        requests: [],
+        osLevelNetworkIsolationClaimed: false,
+      })
+      appendFileSync(join(OUT, 'marker-routing.jsonl'), `${JSON.stringify(decision)}\n`)
+    } catch {
+      /* diagnostics never break the turn */
+    }
     return reply
   }
 }
@@ -780,7 +806,7 @@ async function plan() {
   // list (the boot rewrites it from discovery and re-parses).
   assertBlueprintText(BP_ANCHOR_YAML, BP_ANCHOR_ID, 1, 'anchor.yaml')
   log('anchor blueprint parses (leader legacy, one member template)')
-  const mainExpected = assertBlueprintText(mainBlueprintYaml(DEFAULT_DENY), BP_MAIN_ID, 1, 'main.yaml')
+  const mainExpected = assertBlueprintText(mainBlueprintYaml(DEFAULT_DENY), BP_MAIN_ID, 2, 'main.yaml')
   log(`main blueprint template parses; expected deny=${JSON.stringify(mainExpected.builtinToolDeny)}`)
 
   const harness = createA5sfHarness({
@@ -810,7 +836,7 @@ async function plan() {
     const mainText = mainBlueprintYaml(DEFAULT_DENY)
     writeFileSync(join(config.blueprintDir, 'main.yaml'), mainText)
     // Re-parse the BYTES that will be catalogued, from the world's own dir.
-    assertBlueprintText(readFileSync(join(config.blueprintDir, 'main.yaml'), 'utf8'), BP_MAIN_ID, 1, 'world/main.yaml')
+    assertBlueprintText(readFileSync(join(config.blueprintDir, 'main.yaml'), 'utf8'), BP_MAIN_ID, 2, 'world/main.yaml')
     log('blueprints written into the World blueprintDir and re-parsed from disk')
 
     const identity = rowIdentityCheck(rows)
@@ -985,11 +1011,13 @@ async function boot() {
   let bootInfo = null
   let teardown = null
   let stage = 'boot'
+  let runPaths = null
   const routingLog = []
 
   try {
     world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
     const { rows, config, paths } = rowsFor({ home: world.home, workspaceDir: world.workspaceDir })
+    runPaths = paths
     const handed = handOverRows(world, rows)
     log(`row handoff: ${JSON.stringify(handed)}`)
     if (JSON.stringify(handed) !== JSON.stringify(rows.map((r) => r.id))) throw new Error('row handoff identity/order mismatch')
@@ -1094,7 +1122,7 @@ async function boot() {
     stage = 'write-main-blueprint'
     const mainText = mainBlueprintYaml(denyList)
     writeFileSync(join(config.blueprintDir, 'main.yaml'), mainText)
-    const parsedMain = assertBlueprintText(readFileSync(join(config.blueprintDir, 'main.yaml'), 'utf8'), BP_MAIN_ID, 1, 'main.yaml')
+    const parsedMain = assertBlueprintText(readFileSync(join(config.blueprintDir, 'main.yaml'), 'utf8'), BP_MAIN_ID, 2, 'main.yaml')
     log(`main blueprint parsed; builtinToolDeny=${JSON.stringify(parsedMain.builtinToolDeny)}`)
 
     stage = 'create-team'
@@ -1162,7 +1190,7 @@ async function boot() {
       const delegated = await toolRoute('team_delegate', {
         rootSessionId: CREATE_ROOT,
         requestToken: callId,
-        delegationTemplateId: MEMBER_TEMPLATE,
+        delegationTemplateId: planCase.memberTemplate,
         label,
         prompt: `${planCase.marker}: call the ${planCase.tool} tool exactly once with ${JSON.stringify(planCase.args)} and then report the exact error text. Call no other tool.`,
       }, CREATE_ROOT, callId)
@@ -1361,6 +1389,26 @@ async function boot() {
   } catch (error) {
     record.markAborted({ stage, detail: null, error: String(error?.stack ?? error?.message ?? error) })
     log(`ABORT at ${stage}: ${String(error?.stack ?? error?.message ?? error)}`)
+    // PERSIST THE OBSERVATIONS BEFORE TEARDOWN: an abort must not destroy the
+    // model requests / guard facts that explain it (the end-of-run block below
+    // is never reached on this path).
+    if (world !== null) {
+      try {
+        const requests = world.mock?.requests ?? []
+        writeJson(join(OUT, 'mock-requests.json'), { count: requests.length, requests, abortedAt: stage, osLevelNetworkIsolationClaimed: false })
+        if (runPaths !== null) {
+          writeJson(join(OUT, 'guard-facts.json'), { sink: runPaths.sink, facts: parseJsonl(runPaths.sink), abortedAt: stage, osLevelNetworkIsolationClaimed: false })
+          writeJson(join(OUT, 'counter-rows.json'), {
+            providerEntries: parseJsonl(runPaths.counter),
+            hostWebRows: parseJsonl(runPaths.hostWebCounter).filter((row) => row?.leg === 'host-web-call'),
+            abortedAt: stage,
+            osLevelNetworkIsolationClaimed: false,
+          })
+        }
+      } catch (diagnosticError) {
+        log(`abort diagnostics failed: ${String(diagnosticError?.message ?? diagnosticError)}`)
+      }
+    }
     if (world !== null && teardown === null) {
       try {
         teardown = await world.teardown()
