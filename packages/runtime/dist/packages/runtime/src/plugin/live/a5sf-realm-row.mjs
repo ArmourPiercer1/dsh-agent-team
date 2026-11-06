@@ -77,7 +77,7 @@
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
 import { isAbsolute } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { URL, pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'

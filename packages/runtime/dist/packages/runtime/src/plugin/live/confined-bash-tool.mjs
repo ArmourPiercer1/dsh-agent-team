@@ -37,6 +37,7 @@
  * @module @dsh-agent-team/runtime/plugin/live/confined-bash-tool
  */
 import { isAbsolute, join } from 'node:path'
+import { clearTimeout, setTimeout } from 'node:timers'
 
 export const name = 'a5sf-confined-bash'
 
