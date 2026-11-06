@@ -1400,6 +1400,9 @@ const CONFINEMENT_ROW_LABEL = /confinement|isolat/i
 function checkAdmissionRefusalCase(c, policy, findings, notes) {
   const id = String(c.id)
   const code = nonBlank(c.expectedCode) ? String(c.expectedCode) : ''
+  // Notes are case-local: a finding from an EARLIER case must not suppress this
+  // case's PASS wording.
+  const priorFindings = findings.length
   if (String(c.axis ?? '') !== 'network') {
     findings.push(finding('POLICY_CASE_CLASS_AXIS', `case ${id} declares caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)} but axis=${JSON.stringify(c.axis)}; an admission refusal is a NETWORK-face refusal, so the class is network-only`))
     return
@@ -1471,7 +1474,7 @@ function checkAdmissionRefusalCase(c, policy, findings, notes) {
   if (c.networkProbeEnforced === true) {
     findings.push(finding('POLICY_ADMISSION_REFUSAL_PROBE_CLAIM', `case ${id} declares networkProbeEnforced: true alongside caseClass=${JSON.stringify(ADMISSION_REFUSAL_CLASS)}; the call is refused BEFORE the provider, so there is no enforced transport to claim`))
   }
-  if (findings.length === 0) notes.push(admissionRefusalWording(id, code))
+  if (findings.length === priorFindings) notes.push(admissionRefusalWording(id, code))
 }
 
 /**
