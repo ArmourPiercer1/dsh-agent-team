@@ -1,8 +1,8 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06. Gate HEAD: `fa87927fd` (9/9 local, 299.4 s, census 677/8832;
+Date: 2026-11-06. Gate HEAD: `fedd641ed` (9/9 local, gate log, census 677/8832;
 `gate.md`); docs after this file are docs-only. Evidence HEAD at the gate:
-`fa87927fd`. Branch `alpha6/int-20261103`, rollback tag
+`fedd641ed`. Branch `alpha6/int-20261103`, rollback tag
 `a6-int-pre-585-20261105` (peeled `ccc9294f4e37c230841924713a9624e1553c545a`).
 No master merge, no un-draft, no production switch.
 
@@ -26,7 +26,7 @@ No master merge, no un-draft, no production switch.
 | Human leg discovered from the remote ledger page only, then resolved | PASS | `a6-human-r13`, A6-21 |
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r12`, A6-22/23 |
 | Explicit human message after restart clears the durable Stop and re-plans the ACTUAL pending leg; historical call not revived | PASS | `a6-sticky-stop-r13`, A6-24 |
-| A wake claimed by a crashed turn is reconciled without duplicate, durable pending request survives | PASS | `a6-inbox-r5`, A6-25 |
+| Native-Inbox crashed-wake reconciliation | NOT PROVEN | multi-root probe only reachable via BLOCKed cross-root recovery; `a6-inbox-r5..r8` |
 | Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r6`, A6-2..6 |
 | Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r8`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |

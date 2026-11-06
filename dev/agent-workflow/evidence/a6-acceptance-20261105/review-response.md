@@ -179,3 +179,22 @@ round-trip/torn-marker unit tests added. The current tree is gated at
 A6-22's label still cannot distinguish withdrawal from an already-consumed row;
 A6-24 counts model requests rather than delivered messages; resume rebuild does
 not take the wake lock.
+
+
+## Third review of `fa87927fd` — BLOCK, response at `fedd641ed`
+
+The reviewer confirmed the resume P1 fix, then found two new P1s in the
+cross-root recovery added alongside it: (1) `intent.key.sessionGeneration`
+(static config generation) compared against the durable Team generation
+(advances per ledger append) marked every live row stale; (2) "a durable Team
+row exists" was treated as "live in this process", so a dormant Team from a
+previous world could have its row/message cleared. P2: `isStopped` was
+fail-open on non-ENOENT errors; the marker-registration generation filter used
+the same wrong namespace.
+
+RESPONSE at `fedd641ed`: boot recovery and marker registration are restored to
+strict `rootSessionId === rootSid` + `config.generation`; `isStopped` is
+fail-closed except ENOENT; the resume real-leg re-plan, atomic marker and unit
+tests remain. The native-Inbox crash probe is explicitly NOT accepted because
+the only way it exercised recovery was the BLOCKed cross-root path. A future
+fix must carry an explicit mount-owner identity on the row/marker.

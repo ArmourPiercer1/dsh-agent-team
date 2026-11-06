@@ -1,22 +1,28 @@
 # Gate record
 
-## Final acceptance HEAD — `fa87927fd`
+## Final acceptance HEAD — `fedd641ed`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS**, 0 skip, **299.4 s**
+- Result: **9/9 PASS**, 0 skip, seconds see log
 - Census: **677 files / 8832 legs** (two new marker unit tests), `COUNTS MOVED,
   SET DID NOT`, 0 new reds
 - Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
 - Blueprint fence: no new offending path; kit identities re-recorded at
   L619/L808/L1729/L2417 (same fixtures)
-- Log: `.drill/ci-gate-fa87927fd.log` (untracked local artifact)
+- Log: `.drill/ci-gate-fedd641ed.log` (untracked local artifact)
 - Product delta since `1e50d55fc`: real resume re-plan (actual delegable legs,
-  never an empty scan), cross-root boot intent recovery, atomic/existence-based
-  Sticky Stop marker + unit tests, native-Inbox crash reconcile probe.
+  never an empty scan), atomic/existence-based Sticky Stop marker + unit tests.
+  Boot recovery stays strictly own-root after the second review showed a
+  cross-root version could touch another mounted Team's row.
 - Earlier `1e50d55fc`: 9/9, 362.8 s (`.drill/ci-gate-1e50d55fc.log`).
 
-## Previous acceptance HEAD — `1e50d55fc`
+## Previous acceptance HEAD — `fa87927fd`
+
+`fa87927fd` was 9/9 (299.4 s) but its cross-root recovery was BLOCKed by the
+second review (owner/generation namespace); it is superseded by `fedd641ed`.
+
+## Earlier acceptance HEAD — `1e50d55fc`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`

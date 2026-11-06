@@ -108,3 +108,16 @@ SIGKILLed. On restart:
 
 **Not covered:** a crash in the narrower window where the Inbox ACCEPTED but
 never CLAIMED the message, and native cold-start replay of that message.
+
+
+## Status after the second review (2026-11-06)
+
+The `a6-inbox-r5` result was obtained with a cross-root boot recovery that the
+second review BLOCKed: it could adopt/clear another mounted Team's durable row,
+and it compared the key generation against the wrong namespace. That recovery
+was reverted to strictly own-root at `fedd641ed`. The multi-root probe is
+env-gated (`C1_A6_INBOX=1`) but is **not** an accepted capability: with strict
+own-root the A6 Team row is not owned by the mount instance, so this probe no
+longer exercises recovery. A safe fix needs an explicit per-row owner/mount
+identity written at queue time and honored by every recovery instance; until
+then the native-Inbox crash window is disclosed as unproven.
