@@ -180,6 +180,14 @@ export interface TeamPluginConfig {
      * cannot reconcile a queued wake.
      */
     readonly alpha6WakeIntentPath?: string;
+    /**
+     * Alpha.6 (opt-in only) — the bounded approval wait for an A6 PA leg, in
+     * milliseconds. When unset the production wiring uses 600000 (10 minutes);
+     * the wait is still abortable by the caller's signal and a timeout never
+     * decides, mints or consumes. The durable request keeps its original
+     * meaning and can be resolved later; this invocation simply stops waiting.
+     */
+    readonly alpha6WaitTimeoutMs?: number;
     /** The durable TeamSession `generation` (positive integer). */
     readonly generation: number;
     /** The effective default workspace (TeamSession record field). */

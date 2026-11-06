@@ -307,6 +307,7 @@ const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
 const A6_CRASH = ['1', 'allow', 'consume', 'before'].includes(String(process.env['C1_A6_CRASH']))
+const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -580,6 +581,7 @@ function teamRowConfig() {
       ? {
           alpha6ReviewRouting: true,
           alpha6WakeIntentPath: join(HOME, 'alpha6-wake-intents'),
+          ...(A6_TIMEOUT_MS > 0 ? { alpha6WaitTimeoutMs: A6_TIMEOUT_MS } : {}),
         }
       : {}),
   }
@@ -1151,6 +1153,36 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     return false
   }
 
+  if (A6_TIMEOUT_MS > 0) {
+    await new Promise((resolve) => setTimeout(resolve, A6_TIMEOUT_MS + 8000))
+    const ledger = readControlLedger(CREATE_ROOT_A6)
+    const pa = ledger.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+    const paDecision = pa === null ? null : ledger.decisions.find((d) => d.requestId === pa.requestId) ?? null
+    const paConsumption = pa === null ? null : ledger.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+    const executed = existsSync(FILE_A6_ALLOW)
+    check('A6-19', 'a bounded A6 approval wait expires without deciding, consuming or executing, and leaves the durable request pending',
+      pa !== null && paDecision === null && paConsumption === null && !executed,
+      `timeoutMs=${String(A6_TIMEOUT_MS)} pa=${String(pa?.requestId)} decision=${String(paDecision?.decision)} consumed=${String(paConsumption !== null)} executed=${String(executed)}`)
+    let late = null
+    if (pa !== null) {
+      late = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: pa.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: late allow after the bounded wait expired',
+      }, 'c1a6timeout', 4)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+    const after = readControlLedger(CREATE_ROOT_A6)
+    const lateDecision = pa === null ? null : after.decisions.find((d) => d.requestId === pa.requestId) ?? null
+    const lateConsumption = pa === null ? null : after.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+    const lateFile = existsSync(FILE_A6_ALLOW)
+    check('A6-20', 'a late allow after the wait timed out cannot revive the dead call: it is fail-closed or left unspent, never executed or consumed',
+      lateDecision !== null && lateConsumption === null && !lateFile,
+      `decision=${String(lateDecision?.decision)} reason=${String(lateDecision?.reason)} consumed=${String(lateConsumption !== null)} executed=${String(lateFile)}`)
+    writeEvidence('a6-timeout.json', { timeoutMs: A6_TIMEOUT_MS, pa, paDecision, paConsumption, executed, late: late?.body ?? late, lateDecision, lateConsumption, lateFile })
+    return pa !== null && paDecision === null && paConsumption === null && !executed && lateDecision !== null && lateConsumption === null && !lateFile
+  }
   if (A6_CRASH) {
     const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow'
       : process.env['C1_A6_CRASH'] === 'consume' ? 'consume'
@@ -1504,6 +1536,7 @@ function makeDecide() {
     // arrive here; each turn lists and resolves exactly the id its text names
     // (or the first pending id for a merged wake).
     if (lastUser.startsWith('[team-review-wake')) {
+      if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
       const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
         ?? /requestId=([^\]\s]+)/.exec(lastUser)?.[1]
         ?? ''

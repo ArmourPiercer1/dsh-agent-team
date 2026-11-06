@@ -3,17 +3,26 @@
 This file records what is **not** reachable yet, so the acceptance matrix does not
 silently promote a unit test or a synthetic timer to product evidence.
 
-## Wait timeout is not reachable in the production A6 path
+## Wait timeout is now reachable and proven
 
-`PaControlBridgeDeps.waitTimeoutMs` exists and, when supplied, aborts the wait
-(`packages/runtime/operation-permission/pa-control-bridge.ts:539`). A repository-wide
-search of non-test, non-dist sources finds **only** those three references: the field,
-its validation, and the timer. No production caller (root/plugin/PA wiring) supplies
-it. The A6 bridge therefore waits without a client timer, matching the design rule
-"no timer"; there is no product timeout to inject and no E2E timer to misread.
+`PaControlBridgeDeps.waitTimeoutMs` already aborts the wait without deciding or
+consuming (`pa-control-bridge.ts:539`). The production A6 wiring now supplies it
+from `alpha6WaitTimeoutMs` (default 600000 ms when the opt-in is on) in
+`agent-bindings.mjs`; the root refuses a non-positive/non-finite value. The
+timer is local to the bridge, not a Timer Service.
 
-Consequence: row 14 timeout non-revival is **NOT_REACHED**, not PASS. Making a
-synthetic `waitTimeoutMs` visible in a unit test would not prove the product path.
+Real-Host proof, run `a6-timeout-r4` (root
+`session-c1-smoke-a6-2026-11-06T06-27-35`, `alpha6WaitTimeoutMs=5000`):
+
+- The Officer mock intentionally never resolves the wake.
+- After the bounded wait, `A6-19` PASS: PA `ctrl-0spa2y11wf5niq0dtyrzz1lv`
+  is still **pending** (`decision=undefined`), no consumption, no execution.
+- A late human `allow` is fail-closed: durable decision `deny`,
+  `reason='authority-undetermined'`, no consumption, no execution (`A6-20`
+  PASS). The dead Member invocation cannot be revived by the late decision.
+
+This is the strictest form of non-revival: the timeout leaves the request
+unsettled, and the later allow is not usable against it.
 
 ## Queue / claim / release
 

@@ -2800,6 +2800,7 @@ export function createAgentBindings(deps) {
                   ...(a6BoundBlueprint?.revision === undefined
                     ? {}
                     : { blueprintRevision: String(a6BoundBlueprint.revision) }),
+                  waitTimeoutMs: config?.alpha6WaitTimeoutMs ?? 600_000,
                 }
               : {}),
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),

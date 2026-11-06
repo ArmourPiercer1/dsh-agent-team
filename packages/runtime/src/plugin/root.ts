@@ -2527,6 +2527,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       { rootSessionId: rootSid, reason: 'alpha6-review-wake-inbox-missing' },
     )
   }
+  if (alpha6Wiring.mode === 'alpha6' && config.alpha6WaitTimeoutMs !== undefined
+    && (typeof config.alpha6WaitTimeoutMs !== 'number'
+      || !Number.isFinite(config.alpha6WaitTimeoutMs)
+      || config.alpha6WaitTimeoutMs <= 0)) {
+    throw new TeamPluginError(
+      'TEAM_PLUGIN_CONFIG_INVALID',
+      'alpha6WaitTimeoutMs must be a finite positive number when present',
+      { rootSessionId: rootSid, reason: 'alpha6-wait-timeout-invalid' },
+    )
+  }
   const alpha6WakeIntents =
     alpha6Wiring.mode === 'alpha6'
       ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath as string)

@@ -21,6 +21,7 @@ No master merge, no un-draft, no production switch.
 | Reconcile the orphaned allow after that crash | **FAIL** | same run: allow seq 11, `consAfter=0`, no file; the approved call is lost |
 | Crash after the allow is consumed, before the result: no duplicate consumption/execution | PASS (no duplicate) | `a6-crash-consume-r2`, A6-16 |
 | Crash before the PA request write: no phantom request/consumption/execution | PASS | `a6-crash-before-r1`, A6-17 |
+| Bounded wait expires: request stays pending, late allow cannot revive | PASS | `a6-timeout-r4`, A6-19/20 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
 
 Full local gate: 9/9, census 677/8830, identity set identical to
@@ -32,8 +33,7 @@ Full local gate: 9/9, census 677/8830, identity set identical to
 - **Host human delivery**: `human-current-leg` routes to `native-human`, a
   deliberate no-op. The human resolution above used the remote
   `team.resolveControl` entry, not a Host wake.
-- **Wait timeout**: the production A6 path supplies no `waitTimeoutMs`; there is
-  no product timer to exercise (`timeout-and-queue.md`).
+- **Cancel racing the guard**: not injected; timeout and Stop are proven.
 - **Same-session queued wake**: after a direct prompt to the Officer,
   `followup` reports running but no model turn consumes the queued wake
   (`a6-recipients-r22`, row 15).
