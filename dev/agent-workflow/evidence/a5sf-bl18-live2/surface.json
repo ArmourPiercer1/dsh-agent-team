@@ -1,0 +1,11 @@
+{
+  "schema": "a5sf-bl18-live2/surface/1",
+  "at": "2026-11-06T05:07:52.962Z",
+  "discovery": null,
+  "leaderFinalExpectation": null,
+  "denyList": null,
+  "member": null,
+  "reason": "the anchor leader session was never reachable: the Host booted but the team bootstrap failed before any agent session or model request existed (health 404 on the p6t6 observer)",
+  "provenance": "none — no model request was recorded",
+  "osLevelNetworkIsolationClaimed": false
+}

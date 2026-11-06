@@ -1,0 +1,11 @@
+{
+  "grantId": "grant-a5sf-bl18-live2-3c0f6292d9b7",
+  "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\") — this run is start 5 of 5, the LAST start; there is no retry, no sixth start, no reserve.",
+  "allocationItem": "P2-04 boot #5 of 5 — BL-18 live deny-lane wiring (web face)",
+  "boundCommit": "3c0f6292d9b73eb75b33048f5851ff7168e20c04",
+  "priorRows": 0,
+  "plannedStarts": 1,
+  "maxStarts": 2,
+  "aborts": 0,
+  "note": "maxStarts = prior shared-ledger rows + 1 pre-registration (intent) row + 1 boot; the BL-14 gate counts shared-ledger rows, not spawns"
+}

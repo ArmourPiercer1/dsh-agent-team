@@ -8067,3 +8067,24 @@ strict Member 不能承载 web_fetch/web_search（surfaced ⇒ A2C-2 fatal；den
 `a5sf-bl17-live2`（及其 archive 副本）由 `PASS 16/16` → **FAIL `BUNDLE_CASE_UNDECLARED`**
 （`network-deny-refusal`）。负控四条，各只红一项，bundle+CLI payload 均被测试复读。0 boot、无 grade/V@B、
 无产品改动。
+
+## 2026-11-06 — a5sf-bl18-live2：P2-04 第 5/5 次（最后一次）boot，live wiring 未取得 — NOT PROVEN
+
+- 预检（start 前）：`preflight-bundle.json` 绑定 HEAD `3c0f6292d`、authority pointer sha256
+  `31ac81fb…`，`scripts/a5sf-preflight.mjs` = **PASS 18/18**（exit 0，payload 存 `preflight.log`）。
+  host-free `--plan` 先跑了五 row 交接、patch、双 blueprint 经 host 自身 `parseBlueprint` 解析；0 boot。
+- 唯一一次 start（grant `maxStarts: 2` = intent row + boot row，bound `3c0f6292d`）：Host 在 3184 端口
+  起来了，`authenticate` 200、`/team-remote` 挂上；随后 **health-gate 404** 中止。Host 日志：
+  `bootstrap FAILED: TeamDomainError: store 'session_bindings' operation 'get' was rejected: the TeamDomain
+  is closed`（`bindFreshTeamRoot` → `putSessionBinding` → `createAndStartTeam` → `boot` → `bootstrap`）；
+  p6t6 观察者写同名 `setup-failure.json`，路由未注册。**未到达任何 case 阶段**：无 Member、无 model
+  request、无 tool call、无 guard fact、无 provider entry；不是拒绝，也不是 case 失败。teardown 已记录
+  （pid kill、3184/3494 释放、home 删除）。未重启。**5 of 5 spent, 0 remain。**
+- 结果：四项 wiring（seam 交付 confined web face；deny lane 单 fact/零 provider entry 拒绝；marker 路由；
+  surface/caller 意外）全部 **NOT PROVEN / NONE OBSERVABLE**。零计数=未尝试，不具证据力；无
+  confinement/isolation 声明（`osLevelNetworkIsolationClaimed:false`，limit 句逐字保留）。
+- `ledger.json`：intent + boot 两 row，`boots:1`、`plannedStarts:1`、`aborts:0`，算术成立；
+  `run-record.json` overall FAIL、`abortedAt: health-gate`。证据
+  `dev/agent-workflow/evidence/a5sf-bl18-live2/`。矩阵 **不加指针**（M-14/M-15 无 grade/V@B 变更）。
+- 未决（无第六次 start 可用）：`TeamDomain is closed` 是 row 组合触发还是 product boot-phase 缺陷，一次
+  start 无法区分；README §6 记下“若还有一次 start”所需的 host-free 复现路径，并明确说明不存在。
