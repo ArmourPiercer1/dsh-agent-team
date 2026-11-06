@@ -1,7 +1,7 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `fedd641ed` (durable Stop/resume,
-  trusted provenance, real resume re-plan, Inbox crash reconcile; full gate 9/9
+- **Integrated code HEAD under test:** `d6c0e8528` (durable Stop/resume,
+  trusted provenance, real resume re-plan, strict own-root recovery; full gate 9/9
   in `gate.md`).
 - **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
   `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
@@ -40,7 +40,7 @@
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on `fedd641ed`; the evidence commits after
+Full local gate **9/9 PASS, zero skips** on `d6c0e8528`; the evidence commits after
 it change docs/evidence only. `gate.md` records the exact SHA and outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.

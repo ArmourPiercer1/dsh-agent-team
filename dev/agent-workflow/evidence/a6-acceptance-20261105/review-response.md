@@ -198,3 +198,9 @@ fail-closed except ENOENT; the resume real-leg re-plan, atomic marker and unit
 tests remain. The native-Inbox crash probe is explicitly NOT accepted because
 the only way it exercised recovery was the BLOCKed cross-root path. A future
 fix must carry an explicit mount-owner identity on the row/marker.
+
+Residual P3s accepted: the env-gated A6-25 probe now fails by design under
+strict own-root (kept as a future probe, excluded from acceptance); the
+`ownerRootSessionId` field is written but not yet honored (reserved for the
+safe fix, comments corrected in the follow-up design note); `isStopped`'s
+non-ENOENT branch is code-read, not unit-tested.

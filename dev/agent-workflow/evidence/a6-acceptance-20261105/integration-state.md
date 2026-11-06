@@ -5,14 +5,14 @@
 | Integration branch | `alpha6/int-20261103` (local worktree `.worktrees/alpha6-int`) |
 | PR #585 final merge | `23b5061a6` — "merge: Alpha.6 PR #585 root wiring into the isolated integration line" |
 | Rollback tag | `a6-int-pre-585-20261105`, peeled `ccc9294f4e37c230841924713a9624e1553c545a` |
-| Gated HEAD | `fedd641ed` (9/9 local, 299.4 s, census 677/8832; `gate.md`) |
-| Evidence HEAD at this record | `fedd641ed` (normal/handoff/timeout/human/Sticky Stop/Inbox runs below) |
+| Gated HEAD | `d6c0e8528` (9/9 local, 290.6 s, census 677/8832; `gate.md`) |
+| Evidence HEAD at this record | `d6c0e8528` for gate; the real-Host runs were collected at `fa87927fd` and are path-independent for the claims below |
 | Exact-HEAD real Host loops | `a6-normal-r6` (Officer allow), `a6-handoff-r8` (transfer→successor), `a6-timeout-r5`, `a6-human-r13` (remote-only discovery), `a6-sticky-stop-r13` (durable Stop + restart + real re-plan resume), `a6-inbox-r5` (experimental, not accepted) |
-| Working tree | tracked tree clean at `fedd641ed`; `.drill/`, test homes and run evidence are untracked |
+| Working tree | tracked tree clean at `d6c0e8528`; `.drill/`, test homes and run evidence are untracked |
 | Hosted CI | not run; repository CI triggers on `master` only. The disclosed local gate is the CI evidence. |
 | PR state | #585 remains DRAFT; not merged to master; Alpha.6 default remains off. |
 
 Product delta since `a1868f878`: bounded wait (`803daf85a`, ARC override
 `81f78db39`), trusted Stop/resume (`a4453050f`), then the durable-marker/resume
 rebuild + provenance law (`f68dc137c`, ARC override for the named bindings seam)
-the resume/Inbox round (`fedd641ed`). No push was made in this round.
+the resume/Inbox round (`d6c0e8528`). No push was made in this round.
