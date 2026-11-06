@@ -212,3 +212,20 @@ test('PD-9: the PTY layer-B arms never claim a byte channel for the product regi
     'PD-9 must stay FIXED with its branch/commit evidence',
   )
 })
+
+test('PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling', () => {
+  // PD-1 changed the public `revoke` signature, so its status and the ruling
+  // semantics are pinned here as well as in the acceptance arms. The earlier
+  // "blocked by: an owner API ruling" deferral must survive ANNOTATED, not be
+  // deleted: the ruling supersedes it, it does not erase the history.
+  const SEMANTICS =
+    "Revocation is generation-scoped: `revoke` takes the trusted member identity (teamId, memberInstanceId, instanceGeneration) and records that generation's revocation key unconditionally, even when the member owns no live domain; a new generation of the same member may acquire, and a spawn that completes after the revoke is reaped before publication."
+  const row = rows.find((candidate) => candidate.id === 'PD-1')
+  assert.ok(row, 'the register lost its PD-1 row')
+  assert.match(row.body, /^- \*\*status\*\*: FIXED — /m, 'PD-1 must be FIXED with its evidence')
+  assert.ok(row.body.includes(SEMANTICS), 'PD-1 must carry the 2026-11-09 generation-scoped semantics sentence')
+  assert.match(row.body, /superseded 2026-11-09/, 'the earlier owner-ruling deferral must be annotated as superseded, not deleted')
+  const summaryRow = summary.find((candidate) => candidate.id === 'PD-1')
+  assert.ok(summaryRow, 'the summary table lost its PD-1 row')
+  assert.equal(summaryRow.consequence, 'governance hole', 'the historical consequence class stays for the fixed row')
+})
