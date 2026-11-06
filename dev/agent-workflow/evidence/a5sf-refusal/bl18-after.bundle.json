@@ -116,7 +116,7 @@
   "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
  },
  "candidate": {
-  "head": "e31df15c36121296792b0b7f7720feacae38b500",
+  "head": "a1a903310bec5c82e0af883e1c139f4de738fb06",
   "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
   "productTreeProof": [],
   "note": "the run executes at candidate.head (this task branch, code+tests commit); no product path differs from the baseline"
@@ -124,13 +124,13 @@
  "grant": {
   "grantId": "P2-04-bl18-live-remaining-1",
   "grantedBy": "owner ruling 2026-11-06 \u300c\u6279\u51c65\u6b21P2-04\u9884\u7b97\u300d (allocation #2 = BL-17 live; BL-18 = the remaining start)",
-  "boundCommit": "e31df15c36121296792b0b7f7720feacae38b500",
+  "boundCommit": "a1a903310bec5c82e0af883e1c139f4de738fb06",
   "priorRows": 4,
   "plannedStarts": 1,
   "maxStarts": 5
  },
  "runRecord": {
-  "teamSha": "e31df15c36121296792b0b7f7720feacae38b500",
+  "teamSha": "a1a903310bec5c82e0af883e1c139f4de738fb06",
   "bindings": {
    "authority": {
     "pointer": {
