@@ -267,7 +267,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   extra case is this guard).
 - **blocked by**: nothing for the rename; the channel itself is PD-3's build.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]` ; `tests/world-factory/a5sf-pty-contract.test.mjs#L98` contains `P1-ONE-ALLOCATE-PER-SESSION`
-- **status**: FIXED — branch `task/a5sf-pd9-20261108`, draft PR first line `PD-9-FIX`; fix commit sha and PR number recorded in the follow-up register commit. Correction note: [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §3 (PD-9).
+- **status**: FIXED — branch `task/a5sf-pd9-20261108`, fix commit `7182b8f7678123eaeccfbe603533c990d0706586` (draft PR #620, first line `PD-9-FIX`). Correction note: [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §3 (PD-9).
 
 ### PD-10 (GAP-WEB-CONTRACT-1) — every real `web_search` fact records a malformed marker
 
