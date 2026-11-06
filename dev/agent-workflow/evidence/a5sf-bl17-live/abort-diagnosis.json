@@ -1,0 +1,52 @@
+{
+  "schema": "a5sf-bl17-live/abort-diagnosis/1",
+  "runId": "a5sf-bl17-live-2026-11-06T00-16-23-754Z",
+  "allocation": "P2-04 boot #3 of 5 — BL-17 live half (owner ruling 2026-11-06, allocation #2)",
+  "startedAt": "2026-11-06T00:16:23.749Z",
+  "abortedAt": "2026-11-06T00:18:14.107Z",
+  "booted": {
+    "port": 3184,
+    "portFamily": "3180 (allowed; :3080 untouched)",
+    "dshHome": "tests/homes/u5a5sfbl17-20261106T00-16-23Z (world home, deleted by teardown)",
+    "hostLog": "logs/u5a5sfbl17-20261106T00-16-23Z/instance-port3184.log",
+    "leases": {
+      "hostStartRows": 2,
+      "rows": [
+        "budget-intent:grant-a5sf-bl17-live-572a7625dd83",
+        "a5sf-bl17-live-boot1:u5a5sfbl17-20261106T00-16-23Z"
+      ],
+      "bootsSpent": 1
+    }
+  },
+  "stage": "driver gate between `health` and `team.create`",
+  "symptom": "`/__p6t6/state` never satisfied `body.rootSessionId === 'session-a5sf-bl17-team'` within the 90 s window; the driver threw `the anchor team never settled; team.create cannot run` before `team.create` was called. All four cases are NOT_REACHED. The Host was healthy (`ok:true`) and alive. Teardown was clean: host pid 55 killed, port 3184 free, home deleted, no orphan.",
+  "rootCause": {
+    "summary": "The driver gated on the durable state route on a root that had NO team session yet. `/__p6t6/state` reads `control.listControlState(rootSid)` and `messaging.recoverPendingDeliveries(rootSid)`; on a root with no team session the control service throws `TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND` (documented at packages/runtime/src/plugin/root.ts:3770-3777), so the route answers non-200 until `team.create` has created the team. The gate therefore could never open.",
+    "evidence": [
+      "run log: health=true hostAlive=true at 00:16:43.949Z, then state=false at 00:18:14.107Z (the whole 90 s window), then the throw. team.create was never called (no team.create line in boot3-abort.log).",
+      "health answered ok:true, and the p6t6 health body's `ok` is `setupError === null` (packages/tools/harness/plugin.mjs:328-340), so the production Team row's setup did NOT fail. The failure is specific to the state read on a session-less root.",
+      "root.ts:3770-3777: 'a root makes listControlState throw TEAM_RUNTIME_TEAM_SESSION_NOT_FOUND'.",
+      "the driver did not record the state response body, so the exact status (500 vs 503) is not in the artefact; the code path above is the one that fires on a session-less root with a healthy row."
+    ]
+  },
+  "fix": {
+    "status": "committed on this branch (driver only; no product change)",
+    "change": "the pre-create state read is now a DIAGNOSTIC that records the status/body and never gates; the state gate runs AFTER team.create and requires `rootSessionId === CREATE_ROOT && teamSession !== null`. The health gate now also records the health body (rootSessionId + setupError).",
+    "verifiedHostFree": [
+      "node run-boot.mjs --plan exits 0 and emits the same row identity + patch layer",
+      "scripts/a5sf-preflight.mjs --bundle ... → PASS 13/13"
+    ]
+  },
+  "budget": {
+    "startsBefore": 2,
+    "startsSpentThisRun": 1,
+    "startsAfter": 3,
+    "startsRemaining": 2,
+    "earmark": "BL-18 live + one FS/Search re-validation",
+    "retryPolicy": "NO retry on the driver's own authority. The shared ledger for this evidence directory holds the intent + boot rows and the driver refuses a second boot (`priorBoots >= 1`). A re-run needs a NEW owner grant bound to the NEW branch HEAD and a fresh evidence directory; the grant's `maxStarts` must cover 1 intent row + 1 boot."
+  },
+  "matrix": {
+    "changed": false,
+    "why": "no live property was measured; BL-17's live half stays unproven and no evidence pointer can be added on an aborted run"
+  }
+}

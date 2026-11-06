@@ -1,0 +1,98 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-bl17-live-2026-11-06T00-16-23-754Z",
+  "suite": "a5sf-bl17-live",
+  "startedAt": "2026-11-06T00:16:23.754Z",
+  "selectedCases": [
+    "shell-positive",
+    "write-only-read",
+    "chmod-gap",
+    "network-deny-refusal"
+  ],
+  "bindings": {
+    "teamSha": "572a7625dd83548d32f889ca0cc51bf6ac278efd",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sfbl17",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-bl17-live-572a7625dd83",
+    "allocationItem": "P2-04 boot #3 of 5 — BL-17 live half (Shell-PTY face)",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261105r2",
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+      },
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+    },
+    "providerComposition": "test row a5sf-bl17-live-realm-provider-row.mjs (no product composition declares a shell class at this base)",
+    "laneAlgebra": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets",
+    "toolCaller": "test-composition tool a5sf-bl17-bash-probe-tool.mjs (calls the shipped confined face; decides nothing)"
+  },
+  "cases": [
+    {
+      "id": "shell-positive",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T00:18:14.108Z",
+      "reason": "RUN_ABORTED",
+      "detail": "the anchor team never settled; team.create cannot run"
+    },
+    {
+      "id": "write-only-read",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T00:18:14.108Z",
+      "reason": "RUN_ABORTED",
+      "detail": "the anchor team never settled; team.create cannot run"
+    },
+    {
+      "id": "chmod-gap",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T00:18:14.108Z",
+      "reason": "RUN_ABORTED",
+      "detail": "the anchor team never settled; team.create cannot run"
+    },
+    {
+      "id": "network-deny-refusal",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-06T00:18:14.108Z",
+      "reason": "RUN_ABORTED",
+      "detail": "the anchor team never settled; team.create cannot run"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T00:16:23.785Z",
+        "runId": "a5sf-bl17-live-2026-11-06T00-16-23-754Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-bl17-live-572a7625dd83",
+        "grantId": "grant-a5sf-bl17-live-572a7625dd83",
+        "grantedBy": "owner allocation 2026-11-06 (\"批准5次P2-04预算\"), allocation #2 = BL-17 live half; this run is start 3 of 5. After it: 2 starts remain, earmarked BL-18 live and one FS/Search re-validation.",
+        "boundCommit": "572a7625dd83548d32f889ca0cc51bf6ac278efd",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T00:16:30.230Z",
+        "runId": "a5sf-bl17-live-2026-11-06T00-16-23-754Z",
+        "suite": "a5sf-bl17-live",
+        "world": "u5a5sfbl17-20261106T00-16-23Z",
+        "phase": "a5sf-bl17-live-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-bl17-live-boot1",
+      "world": "u5a5sfbl17-20261106T00-16-23Z",
+      "port": 3184,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/logs/u5a5sfbl17-20261106T00-16-23Z/instance-port3184.log"
+    }
+  ],
+  "overall": "NOT_REACHED",
+  "partial": false,
+  "finishedAt": "2026-11-06T00:18:14.215Z"
+}

@@ -1,0 +1,14 @@
+[2026-11-06T00:20:27.545Z] PLAN MODE — no gate, no ledger row, no spawn. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-06T00:20:27.554Z] HEAD=572a7625dd83548d32f889ca0cc51bf6ac278efd pinnedHost=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-06T00:20:27.554Z] host persistent-bash module: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/shell/tool-bash-persistent/lib/index.js exists=true
+[2026-11-06T00:20:27.618Z] anchor blueprint: {"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"}
+[2026-11-06T00:20:27.622Z] main blueprint: {"ok":true,"via":"parseBlueprint(dist domain facade = the host own import)"}
+[2026-11-06T00:20:27.982Z] patch layer bytes=6010; rows=a5sf-bl17-live-realm,dsh-agent-team,p6t6-team-tools,preset-a5sf-bl17-base
+[2026-11-06T00:20:27.982Z] pre-boot row identity check: {"ok":true}
+[2026-11-06T00:20:27.982Z] row handoff identity: emitted === world (4 rows) BEFORE boot
+[2026-11-06T00:20:27.988Z] provider row: name=a5sf-bl17-live-realm-provider apply=function inject=[]
+[2026-11-06T00:20:27.988Z] tool module: name=a5sf-bl17-bash-probe apply=function inject=["tools","subprocess"]
+[2026-11-06T00:20:27.988Z] lane algebra: read=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/workspace/lane/inside"] write=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/workspace/lane/write-only"]
+[2026-11-06T00:20:27.988Z] dispositions: [{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/workspace/lane/inside","read":"allow","write":"deny"},{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/workspace/lane/write-only/secret.txt","read":"deny","write":"allow"},{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/workspace/lane/inside/mode.txt","read":"allow","write":"deny"},{"locator":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z/realm-outside","read":"deny","write":"deny"}]
+[2026-11-06T00:20:27.989Z] preflight bundle written: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/dev/agent-workflow/evidence/a5sf-bl17-live/preflight-bundle.json
+[2026-11-06T00:20:27.989Z] plan world torn down: homeDeleted=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl17-live/tests/homes/u5a5sfbl17-20261106T00-20-27Z releasedPorts=[]
