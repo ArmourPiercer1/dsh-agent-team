@@ -1,0 +1,26 @@
+{
+  "schema": "a5sf-pd12/team-state/1",
+  "at": "2026-11-06T14:41:00.186Z",
+  "members": [
+    {
+      "instanceId": "inst-0u3ell71ucz7",
+      "templateId": "worker",
+      "lifecycle": "SETTLED",
+      "childSessionIdSet": true
+    },
+    {
+      "instanceId": "inst-1crmtpc0kmst",
+      "templateId": "worker-deny",
+      "lifecycle": "SETTLED",
+      "childSessionIdSet": true
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined",
+      "childSessionIdSet": true
+    }
+  ],
+  "laneReportExists": true,
+  "mockRequests": 18
+}

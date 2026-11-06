@@ -1,0 +1,96 @@
+# U6-fs World: canary + probe rows + the production Team row, p6t6
+# observer and preset declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "u6-fs-probe-host"
+      name: "./u6-fs-probe-host.mjs"
+    - id: "a5sf-pd12-realm"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/a5sf-pd12-realm-row.mjs"
+      config:
+        allowRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/workspace"
+        laneReportPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/lane-report"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/sub-counter.jsonl"
+        scratchRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/sub-scratch"
+        denyTemplateId: "worker-deny"
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-a5sf-acceptance-root"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5sf.sub.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf subprocess anchor team. A5SF_SUB_DISC is the discovery marker.\"\nmembers:\n  - templateId: worker\n    persona: \"You are the a5sf subprocess anchor worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/blueprints"
+        rootPresetId: "a5sf-pd12-base"
+        memberPresetId: "a5sf-pd12-base"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "a5sf-sub-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/packages/runtime/root-binding/harness/seam.mjs"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/a5sf-consult.jsonl"
+        a5sfNativeToolModules:
+          - url: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/sub-probe-module.mjs"
+            config:
+              workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/workspace"
+              allowTag: "A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T14-41-37Z"
+              denyTag: "A5SF_SUB_DENY_u5u5a5sfsub1-20261106T14-41-37Z"
+              allowMarker: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/workspace/lane/allow-marker.txt"
+              denyMarker: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-41-37Z/workspace/lane/deny-marker.txt"
+            expectedTools:
+              - "sub_probe"
+        a5sfExpectedTools:
+          file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/sub-probe-module.mjs:
+            - "sub_probe"
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-pd12-base"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-pd12-base"
+        name: "a5sf subprocess dev-live base"
+        description: "a5sf subprocess dev-live boot preset (u5a5sfsub1) = the shipped standard preset's tool-bash + tool-fs"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-bash"
+            name: "@deepseek-ai/dsh-tool-bash"
+            config:
+              timeoutMs: 60000
+          - id: "sub-probe-stub"
+            name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/sub-probe-stub.mjs"
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false

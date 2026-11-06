@@ -94,10 +94,9 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 > 完整行文并明说“待插入 PD-11”），PD-12/PD-13/PD-14 是 dev-live 弧实测出来的新行。**没有**为
 > `chmod` 缺口新建行（`BL-17` 已经披露，本次只在那边标注 `LIVE-REPRODUCED`），也**没有**为
 > web locator 或拒绝记录不对称新建行（并入 PD-10 的 2026-11-10 标注）。PD-6 的后果类别句子在
-> deny 车道上被实测推翻，**行文保留、追加标注**，新洞记在 PD-12。四条新行的证据分布见 §6：
-> PD-11 的证据在 master；PD-12/PD-13/PD-14 的证据在两条**未合并**分支上。
-> 因此“行数 14、待裁决 **11**（PD-1/PD-7/PD-9 已 FIXED）”这个数字里，有 3 行的证据还不是本树的字节；
-> `V@B` 不因此变动。
+> deny 车道上被实测推翻，**行文保留、追加标注**，新洞记在 PD-12。四条新行的证据现在**全部在本树**
+> （PR #634/#635 已合并；PD-12 的修复证据在 `evidence/a5sf-pd12-fix/`，仍是 draft PR 的 DEV-LIVE 证据）。
+> “行数 14、待裁决 **10**（PD-1/PD-7/PD-9/PD-12 已 FIXED）”这个数字随之更新；`V@B` 不因此变动。
 
 ## 2. The rows
 
@@ -441,7 +440,32 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 
 ### PD-12 (Q5) — `network: deny` does not govern the model-visible `bash`
 
-- **source**: `Q5` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §Q1/§Q5 — evidence carried on branch `task/a5sf-sub-devlive-20261110` (PR #635); see §6 of this file.
+- **source**: `Q5` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §Q1/§Q5 (merged in PR #635; the file is on this tree). Fix evidence: [a5sf-pd12-fix/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd12-fix/README.md).
+
+> **2026-11-10 FIXED — `PD12-FIX` (branch `task/a5sf-pd12-fix-20261110`, draft PR; not merged).**
+> The block below is the **pre-fix measurement**, kept verbatim as the defect pin. The fix shadows
+> `bash` inside the Member's own scope through the EXISTING route-C native-module seam: the realm row
+> appends `packages/runtime/src/plugin/live/confined-bash-tool.mjs` when — and only when — the realm
+> owns a confined `subprocess` face and the agent surface already exposes `bash` (no tool name is
+> added or removed). The tool call is therefore served by the confined face and the compiled
+> `network: deny` is consulted. On the pinned Host, three consecutive DEV-LIVE starts agree: the
+> allow lane's model `bash` reaches the confined provider exactly once with
+> `/bin/bash -c <body>` (base `shell-exec` 0, base spawns 0); the deny Member's identical call is
+> refused with `NETWORK_UNCONFINED_REALM` naming `network-destination`, **0** provider calls, **0**
+> base spawns, **0** `/proc` sightings of the marker. Host-free: `a5sf-pd12-bash-governance.test.mjs`
+> (D1/A1/A2/S1) plus controls C1 (shadow removed => hole returns), C2 (no confined face => no shadow),
+> C4 (no shell class => `SUBPROCESS_SHELL_NOT_DECLARED` first), and two source mutations
+> (`MA`: shadow row removed; `MB`: network admission removed) that each red exactly the arms they
+> protect. **Residuals — what this does NOT claim:** (1) the refusal is an **admission** refusal; the
+> provider probe still reports `network-destination: unsupported`, so no OS-level network isolation
+> is claimed (BL-42 remains open); (2) a shell body's **read** axis is still not statically
+> attributable — the shadow only changes which face serves `bash`, whose read admission is lane-root
+> based (PD-13 remains OPEN); (3) a composition that does not declare a `shellClass` now REFUSES the
+> shadowed `bash` (`SUBPROCESS_SHELL_NOT_DECLARED`) where it previously executed; a Member whose
+> preset mounts the **persistent** shell can still hold that PTY through other shell-consuming tools
+> until PD-3/PD-13; (4) product assembly still cannot request a process face
+> (`product-assembly.ts`), so a shipped preset without a governed realm gets no shadow and its
+> `bash` is unchanged; (5) only realms that already install the confined face are affected.
 - **true today**: on the pinned Host, the Member on template `worker-deny` declares `network.access: deny`, and
   the confined face does refuse **its own** calls (`NETWORK_UNCONFINED_REALM`, 0 processes, body
   never ran). The **same Member, same lane**, then called the model-visible `bash` tool: the tool
@@ -469,11 +493,13 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   to the *host* executor's argv is **not** an honest fix here: it changes the pinned host composition
   (forbidden by `CORE_PATCH_BUDGET = 0`) and would still leave the decision outside the Member's
   compiled ceiling.
-- **proof**: `sub:network-deny-bash-lane` must flip from "it runs" to "the same command under
-  `network: deny` is refused with the face's typed code and 0 processes", or to "it runs inside a
-  network namespace while the provider carries an `enforced` capability row" (the latter needs
-  BL-42). `sub:network-deny` (the face refusal), `sub:face-admitted` and the four `argvPredicate`
-  vectors stay green.
+- **proof**: the `sub:network-deny-bash-lane` live arm flipped from "it runs" (boots 10/11 of the
+  subprocess lane) to "the same command under `network: deny` is refused with the face's typed code
+  and 0 processes" (boots 02/03 of `a5sf-pd12-fix`); `sub:product-bash-executor` flipped to
+  "served by the confined provider, base executor 0"; `sub:network-deny`, `sub:face-admitted` and the
+  `argvPredicate` vectors stayed green. Host-free pin + mutation controls:
+  `tests/world-factory/a5sf-pd12-bash-governance.test.mjs` and
+  `dev/agent-workflow/evidence/a5sf-pd12-fix/mutation-controls.mjs`.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (an `enforced` network backend), plus the owner's decision to expose `bash` through the face at all.
 - **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1413` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L204` contains `readonly subprocess: ConfinedSubprocessSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ceiling term** —
@@ -481,11 +507,11 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   model-visible tool set includes a network-capable child, because the ceiling is compiled per
   **face** while the ToolRestriction bound `bash` to an executor that never enters that face; the
   intersection was computed on a mechanism the call does not traverse.
-- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-sub-devlive-20261110` (draft PR #635), boots 10 and 11 (the agreeing pair, identical driver bytes); 11 starts total in that lane, 0 of them candidate.
+- **status**: FIXED — 2026-11-10, branch `task/a5sf-pd12-fix-20261110` (draft PR, no merge), DEV-LIVE boots 02/03 of `a5sf-pd12-fix` (agreeing pair) plus boots 10/11 of the subprocess lane as the pre-fix pin; 0 candidate starts. Residuals (1)–(5) above; **PD-13 is not closed** by this fix.
 
 ### PD-13 (READ-AXIS) — the terminal path has no read axis
 
-- **source**: `READ-AXIS` in [a5sf-pty-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-devlive/README.md) §3a/§3b and §6/§7.1 — evidence carried on branch `task/a5sf-pty-devlive-20261110` (PR #634); see §6 of this file.
+- **source**: `READ-AXIS` in [a5sf-pty-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-devlive/README.md) §3a/§3b and §6/§7.1 (merged in PR #634; the file is on this tree).
 - **true today**: a Member's `bash` is the preset's inherited persistent shell
   (`@deepseek-ai/dsh-tool-bash-persistent` → the isolated `@deepseek-ai/dsh-terminal`
   `TerminalSessionService` → `@deepseek-ai/dsh-terminal-bash` → a real `/dev/pts/N`). One Member's
@@ -522,11 +548,11 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   them, so the Member's `bash` is served by the preset's own tool row, carries the preset's legacy
   PTY, and no lane is consulted at all; the ceiling's read denial is not evaluated, so the
   intersection is not merely wrong, it is never taken on this path.
-- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-pty-devlive-20261110` (draft PR #634), runs 08 and 09 (the stable pair, identical verdicts and facts, no code change between them); 9 starts total in that lane, 0 of them candidate.
+- **status**: OPEN — `DEV-LIVE` evidence, merged via PR #634, runs 08 and 09 (the stable pair, identical verdicts and facts, no code change between them); 9 starts total in that lane, 0 of them candidate. **2026-11-10 note:** PD-12's fix does not close this row; it routes `bash` into the confined face, whose read admission is lane-root based and does not make a shell body's reads attributable (see PD-12 residuals).
 
 ### PD-14 (SANDBOX-ROOT) — a Member session's sandbox root is the pinned host checkout
 
-- **source**: `SANDBOX-ROOT` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §5 — evidence carried on branch `task/a5sf-sub-devlive-20261110` (PR #635); see §6 of this file.
+- **source**: `SANDBOX-ROOT` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §5 (merged in PR #635; the file is on this tree).
 - **true today**: the shipped executor's `sandboxPolicy` for a Member's `bash` child is
   `{mode: 'workspace-write', workspaceRoot: <the pinned host tree>}` — in the recorded artefact the
   resolved root is `<main checkout>/tests/deepseek-harness-test-use`, while the run's
@@ -674,33 +700,22 @@ boot in the PTY README §5), and PD-4's proxy table is an evidence measurement, 
 **2026-11-10 addendum.** The four new rows are scoped the same way: PD-11's mechanism is host-free
 (0 boots, `TEST-WORLD` lane); PD-12, PD-13 and PD-14 are **`DEV-LIVE` live development evidence**,
 which is a record class that cannot become a candidate claim or a `V@B` value, and every quoted
-number is an artefact under the named branch. Three of the four therefore depend on a branch that
-is not on master — §6 states exactly which, and why keeping them here is better than keeping them
-in a conversation. Nothing in this revision was re-measured: this revision ran 0 boots, and every
-claim cites an artefact that was read.
+number is an artefact under the named lane. **All three evidence paths are now on this tree**
+(PR #634 and PR #635 merged); the earlier §6 declarations were removed when the paths landed, as
+the machine check requires. PD-12's fix evidence (`evidence/a5sf-pd12-fix/`) is still a draft-PR
+lane — it is cited as `DEV-LIVE`, makes no candidate claim, and cannot move `V@B`. Nothing in this
+revision was re-measured by the register itself: it ran 0 boots, and every claim cites an artefact
+that was read.
 
 ## 6. Rows whose evidence is not yet on master
 
-Three rows cite `DEV-LIVE` evidence that lives on a branch whose PR is still open. They are
-recorded here rather than deferred, because a measured governance hole that exists only in a
-conversation is indistinguishable, six weeks later, from a hole nobody measured. The declaration is
-machine-checked (`tests/world-factory/a5sf-debt-register.test.mjs`): the branch, the path and the
-finding id are asserted, and the declaration reds the moment the path appears on master, so the
-table cannot outlive its reason.
-
-| row | finding id | branch | PR | evidence path (repo-relative) | section |
-|---|---|---|---|---|---|
-| PD-12 | Q5 | `task/a5sf-sub-devlive-20261110` | #635 | `dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` | §Q5 |
-| PD-13 | READ-AXIS | `task/a5sf-pty-devlive-20261110` | #634 | `dev/agent-workflow/evidence/a5sf-pty-devlive/README.md` | §3a/§3b |
-| PD-14 | SANDBOX-ROOT | `task/a5sf-sub-devlive-20261110` | #635 | `dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` | §5 |
-
-What a reviewer must do with those three rows until the branches land:
-
-1. Read the named section **on the branch** (`git show <branch>:<path>`), not this digest.
-2. Treat their `proof` fields as **unexecuted on master**: the arms they name do not exist in this
-   tree yet, so "stays green" is a future obligation, not a current receipt.
-3. Do **not** aggregate them into a matrix cell. `DEV-LIVE` rows are not candidate evidence and
-   carry no `V@B`; the run-record finalizer refuses that conversion by construction.
+**Empty as of 2026-11-10.** The three rows that were declared here (PD-12/PD-13/PD-14) now cite
+files on this tree, so the declarations were deleted rather than left to rot. The machine check
+(`tests/world-factory/a5sf-debt-register.test.mjs`) still enforces the two things that mattered:
+every cited evidence file exists in the tree and still mentions the finding id, and any future
+§6 declaration reds the moment its path lands. A `DEV-LIVE` row is never aggregated into a matrix
+cell: that record class carries no `V@B`, and the run-record finalizer refuses the conversion by
+construction. PD-12 is `FIXED` with residuals; PD-13 and PD-14 remain `OPEN`.
 
 Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 `node scripts/doc-checks.mjs`, `git diff --check`.

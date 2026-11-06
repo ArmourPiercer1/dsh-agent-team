@@ -76,7 +76,7 @@ Host + Oracle + 独立裁决），**不是**矩阵等级，**结构上不可能*
 | face | 今天一个 Member 实际能做什么（**live-measured**） | `DEV-LIVE` 指针（精确产物） | 仍未被证（**the specific remaining gap**） |
 |---|---|---|---|
 | **FS Provider** | 在真实 Host 上、用 candidate-1 的已接受组合行（挂 shipped `installToolBindingRealm` + 产品 lane 代数），单次启动同时测 **14 行**：search 6 行 + FS 5 行 + edit 2 行 + `read_image` 1 行。**两次连续启动（run-3 / run-4）在 reason 粒度逐行相同**：13 PASS / 0 FAIL / 1 `NOT_REACHED`；`read_image` 是那 1 行（route 上模型未声明图像输入，未到达），不是失败 | `dev/agent-workflow/evidence/a5sf-fs-devlive/README.md` §2（14 行表）与 `RUNS.md`；`driver/runs/INDEX.json`（run-3/run-4 全表 + `finishedAt`）；`driver/ledger.json`（4 条 `DEV-LIVE` 行） | **零 OS 级观测**（没有内核日志、没有 independent 的第二条读取路径）；`read_image` 在 live 上既未被成功调用也未被 lane 拒绝（`NOT_REACHED`）；矩阵 M-01…M-05 等级与 `V@B` 不变 |
-| **Subprocess** | (a) Member 的 model-visible `bash` 由 shipped `SandboxBashExecutor` 在**继承的 base** subprocess service 上真实执行（1 条 `shell-exec`、带 marker 的 confined provider 调用 **0** 次、命令在 OS 进程里被 `/proc` 看到）；(b) confined face 的四个 argv 向量按谓词拒绝/放行，shell-shape 拒绝各留 **1** 条 guard fact，而 `NETWORK_UNCONFINED_REALM` 与 `SUBPROCESS_PROGRAM_NOT_ABSOLUTE` 留 **0** 条；(c) `network: deny` Member 的 `bash` **仍然执行**，bwrap argv **无** `--unshare-net`（PD-12）；(d) sandbox root 解析到 pinned host tree（PD-14）。boot 10/11 逐条一致 | `dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` §Q1/§Q2/§Q5 与 `RUNS.md`；`runs/boot10|boot11/probe-report.json`（`executor` / `argvPredicate` / `denyBash` 子对象）；`driver/consultations.jsonl` | **没有任何 `enforced` 网络后端**（BL-42）——所以“离线但可用”仍不可宣称；**没有真实出网尝试**；`network: deny` 在 OS 层没有任何拒绝事实 |
+| **Subprocess** | **2026-11-10 PD-12 FIXED 后**：(a) 在拥有 confined `subprocess` face 的 realm 上，Member 的 model-visible `bash` 由**该面**服务：带 marker 的 confined provider 调用 **1** 次、confined-spawn **1** 条、base `shell-exec` **0**、base spawn **0**，argv 为 `/bin/bash -c <body>`；(b) confined face 的四个 argv 向量按谓词拒绝/放行，shell-shape 拒绝各留 **1** 条 guard fact，而 `NETWORK_UNCONFINED_REALM` 与 `SUBPROCESS_PROGRAM_NOT_ABSOLUTE` 留 **0** 条；(c) `network: deny` Member 的同一 `bash` 调用在 admission 处以 `NETWORK_UNCONFINED_REALM` 拒绝（点名 `network-destination`），**0** provider 调用、**0** 进程（PD-12 修复前是“仍然执行、bwrap 无 `--unshare-net`”，boot 10/11 保留为 pin）；(d) sandbox root 仍解析到 pinned host tree（PD-14 OPEN）。修复后 boot 02/03 逐条一致 | `dev/agent-workflow/evidence/a5sf-pd12-fix/README.md` 与 `runs/boot02|boot03/probe-report.json`；修复前 pin：`dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` §Q1/§Q5、`runs/boot10|boot11` | **没有任何 `enforced` 网络后端**（BL-42）——拒绝仍是 admission 拒绝，OS 从未被要求拒绝；“离线但可用”仍不可宣称；**没有真实出网尝试** |
 | **Shell-PTY** | Member 的 `bash` 是 preset 继承的 legacy 持久 shell，**不是**受限 face：真实 `/dev/pts/0`（`tty_nr` 136:0）、同 Member 多命令共用一个 shell（`export`/`cd` 存活）、第二个 Member 独立（`pty-2`）；**同一个 shell 读取了 confined write-only lane 声明不可读的文件并返回字节（exit 0）**，confined face 对同一问题以 `IO_READ_DENIED` 拒绝、0 provider 调用、0 字节（PD-13）；`chmod 644→600` 无声明复现（BL-17 `LIVE-REPRODUCED`）；`network: deny` 在 face 的 capability probe 处拒绝（0 进程、0 guard facts）。run-08/09 六条 verdict 与事实逐条一致 | `dev/agent-workflow/evidence/a5sf-pty-devlive/README.md` §1/§3a/§3b/§4/§6 与 `RUNS.md`；`runs/run-08|run-09/item3-product-shell-read.json`、`item4-write-only-read-denied.json`、`item5-chmod-gap.json`、`guard-facts.json` | **仍没有 confined terminal face**（PD-3）：读轴与禁网在产品 `bash` 上都不存在。真实 PTY 的 **OS 级**行为仍未观测（session leader、`SIGKILL` 到进程组、zombie/fd 计数）；`bash` 的 OS 级隔离仍只有宿主自己的 `workspace-write` bwrap |
 | **Web** | 两个 legacy（非 strict）Member 的**自己的模型请求**里，`tools` 同时含 `web_fetch` 与 `web_search`；模型自己的调用各产生**恰一条** typed guard fact（`realm: member`、`memberIdentity` = 该 Member 实例、`decidedBy: NETWORK_UNCONFINED_REALM`）、**0** provider entries（fetch/search/transport/dns/connect 全零）、拒绝文本点名能力；run-06/07 连续两次一致。同时实测：`web_search` 的 locator 就是 `<search:malformed-request>`（PD-10），且两条 fact 的 `toolBindingIdentity` 为 `null` | `dev/agent-workflow/evidence/a5sf-web-devlive/README.md` §3/§4 与 `RUNS.md`；`two-run-agreement.json`；`run-06|run-07/item-web-deny-search.json`、`guard-facts.json`；`run-06|run-07/health.json`（404→200 的 pending 窗口） | **零 OS 级网络观测**：所有传输是 recorder，没有 socket，没有 DNS/redirect/代理链；confined web face 的 deny 仍然只是**我们自己的准入拒绝**，README §7 的五项一项都不存在 |
 
@@ -101,18 +101,22 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 | PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1 的 “write”/“read” 实为命令门与 descendant 审计，臂名曾经夸大 | evidence-quality | **FIXED** — PR **#620**，master 提交 `bab33c4c6` | 否（已修） |
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | 每个真实 `web_search` fact 记下畸形 marker | evidence-quality | **OPEN** | **是** — 语义（记录值） |
 | PD-11 (D1) | Boot | 共享 domain 的 teardown 被报成 `TeamDomain is closed`，detached bootstrap 继续往死掉的 domain 写 | evidence-quality | **OPEN**（2026-11-10 认领） | **是** — 语义（新 code/name + disposal fence） |
-| PD-12 (Q5) | Subprocess | **`network: deny` 管不住 model-visible `bash`**：命令照跑、bwrap argv 无 `--unshare-net` | **governance hole** | **OPEN**（2026-11-10 新增，`DEV-LIVE`） | **是** — 语义（把 `bash` 路由进受限面；BL-17 + BL-42） |
+| PD-12 (Q5) | Subprocess | **`network: deny` 管不住 model-visible `bash`**：命令照跑、bwrap argv 无 `--unshare-net` | **governance hole** | **FIXED**（2026-11-10，draft PR `task/a5sf-pd12-fix-20261110`，未合并；`DEV-LIVE`） | **否（已修；残余转 PD-13/BL-42）** |
 | PD-13 (READ-AXIS) | Shell-PTY | **终端路径没有读轴**：Member 自己的 shell 读走 write-only lane 的 secret 并返回字节 | **governance hole** | **OPEN**（2026-11-10 新增，`DEV-LIVE`） | **是** — 语义（PD-3 的 face + 把 Member shell 路由进去） |
 | PD-14 (SANDBOX-ROOT) | Subprocess | Member session 的 sandbox root 是 pinned host checkout，不是 World workspace | behavioural divergence | **OPEN**（2026-11-10 新增，`DEV-LIVE`） | **是** — 语义（session cwd 归谁；World 侧修，非产品） |
 
-**小计：8 条 OPEN（全部需 owner 决策），2 条 FIXED（有已合并 PR）。**
+**小计：7 条 OPEN（全部需 owner 决策），3 条 FIXED（2 条有已合并 PR；PD-12 为 draft PR）。**
 
 > **2026-11-10 更正（只追加）**：上表在 2026-11-08 是 **10 行 / 8 OPEN / 2 FIXED**；现在登记册是
 > **14 行**，按登记册的状态口径是 **11 OPEN / 3 FIXED**，并且 **governance hole 从 2 条变成 4 条**
 > （PD-12 与 PD-13 是 dev-live 实测出来的新洞；PD-2 仍是潜伏的）。**注意本表自身已有一处过期**：
 > 上表 PD-1 行仍写 **OPEN**，而 `PRODUCT-DEBT-REGISTER.md` 的 PD-1 是 **FIXED**（PR **#629**，
 > master 提交 `d7d6a8e00`）——本次**不改**那一格（只追加纪律），只在此点名，请读者以登记册为准。
-> 四条新行里 PD-11 的证据在 master，PD-12/PD-13/PD-14 的证据在未合并分支上（登记册 §6 机器校验）。
+> 四条新行里 PD-11 的证据在 master，PD-12/PD-13/PD-14 的证据现已随 PR #634/#635 全部在本树（登记册 §6 已清空）。
+> **2026-11-10 再更正（只追加）**：PD-12 已 `FIXED`（draft PR，未合并；`network: deny` 现在在
+> `bash` 的调用路径上被求值），因此上表 PD-12 行与“11 OPEN / 3 FIXED”数字再变为 **14 行 / 10 OPEN /
+> 4 FIXED**。PD-12 的残余（admission 而非 OS 拒绝、读轴未解、无 `shellClass` 的组合改为拒绝、
+> 未装该面的 shipped preset 不变）不改变任何 grade 或 `V@B`；**PD-13 仍未关闭**。
 > **状态变化不代表任何 grade 或 `V@B` 变化。**
 `PRODUCT-DEBT-REGISTER.md` 把 PD-7/PD-9 写成 “draft PR #619/#620”；`git log origin/master` 显示两者
 已 squash 合入（提交号见上表）。这是**状态更新，不是内容改写**。

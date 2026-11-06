@@ -1,0 +1,35 @@
+✖ P0 PD-12 defect pin (PRE-FIX): deny bash executes on the preset executor; confined provider 0 calls (16.520105ms)
+✔ D1 fix: deny Member's bash reaches the confined face; NETWORK_UNCONFINED_REALM names the capability; 0 provider calls, 0 base spawns (4.007909ms)
+✔ A1 allow lane: the shadowed bash executes through the confined face end to end (11.844543ms)
+✔ A2 no network axis: the same world allows (the refusal is the network term) (6.061355ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (3.969014ms)
+✔ C1 control (shadow removed): deny bash executes on the preset executor again (3.946591ms)
+✔ C2 control (no confined face): bash is NOT shadowed and runs on the preset executor (3.520254ms)
+✔ C4 control (no shell class): the deny refusal is SUBPROCESS_SHELL_NOT_DECLARED, not the capability code (4.692825ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 303.995712
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd12-bash-governance.test.mjs:351:1
+✖ P0 PD-12 defect pin (PRE-FIX): deny bash executes on the preset executor; confined provider 0 calls (16.520105ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: the deny Member's bash executed
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/world-factory/a5sf-pd12-bash-governance.test.mjs:365:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
