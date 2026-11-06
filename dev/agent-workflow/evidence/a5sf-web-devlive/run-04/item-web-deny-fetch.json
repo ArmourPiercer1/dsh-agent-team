@@ -1,0 +1,147 @@
+{
+  "schema": "a5sf-web-devlive/deny-face/1",
+  "at": "2026-11-06T08:49:12.062Z",
+  "caseId": "web-deny-fetch",
+  "question": "Does the governed realm deliver a confined `web` face to this legacy Member, and does the deny lane refuse at the FACE — one typed guard fact, zero provider entries — when the model calls the tool?",
+  "caseClass": "admission-refusal",
+  "member": {
+    "instanceId": "inst-0khuuyv12140",
+    "childSessionId": "session-team-child-35b60fd7493a48b531dccf4ef3afd425",
+    "templateId": "webworker-fetch",
+    "label": "webdev-fetch",
+    "legacy": true,
+    "capabilitiesAbsent": true,
+    "note": "the webworker template in the authored main blueprint carries NO capabilities block -> permissionPolicy absent -> A2C-2 does not run"
+  },
+  "preset": {
+    "member": "a5sf-web-devlive-webworker",
+    "module": "@deepseek-ai/dsh-tool-web",
+    "tools": [
+      "web_fetch",
+      "web_search"
+    ],
+    "leader": "a5sf-web-devlive-leader"
+  },
+  "surface": {
+    "memberToolsFromModelRequest": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "web_fetch",
+      "web_search",
+      "write"
+    ],
+    "hasWebFetch": true,
+    "hasWebSearch": true,
+    "source": "the `tools` array the mock recorded on this Member turn's own model request"
+  },
+  "initiation": "model-tool-call",
+  "observations": {
+    "refusalNamesTypedCode": false,
+    "refusalTextNamesCapability": true,
+    "guardFactLocator": "https://example.test/legal/page",
+    "guardFactBindingIdentity": null
+  },
+  "call": {
+    "tool": "web_fetch",
+    "arguments": {
+      "url": "https://example.test/legal/page"
+    },
+    "status": null,
+    "isError": true,
+    "refusalText": "Error: the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (a5sf-bl18 composition boundary: network-destination=unsupported (this host's providers report no enforced network capability)); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call",
+    "refusalTextSource": "the member turn's recorded tool_result text"
+  },
+  "result": {
+    "guardFacts": [
+      {
+        "schema": "a5sf-guard-consult/1",
+        "realm": "member",
+        "memberIdentity": "inst-0khuuyv12140",
+        "toolBindingIdentity": null,
+        "policyRevision": "a5sf-bl18:inst-0khuuyv12140:g1",
+        "method": "web:fetch",
+        "locator": "https://example.test/legal/page",
+        "decision": "deny",
+        "decidedBy": "NETWORK_UNCONFINED_REALM",
+        "sequence": 1,
+        "observedAt": "2026-11-06T08:49:11.726Z"
+      }
+    ],
+    "guardFactCount": 1,
+    "expectedMethod": "web:fetch",
+    "providerEntries": {
+      "fetch": 0,
+      "search": 0,
+      "transport": 0,
+      "dns": 0,
+      "connect": 0,
+      "total": 0,
+      "rows": []
+    },
+    "capabilityProbes": {
+      "count": 1,
+      "rows": [
+        {
+          "at": "2026-11-06T08:49:11.726Z",
+          "leg": "capability-probe",
+          "realm": "member:inst-0khuuyv12140",
+          "level": "unsupported"
+        }
+      ],
+      "note": "the guard's own capability question to the backend (leg=capability-probe). It enters no fetch/search/transport/dns/connect channel and is NOT a provider entry; the inherited driver counted it as one."
+    },
+    "hostWebEntries": 0,
+    "hostWebRows": [],
+    "before": {
+      "facts": 0,
+      "entries": 0,
+      "probes": 0,
+      "hostWeb": 0
+    }
+  },
+  "claim": {
+    "caseClass": "admission-refusal",
+    "claimsConfinement": false,
+    "osLevelNetworkIsolationClaimed": false,
+    "wording": "The refusal is a pre-provider admission fact: the shipped guard refused before the provider was entered, so zero provider entries is a counter of our own admission code, not an OS observation. This does NOT prove network confinement or isolation."
+  },
+  "checks": {
+    "memberIsLegacy": true,
+    "memberSurfaceHasPair": true,
+    "modelTurnRan": true,
+    "initiationIsModelCall": true,
+    "memberTurnObserved": true,
+    "exactlyOneFact": true,
+    "typedCode": true,
+    "decisionDeny": true,
+    "zeroProviderEntries": true,
+    "zeroHostWebEntries": true,
+    "refusalNamesCapability": true,
+    "typedRefusalFact": true
+  },
+  "verdict": "PROVEN",
+  "limits": {
+    "wording": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "Refusing to fetch is a statement about our own admission code, made before the OS was asked. The provider is a fake boundary; the OS was never asked to deny anything.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

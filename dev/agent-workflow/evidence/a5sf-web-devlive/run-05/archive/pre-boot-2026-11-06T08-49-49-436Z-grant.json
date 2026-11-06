@@ -1,0 +1,9 @@
+{
+  "grantId": "devlive-web-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed by the Web-face implementer: dev-live scope authorisation for the Web face",
+  "face": "Web",
+  "world": "a5sfwebdv",
+  "note": "repeated development starts for the Web face: live wiring of the confined web face and the NETWORK_UNCONFINED_REALM deny lane. No candidate claim, no fixed cumulative cap, at most 2 concurrent dev Hosts machine-wide.",
+  "osLevelNetworkIsolationClaimed": false
+}
