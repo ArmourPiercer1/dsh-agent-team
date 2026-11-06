@@ -1,0 +1,27 @@
+{
+  "schema": "a5sf-sub-devlive/fixtures/1",
+  "at": "2026-11-06T11:11:05.887Z",
+  "worldId": "u5u5a5sfsub1-20261106T11-11-05Z",
+  "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace",
+  "lane": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane",
+  "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane/in-lane.txt",
+  "denyMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane/deny-marker.txt",
+  "allowMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane/allow-marker.txt",
+  "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/ceiling-outside/secret.txt",
+  "claims": {
+    "bashTag": "A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-11-05Z",
+    "allowTag": "A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T11-11-05Z",
+    "denyTag": "A5SF_SUB_DENY_u5u5a5sfsub1-20261106T11-11-05Z"
+  },
+  "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/a5sf-consult.jsonl",
+  "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/sub-counter.jsonl",
+  "laneReportPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/lane-report.jsonl",
+  "probeConfig": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace",
+    "allowTag": "A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T11-11-05Z",
+    "denyTag": "A5SF_SUB_DENY_u5u5a5sfsub1-20261106T11-11-05Z",
+    "allowMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane/allow-marker.txt",
+    "denyMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z/workspace/lane/deny-marker.txt"
+  },
+  "deploymentSandbox": "measured at the shell-exec record, see probe-report.json#executor.deploymentSandbox"
+}

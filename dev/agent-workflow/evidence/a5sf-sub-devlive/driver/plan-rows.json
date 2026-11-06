@@ -1,0 +1,44 @@
+{
+  "schema": "a5sf-sub-devlive/plan-rows/1",
+  "at": "2026-11-06T11:15:10.335Z",
+  "rowIds": [
+    "a5sf-sub-devlive-realm",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-sub-devlive-base"
+  ],
+  "nativeModules": [
+    {
+      "url": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/sub-probe-module.mjs",
+      "config": {
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver",
+        "allowTag": "A5SF_SUB_ALLOW_er/.rowcheck",
+        "denyTag": "A5SF_SUB_DENY_er/.rowcheck",
+        "allowMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/lane/allow-marker.txt",
+        "denyMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/lane/deny-marker.txt"
+      },
+      "expectedTools": [
+        "sub_probe"
+      ]
+    }
+  ],
+  "expectedTools": {
+    "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/sub-probe-module.mjs": [
+      "sub_probe"
+    ]
+  },
+  "leaderSurface": [
+    "bash",
+    "read",
+    "write",
+    "edit",
+    "read_image",
+    "sub_probe",
+    "todo_write",
+    "team_delegate",
+    "team_archive_member",
+    "team_follow_up",
+    "team_collect",
+    "team_list_members"
+  ]
+}
