@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-06T08:47:05.429Z",
+  "head": "f0cfd5ca35511288d3ca15ce0683673cdf3ab301",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "worldId": "u5a5sfwebdv-20261106T08-47-05Z",
+  "rows": [
+    "a5sf-bl18-web-offer",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-web-devlive-leader",
+    "preset-a5sf-web-devlive-webworker"
+  ],
+  "paths": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-47-05Z/workspace",
+    "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-47-05Z/a5sf-consult.jsonl",
+    "counter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-47-05Z/web-provider.jsonl",
+    "hostWebCounter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-47-05Z/host-web.jsonl"
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "devlive-web-1",
+    "scope": "DEV-LIVE",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed by the Web-face implementer: dev-live scope authorisation for the Web face",
+    "face": "Web",
+    "world": "a5sfwebdv",
+    "note": "repeated development starts for the Web face: live wiring of the confined web face and the NETWORK_UNCONFINED_REALM deny lane. No candidate claim, no fixed cumulative cap, at most 2 concurrent dev Hosts machine-wide.",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}
