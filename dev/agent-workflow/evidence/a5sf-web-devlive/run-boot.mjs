@@ -714,9 +714,17 @@ function makeDecide(routingLog) {
     // The whole-turn classifier can prefer FETCH over SEARCH on a history that
     // carries both; with two Members that cannot happen, but the routing
     // artifact records both answers so the driver never hides the difference.
-    const effective = lastItem !== undefined
-      ? (lastItem === BL18_MARKERS.fetch ? 'fetch' : lastItem === BL18_MARKERS.search ? 'search' : lastItem === BL18_MARKERS.create ? 'create' : 'collect')
-      : kind
+    // A title/compaction request carries the conversation history INCLUDING
+    // the delegation marker; it must never consume an item script (BL-17's
+    // title-turn lesson). Only a real agent turn may be re-keyed by the LAST
+    // user message, and only to disambiguate a history that carries several
+    // item markers.
+    const itemKind = lastItem === undefined
+      ? null
+      : (lastItem === BL18_MARKERS.fetch ? 'fetch' : lastItem === BL18_MARKERS.search ? 'search' : lastItem === BL18_MARKERS.create ? 'create' : 'collect')
+    const effective = kind === 'title' || kind === 'discovery'
+      ? kind
+      : (itemKind ?? kind)
     const count = (served.get(effective) ?? 0) + 1
     served.set(effective, count)
     const markers = items.filter((marker) => messages.some((m) => {
@@ -1165,7 +1173,15 @@ async function boot() {
 
     // ── the two deny-lane items ─────────────────────────────────────────────
     const factsOf = (memberIdentity, method) => parseJsonl(paths.sink).filter((fact) => fact?.memberIdentity === String(memberIdentity) && fact?.method === method)
-    const entriesOf = (memberIdentity) => parseJsonl(paths.counter).filter((entry) => entry?.realm === `member:${String(memberIdentity)}`)
+    // A PROVIDER ENTRY is `leg === 'provider-entry'`: the fake boundary's
+    // fetch/search methods were entered. The capability probe is a separate
+    // leg (`leg === 'capability-probe'`) — the guard's own question to the
+    // backend, answered without any transport. The inherited driver counted
+    // every row as an entry, so run-02's otherwise-clean search refusal read
+    // as one provider entry. The two legs are counted separately here.
+    const entriesOf = (memberIdentity) => parseJsonl(paths.counter).filter((entry) => entry?.leg === 'provider-entry' && entry?.realm === `member:${String(memberIdentity)}`)
+    const probesOf = (memberIdentity) => parseJsonl(paths.counter).filter((entry) => entry?.leg === 'capability-probe' && entry?.realm === `member:${String(memberIdentity)}`)
+    const providerEntryRows = () => parseJsonl(paths.counter).filter((entry) => entry?.leg === 'provider-entry')
     const hostWebRows = () => parseJsonl(paths.hostWebCounter).filter((row) => row?.leg === 'host-web-call')
 
     const waitMember = async (label) => {
@@ -1182,7 +1198,8 @@ async function boot() {
     const runItem = async (planCase) => {
       const before = {
         facts: parseJsonl(paths.sink).length,
-        entries: parseJsonl(paths.counter).length,
+        entries: providerEntryRows().length,
+        probes: parseJsonl(paths.counter).filter((entry) => entry?.leg === 'capability-probe').length,
         hostWeb: hostWebRows().length,
       }
       const label = `webdev-${planCase.tool === 'web_fetch' ? 'fetch' : 'search'}`
@@ -1215,8 +1232,10 @@ async function boot() {
 
       const facts = factsOf(instanceId, planCase.method)
       const entries = entriesOf(instanceId)
+      const probes = probesOf(instanceId)
       const hostCalls = hostWebRows()
-      const newEntryCount = parseJsonl(paths.counter).length - before.entries
+      const newEntryCount = providerEntryRows().length - before.entries
+      const newProbeCount = parseJsonl(paths.counter).filter((entry) => entry?.leg === 'capability-probe').length - before.probes
       const newHostCount = hostCalls.length - before.hostWeb
 
       const requests = memberRequests()
@@ -1241,7 +1260,8 @@ async function boot() {
         decisionDeny: String(fact?.decision ?? '') === 'deny',
         zeroProviderEntries: newEntryCount === 0 && entries.length === 0,
         zeroHostWebEntries: newHostCount === 0,
-        refusalNamesCapability: typeof refusalText === 'string' && refusalText.includes('NETWORK_UNCONFINED_REALM'),
+        refusalNamesCapability: typeof refusalText === 'string' && /network/iu.test(refusalText),
+        refusalNamesTypedCode: typeof refusalText === 'string' && refusalText.includes('NETWORK_UNCONFINED_REALM'),
         typedRefusalFact: String(fact?.decidedBy ?? '') === 'NETWORK_UNCONFINED_REALM',
       }
       const verdict = Object.values(checks).every((v) => v === true) ? 'PROVEN' : 'REFUTED'
@@ -1289,6 +1309,11 @@ async function boot() {
             total: newEntryCount,
             rows: entries,
           },
+          capabilityProbes: {
+            count: newProbeCount,
+            rows: probes,
+            note: 'the guard\'s own capability question to the backend (leg=capability-probe). It enters no fetch/search/transport/dns/connect channel and is NOT a provider entry; the inherited driver counted it as one.',
+          },
           hostWebEntries: newHostCount,
           hostWebRows: hostCalls,
           before,
@@ -1335,9 +1360,11 @@ async function boot() {
     // ── artefacts that are not per-case ────────────────────────────────────
     writeJson(join(OUT, 'guard-facts.json'), { sink: paths.sink, facts: parseJsonl(paths.sink), osLevelNetworkIsolationClaimed: false })
     writeJson(join(OUT, 'counter-rows.json'), {
-      providerEntries: parseJsonl(paths.counter),
+      providerEntries: providerEntryRows(),
+      capabilityProbes: parseJsonl(paths.counter).filter((entry) => entry?.leg === 'capability-probe'),
+      allCounterRows: parseJsonl(paths.counter),
       hostWebRows: hostWebRows(),
-      note: 'provider entries must be empty for a pre-provider refusal; hostWebRows empty proves the inherited host web service was never consulted',
+      note: 'provider entries (leg=provider-entry: an actual fetch/search/transport/dns/connect entry) must be empty for a pre-provider refusal; capability probes (leg=capability-probe) are the guard\'s own question to the backend and are not entries; hostWebRows empty proves the inherited host web service was never consulted',
       osLevelNetworkIsolationClaimed: false,
     })
     const routed = (world.mock?.requests ?? []).map((request, index) => {
@@ -1398,8 +1425,11 @@ async function boot() {
         writeJson(join(OUT, 'mock-requests.json'), { count: requests.length, requests, abortedAt: stage, osLevelNetworkIsolationClaimed: false })
         if (runPaths !== null) {
           writeJson(join(OUT, 'guard-facts.json'), { sink: runPaths.sink, facts: parseJsonl(runPaths.sink), abortedAt: stage, osLevelNetworkIsolationClaimed: false })
+          const counterRows = parseJsonl(runPaths.counter)
           writeJson(join(OUT, 'counter-rows.json'), {
-            providerEntries: parseJsonl(runPaths.counter),
+            providerEntries: counterRows.filter((entry) => entry?.leg === 'provider-entry'),
+            capabilityProbes: counterRows.filter((entry) => entry?.leg === 'capability-probe'),
+            allCounterRows: counterRows,
             hostWebRows: parseJsonl(runPaths.hostWebCounter).filter((row) => row?.leg === 'host-web-call'),
             abortedAt: stage,
             osLevelNetworkIsolationClaimed: false,
