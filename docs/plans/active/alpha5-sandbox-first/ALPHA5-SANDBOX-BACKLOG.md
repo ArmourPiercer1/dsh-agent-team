@@ -110,7 +110,7 @@ BL-24/BL-25 的括号里。
 | BL-14 | fs | 有 | 有（历史，已撤回） | 是 | read live 8/8 在 `44babbfcf`；`#606` 后 `V@B=no` |
 | BL-15 | fs | 有 | 有（历史，已撤回） | 是 | write live 两半；同上 |
 | BL-16 | subprocess | 有 | 有（历史，已撤回） | 是 | grep/glob 六行 PASS + 候选 11/11；`#606` 后撤回 |
-| BL-17 | shell-pty | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #2 预算已不再是约束）** | shell-class 准入/写轴/网络探针/旧代 PTY 拒用 host-free 已证 |
+| BL-17 | shell-pty | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #2 预算已不再是约束）** | shell-class 准入/写轴/网络探针/旧代 PTY 拒用 host-free 已证；**2026-11-10 PD-12 注记**：`bash` 已由 route-C 在成员 scope 内 shadow，声明了 `shellClass` 的 realm 上 `network: deny` 首次在 `bash` 路径被求值（draft PR，DEV-LIVE，admission 拒绝）；但**产品组合仍不声明 shellClass**，BL-17 的 live 半场仍未证，本行等级不变 |
 | BL-18 | web | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #3 预算已不再是约束）** | deny 车道 provider 之前拒绝；web face 转发已由 `#608`（`52a95fe0b`）落地，**live 半场仍未测** |
 | BL-19 | external | — | — | 否（先 C1） | run_code/PTC：无 routed-native 接入面（矩阵 M-11） |
 | BL-20 | subprocess | — | — | 否（先 C1） | 通用 launcher 端到端；机制已在 P1-07 实测 |

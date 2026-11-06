@@ -72,6 +72,18 @@ EffectiveIo(member, tool, call) ⊆ MemberCeiling(member) ∩ ToolRestriction(me
 
 ### PD-12 — `network: deny` 不约束成员的 `bash`（治理洞，破坏 **ceiling 项**）
 
+> **2026-11-10 关闭（draft PR `task/a5sf-pd12-fix-20261110`，未合并；`DEV-LIVE`，0 candidate）。**
+> 修法：在成员自己的 scope 内用既有 route-C 原生模块 seam **shadow `bash`**（不是改 preset、不是
+> 改 upstream），于是调用由 confined `subprocess` face 服务，编译后的 `network: deny` 被求值。
+> 下面这段仍是**修复前**的测量（pin 保留）；修复后三个连续真实 Host 的一致结果是：allow 车道的
+> model `bash` 恰好 1 次到达 confined provider（base `shell-exec` 0、base spawn 0），deny 成员的
+> 同一命令以 `NETWORK_UNCONFINED_REALM`（点名 `network-destination`）拒绝，**0** provider 调用、
+> **0** base spawn、**0** `/proc` sighting。证据 `dev/agent-workflow/evidence/a5sf-pd12-fix/`。
+> **不能宣称**：OS 级网络隔离（provider probe 仍 `unsupported`，BL-42 仍开）；shell body 的读轴
+> 已可归因（PD-13 **仍未关闭**）；没有 `shellClass` 的产品组合从"执行"变成了
+> `SUBPROCESS_SHELL_NOT_DECLARED` 拒绝；`product-assembly.ts` 仍不能请求进程面，故未装该面的
+> shipped preset 的 `bash` 不变。
+
 - **live 事实**：一个 ceiling 声明 `network: deny` 的成员，其模型可见的 `bash` 仍然执行命令：落在
   shipped `SandboxBashExecutor`（继承的 base subprocess 服务），confined provider 被调用 **0 次**，
   一个 OS 进程带着该命令，bwrap argv **没有 `--unshare-net`**。
@@ -167,7 +179,7 @@ Integration Owner 只保留共享装配、PR 集成、资源调度与冻结候�
 | 面 | 今天真实能力 | 最强真实声明 | 最弱未证声明 |
 |---|---|---|---|
 | FS Provider | 只有在声明了 `a5sfMemberPolicies` 的组合里才受限；没有 shipped preset 声明它，故产品路径用继承的 provider；`read_image` 在 route-C 下不可达（PD-5） | 20 臂在真实 `tool-fs` 上于 provider 之前实施交集 | "成员的 FS 被沙箱了"——今天为假，且 live `V@B=no` |
-| Subprocess | `grep`/`glob` 在提供 P1-07 + launcher pin 且声明该面时受限；第三方 CLI `PROBE-GATED`；**`bash` 走 shipped executor，不受该面约束**（PD-12） | 15 臂在任何进程之前拒绝出 lane 搜索 | "`network: deny` 意味着离线"——OS 从未被要求 |
+| Subprocess | `grep`/`glob` 在提供 P1-07 + launcher pin 且声明该面时受限；第三方 CLI `PROBE-GATED`；`bash` 在声明了该面的 realm 上现在**由该面服务**（PD-12 已修，2026-11-10；此前走 shipped executor）；未声明该面的 shipped preset 不变 | 15 臂在任何进程之前拒绝出 lane 搜索；PD-12 的 deny 是 admission 拒绝，不是 OS 拒绝 | "`network: deny` 意味着离线"——OS 从未被要求 |
 | Shell-PTY | **没有受管 shell**：`RealmServiceFaces` 无 `terminals`；成员的 shell 是 preset 的 legacy PTY，能读出被 lane 禁止的字节（PD-13） | 15 臂 + PD-1 契约修复证明生命周期/命令闸/撤销顺序 | "成员有 shell，只是被拒"——没有面；PTY 是 double |
 | Web | seam 真的把 confined face 交给成员的 tool call；deny 在 face 上拒绝；但无 shipped preset 声明该面，且 strict Member 无法承载该工具对 | 10 臂 + 7 次 live 启动（2 组一致） | "接上了 ⇒ 成员受管"——没有 caller 的默认路径 |
 | 外部执行 | 未接线（PTC 非可加载模块、LSP 不在 preset、stdio/remote MCP 未连接） | 不存在该面，故不作受限声明 | "`UNSUPPORTED` 意味着受限" |
@@ -180,7 +192,7 @@ Integration Owner 只保留共享装配、PR 集成、资源调度与冻结候�
 - **已执行**：PD-1 → 代际明确撤销接口 + `spawn` 期间竞态封堵（#629）；开发级 Boot 自授权（#631）；
   三份 2026-11-09 决策入档（#628）。
 - **仍需裁决**：PD-4 proxy overlay 语义；PD-5 `fs` 进 `ROUTED_SERVICE_NAMES`；
-  PD-6 shipped `bash-local` executor 的去留；**PD-12 的修法**（把 `bash` shadow 进成员 scope，还是承认 deny 只作用于面）；
+  PD-6 shipped `bash-local` executor 的去留；**PD-12 的修法已裁决并落地**（把 `bash` shadow 进成员 scope；2026-11-10，draft PR，未合并）；PD-13 的修法仍未裁决；
   **PD-13 的修法**（建受管终端面，还是明确保留 legacy PTY 并停止宣称受管 shell）。
 - **不需要裁决但需要决定的工程项**：PD-14 的 session cwd（World 夹具 vs 产品默认）；
   `web_search` locator 形状（PD-10）；PD-1 残留的 `keyOf` 代际（gen-2 可复用 gen-1 活跃域）。
@@ -189,7 +201,7 @@ Integration Owner 只保留共享装配、PR 集成、资源调度与冻结候�
 
 ## 9. 下一批工作（按价值排序）
 
-1. **PD-12/PD-13 的修法落地**——它们是不变量的直接反例，优先级高于任何新面。
+1. **PD-12/PD-13 的修法落地**——PD-12 已落地（2026-11-10，`network: deny` 现在在 `bash` 路径上被求值）；**PD-13 仍未落地**，仍是不变量的直接反例，优先级高于任何新面。
 2. **受管终端面**（BL-17 的 build）：`RealmServiceFaces.terminals` + install + confined backend；同时处理"preset 仍为成员
    挂 legacy `dsh-terminal`"的双终端问题。
 3. **真实网络拒绝后端**（BL-42）——在它之前，任何"离线"声明都必须写成"准入层拒绝"。
@@ -202,5 +214,5 @@ Integration Owner 只保留共享装配、PR 集成、资源调度与冻结候�
 ## 10. 一句话交付结论
 
 **Alpha.5 目前交付的是一个"机制正确、路径不完整"的沙箱内核**：编译、准入、拒绝归因、证据可复现性都已成立，
-并在真实 Host 上被四个面走到；**但它今天还不能保证一个成员的实际能力被其上界包含**——PD-12/PD-13 不是实现 bug，
+并在真实 Host 上被四个面走到；**但它今天还不能保证一个成员的实际能力被其上界包含**——PD-12 的 `bash` 路径已修，PD-13 的读轴不是实现 bug，
 而是"上界作用于面、调用走另一条路"的结构性缺口。修复它们之后，Alpha.5 才有资格谈 G4/G5。

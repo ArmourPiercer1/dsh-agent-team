@@ -1,0 +1,69 @@
+{
+  "schema": "a5sf-pd12-mutation-controls/1",
+  "at": "2026-11-06T14:45:14.481Z",
+  "arms": "tests/world-factory/a5sf-pd12-bash-governance.test.mjs",
+  "mutantCount": 2,
+  "controls": [
+    {
+      "id": "MA-shadow-row-removed",
+      "description": "the route-C attach never appends the confined-`bash` module (the pre-fix composition)",
+      "expectedRed": [
+        "A1",
+        "A2",
+        "C4",
+        "D1"
+      ],
+      "observedRed": [
+        "A1",
+        "A2",
+        "C4",
+        "D1"
+      ],
+      "expectedGreen": [
+        "P0",
+        "S1",
+        "C1",
+        "C2"
+      ],
+      "observedGreen": [
+        "P0",
+        "S1",
+        "C1",
+        "C2"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "id": "MB-network-admission-removed",
+      "description": "the confined face never consults the provider capability probe for a network=deny lane",
+      "expectedRed": [
+        "D1"
+      ],
+      "observedRed": [
+        "D1"
+      ],
+      "expectedGreen": [
+        "P0",
+        "A1",
+        "A2",
+        "S1",
+        "C1",
+        "C2",
+        "C4"
+      ],
+      "observedGreen": [
+        "P0",
+        "A1",
+        "A2",
+        "S1",
+        "C1",
+        "C2",
+        "C4"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ],
+  "verdict": "PASS"
+}

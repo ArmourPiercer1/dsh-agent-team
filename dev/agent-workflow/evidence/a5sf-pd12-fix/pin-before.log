@@ -1,0 +1,88 @@
+✔ P0 PD-12 defect pin (PRE-FIX): deny bash executes on the preset executor; confined provider 0 calls (10.49519ms)
+✖ D1 fix: deny Member's bash reaches the confined face; NETWORK_UNCONFINED_REALM names the capability; 0 provider calls, 0 base spawns (3.978753ms)
+✖ A1 allow lane: the shadowed bash executes through the confined face end to end (4.293809ms)
+✖ A2 no network axis: the same world allows (the refusal is the network term) (3.906686ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (3.046648ms)
+✔ C1 control (shadow removed): deny bash executes on the preset executor again (2.301056ms)
+✔ C2 control (no confined face): bash is NOT shadowed and runs on the preset executor (1.634284ms)
+✖ C4 control (no shell class): the deny refusal is SUBPROCESS_SHELL_NOT_DECLARED, not the capability code (2.19717ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 4
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 288.865852
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd12-bash-governance.test.mjs:377:1
+✖ D1 fix: deny Member's bash reaches the confined face; NETWORK_UNCONFINED_REALM names the capability; 0 provider calls, 0 base spawns (3.978753ms)
+  AssertionError [ERR_ASSERTION]: the deny Member's bash is REFUSED, not executed
+
+  false !== true
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/world-factory/a5sf-pd12-bash-governance.test.mjs:389:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd12-bash-governance.test.mjs:403:1
+✖ A1 allow lane: the shadowed bash executes through the confined face end to end (4.293809ms)
+  AssertionError [ERR_ASSERTION]: the result says which face served it
+  + actual - expected
+
+  + undefined
+  - 'confined'
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/world-factory/a5sf-pd12-bash-governance.test.mjs:417:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'confined',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd12-bash-governance.test.mjs:429:1
+✖ A2 no network axis: the same world allows (the refusal is the network term) (3.906686ms)
+  AssertionError [ERR_ASSERTION]: served by the confined face
+
+  0 !== 1
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/world-factory/a5sf-pd12-bash-governance.test.mjs:440:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd12-bash-governance.test.mjs:505:1
+✖ C4 control (no shell class): the deny refusal is SUBPROCESS_SHELL_NOT_DECLARED, not the capability code (2.19717ms)
+  AssertionError [ERR_ASSERTION]: still refused before any process
+
+  false !== true
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/world-factory/a5sf-pd12-bash-governance.test.mjs:514:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

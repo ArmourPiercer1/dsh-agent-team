@@ -1,0 +1,372 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd12-2026-11-06T14-40-14-719Z",
+  "suite": "a5sf-pd12",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-06T14:40:14.720Z",
+  "selectedCases": [
+    "sub:product-bash-executor",
+    "sub:face-admitted",
+    "sub:network-deny",
+    "sub:network-deny-bash-lane"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "3313bdf08919313d03abf78e57dcfb6c6ff957c9",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "teamSha": "3313bdf08919313d03abf78e57dcfb6c6ff957c9",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "cases": [
+    {
+      "id": "sub:product-bash-executor",
+      "verdict": "PASS",
+      "at": "2026-11-06T14:41:00.189Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "a Member's model-visible `bash` is served by the Member's CONFINED subprocess face (PD-12 fix): the confined provider is called once with this command, the inherited base executor and the shipped `ctx.shell` executor are never reached, and the allow lane admits the declared invocation",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued a `bash` tool call"
+        },
+        {
+          "id": "call-settled-ok",
+          "ok": true,
+          "detail": "tool result isError=false"
+        },
+        {
+          "id": "marker-in-stdout",
+          "ok": true,
+          "detail": "stdout carries \"A5SF_SUB_BASH_u5u5a5sfsub1-20261106T14-40-14Z\": \"{\\\"kind\\\":\\\"confined\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"stdout\\\":\\\"A5SF_SUB_BASH_u5u5a5sfsub1-20261106T14-40-14Z\\\\n\\\",\\\"stderr\\\":\\\"\\\"}\""
+        },
+        {
+          "id": "confined-provider-called-once",
+          "ok": true,
+          "detail": "1 confined provider call(s) carrying the bash marker"
+        },
+        {
+          "id": "confined-spawn-recorded",
+          "ok": true,
+          "detail": "1 confined-spawn record(s) carrying the bash marker"
+        },
+        {
+          "id": "base-executor-not-reached",
+          "ok": true,
+          "detail": "0 base-spawn record(s) carrying the bash marker"
+        },
+        {
+          "id": "shell-executor-not-reached",
+          "ok": true,
+          "detail": "0 shell-exec record(s) carrying the bash marker (the preset executor must never see it)"
+        },
+        {
+          "id": "declared-argv-shape",
+          "ok": true,
+          "detail": "request argv=[\"/bin/bash\",\"-c\",\"printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T14-40-14Z\\\\n'; sleep 1.5\"] (closed shape: ['/bin/bash','-c',<body>])"
+        },
+        {
+          "id": "network-profile-absent",
+          "ok": true,
+          "detail": "request networkProfile=[null] (the allow lane claims no network profile)"
+        }
+      ]
+    },
+    {
+      "id": "sub:face-admitted",
+      "verdict": "PASS",
+      "at": "2026-11-06T14:41:00.189Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "the confined face ADMITS the declared argv shape (`/bin/bash -c <non-empty>`) and a real child runs through the OS provider",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "probe-returned",
+          "ok": true,
+          "detail": "JSON"
+        },
+        {
+          "id": "settled-ok",
+          "ok": true,
+          "detail": "ok=true code=null message=null"
+        },
+        {
+          "id": "stdout-marker",
+          "ok": true,
+          "detail": "stdout=\"A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T14-40-14Z\\n\""
+        },
+        {
+          "id": "provider-called-once",
+          "ok": true,
+          "detail": "1 provider call(s) for this argv"
+        },
+        {
+          "id": "confined-spawn-once",
+          "ok": true,
+          "detail": "1 confined-spawn record(s) for this argv"
+        },
+        {
+          "id": "independent-marker-file",
+          "ok": true,
+          "detail": "the child-created marker file exists=true (an OS fact, not our counter)"
+        }
+      ]
+    },
+    {
+      "id": "sub:network-deny",
+      "verdict": "PASS",
+      "at": "2026-11-06T14:41:00.189Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "a `network: deny` lane REFUSES the call at admission, before the provider and before any process exists",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "probe-returned",
+          "ok": true,
+          "detail": "JSON"
+        },
+        {
+          "id": "typed-code",
+          "ok": true,
+          "detail": "code=NETWORK_UNCONFINED_REALM message=NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (landlock ABI v7: Landlock ABI v4 mediates only TCP port bind/con"
+        },
+        {
+          "id": "zero-provider-calls",
+          "ok": true,
+          "detail": "0 provider call(s) with this argv"
+        },
+        {
+          "id": "zero-base-fallback",
+          "ok": true,
+          "detail": "0 base-spawn record(s) carrying the body"
+        },
+        {
+          "id": "zero-proc-sightings",
+          "ok": true,
+          "detail": "0 /proc sighting(s) of the deny marker"
+        },
+        {
+          "id": "no-marker-file",
+          "ok": true,
+          "detail": "marker file exists=false"
+        },
+        {
+          "id": "no-guard-fact",
+          "ok": true,
+          "detail": "guard facts with decidedBy=NETWORK_UNCONFINED_REALM: 0. The refusal is thrown directly by the face's network admission (subprocess.ts, after provider.probe()), so NO guard consult happens — unlike the argv refusals, which write one IO_READ_DENIED fact. Recorded as an asymmetry, not a defect."
+        },
+        {
+          "id": "provider-capability-refusal",
+          "ok": true,
+          "detail": "the provider's own capability row: {\"dimension\":\"network-destination\",\"level\":\"unsupported\",\"note\":\"landlock ABI v7: Landlock ABI v4 mediates only TCP port bind/connect inside the domain; UDP, IPv6 raw paths, AF_UNIX sockets, inherited socket FDs and out-of-band routes are NOT covered — this is not a general no-network guarantee (PoC-4b)\",\"mechanism\":\"\"}"
+        },
+        {
+          "id": "no-confinement-claim",
+          "ok": true,
+          "detail": "the refusal is a statement about our own admission code, not about isolation"
+        }
+      ]
+    },
+    {
+      "id": "sub:network-deny-bash-lane",
+      "verdict": "PASS",
+      "at": "2026-11-06T14:41:00.189Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "the PD-12 fix makes a `network: deny` lane GOVERN the Member's model-visible `bash`: the same command is refused at the confined face's network admission with the typed capability code, before the provider and before any process",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the deny-lane Member issued a `bash` tool call"
+        },
+        {
+          "id": "call-settled-as-error",
+          "ok": true,
+          "detail": "tool result isError=true"
+        },
+        {
+          "id": "typed-refusal-code",
+          "ok": true,
+          "detail": "the result carries NETWORK_UNCONFINED_REALM"
+        },
+        {
+          "id": "refusal-names-capability",
+          "ok": true,
+          "detail": "the refusal names the probed dimension: \"Error: NETWORK_UNCONFINED_REALM: NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (landlock ABI v7: Landlock ABI v4 mediates only TCP port bind/connect in\""
+        },
+        {
+          "id": "body-never-ran",
+          "ok": true,
+          "detail": "stdout carries \"A5SF_SUB_DENYBASH_u5u5a5sfsub1-20261106T14-40-14Z\": false"
+        },
+        {
+          "id": "zero-confined-provider-calls",
+          "ok": true,
+          "detail": "0 confined provider call(s) carrying the deny-lane bash marker"
+        },
+        {
+          "id": "zero-base-spawns",
+          "ok": true,
+          "detail": "0 base-spawn record(s) carrying the deny-lane bash marker"
+        },
+        {
+          "id": "zero-shell-execs",
+          "ok": true,
+          "detail": "0 shell-exec record(s) carrying the deny-lane bash marker (the preset executor must never see it)"
+        },
+        {
+          "id": "zero-proc-sightings",
+          "ok": true,
+          "detail": "0 independent /proc sighting(s) of the deny-lane bash marker"
+        },
+        {
+          "id": "refusal-is-admission-not-os-denial",
+          "ok": true,
+          "detail": "the refusal is our admission code (the provider probe reports network-destination unsupported); no OS-level network isolation is claimed"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/run-ledger.jsonl",
+    "thisRunCount": 3,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T14:40:14.753Z",
+        "runId": "a5sf-pd12-2026-11-06T14-40-14-719Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "3313bdf08919313d03abf78e57dcfb6c6ff957c9",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T14:40:30.949Z",
+        "runId": "a5sf-pd12-2026-11-06T14-40-14-719Z",
+        "suite": "a5sf-pd12",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfsub1-20261106T14-40-14Z",
+        "phase": "a5sf-pd12-boot2"
+      },
+      {
+        "at": "2026-11-06T14:41:00.317Z",
+        "runId": "a5sf-pd12-2026-11-06T14-40-14-719Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "dev-live-outcome",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-outcome",
+        "world": "u5a5sfsub1",
+        "grantId": "devlive-subprocess-1",
+        "face": "Subprocess",
+        "headCommit": "3313bdf08919313d03abf78e57dcfb6c6ff957c9",
+        "overall": "PASS",
+        "cases": [
+          {
+            "id": "sub:product-bash-executor",
+            "verdict": "PASS"
+          },
+          {
+            "id": "sub:face-admitted",
+            "verdict": "PASS"
+          },
+          {
+            "id": "sub:network-deny",
+            "verdict": "PASS"
+          },
+          {
+            "id": "sub:network-deny-bash-lane",
+            "verdict": "PASS"
+          }
+        ],
+        "teardown": {
+          "releasedPorts": [
+            3185,
+            3494,
+            3185
+          ],
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-40-14Z",
+          "hostPid": null
+        }
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd12-boot2",
+      "world": "u5u5a5sfsub1-20261106T14-40-14Z",
+      "port": 3185,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/logs/u5u5a5sfsub1-20261106T14-40-14Z/instance-port3185.log"
+    }
+  ],
+  "probeReport": {
+    "path": "probe-report.json",
+    "executor": "PROVEN",
+    "faceControl": "PROVEN",
+    "netDeny": "PROVEN",
+    "denyBash": "PROVEN",
+    "argv": {
+      "shipped_argv": "PROVEN",
+      "argv_lc": "PROVEN",
+      "argv_empty_body": "PROVEN",
+      "argv_extra_operand": "PROVEN"
+    }
+  },
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 52,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/tests/homes/u5u5a5sfsub1-20261106T14-40-14Z",
+    "releasedPorts": [
+      3185,
+      3494,
+      3185
+    ],
+    "killedPids": [
+      52
+    ],
+    "notes": []
+  },
+  "abort": null,
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd12-2026-11-06T14-40-14-719Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "osLevelNetworkIsolationClaimed": false,
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-06T14:41:00.317Z",
+  "runRecordPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd12/dev/agent-workflow/evidence/a5sf-pd12-fix/driver/run-record.json"
+}

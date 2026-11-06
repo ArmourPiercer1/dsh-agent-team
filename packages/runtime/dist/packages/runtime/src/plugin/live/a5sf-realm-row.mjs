@@ -77,7 +77,7 @@
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
 import { isAbsolute } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { URL, pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'
@@ -844,6 +844,44 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
 }
 
 /**
+ * The confined `bash` native module (PD-12), resolved from THIS file's own
+ * location: the row rides the dist mirror beside it, so source and installed
+ * faces use the same relative specifier. Never a host path, never a guess.
+ */
+const A5SF_CONFINED_BASH_TOOL = new URL('./confined-bash-tool.mjs', import.meta.url).href
+
+/**
+ * PD-12 — decide whether THIS realm's `bash` must be shadowed onto the
+ * confined `subprocess` face, and answer the module spec to append.
+ *
+ * The three conditions are each a refusal to guess:
+ *   1. the agent can SEE `bash` (the attach is surface-neutral: it may replace
+ *      the preset definition, never add or remove a name);
+ *   2. the realm OWNS a confined `subprocess` face (`faces.subprocess` is not
+ *      null). Without it the mount seam would refuse a subprocess-consuming
+ *      module — and there would be no confined face to route the call to;
+ *   3. the composition has not already configured a `bash` owner (the same
+ *      module, or an entry that declares `expectedTools: ['bash']`). Auto-adding
+ *      beside a declared owner would register the name twice, so the declared
+ *      composition wins and this seam stays silent.
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @returns {{url: string, expectedTools: readonly string[]} | undefined}
+ */
+function confinedBashSpecOf(realm, nativeSpecs, surface) {
+  if (!surface.has('bash')) return undefined
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null || faces.subprocess === undefined || faces.subprocess === null) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
+    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
+  }
+  return Object.freeze({ url: A5SF_CONFINED_BASH_TOOL, expectedTools: Object.freeze(['bash']) })
+}
+
+/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -875,12 +913,21 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
  */
 export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runtimeAgent) {
   const nativeSpecs = a5sfConfig?.nativeToolModules ?? []
-  if (nativeSpecs.length === 0) return undefined
   if (realm === undefined || realm === null || typeof realm.mountNativeToolModules !== 'function') {
     throw new TypeError('agent-bindings: the a5sf native tool attach needs a mounted realm carrying mountNativeToolModules (the pre-route-C realm cannot re-mount native tools)')
   }
   // The POST-DENY surface: this is the baseline the shadow must not change.
   const before = a5sfAgentToolSurface(root, runtimeAgent)
+  // PD-12 (2026-11-10): the model-visible `bash` must ride the confined
+  // `subprocess` face the ceiling term is compiled for. A realm that owns that
+  // face, and whose agent can already see `bash`, gets the surface-neutral
+  // shadow appended here (see `confinedBashSpecOf`). A realm WITHOUT the face,
+  // or an agent without `bash`, is left byte-identically alone: adding a name
+  // would be a governance change this wiring must not make, and there is no
+  // confined face to route the call to anyway.
+  const bashSpec = confinedBashSpecOf(realm, nativeSpecs, before)
+  const specs = bashSpec === undefined ? nativeSpecs : [...nativeSpecs, bashSpec]
+  if (specs.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,
   // not just the name set (a module that registers nothing, or registers late,
   // leaves the preset definition in place — same name, ZERO guard facts).
@@ -901,7 +948,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     )
   }
   const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
-  const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
+  const nativeToolModules = await Promise.all(specs.map(async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
     // as a bare ERR_MODULE_NOT_FOUND from the middle of agent setup.
