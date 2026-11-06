@@ -116,8 +116,14 @@ never CLAIMED the message, and native cold-start replay of that message.
 
 The wake turn was held open after the native Inbox CLAIMED the wake; the Host
 was SIGKILLed. On restart the row was `accepted` and the native message was
-gone. Owner-scoped recovery (row carries its mount root) cleared the stale row
+gone. Owner-scoped recovery (the intent row carries its mount root) cleared the stale row
 inside the latch lock and did **not** rebuild it: `wake-*.json` 1 -> 0, wake
 model requests 1 -> 1 (no duplicate), and the durable pending Control request
 that existed before the crash was still pending after (`pendingBefore=1`,
 same requestId). A `queued` row (never accepted) is still rebuilt.
+
+**Preconditions disclosed:** marker recovery is still strict own-root (the
+marker reader drops the owner field); owner identity across restart relies on
+the boot reusing the same root session (`create-or-open` in the kit), and the
+Host run logs do not embed a product SHA — the A6-25 rows 1→0 outcome is what
+pins the accepted branch.

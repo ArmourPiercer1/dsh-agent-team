@@ -27,7 +27,7 @@ No master merge, no un-draft, no production switch.
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r14`, A6-22/23 |
 | Explicit human message after restart clears the durable Stop and re-plans the ACTUAL pending leg; historical call not revived | PASS | `a6-sticky-stop-r14`, A6-24 |
 | A wake claimed by a crashed turn is reconciled without duplicate; durable pending request survives | PASS | `a6-inbox-r9`, A6-25 |
-| Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r6`, A6-2..6 |
+| Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r8`, A6-2..6 |
 | Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r8`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
 
@@ -56,11 +56,11 @@ is closed by the clean 9/9 at `1e50d55fc`.
 - **Explicit resume delivering a new wake**: proven with a real leg set
   (`a6-sticky-stop-r14`, A6-24). What is not chained in one run is a *new*
   call's allow→execute after resume; the ordinary path is proven separately by
-  `a6-normal-r6`.
-- **Inbox replacement wake**: `a6-inbox-r5` proves the crashed claim is not
+  `a6-normal-r8`.
+- **Inbox replacement wake**: `a6-inbox-r9` proves the crashed claim is not
   duplicated, the stale intent row is reconciled away and the durable pending
-  request survives; a boot-time replacement wake is allowed but not required
-  by the assertion (`pendingAfter>0` is the work guarantee).
+  request survives; the accepted code deliberately does NOT rebuild an `accepted` row; the
+  assertion requires the pre-crash pending request ids to survive (r9).
 - **Native Inbox cold-start replay**: a claimed-wake crash is covered
   (`a6-inbox-r9`); an *accepted but still queued* wake crash is not injected.
 - **Sink unit test**: not added; the marker surface now has unit tests
