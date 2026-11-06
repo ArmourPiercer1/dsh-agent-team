@@ -1,0 +1,221 @@
+{
+  "schema": "a5sf-domain-attrib/1",
+  "at": "2026-11-06T06:37:12.353Z",
+  "hostFree": true,
+  "hostStarts": 0,
+  "ports": 0,
+  "dshHome": null,
+  "boot5Payload": {
+    "rootSessionId": "session-a5sf-bl18-live2-anchor",
+    "generation": 1,
+    "blueprint": "blueprint-anchor-boot5.yaml (verbatim from evidence/a5sf-bl18-live2 composed profile)"
+  },
+  "total": 12,
+  "pass": 12,
+  "fail": 0,
+  "results": [
+    {
+      "id": "E0",
+      "claim": "only seam code 'closed' produces the observed message; no other seam error does",
+      "pass": true,
+      "expected": "exact NOT_OPEN message for closed; distinct messages for already-open/invalid-table/plain",
+      "observed": {
+        "exact": {
+          "code": "NOT_OPEN",
+          "message": "store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed"
+        },
+        "variants": {
+          "already-open": {
+            "code": "SEAM_FAILURE",
+            "message": "storage seam failure during 'open' on store 'team_domain': already-open — seam error 'already-open'"
+          },
+          "invalid-table": {
+            "code": "SEAM_FAILURE",
+            "message": "storage seam failure during 'get' on store 'session_bindings': invalid-table — seam error 'invalid-table'"
+          },
+          "plain": {
+            "code": "SEAM_FAILURE",
+            "message": "storage seam failure during 'get' on store 'session_bindings': boom"
+          },
+          "noCode": {
+            "code": "SEAM_FAILURE",
+            "message": "storage seam failure during 'get' on store 'session_bindings': no code"
+          }
+        }
+      }
+    },
+    {
+      "id": "E1",
+      "claim": "boot #5's own payload (blueprint/session/generation/workspace) binds clean host-free — row composition is not, by itself, a sufficient cause",
+      "pass": true,
+      "expected": "no error; TeamSession + team-root binding + LeaderInstance minted; fresh install ran",
+      "observed": {
+        "error": null,
+        "wrote": true,
+        "bindingKind": "team-root",
+        "leaderMinted": true,
+        "installedSlots": [
+          "persona",
+          "model",
+          "capability"
+        ]
+      }
+    },
+    {
+      "id": "E1b",
+      "claim": "the minimal plan (production row only) binds clean host-free",
+      "pass": true,
+      "expected": "no error; wrote true",
+      "observed": {
+        "error": null,
+        "wrote": true
+      }
+    },
+    {
+      "id": "E4",
+      "claim": "removing rows and reordering the composition never changes the host-free outcome (always clean) — the row set is not the discriminator",
+      "pass": true,
+      "expected": "all four composition variants clean",
+      "observed": [
+        {
+          "id": "E4a",
+          "payload": "the five declared rows, declared order (product payload only)",
+          "error": null,
+          "wrote": true,
+          "bindingKind": "team-root"
+        },
+        {
+          "id": "E4b",
+          "payload": "production row only",
+          "error": null,
+          "wrote": true,
+          "bindingKind": "team-root"
+        },
+        {
+          "id": "E4c",
+          "payload": "offer row + production row, no p6t6 / no presets",
+          "error": null,
+          "wrote": true,
+          "bindingKind": "team-root"
+        },
+        {
+          "id": "E4d",
+          "payload": "production row first, then offer, then presets + p6t6",
+          "error": null,
+          "wrote": true,
+          "bindingKind": "team-root"
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "claim": "a facility closeAll() at the boot #5 instant reproduces the observed message AND the observed stack frames",
+      "pass": true,
+      "expected": "store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed",
+      "observed": {
+        "closed": true,
+        "code": "NOT_OPEN",
+        "message": "store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed",
+        "stackHasPutSessionBinding": true,
+        "stackHasBindFreshTeamRoot": true,
+        "frames": [
+          "TeamDomainError: store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed",
+          "at normalizeSeamError (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/storage/schema/errors.js:148:16)",
+          "at SessionBindingsRepository.readRow (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/storage/repositories/base.js:76:19)",
+          "at SessionBindingsRepository.putRecord (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/storage/repositories/base.js:136:31)",
+          "at SessionBindingsRepository.put (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/storage/repositories/session-bindings.js:56:20)",
+          "at Object.putSessionBinding (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/runtime/root-binding/write-port.js:33:49)",
+          "at Object.putSessionBinding (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/dev/agent-workflow/evidence/a5sf-domain-attrib/domain-attrib.mjs:385:47)",
+          "at Module.bindFreshTeamRoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-domain-attrib/packages/runtime/dist/packages/runtime/root-binding/fresh-root.js:137:41)"
+        ]
+      }
+    },
+    {
+      "id": "E2b",
+      "claim": "the same teardown one await earlier (between a stamp read and its write) produces the SAME class with a DIFFERENT store/op — the native2 shape",
+      "pass": true,
+      "expected": "store 'schema_meta' operation 'put' was rejected: the TeamDomain is closed",
+      "observed": {
+        "closed": true,
+        "code": "NOT_OPEN",
+        "message": "store 'schema_meta' operation 'put' was rejected: the TeamDomain is closed",
+        "schemaReads": 2
+      }
+    },
+    {
+      "id": "E3",
+      "claim": "the same teardown one await later yields the SAME class with yet another store (member_instances) — store/op is a timing artifact",
+      "pass": true,
+      "expected": "store 'member_instances' operation 'get' was rejected: the TeamDomain is closed",
+      "observed": {
+        "closed": true,
+        "code": "NOT_OPEN",
+        "message": "store 'member_instances' operation 'get' was rejected: the TeamDomain is closed"
+      }
+    },
+    {
+      "id": "E7",
+      "claim": "the boot #5 evidence artefacts are reproduced end to end by the driver race: health 404 while the bootstrap is PENDING, then (after the abort closes the shared domain) the masked TeamDomain-closed rejection and only THEN a health route",
+      "pass": true,
+      "expected": "probe 404 -> abort -> masked closeAll rejection -> 200 {ok:false}",
+      "observed": {
+        "aborted": true,
+        "probeBeforeAbort": {
+          "status": 404,
+          "body": null
+        },
+        "maskedError": "store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed",
+        "probeAfterAbortStatus": 200,
+        "probeAfterAbortOk": false,
+        "failureRouteRegisteredAtProbeTime": false
+      }
+    },
+    {
+      "id": "E7b",
+      "claim": "a bootstrap that fails BEFORE the probe yields 200 {ok:false}, never 404 — so boot #5's 404 proves the bootstrap had not failed at probe time",
+      "pass": true,
+      "expected": "200 {ok:false, setupError: <the real rejection>}",
+      "observed": {
+        "probe": {
+          "status": 200,
+          "body": {
+            "ok": false,
+            "ready": false,
+            "setupError": "the production row bootstrap failed before the bind (stand-in)"
+          }
+        },
+        "bindError": "the production row bootstrap failed before the bind (stand-in)"
+      }
+    },
+    {
+      "id": "E5a",
+      "claim": "bootPhase \"create\" on a stamped medium fails deterministically with TEAM_DOMAIN_EXISTS (predictable before a start)",
+      "pass": true,
+      "expected": "TEAM_DOMAIN_EXISTS",
+      "observed": {
+        "code": "TEAM_DOMAIN_EXISTS",
+        "message": "team_domain already exists (schema_meta holds 10 stamp row(s)); use openTeamDomain"
+      }
+    },
+    {
+      "id": "E5b",
+      "claim": "load/resume on a fresh medium fails deterministically with a schema-stamp failure (predictable before a start)",
+      "pass": true,
+      "expected": "SCHEMA_STAMP_MISSING (the first missing baseline stamp)",
+      "observed": {
+        "code": "SCHEMA_STAMP_MISSING",
+        "message": "schema_meta stamp for store 'schema_meta' is missing (partial create or corruption)"
+      }
+    },
+    {
+      "id": "E6",
+      "claim": "a never-opened domain is not a closed domain on the production/filed seam (open succeeds); only the test-only in-memory fake treats \"not open\" as closed (instrument hazard, p4-helpers.ts:243)",
+      "pass": true,
+      "expected": "open() resolves on a fresh medium; no closed error",
+      "observed": {
+        "error": null,
+        "name": "team_domain"
+      }
+    }
+  ]
+}

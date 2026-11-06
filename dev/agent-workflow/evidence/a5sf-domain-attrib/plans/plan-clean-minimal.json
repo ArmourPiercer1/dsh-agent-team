@@ -1,0 +1,10 @@
+{
+  "planId": "clean-minimal",
+  "note": "The production row alone over a fresh home. Host-free verified clean (E1b): this is the plan a pre-start control should bless.",
+  "homeFresh": true,
+  "bootPhase": "create",
+  "runtimeReload": { "possible": false, "why": "no reload declared" },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "module": "file:///.../packages/runtime/dist/packages/runtime/src/plugin/host.js", "required": true, "moduleCheck": "skip", "fault": null }
+  ]
+}
