@@ -1,7 +1,7 @@
 # PD-15 — a network-enforcement proof is bound to the face that consumes it
 
 **Task** `task/a5sf-pd15-face-bound-proof-20261111` · base `origin/master` @ `e411363d8` (#645)
-· draft PR first line `PD15-FIX` · **not merged**, no settle.
+· draft PR **#646**, first line `PD15-FIX` · **not merged**, no settle.
 **Register:** `PRODUCT-DEBT-REGISTER.md` PD-15 — finding id **`FACE-BOUND-PROOF`**, `FIXED`
 with residuals (1)–(4).
 **CORE PATCH BUDGET = 0**: `packages/**` + our tests only; upstream, the pinned host and every

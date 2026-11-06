@@ -1,13 +1,13 @@
-✔ the register parses into rows and a summary table (0.584055ms)
-✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.432358ms)
-✔ (d) every row has all required fields exactly once (0.783213ms)
-✔ (d) every row declares one consequence class from the closed set, and the table agrees (0.326518ms)
-✔ (a) every finding id is still present in the evidence file that originated it (5.534847ms)
-✔ §6 declarations map one-to-one onto live register rows (0.115148ms)
-✔ (b) every anchor resolves and still contains the symbol the row claims (6.116169ms)
-✔ the register names the evidence it digests and does not claim a boot (0.159613ms)
-✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (0.476512ms)
-✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (0.208244ms)
+✔ the register parses into rows and a summary table (0.60203ms)
+✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.466484ms)
+✔ (d) every row has all required fields exactly once (0.715775ms)
+✔ (d) every row declares one consequence class from the closed set, and the table agrees (0.335736ms)
+✔ (a) every finding id is still present in the evidence file that originated it (5.539046ms)
+✔ §6 declarations map one-to-one onto live register rows (0.12158ms)
+✔ (b) every anchor resolves and still contains the symbol the row claims (5.157975ms)
+✔ the register names the evidence it digests and does not claim a boot (0.152068ms)
+✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (0.477123ms)
+✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (0.239594ms)
 ℹ tests 10
 ℹ suites 0
 ℹ pass 10
@@ -15,4 +15,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 68.990223
+ℹ duration_ms 67.044019
