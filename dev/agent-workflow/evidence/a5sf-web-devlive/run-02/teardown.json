@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-06T08:44:47.233Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 35,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-42-25Z",
+    "releasedPorts": [
+      3185,
+      3494,
+      3185
+    ],
+    "killedPids": [
+      35
+    ],
+    "notes": []
+  },
+  "port": 3185,
+  "portClosedAfterTeardown": true,
+  "homeRemoved": true,
+  "homePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web-devlive/tests/homes/u5a5sfwebdv-20261106T08-42-25Z",
+  "hostAliveAtEnd": false,
+  "osLevelNetworkIsolationClaimed": false
+}
