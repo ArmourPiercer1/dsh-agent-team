@@ -87,7 +87,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   the owner ruled generation-scoped isolation; not the boot budget.
 - **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs) — arms `PD-1 REFUSAL`, `PD-1 CONTRAST (live domain)`, `PD-1 IN-FLIGHT`, `PD-1 CONTRAST (new generation)`, `PD-1 REGISTER`; negative control and race-window transcript in the evidence README.
 - **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L285` contains `async revoke(identity: TrustedMemberIdentity` ; `packages/runtime/team-sandbox/src/terminal.ts#L298` contains `revokedMembers.add(revokedKey)` ; `packages/runtime/team-sandbox/src/terminal.ts#L239` contains `revokedMembers.has(memberKey(identity))`
-- **status**: FIXED — branch `task/a5sf-pd1-fix-20261109`, base `fb9584da5733918113b1dbd01b08d6931cfb1ddb`, merging/PR placeholder **#TBD** (draft PR first line `PD1-FIX`). Evidence: [a5sf-pd1-fix](../../../../dev/agent-workflow/evidence/a5sf-pd1-fix/README.md).
+- **status**: FIXED — branch `task/a5sf-pd1-fix-20261109`, base `fb9584da5733918113b1dbd01b08d6931cfb1ddb`, draft PR **#629** (first line `PD1-FIX`; merge placeholder until it lands). Evidence: [a5sf-pd1-fix](../../../../dev/agent-workflow/evidence/a5sf-pd1-fix/README.md).
 
 ### PD-2 (F2) — the deferred PTY refusal fires after a legacy session is allocated
 
