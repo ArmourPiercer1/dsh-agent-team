@@ -190,3 +190,13 @@ so points 1–5 were and remain absent.
 - BL-17's live half (same-PTY sharing on a governed Member, the live read-axis
   refusal, the live chmod gap, the live network-refusal position) stays **unproven**
   and candidate-track claims stay **spec-only**. No grade and no `V@B` changed.
+
+## 2026-11-08 — 记录格式更正（未改任何测量事实）
+
+`boot3-abort-run-record.json` 的 `bindings.authority` 缺 `pointerSha256`，在 CI 的
+`EB3-RUN-MANIFEST --new` 严格档下被判 `RUN_AUTHORITY_BINDING_MISMATCH`（本地非严格档不报）。
+已补为当前指针字节哈希 `31ac81fb…`（`sha256sum dev/engineering/current-authority.json` 的实测值），
+严格档现为 `strict=1 findings=0`。
+
+这是**记录格式缺陷，不是测量缺陷**，与第 5 次仪器缺陷同类：它同样只在真实门禁里才现形。
+本次 abort 的四项结果仍全部为 `NOT_REACHED`，未因这次更正获得任何新结论。

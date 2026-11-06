@@ -22,7 +22,8 @@
         "snapshot_version": "as20261105r2",
         "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
       },
-      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f"
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
     },
     "providerComposition": "test row a5sf-bl17-live-realm-provider-row.mjs (no product composition declares a shell class at this base)",
     "laneAlgebra": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets",
