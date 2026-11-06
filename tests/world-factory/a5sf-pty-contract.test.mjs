@@ -25,6 +25,12 @@
  *   P1  allocation lifecycle — one allocate per session, one kill per terminal,
  *       no command accepted after kill; double-kill is idempotent, a command
  *       after kill is a TYPED refusal (the two are different answers, pinned).
+ *       The per-command operation is a COMMAND GATE (`assertCurrent`: a command
+ *       request is admitted or refused against the CURRENT policy revision),
+ *       and the only descendant observation is the recorded handle's
+ *       DESCENDANT AUDIT (`descendants()`). `PtyHandle` has no write or read
+ *       channel, so no arm here measures bytes through the product registry;
+ *       the `P1-HOST-*`/`P5-HOST-*` arms measure the pinned service's channel.
  *   P2  exit-status propagation — a non-zero exit, a signal death and a
  *       transport error must be distinguishable downstream. The pinned host
  *       service DOES distinguish them; the product registry collapses every
@@ -38,10 +44,11 @@
  *       allocation (measured at a real backend counter). The DEFERRED shape is
  *       refused AFTER the module's own `apply` allocated a live legacy PTY — a
  *       FINDING with its own arm.
- *   P5  concurrency — two terminals under the same member must not cross writes,
- *       killing one must not kill the other, and every fact must carry the right
- *       terminal identity. The fixtures make mis-attribution DETECTABLE
- *       (different pids, different backends, swapped-read/write controls).
+ *   P5  concurrency — two terminals under the same member must not cross command
+ *       requests (nor, on the pinned host service, writes), killing one must not
+ *       kill the other, and every fact must carry the right terminal identity.
+ *       The fixtures make mis-attribution DETECTABLE (different pids, different
+ *       backends, per-session sent text and scrollback).
  *
  * NOT DUPLICATING LAYER A: `a5sf-bash.test.mjs` already covers the admission's
  * existence, the lane, and the BL-17 tripwire ("the inherited service must not
@@ -94,10 +101,10 @@ const CASES = [
     run: armOneAllocatePerSession,
   },
   {
-    title: 'P1-NO-COMMAND-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing',
+    title: 'P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing',
     label: 'p1-after-kill',
     kind: 'registry',
-    run: armNoCommandAfterKill,
+    run: armCommandGateAfterKill,
   },
   {
     title: 'P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY: revoking a member that owns no live shell records nothing, so that generation can still acquire (FINDING)',
@@ -301,7 +308,7 @@ async function armOneAllocatePerSession(harness) {
   assert.deepEqual(harness.log.filter((entry) => entry[0] === 'allocate').map((entry) => entry[1]), ['bind-a', 'bind-b'])
 }
 
-async function armNoCommandAfterKill(harness) {
+async function armCommandGateAfterKill(harness) {
   const acquired = await harness.acquire('bind-a')
   assert.equal(acquired.result.ok, true)
   const { domainId } = acquired.result.value

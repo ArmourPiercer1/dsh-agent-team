@@ -42,7 +42,7 @@ exactly which transitions are genuinely covered (§7).
 | layer | question it answers | already owns (do not restate) |
 | --- | --- | --- |
 | **A** — capability face × permission axis | is the LANE around a call correct: ceiling ∩ restriction, ask/deny, member isolation, fact attribution | `a5sf-member-policy.test.ts`, `a5sf-product-assembly.test.mjs`, `a5sf-tool-axis.test.mjs`, `a5sf-bash.test.mjs` |
-| **B** — per-native-tool contract | does the REAL face behave as its own contract says **inside** an admitted call: allocation identity, write/read fencing, exit-status propagation, reap, refusal ordering, per-terminal identity | **this document** |
+| **B** — per-native-tool contract | does the REAL face behave as its own contract says **inside** an admitted call: allocation identity, command-gate / descendant-audit ordering (product) and send/read fencing (pinned service), exit-status propagation, reap, refusal ordering, per-terminal identity | **this document** |
 | **C** — frozen-candidate live | does the assembled Host + preset + provider actually do it | previous boot rounds; not re-run here |
 
 Already covered by layer A **and deliberately not restated**: the admission's
@@ -80,13 +80,17 @@ terminal a fact belongs to), never the mere presence of a refusal. Run:
 `node --test tests/world-factory/a5sf-pty-contract.test.mjs` → **14 pass / 0 fail**
 (`suite.log`).
 
-### P1 — allocation lifecycle (`create → write → read → kill → reap`)
+### P1 — allocation lifecycle (`create → command gate → descendant audit → kill → reap`)
 
-The registry has **no write or read**. The only per-command operation is
-`assertCurrent(domainId)` (`terminal.ts:232-247`) — the gate every command must
-pass before it may run in that shell — so P1's "write" is pinned **on the gate**,
-and P1's "read" is the port's `descendants()` audit. That substitution is stated,
-not hidden (`GAP-PTY-CONTRACT-2`).
+`PtyHandle` has no write or read channel; "write"/"read" in earlier revisions of this face meant the command gate and the descendant audit.
+
+The registry has no command-request channel and no byte read. The only
+per-command operation is `assertCurrent(domainId)` (`terminal.ts:232-247`) — the
+gate that admits or refuses a **command request** against the current policy
+revision — so P1's former "write" arm is pinned **on that gate**, and P1's former
+"read" arm on the port's **descendant audit** (`descendants()`: what the recorded
+handle reports about descendants). That substitution is stated, not hidden
+(`GAP-PTY-CONTRACT-2`).
 
 **Semantics found** (all from the code, not preference):
 
@@ -108,7 +112,8 @@ not hidden (`GAP-PTY-CONTRACT-2`).
 `domainId`/`pid`/`backend`, `allocations() === 1`; a second binding allocates
 once more with a different `domainId`; allocate order is `[bind-a, bind-b]`.
 
-**Assertion** `P1-NO-COMMAND-AFTER-KILL`: `assertCurrent` ok before; after
+**Assertion** `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL` (recorded as
+`P1-NO-COMMAND-AFTER-KILL` before PD-9): `assertCurrent` ok before; after
 `revoke` the port got exactly `['SIGKILL']`, `assertCurrent` is
 `DOMAIN_REVOKED`, `allocations()` is still 1; a second `revoke` is `[]` and the
 kill log is unchanged; a fresh `acquire` for the revoked member is
@@ -259,6 +264,16 @@ backend is never closed.
 (shared existing-domain lookup), M6 (receipt pid from the first domain) reds the
 identity arm, I3 (port crosses writes) reds the host arm.
 
+> **Correction note (PD-9, 2026-11-08).** The P1 property label was
+> `create → write → read → kill → reap` and the gate arm was
+> `P1-NO-COMMAND-AFTER-KILL` when this face was recorded. The label now reads
+> `create → command gate → descendant audit → kill → reap` and the arm is
+> `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL`; assertions are unchanged.
+> `suite.log`, `red-first-run.log`, `mutations.log` and the run outputs preserved
+> in `a5sf-product-debt/**` keep the recorded pre-rename title — they are
+> historical output, not corrected in place. The retired words meant the
+> command gate and the descendant audit, never bytes.
+
 ## 4. Findings (reported, not fixed)
 
 **F1 — the registry cannot distinguish an exit from a kill** (`terminal.ts:149-158`,
@@ -299,12 +314,15 @@ enforces. Left unfixed here because the branch may not touch `packages/**`.
 there is nowhere for a confined terminal provider to be installed. This is a
 design gap, not a bug: the refusal is the current total answer.
 
-**GAP-PTY-CONTRACT-2** — the P1 property is "create → **write** → **read** → kill
-→ reap", but the product face has no write and no read. The write-order property is
-pinned on the command gate (`assertCurrent`) and the read property on the port's
-`descendants()` audit. Anything about actual bytes through a PTY
+**GAP-PTY-CONTRACT-2** — the P1 property used to be written "create → **write**
+→ **read** → kill → reap", but the product face has neither. What the arms pin is
+a **command gate** (`assertCurrent` admits or refuses a *command request* against
+the current policy revision) and a **descendant audit** (the recorded handle's
+report about descendants). Anything about actual bytes through a PTY
 (flow control, EOF, `SIGHUP` on close, scrollback) is not representable in this
-face at all.
+face at all. The retired labels were **renamed, not replaced by a channel**:
+PD-9 in the product-debt register records the correction, and the arms'
+assertions are unchanged.
 
 ## 5. What is NOT proven (and the exact one-shot command a boot would run)
 
@@ -341,7 +359,7 @@ passing** (`mutations.log`). Two kinds, and the distinction is load-bearing:
 | control | property | breaks | red arms (declared, measured) |
 | --- | --- | --- | --- |
 | M1 existing-domain lookup dropped | P1 | reuse path never finds the live domain | `P1-ONE-ALLOCATE-PER-SESSION`, `P5-KILL-ONE-NOT-THE-OTHER` |
-| M2 killed-domain command admitted | P1 | the "domain does not exist" refusal | `P1-NO-COMMAND-AFTER-KILL`, `P3-REGISTRY-REAP` |
+| M2 killed-domain command admitted | P1 | the "domain does not exist" refusal | `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL`, `P3-REGISTRY-REAP` |
 | M3 kill error propagated | P2 | the swallowed kill error | `P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES` |
 | M4 shutdown retains the dead domain | P3 | map deletion after kill | `P3-REGISTRY-REAP` |
 | M5 pre-mount refusal dropped | P4 | declared-inject refusal site | `P4-REFUSED-BEFORE-ALLOCATION` |
