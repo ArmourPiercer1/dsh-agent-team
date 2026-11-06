@@ -1,8 +1,8 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06. Gate HEAD: `1e50d55fc` (9/9 local, 362.8 s, census 677/8830;
+Date: 2026-11-06. Gate HEAD: `fa87927fd` (9/9 local, 299.4 s, census 677/8832;
 `gate.md`); docs after this file are docs-only. Evidence HEAD at the gate:
-`1e50d55fc`. Branch `alpha6/int-20261103`, rollback tag
+`fa87927fd`. Branch `alpha6/int-20261103`, rollback tag
 `a6-int-pre-585-20261105` (peeled `ccc9294f4e37c230841924713a9624e1553c545a`).
 No master merge, no un-draft, no production switch.
 
@@ -25,7 +25,8 @@ No master merge, no un-draft, no production switch.
 | Bounded wait expires: request stays pending, late allow is recorded fail-closed | PASS | `a6-timeout-r5`, A6-19/20 |
 | Human leg discovered from the remote ledger page only, then resolved | PASS | `a6-human-r13`, A6-21 |
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r12`, A6-22/23 |
-| Explicit human message after restart clears the durable Stop and re-plans the wake; historical call not revived | PASS | `a6-sticky-stop-r12`, A6-24 |
+| Explicit human message after restart clears the durable Stop and re-plans the ACTUAL pending leg; historical call not revived | PASS | `a6-sticky-stop-r13`, A6-24 |
+| A wake claimed by a crashed turn is reconciled without duplicate, durable pending request survives | PASS | `a6-inbox-r5`, A6-25 |
 | Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r6`, A6-2..6 |
 | Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r8`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
@@ -52,11 +53,18 @@ is closed by the clean 9/9 at `1e50d55fc`.
 - **Durable invalidation settlement**: crash recognition is fail-closed and no
   replay occurs, but no new non-authorizing settlement row was added this round
   to mark the original call invalid after restart.
-- **Explicit resume delivering a new wake**: proven (`a6-sticky-stop-r12`,
-  A6-24). What is not chained in one run is a *new* call's allow→execute after
-  resume; the ordinary path is proven separately by `a6-normal-r6`.
-- **Native Inbox cold-start replay**: not injected.
-- **Sink unit test**: not added; the E2E plus the code argument are the evidence.
+- **Explicit resume delivering a new wake**: proven with a real leg set
+  (`a6-sticky-stop-r13`, A6-24). What is not chained in one run is a *new*
+  call's allow→execute after resume; the ordinary path is proven separately by
+  `a6-normal-r6`.
+- **Inbox replacement wake**: `a6-inbox-r5` proves the crashed claim is not
+  duplicated, the stale intent row is reconciled away and the durable pending
+  request survives; a boot-time replacement wake is allowed but not required
+  by the assertion (`pendingAfter>0` is the work guarantee).
+- **Native Inbox cold-start replay**: a claimed-wake crash is covered
+  (`a6-inbox-r5`); an *unclaimed accepted* wake crash is not injected.
+- **Sink unit test**: not added; the marker surface now has unit tests
+  (`a6-wake-intent-store.test.ts`).
 
 ## Decision
 

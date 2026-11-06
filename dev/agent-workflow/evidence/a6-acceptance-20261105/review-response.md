@@ -154,3 +154,28 @@ The reviewer's unverified list is addressed by the new Host runs: normal
 `a6-normal-r6`, handoff `a6-handoff-r8`, timeout `a6-timeout-r5`, human
 `a6-human-r13`, Sticky Stop/resume `a6-sticky-stop-r12`, and the gate above.
 New-call-after-resume chaining and crash settlement remain open (below).
+
+
+## Second review at `1e50d55fc` — BLOCK, response at `fa87927fd`
+
+The follow-up review closed P1-1/P1-2 and the core of P1-3, but found a new P1:
+resume passed `currentLegIds: []` to `alpha6DispatchWake`, fabricating a
+zero-leg "ready" fingerprint. That could (a) duplicate a wake for unchanged work
+after the next post-turn rescan, (b) fire a spurious wake on an ordinary human
+chat on a live latch, and (c) contradicted the comment.
+
+FIXED at `fa87927fd`: resume now dispatches only when the reducer transition is
+`applied`, reads `readControlState`, runs the same `collectAlpha6DelegableLegs`
++ router path as the boot rebuild, and dispatches only when `fresh.length > 0`
+with the real request ids. Boot intent recovery now keys the Team by the row's
+own `rootSessionId` (the mount root is not always the Team root), so accepted
+wakes are actually reconciled; foreign/stale markers are skipped using the live
+Team record + generation.
+
+P2s: the Sticky Stop marker is written atomically and `isStopped` is a file
+existence check (a torn/older marker cannot re-open a stopped reviewer); marker
+round-trip/torn-marker unit tests added. The current tree is gated at
+`fa87927fd` (9/9, census 677/8832). Remaining P3s are disclosed, not claimed:
+A6-22's label still cannot distinguish withdrawal from an already-consumed row;
+A6-24 counts model requests rather than delivered messages; resume rebuild does
+not take the wake lock.

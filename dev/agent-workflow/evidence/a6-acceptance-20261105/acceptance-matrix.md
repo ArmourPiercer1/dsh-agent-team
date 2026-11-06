@@ -1,7 +1,8 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `1e50d55fc` (durable Stop/resume +
-  trusted cancel/message provenance; full gate 9/9 in `gate.md`).
+- **Integrated code HEAD under test:** `fa87927fd` (durable Stop/resume,
+  trusted provenance, real resume re-plan, Inbox crash reconcile; full gate 9/9
+  in `gate.md`).
 - **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
   `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
   `a6-exception-r2`, `a6-human-r9`, `a6-handoff-only-r6` and `a6-stop-r3`, whose
@@ -34,12 +35,12 @@
 | 12 | Handoff successor notification / production `reviewEvents` consumer | **PASS** | clean real Host `a6-handoff-only-r6`: transfer seq 22 → Leader decision seq 23 → execution once. The missing production `reviewEvents` consumer was the defect; fixed in `fd7a5d6c1`; `recipients.md` |
 | 13 | Human escalation authority / final approval | **PASS (authority); Host human wake NOT_REACHED** | clean real Host `a6-human-r9`: Officer escalate seq 12, human leg seq 13 (`reviewAuthority:'human-user'`), human allow seq 14 (`decider.kind:'human'`), consumed seq 15, command executed once; see `human.md`. The human is resolved through the remote `team.resolveControl` entry; `human-current-leg` routes to `native-human`, a deliberate no-op, so no Host human wake is claimed |
 | 14 | Execution-time revalidation, Stop/cancel/timeout non-revival | **PASS (timeout/Stop); cancel-racing-guard NOT_REACHED** | Stop: allow seq 14, cancel accepted, no consumption/execution, second allow `CONTROL_REQUEST_DECIDED` (`a6-stop-r3`). Bounded wait: `alpha6WaitTimeoutMs=5000`, PA stays pending, no consumption/execution, late allow fail-closed `authority-undetermined` (`a6-timeout-r4`, A6-19/20). A cancel racing the guard is still not injected; see `timeout-and-queue.md` |
-| 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **PARTIAL** | two real windows: post-write (`a6-crash-r4`: request durable, post-restart human allow fail-closed `authority-undetermined`, no execution) and after-allow-before-consume (`a6-crash-allow-r1`: allow seq 11 with `consBefore=0`, restart leaves `consAfter=0`, no duplicate consumption/execution, but the approved call is **not reconciled/replayed** — a lost approved call). after-consume-before-result (`a6-crash-consume-r2`: `consBefore=1`, restart keeps `consAfter=1`, no duplicate execution, but the consumed allow's command is never executed — a lost execution). before-PA-write (`a6-crash-before-r1`: kill at the Guard admission, restart leaves no phantom PA request/consumption and no execution). All four crash windows now have real-Host evidence; the two approval-window gaps above remain FAIL for recovery. Sticky Stop is **WIRED and Host-proven** (`a6-sticky-stop-r12`: durable marker before dispatch, no post-restart redelivery, explicit human resume clears it and re-plans the wake without reviving the historical call; `sticky-stop.md`); native inbox replay remains unreached; see `crash-and-inbox.md` |
+| 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **PARTIAL** | two real windows: post-write (`a6-crash-r4`: request durable, post-restart human allow fail-closed `authority-undetermined`, no execution) and after-allow-before-consume (`a6-crash-allow-r1`: allow seq 11 with `consBefore=0`, restart leaves `consAfter=0`, no duplicate consumption/execution, but the approved call is **not reconciled/replayed** — a lost approved call). after-consume-before-result (`a6-crash-consume-r2`: `consBefore=1`, restart keeps `consAfter=1`, no duplicate execution, but the consumed allow's command is never executed — a lost execution). before-PA-write (`a6-crash-before-r1`: kill at the Guard admission, restart leaves no phantom PA request/consumption and no execution). All four crash windows now have real-Host evidence; the two approval-window gaps above remain FAIL for recovery. Sticky Stop is **WIRED and Host-proven** (`a6-sticky-stop-r12`: durable marker before dispatch, no post-restart redelivery, explicit human resume clears it and re-plans the wake without reviving the historical call; `sticky-stop.md`); claimed-wake native Inbox reconciliation is proven (`a6-inbox-r5`, A6-25: no duplicate, stale intent discarded, durable pending request survives); an *unclaimed accepted* cold-start replay is still unreached; see `crash-and-inbox.md` |
 | 16 | Duplicate-approval elimination | **NOT_IMPLEMENTED** | evidence collected; recommendation only (see duplicate report) |
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on `1e50d55fc`; the evidence commits after
+Full local gate **9/9 PASS, zero skips** on `fa87927fd`; the evidence commits after
 it change docs/evidence only. `gate.md` records the exact SHA and outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.

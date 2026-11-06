@@ -89,3 +89,22 @@ Root `session-c1-smoke-a6-2026-11-05T21-21-30`, real Host `:3706`.
 a request. The Guard leg that was already written remains settled normally.
 This is the "before write" window for the Plane PA leg, not a claim about a
 crash before the Guard request.
+
+
+## Native Inbox wake reconcile — `a6-inbox-r5` (A6-25)
+
+Real Host, exact evidence head `fa87927fd`. The Officer wake turn was held open
+(30 s mock think time) after the native Inbox had CLAIMED the wake; the Host was
+SIGKILLed. On restart:
+
+- the durable intent row was still `accepted`; the native message was gone
+  (consumed by the crashed turn);
+- boot recovery discarded the stale row (`wake-*.json` 1 -> 0) and did not
+  duplicate the wake (1 -> 1 model wake request);
+- the durable Control request remained pending (`pendingAfter=1`), so no work
+  was lost even though the advisory wake was not re-issued;
+- a boot-time replacement wake is allowed by the protocol but was not required
+  by this assertion.
+
+**Not covered:** a crash in the narrower window where the Inbox ACCEPTED but
+never CLAIMED the message, and native cold-start replay of that message.
