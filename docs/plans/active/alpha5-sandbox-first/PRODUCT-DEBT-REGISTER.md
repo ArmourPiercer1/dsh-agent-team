@@ -19,6 +19,32 @@
 >
 > Date 2026-11-07 · base `origin/master` @ `f082a28c0` · 0 boots · `CORE_PATCH_BUDGET = 0`.
 
+## 0.1 Owner ruling 2026-11-09 — PD-1 semantics deferred, deliberately
+
+Asked directly whether revocation should bind **only the current generation** (add a `generation` input to `revoke`,
+`:249`, keeping the existing "archived then re-created may acquire again" behaviour asserted by
+`packages/runtime/test/a5sf-terminal-lifecycle.test.ts`), bind **all generations** via an owner-scoped tombstone
+(which closes the hole and also removes that existing capability), or take the larger **tombstone + explicit
+`restore`** shape, the owner ruled: **defer the decision and keep the defect latent.**
+
+What that ruling means, stated so it cannot be read as an acceptance:
+
+- **PD-1 stays a `governance hole`.** It is not downgraded, not reclassified, and not "accepted risk".
+- **The Shell-PTY face stays unwired.** The ship-order rule in §1 ("fix PD-1/PD-2 before wiring the terminal face")
+  now has a second, independent reason to hold: there is no ruling to implement, so BL-17's confined terminal face
+  must not be built on top of a revocation path whose semantics the owner has not chosen.
+- **The defect pin stays green on purpose.**
+  `tests/world-factory/a5sf-pd1-revocation-escape.test.mjs` continues to assert that the escape currently succeeds and
+  prints `PD1-ESCAPE-REPRODUCED`; it also reds if this row is deleted or downgraded, so the deferral cannot silently
+  become a fix or a disappearance.
+- **Nothing else is unblocked by the deferral.** The hole remains latent only because no governed realm installs a
+  `terminals` face (`RealmServiceFaces` = fs/subprocess/web, PD-3); that is the whole backstop, and it is a
+  composition-time absence, not an enforcement.
+- **Release stays BLOCKED**, and the PTY row of the end-state table continues to read "no confined shell at all".
+
+Recorded here rather than in a lane report because a deferred owner decision that lives only in a conversation is
+indistinguishable, six weeks later, from a decision nobody ever made.
+
 ## 1. The register at a glance
 
 | id | face | debt | consequence | decision |
