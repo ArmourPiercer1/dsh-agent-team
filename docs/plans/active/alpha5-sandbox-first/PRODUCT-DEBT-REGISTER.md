@@ -19,6 +19,20 @@
 > (PD-3); everything else is a capability loss, a false record, or a weak citation.
 >
 > Date 2026-11-07 · base `origin/master` @ `f082a28c0` · 0 boots · `CORE_PATCH_BUDGET = 0`.
+>
+> **2026-11-10 (LIVE-DEBT — this revision; every sentence above is unchanged).** Four live
+> dev-live results are folded in. Two of them are **governance holes that were inferred before
+> and are now measured**: PD-12 (`network: deny` does not govern the model-visible `bash`) and
+> PD-13 (the terminal path has no read axis). PD-14 records the sandbox-root divergence. PD-11
+> is **adopted** from the `TEST-WORLD` attribution lane, whose register-format row was filed
+> under `dev/agent-workflow/evidence/a5sf-domain-attrib/`. PD-6 and PD-10 are **annotated, not
+> duplicated**; the `chmod` gap gets **no row at all** because it is already disclosed in
+> [BL-17](ALPHA5-SANDBOX-BACKLOG.md) — it is annotated `LIVE-REPRODUCED` there instead (§4).
+> PD-12…PD-14 cite `DEV-LIVE` evidence carried on two unmerged branches (§6). That evidence is
+> **live development evidence — not a candidate claim, not a matrix grade, and structurally
+> incapable of `V@B=yes`** (the run-record finalizer refuses to grade a `DEV-LIVE` record as
+> candidate evidence). **No `V@B` moves because of this revision, and this revision itself ran
+> 0 boots.**
 
 ## 0.1 Owner ruling 2026-11-09 — PD-1 semantics deferred, deliberately
 
@@ -60,6 +74,10 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-8 (F1) | Shell-PTY | The shutdown receipt cannot tell an exit from a kill | evidence-quality | semantics |
 | PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1's "write" and "read" were a command gate and an audit **(FIXED)** | evidence-quality | correctness |
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | Every real `web_search` fact records a malformed marker | evidence-quality | semantics |
+| PD-11 (D1) | Boot | A shared-domain teardown is reported as `TeamDomain is closed` and the detached boot keeps writing into it | evidence-quality | semantics |
+| PD-12 (Q5) | Subprocess | `network: deny` never governs the model-visible `bash`; the child runs with no network namespace | governance hole | semantics |
+| PD-13 (READ-AXIS) | Shell-PTY | The terminal path has no read axis: a Member's own shell read a write-only-lane secret and returned its bytes | governance hole | semantics |
+| PD-14 (SANDBOX-ROOT) | Subprocess | A Member session's sandbox root is the pinned host checkout, not the World workspace | behavioural divergence | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
@@ -70,6 +88,16 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 > **PD-7 = `572a7625d`（#619）**、**PD-9 = `bab33c4c6`（#620）**。因此按“FIXED 只在合并 PR 说了
 > 才算”的口径，这两行现在是 `FIXED`（有已合并 PR），其余 **8 行仍 `OPEN` 且仍待 owner 决策**。
 > 状态汇总表在 `ALPHA5-END-STATE.md` §2；本文件 §2 的逐条详情、验收条件与 anchors 一字未动。
+
+> **2026-11-10 状态更新（LIVE-DEBT；只追加，不改任何行文）**：本文件从 **10 行**变为 **14 行**，
+> 但**只有 4 行是新的**：PD-11 是从 `evidence/a5sf-domain-attrib/` 认领的既有行（该 lane 已经写好
+> 完整行文并明说“待插入 PD-11”），PD-12/PD-13/PD-14 是 dev-live 弧实测出来的新行。**没有**为
+> `chmod` 缺口新建行（`BL-17` 已经披露，本次只在那边标注 `LIVE-REPRODUCED`），也**没有**为
+> web locator 或拒绝记录不对称新建行（并入 PD-10 的 2026-11-10 标注）。PD-6 的后果类别句子在
+> deny 车道上被实测推翻，**行文保留、追加标注**，新洞记在 PD-12。四条新行的证据分布见 §6：
+> PD-11 的证据在 master；PD-12/PD-13/PD-14 的证据在两条**未合并**分支上。
+> 因此“行数 14、待裁决 **11**（PD-1/PD-7/PD-9 已 FIXED）”这个数字里，有 3 行的证据还不是本树的字节；
+> `V@B` 不因此变动。
 
 ## 2. The rows
 
@@ -237,6 +265,15 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and the owner's decision to expose
   `bash` at all; [BL-42](ALPHA5-SANDBOX-BACKLOG.md) before any "offline but functional" claim.
 - **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1230-L1236` contains `if (!isAbsolute(program))` ; `packages/runtime/team-services/src/subprocess.ts#L1210-L1214` contains `a spill file is not produced by this provider`
+- **2026-11-10 LIVED annotation (append-only; the fields above are not edited)**: this row's *fact*
+  — the shipped transient shell cannot ride the confined face — **stays true and is now measured
+  live** (a Member's `bash` is served by `SandboxBashExecutor` on the base subprocess service, with
+  0 calls into the confined provider). Its *consequence sentence* — "fail-closed, nothing executes;
+  a coverage gap, **not a hole**" — is **contradicted on the `network: deny` lane**: nothing
+  fail-closes, the child runs, and it runs outside the deny. The class of the hole itself is
+  recorded as its own row, **PD-12**, so this row is not re-graded and not duplicated; read PD-6 as
+  "a coverage gap for an *allow* lane, and the mechanism that makes PD-12 reachable". Evidence:
+  `Q5` in `a5sf-sub-devlive/README.md` (§6 of this file names its branch), boots 10/11.
 
 ### PD-7 (F4) — a stale-but-live shell is reported `active`
 
@@ -338,6 +375,193 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   still absent; `P4-SHARED-GUARD-BOTH-PATHS` and `P1-GUARD-BEFORE-PROVIDER` stay green.
 - **blocked by**: owner approval; not the boot budget.
 - **anchors**: `packages/runtime/team-services/src/web.ts#L240` contains `function declaredUrlOf` ; `packages/runtime/team-services/src/web.ts#L246` contains `queries:${String(queries.length)}` ; `packages/runtime/team-services/src/web.ts#L249` contains `<${kind}:malformed-request>`
+- **2026-11-10 LIVE-EVIDENCE annotation (append-only; the fields above are not edited)** — two
+  evidence-quality items, folded here rather than given rows of their own, because both say the
+  same thing PD-10 says: *the record does not say what it appears to say*.
+  1. **The locator defect is now live-measured, not inferred.** On a real Host the model's own
+     `web_search` call produced exactly one guard fact (`decision: deny`,
+     `decidedBy: NETWORK_UNCONFINED_REALM`, `method: web:search`, 0 provider entries on all five
+     channels) whose locator is `<search:malformed-request>`; the fetch lane's locator is the
+     real URL. Artefacts: `run-06/item-web-deny-search.json`, `run-06/guard-facts.json`,
+     `run-07/…` (the agreeing pair) in `evidence/a5sf-web-devlive/`. The same session also shows
+     `toolBindingIdentity: null` on both guard facts even though the offer row names `team/web` as
+     the binding — the fact carries `realm: member` and the Member instance, not the binding id.
+     That null is **cross-face**: the Shell-PTY lane's `guard-facts.json` carries it on both of its
+     facts too, so it is a property of the guard-consult record, not of the web face.
+  2. **Which refusals leave a record is not uniform — an auditability asymmetry, not a bug.**
+     Measured on the Subprocess face: the three shell-shape refusals
+     (`SUBPROCESS_SHELL_ARGV_UNSUPPORTED`) each write **exactly one** guard fact
+     (`method: spawn`, `decidedBy: IO_READ_DENIED`, one consultation row per refusal), while the
+     **two** most consequential refusals write **zero**: `NETWORK_UNCONFINED_REALM` and
+     `SUBPROCESS_PROGRAM_NOT_ABSOLUTE` are thrown by the confined face *before* it consults the
+     guard, so the sink is legitimately empty. A reviewer must not read "0 guard facts" as "nothing
+     was refused", and must not read "1 guard fact" as "the lane decided it" — the typed code lives
+     on the caller's refusal, and for shell-shape refusals the fact's `decidedBy` is the observed
+     transport (`IO_READ_DENIED`), not the argv refusal. Artefacts:
+     `runs/boot10/consultations.jsonl` (5 rows: 2 allow + 3 denials), `runs/boot10/probe-report.json`
+     (`argvPredicate`, `denyBash`), `driver/guard-facts.json`. **No new row:** the asymmetry is not a
+     capability change; it is a limit on how much an empty sink proves, and it belongs with PD-10's
+     "the record is not the claim".
+
+### PD-11 (D1) — a shared-domain teardown is reported as `TeamDomain is closed`
+
+- **source**: `D1` in [DEBT-ROW-PD-11.md](../../../../dev/agent-workflow/evidence/a5sf-domain-attrib/DEBT-ROW-PD-11.md) — the register-format row the `TEST-WORLD` attribution lane filed for adoption; its evidence is [a5sf-domain-attrib/README.md](../../../../dev/agent-workflow/evidence/a5sf-domain-attrib/README.md) §3 and §7.
+- **true today**: the production row's `apply()` returns before its tracked `ready` promise settles,
+  and the rejection handler only logs and swallows it. The TeamDomain is opened on the **shared**
+  upstream `storageDomain` facility, which another fiber owns; when that facility is disposed inside
+  the boot window (loader unwind, `Fiber._reload`, a world teardown) its disposer closes the Team
+  domain under the still-pending bootstrap. The next repository touch then fails as
+  `TeamDomainError('NOT_OPEN', "store '<store>' operation '<op>' was rejected: the TeamDomain is
+  closed")`, which is indistinguishable from a genuine domain-lifecycle failure of this row. Because
+  the bootstrap is detached, the write is attempted **after** the row/tree was disposed; the row-stop
+  disposer is the only closer that waits for `ready`, so an independent facility disposal is
+  invisible to it.
+- **not true**: that `TeamDomain is closed` identifies who closed the domain or why; and that a
+  boot-window teardown is a no-op for the detached bootstrap. Neither the store/op in the message nor
+  the presence of the message implicates any row's composition.
+- **security consequence**: **evidence-quality** — no Member gains anything; the cost is an
+  operator-facing false lead. A teardown of the host's storage plane is reported as a Team-domain
+  defect, which is how one wasted start (#5 of 5) and a wrong turn toward row composition were
+  produced. It can also mask a real storage failure of the same shape.
+- **current backstop**: the console line `[dsh-agent-team] bootstrap FAILED: <stack>` and the row's
+  own `/team-remote` mount log. Neither carries the disposal/teardown event, so the operator cannot
+  tell "my domain broke" from "somebody closed the shared facility".
+- **smallest honest fix**: (a) on `NOT_OPEN`, report a distinct code/detail such as
+  `TEAM_DOMAIN_TORN_DOWN` carrying the row-scope disposal state (or attach the seam error's own
+  detail), so the message says the domain was closed **under** an in-flight boot rather than by it;
+  (b) stop the bootstrap at the first write attempt when the row scope is already disposed (a
+  disposal fence checked between write-port calls) instead of writing into the dead domain. Both are
+  local to `host.ts` + `root-binding/write-port.ts`; neither needs an upstream change.
+- **proof**: [domain-attrib.mjs](../../../../dev/agent-workflow/evidence/a5sf-domain-attrib/domain-attrib.mjs) E0 (only seam code `closed` produces the message), E2/E2b/E3 (one teardown, three different stores/ops — the message is a timing artifact), E7 (the 404-then-teardown sequence reproduces the recorded artefacts), E7b (a bootstrap that really fails answers `200 {ok:false}`, not 404).
+- **blocked by**: nothing for (a)/(b); the owner decides the code/name. A positive Host control (the
+  same plan under a polling health gate) is not required to establish the mechanism and was
+  deliberately not spent.
+- **anchors**: `packages/runtime/src/plugin/host.ts#L3159` contains `const ready: Promise<TeamProductionRoot> = bootstrap()` ; `packages/runtime/src/plugin/host.ts#L3168` contains `void ready.catch(` ; `packages/storage/schema/errors.ts#L166` contains `the TeamDomain is closed` ; `packages/runtime/root-binding/write-port.ts#L47` contains `putSessionBinding(binding: SessionBindingDto)` ; `packages/runtime/root-binding/fresh-root.ts#L192` contains `ports.writes.putSessionBinding({`
+- **status**: OPEN — adopted 2026-11-10 from the row filed at `dev/agent-workflow/evidence/a5sf-domain-attrib/DEBT-ROW-PD-11.md`; that lane was host-free (0 boots), and its verdict was `TEST-WORLD` (the boot #5 abort was a readiness-gate race in the evidence driver, not this defect).
+
+### PD-12 (Q5) — `network: deny` does not govern the model-visible `bash`
+
+- **source**: `Q5` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §Q1/§Q5 — evidence carried on branch `task/a5sf-sub-devlive-20261110` (PR #635); see §6 of this file.
+- **true today**: on the pinned Host, the Member on template `worker-deny` declares `network.access: deny`, and
+  the confined face does refuse **its own** calls (`NETWORK_UNCONFINED_REALM`, 0 processes, body
+  never ran). The **same Member, same lane**, then called the model-visible `bash` tool: the tool
+  result is `isError=false` and carries the marker; `shell-exec` records
+  `executor: "SandboxBashExecutor"` on the inherited **base** subprocess service; the confined
+  provider was called **0** times with that marker; one OS process carried the command; and the
+  deployment sandbox argv is `bwrap … --unshare-pid … -- bash -c …` with **no `--unshare-net`**, so
+  the child shares the host network namespace. The deny is a property of the **face**, not of the
+  Member: it is consulted only when that face is called, and the `bash` tool never calls it.
+- **not true**: that a `network: deny` Member cannot run a shell command; that the deny is
+  "enforced for the Member" (it is enforced for one caller of one face); that the `bash` child is
+  network-namespaced. It is also **not** claimed that the child reached the internet: no egress was
+  attempted (the authority withholds real external network), so the measured fact is "not refused,
+  and no network namespace requested".
+- **security consequence**: **governance hole** — a Member gains a capability the compiled ceiling
+  forbids. The ceiling was compiled and is enforced; it simply is not on the path the tool takes.
+- **current backstop**: **none on the product path.** The face's deny lane refuses only because the
+  host's capability probe reports `network-destination: unsupported`; that probe is never consulted
+  on the `bash` path, so it is not a backstop for this row. `bash` is exposed at all only because a
+  product preset surfaces it, and no product composition declares a shell class (BL-17) — which is
+  why the *face's* own shell lane refuses while the member's tool runs.
+- **smallest honest fix**: route the Member's `bash` through the confined face — a surface-neutral
+  shadow of `bash` the way `read`/`write`/`grep`/`glob` are already shadowed — plus BL-17's
+  shell-class wiring, so the deny lane is consulted before the command runs. Adding `--unshare-net`
+  to the *host* executor's argv is **not** an honest fix here: it changes the pinned host composition
+  (forbidden by `CORE_PATCH_BUDGET = 0`) and would still leave the decision outside the Member's
+  compiled ceiling.
+- **proof**: `sub:network-deny-bash-lane` must flip from "it runs" to "the same command under
+  `network: deny` is refused with the face's typed code and 0 processes", or to "it runs inside a
+  network namespace while the provider carries an `enforced` capability row" (the latter needs
+  BL-42). `sub:network-deny` (the face refusal), `sub:face-admitted` and the four `argvPredicate`
+  vectors stay green.
+- **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (an `enforced` network backend), plus the owner's decision to expose `bash` through the face at all.
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1413` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L204` contains `readonly subprocess: ConfinedSubprocessSurface | null`
+- **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ceiling term** —
+  for that Member the compiled ceiling says `network: deny`, yet the effective I/O of the Member's
+  model-visible tool set includes a network-capable child, because the ceiling is compiled per
+  **face** while the ToolRestriction bound `bash` to an executor that never enters that face; the
+  intersection was computed on a mechanism the call does not traverse.
+- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-sub-devlive-20261110` (draft PR #635), boots 10 and 11 (the agreeing pair, identical driver bytes); 11 starts total in that lane, 0 of them candidate.
+
+### PD-13 (READ-AXIS) — the terminal path has no read axis
+
+- **source**: `READ-AXIS` in [a5sf-pty-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-devlive/README.md) §3a/§3b and §6/§7.1 — evidence carried on branch `task/a5sf-pty-devlive-20261110` (PR #634); see §6 of this file.
+- **true today**: a Member's `bash` is the preset's inherited persistent shell
+  (`@deepseek-ai/dsh-tool-bash-persistent` → the isolated `@deepseek-ai/dsh-terminal`
+  `TerminalSessionService` → `@deepseek-ai/dsh-terminal-bash` → a real `/dev/pts/N`). One Member's
+  several commands share **one** shell (`export`/`cd` state survives); a second Member gets its own
+  (`pty-2`). For that command the confined face recorded **0** spawns and **0** guard facts. And
+  the shell **read a secret the confined write-only lane declares unreadable and returned its
+  bytes**, exit 0 — the artefact's own `locus` says the confined lane was *never consulted*. Asked
+  the same question, the confined face refuses on the **read** axis with `IO_READ_DENIED`, 1 guard
+  fact, **0** provider calls and **0** bytes. The machinery works; it is simply not on the terminal
+  path.
+- **not true**: that a Member's read axis is enforced on the product shell; that "0 guard facts"
+  means nothing happened; that PD-9's "P1 read" was a byte channel that would have caught this (PD-9
+  says exactly the opposite: the product registry has no write/read channel, which is why no arm in
+  that suite could ever see this hole).
+- **security consequence**: **governance hole** — a read the compiled ceiling forbids is delivered
+  to the Member as bytes. Confirmed on two independent starts (08, 09) with the same locator class,
+  and corroborated by the `chmod` reproduction on the same path (BL-17, annotated
+  `LIVE-REPRODUCED`).
+- **current backstop**: none. `RealmServiceFaces` has no `terminals` face, so no realm can install a
+  confined terminal (PD-3), and the shell that a Member does get is the host preset's, outside the
+  realm's reach. That absence is the whole reason the hole is not *also* a wiring bug.
+- **smallest honest fix**: PD-3's confined terminal face **plus** routing the Member's `bash` to it,
+  and stopping the preset's persistent-shell group from mounting `dsh-terminal` for Members — if both
+  terminals exist, the Member holds one governed and one ungoverned shell and the answer forks. Not a
+  patch; a face and a backend.
+- **proof**: a live arm in which the same `cat` under the same ceiling is refused through the
+  Member's own `bash` (typed `IO_READ_DENIED`, 0 bytes, ≥1 guard fact naming the locator);
+  `item3-product-shell-read` is then superseded by that arm, and the confined-face arm
+  (`item4-write-only-read-denied`) stays green as the contrast.
+- **blocked by**: PD-3 / [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (the face), the ship-order rule (PD-1/PD-2 before wiring), and the owner's decision on the terminal face.
+- **anchors**: `packages/runtime/team-services/src/types.ts#L200-L204` contains `readonly fs: 'confined'` ; `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]`
+- **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ToolRestriction
+  term** — route C shadows only the tools it re-registers (the FS/search pair); `bash` is not one of
+  them, so the Member's `bash` is served by the preset's own tool row, carries the preset's legacy
+  PTY, and no lane is consulted at all; the ceiling's read denial is not evaluated, so the
+  intersection is not merely wrong, it is never taken on this path.
+- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-pty-devlive-20261110` (draft PR #634), runs 08 and 09 (the stable pair, identical verdicts and facts, no code change between them); 9 starts total in that lane, 0 of them candidate.
+
+### PD-14 (SANDBOX-ROOT) — a Member session's sandbox root is the pinned host checkout
+
+- **source**: `SANDBOX-ROOT` in [a5sf-sub-devlive/README.md](../../../../dev/agent-workflow/evidence/a5sf-sub-devlive/README.md) §5 — evidence carried on branch `task/a5sf-sub-devlive-20261110` (PR #635); see §6 of this file.
+- **true today**: the shipped executor's `sandboxPolicy` for a Member's `bash` child is
+  `{mode: 'workspace-write', workspaceRoot: <the pinned host tree>}` — in the recorded artefact the
+  resolved root is `<main checkout>/tests/deepseek-harness-test-use`, while the run's
+  `expectedWorkspaceRoot` is the World's own `…/homes/<world>/workspace`. The child's `bwrap` argv
+  `--bind <host tree> <host tree>` is **read-write on that tree**. The cause is the pinned
+  resolver `resolveWorkspaceRoot(session?.header.cwd ?? this.workspaceRoot)`: a *session* cwd wins
+  over configuration, and the World gives the Team a session cwd of the host tree; the World's own
+  record says the same for member sessions ("for member sessions that is the factory's pristine
+  hostTree … NOT the world home"). Measured twice: an override row without `name` disabled the plugin
+  (boot 6), and with `name` it still lost to the session cwd (boot 7).
+- **not true**: that a Member's shell is rooted in its World workspace; that the World home is the
+  boundary of what a Member's `bash` can write (it is the boundary of what gets *deleted* at
+  teardown); that a `sandbox-policy` config row can pin the root (it cannot — the session cwd wins).
+- **security consequence**: **behavioural divergence** — no Member gains a permission relative to
+  its compiled ceiling (the ceiling still bounds the confined faces), but the confinement the
+  compiler names is applied to a different tree than the one the World claims, and the
+  "disposable World" assumption is false for that child: its writes land in the **shared pinned
+  checkout**, which is never removed and whose pristine-ness other legs assert. The hygiene
+  consequence is a cross-lane contamination channel: any future lane whose command writes leaves
+  residue in the tree that every other lane (and the candidate runtime) reads.
+- **current backstop**: hygiene receipts, not enforcement — every run in the SUB lane recorded
+  `git status --porcelain` empty before and after, and its commands were `printf`-only; the same
+  lane's README says explicitly that "any future lane whose command writes must fix the session cwd
+  first". Nothing at the OS level protects the tree: the child is genuinely read-write on it.
+- **smallest honest fix**: set the Team session's `header.cwd` to the World workspace (a World/driver
+  fix, not a product change), **or** state in the product documentation that a Member session is
+  rooted at the host checkout and stop presenting the host tree's pristine-ness as a boundary. A
+  `sandbox-policy` override row is measured **not** to be a fix.
+- **proof**: a live arm recording `sandboxPolicy.workspaceRoot === <this World's workspace>` **and**
+  a `pwd` from inside the child under that root; the porcelain-empty receipt stays green; boots 6–7
+  and 10–11 stay as the historical measurement.
+- **blocked by**: an owner decision on what a Member session's sandbox root should be; the World-side change is test infrastructure, not product, and touches no `packages/**`.
+- **anchors**: `tests/world-factory/lib/u7-fsmut-assembly.mjs#L273-L278` contains `for member sessions that is the factory's`
+- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-sub-devlive-20261110` (draft PR #635), boots 7 (the measured red), 10 and 11 (the agreeing pair); the Shell-PTY lane independently measured that a Member's shell **starts** in the same host checkout.
+
 
 ## 3. Ranking rationale
 
@@ -369,7 +593,32 @@ Member axis to speak of; the other nine are consequences, records or citations. 
 needs a boot to decide, fix, or verify: every fix lands with a host-free arm and every proof names
 the arm that must change and the arms that must stay green.
 
+> **2026-11-10 ranking correction (append-only; the rationale above is the 2026-11-07 reading).**
+> The ordering above was written when the two "only these two pass the hole test" rows were the only
+> holes **known**. Live measurement added two more that pass the hole test **today, on a wired
+> path**, so the live ranking is: **PD-13 and PD-12 first** (a Member's own `bash` delivered a read
+> its ceiling forbids and ran a command a `network: deny` ceiling forbids — no composition change
+> needed, both measured), then **PD-2** (latent, needs the face), then **PD-3** (the structural cause
+> of PD-13 and the ship-order gate), then PD-1's remaining risk (fixed), then PD-4/PD-5/PD-6/PD-14
+> behaviour, then PD-7/PD-8/PD-9/PD-10/PD-11 records. The "if only one row is fixed" sentence is
+> **superseded in practice**: fixing PD-1 (done) removed the withdrawal hole; what remains open at
+> the top is the pair of live holes, and both are closed by the same build (a confined terminal face
+> that the Member's `bash` is routed through) — which is also why PD-13 and PD-12 must be read
+> together, exactly as PD-2 and PD-3 already were.
+
 ## 4. Not on this list, deliberately
+
+- **The undeclared `chmod` gap — `LIVE-REPRODUCED`, still not a row.** It was disclosed, not
+  discovered: Landlock has no "change mode" right, so a same-uid inode that a shell can reach can be
+  `chmod`-ed without any declaration; `chmod` targets are therefore a *declaration* on the write
+  lane, and an undeclared `chmod` is outside this admission's reach
+  ([a5sf-bash/README.md](../../../../dev/agent-workflow/evidence/a5sf-bash/README.md) §6.2, [BL-17](ALPHA5-SANDBOX-BACKLOG.md)).
+  **2026-11-10:** reproduced live on the Shell-PTY lane — `chmod 600` on a file inside the read lane
+  and outside the write lane changed the mode `644 → 600` with **no** `chmod` declaration, **0**
+  guard facts and no typed code (`runs/run-08/item5-chmod-gap.json`; identical on runs 03, 04 and
+  09). The row was **not** duplicated; BL-17 carries the dated `LIVE-REPRODUCED` annotation. It is
+  listed here so that a reader scanning this register for the chmod gap finds the pointer rather
+  than a hole in the list.
 
 - **"`allow fetch / deny search` is not expressible."** A product statement, not a bug: one
   compiled `network.access` field and one guard serve both call paths
@@ -404,7 +653,9 @@ the arm that must change and the arms that must stay green.
 `tests/world-factory/a5sf-debt-register.test.mjs` parses this file and reds when:
 
 - a row's source finding no longer appears in the evidence file that originated it (a fix landed
-  elsewhere and this register was not updated);
+  elsewhere and this register was not updated) — for a row whose evidence is not yet on master, the
+  row must instead be **declared** in §6 with the same id, path, branch and PR, and the declaration
+  **reds once the file lands** so it cannot rot;
 - an anchor line (`path#Lstart-Lend`) no longer contains the substring the row claims;
 - ids are not unique and contiguous `PD-1…PD-n` in document order;
 - a row loses any required field, or the summary table and the detail block disagree on a row's
@@ -419,6 +670,37 @@ No row is marked `UNVERIFIED`: every "true today" sentence traces to the named e
 or to an anchor line verified on 2026-11-07. Two facts are deliberately scoped — PD-2's liveness
 is a session-level fact measured at a recorded port (an OS-level PTY observation would need the
 boot in the PTY README §5), and PD-4's proxy table is an evidence measurement, not a re-run here.
+
+**2026-11-10 addendum.** The four new rows are scoped the same way: PD-11's mechanism is host-free
+(0 boots, `TEST-WORLD` lane); PD-12, PD-13 and PD-14 are **`DEV-LIVE` live development evidence**,
+which is a record class that cannot become a candidate claim or a `V@B` value, and every quoted
+number is an artefact under the named branch. Three of the four therefore depend on a branch that
+is not on master — §6 states exactly which, and why keeping them here is better than keeping them
+in a conversation. Nothing in this revision was re-measured: this revision ran 0 boots, and every
+claim cites an artefact that was read.
+
+## 6. Rows whose evidence is not yet on master
+
+Three rows cite `DEV-LIVE` evidence that lives on a branch whose PR is still open. They are
+recorded here rather than deferred, because a measured governance hole that exists only in a
+conversation is indistinguishable, six weeks later, from a hole nobody measured. The declaration is
+machine-checked (`tests/world-factory/a5sf-debt-register.test.mjs`): the branch, the path and the
+finding id are asserted, and the declaration reds the moment the path appears on master, so the
+table cannot outlive its reason.
+
+| row | finding id | branch | PR | evidence path (repo-relative) | section |
+|---|---|---|---|---|---|
+| PD-12 | Q5 | `task/a5sf-sub-devlive-20261110` | #635 | `dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` | §Q5 |
+| PD-13 | READ-AXIS | `task/a5sf-pty-devlive-20261110` | #634 | `dev/agent-workflow/evidence/a5sf-pty-devlive/README.md` | §3a/§3b |
+| PD-14 | SANDBOX-ROOT | `task/a5sf-sub-devlive-20261110` | #635 | `dev/agent-workflow/evidence/a5sf-sub-devlive/README.md` | §5 |
+
+What a reviewer must do with those three rows until the branches land:
+
+1. Read the named section **on the branch** (`git show <branch>:<path>`), not this digest.
+2. Treat their `proof` fields as **unexecuted on master**: the arms they name do not exist in this
+   tree yet, so "stays green" is a future obligation, not a current receipt.
+3. Do **not** aggregate them into a matrix cell. `DEV-LIVE` rows are not candidate evidence and
+   carry no `V@B`; the run-record finalizer refuses that conversion by construction.
 
 Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 `node scripts/doc-checks.mjs`, `git diff --check`.

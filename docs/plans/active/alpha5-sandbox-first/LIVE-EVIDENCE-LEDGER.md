@@ -12,6 +12,11 @@
 > **为什么没有产出结论**，以及**今天哪一条 host-free 检查会先挡住同一个失败**。
 > 所有事实都能在 `dev/agent-workflow/evidence/` 下打开；不能打开的写 `UNVERIFIED`。
 >
+> **2026-11-10 增补（LIVE-DEBT；只追加，§1–§4 的账一字未动）**：文件现在有**两个弧**。§1–§4 是
+> **候选分配**（P2-04，5/5/0，已关闭）；**§5–§6 是 `DEV-LIVE` 弧**（31 次自授权开发启动，四条车道），
+> 记录它实际用掉多少次、每条车道抓到哪些**仪器缺陷**（含一次靠读原始证据才抓到的**假绿**），
+> 以及旧模式与新模式的**时间算术**——只写能算的，不写倍数。两个弧**不可相加**。
+>
 > 日期：2026-11-08 · 树：`task/a5sf-consolidate-20261108` @ `dfab3fa5c3a5a5637fb1c02c941cfc1e5c9d05c0`
 > （`origin/master` = PR #626 tip；本仓历史中**没有** PR #627）· **本文件 0 boots** ·
 > `CORE_PATCH_BUDGET = 0` · 不改任何 grade / `V@B` / `packages/**` / `.github/**`。
@@ -122,3 +127,120 @@ live 结论（current）0   两条历史结论被 #606 的 Q7 撤回；BL-17 两
 - **不否定 #606 之前的结论**：11/11 仍是那棵树上的事实，只是不是今天这棵树的 current claim。
 - 未逐条复跑已归档的 run log；本文件的每个数字都直接取自 §1 点名文件，凡文件未记载的写 `UNVERIFIED`
   （唯一一处 = §2.2 的“BL-18 若启动会怎样”）。
+
+---
+
+# 5. 第二个弧：`DEV-LIVE`（31 次启动，四条车道）
+
+> **这一节是新弧，不替换 §1 的五次分配。** §1 记的是**候选分配**（P2-04，已关闭，5/5/0）；
+> 本节记的是 2026-11-09 owner 裁决之后、由面级 `scope: "DEV-LIVE"` authorisation 自授权的
+> **开发启动**。两者**不能相加**、**不能互抵**：`DEV-LIVE` 记录**永不**产出 `V@B=yes`，
+> 也**不得**计入任何候选分配（`docs/DEV-LIVE-OPERATOR-GUIDE.md` §2/§3；
+> `docs/ROUTER_RULES.md` §0.1 第 4 条）。这一节的全部数字都取自产物自带的 `at` 字段与
+> 各车道 README/RUNS 的表格，未做二次换算。
+
+## 5.1 实际用掉的启动数（数据，不是预算）
+
+| 车道 | 启动 | 首次启动（产物戳记 UTC） | 首个**稳定**结果 | 首个稳定结果那次启动 | 稳定判据 | `DEV-LIVE` 证据 |
+|---|---|---|---|---|---|---|
+| Web | **7** | `2026-11-06T08:27:50.659Z` | run-06（`2026-11-06T08:51:47.555Z`），与 run-07 逐条一致 | 第 6 次 | 连续两次同 driver、同 head、逐条 fact 相同（`two-run-agreement.json`） | `dev/agent-workflow/evidence/a5sf-web-devlive/` |
+| FS/Search | **4** | `2026-11-06T08:37:29.565Z` | run-3（`2026-11-06T08:51:39.071Z`），与 run-4 逐行一致 | 第 3 次 | 14 行表在 **reason 粒度**逐行相同（`driver/runs/INDEX.json`） | `dev/agent-workflow/evidence/a5sf-fs-devlive/` |
+| Shell-PTY | **9** | `2026-11-06T10:51:28.404Z` | run-08（`2026-11-06T11:10:23.491Z`），与 run-09 逐条一致 | 第 8 次 | 六条 verdict + 事实逐条相同、期间无代码改动 | `dev/agent-workflow/evidence/a5sf-pty-devlive/`（分支 `task/a5sf-pty-devlive-20261110`） |
+| Subprocess | **11** | `2026-11-06T10:53:21.743Z` | boot 10（`2026-11-06T11:15:22.579Z`），与 boot 11 逐条一致 | 第 10 次 | 同 driver 字节（`sha256=a05c62cb…`）、8 个命题 + 4 个 case 相同 | `dev/agent-workflow/evidence/a5sf-sub-devlive/`（分支 `task/a5sf-sub-devlive-20261110`） |
+| **合计** | **31** | 最早 `08:27:50.659Z` | 4 个稳定结果（每面一个） | — | — | — |
+
+每次启动都有它自己的 World（`tests/homes/<world>`）、自己的 3180 族端口、自己的 teardown 回执
+（`portClosed`/`homeRemoved`/无孤儿进程），以及一条 `DEV-LIVE` 账目行（`budget-intent` + boot +
+`dev-live-outcome`）。Web 7 / FS 4 / PTY 9 / Sub 11 = **31**。机器并发上限 2 个 dev Host 未被突破：
+Web 与 FS 的启动时刻在 08:27–09:03 交错、PTY 与 Sub 在 10:51–11:17 交错，每条车道各自的 README/RUNS
+都记了同一件事（FS：一个槽位、另一个槽位归另一条车道；PTY：`lease.holdsSlot()` 在每次 `boot()` 后断言）。
+
+## 5.2 每条车道抓到的仪器缺陷（这是本节真正的产出）
+
+四条车道的失败**几乎都不是产品失败**，而是仪器把“错误的绿”或“错误的红”交给操作者。逐条列，
+因为它们对下一个面是可直接复用的陷阱清单：
+
+| 车道 | 仪器缺陷 | 它会把读者骗成什么 | 修法（留在 driver/预检里） |
+|---|---|---|---|
+| Web（run-01） | 继承的 mock `makeDecide(request)` 把 `{seq, req}` 信封当成 request body，每一轮都落进无害的 `fallback` 分支 | “两侧都 REFUTED、0 fact”看起来像产品没接线；实际**没有任何 model tool call 被发出** | `decide({seq, req})` 读 `req`；决策按请求持久化；两个 legacy Member 模板各管一个 case |
+| Web（run-02） | fetch Member 的**第一个**请求是带 delegation marker 的标题生成轮，driver 按 marker 重新 key 后把唯一一次脚本化的 tool call 花在标题轮上；search 侧把 guard 的 `capability-probe` 行当成 provider entry | “deny 车道泄漏到 provider”/“shot 丢了” | 标题/发现轮不得被 marker 重 key；provider entry 只按 `leg: "provider-entry"` 计 |
+| Web（run-03） | driver 仍要求人类可读的拒绝文本复述 `NETWORK_UNCONFINED_REALM` | 产品完全正确却判 REFUTED | `refusalNamesTypedCode` 从 pass 条件降为 observation |
+| FS（run-1） | abort 后的 re-judge 拿 **search** 完整性规则去问新的 `fs:edit-*` id | “产品在 `delegate-dispatch` 挂了” | `judgeSettledRows` 跳过 `EDIT_CASE_SET`；abort 路径保留 `failed`/`detail` |
+| FS（run-2） | `fs:edit-outside-ceiling` 拿**过期的两行** `plantedContent` 比盘上内容 | 未被动过的文件被读成 `disk_mutated_outside_ceiling` | 单行 planted 值；按**效果**判 edit-outside 拒绝 |
+| PTY（run-01） | 判据 ×4：从 **driver 的** PID namespace 读 `/proc/<pid>`、`ps -o tty=`；`MK_PTY_WORKER` 是 `MK_PTY_WORKER2` 的前缀且先匹配；`typedCode` 只读 `error.info.code`（产品不填）；kernel 臂声明了**越界** read | 真 PTY 被看成假 PTY、控制 Member 从未跑 `bash`、两次真拒绝判 FAIL、内核臂根本没被问到 | shell 自己读 `/proc/$$/stat` 的 `tty_nr`；非前缀 marker + 最长优先路由；typed code 四个来源；kernel 臂声明**界内** read |
+| PTY（run-02） | 重构残留标识符 `observeSessions is not defined`（`node --check` 查不出） | 启动直接中止，0 verdict | 加 **eslint `no-undef`** 门（四个仪器模块，必须 0 error 才能启动） |
+| PTY（run-03） | Q1/Q2 用 `/proc/$$/stat` 第 6 字段（`session`，跨 PID namespace 恒 0）当判据；网络判据要求“恰好一条 guard fact” | 又把真 PTY 判假；把**正确的空 sink** 判失败 | Q1 改用 `tty_nr`↔`fd0` 设备一致性；Q2 去掉 session 门；网络按 typed refusal + 0 进程判，0 fact 记为 **LOCUS** |
+| PTY（run-04） | 共享状态命令用**相对** `cd lane/inside`，而 shell 的起始 cwd 是 Host checkout | cwd 断言不可测 | 每 run 插入绝对 lane 路径；先捕获起始 cwd 再 `cd` |
+| PTY（**run-05/06，假绿**） | “第二条命令”是把第一条的 `RUN=1` 改名为 `RUN=2` 得到的，于是它**先 re-export、re-cd 再读**——观测制造了它自己报告的状态 | **6 PASS**，且“第二个 Member 也看到了 token”的读法完全错误 | 拆成三条独立命令（`setup` / `read` / `control`）。**这个假绿是靠读控制 Member 的原始 `tool_result` 抓到的**，不是靠判据自检 |
+| PTY（run-07） | 控制臂仍用**另一套** mini-parser，从不读 `SHARED_SEEN`/`CWD` | 行为正确的控制被判 FAIL | 所有臂（含控制）共用同一个 `ptyOf` 解析器 |
+| Sub（boot 1） | 从**最后**一条 mock 请求读 leader 面，而那是一条标题请求（0 tools） | “leader surface (0)”，产品行为未被观测 | 选携带 `MK_DISC` 且有非空 `tools` 的请求，并记录 `surfaceBasis` |
+| Sub（boot 3） | 两条判据写错 + `overall` 硬编码，两次实际 2/3 的运行被报成别的结论 | 账本失真 | boot 4 起从 finalize 后的 record 计算 `overall`；更正行指名缺陷而不改写 |
+| Sub（boot 6/7） | fixture：`sandbox-policy` override 行没有 `name` 把整行禁用 → `sandboxPolicy` 服务缺席；补上 `name` 后新判据 `sandbox-root-pinned` 为假 | 一对启动烧在同一个 pin 上 | 保留为点名的阴性结果（boot 7 的假判据变成了 **PD-14** 的实测事实） |
+
+**一处内部口径不一致，如实记录**：`a5sf-sub-devlive/README.md` 的 “Cost, honestly” 写 “Four of the
+eleven starts failed for four different reasons”，而同一车道的 `RUNS.md` 索引表列出的非绿启动是
+**5** 次（boots 1、2、3、6、7）——其中 boot 2 是**产品**不变量的正确拒绝（native module 往 Member 面
+加工具），不是仪器缺陷。本账采用 RUNS 表的 5 次非绿 / 4 条仪器+夹具原因，并把 boot 2 单列为“产品
+正确拒绝”。不解决措辞差异，只标注它——两份文件都在库里，读者可自行核对。
+
+## 5.3 这个弧买到了什么、没买到什么
+
+买到了：**四个面各一个两次一致的 live 结果**，以及四个此前只有推断的洞/分歧被**测量**（PD-12、PD-13、
+PD-14，以及 PD-10 的 live 复核 + `chmod` 的 `LIVE-REPRODUCED`）。没买到：**任何 candidate 资格、
+任何 `V@B`、任何 OS 级隔离证据**（Web 的传输仍是 recorder，PTY 的 `bash` 仍只有宿主自己的
+`workspace-write` bwrap，Sub 没有任何 `enforced` 网络后端）。这四份结果**不能**用来关闭 G2–G5。
+
+# 6. 时间算术：旧"正式分配"模式 vs `DEV-LIVE` 模式（只算能算的）
+
+问题（owner 提的）：**到第一个稳定 live 结果用了多久**，两种模式各是多少。
+
+**旧模式（每次启动要 owner 明文分配）**，数字取自 §1 的 `a5sf-candidate1/run-ledger.jsonl` 与
+`a5sf-bl18-live2/ledger.json`：
+
+- 第一次分配的 intent 行 `2026-11-05T12:17:52.289Z`（boot 行 `12:17:58.807Z`）；
+- 唯一一次产出结论的 PASS 在第二次分配的启动上，intent 行 `2026-11-05T12:33:06.599Z`
+  → **距第一次启动 15m14s**，但它**当天就被 #606 的 Q7 漂移撤回**，从未成为“当前”结果；
+- 最后一次（第 5 次）启动的 boot 行 `2026-11-06T05:07:39.154Z`
+  → 第一次到第五次启动的跨度 **16h49m40s**；
+- 稳定结果数：**0**（没有一对连续一致的 live 运行；唯一 PASS 是单次）。
+
+**`DEV-LIVE` 模式**（同一时钟源，各车道“首个启动 → 该车道首个稳定结果”）：
+
+| 车道 | 首个启动 | 首个稳定结果那次启动 | 用时 | 用了几次启动 |
+|---|---|---|---|---|
+| FS/Search | `08:37:29.565Z` | `08:51:39.071Z` | **14m09.5s** | 3 |
+| Shell-PTY | `10:51:28.404Z` | `11:10:23.491Z` | **18m55.1s** | 8 |
+| Subprocess | `10:53:21.743Z` | `11:15:22.579Z` | **22m00.8s** | 10 |
+| Web | `08:27:50.659Z` | `08:51:47.555Z` | **23m56.9s** | 6 |
+
+四条车道整个弧从最早一次启动（`08:27:50.659Z`）到最后一次启动（`11:17:02.423Z`）是 **2h49m12s**，
+产出 **4 个稳定结果**。
+
+**能算的算术（都写出来）**：
+
+- 每次稳定结果摊到的启动数：`DEV-LIVE` = 31 / 4 = **7.75 次/结果**；旧模式 = 5 / 0 —— **分母为零，
+  不可计算**（这也是为什么本文不给“快了多少倍”）。
+- 每次稳定结果摊到的墙钟：`DEV-LIVE` = 2h49m12s / 4 = **42m18s/结果**；旧模式 = 0 结果，同样**无定义**。
+- 旧模式每次启动摊到的墙钟：16h49m40s / 5 = **3h21m56s/启动**（0 结果）。
+- 两条最慢的车道（PTY 9 次、Sub 11 次）与最快的车道（FS 4 次）之差是 **7 次启动**，而 FS 是唯一一条
+  **从第一次启动起就有会真正执行的 zero-boot preflight**（`driver/preflight-bundle.mjs`，每次
+  `PASS 18/18`，不过就不 spawn）的车道。
+
+**必须写在同一段里的三个限制**：
+
+1. **不可比的分母**：旧模式到第一个稳定结果的耗时**不存在**（0 个稳定结果），所以“X 倍提速”
+   是算不出来的，本文不写。
+2. **摊销**：`DEV-LIVE` 的四条车道是从已经包含旧模式五次启动教训的 master 上切出来的
+   （`CASE_LOCATOR_ALIASED`、driver gate 顺序、leader 面选择、caller 面覆盖、admission-refusal 分类、
+   bundle case 覆盖都已在预检里）。FS 的 14m09s **不能**单独归功于 dev-live 裁决：它站在旧模式的
+   5 次花费上。
+3. **时钟标签**：上文所有时刻都是产物自带的 UTC `at` 字段；owner 裁决的**日期标签**是 2026-11-09，
+   而四条车道的产物戳记落在 2026-11-06。本账不解释这个差（`docs/ROUTER_RULES.md` 头部记有时钟锚点
+   与“会话日历 vs 真实 UTC”的历史），只声明：**上面所有减法都在同一时钟源内做**（同一条车道的
+   ledger 行之间，或同一批候选 ledger 行之间），所以差值不受标签偏移影响；跨模式的**绝对日期**
+   比较不做。
+
+**一句能 defend 的结论**：*旧模式用 5 次正式分配、16 小时 49 分换来 0 个当前 live 结果；`DEV-LIVE`
+用 31 次自授权启动、2 小时 49 分的同一工作窗口换来 4 个两两一致的 live 结果——但这不是同一分子的
+比较（旧分子的结果是零），且新模式的每一次“快”都分摊了旧模式 5 次失败留下的预检，所以只能说
+“从零到四个稳定结果”，不能说“提速 N 倍”。*
