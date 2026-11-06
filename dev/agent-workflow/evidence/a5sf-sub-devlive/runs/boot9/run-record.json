@@ -1,0 +1,294 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-sub-devlive-2026-11-06T11-11-05-817Z",
+  "suite": "a5sf-sub-devlive",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-06T11:11:05.817Z",
+  "selectedCases": [
+    "sub:product-bash-executor",
+    "sub:face-admitted",
+    "sub:network-deny"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "sub:product-bash-executor",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:11:37.082Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "a Member's model-visible `bash` is executed by the SHIPPED host shell executor on the inherited base `subprocess` service, and the Member's confined face is never called",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued a `bash` tool call"
+        },
+        {
+          "id": "call-settled-ok",
+          "ok": true,
+          "detail": "tool result isError=false"
+        },
+        {
+          "id": "marker-in-stdout",
+          "ok": true,
+          "detail": "stdout carries \"A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-11-05Z\": \"A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-11-05Z\\n\""
+        },
+        {
+          "id": "shell-executor-recorded",
+          "ok": true,
+          "detail": "1 shell-exec record(s): [\"SandboxBashExecutor\"]"
+        },
+        {
+          "id": "base-subprocess-spawned",
+          "ok": true,
+          "detail": "19 base-spawn record(s)"
+        },
+        {
+          "id": "confined-face-not-called",
+          "ok": true,
+          "detail": "0 confined provider call(s) with the bash marker"
+        },
+        {
+          "id": "proc-sighting",
+          "ok": true,
+          "detail": "38 independent /proc sighting(s) of the marker"
+        }
+      ]
+    },
+    {
+      "id": "sub:face-admitted",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:11:37.082Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "the confined face ADMITS the declared argv shape (`/bin/bash -c <non-empty>`) and a real child runs through the OS provider",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "probe-returned",
+          "ok": true,
+          "detail": "JSON"
+        },
+        {
+          "id": "settled-ok",
+          "ok": true,
+          "detail": "ok=true code=null message=null"
+        },
+        {
+          "id": "stdout-marker",
+          "ok": true,
+          "detail": "stdout=\"A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T11-11-05Z\\n\""
+        },
+        {
+          "id": "provider-called-once",
+          "ok": true,
+          "detail": "1 provider call(s) for this argv"
+        },
+        {
+          "id": "confined-spawn-once",
+          "ok": true,
+          "detail": "1 confined-spawn record(s) for this argv"
+        },
+        {
+          "id": "independent-marker-file",
+          "ok": true,
+          "detail": "the child-created marker file exists=true (an OS fact, not our counter)"
+        }
+      ]
+    },
+    {
+      "id": "sub:network-deny",
+      "verdict": "PASS",
+      "at": "2026-11-06T11:11:37.082Z",
+      "faceVerdict": "PROVEN",
+      "proposition": "a `network: deny` lane REFUSES the call at admission, before the provider and before any process exists",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "probe-returned",
+          "ok": true,
+          "detail": "JSON"
+        },
+        {
+          "id": "typed-code",
+          "ok": true,
+          "detail": "code=NETWORK_UNCONFINED_REALM message=NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (landlock ABI v7: Landlock ABI v4 mediates only TCP port bind/con"
+        },
+        {
+          "id": "zero-provider-calls",
+          "ok": true,
+          "detail": "0 provider call(s) with this argv"
+        },
+        {
+          "id": "zero-base-fallback",
+          "ok": true,
+          "detail": "0 base-spawn record(s) carrying the body"
+        },
+        {
+          "id": "zero-proc-sightings",
+          "ok": true,
+          "detail": "0 /proc sighting(s) of the deny marker"
+        },
+        {
+          "id": "no-marker-file",
+          "ok": true,
+          "detail": "marker file exists=false"
+        },
+        {
+          "id": "no-guard-fact",
+          "ok": true,
+          "detail": "guard facts with decidedBy=NETWORK_UNCONFINED_REALM: 0. The refusal is thrown directly by the face's network admission (subprocess.ts, after provider.probe()), so NO guard consult happens — unlike the argv refusals, which write one IO_READ_DENIED fact. Recorded as an asymmetry, not a defect."
+        },
+        {
+          "id": "provider-capability-refusal",
+          "ok": true,
+          "detail": "the provider's own capability row: {\"dimension\":\"network-destination\",\"level\":\"unsupported\",\"note\":\"landlock ABI v7: Landlock ABI v4 mediates only TCP port bind/connect inside the domain; UDP, IPv6 raw paths, AF_UNIX sockets, inherited socket FDs and out-of-band routes are NOT covered — this is not a general no-network guarantee (PoC-4b)\",\"mechanism\":\"\"}"
+        },
+        {
+          "id": "no-confinement-claim",
+          "ok": true,
+          "detail": "the refusal is a statement about our own admission code, not about isolation"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/run-ledger.jsonl",
+    "thisRunCount": 3,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-06T11:11:05.848Z",
+        "runId": "a5sf-sub-devlive-2026-11-06T11-11-05-817Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-06T11:11:17.366Z",
+        "runId": "a5sf-sub-devlive-2026-11-06T11-11-05-817Z",
+        "suite": "a5sf-sub-devlive",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfsub1-20261106T11-11-05Z",
+        "phase": "a5sf-sub-devlive-boot9"
+      },
+      {
+        "at": "2026-11-06T11:11:37.197Z",
+        "runId": "a5sf-sub-devlive-2026-11-06T11-11-05-817Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "dev-live-outcome",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-outcome",
+        "world": "u5a5sfsub1",
+        "grantId": "devlive-subprocess-1",
+        "face": "Subprocess",
+        "headCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+        "overall": "PASS",
+        "cases": [
+          {
+            "id": "sub:product-bash-executor",
+            "verdict": "PASS"
+          },
+          {
+            "id": "sub:face-admitted",
+            "verdict": "PASS"
+          },
+          {
+            "id": "sub:network-deny",
+            "verdict": "PASS"
+          }
+        ],
+        "teardown": {
+          "releasedPorts": [
+            3183,
+            3493,
+            3183
+          ],
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z",
+          "hostPid": null
+        }
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-sub-devlive-boot9",
+      "world": "u5u5a5sfsub1-20261106T11-11-05Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/logs/u5u5a5sfsub1-20261106T11-11-05Z/instance-port3183.log"
+    }
+  ],
+  "probeReport": {
+    "path": "probe-report.json",
+    "executor": "PROVEN",
+    "faceControl": "PROVEN",
+    "netDeny": "PROVEN",
+    "argv": {
+      "shipped_argv": "PROVEN",
+      "argv_lc": "PROVEN",
+      "argv_empty_body": "PROVEN",
+      "argv_extra_operand": "PROVEN"
+    }
+  },
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 61,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z",
+    "releasedPorts": [
+      3183,
+      3493,
+      3183
+    ],
+    "killedPids": [
+      61
+    ],
+    "notes": []
+  },
+  "abort": null,
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-sub-devlive-2026-11-06T11-11-05-817Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "osLevelNetworkIsolationClaimed": false,
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-06T11:11:37.197Z",
+  "runRecordPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/run-record.json"
+}

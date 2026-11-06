@@ -1,0 +1,31 @@
+{
+  "schema": "a5sf-sub-devlive/leader-surface/1",
+  "at": "2026-11-06T11:17:41.765Z",
+  "basis": "discovery-turn",
+  "tools": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "sub_probe",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "requests": 2
+}

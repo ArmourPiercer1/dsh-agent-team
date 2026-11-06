@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-subprocess-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+  "face": "Subprocess",
+  "world": "u5a5sfsub1",
+  "note": "dev-live measurement of the Subprocess face: executor identity, the argv predicate, the network-deny position and a positive control. Development evidence only: this class can never produce V@B=yes and no candidate claim is made."
+}

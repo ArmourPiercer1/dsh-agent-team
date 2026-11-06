@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-subprocess-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling, relayed by the subprocess dev-live lane: scope authorisation for the Subprocess/Shell face",
+  "face": "Subprocess",
+  "world": "u5a5sfsub1",
+  "note": "repeated development starts for the Subprocess face's live half (executor identity, argv predicate, network-deny position, positive control); no candidate claim, no V@B"
+}

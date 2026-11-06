@@ -1,0 +1,562 @@
+{
+  "schema": "a5sf-sub-devlive/proc-observations/1",
+  "at": "2026-11-06T11:00:56.891Z",
+  "note": "an independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not our counter",
+  "sightings": [
+    {
+      "at": "2026-11-06T11:00:51.273Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.313Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.352Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.393Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.433Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.473Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.513Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.553Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.594Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.634Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.673Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.714Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.754Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.794Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.834Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.874Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.915Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.955Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:51.995Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.036Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.076Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.116Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.156Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.195Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.236Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.276Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.316Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.356Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.396Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.436Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.476Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.516Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.556Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.596Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.636Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.676Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    },
+    {
+      "at": "2026-11-06T11:00:52.716Z",
+      "hits": [
+        {
+          "marker": "bash",
+          "pid": 151,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        },
+        {
+          "marker": "bash",
+          "pid": 152,
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use -- bash -c printf 'A5SF_SUB_BASH_u5u5a5sfsub1-20261106T11-00-17Z\\n'; sleep 1.5 "
+        }
+      ]
+    }
+  ]
+}
