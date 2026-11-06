@@ -1261,7 +1261,6 @@ async function boot() {
         zeroProviderEntries: newEntryCount === 0 && entries.length === 0,
         zeroHostWebEntries: newHostCount === 0,
         refusalNamesCapability: typeof refusalText === 'string' && /network/iu.test(refusalText),
-        refusalNamesTypedCode: typeof refusalText === 'string' && refusalText.includes('NETWORK_UNCONFINED_REALM'),
         typedRefusalFact: String(fact?.decidedBy ?? '') === 'NETWORK_UNCONFINED_REALM',
       }
       const verdict = Object.values(checks).every((v) => v === true) ? 'PROVEN' : 'REFUTED'
@@ -1288,6 +1287,15 @@ async function boot() {
           source: 'the `tools` array the mock recorded on this Member turn\'s own model request',
         },
         initiation,
+        // An OBSERVATION, not a pass condition: the shipped refusal message
+        // names the capability but does not repeat the typed code (the code is
+        // the guard fact's `decidedBy`). Recorded so a reader can see it.
+        observations: {
+          refusalNamesTypedCode: typeof refusalText === 'string' && refusalText.includes('NETWORK_UNCONFINED_REALM'),
+          refusalTextNamesCapability: typeof refusalText === 'string' && /network/iu.test(refusalText),
+          guardFactLocator: facts[0]?.locator ?? null,
+          guardFactBindingIdentity: facts[0]?.toolBindingIdentity ?? null,
+        },
         call: {
           tool: planCase.tool,
           arguments: planCase.args,
