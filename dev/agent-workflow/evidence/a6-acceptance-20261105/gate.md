@@ -1,20 +1,21 @@
 # Gate record
 
-## Final acceptance HEAD — `d6c0e8528`
+## Final acceptance HEAD — `fb6ccb4f4`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
-- Result: **9/9 PASS**, 0 skip, **290.6 s**
+- Result: **9/9 PASS**, 0 skip, **292.6 s**
 - Census: **677 files / 8832 legs** (two new marker unit tests), `COUNTS MOVED,
   SET DID NOT`, 0 new reds
 - Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
 - Blueprint fence: no new offending path; kit identities re-recorded at
   L619/L808/L1729/L2417 (same fixtures)
-- Log: `.drill/ci-gate-d6c0e8528.log` (untracked local artifact)
-- `fedd641ed` produced no verdict: the fence leg aborted on the stale
-  L1729/L2417 baseline (fixed in `a44d26484`); `a44d26484` then failed
-  artifacts+census because four owner-field dist mirrors were uncommitted;
-  `d6c0e8528` adds them and is the clean 9/9 above.
+- Log: `.drill/ci-gate-fb6ccb4f4-r2.log` (untracked local artifact)
+- `fb6ccb4f4` first run: 8/9, one flaky red in
+  `alpha5-glob-backend.test.ts::X3` (the same test passed standalone, 53/53);
+  the clean re-run above is the recorded verdict.
+- Earlier: `d6c0e8528` 9/9 (290.6 s); `fedd641ed` aborted at fence (stale
+  baseline), `a44d26484` 7/9 (uncommitted dist mirrors).
 - Product delta since `1e50d55fc`: real resume re-plan (actual delegable legs,
   never an empty scan), atomic/existence-based Sticky Stop marker + unit tests.
   Boot recovery stays strictly own-root after the second review showed a

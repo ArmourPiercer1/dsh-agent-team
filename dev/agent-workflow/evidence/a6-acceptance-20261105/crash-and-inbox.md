@@ -110,14 +110,14 @@ SIGKILLed. On restart:
 never CLAIMED the message, and native cold-start replay of that message.
 
 
-## Status after the second review (2026-11-06)
 
-The `a6-inbox-r5` result was obtained with a cross-root boot recovery that the
-second review BLOCKed: it could adopt/clear another mounted Team's durable row,
-and it compared the key generation against the wrong namespace. That recovery
-was reverted to strictly own-root at `fedd641ed`. The multi-root probe is
-env-gated (`C1_A6_INBOX=1`) but is **not** an accepted capability: with strict
-own-root the A6 Team row is not owned by the mount instance, so this probe no
-longer exercises recovery. A safe fix needs an explicit per-row owner/mount
-identity written at queue time and honored by every recovery instance; until
-then the native-Inbox crash window is disclosed as unproven.
+
+## Accepted reconcile — `a6-inbox-r9` (A6-25, code HEAD `fb6ccb4f4`)
+
+The wake turn was held open after the native Inbox CLAIMED the wake; the Host
+was SIGKILLed. On restart the row was `accepted` and the native message was
+gone. Owner-scoped recovery (row carries its mount root) cleared the stale row
+inside the latch lock and did **not** rebuild it: `wake-*.json` 1 -> 0, wake
+model requests 1 -> 1 (no duplicate), and the durable pending Control request
+that existed before the crash was still pending after (`pendingBefore=1`,
+same requestId). A `queued` row (never accepted) is still rebuilt.

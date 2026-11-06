@@ -30,13 +30,13 @@ The Stop is durable, not process memory: `alpha6WakeUserStop` writes
 dispatch or recovery reads that marker and adopts `stopped` into the
 coordinator; an unclaimed queued wake is withdrawn and its intent row cleared.
 
-## Real-Host evidence — `a6-sticky-stop-r13`
+## Real-Host evidence — `a6-sticky-stop-r14`
 
-Root `session-c1-smoke-a6-2026-11-06T09-24-13`:
+Root `session-c1-smoke-a6-2026-11-06T10-35-47`:
 
 - member ask → Officer review wake delivered (1 wake).
 - `session/cancel` on the **Officer child** accepted (`A6-22` PASS).
-- Durable `stopped-6c784f00.json` present (both latch key and reviewer
+- Durable `stopped-1d20024e.json` present (both latch key and reviewer
   `targetSessionId`); the queued wake row is gone; no re-delivery (1 → 1 wakes).
 - SIGKILL + real Host restart: the marker persists and the withdrawn wake is
   still not re-delivered (`A6-23` PASS).
