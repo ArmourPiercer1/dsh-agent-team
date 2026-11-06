@@ -1,0 +1,28 @@
+{
+  "schema": "a5sf-sub-devlive/teardown/1",
+  "at": "2026-11-06T11:11:37.197Z",
+  "worldTeardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 61,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-11-05Z",
+    "releasedPorts": [
+      3183,
+      3493,
+      3183
+    ],
+    "killedPids": [
+      61
+    ],
+    "notes": []
+  },
+  "processSeam": {
+    "hostPid": null,
+    "hostChildExitCode": null,
+    "portStillListening": false,
+    "homeExistsAfterTeardown": false
+  }
+}

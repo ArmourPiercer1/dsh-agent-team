@@ -1,0 +1,23 @@
+dsh: disabling profile plugin row "sandbox-policy": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 8 entries did not activate
+bash-sandbox (@deepseek-ai/dsh-bash-sandbox): pending (waiting for service: sandboxPolicy)
+permission (@deepseek-ai/dsh-permission-presets): pending (waiting for service: shell)
+ptc-runtime (@deepseek-ai/dsh-ptc-runtime-node): pending (waiting for services: fs, sandboxPolicy)
+fs-sandbox (@deepseek-ai/dsh-fs-sandbox): pending (waiting for service: sandboxPolicy)
+session-controller (@deepseek-ai/dsh-api-session-controller): pending (waiting for service: fs)
+terminal-controller (@deepseek-ai/dsh-api-terminal-controller): pending (waiting for service: sandboxPolicy)
+workspace-files (@deepseek-ai/dsh-api-workspace-files): pending (waiting for services: fs, sandboxPolicy)
+ui-deliverables (@deepseek-ai/dsh-client-ui-deliverables): pending (waiting for services: sessionController, workspaceFiles, fs, sandboxPolicy)
+dsh web: http://127.0.0.1:3185/?token=<redacted-launch-token>
+dsh: disabling profile plugin row "sandbox-policy": its declared peer dependencies cannot be validated: Cannot read properties of undefined (reading 'startsWith')
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamAgentBinderError: binder overlay effect 'persona' failed during 'fresh-root' bind of session 'session-a5sf-acceptance-root': the mounted root preset 'a5sf-sub-devlive-base' has an UNRESOLVED persona observation (source: none) — the preset seam cannot express the failure (fail closed); preset 'a5sf-sub-devlive-base' is broken: tool-fs (@deepseek-ai/dsh-tool-fs): waiting for fs
+tool-bash (@deepseek-ai/dsh-tool-bash): waiting for shell
+    at TeamAgentBinder.overlayFailure (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:331:16)
+    at TeamAgentBinder.bind (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:279:32)
+    at TeamAgentBinder.bindFreshRoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/agent-setup/binder/binder.js:150:21)
+    at bindFreshTeamRoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/root-binding/fresh-root.js:198:25)
+    at async createAndStartTeam (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/src/plugin/root.js:1943:24)
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/src/plugin/root.js:3210:17)
+    at async bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/packages/runtime/dist/packages/runtime/src/plugin/host.js:2325:13)

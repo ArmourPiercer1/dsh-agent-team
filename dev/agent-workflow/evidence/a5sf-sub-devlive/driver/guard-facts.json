@@ -1,0 +1,67 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0u3ell71ucz7",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-sub:inst-0u3ell71ucz7:g1",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-17-02Z/workspace",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-06T11:17:43.760Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0u3ell71ucz7",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-sub:inst-0u3ell71ucz7:g1",
+    "method": "spawn:write",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-17-02Z/workspace",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 2,
+    "observedAt": "2026-11-06T11:17:43.764Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0u3ell71ucz7",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-sub:inst-0u3ell71ucz7:g1",
+    "method": "spawn",
+    "locator": "/bin/bash",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 3,
+    "observedAt": "2026-11-06T11:17:45.474Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0u3ell71ucz7",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-sub:inst-0u3ell71ucz7:g1",
+    "method": "spawn",
+    "locator": "/bin/bash",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 4,
+    "observedAt": "2026-11-06T11:17:45.493Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0u3ell71ucz7",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-sub:inst-0u3ell71ucz7:g1",
+    "method": "spawn",
+    "locator": "/bin/bash",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 5,
+    "observedAt": "2026-11-06T11:17:45.510Z"
+  }
+]

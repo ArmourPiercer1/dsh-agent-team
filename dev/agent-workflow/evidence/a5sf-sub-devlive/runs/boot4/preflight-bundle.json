@@ -1,0 +1,575 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "Subprocess dev-live start #5 — executor identity, argv predicate, network-deny position (DEV-LIVE; development evidence, never a candidate claim)",
+  "sources": {
+    "note": "Built at run time from the World this start will boot. Development evidence only: recordClass DEV-LIVE can never produce V@B=yes.",
+    "driver": "dev/agent-workflow/evidence/a5sf-sub-devlive/driver/run-boot.mjs",
+    "providerRow": "dev/agent-workflow/evidence/a5sf-sub-devlive/driver/a5sf-sub-devlive-realm-row.mjs",
+    "evidence": "dev/agent-workflow/evidence/a5sf-sub-devlive/README.md",
+    "limit": "A DEV-LIVE start is development evidence. It does not move V@B, does not become a candidate claim, and does not certify the matrix. The network-deny observation is a face measurement reported in probe-report.json, not a tabled preflight case (see the module header)."
+  },
+  "candidate": {
+    "head": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "productTreeProof": []
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+    "pointer": {
+      "snapshot_version": "as20261105r2",
+      "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+    }
+  },
+  "grant": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/dev-live-grant.json",
+    "scope": "DEV-LIVE",
+    "face": "Subprocess",
+    "world": "u5a5sfsub1",
+    "grantId": "devlive-subprocess-1",
+    "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+    "boundCommit": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "priorRows": 12,
+    "plannedStarts": 1,
+    "maxStarts": 14,
+    "note": "recorded, NOT enforced under DEV-LIVE: the authorisation has no cumulative cap. maxStarts is the ledger arithmetic of this start (prior rows + intent + boot)."
+  },
+  "runRecord": {
+    "teamSha": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    },
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+      }
+    }
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "subprocess"
+    ],
+    "distFaces": {
+      "subprocess": true,
+      "fs": false,
+      "web": false
+    },
+    "hostModules": [
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/a5sf-sub-devlive-realm-row.mjs",
+        "exists": true,
+        "role": "declared by the plan"
+      },
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/sub-probe-module.mjs",
+        "exists": true,
+        "role": "declared by the plan"
+      },
+      {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/dev/agent-workflow/evidence/a5sf-sub-devlive/driver/run-boot.mjs",
+        "exists": true,
+        "role": "declared by the plan"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-sub-devlive-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-sub-devlive-base"
+      ],
+      "worldRowIds": [
+        "a5sf-sub-devlive-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-sub-devlive-base"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "fixtures": {
+    "sub:product-bash-executor": {
+      "caseId": "sub:product-bash-executor",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace",
+        "tool": "bash",
+        "memberTemplate": "worker"
+      }
+    },
+    "sub:face-admitted": {
+      "caseId": "sub:face-admitted",
+      "inputs": {
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace/lane/in-lane.txt",
+        "vector": "face_control"
+      }
+    }
+  },
+  "policy": {
+    "effectiveReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace"
+    ],
+    "effectiveWriteAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace"
+    ],
+    "networkAccess": "deny",
+    "note": "the read/write lane is the World workspace. network=deny is the DENY MEMBER template's compiled axis; it is measured by the face probe (probe-report.json) and deliberately not tabled as a preflight case: the closed network case class is web-caller-shaped and this face has no web caller."
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-acceptance-root",
+    "teamRoot": "session-a5sf-acceptance-team",
+    "createRoot": "session-a5sf-acceptance-team",
+    "stateQueryRoot": "session-a5sf-acceptance-team",
+    "toolRouteRoot": "session-a5sf-acceptance-team",
+    "archiveRoot": "session-a5sf-acceptance-team",
+    "oracleRoot": "session-a5sf-acceptance-team",
+    "directiveRoot": "session-a5sf-acceptance-team",
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.sub.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.sub.main",
+        "members": 2
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "sub:product-bash-executor",
+        "memberIdentity": "member-a5sf-sub-worker",
+        "toolBindingIdentity": "dsh.shell/bash"
+      },
+      {
+        "caseId": "sub:face-admitted",
+        "memberIdentity": "member-a5sf-sub-worker",
+        "toolBindingIdentity": "dsh.subprocess/exec"
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "a5sf-sub-probe (fixture)",
+      "inject": [
+        "tools",
+        "subprocess"
+      ],
+      "requiredConfig": [
+        "workspace",
+        "allowTag",
+        "denyTag",
+        "allowMarker",
+        "denyMarker"
+      ],
+      "config": {
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace",
+        "allowTag": "A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T11-01-30Z",
+        "denyTag": "A5SF_SUB_DENY_u5u5a5sfsub1-20261106T11-01-30Z",
+        "allowMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace/lane/allow-marker.txt",
+        "denyMarker": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace/lane/deny-marker.txt"
+      },
+      "requiredTools": [
+        "sub_probe"
+      ]
+    }
+  ],
+  "driver": {
+    "steps": [
+      {
+        "id": "preflight",
+        "produces": [],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "row-identity",
+        "produces": [],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "world-create",
+        "produces": [
+          "world"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "mock-start",
+        "requires": [
+          "world"
+        ],
+        "produces": [
+          "mock"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "host-boot",
+        "requires": [
+          "world",
+          "mock"
+        ],
+        "produces": [
+          "host"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "composition-handoff",
+        "requires": [
+          "host"
+        ],
+        "produces": [
+          "composed-profile"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "health-poll",
+        "requires": [
+          "composed-profile"
+        ],
+        "produces": [
+          "health"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "discovery-surface",
+        "requires": [
+          "health"
+        ],
+        "produces": [
+          "leader-surface"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "team-create",
+        "requires": [
+          "leader-surface"
+        ],
+        "produces": [
+          "team-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "team-state"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "member-install",
+        "requires": [
+          "team-state"
+        ],
+        "produces": [
+          "member-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "delegate-dispatch",
+        "requires": [
+          "member-session"
+        ],
+        "produces": [
+          "member-rows"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "evidence-collection",
+        "requires": [
+          "member-rows"
+        ],
+        "produces": [
+          "samples"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "teardown",
+        "requires": [
+          "samples"
+        ],
+        "produces": [
+          "teardown"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "outcome-row",
+        "requires": [
+          "teardown"
+        ],
+        "produces": [
+          "dev-live-outcome"
+        ],
+        "canFail": true,
+        "captures": [
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      }
+    ],
+    "plannedCases": [
+      "sub:product-bash-executor",
+      "sub:face-admitted"
+    ],
+    "driverCases": [
+      "sub:product-bash-executor",
+      "sub:face-admitted"
+    ],
+    "blueprint": {
+      "leader": {
+        "tools": [
+          "bash",
+          "read",
+          "write",
+          "edit",
+          "read_image",
+          "sub_probe",
+          "todo_write",
+          "team_delegate",
+          "team_archive_member",
+          "team_follow_up",
+          "team_collect",
+          "team_list_members"
+        ],
+        "builtinToolDeny": "discovery-first",
+        "teamTools": [],
+        "worldRows": {},
+        "presetTools": [
+          "bash",
+          "read",
+          "write",
+          "edit",
+          "read_image",
+          "sub_probe",
+          "todo_write",
+          "team_delegate",
+          "team_archive_member",
+          "team_follow_up",
+          "team_collect",
+          "team_list_members"
+        ]
+      }
+    },
+    "leaderSurface": {
+      "tools": [
+        "bash",
+        "read",
+        "write",
+        "edit",
+        "read_image",
+        "sub_probe",
+        "todo_write",
+        "team_delegate",
+        "team_archive_member",
+        "team_follow_up",
+        "team_collect",
+        "team_list_members"
+      ],
+      "builtinToolDeny": "discovery-first",
+      "teamTools": []
+    }
+  },
+  "cases": [
+    {
+      "id": "sub:product-bash-executor",
+      "face": "subprocess",
+      "corpus": [
+        "transcript",
+        "subprocess-counter",
+        "guard-facts",
+        "proc-observation"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "argv",
+        "providerCalls",
+        "procSightings"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace",
+      "guardFactKey": "sub.executor",
+      "route": "bash",
+      "memberTemplate": "worker",
+      "input": {
+        "command": "<user bash command>",
+        "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace"
+      }
+    },
+    {
+      "id": "sub:face-admitted",
+      "face": "subprocess",
+      "corpus": [
+        "transcript",
+        "subprocess-counter",
+        "guard-facts",
+        "proc-observation"
+      ],
+      "returnShape": [
+        "call",
+        "result",
+        "claim",
+        "argv",
+        "providerCalls",
+        "procSightings"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "axis": "read",
+      "expected": "allow",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-sub-devlive/tests/homes/u5u5a5sfsub1-20261106T11-01-30Z/workspace/lane/in-lane.txt",
+      "guardFactKey": "sub.admitted",
+      "route": "sub_probe",
+      "memberTemplate": "worker",
+      "input": {
+        "vector": "face_control",
+        "argv": [
+          "/bin/bash",
+          "-c",
+          "<allow body>"
+        ]
+      }
+    }
+  ]
+}
