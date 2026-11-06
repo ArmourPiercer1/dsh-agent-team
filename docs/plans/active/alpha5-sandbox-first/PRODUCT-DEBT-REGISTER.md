@@ -77,7 +77,7 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-11 (D1) | Boot | A shared-domain teardown is reported as `TeamDomain is closed` and the detached boot keeps writing into it | evidence-quality | semantics |
 | PD-12 (Q5) | Subprocess | `network: deny` never governs the model-visible `bash`; the child runs with no network namespace | governance hole | semantics |
 | PD-13 (READ-AXIS) | Shell-PTY | The terminal path has no read axis: a Member's own shell read a write-only-lane secret and returned its bytes **(FIXED)** | governance hole | semantics |
-| PD-14 (SANDBOX-ROOT) | Subprocess | A Member session's sandbox root is the pinned host checkout, not the World workspace | behavioural divergence | semantics |
+| PD-14 (SANDBOX-ROOT) | Subprocess | A Member session's sandbox root is the pinned host checkout, not the World workspace **(FIXED)** | behavioural divergence | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
@@ -97,6 +97,17 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 > deny 车道上被实测推翻，**行文保留、追加标注**，新洞记在 PD-12。四条新行的证据现在**全部在本树**
 > （PR #634/#635 已合并；PD-12 的修复证据在 `evidence/a5sf-pd12-fix/`，仍是 draft PR 的 DEV-LIVE 证据）。
 > “行数 14、待裁决 **10**（PD-1/PD-7/PD-9/PD-12 已 FIXED）”这个数字随之更新；`V@B` 不因此变动。
+
+> **2026-11-11 状态更新（PD-14；只追加，不改任何既有行文）**：**PD-14 现在 `FIXED`**。它是本册唯一
+> 一条**夹具层**闭合的缺陷：修复面是 `tests/world-factory/lib/team-workspace.mjs` +
+> `TestWorld.startHost` 的唯一行装配点，**没有**改 `packages/**`、**没有**改 upstream、**0 次启动**。
+> 立的法是“World 的 Team 行没声明 workspace 时绑到本 World 自己的 `<home>/workspace`，并且**拒绝**
+> 把 pinned checkout（或其子目录）或 home 之外任何路径声明成 Member 的可写根”。因此本行的
+> behavioral divergence 对**真实用户**依然按产品契约成立（产品仍以 operator 的启动目录为默认），
+> 这里关掉的是**我们的 World 测出来的那条**：Member 的 `bash` 子进程不再 `--bind` 可写地挂在
+> 共享的 pinned checkout 上。已知残余（产品默认的风险、读边界未动、`config.workspaceRoot` 对 Team
+> session 不再可达、十二个 assembly 未逐一起机）逐条写在该行 `status` 与
+> `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md` §9，**`V@B` 不因此变动**。
 
 ## 2. The rows
 
@@ -630,8 +641,8 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   a `pwd` from inside the child under that root; the porcelain-empty receipt stays green; boots 6–7
   and 10–11 stay as the historical measurement.
 - **blocked by**: an owner decision on what a Member session's sandbox root should be; the World-side change is test infrastructure, not product, and touches no `packages/**`.
-- **anchors**: `tests/world-factory/lib/u7-fsmut-assembly.mjs#L273-L278` contains `for member sessions that is the factory's`
-- **status**: OPEN — `DEV-LIVE` evidence, branch `task/a5sf-sub-devlive-20261110` (draft PR #635), boots 7 (the measured red), 10 and 11 (the agreeing pair); the Shell-PTY lane independently measured that a Member's shell **starts** in the same host checkout.
+- **anchors**: `tests/world-factory/lib/u7-fsmut-assembly.mjs#L273-L278` contains `for member sessions that is the factory's` ; `tests/world-factory/lib/team-workspace.mjs#L135-L135` contains `export function bindTeamDefaultWorkspace` ; `tests/world-factory/lib/world-factory.mjs#L587-L587` contains `#teamWorkspaceRows(rows)` ; `tests/world-factory/a5sf-pd14-sandbox-root.test.mjs#L251-L251` contains `test('P0 PD-14 defect pin`
+- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd14-sandbox-root-20261111` (draft PR, first line `PD14-FIX`, no merge). **The fix is the FIXTURE layer and only the fixture layer**: `tests/world-factory/lib/team-workspace.mjs` binds every Team-shaped row that declares no workspace to the World's own `workspaceDir` (and REFUSES a declaration pointing into the pinned checkout or outside the World home), called from `TestWorld.startHost`'s one row-composition point. No `packages/**` file changed and no upstream byte was touched. **Why not the product:** for a real operator link 1 of the chain *is* their project directory, and the root `cordis.patch.yml` documents that launch-directory default together with the `defaultWorkspace` override that this fix uses; changing it would alter what real users get, justified by nothing PD-14 measured. **Why not a `sandbox-policy` row:** boots 6–7 already measured it — it needs `name` restated and still loses to the session cwd, because the pinned resolver prefers `session.header.cwd`. Proof: `tests/world-factory/a5sf-pd14-sandbox-root.test.mjs` — P0 is the defect pin (GREEN pre-fix, RED post-fix; `pin-before.log` / `pin-after.log`), D1 the provider's own resolved root, D2 the real child's `pwd` + its own `/proc/self/mountinfo` (one `rw` mount at the World workspace, ZERO mounts at/under the pinned checkout, and `--bind <world ws> <world ws>` in the pinned backend's argv), D3 the write boundary (in-root write succeeds, outside write refused `Read-only file system`), F1 the disclosure that the pinned checkout stays READABLE (`--ro-bind / /`), C1 the product-side negative control (an explicitly configured `workspaceRoot` still wins for a call without a session cwd), C2 the fixture-side one (a World that declares its own workspace keeps it), C3/C4 the two refusals, S1 surface neutrality, S2 locus, Z1 the pinned tree's porcelain empty after every arm. Evidence: `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md` (0 boots — the fix touches no product path, so no `DEV-LIVE` run was manufactured). Residuals: (1) the shipped product still roots a Team at the operator's launch directory, so a real Host launched from a non-workspace directory still confines a Member there — a product question this row did not measure and does not close; (2) the read boundary is untouched (`--ro-bind / /`), the pinned checkout stays readable at its absolute path; (3) `config.workspaceRoot` is now unreachable for Team sessions (the pinned resolver prefers the session cwd, which every Team session now has), exercised only for cwd-less calls (C1); (4) the twelve affected assemblies were not booted — the change is one documented config field each, `u6-arc-d` already declared it, and `u7-fsmut`'s oracle that pinned the wrong root is ANNOTATED rather than weakened.
 
 
 ## 3. Ranking rationale
@@ -760,7 +771,9 @@ files on this tree, so the declarations were deleted rather than left to rot. Th
 every cited evidence file exists in the tree and still mentions the finding id, and any future
 §6 declaration reds the moment its path lands. A `DEV-LIVE` row is never aggregated into a matrix
 cell: that record class carries no `V@B`, and the run-record finalizer refuses the conversion by
-construction. PD-12 is `FIXED` with residuals; PD-13 and PD-14 remain `OPEN`.
+construction. PD-12 is `FIXED` with residuals; PD-13 and PD-14 are `FIXED` too (2026-11-11, both
+draft PRs: `task/a5sf-pd13-terminal-20261111` and `task/a5sf-pd14-sandbox-root-20261111`, the latter
+fixture-only with 0 boots).
 
 Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 `node scripts/doc-checks.mjs`, `git diff --check`.

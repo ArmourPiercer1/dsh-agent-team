@@ -282,6 +282,17 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir, sessi
       // host tree is restored by the same actor that dirtied it (the
       // host-base-pristine-post guard measured boot-4's stray file into
       // boot-5's record; never again).
+      //
+      // PD-14 (SANDBOX-ROOT), 2026-11-11 — ANNOTATION, NOT A WEAKENING. The
+      // sentence above described the DEFECT, not the contract: a Member
+      // session's root resolving to the pinned host checkout is exactly what
+      // PD-14 named, and `TestWorld.startHost` now binds the Team's workspace
+      // to this World's own `workspaceDir` (`lib/team-workspace.mjs`, which
+      // also REFUSES a declaration pointing into that checkout). The walk below
+      // is kept byte-for-byte as belt and braces: on a fixed tree the ctl file
+      // is found under `home` and the host-tree branch never fires, and the
+      // `runtimeTree` entry stays in the stack so this oracle keeps looking for
+      // a stray file if one ever appears there again.
       const runtimeTree = sessionRoot ?? join(repoRoot, 'tests', 'deepseek-harness-test-use')
       const stack = [home, runtimeTree]
       let guard = 0

@@ -118,6 +118,13 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 > 4 FIXED**。PD-12 的残余（admission 而非 OS 拒绝、读轴未解、无 `shellClass` 的组合改为拒绝、
 > 未装该面的 shipped preset 不变）不改变任何 grade 或 `V@B`；**PD-13 仍未关闭**。
 > **状态变化不代表任何 grade 或 `V@B` 变化。**
+> **2026-11-11 追加（PD-14）：PD-14 已 `FIXED`**（draft PR `task/a5sf-pd14-sandbox-root-20261111`，
+> 未合并；**夹具层**修复：World 的 Team 行绑定到本 World 的 `<home>/workspace`，并拒绝把 pinned
+> checkout 声明成 Member 的可写根；`packages/**` 与 upstream 零改动，**0 次启动**）。上表 PD-14 行仍写
+> `OPEN`，按只追加纪律**不改那一格**；同时上表 PD-13 行也仍写 `OPEN`，而登记册中 PD-13 已于 PR
+> **#642** 闭合（master 提交 `c91c72bca`）。两处均以登记册为准。真实用户侧的产品默认（Team 以
+> operator 启动目录为 workspace）**未变**，PD-14 关掉的是我们 World 测出的那条可写路径。
+
 `PRODUCT-DEBT-REGISTER.md` 把 PD-7/PD-9 写成 “draft PR #619/#620”；`git log origin/master` 显示两者
 已 squash 合入（提交号见上表）。这是**状态更新，不是内容改写**。
 
