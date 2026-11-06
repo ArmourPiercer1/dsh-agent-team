@@ -1,0 +1,18 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD13",
+  "paths": [
+    "packages/runtime/team-services/src/terminal.ts",
+    "packages/runtime/src/plugin/live/confined-terminal-tool.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1435,
+    "to": 1437
+  },
+  "reason": "a5sf-pd13-fix: the confined TERMINAL face and its route-C shell module. Two new scannable production\nfiles: `packages/runtime/team-services/src/terminal.ts` (the confined `terminals` face — session API, lexical\nread attribution, guard admission) and `packages/runtime/src/plugin/live/confined-terminal-tool.mjs` (the\nmodel-visible `bash` served by that face; same home as the other confined rows). Neither carries denylist\nvocabulary. The two test files this lane adds (tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs and the\nmutation harness under dev/agent-workflow/evidence/) are NOT in the scan population — measured, not assumed:\nthe scanner enumerates packages/** production source plus the nine packages/*/test roots, and\n`tests/world-factory/**` is outside both, exactly as PD-12's booking recorded for its own test file.",
+  "tieNote": "Re-anchored by MEASURING on this tree rather than copying a chain value: the scanner run reports\n1437 files scanned and the ledger derived 1434 + the PD-12 booking (a5sfpd12.json, 1434 -> 1435) = 1435 with\nthis lane unbooked, i.e. exactly the two new scannable files on disk and no other movement. Booking both by\nname ends the chain at the measured total.",
+  "pathNotes": {
+    "packages/runtime/team-services/src/terminal.ts": "PD-13 confined terminal face (command-scoped confined children; lexical read attribution through the Member's observed guard)",
+    "packages/runtime/src/plugin/live/confined-terminal-tool.mjs": "PD-13 route-C `bash` shadow (model-visible `bash` served by the confined terminal face)"
+  }
+}

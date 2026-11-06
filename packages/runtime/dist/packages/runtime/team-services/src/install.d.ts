@@ -72,6 +72,36 @@ export interface InstallMemberIoProvidersInput {
      * preserving: today's product tree declares none).
      */
     readonly web?: ConfinedWebRealmSpec;
+    /**
+     * PD-13 (2026-11-11): mount a CONFINED `terminals` face on the SAME isolated
+     * Member scope, so a routed native shell module that injects `terminals`
+     * (the pinned persistent-`bash` row does) is served by a face that admits
+     * each command's file reads against the compiled lane — instead of the
+     * inherited, legacy-generation host PTY service, which has no read axis at
+     * all. Omitted = nothing is mounted and a `terminals`-consuming module stays
+     * refused at composition time (default-preserving: no product composition
+     * declares one yet).
+     */
+    readonly terminal?: ConfinedTerminalRealmSpec;
+}
+/**
+ * The confined `terminals` face of ONE Member realm (PD-13).
+ *
+ * The face executes every command as a CONFINED CHILD of the realm's confined
+ * `subprocess` face (a PTY cannot ride the Landlock profile), so the effective
+ * lane, the shell class and the process provider are the subprocess face's own
+ * — this spec only names the admitted program and the face's bounded output.
+ * It can never introduce a second policy source.
+ */
+export interface ConfinedTerminalRealmSpec {
+    /** The admitted shell program (absolute; the subprocess face's shell class must cover it). */
+    readonly program: string;
+    /** Bounded stdout/stderr collection per command (default 256 KiB). */
+    readonly maxOutputBytes?: number;
+    /** Grace before the confined child is terminated (default 5 s). */
+    readonly graceMs?: number;
+    /** Optional MOTD the session snapshots carry. */
+    readonly motd?: string;
 }
 /**
  * The confined `subprocess` face of ONE Member realm.
@@ -107,6 +137,7 @@ export interface ConfinedSubprocessSurface {
     spawnTerminal?(spec: unknown): Promise<unknown>;
 }
 export type { ConfinedWebProvider, ConfinedWebSurface, WebProviderConstructor } from './web.js';
+export type { ConfinedTerminalOperation, ConfinedTerminalProcessSurface, ConfinedTerminalSendOutcome, ConfinedTerminalSnapshot, ConfinedTerminalSurface, } from './terminal.js';
 /**
  * The confined `web` face of ONE Member realm (BL-18).
  *

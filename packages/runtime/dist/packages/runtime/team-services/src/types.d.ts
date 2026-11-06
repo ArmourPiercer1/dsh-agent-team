@@ -19,12 +19,12 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderSurface } from './fs.js';
-import type { ConfinedSubprocessSurface, ConfinedWebSurface } from './install.js';
+import type { ConfinedSubprocessSurface, ConfinedTerminalSurface, ConfinedWebSurface } from './install.js';
 /** Closed per-call denial vocabulary of an installed Provider. */
 export declare const TEAM_IO_DENIAL_CODES: readonly ["IO_READ_DENIED", "IO_WRITE_DENIED", "IO_WRITE_REQUIRES_READ", "IO_POLICY_UNSUPPORTED", "IO_ASK_REQUIRES_APPROVAL", "NETWORK_UNCONFINED_REALM"];
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number];
 /** Closed install-time refusal vocabulary. */
-export declare const TEAM_SERVICE_INSTALL_CODES: readonly ["MEMBER_POLICY_UNAVAILABLE", "MEMBER_POLICY_STALE", "MEMBER_IDENTITY_INVALID", "MEMBER_DUPLICATE", "PROVIDER_UNAVAILABLE", "PROVIDER_INCOMPATIBLE", "SERVICE_ALREADY_INSTALLED", "SERVICE_MOUNT_FAILED", "SUBPROCESS_UNCONFINED_REALM", "TERMINALS_LEGACY_PTY_REFUSED", "NETWORK_UNCONFINED_REALM", "REALM_DECLARATION_INVALID", "REALM_DECLARATION_EXCEEDS_BLUEPRINT", "MEMBER_POLICY_WITHOUT_BLUEPRINT"];
+export declare const TEAM_SERVICE_INSTALL_CODES: readonly ["MEMBER_POLICY_UNAVAILABLE", "MEMBER_POLICY_STALE", "MEMBER_IDENTITY_INVALID", "MEMBER_DUPLICATE", "PROVIDER_UNAVAILABLE", "PROVIDER_INCOMPATIBLE", "SERVICE_ALREADY_INSTALLED", "SERVICE_MOUNT_FAILED", "SUBPROCESS_UNCONFINED_REALM", "TERMINALS_LEGACY_PTY_REFUSED", "TERMINALS_UNCONFINED_REALM", "TERMINALS_DOUBLE_TERMINAL_REFUSED", "NETWORK_UNCONFINED_REALM", "REALM_DECLARATION_INVALID", "REALM_DECLARATION_EXCEEDS_BLUEPRINT", "MEMBER_POLICY_WITHOUT_BLUEPRINT"];
 export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number];
 /**
  * The per-call denial raised by an installed Provider method. Carries the
@@ -75,6 +75,18 @@ export interface RealmServiceFaces {
      * `ctx.web` and fetch with zero guard facts.
      */
     readonly web: ConfinedWebSurface | null;
+    /**
+     * PD-13 (2026-11-11): the confined `terminals` face mounted on this realm's
+     * isolated scope, or `null` — an EXPLICIT answer, never an omission.
+     *
+     * `null` means this Member's realm does NOT confine a terminal: the mount
+     * seam then refuses a `terminals`-consuming native module
+     * (`TERMINALS_LEGACY_PTY_REFUSED`) rather than letting it resolve the
+     * inherited, legacy-generation host PTY service. Non-null means a routed
+     * shell module mounted in this realm's scope speaks to the face installed
+     * here, whose per-command reads are admitted against the compiled lane.
+     */
+    readonly terminals: ConfinedTerminalSurface | null;
 }
 /**
  * One Member's installed realm: the isolated Context that carries the

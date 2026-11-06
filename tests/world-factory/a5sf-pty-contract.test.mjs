@@ -519,9 +519,19 @@ function refusalCode(error) {
 }
 
 async function armRefusedBeforeAllocation(world) {
-  // PRECONDITION: the assembled Member realm answers faces for fs/subprocess/web
-  // and has NO terminal face at all — that absence is why the refusal exists.
-  assert.equal('terminals' in world.member.faces, false, 'RealmServiceFaces carries no terminal face (GAP-PTY-CONTRACT-1)')
+  // PRECONDITION: the assembled Member realm answers faces for
+  // fs/subprocess/web/terminals and has NO terminal face at all — that absence
+  // is why the refusal exists.
+  //
+  // ANNOTATED 2026-11-11 (PD-13): this arm used to assert the FIELD was absent
+  // (`'terminals' in faces === false`, GAP-PTY-CONTRACT-1). `RealmServiceFaces`
+  // is a TOTAL answer by design (the same law as `subprocess`/`web`), so PD-13
+  // added the field; the absence is now the explicit `null`. The arm's
+  // PROPOSITION — "this realm confines no terminal, so the consumer is refused
+  // before any allocation" — is unchanged, and its assertions on the refusal,
+  // the zero allocations and the never-run `apply` are untouched. The arm was
+  // narrowed, not deleted: a non-null face here would still fail it.
+  assert.equal(world.member.faces.terminals, null, 'RealmServiceFaces answers NO terminal face (explicit null, PD-13)')
   assert.equal(world.member.faces.subprocess, null)
   const inherited = world.inheritedTerminals
   assert.ok(inherited !== undefined, 'the member scope still RESOLVES an inherited terminals service — the widening the refusal prevents')

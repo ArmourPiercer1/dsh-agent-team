@@ -1,0 +1,139 @@
+✔ P0 PD-13 defect pin (PRE-FIX): the Member shell reads the lane-denied secret and returns its bytes, with no guard fact naming it (23.592174ms)
+✖ D1 fix: the Member's bash read of a lane-denied path is IO_READ_DENIED, 0 bytes, 1 guard fact, 0 provider calls (6.458467ms)
+✖ D2 locus: the realm reports faces.terminals and the model-visible bash definition is the confined terminal module's (3.759027ms)
+✖ A1 allow lane: an in-lane read runs through the confined terminal face exactly once, with an ALLOW read fact (6.796487ms)
+✔ A2 write lane untouched: a redirection target is not a read, so an in-lane write still runs (7.185433ms)
+✔ A3 no path token: a command with no path-shaped operand produces no shellRead fact (5.567981ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (3.54406ms)
+✔ C1 control (shadow removed): the body read returns the secret bytes again (3.67039ms)
+✖ C2 control (no terminal face): bash keeps the PD-12 shape and the body read is not attributed (4.301443ms)
+✖ C3 control (terminal face without a subprocess face): refused at install with TERMINALS_UNCONFINED_REALM (2.064279ms)
+✖ C4 control (double terminal): a legacy preset terminal beside the confined face is refused, 0 legacy allocations (1.9121ms)
+✖ C5 control (no shell class): the terminal face refuses at install, because its commands could never be admitted (1.840584ms)
+✔ C6 declared weakness: a dynamic read (`$(...)`) is not attributed and is not refused at admission (7.87026ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 6
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 326.338091
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:470:1
+✖ D1 fix: the Member's bash read of a lane-denied path is IO_READ_DENIED, 0 bytes, 1 guard fact, 0 provider calls (6.458467ms)
+  AssertionError [ERR_ASSERTION]: the denied read is REFUSED, not delivered: {"kind":"confined","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"stdout":"A5SF_PD13_SECRET_BYTES\n","stderr":""}
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:476:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:492:1
+✖ D2 locus: the realm reports faces.terminals and the model-visible bash definition is the confined terminal module's (3.759027ms)
+  AssertionError [ERR_ASSERTION]: the model resolves the confined terminal definition
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:501:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "Execute a bash command (`bash -c`) through this Member's confined subprocess face and return its stdout/stderr. Each call runs in a fresh shell; pass `workdir` instead of using `cd`. The command is admitted against the compiled lane before any process starts; a refused call names the typed refusal code in its error.",
+    expected: /confined terminal/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:513:1
+✖ A1 allow lane: an in-lane read runs through the confined terminal face exactly once, with an ALLOW read fact (6.796487ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'confined'
+  - 'confined-terminal'
+             ^
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:522:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'confined',
+    expected: 'confined-terminal',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:601:1
+✖ C2 control (no terminal face): bash keeps the PD-12 shape and the body read is not attributed (4.301443ms)
+  AssertionError [ERR_ASSERTION]: the realm answers "no terminal face"
+  + actual - expected
+  
+  + undefined
+  - null
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:606:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:620:1
+✖ C3 control (terminal face without a subprocess face): refused at install with TERMINALS_UNCONFINED_REALM (2.064279ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:623:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:634:1
+✖ C4 control (double terminal): a legacy preset terminal beside the confined face is refused, 0 legacy allocations (1.9121ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:637:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:648:1
+✖ C5 control (no shell class): the terminal face refuses at install, because its commands could never be admitted (1.840584ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs:651:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

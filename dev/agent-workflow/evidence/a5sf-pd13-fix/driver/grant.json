@@ -1,0 +1,11 @@
+{
+  "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd13/dev/agent-workflow/evidence/dev-live-grant.json",
+  "scope": "DEV-LIVE",
+  "face": "Subprocess",
+  "world": "u5a5sfsub1",
+  "grantId": "devlive-subprocess-1",
+  "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+  "headAtThisStart": "550815c9775743b83d563f1c816530850a7b3a31",
+  "bootSequence": 6,
+  "note": "dev-live start #6 of the Subprocess face at 550815c9775743b83d563f1c816530850a7b3a31; the authorisation is reusable and uncapped, the executed commit is recorded here and in the ledger"
+}

@@ -76,7 +76,7 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | Every real `web_search` fact records a malformed marker | evidence-quality | semantics |
 | PD-11 (D1) | Boot | A shared-domain teardown is reported as `TeamDomain is closed` and the detached boot keeps writing into it | evidence-quality | semantics |
 | PD-12 (Q5) | Subprocess | `network: deny` never governs the model-visible `bash`; the child runs with no network namespace | governance hole | semantics |
-| PD-13 (READ-AXIS) | Shell-PTY | The terminal path has no read axis: a Member's own shell read a write-only-lane secret and returned its bytes | governance hole | semantics |
+| PD-13 (READ-AXIS) | Shell-PTY | The terminal path has no read axis: a Member's own shell read a write-only-lane secret and returned its bytes **(FIXED)** | governance hole | semantics |
 | PD-14 (SANDBOX-ROOT) | Subprocess | A Member session's sandbox root is the pinned host checkout, not the World workspace | behavioural divergence | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
@@ -172,7 +172,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   allocations for the deferred shape; `P4-REFUSED-BEFORE-ALLOCATION` and
   `P4-CONTROL-INERT-MODULE-MOUNTS` stay green.
 - **blocked by**: PD-3, plus a ruling on the Cordis seam (is a pre-scan available at all).
-- **anchors**: `packages/runtime/team-services/src/mount.ts#L1630-L1641` contains `deferredTerminal` ; `packages/runtime/team-services/src/mount.ts#L1442-L1449` contains `A5SF_TERMINALS_LEGACY_PTY_REFUSED`
+- **anchors**: `packages/runtime/team-services/src/mount.ts#L1645-L1656` contains `deferredTerminal` ; `packages/runtime/team-services/src/mount.ts#L1452-L1463` contains `A5SF_TERMINALS_LEGACY_PTY_REFUSED`
 
 ### PD-3 (GAP-PTY-CONTRACT-1) — there is no confined terminal face
 
@@ -195,7 +195,17 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   the *legacy* service only.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (a real
   network-deny backend, before "offline but functional" can be claimed); the boot budget for any live claim.
-- **anchors**: `packages/runtime/team-services/src/install.ts#L441-L448` contains `const faces: RealmServiceFaces` ; `packages/runtime/team-services/src/mount.ts#L1442-L1449` contains `TERMINALS_LEGACY_PTY_REFUSED`
+- **anchors**: `packages/runtime/team-services/src/install.ts#L593-L606` contains `const faces: RealmServiceFaces` ; `packages/runtime/team-services/src/mount.ts#L1452-L1463` contains `TERMINALS_LEGACY_PTY_REFUSED`
+- **2026-11-11 annotation (PD-13 build)**: the structural half of this row is closed.
+  `RealmServiceFaces` now carries a TOTAL `terminals` answer
+  (`ConfinedTerminalSurface | null`), `installMemberIoProviders` installs a confined terminal face on
+  the Member's isolated scope when a composition declares one, and `mountNativeToolModules` admits a
+  `terminals`-consuming native module **iff** `faces.terminals !== null` (the refusal is unchanged and
+  still fires for every realm that answers `null`, i.e. every realm today). What is NOT done here is
+  the product decision: no shipped composition declares a terminal face yet, so matrix rows M-08 /
+  M-13 stay `NOT_WIRED` until an owner wiring round declares it. The refusal remains the fail-closed
+  answer, and the double-terminal fork is now refused explicitly
+  (`TERMINALS_DOUBLE_TERMINAL_REFUSED`) instead of being left to composition order.
 
 ### PD-4 (P5) — the confined child drops upstream's proxy overlay
 
@@ -501,13 +511,17 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `tests/world-factory/a5sf-pd12-bash-governance.test.mjs` and
   `dev/agent-workflow/evidence/a5sf-pd12-fix/mutation-controls.mjs`.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (an `enforced` network backend), plus the owner's decision to expose `bash` through the face at all.
-- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1413` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L204` contains `readonly subprocess: ConfinedSubprocessSurface | null`
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1413` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L222` contains `readonly subprocess: ConfinedSubprocessSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ceiling term** —
   for that Member the compiled ceiling says `network: deny`, yet the effective I/O of the Member's
   model-visible tool set includes a network-capable child, because the ceiling is compiled per
   **face** while the ToolRestriction bound `bash` to an executor that never enters that face; the
   intersection was computed on a mechanism the call does not traverse.
-- **status**: FIXED — 2026-11-10, branch `task/a5sf-pd12-fix-20261110` (draft PR, no merge), DEV-LIVE boots 02/03 of `a5sf-pd12-fix` (agreeing pair) plus boots 10/11 of the subprocess lane as the pre-fix pin; 0 candidate starts. Residuals (1)–(5) above; **PD-13 is not closed** by this fix.
+- **status**: FIXED — 2026-11-10, branch `task/a5sf-pd12-fix-20261110` (draft PR, no merge), DEV-LIVE boots 02/03 of `a5sf-pd12-fix` (agreeing pair) plus boots 10/11 of the subprocess lane as the pre-fix pin; 0 candidate starts. Residuals (1)–(5) above; **PD-13 was not closed** by this fix.
+- **2026-11-11 annotation**: PD-13 IS closed now — its confined terminal face puts a read axis on the
+  Member's own shell (PD-13 row above). This row's fix and PD-13's fix compose: PD-12 routes the shell
+  into a confined face for the network axis, PD-13 gives that face per-command read attribution. Both
+  answers are certified separately.
 
 ### PD-13 (READ-AXIS) — the terminal path has no read axis
 
@@ -536,19 +550,50 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **smallest honest fix**: PD-3's confined terminal face **plus** routing the Member's `bash` to it,
   and stopping the preset's persistent-shell group from mounting `dsh-terminal` for Members — if both
   terminals exist, the Member holds one governed and one ungoverned shell and the answer forks. Not a
-  patch; a face and a backend.
-- **proof**: a live arm in which the same `cat` under the same ceiling is refused through the
-  Member's own `bash` (typed `IO_READ_DENIED`, 0 bytes, ≥1 guard fact naming the locator);
-  `item3-product-shell-read` is then superseded by that arm, and the confined-face arm
-  (`item4-write-only-read-denied`) stays green as the contrast.
-- **blocked by**: PD-3 / [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (the face), the ship-order rule (PD-1/PD-2 before wiring), and the owner's decision on the terminal face.
-- **anchors**: `packages/runtime/team-services/src/types.ts#L200-L204` contains `readonly fs: 'confined'` ; `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]`
+  patch; a face and a backend. **Built as specified** (2026-11-11): `RealmServiceFaces.terminals` +
+  install path + a command-scoped confined terminal face whose per-command reads are admitted against
+  the compiled read lane (below), the route-C `bash` shadow onto it, and a REFUSAL as the
+  double-terminal answer (`TERMINALS_DOUBLE_TERMINAL_REFUSED`). It is **not** a PTY: a PTY cannot ride
+  the Landlock profile, so each command is a fresh confined child — the capability cost is disclosed
+  in residual (2).
+- **proof**: `tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs` — P0 the defect pin (green
+  on the pre-fix tree, RED on the fixed tree), D1 the same `cat` through the Member's own `bash` is
+  `IO_READ_DENIED` with **0 bytes**, exactly **1** `shellRead` fact naming the locator and **0**
+  provider calls; A1 the in-lane read is served once by the confined terminal face with one ALLOW
+  fact; S1 surface-neutral (one `bash`, same name set); C1–C6 controls (shadow removed returns the
+  bytes; no terminal face keeps the PD-12 shape; no subprocess face / no shell class / a legacy
+  preset terminal are each typed refusals; C6 pins the DISCLOSED dynamic-read weakness). Mutation
+  controls `dev/agent-workflow/evidence/a5sf-pd13-fix/mutation-controls.mjs`: **MA** removing the
+  read axis reds exactly D1+A1 and leaves the write/allowed/control arms green; **MB** removing the
+  shadow returns the ungoverned path (D1/D2/A1 red plus every arm that measures the confined route).
+  Live: `dev/agent-workflow/evidence/a5sf-pd13-fix/README.md` (DEV-LIVE boots, agreeing pair).
+- **blocked by**: nothing on the face itself; the PRODUCT path still needs an owner decision to
+  declare a terminal face in a shipped composition (no product composition declares one yet, so the
+  shipped product still has no confined shell — residual (4)). [BL-42](ALPHA5-SANDBOX-BACKLOG.md)'s
+  network backend is unrelated to this row.
+- **anchors**: `packages/runtime/team-services/src/terminal.ts#L530-L535` contains `for (const locator of shellReadIntentsOf(text, session.cwd))` ; `packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L914-L926` contains `confinedTerminalSpecOf` ; `packages/runtime/team-services/src/types.ts#L243` contains `readonly terminals: ConfinedTerminalSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ToolRestriction
   term** — route C shadows only the tools it re-registers (the FS/search pair); `bash` is not one of
   them, so the Member's `bash` is served by the preset's own tool row, carries the preset's legacy
   PTY, and no lane is consulted at all; the ceiling's read denial is not evaluated, so the
   intersection is not merely wrong, it is never taken on this path.
-- **status**: OPEN — `DEV-LIVE` evidence, merged via PR #634, runs 08 and 09 (the stable pair, identical verdicts and facts, no code change between them); 9 starts total in that lane, 0 of them candidate. **2026-11-10 note:** PD-12's fix does not close this row; it routes `bash` into the confined face, whose read admission is lane-root based and does not make a shell body's reads attributable (see PD-12 residuals).
+- **status**: FIXED — 2026-11-11, branch `task/a5sf-pd13-terminal-20261111` (draft PR, no merge). The
+  face, the route-C `bash` shadow and the double-terminal refusal are proven host-free (pin flip +
+  13 arms + two mutation controls) and on real Hosts (DEV-LIVE pair in
+  `dev/agent-workflow/evidence/a5sf-pd13-fix/`). Residuals: (1) a DYNAMIC read (`$(…)`, backticks, a
+  path assembled from variables) is not lexically attributable and is not refused at admission — the
+  OS profile is its boundary (arm C6 pins this); (2) there is no persistent shell state (`cd`/`export`
+  do not survive a command, no interactive stdin) because each command is a fresh confined child; the
+  old persistent PTY's capability is deliberately given up; (3) redirection targets are writes, not
+  read intents, so the read axis is the only axis the face adds — the write axis remains the confined
+  process face's declared `shell.writes`; (4) NO SHIPPED COMPOSITION DECLARES A TERMINAL FACE yet, so
+  the product's Member shell is still the preset's until an owner declares
+  `terminal`/`a5sfRealm` for Members; the refusal (double terminal, missing subprocess face, undeclared
+  shell class) is the fail-closed answer meanwhile; (5) a `terminals`-consuming module mounted on an
+  ANCESTOR scope still resolves the inherited service — `faces` gates route-C mounts only.
+  **2026-11-10 note (kept for the record):** PD-12's fix did not close this row; it routed `bash` into
+  the confined subprocess face, whose read admission is lane-root based and does not make a shell
+  body's reads attributable. That gap is what this build closes.
 
 ### PD-14 (SANDBOX-ROOT) — a Member session's sandbox root is the pinned host checkout
 

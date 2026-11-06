@@ -1,0 +1,85 @@
+{
+  "schema": "a5sf-pd13-mutation-controls/1",
+  "at": "2026-11-06T17:31:08.154Z",
+  "arms": "tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs",
+  "mutantCount": 2,
+  "controls": [
+    {
+      "id": "MA-read-axis-removed",
+      "description": "the confined terminal face never enumerates a command's declared reads, so the lane is never consulted",
+      "expectedRed": [
+        "A1",
+        "D1"
+      ],
+      "observedRed": [
+        "A1",
+        "D1"
+      ],
+      "expectedGreen": [
+        "D2",
+        "A2",
+        "A3",
+        "S1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "observedGreen": [
+        "D2",
+        "A2",
+        "A3",
+        "S1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    },
+    {
+      "id": "MB-shadow-row-removed",
+      "description": "the route-C attach appends neither the confined-terminal nor the confined-bash module (the pre-fix composition)",
+      "expectedRed": [
+        "A1",
+        "A2",
+        "A3",
+        "C2",
+        "C6",
+        "D1",
+        "D2"
+      ],
+      "observedRed": [
+        "A1",
+        "A2",
+        "A3",
+        "C2",
+        "C6",
+        "D1",
+        "D2"
+      ],
+      "expectedGreen": [
+        "S1",
+        "C1",
+        "C3",
+        "C4",
+        "C5"
+      ],
+      "observedGreen": [
+        "S1",
+        "C1",
+        "C3",
+        "C4",
+        "C5"
+      ],
+      "rc": 1,
+      "verdict": "RED-AS-REQUIRED"
+    }
+  ],
+  "verdict": "PASS"
+}

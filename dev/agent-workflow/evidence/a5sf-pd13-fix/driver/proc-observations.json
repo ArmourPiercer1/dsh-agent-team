@@ -1,0 +1,21 @@
+{
+  "schema": "a5sf-pd13/proc-observations/1",
+  "at": "2026-11-06T17:48:45.727Z",
+  "note": "an independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not our counter",
+  "sightings": [
+    {
+      "at": "2026-11-06T17:48:41.783Z",
+      "hits": [
+        {
+          "marker": "allow",
+          "pid": 171,
+          "pty": "none",
+          "pgrp": null,
+          "session": null,
+          "state": "S",
+          "cmdline": "/bin/bash -c printf 'A5SF_SUB_ALLOW_u5u5a5sfsub1-20261106T17-48-09Z\\n'; touch '/home/armourpiercer/projects/dsh-agent-team/tests/homes/u5u5a5sfsub1-20261106T17-48-09Z/workspace/lane/allow-marker.txt'; sleep 1.5 "
+        }
+      ]
+    }
+  ]
+}
