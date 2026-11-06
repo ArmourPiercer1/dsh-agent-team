@@ -1,0 +1,10 @@
+{
+  "planId": "stale-home-create",
+  "note": "A plan whose bootPhase is create over a home that is NOT fresh (a previous boot already stamped the domain). Deterministically TEAM_DOMAIN_EXISTS before bootstrap (E5a), so this class IS decidable before a start.",
+  "homeFresh": false,
+  "bootPhase": "create",
+  "runtimeReload": { "possible": false, "why": "no reload declared" },
+  "rows": [
+    { "id": "dsh-agent-team", "kind": "product-row", "required": true, "moduleCheck": "skip", "fault": null }
+  ]
+}
