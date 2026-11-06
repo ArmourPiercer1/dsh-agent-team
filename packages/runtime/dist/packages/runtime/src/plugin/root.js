@@ -2048,9 +2048,12 @@ export function createTeamProductionRoot(params) {
             // already withdrawn). Register its latch as stopped so an explicit
             // resume can find it; this grants nothing and delivers nothing.
             for (const marker of await alpha6WakeIntents.listStopped()) {
-                // Strict own-root guard: a durable row from another Team (or a
-                // previous world sharing this HOME) is never ours to clear/adopt.
-                if (marker.key.rootSessionId !== rootSid)
+                // Owner guard: a marker from another mount instance is never ours
+                // to register/clear. Legacy markers fall back to strict own-root.
+                const markerOwned = marker.ownerRootSessionId === undefined
+                    ? marker.key.rootSessionId === rootSid
+                    : marker.ownerRootSessionId === rootSid;
+                if (!markerOwned)
                     continue;
                 if (marker.key.sessionGeneration !== config.generation)
                     continue;
@@ -2072,9 +2075,13 @@ export function createTeamProductionRoot(params) {
                 // or clear a row whose Team is not live in THIS process; the row's
                 // own root is the Team root, which is not necessarily the boot
                 // root this plugin instance was mounted under.
-                // Strict own-root guard: another Team's durable row (or a previous
-                // world) is not adopted or cleared by this instance.
-                if (intent.key.rootSessionId !== rootSid)
+                // Owner guard: a row written by another mount instance (or an
+                // older world) is never adopted/cleared here. Legacy rows without
+                // an owner keep the strict own-root fallback.
+                const intentOwned = intent.ownerRootSessionId === undefined
+                    ? intent.key.rootSessionId === rootSid
+                    : intent.ownerRootSessionId === rootSid;
+                if (!intentOwned)
                     continue;
                 if (intent.key.sessionGeneration !== config.generation) {
                     // A generation bump invalidates the old latch identity. Withdraw
@@ -2137,6 +2144,7 @@ export function createTeamProductionRoot(params) {
                 }
                 const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`;
                 let rebuild = false;
+                let discarded = false;
                 await withAlpha6WakeLock(mapKey, async () => {
                     // A concurrent readiness-gated dispatch may already own this
                     // latch. Its coordinator is authoritative; never recover over it.
@@ -2160,9 +2168,18 @@ export function createTeamProductionRoot(params) {
                         alpha6WakeCoordinators.delete(mapKey);
                     if (alpha6WakeBySession.get(targetSessionId) === coordinator)
                         alpha6WakeBySession.delete(targetSessionId);
+                    // Native Inbox truth beats availability: row `accepted` but the
+                    // native message is gone means a crashed turn already claimed it.
+                    // Rebuilding would deliver a second wake; discard the stale row
+                    // instead (the durable Control request remains the work).
+                    if (recovered.reason === 'absent' && intent.status === 'accepted') {
+                        await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                        discarded = true;
+                        return;
+                    }
                     rebuild = true;
                 });
-                if (!rebuild)
+                if (!rebuild || discarded)
                     continue;
                 // Windows (b)/(d): the native message is gone (claimed and consumed
                 // by a crashed turn, or never delivered). Rebuild the wake from the
