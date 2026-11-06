@@ -31,7 +31,9 @@
       "world": "u5a5sfsub1"
     },
     "recordClass": "DEV-LIVE",
-    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "teamSha": "79a19bd4c09b1770f71df89ea571da994c2364d0",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
   },
   "cases": [
     {

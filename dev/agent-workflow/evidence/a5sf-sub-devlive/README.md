@@ -362,3 +362,13 @@ Four of the eleven starts failed for four different reasons, and every one of th
 produced a fact that changed the driver — the two that were purely my defects
 (boot 1's discovery-turn selection; the `overall` computation) are corrected in
 the ledger rather than hidden. No product code was modified; nothing was merged.
+
+## 2026-11-10 — 记录格式更正（未改任何测量事实）
+
+7 份 `run-record.json` 的 `bindings` 缺 `teamSha` / `hostSha` / `authority`，在 `EB3-RUN-MANIFEST --new`
+严格档下判 `RUN_SOURCE_UNRESOLVED` + `RUN_SCHEMA`（本地非严格档不报）。已按本分支实测值补齐：
+`teamSha` = 被测 master `79a19bd4c0`、`hostSha` = pin `639ed0153972…`、`authority` = 当前指针
+`as20261105r2` + 指针字节哈希 `31ac81fb…`。严格档现 `strict=7 findings=0`。
+
+这是**记录格式缺陷，不是测量缺陷**：8 条 proposition、4 个 case、稳定对（start 10/11）的结论一字未改。
+与前几次同类——只有真实门禁才现形——故记在此处而非静默修正。
