@@ -20,6 +20,32 @@
 >
 > Date 2026-11-07 · base `origin/master` @ `f082a28c0` · 0 boots · `CORE_PATCH_BUDGET = 0`.
 
+## 0.1 Owner ruling 2026-11-09 — PD-1 semantics deferred, deliberately
+
+Asked directly whether revocation should bind **only the current generation** (add a `generation` input to `revoke`,
+`:249`, keeping the existing "archived then re-created may acquire again" behaviour asserted by
+`packages/runtime/test/a5sf-terminal-lifecycle.test.ts`), bind **all generations** via an owner-scoped tombstone
+(which closes the hole and also removes that existing capability), or take the larger **tombstone + explicit
+`restore`** shape, the owner ruled: **defer the decision and keep the defect latent.**
+
+What that ruling means, stated so it cannot be read as an acceptance:
+
+- **PD-1 stays a `governance hole`.** It is not downgraded, not reclassified, and not "accepted risk".
+- **The Shell-PTY face stays unwired.** The ship-order rule in §1 ("fix PD-1/PD-2 before wiring the terminal face")
+  now has a second, independent reason to hold: there is no ruling to implement, so BL-17's confined terminal face
+  must not be built on top of a revocation path whose semantics the owner has not chosen.
+- **The defect pin stays green on purpose.**
+  `tests/world-factory/a5sf-pd1-revocation-escape.test.mjs` continues to assert that the escape currently succeeds and
+  prints `PD1-ESCAPE-REPRODUCED`; it also reds if this row is deleted or downgraded, so the deferral cannot silently
+  become a fix or a disappearance.
+- **Nothing else is unblocked by the deferral.** The hole remains latent only because no governed realm installs a
+  `terminals` face (`RealmServiceFaces` = fs/subprocess/web, PD-3); that is the whole backstop, and it is a
+  composition-time absence, not an enforcement.
+- **Release stays BLOCKED**, and the PTY row of the end-state table continues to read "no confined shell at all".
+
+Recorded here rather than in a lane report because a deferred owner decision that lives only in a conversation is
+indistinguishable, six weeks later, from a decision nobody ever made.
+
 ## 1. The register at a glance
 
 | id | face | debt | consequence | decision |
@@ -38,6 +64,12 @@
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
 **`decision = correctness`** means the fix only makes the product report what it already does.
+
+> **2026-11-08 状态更新（ALPHA5-CONSOLIDATE；只追加，不改任何行文）**：PD-7 与 PD-9 的 `status`
+> 行写于两条 PR 还是 draft 的时候。`git log origin/master` 显示二者已 squash 合入：
+> **PD-7 = `572a7625d`（#619）**、**PD-9 = `bab33c4c6`（#620）**。因此按“FIXED 只在合并 PR 说了
+> 才算”的口径，这两行现在是 `FIXED`（有已合并 PR），其余 **8 行仍 `OPEN` 且仍待 owner 决策**。
+> 状态汇总表在 `ALPHA5-END-STATE.md` §2；本文件 §2 的逐条详情、验收条件与 anchors 一字未动。
 
 ## 2. The rows
 
