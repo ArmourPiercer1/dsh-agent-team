@@ -206,7 +206,12 @@
         "captures": [
           "status",
           "body"
-        ]
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
       },
       {
         "id": "create-team",
@@ -218,7 +223,12 @@
         "captures": [
           "status",
           "body"
-        ]
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
       },
       {
         "id": "create-member",
@@ -233,7 +243,12 @@
         "captures": [
           "status",
           "body"
-        ]
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
       },
       {
         "id": "read-control-state",
@@ -249,7 +264,12 @@
         "captures": [
           "status",
           "body"
-        ]
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
       },
       {
         "id": "run-cases",
@@ -261,7 +281,12 @@
         "captures": [
           "status",
           "body"
-        ]
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
       }
     ],
     "plannedCases": [
@@ -274,7 +299,50 @@
       "search-row2",
       "search-row3",
       "search-row5"
-    ]
+    ],
+    "blueprint": {
+      "blueprintId": "team.a5sf.preflight.main",
+      "leader": {
+        "tools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "write",
+          "team_list_members",
+          "team_create_member",
+          "team_delegate",
+          "team_collect",
+          "u5_canary",
+          "u6fs_probe"
+        ],
+        "builtinToolDeny": [
+          "u5_canary",
+          "u6fs_probe"
+        ],
+        "teamTools": [
+          "team_list_members",
+          "team_create_member",
+          "team_delegate",
+          "team_collect"
+        ],
+        "worldRows": {
+          "u5-canary": [
+            "u5_canary"
+          ],
+          "u6-fs-probe-host": [
+            "u6fs_probe"
+          ]
+        },
+        "presetTools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    }
   },
   "fixtures": [
     {
@@ -409,7 +477,7 @@
     "plannedStarts": 1,
     "aborts": 0,
     "boundCommit": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
-    "grantedBy": "owner, 2026-11-06 (\"\u6279\u51c65\u6b21P2-04\u9884\u7b97\"), allocation #4 of 5 (retry of #1), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+    "grantedBy": "owner, 2026-11-06 (\"批准5次P2-04预算\"), allocation #4 of 5 (retry of #1), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
   },
   "runRecord": {
     "teamSha": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
