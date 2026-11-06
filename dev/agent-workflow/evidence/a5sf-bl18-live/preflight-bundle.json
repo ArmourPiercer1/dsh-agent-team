@@ -116,7 +116,7 @@
     "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
   },
   "candidate": {
-    "head": "63a745c65efda441da29f5fe0397851ad9614e89",
+    "head": "34c9e0ef010b7a14b754740b1b26de7e4b808cd5",
     "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
     "productTreeProof": [],
     "note": "the run executes at candidate.head; no product path differs from the baseline for this lane (no product change)"
@@ -124,13 +124,13 @@
   "grant": {
     "grantId": "P2-04-bl18-live-remaining-1",
     "grantedBy": "owner ruling 2026-11-06 「批准5次P2-04预算」 (allocation #2 = BL-17 live; BL-18 = the remaining start)",
-    "boundCommit": "63a745c65efda441da29f5fe0397851ad9614e89",
+    "boundCommit": "34c9e0ef010b7a14b754740b1b26de7e4b808cd5",
     "priorRows": 4,
     "plannedStarts": 1,
     "maxStarts": 5
   },
   "runRecord": {
-    "teamSha": "63a745c65efda441da29f5fe0397851ad9614e89",
+    "teamSha": "34c9e0ef010b7a14b754740b1b26de7e4b808cd5",
     "bindings": {
       "authority": {
         "pointer": {

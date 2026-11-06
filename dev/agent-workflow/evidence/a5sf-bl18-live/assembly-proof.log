@@ -32,7 +32,8 @@ E  product-assembly.ts ceiling deny refusal: line 869
 E  product-assembly.ts binding deny refusal: line 551
 E  web.ts face guard (deny lane + probe): line 148
 E  web.ts refusal throw: line 160
-E  mount.ts composition refusal (module injects web, no face): line 0
+E  mount.ts composition refusal (module injects web, no face): line 1472
+E  a5sf-realm-row.mjs single-source web fork refusal: line 815
 E  a5sf-realm-row.mjs presence check (declared face cannot mount): line 619
 
 == VERDICT ==

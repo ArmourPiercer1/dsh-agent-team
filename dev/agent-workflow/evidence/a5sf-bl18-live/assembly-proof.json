@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-bl18-assembly-proof/1",
-  "at": "2026-11-06T04:08:21.559Z",
+  "at": "2026-11-06T04:09:03.017Z",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-web/tests/deepseek-harness-test-use",
   "scenarios": {
     "A": {
@@ -80,7 +80,8 @@
       "product-assembly.ts binding deny refusal": 551,
       "web.ts face guard (deny lane + probe)": 148,
       "web.ts refusal throw": 160,
-      "mount.ts composition refusal (module injects web, no face)": 0,
+      "mount.ts composition refusal (module injects web, no face)": 1472,
+      "a5sf-realm-row.mjs single-source web fork refusal": 815,
       "a5sf-realm-row.mjs presence check (declared face cannot mount)": 619
     }
   },
@@ -121,7 +122,8 @@
     "E  product-assembly.ts binding deny refusal: line 551",
     "E  web.ts face guard (deny lane + probe): line 148",
     "E  web.ts refusal throw: line 160",
-    "E  mount.ts composition refusal (module injects web, no face): line 0",
+    "E  mount.ts composition refusal (module injects web, no face): line 1472",
+    "E  a5sf-realm-row.mjs single-source web fork refusal: line 815",
     "E  a5sf-realm-row.mjs presence check (declared face cannot mount): line 619",
     "",
     "== VERDICT ==",

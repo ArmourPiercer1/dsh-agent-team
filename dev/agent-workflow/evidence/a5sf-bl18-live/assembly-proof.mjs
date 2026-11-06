@@ -571,7 +571,11 @@ function scenarioE() {
     'product-assembly.ts binding deny refusal': lineOf(productTs, 'narrows the network axis (${restriction.network}'),
     'web.ts face guard (deny lane + probe)': lineOf(webTs, 'export function createWebNetworkGuard'),
     'web.ts refusal throw': lineOf(webTs, "throw new TeamIoDenial("),
-    'mount.ts composition refusal (module injects web, no face)': lineOf(mountTs, "injects `web`, but"),
+    'mount.ts composition refusal (module injects web, no face)': lineOf(mountTs, 'mounts no confined web face;'),
+    'a5sf-realm-row.mjs single-source web fork refusal': lineOf(
+      readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'), 'utf8'),
+      'two web-face sources for one Member realm is a fork',
+    ),
     'a5sf-realm-row.mjs presence check (declared face cannot mount)': lineOf(
       readFileSync(join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'), 'utf8'),
       'carries no mountable confined web face',
