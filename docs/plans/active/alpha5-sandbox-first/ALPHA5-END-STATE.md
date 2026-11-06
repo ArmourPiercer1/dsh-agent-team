@@ -17,6 +17,23 @@
 > 六个能力面（FS Provider / Subprocess / Shell-PTY / Web / External execution / Non-data-plane）
 > 加一个 cross-face 桶；下表把 Non-data-plane 单列一行，Cross-face 也单列一行，因为发布门属于后者。
 
+## 0. 2026-11-09 owner 决策（三条，取代此前的 PD-1 延期）
+
+外部审查与 owner 同日裁决，逐条记录，因为它们改变本文件的结论边界：
+
+1. **Boot 预算：有条件预授权 3 次。** 生效条件是两个，缺一不可：**(i) `TeamDomain is closed` 得到 host-free 归因**；
+   **(ii) 存在真正可区分的启动前负控**（能在启动前判定这一类失败，而不是又一条静态门禁）。在两者满足之前，
+   这 3 次**不可用**，预算实际状态仍是 **0/5 已耗尽**。跟踪：
+   `dev/agent-workflow/evidence/a5sf-domain-attrib/`。
+2. **报告节奏：** 60 轮不再作为收口点，正式阶段性开发报告须在**第 75 轮之前**提交；报告**不等于** Alpha.5 通过验收、
+   也不等于停工，之后可继续开发。本文件因此是**阶段性**陈述，不是发布结论。
+3. **PD-1：批准"代际明确"的撤销接口**（`revoke` 接收受信 member 身份，含 `teamId`/`memberInstanceId`/
+   `instanceGeneration`），**不采用**按 `memberInstanceId` 永久生效的墓碑（那会阻止新代际合法重建 Shell，
+   与既有设计冲突）；同时必须封住 **`spawn()` 执行期间 revoke** 的竞态：迟到的创建结果不得获得执行资格。
+   §0.1 中 2026-11-09 早些时候的"延期"裁决**被本条取代**（保留为历史）。跟踪：`dev/agent-workflow/evidence/a5sf-pd1-fix/`。
+4. **明确不做的事**（审查建议，采纳）：停止为每个未完成项新增治理机制；剩余工作集中在真实缺陷修复、
+   未完成范围的准确说明、以及证据可复现性上。
+
 ## 1. 终态表（每面一行）
 
 | face | 今天一个 Member 实际能做什么 | 最强真话（有证据） | 最容易被误信、但没有证据的那句话 | 证据指针 | 阻塞 |
