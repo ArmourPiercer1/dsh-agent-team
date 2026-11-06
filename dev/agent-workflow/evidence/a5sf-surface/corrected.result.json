@@ -1,0 +1,99 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "id": "assembly.usable",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.roots",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.blueprints",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.member-tool-binding",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "identity.authority",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "native.module-config",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.paths",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "policy.fifo",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "cases.isolation",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "bundle.case-coverage",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.gate-order",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.leader-surface",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "driver.log-capture",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "collector.shape",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.candidate",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.grant",
+      "verdict": "PASS",
+      "findings": []
+    },
+    {
+      "id": "wiring.run-record",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "unknown": [],
+  "summary": "PASS 17/17 checks",
+  "inputs": {
+    "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-surface",
+    "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostPrefixRemapped": true
+  }
+}

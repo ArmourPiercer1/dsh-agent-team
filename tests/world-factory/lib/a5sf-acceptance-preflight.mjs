@@ -1147,10 +1147,20 @@ export function judgeAcceptanceRow(caseId, sample = {}) {
 // boot 3 burned an allocation on a gate that ran before `team.create`. Three
 // checks now grade the plan's DECLARED ORDER and its inputs: `driver.gate-order`
 // (a step's `requires` token must be produced by an earlier step),
-// `driver.log-capture` (a fail-capable step must declare a body capture), and
-// `bundle.case-coverage` (planned cases exist exactly once and have fixture
+// `driver.log-capture` (a fail-capable step must declare a body capture),
+// and `bundle.case-coverage` (planned cases exist exactly once and have fixture
 // rows). They read declarations, never route strings, and a bundle that
 // predates the declaration is `UNKNOWN` — visibly not `PASS`.
+//
+// SURFACE CHECK (2026-11-08, BL-17 boot 4 / zero boots). All 16 then-passing
+// checks graded blueprint IDs, counts and order; none graded the tool surface
+// the root agent would actually receive, so `team.create` was refused by A2C-2
+// for two World-composed test tools (`u5_canary`, `u6fs_probe`). The 17th check
+// `driver.leader-surface` applies A2C-2's own predicate to the DECLARED surface
+// and denies, and `driver.log-capture` now refuses a declared truncation (boot
+// 4 PASSED it while slicing the body at 400/300 chars). A surface the bundle
+// does not declare is `UNKNOWN` — the same three-valued rule as the order
+// checks, and `driver.log-capture`'s new retention clause follows it too.
 //
 // WHAT IT IS NOT: it does not replace the per-row judges above, and it does
 // not decide a row. It answers one question — "would spending a start on this
@@ -1173,6 +1183,7 @@ export const PREFLIGHT_CHECK_IDS = Object.freeze([
   'cases.isolation',
   'bundle.case-coverage',
   'driver.gate-order',
+  'driver.leader-surface',
   'driver.log-capture',
   'collector.shape',
   'wiring.candidate',
@@ -1723,6 +1734,312 @@ export function checkDriverGateOrder(bundle) {
   return { findings }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// `driver.leader-surface` — the A2C-2 predicate, applied BEFORE a start
+//
+// BL-17 boot 4 aborted at `team.create` with
+// `alpha2-permission-coverage-unmanaged-tools`: the driver declared the leader
+// with `builtinToolDeny: []` while the World always composed the `u5-canary`
+// and `u6-fs-probe-host` rows, so `u5_canary` and `u6fs_probe` sat on the
+// leader's FINAL model-facing surface with no authority owner. The preflight
+// passed 16/16 immediately before that start because it graded blueprint IDs
+// and counts, never the surface the root agent would actually be handed.
+//
+// WHY A MIRROR AND NOT AN IMPORT. `permission-coverage.ts` is TypeScript under
+// `packages/`, and this module is a pure host-free contract (no product import,
+// no build artifact, no I/O). The registries below are a READ-ONLY COPY, and
+// `tests/world-factory/a5sf-acceptance-preflight.test.mjs` binds every literal
+// back to `packages/runtime/operation-permission/permission-coverage.ts` and
+// `packages/domain/blueprint/src/schema.ts` (the drift guard, E12). The
+// predicate itself is {@link classifyLeaderSurfaceTool}, with the SAME fixed
+// precedence as A2C-2's `classifyPermissionCoverageTool`
+// (`permission-coverage.ts:294-341`): managed → team → MCP → safe-unmanaged →
+// known-sensitive (exact names, then the `job_` family prefix) → unknown.
+//
+// The live call site is `packages/runtime/src/plugin/live/agent-bindings.mjs`
+// `:3549-3579`: it reads the FINAL surface (after `builtinToolDeny`'s
+// `restrict()` masking), passes `PERMISSION_TOOL_NAMES` as `managedToolNames`,
+// `[...selectedTeamToolNames, ...a5PlaneOwnNames]` as `teamToolNames`, and the
+// proven MCP delta as `mcpToolNames`, then throws
+// `PermissionCoverageUnmanagedError` when `evaluatePermissionCoverage` is not
+// `ok`. {@link checkDriverLeaderSurface} applies that same set algebra to the
+// DECLARED surface, so a host-free verdict and the live gate cannot disagree
+// about a name: `final = declaredSurface − builtinToolDeny`, and a name is
+// covered iff it is managed/team/MCP/safe. The product has no other way for a
+// tool to acquire an owner; there is no acknowledgement escape hatch
+// (plan §7.3-F / §7.5).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The seven-name managed permission vocabulary (`PERMISSION_TOOL_NAMES`,
+ *  `packages/domain/blueprint/src/schema.ts:421-429`). A managed name passes
+ *  A2C-2 without any Blueprint rule (ownership, not per-call declaration). */
+export const SURFACE_MANAGED_TOOL_NAMES = Object.freeze(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
+
+/** The closed source-reviewed SAFE_UNMANAGED registry
+ *  (`permission-coverage.ts:130`). */
+export const SURFACE_SAFE_UNMANAGED_TOOL_NAMES = Object.freeze(['todo_write'])
+
+/** The closed KNOWN_SENSITIVE exact-name registry
+ *  (`permission-coverage.ts:146-175`). */
+export const SURFACE_KNOWN_SENSITIVE_TOOL_NAMES = Object.freeze([
+  'grep', 'glob',
+  'subagent', 'subagent_fork', 'ralph', 'workflow',
+  'web_fetch', 'web_search',
+  'job_list', 'job_output', 'job_kill',
+  'send_message', 'interrupt_agent', 'list_agents',
+])
+
+/** The known-sensitive FAMILY prefix (`permission-coverage.ts:180`). */
+export const SURFACE_KNOWN_SENSITIVE_TOOL_PREFIXES = Object.freeze(['job_'])
+
+/** The closed six authority-owner classes, same stable kebab-case strings the
+ *  typed A2C-2 error detail carries. */
+export const SURFACE_CLASSES = Object.freeze({
+  MANAGED: 'managed-operation-permission',
+  TEAM: 'other-managed-team-tool',
+  MCP: 'other-managed-mcp',
+  SAFE: 'safe-unmanaged',
+  SENSITIVE: 'known-sensitive-unmanaged',
+  UNKNOWN: 'unknown-unmanaged',
+})
+
+/** The fatal classes (`evaluatePermissionCoverage`: `unmanagedTools`). */
+export const SURFACE_FATAL_CLASSES = Object.freeze([SURFACE_CLASSES.SENSITIVE, SURFACE_CLASSES.UNKNOWN])
+
+/** The finding a name with no authority owner produces. */
+export const POLICY_SURFACE_UNMANAGED = 'POLICY_SURFACE_UNMANAGED'
+
+/**
+ * Classify ONE declared final-surface tool, with A2C-2's fixed precedence.
+ *
+ * `facts.managed` / `facts.safeUnmanaged` are overridable because a bundle may
+ * pin the vocabulary it was planned against; absent, the product mirrors above
+ * apply. `teamTools` and `mcpTools` are always the caller's declared ownership
+ * facts — the product never guesses them from a name prefix.
+ *
+ * @param {string} name
+ * @param {{managed?: readonly string[], teamTools?: readonly string[], mcpTools?: readonly string[], safeUnmanaged?: readonly string[]}} [facts]
+ * @returns {string} one of {@link SURFACE_CLASSES}
+ */
+export function classifyLeaderSurfaceTool(name, facts = {}) {
+  const tool = String(name)
+  const managed = facts.managed ?? SURFACE_MANAGED_TOOL_NAMES
+  if (managed.includes(tool)) return SURFACE_CLASSES.MANAGED
+  if ((facts.teamTools ?? []).includes(tool)) return SURFACE_CLASSES.TEAM
+  if ((facts.mcpTools ?? []).includes(tool)) return SURFACE_CLASSES.MCP
+  if ((facts.safeUnmanaged ?? SURFACE_SAFE_UNMANAGED_TOOL_NAMES).includes(tool)) return SURFACE_CLASSES.SAFE
+  if (SURFACE_KNOWN_SENSITIVE_TOOL_NAMES.includes(tool)) return SURFACE_CLASSES.SENSITIVE
+  if (SURFACE_KNOWN_SENSITIVE_TOOL_PREFIXES.some((prefix) => tool.startsWith(prefix))) return SURFACE_CLASSES.SENSITIVE
+  return SURFACE_CLASSES.UNKNOWN
+}
+
+/** Is this classification one A2C-2 makes FATAL (no authority owner)? */
+export function isFatalSurfaceClass(classification) {
+  return SURFACE_FATAL_CLASSES.includes(classification)
+}
+
+/**
+ * The DISCOVERY-FIRST deny rule: every name on the surface that A2C-2 would
+ * classify as fatal, sorted. This is the host-free twin of the canonical
+ * assembly's
+ * `surface.filter((n) => !n.startsWith('team_') && !MANAGED.includes(n) && !SAFE.includes(n))`
+ * (`tests/world-factory/suites/040-u6-arc-a.mjs:159-161`,
+ * `tests/world-factory/lib/u6-fs-assembly.mjs` `mainBlueprintYaml(denyList)`),
+ * stated over the SAME classifier the live gate uses instead of a `team_`
+ * prefix heuristic.
+ *
+ * A static deny list rots the moment the World composes a new row; this rule
+ * cannot, because its input is the ACTUAL discovered surface. A driver that
+ * declares `builtinToolDeny: "discovery-first"` is asserting it will compute
+ * this list at runtime; the preflight computes the same list from the declared
+ * surface and requires the resulting final surface to be coverage-clean.
+ *
+ * @param {readonly string[]} toolNames
+ * @param {{managed?: readonly string[], teamTools?: readonly string[], mcpTools?: readonly string[], safeUnmanaged?: readonly string[]}} [facts]
+ * @returns {string[]} the names to pass to `builtinToolDeny`, sorted
+ */
+export function discoveryFirstDenyList(toolNames, facts = {}) {
+  const unique = [...new Set((toolNames ?? []).map(String))].sort()
+  return unique.filter((name) => isFatalSurfaceClass(classifyLeaderSurfaceTool(name, facts)))
+}
+
+/** Normalise a declared tool-name list for the surface check. Returns null for
+ *  a malformed declaration, so a typo cannot pass as an empty surface. */
+function surfaceNameList(value) {
+  if (value === undefined || value === null) return null
+  if (typeof value === 'string') return value.trim() === '' ? null : [value.trim()]
+  if (!Array.isArray(value)) return null
+  const out = []
+  for (const entry of value) {
+    if (!nonBlank(entry)) return null
+    out.push(String(entry).trim())
+  }
+  return out
+}
+
+/** Where the leader-surface declaration may live, in priority order. */
+export function readLeaderSurfaceDeclaration(bundle) {
+  const declared = readDriverPlan(bundle)
+  const plan = declared?.plan ?? null
+  const candidates = [
+    plan?.blueprint?.leader,
+    plan?.leaderSurface,
+    bundle?.leaderSurface,
+  ]
+  for (const candidate of candidates) {
+    if (isObject(candidate)) return candidate
+  }
+  return null
+}
+
+/**
+ * `driver.leader-surface` — would `team.create` be refused by A2C-2?
+ *
+ * The bundle declares the leader's model-facing surface for the World it
+ * targets (`driver.blueprint.leader.tools`, with optional `worldRows` /
+ * `presetTools` provenance), the blueprint's `builtinToolDeny` (an array, or
+ * the sentinel `"discovery-first"`), and the ownership facts
+ * (`teamTools`, optional `managed` / `safeUnmanaged` / `mcpTools`).
+ *
+ * A bundle that declares none of this is `UNKNOWN`, never `PASS`: the live gate
+ * would still run, and "the bundle never said" is not "the surface is covered".
+ *
+ * @param {object} bundle
+ * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
+ */
+export function checkDriverLeaderSurface(bundle) {
+  const findings = []
+  const declared = readDriverPlan(bundle)
+  if (declared === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_PLAN_UNDECLARED',
+      detail: 'the bundle declares no driver plan; the leader tool surface cannot be certified (UNKNOWN, not PASS)',
+    }
+  }
+  const surface = readLeaderSurfaceDeclaration(bundle)
+  if (surface === null) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_LEADER_SURFACE_UNDECLARED',
+      detail: 'the bundle declares no driver.blueprint.leader surface (tools/builtinToolDeny); A2C-2 coverage cannot be certified host-free (UNKNOWN, not PASS)',
+    }
+  }
+  const tools = surfaceNameList(surface.tools)
+  if (tools === null) {
+    if (surface.tools === undefined || surface.tools === null) {
+      return {
+        findings,
+        unknown: true,
+        reason: 'DRIVER_LEADER_SURFACE_UNDECLARED',
+        detail: `${declared.source}.blueprint.leader declares no tools list; the model-facing surface is not stated (UNKNOWN, not PASS)`,
+      }
+    }
+    findings.push(finding('POLICY_SURFACE_INVALID', `the leader surface tools declaration is malformed: ${JSON.stringify(surface.tools)}; expected an array of non-blank tool names`))
+    return { findings }
+  }
+  if (tools.length === 0) {
+    findings.push(finding('POLICY_SURFACE_INVALID', 'the leader surface tools list is empty; a model-facing surface with no tool cannot be graded (and is not the surface A2C-2 reads)'))
+    return { findings }
+  }
+  const facts = {}
+  const defaults = {
+    managed: SURFACE_MANAGED_TOOL_NAMES,
+    teamTools: [],
+    mcpTools: [],
+    safeUnmanaged: SURFACE_SAFE_UNMANAGED_TOOL_NAMES,
+  }
+  for (const field of ['managed', 'teamTools', 'mcpTools', 'safeUnmanaged']) {
+    const declared = surface[field]
+    if (declared === undefined || declared === null) {
+      facts[field] = defaults[field]
+      continue
+    }
+    const list = surfaceNameList(declared)
+    if (list === null) {
+      findings.push(finding('POLICY_SURFACE_INVALID', `the leader surface ${field} declaration is malformed: ${JSON.stringify(declared)}`))
+      continue
+    }
+    facts[field] = list
+  }
+  if (findings.length > 0) return { findings }
+
+  // Provenance: a declared World row / preset tool that is missing from `tools`
+  // means the surface was under-declared, and the set difference below would
+  // silently grade the smaller surface.
+  for (const [field, map] of [['worldRows', surface.worldRows], ['presetTools', surface.presetTools]]) {
+    if (map === undefined || map === null) continue
+    const groups = field === 'worldRows'
+      ? (isObject(map) ? Object.entries(map) : null)
+      : (Array.isArray(map) ? [['presetTools', map]] : null)
+    if (groups === null) {
+      findings.push(finding('POLICY_SURFACE_INVALID', `the leader surface ${field} declaration is malformed: ${JSON.stringify(map)}`))
+      continue
+    }
+    for (const [group, names] of groups) {
+      const list = surfaceNameList(names)
+      if (list === null) {
+        findings.push(finding('POLICY_SURFACE_INVALID', `the leader surface ${field}[${JSON.stringify(group)}] is malformed: ${JSON.stringify(names)}`))
+        continue
+      }
+      for (const name of list) {
+        if (!tools.includes(name)) {
+          findings.push(finding(
+            'POLICY_SURFACE_DECLARATION_INCONSISTENT',
+            `${field} ${JSON.stringify(group)} contributes tool ${JSON.stringify(name)} but the declared surface tools list omits it; the set difference would grade an under-declared surface`,
+            { source: group, toolName: name },
+          ))
+        }
+      }
+    }
+  }
+
+  let denyList
+  if (surface.builtinToolDeny === 'discovery-first') {
+    denyList = discoveryFirstDenyList(tools, facts)
+  } else {
+    denyList = surfaceNameList(surface.builtinToolDeny)
+    if (denyList === null) {
+      if (surface.builtinToolDeny === undefined || surface.builtinToolDeny === null) {
+        return {
+          findings,
+          unknown: true,
+          reason: 'DRIVER_LEADER_DENY_UNDECLARED',
+          detail: `${declared.source}.blueprint.leader declares no builtinToolDeny; coverage cannot be certified (UNKNOWN, not PASS)`,
+        }
+      }
+      findings.push(finding('POLICY_SURFACE_INVALID', `the leader builtinToolDeny declaration is neither an array of tool names nor the "discovery-first" sentinel: ${JSON.stringify(surface.builtinToolDeny)}`))
+      return { findings }
+    }
+  }
+  if (findings.length > 0) return { findings }
+
+  const denied = new Set(denyList)
+  const finalSurface = [...new Set(tools)].filter((name) => !denied.has(name)).sort()
+  for (const name of finalSurface) {
+    const classification = classifyLeaderSurfaceTool(name, facts)
+    if (!isFatalSurfaceClass(classification)) continue
+    findings.push(finding(
+      POLICY_SURFACE_UNMANAGED,
+      `tool ${JSON.stringify(name)} would be on the leader's final model-facing surface but is neither denied (builtinToolDeny) nor managed (managed/teamTools/mcpTools/safeUnmanaged); A2C-2 would refuse team.create with alpha2-permission-coverage-unmanaged-tools (${classification})`,
+      { toolName: name, classification },
+    ))
+  }
+  return { findings }
+}
+
+/**
+ * The minimum number of body characters a fail-capable step must be able to
+ * keep. Not a transport detail: the BL-17 boot-4 `team.create` body was sliced
+ * at 400 chars and the thrown Error at 300, so the second unmanaged tool name
+ * had to be INFERRED from `2 unmanaged tool(s)` and the World's other row. A
+ * diagnostic body that cannot hold the full product message is a truncated
+ * body, and `PASS 16/16` must not mean "the run is diagnosable".
+ */
+export const DRIVER_BODY_CAPTURE_MIN_CHARS = 4096
+
 /**
  * `driver.log-capture` — every gate/step that can fail must declare a captured
  * BODY, so a failed start is diagnosable from the record.
@@ -1732,6 +2049,17 @@ export function checkDriverGateOrder(bundle) {
  * particular transport; it demands that the plan says `captures: ["body"]` on
  * every step it marks `canFail: true` (or `gate: true`, or that declares a
  * `requires` precondition, which by construction can fail).
+ *
+ * TIGHTENED AFTER BOOT 4 (2026-11-08). A declared body capture is not enough:
+ * the boot-4 driver PASSED this check and still recorded 400/300 characters.
+ * A body-capturing fail-capable step must now also declare its retention:
+ * `captureLimits: { body: { maxChars: null } }` (unbounded), a number >=
+ * {@link DRIVER_BODY_CAPTURE_MIN_CHARS}, or `bodyTruncated: false`. A declared
+ * limit BELOW the minimum is a finding; a declared `bodyTruncated: true` is a
+ * finding; and a step that declares a body capture but no retention at all
+ * makes the check `UNKNOWN` — the preflight will not certify "no truncation"
+ * from silence. That last clause is the honest host-free half: a driver that
+ * truncates WITHOUT declaring its limit is still undetectable before a boot.
  *
  * @param {object} bundle
  * @returns {{findings: object[], unknown?: boolean, reason?: string, detail?: string}}
@@ -1768,6 +2096,7 @@ export function checkDriverLogCapture(bundle) {
       detail: `${declared.source}.steps marks no step canFail/gate and declares no requires precondition; failure-body capture cannot be graded`,
     }
   }
+  const retentionUndeclared = []
   for (const entry of failCapable) {
     const declaredCaptures = entry.step.captures ?? entry.step.capture
     const captures = Array.isArray(declaredCaptures)
@@ -1780,6 +2109,50 @@ export function checkDriverLogCapture(bundle) {
         `step ${JSON.stringify(entry.id)} can fail but does not declare captures: ["body"]; a failed gate would leave no diagnostic body (BL-17 boot 3's second half)`,
         { stepId: entry.id, captures },
       ))
+      continue
+    }
+    // `bodyTruncated: true` is an admission, not a control: the driver says the
+    // body it keeps is already clipped, so the record cannot carry the product
+    // message (boot 4's 400/300-char slice).
+    if (entry.step.bodyTruncated === true || entry.step.captureLimits?.truncated === true) {
+      findings.push(finding(
+        'DRIVER_CAPTURE_TRUNCATED',
+        `step ${JSON.stringify(entry.id)} declares bodyTruncated: true; a truncated body cannot carry the product message the next reader must diagnose (BL-17 boot 4: 400/300 chars, the second tool name was inferred)`,
+        { stepId: entry.id },
+      ))
+      continue
+    }
+    const limits = entry.step.captureLimits
+    const raw = isObject(limits) ? (limits.body ?? limits.bodyMaxChars) : undefined
+    if (raw === undefined) {
+      retentionUndeclared.push(entry.id)
+      continue
+    }
+    // Accepted retention shapes: `null` / `{maxChars: null}` = unbounded,
+    // `{maxChars: n}` / `n` = a character cap.
+    const maxChars = raw === null ? null : (isObject(raw) ? raw.maxChars : raw)
+    if (maxChars === null) continue
+    if (typeof maxChars !== 'number' || !Number.isFinite(maxChars) || maxChars <= 0) {
+      findings.push(finding(
+        'DRIVER_CAPTURE_LIMIT_INVALID',
+        `step ${JSON.stringify(entry.id)} declares captureLimits.body ${JSON.stringify(raw)}; expected null (unbounded) or a positive maxChars`,
+        { stepId: entry.id, value: raw },
+      ))
+    } else if (maxChars < DRIVER_BODY_CAPTURE_MIN_CHARS) {
+      findings.push(finding(
+        'DRIVER_CAPTURE_TRUNCATED',
+        `step ${JSON.stringify(entry.id)} declares a body capture limit of ${String(maxChars)} chars, below the ${String(DRIVER_BODY_CAPTURE_MIN_CHARS)}-char minimum; the product message would be sliced (BL-17 boot 4: 400/300 chars)`,
+        { stepId: entry.id, maxChars, minimum: DRIVER_BODY_CAPTURE_MIN_CHARS },
+      ))
+    }
+  }
+  if (findings.length > 0) return { findings }
+  if (retentionUndeclared.length > 0) {
+    return {
+      findings,
+      unknown: true,
+      reason: 'DRIVER_CAPTURE_LIMIT_UNDECLARED',
+      detail: `step(s) ${retentionUndeclared.map((id) => JSON.stringify(id)).join(', ')} declare a body capture but no captureLimits.body retention; "no truncation" cannot be certified from silence (UNKNOWN, not PASS)`,
     }
   }
   return { findings }
@@ -2038,6 +2411,7 @@ export function runZeroBootPreflight(bundle, options = {}) {
   add('cases.isolation', checkCaseIsolation(bundle.cases))
   add('bundle.case-coverage', checkCaseCoverage(bundle))
   add('driver.gate-order', checkDriverGateOrder(bundle))
+  add('driver.leader-surface', checkDriverLeaderSurface(bundle))
   add('driver.log-capture', checkDriverLogCapture(bundle))
   add('collector.shape', checkCollectorShape(bundle))
   const wiring = checkCandidateWiring(bundle)

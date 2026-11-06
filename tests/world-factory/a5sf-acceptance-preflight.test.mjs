@@ -57,9 +57,25 @@ import {
   toRunVerdict,
   PREFLIGHT_CHECK_IDS,
   PREFLIGHT_VERDICTS,
+  POLICY_SURFACE_UNMANAGED,
+  SURFACE_CLASSES,
+  SURFACE_KNOWN_SENSITIVE_TOOL_NAMES,
+  SURFACE_KNOWN_SENSITIVE_TOOL_PREFIXES,
+  SURFACE_MANAGED_TOOL_NAMES,
+  SURFACE_SAFE_UNMANAGED_TOOL_NAMES,
+  DRIVER_BODY_CAPTURE_MIN_CHARS,
+  checkDriverLeaderSurface,
+  checkDriverLogCapture,
+  classifyLeaderSurfaceTool,
+  discoveryFirstDenyList,
   readDriverPlan,
   runZeroBootPreflight,
 } from './lib/a5sf-acceptance-preflight.mjs'
+import {
+  buildLeaderSurfaceCapabilities,
+  renderBuiltinToolDenyLines,
+  surfacedToolNames,
+} from '../../dev/agent-workflow/evidence/a5sf-surface/driver-fix/leader-surface-discovery.mjs'
 
 /** The REAL #575 stream, extracted from the committed `teardown.json` (read-only
  *  fixture: that boot cannot be re-run). Review B4: a synthetic 6-line stream
@@ -1210,11 +1226,12 @@ test('D21 an undeclared driver plan is UNKNOWN, never PASS, and is visibly disti
   assert.deepEqual(result.findings, [], 'an undeclared plan is not accused of a defect')
   assert.deepEqual(
     result.checks.filter((c) => c.verdict === 'UNKNOWN').map((c) => c.id),
-    ['bundle.case-coverage', 'driver.gate-order', 'driver.log-capture'],
+    ['bundle.case-coverage', 'driver.gate-order', 'driver.leader-surface', 'driver.log-capture'],
   )
-  assert.equal(result.checks.filter((c) => c.verdict === 'PASS').length, PREFLIGHT_CHECK_IDS.length - 3)
-  assert.match(result.summary, /^UNKNOWN \d+\/16 checks unknown=/)
+  assert.equal(result.checks.filter((c) => c.verdict === 'PASS').length, PREFLIGHT_CHECK_IDS.length - 4)
+  assert.match(result.summary, /^UNKNOWN \d+\/17 checks unknown=/)
   assert.deepEqual(result.unknown.map((u) => u.reason), [
+    'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
     'DRIVER_PLAN_UNDECLARED',
@@ -1271,7 +1288,7 @@ test('D24 the CLI exits 3 for UNKNOWN (never 0) and still prints one line', () =
     assert.equal(lines.length, 1)
     const verdict = JSON.parse(lines[0].slice('DSH-A5SF-PREFLIGHT '.length))
     assert.equal(verdict.verdict, 'UNKNOWN')
-    assert.equal(verdict.unknown.length, 3)
+    assert.equal(verdict.unknown.length, 4)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
@@ -1290,4 +1307,273 @@ test('D25 the committed negative-control bundles are load-bearing: each reds exa
     assert.deepEqual(failedCheckIds(result), [checkId], file)
     assert.deepEqual([...new Set(codesOf(result))].sort(), [...codes].sort(), file)
   }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// E. THE LEADER-SURFACE CHECK AND THE LOG-CAPTURE TIGHTENING
+//    (2026-11-08, BL-17 boot 4 spent / zero boots for this change)
+//
+// Boot 4 aborted at `team.create` because the preflight graded blueprint IDs and
+// counts, never the leader's final model-facing surface: the driver declared
+// `builtinToolDeny: []` while the World always composes `u5_canary` and
+// `u6fs_probe`. The controls below are the spent run's declaration (FAIL
+// `POLICY_SURFACE_UNMANAGED`, exactly the two names), the corrected
+// discovery-first declaration (PASS), and one red each for the two changed
+// checks. The committed bundles under `evidence/a5sf-surface/` are re-read by
+// E9 so the payload cannot drift away from the code.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SURFACE_EVIDENCE = new URL('../../dev/agent-workflow/evidence/a5sf-surface/', import.meta.url)
+const boot4Bundle = () => JSON.parse(readFileSync(new URL('boot4-repro.bundle.json', SURFACE_EVIDENCE), 'utf8'))
+const correctedBundle = () => JSON.parse(readFileSync(new URL('corrected.bundle.json', SURFACE_EVIDENCE), 'utf8'))
+const logCaptureControl = () => JSON.parse(readFileSync(new URL('negative-controls/log-capture-truncated.bundle.json', SURFACE_EVIDENCE), 'utf8'))
+
+test('E1 driver.leader-surface is part of the closed check set and the clean plan passes it', () => {
+  assert.ok(PREFLIGHT_CHECK_IDS.includes('driver.leader-surface'))
+  const result = runZeroBootPreflight(CLEAN, PRESENT)
+  assert.equal(result.checks.find((c) => c.id === 'driver.leader-surface').verdict, 'PASS')
+  assert.equal(result.checks.find((c) => c.id === 'driver.log-capture').verdict, 'PASS')
+  assert.ok(SURFACE_MANAGED_TOOL_NAMES.includes('bash'))
+  assert.ok(SURFACE_SAFE_UNMANAGED_TOOL_NAMES.includes('todo_write'))
+  assert.ok(SURFACE_KNOWN_SENSITIVE_TOOL_PREFIXES.includes('job_'))
+})
+
+test('E2 NEGATIVE CONTROL driver.leader-surface: the SPENT boot-4 declaration is RED, names exactly u5_canary and u6fs_probe, and reds only this check', () => {
+  const result = runZeroBootPreflight(boot4Bundle(), PRESENT)
+  assert.equal(result.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(result), ['driver.leader-surface'], 'the surface defect must not hide behind collateral findings')
+  const findings = result.checks.find((c) => c.id === 'driver.leader-surface').findings
+  assert.deepEqual(findings.map((f) => f.code), [POLICY_SURFACE_UNMANAGED, POLICY_SURFACE_UNMANAGED])
+  assert.deepEqual(findings.map((f) => f.toolName), ['u5_canary', 'u6fs_probe'])
+  assert.deepEqual(findings.map((f) => f.classification), [SURFACE_CLASSES.UNKNOWN, SURFACE_CLASSES.UNKNOWN])
+  for (const f of findings) assert.match(f.detail, /alpha2-permission-coverage-unmanaged-tools/)
+  // The spent run declared no body retention at all (the driver code sliced at
+  // 400/300); the tightened check says UNKNOWN rather than PASS, and contributes
+  // no finding.
+  assert.deepEqual(result.unknown.map((u) => u.id), ['driver.log-capture'])
+  assert.equal(result.unknown[0].reason, 'DRIVER_CAPTURE_LIMIT_UNDECLARED')
+})
+
+test('E3 an undeclared leader surface or deny list is UNKNOWN, never PASS', () => {
+  const noSurface = structuredClone(CLEAN)
+  delete noSurface.driver.blueprint
+  const undefinedSurface = runZeroBootPreflight(noSurface, PRESENT)
+  assert.equal(undefinedSurface.verdict, 'UNKNOWN')
+  const surfaceCheck = undefinedSurface.checks.find((c) => c.id === 'driver.leader-surface')
+  assert.equal(surfaceCheck.verdict, 'UNKNOWN')
+  assert.equal(surfaceCheck.reason, 'DRIVER_LEADER_SURFACE_UNDECLARED')
+  assert.deepEqual(surfaceCheck.findings, [])
+
+  const noDeny = structuredClone(CLEAN)
+  delete noDeny.driver.blueprint.leader.builtinToolDeny
+  const undefinedDeny = runZeroBootPreflight(noDeny, PRESENT)
+  assert.equal(undefinedDeny.verdict, 'UNKNOWN')
+  const denyCheck = undefinedDeny.checks.find((c) => c.id === 'driver.leader-surface')
+  assert.equal(denyCheck.reason, 'DRIVER_LEADER_DENY_UNDECLARED')
+
+  // No driver plan at all is still the plan-level UNKNOWN, not a surface claim.
+  assert.equal(checkDriverLeaderSurface({ schema: CLEAN.schema }).reason, 'DRIVER_PLAN_UNDECLARED')
+})
+
+test('E4 the CORRECTED discovery-first declaration PASSes, and it denies a tool the World did not have yet', () => {
+  const corrected = runZeroBootPreflight(correctedBundle(), PRESENT)
+  assert.equal(corrected.verdict, 'PASS', JSON.stringify(corrected.findings))
+  assert.equal(corrected.summary, `PASS ${PREFLIGHT_CHECK_IDS.length}/${PREFLIGHT_CHECK_IDS.length} checks`)
+  // The declaration carries the discovery PRECONDITION too: discovery produces
+  // `leader-surface`, create consumes it; `driver.gate-order` (unchanged) grades it.
+  const plan = correctedBundle().driver
+  const discover = plan.steps.find((step) => step.id === 'discover-leader-surface')
+  assert.deepEqual(discover.produces, ['leader-surface'])
+  assert.deepEqual(plan.steps.find((step) => step.id === 'create-team').requires, ['leader-surface'])
+  assert.ok(plan.steps.indexOf(discover) < plan.steps.findIndex((step) => step.id === 'create-team'))
+
+  // THE ANTI-ROT CLAIM, as a test: add a row's tool (and a job_ family control)
+  // to the SAME declaration. Discovery-first still passes because the computed
+  // deny list grows with the surface; the static CLEAN list would rot.
+  const grown = correctedBundle()
+  grown.driver.blueprint.leader.tools.push('u9_new_probe', 'job_control_face')
+  const grownResult = runZeroBootPreflight(grown, PRESENT)
+  assert.equal(grownResult.verdict, 'PASS', JSON.stringify(grownResult.findings))
+  const surface = grown.driver.blueprint.leader
+  const computed = discoveryFirstDenyList(surface.tools, {
+    teamTools: surface.teamTools,
+    managed: SURFACE_MANAGED_TOOL_NAMES,
+    safeUnmanaged: SURFACE_SAFE_UNMANAGED_TOOL_NAMES,
+  })
+  assert.deepEqual(computed, ['job_control_face', 'u5_canary', 'u6fs_probe', 'u9_new_probe'])
+
+  const rotted = structuredClone(CLEAN)
+  rotted.driver.blueprint.leader.tools.push('u9_new_probe')
+  const rottedResult = runZeroBootPreflight(rotted, PRESENT)
+  assert.deepEqual(failedCheckIds(rottedResult), ['driver.leader-surface'])
+  assert.deepEqual(rottedResult.findings.map((f) => f.toolName), ['u9_new_probe'])
+})
+
+test('E5 the six classes: managed/team/MCP/safe pass; known-sensitive and unknown are fatal', () => {
+  const surface = {
+    tools: ['bash', 'read', 'todo_write', 'team_delegate', 'mcp_probe', 'web_fetch', 'job_control', 'mystery_tool'],
+    builtinToolDeny: [],
+    teamTools: ['team_delegate'],
+    mcpTools: ['mcp_probe'],
+    safeUnmanaged: ['todo_write'],
+  }
+  const bundle = structuredClone(CLEAN)
+  bundle.driver.blueprint.leader = surface
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.deepEqual(failedCheckIds(result), ['driver.leader-surface'])
+  const findings = result.findings
+  assert.deepEqual(findings.map((f) => f.toolName), ['job_control', 'mystery_tool', 'web_fetch'])
+  assert.deepEqual(findings.map((f) => f.classification), [
+    SURFACE_CLASSES.SENSITIVE,
+    SURFACE_CLASSES.UNKNOWN,
+    SURFACE_CLASSES.SENSITIVE,
+  ])
+  assert.equal(classifyLeaderSurfaceTool('read'), SURFACE_CLASSES.MANAGED)
+  assert.equal(classifyLeaderSurfaceTool('team_x', { teamTools: ['team_x'] }), SURFACE_CLASSES.TEAM)
+  assert.equal(classifyLeaderSurfaceTool('mcp_x', { mcpTools: ['mcp_x'] }), SURFACE_CLASSES.MCP)
+  assert.equal(classifyLeaderSurfaceTool('todo_write'), SURFACE_CLASSES.SAFE)
+  assert.equal(classifyLeaderSurfaceTool('job_future'), SURFACE_CLASSES.SENSITIVE)
+
+  const malformed = structuredClone(CLEAN)
+  malformed.driver.blueprint.leader.managed = { read: true }
+  const malformedResult = runZeroBootPreflight(malformed, PRESENT)
+  assert.deepEqual(failedCheckIds(malformedResult), ['driver.leader-surface'])
+  assert.deepEqual(malformedResult.findings.map((f) => f.code), ['POLICY_SURFACE_INVALID'])
+})
+
+test('E6 NEGATIVE CONTROL: a declared World row whose tool is missing from the surface list is RED (under-declaration)', () => {
+  const bundle = structuredClone(CLEAN)
+  bundle.driver.blueprint.leader.tools = bundle.driver.blueprint.leader.tools.filter((name) => name !== 'u6fs_probe')
+  const result = runZeroBootPreflight(bundle, PRESENT)
+  assert.deepEqual(failedCheckIds(result), ['driver.leader-surface'])
+  assert.deepEqual(result.findings.map((f) => f.code), ['POLICY_SURFACE_DECLARATION_INCONSISTENT'])
+  assert.equal(result.findings[0].source, 'u6-fs-probe-host')
+  assert.equal(result.findings[0].toolName, 'u6fs_probe')
+})
+
+test('E7 NEGATIVE CONTROL driver.log-capture: a declared 400-char body is RED; an undeclared retention is UNKNOWN', () => {
+  const control = runZeroBootPreflight(logCaptureControl(), PRESENT)
+  assert.equal(control.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(control), ['driver.log-capture'])
+  assert.deepEqual(control.findings.map((f) => f.code), ['DRIVER_CAPTURE_TRUNCATED'])
+  assert.equal(control.findings[0].stepId, 'create-team')
+  assert.equal(control.findings[0].maxChars, 400)
+  assert.equal(control.findings[0].minimum, DRIVER_BODY_CAPTURE_MIN_CHARS)
+
+  const admitted = structuredClone(CLEAN)
+  admitted.driver.steps.find((s) => s.id === 'create-team').bodyTruncated = true
+  assert.deepEqual(runZeroBootPreflight(admitted, PRESENT).findings.map((f) => f.code), ['DRIVER_CAPTURE_TRUNCATED'])
+
+  const silent = structuredClone(CLEAN)
+  delete silent.driver.steps.find((s) => s.id === 'create-team').captureLimits
+  const silentResult = runZeroBootPreflight(silent, PRESENT)
+  assert.equal(silentResult.verdict, 'UNKNOWN')
+  assert.deepEqual(silentResult.findings, [])
+  assert.equal(silentResult.checks.find((c) => c.id === 'driver.log-capture').reason, 'DRIVER_CAPTURE_LIMIT_UNDECLARED')
+
+  // A retention at or above the minimum (and the explicit unbounded form) passes.
+  const generous = structuredClone(CLEAN)
+  generous.driver.steps.find((s) => s.id === 'create-team').captureLimits = { body: { maxChars: DRIVER_BODY_CAPTURE_MIN_CHARS } }
+  assert.equal(runZeroBootPreflight(generous, PRESENT).verdict, 'PASS')
+  assert.equal(checkDriverLogCapture(structuredClone(CLEAN)).findings.length, 0)
+})
+
+test('E8 the CLI reproduces boot #4: one FAIL line, exit 1, POLICY_SURFACE_UNMANAGED naming both tools', () => {
+  const cli = fileURLToPath(new URL('../../scripts/a5sf-preflight.mjs', import.meta.url))
+  const repo = fileURLToPath(new URL('../..', import.meta.url))
+  const root = mkdtempSync(join(tmpdir(), 'a5sf-leader-surface-'))
+  const host = join(root, 'host')
+  try {
+    const bundle = boot4Bundle()
+    for (const rel of bundle.assembly.hostModules.map((m) => m.path)) {
+      const abs = join(host, rel.slice('tests/deepseek-harness-test-use/'.length))
+      mkdirSync(dirname(abs), { recursive: true })
+      mkdirSync(abs, { recursive: true })
+    }
+    const bundlePath = join(root, 'boot4-repro.bundle.json')
+    writeFileSync(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`, 'utf8')
+    const run = spawnSync(process.execPath, [cli, '--bundle', bundlePath, '--repo', repo, '--host-root', host], { encoding: 'utf8' })
+    assert.equal(run.status, 1, run.stderr)
+    const lines = run.stdout.trim().split('\n')
+    assert.equal(lines.length, 1, 'the one-line verdict shape is unchanged')
+    assert.ok(lines[0].startsWith('DSH-A5SF-PREFLIGHT '))
+    const verdict = JSON.parse(lines[0].slice('DSH-A5SF-PREFLIGHT '.length))
+    assert.equal(verdict.verdict, 'FAIL')
+    assert.match(verdict.summary, /blocks=POLICY_SURFACE_UNMANAGED/)
+    assert.deepEqual(verdict.findings.map((f) => f.toolName), ['u5_canary', 'u6fs_probe'])
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('E9 the committed surface bundles are load-bearing: boot-#4 FAIL, corrected PASS, one red each', () => {
+  const boot4 = runZeroBootPreflight(boot4Bundle(), PRESENT)
+  assert.equal(boot4.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(boot4), ['driver.leader-surface'])
+  assert.deepEqual(boot4.findings.map((f) => f.code), [POLICY_SURFACE_UNMANAGED, POLICY_SURFACE_UNMANAGED])
+
+  const corrected = runZeroBootPreflight(correctedBundle(), PRESENT)
+  assert.equal(corrected.verdict, 'PASS')
+
+  const capture = runZeroBootPreflight(logCaptureControl(), PRESENT)
+  assert.equal(capture.verdict, 'FAIL')
+  assert.deepEqual(failedCheckIds(capture), ['driver.log-capture'])
+  assert.deepEqual(capture.findings.map((f) => f.code), ['DRIVER_CAPTURE_TRUNCATED'])
+})
+
+test('E10 DRIFT GUARD: the mirrored registries and precedence are the product gate\'s own', () => {
+  const product = readFileSync(new URL('../../packages/runtime/operation-permission/permission-coverage.ts', import.meta.url), 'utf8')
+  const schema = readFileSync(new URL('../../packages/domain/blueprint/src/schema.ts', import.meta.url), 'utf8')
+  const quoted = (source, marker) => {
+    const at = source.indexOf(marker)
+    assert.notEqual(at, -1, `the product no longer declares ${marker}; the mirror must be re-derived`)
+    const assign = source.indexOf('= [', at)
+    const open = assign === -1 ? source.indexOf('[', at) : assign + 2
+    const close = source.indexOf(']', open)
+    return [...source.slice(open, close).matchAll(/'([^']+)'/g)].map((m) => m[1])
+  }
+  assert.deepEqual([...SURFACE_MANAGED_TOOL_NAMES].sort(), quoted(schema, 'export const PERMISSION_TOOL_NAMES').sort())
+  assert.deepEqual([...SURFACE_SAFE_UNMANAGED_TOOL_NAMES].sort(), quoted(product, 'export const SAFE_UNMANAGED_TOOL_NAMES').sort())
+  assert.deepEqual([...SURFACE_KNOWN_SENSITIVE_TOOL_NAMES].sort(), quoted(product, 'export const KNOWN_SENSITIVE_TOOL_NAMES').sort())
+  assert.deepEqual([...SURFACE_KNOWN_SENSITIVE_TOOL_PREFIXES].sort(), quoted(product, 'export const KNOWN_SENSITIVE_TOOL_PREFIXES').sort())
+
+  // Fixed precedence (plan §7.3): a proven owner beats a name-based suspicion.
+  const classifyAt = product.indexOf('export function classifyPermissionCoverageTool')
+  const order = [
+    'facts.managedToolNames.includes(name)',
+    'facts.teamToolNames.includes(name)',
+    'facts.mcpToolNames.includes(name)',
+    'SAFE_UNMANAGED_TOOL_NAMES.includes(name)',
+    'SENSITIVE_CATEGORY_BY_NAME.get(name)',
+    'KNOWN_SENSITIVE_TOOL_PREFIXES.some',
+  ].map((needle) => {
+    const at = product.indexOf(needle, classifyAt)
+    assert.notEqual(at, -1, `the product classifier no longer contains ${needle}`)
+    return at
+  })
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'A2C-2 precedence changed; the host-free mirror must follow it')
+})
+
+test('E11 the driver-side fix computes the same deny list and renders the canonical YAML block', () => {
+  const leader = boot4Bundle().driver.blueprint.leader
+  const built = buildLeaderSurfaceCapabilities({
+    surface: leader.tools,
+    teamTools: leader.teamTools,
+    managed: SURFACE_MANAGED_TOOL_NAMES,
+    safeUnmanaged: SURFACE_SAFE_UNMANAGED_TOOL_NAMES,
+  })
+  assert.deepEqual(built.builtinToolDeny, ['u5_canary', 'u6fs_probe'])
+  assert.deepEqual(built.unmanaged, [])
+  assert.deepEqual(built.finalSurface, ['bash', 'edit', 'read', 'read_image', 'team_archive_member', 'team_delegate', 'write'])
+  assert.deepEqual(renderBuiltinToolDenyLines(built.builtinToolDeny), [
+    '    builtinToolDeny:',
+    '      - u5_canary',
+    '      - u6fs_probe',
+  ])
+  assert.deepEqual(renderBuiltinToolDenyLines([]), ['    builtinToolDeny: []'])
+  assert.deepEqual(surfacedToolNames({ tools: [{ name: 'read' }, { function: { name: 'bash' } }] }), ['read', 'bash'])
+  // The rule the corrected bundle declares and the rule this driver helper runs
+  // are the SAME function, so the preflight verdict and the live declaration
+  // cannot disagree about a name.
+  assert.deepEqual(built.builtinToolDeny, discoveryFirstDenyList(leader.tools, { teamTools: leader.teamTools }))
 })

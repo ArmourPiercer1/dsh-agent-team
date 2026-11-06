@@ -1,0 +1,641 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "BL-17 surface fix — discovery-first leader declaration; the deny list is computed from the discovered surface",
+  "sources": {
+    "note": "Same World rows and the same base preset as boot #4. The leader blueprint now writes builtinToolDeny from the ACTUAL discovered surface (040-u6-arc-a.mjs:159-161 discovery -> deny -> create; u6-fs-assembly.mjs mainBlueprintYaml(denyList)). The sentinel \"discovery-first\" is the declared rule; the preflight computes the same list with the SAME classifier A2C-2 uses, so the declaration cannot silently rot when the World adds a row. captureLimits.body.maxChars=null on every fail-capable body capture: the boot-4 400/300-char slice is refused by declaration. The plan also declares the discovery step: `discover-leader-surface` produces `leader-surface` and `create-team` requires it, so `driver.gate-order` refuses a driver that creates before it discovers.",
+    "computedDenyList": "bash edit read read_image write team_delegate team_archive_member excluded as managed/team; u5_canary and u6fs_probe are the only fatal names -> builtinToolDeny = [u5_canary, u6fs_probe]"
+  },
+  "cases": [
+    {
+      "id": "read-a",
+      "face": "fs-provider",
+      "axis": "read",
+      "locator": "/w/workspace/lane/inside/needle.txt",
+      "guardFactKey": "read-a",
+      "expected": "allow",
+      "method": "readText",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "read-a"
+      ]
+    },
+    {
+      "id": "read-b",
+      "face": "fs-provider",
+      "axis": "read",
+      "locator": "/w/workspace/lane/fs/outside-restriction.txt",
+      "guardFactKey": "read-b",
+      "expected": "deny",
+      "method": "readText",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "read-b"
+      ],
+      "deniedBy": "restriction"
+    },
+    {
+      "id": "read-c",
+      "face": "fs-provider",
+      "axis": "read",
+      "locator": "/w/ceiling-outside/secret.txt",
+      "guardFactKey": "read-c",
+      "expected": "deny",
+      "method": "readText",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "read-c"
+      ],
+      "deniedBy": "ceiling"
+    },
+    {
+      "id": "w4a",
+      "face": "fs-provider",
+      "axis": "write",
+      "locator": "/w/workspace/lane/inside/w4a.txt",
+      "guardFactKey": "w4a",
+      "expected": "allow",
+      "method": "writeText",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "w4a"
+      ]
+    },
+    {
+      "id": "w4b",
+      "face": "fs-provider",
+      "axis": "write",
+      "locator": "/w/workspace/w4b.txt",
+      "guardFactKey": "w4b",
+      "expected": "allow",
+      "method": "writeText",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "w4b"
+      ]
+    },
+    {
+      "id": "search-row1",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/w/workspace/lane/inside",
+      "guardFactKey": "search-row1",
+      "expected": "allow",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "search-row1"
+      ]
+    },
+    {
+      "id": "search-row2",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/w/ceiling-outside",
+      "guardFactKey": "search-row2",
+      "expected": "deny",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "search-row2"
+      ],
+      "deniedBy": "ceiling"
+    },
+    {
+      "id": "search-row3",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/w/workspace/lane/outside-restriction.txt",
+      "guardFactKey": "search-row3",
+      "expected": "deny",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "search-row3"
+      ],
+      "deniedBy": "restriction"
+    },
+    {
+      "id": "search-row5",
+      "face": "subprocess",
+      "axis": "read",
+      "locator": "/w/workspace/lane/inside/invalid-pattern",
+      "guardFactKey": "search-row5",
+      "expected": "allow",
+      "method": "spawn",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "search-row5"
+      ]
+    }
+  ],
+  "driver": {
+    "source": "test fixture (the plan-order contract is declared, not inferred)",
+    "steps": [
+      {
+        "id": "boot",
+        "label": "harness.boot",
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "discover-leader-surface",
+        "canFail": true,
+        "produces": [
+          "leader-surface"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "create-team",
+        "label": "team.create",
+        "canFail": true,
+        "produces": [
+          "team-session"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        },
+        "requires": [
+          "leader-surface"
+        ]
+      },
+      {
+        "id": "create-member",
+        "label": "team.create_member",
+        "canFail": true,
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "read-control-state",
+        "label": "GET /__p6t6/state",
+        "canFail": true,
+        "requires": [
+          "team-session",
+          "member"
+        ],
+        "produces": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "run-cases",
+        "label": "dispatch the nine cases",
+        "canFail": true,
+        "requires": [
+          "control-state"
+        ],
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      }
+    ],
+    "plannedCases": [
+      "read-a",
+      "read-b",
+      "read-c",
+      "w4a",
+      "w4b",
+      "search-row1",
+      "search-row2",
+      "search-row3",
+      "search-row5"
+    ],
+    "blueprint": {
+      "blueprintId": "team.a5sf.bl17.main",
+      "leader": {
+        "blueprintId": "team.a5sf.bl17.main",
+        "tools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "write",
+          "team_delegate",
+          "team_archive_member",
+          "u5_canary",
+          "u6fs_probe"
+        ],
+        "builtinToolDeny": "discovery-first",
+        "teamTools": [
+          "team_delegate",
+          "team_archive_member"
+        ],
+        "worldRows": {
+          "u5-canary": [
+            "u5_canary"
+          ],
+          "u6-fs-probe-host": [
+            "u6fs_probe"
+          ]
+        },
+        "presetTools": [
+          "bash",
+          "edit",
+          "read",
+          "read_image",
+          "write"
+        ]
+      }
+    }
+  },
+  "fixtures": [
+    {
+      "caseId": "read-a",
+      "input": "/w/workspace/lane/inside/needle.txt"
+    },
+    {
+      "caseId": "read-b",
+      "input": "/w/workspace/lane/fs/outside-restriction.txt"
+    },
+    {
+      "caseId": "read-c",
+      "input": "/w/ceiling-outside/secret.txt"
+    },
+    {
+      "caseId": "w4a",
+      "input": "/w/workspace/lane/inside/w4a.txt"
+    },
+    {
+      "caseId": "w4b",
+      "input": "/w/workspace/w4b.txt"
+    },
+    {
+      "caseId": "search-row1",
+      "input": "/w/workspace/lane/inside"
+    },
+    {
+      "caseId": "search-row2",
+      "input": "/w/ceiling-outside"
+    },
+    {
+      "caseId": "search-row3",
+      "input": "/w/workspace/lane/outside-restriction.txt"
+    },
+    {
+      "caseId": "search-row5",
+      "input": "/w/workspace/lane/inside/invalid-pattern"
+    }
+  ],
+  "identity": {
+    "bootRoot": "session-a5sf-candidate1-root",
+    "teamRoot": "session-a5sf-candidate1-team",
+    "createRoot": "session-a5sf-candidate1-team",
+    "stateQueryRoot": "session-a5sf-candidate1-team",
+    "archiveRoot": "session-a5sf-candidate1-team",
+    "oracleRoot": "session-a5sf-candidate1-team",
+    "directiveRoot": "session-a5sf-candidate1-team",
+    "blueprints": [
+      {
+        "label": "anchor.yaml",
+        "blueprintId": "session-a5sf-candidate1-root",
+        "members": 1
+      },
+      {
+        "label": "main.yaml",
+        "blueprintId": "session-a5sf-candidate1-team",
+        "members": 1
+      }
+    ],
+    "memberBindings": [
+      {
+        "caseId": "read-a",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "read-b",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "read-c",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "w4a",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "w4b",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.fs/read"
+      },
+      {
+        "caseId": "search-row1",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.subprocess/spawn"
+      },
+      {
+        "caseId": "search-row2",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.subprocess/spawn"
+      },
+      {
+        "caseId": "search-row3",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.subprocess/spawn"
+      },
+      {
+        "caseId": "search-row5",
+        "memberIdentity": "inst-a5sf-member-1",
+        "toolBindingIdentity": "dsh.subprocess/spawn"
+      }
+    ]
+  },
+  "authority": {
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "candidate": {
+    "head": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "productTreeProof": [
+      {
+        "path": "packages/runtime/team-services/src/subprocess.ts",
+        "equal": true
+      },
+      {
+        "path": "packages/runtime/team-services/src/install.ts",
+        "equal": true
+      }
+    ]
+  },
+  "grant": {
+    "grantId": "grant-a5sf-candidate1-25e106b4573c-b2",
+    "maxStarts": 4,
+    "priorRows": 2,
+    "plannedStarts": 1,
+    "aborts": 0,
+    "boundCommit": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+    "grantedBy": "owner, 2026-11-06 (\"批准5次P2-04预算\"), allocation #4 of 5 (retry of #1), relayed by coordinator session-76eeddd5-4e2e-472f-a3ba-750a70c8a374"
+  },
+  "runRecord": {
+    "teamSha": "25e106b4573cac0ab624c7e0bc5ca7d36dba3730",
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f"
+      },
+      "grantId": "grant-a5sf-candidate1-25e106b4573c-b2"
+    },
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    }
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "fs",
+      "subprocess"
+    ],
+    "distFaces": {
+      "fs": true,
+      "subprocess": true,
+      "web": true
+    },
+    "hostModules": [
+      {
+        "path": "tests/deepseek-harness-test-use/packages/fs/tool-fs/src/index.ts"
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/fs/tool-fs-search/src/index.ts"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-candidate1-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-candidate1-base"
+      ],
+      "worldRowIds": [
+        "a5sf-candidate1-realm",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-candidate1-base"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "nativeModules": [
+    {
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "inject": [
+        "tools",
+        "systemPrompt",
+        "subprocess"
+      ],
+      "requiredConfig": [
+        "sampleOverCapGlobResults"
+      ],
+      "config": {
+        "sampleOverCapGlobResults": 20
+      }
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-fs",
+      "inject": [
+        "tools",
+        "systemPrompt",
+        "fs",
+        "attachments"
+      ],
+      "requiredConfig": [],
+      "config": {}
+    }
+  ],
+  "policy": {
+    "ceilingReadAllow": [
+      "/w/workspace"
+    ],
+    "restrictionReadAllow": [
+      "/w/workspace/lane/inside",
+      "/w/ceiling-outside"
+    ],
+    "effectiveReadAllow": [
+      "/w/workspace/lane/inside"
+    ],
+    "effectiveWriteAllow": [
+      "/w/workspace/lane/inside",
+      "/w/workspace"
+    ],
+    "networkAccess": "allow",
+    "fifo": "/w/workspace/lane/inside/blocking.fifo",
+    "dispositions": {
+      "read-a": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      },
+      "read-b": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "read-c": {
+        "ceiling": "deny",
+        "restriction": "allow",
+        "effective": "deny"
+      },
+      "w4a": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      },
+      "w4b": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "search-row1": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      },
+      "search-row2": {
+        "ceiling": "deny",
+        "restriction": "allow",
+        "effective": "deny"
+      },
+      "search-row3": {
+        "ceiling": "allow",
+        "restriction": "deny",
+        "effective": "deny"
+      },
+      "search-row5": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      },
+      "fifo": {
+        "ceiling": "allow",
+        "restriction": "allow",
+        "effective": "allow"
+      }
+    }
+  }
+}
