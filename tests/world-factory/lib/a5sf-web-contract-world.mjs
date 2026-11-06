@@ -179,6 +179,8 @@ export function contractBoundary({
             dimension: 'network-destination',
             level: probeLevel,
             note: `contract boundary probe: network-destination=${probeLevel}`,
+            // BL-42: an `enforced` row carries its mechanism + evidence.
+            ...(probeLevel === 'enforced' ? { mechanism: 'fake-netns (fixture)', evidence: 'evidence://fake/bl42-web-contract' } : {}),
           },
         ],
       }

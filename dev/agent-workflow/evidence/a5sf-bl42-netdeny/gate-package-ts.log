@@ -1,0 +1,19 @@
+## this tree (BL-42) — node scripts/run-tests.mjs runtime
+                      ^
+
+TypeError: expect(...).toHaveLength is not a function
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/packages/runtime/test/a3p3-permission-mutation-authority.test.ts:856:23
+
+Node.js v24.21.0
+## baseline checkout (origin/master 550815c97..47316541a) — same command
+                      ^
+
+TypeError: expect(...).toHaveLength is not a function
+    at file:///home/armourpiercer/projects/dsh-agent-team/packages/runtime/test/a3p3-permission-mutation-authority.test.ts:856:23
+
+Node.js v24.21.0
+## the four BL-42-adjacent package test files, run individually
+FAILED packages/runtime/test/a5sf-confined-subprocess.test.ts The requested module 'vitest' does not provide an export named 'afterAll'
+FAILED packages/runtime/test/a5sf-subprocess-contract.test.ts The requested module 'vitest' does not provide an export named 'afterAll'
+FAILED packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts The requested module 'vitest' does not provide an export named 'afterAll'
+rc=1

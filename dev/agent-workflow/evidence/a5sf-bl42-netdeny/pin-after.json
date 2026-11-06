@@ -1,0 +1,61 @@
+{
+  "schema": "a5sf-bl42-pin/1",
+  "at": "2026-11-06T19:49:07.068Z",
+  "launcher": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+  "launcherSha256": "f418831915c624fbabfc534d4bc4f6b07e04e55670f728450c316adca05094b4",
+  "propositions": {
+    "mechanism": {
+      "rc": 0,
+      "modeSupported": true,
+      "verdict": "NET-DENY-CONFIRMED",
+      "mechanism": "netns",
+      "netNsInode": 4026532407,
+      "hostNetNsInode": 4026531833,
+      "controlAccepted": 1,
+      "controlNonceMatched": true,
+      "denyAccepted": 0,
+      "denyTcpErrno": "ENETUNREACH",
+      "denyUdpErrno": "ENETUNREACH",
+      "stderrTail": ""
+    },
+    "probe": {
+      "probeOk": true,
+      "probeError": null,
+      "row": {
+        "level": "enforced",
+        "mechanism": "netns CLONE_NEWUSER|CLONE_NEWNET per confined child (unprivileged, owned by the child; verified by the child's own /proc/self/ns/net inode)",
+        "evidence": "evidence://a5p4/probe/realm-bl42-pin/mw5e1cky",
+        "realmId": "realm-bl42-pin",
+        "trustRoot": "sha256:f418831915c624fb#/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+        "note": "net leg NET-DENY-CONFIRMED: control reached the listener (tcp 1/1 packets, nonce matched); deny child in netns inode 4026532407 (host 4026531833) failed tcp=ENETUNREACH udp=ENETUNREACH with the listener counter unchanged (0/0) | coverage covered=tcp,udp,ipv4,ipv6,raw,af_unix_abstract,loopback not-covered=af_unix_pathname (a filesystem object, not a network destination — the lane decides);inherited_socket_fds (refused outright by the launcher's deny-lane fd gate) | landlock ABI v7 is NOT the network mechanism here"
+      },
+      "proof": {
+        "mechanism": "netns CLONE_NEWUSER|CLONE_NEWNET per confined child (unprivileged, owned by the child; verified by the child's own /proc/self/ns/net inode)",
+        "evidence": "evidence://a5p4/probe/realm-bl42-pin/mw5e1cky",
+        "netNsInode": 4026532407,
+        "hostNetNsInode": 4026531833
+      }
+    },
+    "admission": {
+      "admitted": true,
+      "refusalCode": null,
+      "refusalMessage": null,
+      "plan": {
+        "prepared": true,
+        "planId": "plan-mw5e1cl3-w3vgr0",
+        "policyFile": "/tmp/a5sf-bl42-pin-NMUxjs/provider/plans/plan-mw5e1cl3-w3vgr0.json",
+        "policyNetwork": "deny",
+        "policyKeys": [
+          "allow",
+          "argv",
+          "close_extra_fds",
+          "cwd",
+          "env",
+          "fd_plan",
+          "network",
+          "runtime_base"
+        ]
+      }
+    }
+  }
+}

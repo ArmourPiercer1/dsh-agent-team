@@ -172,7 +172,13 @@ export function fakeWebBoundary({ probeLevel = 'unsupported', body = 'BL18-MOCK-
       boundary.probeCalls += 1
       return {
         ok: true,
-        value: [{ dimension: 'network-destination', level: probeLevel, note: `fake web boundary probe: network-destination=${probeLevel}` }],
+        value: [{
+          dimension: 'network-destination',
+          level: probeLevel,
+          note: `fake web boundary probe: network-destination=${probeLevel}`,
+          // BL-42: a bare `enforced` level is not evidence any more.
+          ...(probeLevel === 'enforced' ? { mechanism: 'fake-netns (fixture)', evidence: 'evidence://fake/bl42-web' } : {}),
+        }],
       }
     }
   }

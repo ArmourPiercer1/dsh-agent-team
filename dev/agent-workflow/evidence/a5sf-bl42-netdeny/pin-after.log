@@ -1,0 +1,11 @@
+A5SF-BL42-PIN schema=a5sf-bl42-pin/1
+launcher=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py
+launcherSha256=f418831915c624fbabfc534d4bc4f6b07e04e55670f728450c316adca05094b4
+MECHANISM mode-supported=true verdict=NET-DENY-CONFIRMED mechanism=netns
+MECHANISM control-accepted=1 nonce-matched=true deny-accepted=0 tcp=ENETUNREACH udp=ENETUNREACH
+MECHANISM netns=4026532407 host=4026531833
+PROBE level=enforced mechanism=netns CLONE_NEWUSER|CLONE_NEWNET per confined child (unprivileged, owned by the child; verified by the child's own /proc/self/ns/net inode) evidence=evidence://a5p4/probe/realm-bl42-pin/mw5e1hfb proof=present
+PROBE realm=realm-bl42-pin trustRoot=sha256:f418831915c624fb#/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py
+ADMISSION admitted=true refusal=null
+PLAN prepared=true policy-network=deny processes-started=0
+verdict=MEASURED

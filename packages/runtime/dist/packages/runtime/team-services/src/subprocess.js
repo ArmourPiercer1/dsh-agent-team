@@ -751,10 +751,26 @@ export async function probeNetworkDenial(provider) {
     if (row === undefined) {
         return unsupported('the confined provider reported no network-destination capability row; enforcement cannot be proven');
     }
+    // BL-42 — A LEVEL ALONE IS NOT EVIDENCE. The bar (§7 item 1) asks for a
+    // mechanism AND a recorded evidence row, so an `enforced` answer without both
+    // is treated as `unsupported`: this is what stops "the code intends to
+    // enforce" from ever being read as "the mechanism was applied". The real
+    // provider now supplies both from its own measured net leg; a fixture or a
+    // future backend that cannot is refused by the same gate.
+    if (row.level === 'enforced') {
+        if (typeof row.mechanism !== 'string' || row.mechanism.trim() === '') {
+            return unsupported(`the confined provider reported network-destination='enforced' with NO mechanism — a level without a mechanism is not evidence; enforcement cannot be proven`);
+        }
+        if (typeof row.evidence !== 'string' || row.evidence.trim() === '') {
+            return unsupported(`the confined provider reported network-destination='enforced' with mechanism '${row.mechanism}' but NO evidence row — an unrecorded mechanism is not evidence; enforcement cannot be proven`);
+        }
+    }
     return Object.freeze({
         dimension: 'network-destination',
         level: row.level === 'enforced' ? 'enforced' : 'unsupported',
         note: typeof row.note === 'string' && row.note !== '' ? row.note : `probe reported network-destination='${row.level}'`,
+        mechanism: typeof row.mechanism === 'string' && row.mechanism !== '' ? row.mechanism : null,
+        evidence: typeof row.evidence === 'string' && row.evidence !== '' ? row.evidence : null,
         rows: Object.freeze([...rows]),
     });
 }

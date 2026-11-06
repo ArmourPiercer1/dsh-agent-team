@@ -1,0 +1,5 @@
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+rc=0

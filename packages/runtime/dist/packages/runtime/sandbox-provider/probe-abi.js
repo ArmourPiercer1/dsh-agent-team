@@ -25,7 +25,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import {} from './contract-stub.js';
-import { networkProbeRow } from './network.js';
+import { networkEnforcedRow, networkProbeRow } from './network.js';
 import { fdPlanToPayload } from './fd-inheritance.js';
 /** The production deps: spawnSync without a shell, bounded buffers. */
 export function createLauncherDeps(init) {
@@ -114,6 +114,84 @@ export function runFdCloseProbe(deps, scratchDir, plan) {
         rc: r.rc,
     });
 }
+function num(v) {
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+function rec(v) {
+    return typeof v === 'object' && v !== null ? v : {};
+}
+/** Run the real network-enforcement leg through the trusted launcher. */
+export function runNetworkLeg(deps, scratchDir) {
+    mkdirSync(scratchDir, { recursive: true });
+    const r = deps.run([deps.launcherPath, '--net-leg', '--scratch', scratchDir]);
+    const v = parseVerdict(r.stdout);
+    if (v === null) {
+        return Object.freeze({
+            verdict: 'MIXED/FAILED',
+            mechanism: null,
+            checks: Object.freeze([]),
+            hostNetNsInode: null,
+            denyNetNsInode: null,
+            listener: Object.freeze({ portTcp: null, portUdp: null, acceptedTotal: null, datagramsTotal: null }),
+            control: Object.freeze({ tcpOk: null, udpOk: null, accepted: null, datagrams: null, nonceMatched: null }),
+            deny: Object.freeze({ tcpErrno: null, udpErrno: null, accepted: null, datagrams: null, reason: `launcher answer unparseable (rc=${String(r.rc)})` }),
+            raw: Object.freeze([...r.stderr.split('\n').filter(Boolean)]),
+        });
+    }
+    const known = ['NET-DENY-CONFIRMED', 'NO-ENFORCEMENT', 'MIXED/FAILED'];
+    const verdictWord = typeof v['verdict'] === 'string' && known.includes(v['verdict'])
+        ? v['verdict']
+        : 'MIXED/FAILED';
+    const checks = Array.isArray(v['checks'])
+        ? v['checks'].filter((c) => typeof c === 'object' && c !== null).map((c) => Object.freeze({
+            name: typeof c['name'] === 'string' ? c['name'] : '?',
+            expect: typeof c['expect'] === 'string' ? c['expect'] : '?',
+            got: typeof c['got'] === 'string' ? c['got'] : '?',
+            match: c['match'] === true,
+        }))
+        : [];
+    const listener = rec(v['listener']);
+    const control = rec(v['control']);
+    const deny = rec(v['deny']);
+    const denyTcp = rec(deny['tcp']);
+    const denyUdp = rec(deny['udp']);
+    const controlTcp = rec(control['tcp']);
+    const controlUdp = rec(control['udp']);
+    const denyNet = rec(deny['net']);
+    return Object.freeze({
+        verdict: verdictWord,
+        mechanism: typeof v['mechanism'] === 'string' && v['mechanism'] !== '' ? v['mechanism'] : null,
+        checks: Object.freeze(checks),
+        hostNetNsInode: num(v['host_net_ns_inode']),
+        denyNetNsInode: num(v['deny_net_ns_inode']),
+        listener: Object.freeze({ portTcp: num(listener['port_tcp']), portUdp: num(listener['port_udp']), acceptedTotal: num(listener['accepted_total']), datagramsTotal: num(listener['datagrams_total']) }),
+        control: Object.freeze({
+            tcpOk: typeof controlTcp['ok'] === 'boolean' ? controlTcp['ok'] : null,
+            udpOk: typeof controlUdp['ok'] === 'boolean' ? controlUdp['ok'] : null,
+            accepted: num(control['accepted']),
+            datagrams: num(control['datagrams']),
+            nonceMatched: typeof control['nonce_matched'] === 'boolean' ? control['nonce_matched'] : null,
+        }),
+        deny: Object.freeze({
+            tcpErrno: typeof denyTcp['errno'] === 'string' ? denyTcp['errno'] : null,
+            udpErrno: typeof denyUdp['errno'] === 'string' ? denyUdp['errno'] : null,
+            accepted: num(deny['accepted']),
+            datagrams: num(deny['datagrams']),
+            reason: typeof denyNet['reason'] === 'string' ? denyNet['reason'] : (typeof deny['reason'] === 'string' ? deny['reason'] : null),
+        }),
+        raw: Object.freeze(Array.isArray(v['raw']) ? v['raw'].filter((x) => typeof x === 'string') : []),
+    });
+}
+/**
+ * The one-line note the `enforced` row carries. Built from the leg's own
+ * numbers so a reader can see WHY the row says `enforced` without trusting it.
+ */
+export function netLegNote(net) {
+    return `net leg NET-DENY-CONFIRMED: control reached the listener `
+        + `(tcp ${String(net.control.accepted)}/${String(net.control.datagrams)} packets, nonce ${net.control.nonceMatched === true ? 'matched' : 'UNMATCHED'}); `
+        + `deny child in netns inode ${String(net.denyNetNsInode)} (host ${String(net.hostNetNsInode)}) failed tcp=${String(net.deny.tcpErrno)} udp=${String(net.deny.udpErrno)} `
+        + `with the listener counter unchanged (${String(net.deny.accepted)}/${String(net.deny.datagrams)})`;
+}
 /** Verify the launcher bytes against the assembly pin. Never throws. */
 export function verifyLauncherIntegrity(input) {
     const pinned = String(input.launcherSha256 ?? '').trim().toLowerCase();
@@ -182,15 +260,29 @@ function bothConfirm(abi, legs) {
  * Map probe facts to capability rows under the DOUBLE-EVIDENCE LAW:
  * `enforced` is issued only when GET_VERSION answered AND BOTH enforcement
  * legs confirmed; any missing or MIXED leg demotes. The rows the lane can
- * never claim (metadata hiding, alias safety, network deny) stay `unsupported`
- * whatever the host says (PoC-4a / PoC-4b posture, no-overclaim law).
+ * never claim (metadata hiding, alias safety) stay `unsupported` whatever the
+ * host says (PoC-4a posture, no-overclaim law).
+ *
+ * BL-42: the network row is the ONE row whose evidence is a DIFFERENT
+ * mechanism, so it is decided by its own leg and nothing else — a confirmed
+ * `--net-leg` yields `enforced` with a non-null mechanism and the bound
+ * evidence reference, and every other answer (absent leg, NO-ENFORCEMENT,
+ * MIXED/FAILED, or a control that did not reach the listener) yields the
+ * historical `unsupported` row. Landlock never promotes it: ABI bits are not a
+ * network destination claim.
  */
-export function probeToCapabilities(abi, legs, binding) {
+export function probeToCapabilities(abi, legs, binding, net) {
     const facts = { abiVersion: abi.abiVersion, legs };
     const dbl = bothConfirm(abi, legs);
     const abiVersion = facts.abiVersion;
     const mech = abiVersion === null ? null : `landlock ABI v${abiVersion} entry self-lock (bare syscalls 444/445/446), selective+denyall double evidence`;
     const writeNeg = facts.legs.selective?.checks.some((c) => c.name.startsWith('NEG create') && c.match) === true;
+    const netConfirmed = net !== undefined && net !== null && net.verdict === 'NET-DENY-CONFIRMED'
+        && typeof net.mechanism === 'string' && net.mechanism !== ''
+        && net.denyNetNsInode !== null && net.hostNetNsInode !== null && net.denyNetNsInode !== net.hostNetNsInode
+        && net.control.tcpOk === true && net.control.udpOk === true && net.control.nonceMatched === true
+        && net.deny.accepted === 0 && net.deny.datagrams === 0
+        && net.deny.tcpErrno !== null && net.deny.udpErrno !== null;
     const rows = [
         Object.freeze({
             dimension: 'content-read',
@@ -234,7 +326,15 @@ export function probeToCapabilities(abi, legs, binding) {
             evidence: null,
             note: 'symlink/hardlink/alias safety requires the openat2-by-FD discipline (PR3 territory); this lane states no alias guarantee',
         }),
-        { ...networkProbeRow(abiVersion, binding.realmId) },
+        netConfirmed && net !== undefined && net !== null
+            ? networkEnforcedRow({
+                realmId: binding.realmId,
+                trustRoot: binding.trustRoot,
+                evidence: binding.evidenceRef,
+                note: netLegNote(net),
+                abiVersion,
+            })
+            : { ...networkProbeRow(abiVersion, binding.realmId) },
         Object.freeze({
             dimension: 'inherit-cancel',
             level: 'author-trusted',

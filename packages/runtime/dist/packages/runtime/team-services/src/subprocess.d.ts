@@ -189,6 +189,15 @@ export interface ConfinedCapabilityRow {
     readonly dimension: string;
     readonly level: string;
     readonly note?: string | undefined;
+    /**
+     * BL-42 — the mechanism the backend names for this row (required for an
+     * `enforced` network answer). Optional here because the OTHER dimensions
+     * keep their historical three-field shape; the probe treats a missing
+     * mechanism on `network-destination: enforced` as `unsupported`.
+     */
+    readonly mechanism?: string | null | undefined;
+    /** BL-42 — the recorded evidence reference for this row, when it carries one. */
+    readonly evidence?: string | null | undefined;
 }
 /** The one provider method a confined spawn needs. */
 export interface ConfinedProcessProvider {
@@ -513,6 +522,14 @@ export interface ConfinedNetworkCapabilityProbe {
     readonly level: 'enforced' | 'unsupported';
     /** The probe's own note (or why no row was available). */
     readonly note: string;
+    /**
+     * BL-42 — the mechanism the backend named for an `enforced` answer. `null`
+     * for every `unsupported` answer (and for an `enforced` row that named none,
+     * which is itself treated as `unsupported`).
+     */
+    readonly mechanism?: string | null;
+    /** BL-42 — the evidence reference the backend's row carried, or `null`. */
+    readonly evidence?: string | null;
     /** The raw capability rows the backend returned (empty when it has no probe). */
     readonly rows: readonly ConfinedCapabilityRow[];
 }

@@ -68,8 +68,7 @@ export interface LegVerdict {
 }
 /** Run one real enforcement leg; the launcher self-confines, this process never does. */
 export declare function runEnforcementLeg(deps: LauncherDeps, leg: LegName, scratchDir: string): LegVerdict;
-/** The FD-closure leg (P2 fork-not-exec handoff). */
-export interface FdCloseVerdict {
+/** The FD-closure leg (P2 fork-not-exec handoff). */ export interface FdCloseVerdict {
     readonly verdict: 'FD-CLOSURE-CONFIRMED' | 'NO-ENFORCEMENT' | 'MIXED/FAILED' | 'ABI-UNAVAILABLE';
     readonly declaredSeen: boolean | null;
     readonly undeclaredClosed: boolean | null;
@@ -77,6 +76,50 @@ export interface FdCloseVerdict {
 }
 /** Run the real FD-closure leg: ruleset compiled parent-side, fork (no exec), child closes undeclared + self-locks. */
 export declare function runFdCloseProbe(deps: LauncherDeps, scratchDir: string, plan?: FdPlan): FdCloseVerdict;
+/** One check inside the net leg (same shape as the enforcement legs). */
+export interface NetLegCheck {
+    readonly name: string;
+    readonly expect: string;
+    readonly got: string;
+    readonly match: boolean;
+}
+/** What the `--net-leg` invocation answered. */
+export interface NetLegVerdict {
+    readonly verdict: 'NET-DENY-CONFIRMED' | 'NO-ENFORCEMENT' | 'MIXED/FAILED';
+    readonly mechanism: string | null;
+    readonly checks: readonly NetLegCheck[];
+    readonly hostNetNsInode: number | null;
+    readonly denyNetNsInode: number | null;
+    /** The listener's own counters — read in the probe process, out of band. */
+    readonly listener: {
+        readonly portTcp: number | null;
+        readonly portUdp: number | null;
+        readonly acceptedTotal: number | null;
+        readonly datagramsTotal: number | null;
+    };
+    readonly control: {
+        readonly tcpOk: boolean | null;
+        readonly udpOk: boolean | null;
+        readonly accepted: number | null;
+        readonly datagrams: number | null;
+        readonly nonceMatched: boolean | null;
+    };
+    readonly deny: {
+        readonly tcpErrno: string | null;
+        readonly udpErrno: string | null;
+        readonly accepted: number | null;
+        readonly datagrams: number | null;
+        readonly reason: string | null;
+    };
+    readonly raw: readonly string[];
+}
+/** Run the real network-enforcement leg through the trusted launcher. */
+export declare function runNetworkLeg(deps: LauncherDeps, scratchDir: string): NetLegVerdict;
+/**
+ * The one-line note the `enforced` row carries. Built from the leg's own
+ * numbers so a reader can see WHY the row says `enforced` without trusting it.
+ */
+export declare function netLegNote(net: NetLegVerdict): string;
 /** Inputs (the `read` seam is injectable for tests; production reads the file). */
 export interface LauncherIntegrityInput {
     readonly launcherPath: string;
@@ -128,8 +171,16 @@ export interface ProbeBinding {
  * Map probe facts to capability rows under the DOUBLE-EVIDENCE LAW:
  * `enforced` is issued only when GET_VERSION answered AND BOTH enforcement
  * legs confirmed; any missing or MIXED leg demotes. The rows the lane can
- * never claim (metadata hiding, alias safety, network deny) stay `unsupported`
- * whatever the host says (PoC-4a / PoC-4b posture, no-overclaim law).
+ * never claim (metadata hiding, alias safety) stay `unsupported` whatever the
+ * host says (PoC-4a posture, no-overclaim law).
+ *
+ * BL-42: the network row is the ONE row whose evidence is a DIFFERENT
+ * mechanism, so it is decided by its own leg and nothing else — a confirmed
+ * `--net-leg` yields `enforced` with a non-null mechanism and the bound
+ * evidence reference, and every other answer (absent leg, NO-ENFORCEMENT,
+ * MIXED/FAILED, or a control that did not reach the listener) yields the
+ * historical `unsupported` row. Landlock never promotes it: ABI bits are not a
+ * network destination claim.
  */
-export declare function probeToCapabilities(abi: AbiVerdict, legs: Partial<Record<LegName, LegVerdict>>, binding: ProbeBinding): readonly ProcessCapabilityRow[];
+export declare function probeToCapabilities(abi: AbiVerdict, legs: Partial<Record<LegName, LegVerdict>>, binding: ProbeBinding, net?: NetLegVerdict | null): readonly ProcessCapabilityRow[];
 //# sourceMappingURL=probe-abi.d.ts.map

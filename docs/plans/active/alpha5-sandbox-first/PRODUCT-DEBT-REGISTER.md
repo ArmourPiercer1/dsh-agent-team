@@ -238,7 +238,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **proof**: `P5-PROXY-DIVERGENCE` becomes an equality assertion (confined == unconfined for the
   flag and the proxy names under a published proxy); `P5-ENV-SCRUB` stays green.
 - **blocked by**: an owner dependency/lockfile decision; not the boot budget.
-- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1071-L1082` contains `export function confinedChildEnvironment` ; `packages/runtime/team-services/src/subprocess.ts#L1461` contains `confinedChildEnvironment(spec.env)`
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1104-L1115` contains `export function confinedChildEnvironment` ; `packages/runtime/team-services/src/subprocess.ts#L1494` contains `confinedChildEnvironment(spec.env)`
 
 ### PD-5 (GAP-FS-CONTRACT-1) — routed `read_image` cannot resolve `fs`
 
@@ -284,7 +284,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   read/write lane still enforced"; `P1-ARGV-*` and `P2-*` stay green.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and the owner's decision to expose
   `bash` at all; [BL-42](ALPHA5-SANDBOX-BACKLOG.md) before any "offline but functional" claim.
-- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1230-L1236` contains `if (!isAbsolute(program))` ; `packages/runtime/team-services/src/subprocess.ts#L1210-L1214` contains `a spill file is not produced by this provider`
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1263-L1269` contains `if (!isAbsolute(program))` ; `packages/runtime/team-services/src/subprocess.ts#L1242-L1247` contains `a spill file is not produced by this provider`
 - **2026-11-10 LIVED annotation (append-only; the fields above are not edited)**: this row's *fact*
   — the shipped transient shell cannot ride the confined face — **stays true and is now measured
   live** (a Member's `bash` is served by `SandboxBashExecutor` on the base subprocess service, with
@@ -522,7 +522,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   `tests/world-factory/a5sf-pd12-bash-governance.test.mjs` and
   `dev/agent-workflow/evidence/a5sf-pd12-fix/mutation-controls.mjs`.
 - **blocked by**: [BL-17](ALPHA5-SANDBOX-BACKLOG.md) (shell-class wiring) and [BL-42](ALPHA5-SANDBOX-BACKLOG.md) (an `enforced` network backend), plus the owner's decision to expose `bash` through the face at all.
-- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1413` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L222` contains `readonly subprocess: ConfinedSubprocessSurface | null`
+- **anchors**: `packages/runtime/team-services/src/subprocess.ts#L1446` contains `await probeNetworkDenial(provider)` ; `packages/runtime/team-services/src/types.ts#L222` contains `readonly subprocess: ConfinedSubprocessSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ceiling term** —
   for that Member the compiled ceiling says `network: deny`, yet the effective I/O of the Member's
   model-visible tool set includes a network-capable child, because the ceiling is compiled per

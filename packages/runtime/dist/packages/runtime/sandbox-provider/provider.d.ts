@@ -27,7 +27,7 @@
 import { type Readable, type Writable } from 'node:stream';
 import { type AssuranceDimension, type ProcessCapabilityRow, type ProviderResult } from './contract-stub.js';
 import { type FdPlan } from './fd-inheritance.js';
-import { type AvailabilityRow, type LegName, type LegVerdict, type RunResult } from './probe-abi.js';
+import { type AvailabilityRow, type LegName, type LegVerdict, type NetLegVerdict, type RunResult } from './probe-abi.js';
 /** One path allow-entry with the named access bits the launcher maps. */
 export interface AllowPathEntry {
     readonly path: string;
@@ -112,6 +112,16 @@ export interface RunOutput {
 export interface SpawnReceipt {
     readonly lease: ProviderLease;
     readonly processIdentity: string;
+    /**
+     * BL-42 — the mechanism the PAYLOAD's own process reported applying before
+     * execve (namespace inodes read back from the child). Present only when the
+     * request carried a `deny` profile, so every existing receipt is unchanged.
+     */
+    readonly network?: {
+        readonly mechanism: string;
+        readonly netNsInode: number | null;
+        readonly hostNetNsInode: number | null;
+    };
 }
 /** The streaming launcher process as the injected seam exposes it. */
 export interface LauncherStreamProcess {
@@ -221,9 +231,16 @@ export interface ProviderDeps {
         readonly rows: readonly AvailabilityRow[];
     };
     readonly run: (argv: readonly string[], timeoutMs?: number) => RunResult;
+    /**
+     * The probe facts. BL-42 adds the OPTIONAL `net` member: the result of the
+     * launcher's `--net-leg`. Absent (every pre-BL-42 injected fake) means "no
+     * network-enforcement observation was made", which yields the historical
+     * `unsupported` row — never an inferred `enforced`.
+     */
     readonly probeFacts: () => {
         readonly abiVersion: number | null;
         readonly legs: Partial<Record<LegName, LegVerdict>>;
+        readonly net?: NetLegVerdict | null;
     };
     /**
      * Streaming arm (R-1): spawn the launcher in stream mode with the fd-3

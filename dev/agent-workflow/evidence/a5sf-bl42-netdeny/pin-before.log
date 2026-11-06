@@ -1,0 +1,11 @@
+A5SF-BL42-PIN schema=a5sf-bl42-pin/1
+launcher=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-bl42/dev/agent-workflow/evidence/a5sf-bl42-netdeny/launcher-pre-bl42.py
+launcherSha256=1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3
+MECHANISM mode-supported=true verdict=MIXED/FAILED mechanism=null
+MECHANISM control-accepted=null nonce-matched=null deny-accepted=null tcp=null udp=null
+MECHANISM netns=null host=null
+PROBE level=unsupported mechanism=null evidence=null proof=null
+PROBE realm=realm-bl42-pin trustRoot=null
+ADMISSION admitted=false refusal=IO_POLICY_UNSUPPORTED
+PLAN prepared=false policy-network=null processes-started=0
+verdict=MEASURED
