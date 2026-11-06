@@ -203,6 +203,58 @@ compiled 车道与**同一个** guard 实例（`sequence` 1→2），因此“al
 **这些臂不构成任何行的 live/level 证据**：`M-14`/`M-15` 仍 `B` / `V@B=no`；本段只加证据指针，并把
 `M-14` 原“行不转发 `web` face”的过时说明更正为“live 未跑”。
 
+## 1.2 2026-11-08 定点更正（ALPHA5-CONSOLIDATE；只追加，不改任何历史数字）
+
+**本节不重写上面任何一行。** 上面出现的 `PASS`、`8/8`、`11/11`、`六行全 PASS` 全部**保留原样可见**；
+本节只在它们旁边写下“今天它值多少”。四行 `M-01`/`M-02`/`M-06`/`M-07` 的 ⑧/⑨ 一个字符没动
+（仍是 `ENFORCE-PARTIAL` / `NEEDS_REVALIDATION` 与 `V@B=no`），因为本轮没有新证据可以把任何一行升级。
+
+### 1.2.1 BL-17 / BL-18 期待 live 证据、实际没有：逐面更正
+
+| 面 | 期待（BL 条目） | 实际发生 | live 半场今天的读法 | 证据 |
+|---|---|---|---|---|
+| **Shell-PTY**（M-08/M-09/M-13） | BL-17 用 allocation #2/#3 的两次启动测四个 live 问题：同 PTY 多命令、只写不读的读轴拒绝、`chmod` 缺口、`network: deny` 拒绝位置 | boot #3：driver gate 顺序缺陷，`NOT_REACHED` ×4；boot #4：leader 面未覆盖，`team.create` 被 A2C-2 拒，`NOT_REACHED` ×4、**零 model 请求** | **live 半场未证，零 case 到达。** 四个问题一个都没有被观测；本面仍无 confined terminal face（`RealmServiceFaces` 无 `terminals`），真实 PTY 仍是 double | `dev/agent-workflow/evidence/a5sf-bl17-live/README.md` §2/§4；`dev/agent-workflow/evidence/a5sf-bl17-live2/README.md` §2/§6 |
+| **Web**（M-14/M-15） | BL-18 用 allocation #5 的**一次**启动测 deny 车道的准入拒绝（一条 guard fact、零 provider entry） | **0 boots**：lane 在 NO-GO 下**没有花**这次 start；只产出 host-free 装配证明、marker mock、两个 bundle | **live 半场未证，零启动。** “deny 车道能挂载并在 face 上拒绝”是 host-free 事实；“真实 Host 上模型调用到达这个 face”没有发生 | `dev/agent-workflow/evidence/a5sf-bl18-live/README.md` §2/§6/§7 |
+| **FS Provider**（M-01/M-02） | BL-16 的候选轮本来就要把 FS/Search 的 current claim 在冻结候选树上重新立起来 | allocation #1 `FAIL 9/11`（locator 别名）；allocation #4 `PASS 11/11` | **曾经成立、今天不 current**：`#606` 移动 28 条产品路径，Q7 撤回；`M-01`/`M-02` 记 `NEEDS_REVALIDATION` / `V@B=no` | `dev/agent-workflow/evidence/a5sf-candidate1/README.md` §1–§3；本文件 §1.1 |
+| **Subprocess**（M-06/M-07） | 同上（同一轮候选） | 同 FS：11/11 含 search 五案，负控 PROVEN | 同上：`ENFORCE-PARTIAL` / `V@B=no`，需在新树重跑 live 才能再断言 | 同上 |
+| **External execution / Non-data-plane** | **BL-17/BL-18 从未对这两个面作出 live 承诺** | — | 不是“BL 失败”，是“这两个面没有可验收的产品接线”：M-11/M-12/M-17/M-18 `NOT_WIRED`/`UNSUPPORTED`，M-19/M-20/M-21 只有契约与披露 | 本文件 §1.1.1；`ALPHA5-SANDBOX-BACKLOG.md` §5/§6 |
+
+**一句话**：BL-17 与 BL-18 的 live 半场都是 **`NOT_REACHED`**，不是 `FAIL`、更不是 `PASS`；
+BL-16 的 live 半场曾经 `PASS` 但**当前不成立**。三种状态在同一张表里必须能被区分，这正是本节的用途。
+
+### 1.2.2 为错误的原因报绿的 payload（逐条点名）
+
+| payload | 当时的判词 | 今天的判词 | 为什么是“绿错了原因” |
+|---|---|---|---|
+| `dev/agent-workflow/evidence/a5sf-bl17-live2/preflight-bundle.json` | **`PASS 16/16`**（boot #4 启动前，`dev/agent-workflow/evidence/a5sf-bl17-live2/README.md` §4） | **`FAIL 15/18` `blocks=BUNDLE_CASE_UNDECLARED`**（`dev/agent-workflow/evidence/a5sf-refusal/README.md` §4/§5） | driver 自己的 `CASES` 字面量声明了 **4** 个 case，bundle 的 `cases` 只列了 **3** 个，`plannedCases` 也被缩到同样 3 个；**被漏掉的正是 `network-deny-refusal`——这次启动要测的那一个**。16/16 是对“不完整计划”的满分 |
+| `dev/agent-workflow/evidence/a5sf-bl17-live2/archive/pre-boot-preflight-bundle.json` | **`PASS 16/16`**（启动前冻结的同一计划副本） | **同一个 `FAIL`，同一条缺失 case** | 同一份计划的两个字节副本，同一个洞；archive 不因为被冻结就变成证据 |
+| `dev/agent-workflow/evidence/a5sf-bl18-live/preflight-enforced-claim.bundle.json` | **`PASS 17/17`** | 仍 `PASS`，但**它是负控、不是计划** | 它与真话 bundle 只差一个字段：`networkProbeEnforced: true`——一个本机探测（`network-destination: unsupported`）与 §7 同时否定的强制声明。**它的 PASS 证明的是“假声明能过”，不是“计划能过”** |
+| `dev/agent-workflow/evidence/a5sf-bl17-live/preflight-bundle.json` | `PASS 13/13`（更小的检查集） | 今天 `UNKNOWN`（不是新 FAIL） | 它没有可被新规则判红的声明；`UNKNOWN` 也不是通过 |
+
+**结论**：**两个 payload、一个计划**曾经是“绿错了原因”（live2 的 `PASS 16/16` 及其 archive 孪生）；
+另有 **一个负控**的 PASS 只能靠假声明取得。三者都保留在树里，本文件不删不改它们。
+
+本轮**复跑**（2026-11-08，0 boots，`--host-root` 借只读 pristine 树）复现了上表两行：
+`dev/agent-workflow/evidence/a5sf-bl17-live2/preflight-bundle.json` → `FAIL 15/18
+blocks=BUNDLE_CASE_UNDECLARED unknown=driver.leader-surface,driver.log-capture`；
+`dev/agent-workflow/evidence/a5sf-refusal/bl18-after.bundle.json` → `PASS 18/18`。这是测量，不是引用。
+
+### 1.2.3 什么才算 green preflight（本节是本轮新增的读法约束）
+
+> **green preflight 的意思是：这份“计划”是诚实且完整的，不是“这个行为被验证了”。**
+>
+> 它检查的是**声明**：cases 是否被完整列出、driver 的 gate 是否排在自己消费的事实之后、
+> 模型可见面是否被覆盖、证据路径与身份绑定是否存在、网络声明是否与后端能力一致。
+> 它不启动 Host，因此**不能**证明任何 provider 被调用、任何进程被创建、任何字节被读取或拒绝。
+>
+> 三个直接推论（都由本阶段的实测付出过代价）：
+> 1. **PASS 可以对不完整的计划发生**（`PASS 16/16` 漏掉 4 个 case 中的 1 个）；
+> 2. **PASS 可以对假声明发生**（`networkProbeEnforced: true` 的负控 `PASS 17/17`）；
+> 3. **PASS 不覆盖它没建模的事实**（boot #3 的 gate 顺序、boot #4 的 leader 面，都是 PASS 之后才炸）。
+>
+> 因此：**矩阵的任何等级不得引用 preflight PASS 作为行为证据**；PASS 只能作为“允许花一次启动”的
+> 前置条件。反过来说，`FAIL` 也不等于产品失败——它可能只说明计划里有一句不诚实的话。
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->
