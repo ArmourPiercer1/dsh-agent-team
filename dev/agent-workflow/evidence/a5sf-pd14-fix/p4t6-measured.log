@@ -1,0 +1,2 @@
+scanner files=1437 hits=15 outsidePackages=0 pd14=0
+PASS packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests)

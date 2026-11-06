@@ -1,0 +1,32 @@
+✖ P0 PD-14 defect pin (PRE-FIX): a World with no Team workspace roots a Member at the pinned host checkout (2.34012ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196.24055
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd14-sandbox-root.test.mjs:251:1
+✖ P0 PD-14 defect pin (PRE-FIX): a World with no Team workspace roots a Member at the pinned host checkout (2.34012ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: the Team row declares no workspace, so the product falls back to the Host launch directory (the pinned checkout)
+  + actual - expected
+  
+  + '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd14/tests/homes/a5sf-pd14-pin-sid4kc/workspace'
+  - '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd14/tests/deepseek-harness-test-use'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd14/tests/world-factory/a5sf-pd14-sandbox-root.test.mjs:254:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd14/tests/homes/a5sf-pd14-pin-sid4kc/workspace',
+    expected: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pd14/tests/deepseek-harness-test-use',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

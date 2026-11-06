@@ -118,6 +118,13 @@ BL-24/BL-25 的括号里。
 > 产品组合仍不声明 terminal face，所以“产品里的成员 shell 已被治理”仍是 `no`；PD-13 的 live 证据
 > 证明的是**声明该 face 的 realm 路径**（dev-live 组合，DEV-LIVE）。要把 M-08/M-13 从 `NOT_WIRED`
 > 推进，需要一次 owner 决定的组合声明轮，而不是再一次 face 构建。
+> **2026-11-11 PD-14 注记（只追加）**：subprocess 车道此前把自己的洁净当作**回执**——每次运行前后
+> 录 `git status --porcelain` 为空、命令只用 `printf`，因为 Member 的 `bash` 子进程当时**真的**是
+> `--bind` 可写地挂在 pinned checkout 上（PD-14）。现在这不再是回执而是**结构**：World 的 Team 行
+> 在本 World 的 `<home>/workspace` 上绑定，且把 pinned checkout 声明成可写根会在 World 构造时被拒绝
+> （`TEAM_WORKSPACE_ON_HOST_TREE`）。本行（BL-16，及相邻的 BL-17/BL-18）的等级与 live 半场口径
+> **不变**：这是夹具层修复，`packages/**` 与 upstream 零改动、**0 次启动**；证据
+> `dev/agent-workflow/evidence/a5sf-pd14-fix/README.md`。
 | BL-18 | web | 有 | — | **是（`DEV-LIVE`，自授权；原 allocation #3 预算已不再是约束）** | deny 车道 provider 之前拒绝；web face 转发已由 `#608`（`52a95fe0b`）落地，**live 半场仍未测** |
 | BL-19 | external | — | — | 否（先 C1） | run_code/PTC：无 routed-native 接入面（矩阵 M-11） |
 | BL-20 | subprocess | — | — | 否（先 C1） | 通用 launcher 端到端；机制已在 P1-07 实测 |

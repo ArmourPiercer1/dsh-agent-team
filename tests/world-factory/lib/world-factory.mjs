@@ -54,6 +54,7 @@ import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, validateKindSpec } fr
 import { captureProfileBinding, verifyProfileBindingLaunched } from './binding-digests.mjs'
 import { preflightHostSandbox as measureSandboxPreflight } from './host-sandbox-assets.mjs'
 import { bindSandboxPreflight } from './run-record.mjs'
+import { bindTeamDefaultWorkspace } from './team-workspace.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -491,6 +492,10 @@ export class TestWorld {
     this.mockLease = null
     this.token = undefined
     this.tornDown = null
+    // PD-14: the Team-workspace binding this World's patch layer was written
+    // with (lib/team-workspace.mjs#bindTeamDefaultWorkspace's report); null
+    // until `startHost` assembles the rows.
+    this.teamWorkspaceBinding = null
     this.receipts = { booted: [], killedPids: [], releasedPorts: [], homeDeleted: null, notes: [] }
   }
 
@@ -561,6 +566,36 @@ export class TestWorld {
   // (U6 PR2/PR3/PR5/PR6 probe-ledger readers — u6fsLedgerRows, u6procLedgerRows,
   //  u6arcaLedgerRows, u6arcdLedgerRows — are installed per kind by the
   //  constructor from the world-kinds registry; null = the probe never recorded.)
+
+  /**
+   * PD-14 (SANDBOX-ROOT): the rows this Host is asked to compose, with every
+   * Team row bound to THIS World's workspace.
+   *
+   * Why a law here and not a key in twelve assemblies: a World that declares
+   * no Team workspace inherits the Host process's launch directory
+   * (`withDefaultWorkspace(config, launchCwd)` in the shipped host entry, and
+   * `launchCwd` is the pinned runtime tree because the CLI entry is spawned
+   * relatively), and the pinned sandbox policy then mounts THAT tree
+   * read-write for a Member's `bash` child (`session.header.cwd ??
+   * config.workspaceRoot`). Measured in `a5sf-sub-devlive` §5 and the
+   * Shell-PTY lane. `lib/team-workspace.mjs` carries the full chain and the
+   * refusal rules; this method is the single place every World passes through.
+   *
+   * @param {Array<object>} rows the assembled patch-layer rows, unbound
+   * @returns {Array<object>} the rows with `defaultWorkspace` bound/validated
+   */
+  #teamWorkspaceRows(rows) {
+    const { rows: bound, report } = bindTeamDefaultWorkspace(rows, {
+      home: this.home,
+      workspaceDir: this.workspaceDir,
+      hostTree: this.factory.hostTree,
+    })
+    // Receipt-side truth: which rows were bound, which declared their own
+    // workspace, and what this World's workspace is. Evidence reads this
+    // instead of inferring it from a boot.
+    this.teamWorkspaceBinding = report
+    return bound
+  }
 
   /**
    * Boot the Host for this World through the SHARED launcher (DshInstance).
@@ -682,10 +717,10 @@ export class TestWorld {
       }
       for (const row of this[kind.option].rows) rows.push(row)
       mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(this.instance.patchFile, emitPatchLayer(kind.patchHeader, rows) + '\n')
+      writeFileSync(this.instance.patchFile, emitPatchLayer(kind.patchHeader, this.#teamWorkspaceRows(rows)) + '\n')
     } else {
       this.instance.mountRows(
-        rows,
+        this.#teamWorkspaceRows(rows),
         ['U5 canary World — one test-only plugin row via the public profile-patch seam.'],
       )
     }
