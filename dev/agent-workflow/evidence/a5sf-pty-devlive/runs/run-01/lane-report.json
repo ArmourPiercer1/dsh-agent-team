@@ -1,0 +1,123 @@
+{
+  "schema": "a5sf-tool-binding-lane-report/1",
+  "kind": "shell-pty",
+  "computedBy": "packages/runtime/dist/packages/runtime/member-io-policy/src/path-rules.js # intersectPathRuleSets / matchLocator",
+  "bindingIdentity": "team/pty-shell",
+  "ceiling": {
+    "read": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace"
+      ],
+      "ask": [],
+      "deny": []
+    },
+    "write": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace"
+      ],
+      "ask": [],
+      "deny": []
+    }
+  },
+  "restriction": {
+    "read": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside"
+      ],
+      "ask": [],
+      "deny": []
+    },
+    "write": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+      ],
+      "ask": [],
+      "deny": []
+    }
+  },
+  "effective": {
+    "read": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside"
+      ],
+      "ask": [],
+      "deny": []
+    },
+    "write": {
+      "mode": "restricted",
+      "allow": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only"
+      ],
+      "ask": [],
+      "deny": []
+    }
+  },
+  "network": {
+    "denyTemplates": [
+      "nether"
+    ],
+    "others": "allow"
+  },
+  "shellClass": {
+    "programs": [
+      "bash"
+    ]
+  },
+  "probePaths": [
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside",
+      "ceilingRead": "allow",
+      "restrictionRead": "allow",
+      "effectiveRead": "allow",
+      "effectiveWrite": "deny"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only",
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny",
+      "effectiveWrite": "allow"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-product.txt",
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny",
+      "effectiveWrite": "allow"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-face.txt",
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny",
+      "effectiveWrite": "allow"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-kernel.txt",
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny",
+      "effectiveWrite": "allow"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/write-only/secret-write-only.txt",
+      "ceilingRead": "allow",
+      "restrictionRead": "deny",
+      "effectiveRead": "deny",
+      "effectiveWrite": "allow"
+    },
+    {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T10-51-28Z/workspace/lane/inside/mode.txt",
+      "ceilingRead": "allow",
+      "restrictionRead": "allow",
+      "effectiveRead": "allow",
+      "effectiveWrite": "deny"
+    }
+  ],
+  "note": "the CEILING/RESTRICTION inputs and the per-template network choice are test-composition fixtures; the intersection and every disposition are the product functions, called here. The confined subprocess face is a MEMBER-realm face."
+}

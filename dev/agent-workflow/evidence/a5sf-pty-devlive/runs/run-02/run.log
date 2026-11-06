@@ -1,0 +1,35 @@
+[2026-11-06T11:00:03.711Z] BOOT MODE. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-02
+[2026-11-06T11:00:03.715Z] HEAD=79a19bd4c09b1770f71df89ea571da994c2364d0 pinned host=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-06T11:00:03.759Z] shared preflight re-run: exit=0 verdict=PASS summary=PASS 18/18 checks
+[2026-11-06T11:00:03.760Z] authority: snapshot=as20261105r2 digest=sha256:d28bdf46c… baseline=1484fa4ee0ff9326a3dafcac060bf63f8d334a1f
+[2026-11-06T11:00:03.761Z] dev-live lease open: grant=devlive-pty-shell-1 face=Shell-PTY world=a5sfptydv slotHeld=false
+[2026-11-06T11:00:03.766Z] world=u5a5sfptydv-20261106T11-00-03Z rows=["a5sf-pty-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-pty-base"]
+[2026-11-06T11:00:15.058Z] mock started on port 3494
+[2026-11-06T11:00:37.542Z] dev-live slot held=true (DEV_LIVE_SLOT_LIMIT=2 machine-wide)
+[2026-11-06T11:00:37.542Z] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-02/logs/u5a5sfptydv-20261106T11-00-03Z/instance-port3185.log
+[2026-11-06T11:00:37.648Z] authenticated (token never recorded); host pid=42
+[2026-11-06T11:00:38.155Z] health 200 ready=true after 506ms (2 probe(s))
+[2026-11-06T11:00:38.251Z] mock seq=1 effective=title disposition=harmless-text
+[2026-11-06T11:00:38.253Z] mock seq=2 effective=MK_PTY_DISC disposition=harmless-text
+[2026-11-06T11:00:38.580Z] discovery surface (24): ["bash","bash_probe","edit","pty_observe","read","read_image","team_archive_member","team_collect","team_create_member","team_delegate","team_follow_up","team_grant_permission","team_inspect_config","team_list_members","team_list_pending_control","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_revoke_permission","team_send_message","u5_canary","u6fs_probe","write"]
+[2026-11-06T11:00:38.580Z] discovery-first deny list: ["bash_probe","pty_observe","u5_canary","u6fs_probe"]
+[2026-11-06T11:00:38.586Z] main blueprint parsed; builtinToolDeny entries=4
+[2026-11-06T11:00:38.766Z] mock seq=3 effective=MK_PTY_CREATE disposition=harmless-text
+[2026-11-06T11:00:38.767Z] mock seq=4 effective=title disposition=harmless-text
+[2026-11-06T11:00:38.839Z] team.create ok on session-a5sf-pty-team
+[2026-11-06T11:00:38.844Z] state-gate open: blueprint=team.a5sf.pty.main members=1
+[2026-11-06T11:00:38.846Z] live leader gate open: liveSessions=["session-a5sf-pty-root","session-a5sf-pty-team"]
+[2026-11-06T11:00:38.988Z] delegate ptydv-worker: status=200 ok=true
+[2026-11-06T11:00:39.009Z] member ptydv-worker: instanceId=inst-054vaf000o03 childSessionId=session-team-child-cdcb7199639ea72356ec83423273b39a lifecycle=RUNNING
+[2026-11-06T11:00:39.040Z] mock seq=5 effective=title disposition=harmless-text
+[2026-11-06T11:00:39.041Z] mock seq=6 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:00:39.398Z] mock seq=7 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:00:39.521Z] mock seq=8 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:00:39.647Z] mock seq=9 effective=MK_PTY_WKR1 disposition=done
+[2026-11-06T11:00:39.798Z] mock seq=10 effective=MK_PTY_CREATE disposition=harmless-text
+[2026-11-06T11:00:39.817Z] ABORT at member-bash-calls: ReferenceError: observeSessions is not defined
+    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/run-boot.mjs:1509:125)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-06T11:00:42.952Z] RUN-SUMMARY run=a5sf-pty-devlive-2026-11-06T11-00-03-760Z suite=a5sf-pty-devlive overall=FAIL cases=6 FAIL:6 worlds=none partial=true abortedAt=member-bash-calls recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-06T11:00:42.952Z] ledger: boots=1 planned=1 aborts=0 outcome=1
+[2026-11-06T11:00:42.952Z] OVERALL=FAIL

@@ -1,0 +1,56 @@
+[2026-11-06T11:01:32.872Z] BOOT MODE. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-03
+[2026-11-06T11:01:32.875Z] HEAD=79a19bd4c09b1770f71df89ea571da994c2364d0 pinned host=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-06T11:01:32.913Z] shared preflight re-run: exit=0 verdict=PASS summary=PASS 18/18 checks
+[2026-11-06T11:01:32.914Z] authority: snapshot=as20261105r2 digest=sha256:d28bdf46c… baseline=1484fa4ee0ff9326a3dafcac060bf63f8d334a1f
+[2026-11-06T11:01:32.915Z] dev-live lease open: grant=devlive-pty-shell-1 face=Shell-PTY world=a5sfptydv slotHeld=false
+[2026-11-06T11:01:32.920Z] world=u5a5sfptydv-20261106T11-01-32Z rows=["a5sf-pty-realm","dsh-agent-team","p6t6-team-tools","preset-a5sf-pty-base"]
+[2026-11-06T11:01:39.338Z] mock started on port 3495
+[2026-11-06T11:01:52.126Z] dev-live slot held=true (DEV_LIVE_SLOT_LIMIT=2 machine-wide)
+[2026-11-06T11:01:52.126Z] BOOTED port=3186 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/dev/agent-workflow/evidence/a5sf-pty-devlive/runs/run-03/logs/u5a5sfptydv-20261106T11-01-32Z/instance-port3186.log
+[2026-11-06T11:01:52.300Z] authenticated (token never recorded); host pid=42
+[2026-11-06T11:01:52.808Z] health 200 ready=true after 507ms (2 probe(s))
+[2026-11-06T11:01:52.891Z] mock seq=1 effective=title disposition=harmless-text
+[2026-11-06T11:01:52.893Z] mock seq=2 effective=MK_PTY_DISC disposition=harmless-text
+[2026-11-06T11:01:53.230Z] discovery surface (24): ["bash","bash_probe","edit","pty_observe","read","read_image","team_archive_member","team_collect","team_create_member","team_delegate","team_follow_up","team_grant_permission","team_inspect_config","team_list_members","team_list_pending_control","team_list_templates","team_report_progress","team_request_control","team_resolve_control","team_revoke_permission","team_send_message","u5_canary","u6fs_probe","write"]
+[2026-11-06T11:01:53.231Z] discovery-first deny list: ["bash_probe","pty_observe","u5_canary","u6fs_probe"]
+[2026-11-06T11:01:53.235Z] main blueprint parsed; builtinToolDeny entries=4
+[2026-11-06T11:01:53.410Z] mock seq=3 effective=MK_PTY_CREATE disposition=harmless-text
+[2026-11-06T11:01:53.411Z] mock seq=4 effective=title disposition=harmless-text
+[2026-11-06T11:01:53.478Z] team.create ok on session-a5sf-pty-team
+[2026-11-06T11:01:53.483Z] state-gate open: blueprint=team.a5sf.pty.main members=1
+[2026-11-06T11:01:53.485Z] live leader gate open: liveSessions=["session-a5sf-pty-root","session-a5sf-pty-team"]
+[2026-11-06T11:01:53.630Z] delegate ptydv-worker: status=200 ok=true
+[2026-11-06T11:01:53.648Z] member ptydv-worker: instanceId=inst-054vaf000o03 childSessionId=session-team-child-cdcb7199639ea72356ec83423273b39a lifecycle=RUNNING
+[2026-11-06T11:01:53.674Z] mock seq=5 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:01:53.675Z] mock seq=6 effective=title disposition=harmless-text
+[2026-11-06T11:01:54.078Z] mock seq=7 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:01:54.199Z] mock seq=8 effective=MK_PTY_WKR1 disposition=tool-call
+[2026-11-06T11:01:54.320Z] mock seq=9 effective=MK_PTY_WKR1 disposition=done
+[2026-11-06T11:01:54.445Z] mock seq=10 effective=MK_PTY_CREATE disposition=harmless-text
+[2026-11-06T11:01:54.454Z] pty_observe: ok=true backends=["shell"] sessions=1 shellSessions=1 errors=[]
+[2026-11-06T11:01:54.455Z] case member-terminal-face: FAIL {"service":"@deepseek-ai/dsh-terminal — `TerminalSessionService` (pinned host 0.639ed01539)","pid":2,"ttyNr":34816,"fd0":"/dev/pts/0","serviceSessionId":"pty-1","realmHasTerminalsFace":false,"confinedSpawnForBash":0,"failedChecks":["shellRecordedSession"],"artifact":"item1-member-terminal-face.json"}
+[2026-11-06T11:01:54.600Z] delegate ptydv-worker2: status=200 ok=true
+[2026-11-06T11:01:54.616Z] member ptydv-worker2: instanceId=inst-0v93y6i1hns7 childSessionId=session-team-child-da0e22ebb0ece4d3b3753d6b6740dd89 lifecycle=RUNNING
+[2026-11-06T11:01:54.644Z] mock seq=11 effective=title disposition=harmless-text
+[2026-11-06T11:01:54.645Z] mock seq=12 effective=MK_PTY_WKR2 disposition=tool-call
+[2026-11-06T11:01:55.006Z] mock seq=13 effective=MK_PTY_WKR2 disposition=exhausted
+[2026-11-06T11:01:55.089Z] pty_observe worker2: ok=true sessions=1 shellSessions=1
+[2026-11-06T11:01:55.089Z] case same-pty-multi-command: FAIL {"pid":2,"sessions":[0,0],"ttyNrs":[34816,34816],"controlPid":2,"controlServiceSessionId":"pty-2","failedChecks":["sameSession"],"artifact":"item2-same-pty-multi-command.json"}
+[2026-11-06T11:01:55.090Z] case product-shell-read-unlanned: PASS {"bytesReturned":true,"observed":"allow","laneExpectation":"deny","locus":"product preset / legacy PTY (no a5sf guard consultation)","failedChecks":[],"artifact":"item3-product-shell-read.json"}
+[2026-11-06T11:01:55.098Z] probe write-only-read: status=200 ok=false code=IO_READ_DENIED facts=1 confinedRows=0 presetRows=0
+[2026-11-06T11:01:55.098Z] case write-only-read-denied: PASS {"fact":"IO_READ_DENIED","axis":"read","providerCalls":0,"bytesReturned":false,"failedChecks":[],"artifact":"item4-write-only-read-denied.json"}
+[2026-11-06T11:01:55.282Z] probe kernel-read-supplementary: status=200 ok=true code=null facts=1 confinedRows=2 presetRows=0
+[2026-11-06T11:01:55.282Z] supplementary kernel read: {"admitted":true,"childRan":true,"noSecretBytes":true,"childReportedFailure":true}
+[2026-11-06T11:01:55.319Z] probe chmod-gap: status=200 ok=true code=null facts=0 confinedRows=2 presetRows=0
+[2026-11-06T11:01:55.320Z] case chmod-gap: PASS {"modeBefore":"644","modeAfter":"600","finding":"CHMOD_GAP_REPRODUCED","failedChecks":[],"artifact":"item5-chmod-gap.json"}
+[2026-11-06T11:01:55.326Z] mock seq=14 effective=MK_PTY_CREATE disposition=harmless-text
+[2026-11-06T11:01:55.488Z] delegate ptydv-nether: status=200 ok=true
+[2026-11-06T11:01:55.505Z] member ptydv-nether: instanceId=inst-0vzx5580rczo childSessionId=session-team-child-e523f17a1dc02d55d6e8f51801c75ea0 lifecycle=RUNNING
+[2026-11-06T11:01:55.530Z] mock seq=15 effective=title disposition=harmless-text
+[2026-11-06T11:01:55.530Z] mock seq=16 effective=MK_PTY_NET disposition=harmless-text
+[2026-11-06T11:01:55.577Z] probe network-deny: status=200 ok=false code=NETWORK_UNCONFINED_REALM facts=0 confinedRows=0 presetRows=0
+[2026-11-06T11:01:55.577Z] case network-deny-refusal: FAIL {"typedCode":"NETWORK_UNCONFINED_REALM","processes":0,"bodyRan":false,"failedChecks":["refusedAtAdmission"],"artifact":"item6-network-deny-refusal.json"}
+[2026-11-06T11:01:58.713Z] teardown: portClosed=true homeRemoved=true
+[2026-11-06T11:01:58.716Z] RUN-SUMMARY run=a5sf-pty-devlive-2026-11-06T11-01-32-914Z suite=a5sf-pty-devlive overall=FAIL cases=6 FAIL:3 PASS:3 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-06T11:01:58.716Z] ledger: boots=1 planned=1 aborts=0 outcome=1
+[2026-11-06T11:01:58.716Z] OVERALL=FAIL

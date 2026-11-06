@@ -1,0 +1,87 @@
+{
+  "schema": "a5sf-pty-devlive/network-deny-refusal/1",
+  "at": "2026-11-06T11:11:00.936Z",
+  "caseId": "network-deny-refusal",
+  "untabled": true,
+  "untabledReason": "the shared preflight schema grades a network refusal only through the admission-refusal class, which then requires a WEB caller declaration this Shell-PTY case does not have (see driver.untabledCases)",
+  "question": "Where does `network: deny` refuse on the confined shell face?",
+  "observed": {
+    "typedCode": "NETWORK_UNCONFINED_REALM",
+    "processes": 0,
+    "bodyRan": false
+  },
+  "member": {
+    "instanceId": "inst-0vzx5580rczo",
+    "childSessionId": "session-team-child-e523f17a1dc02d55d6e8f51801c75ea0",
+    "templateId": "nether"
+  },
+  "probe": {
+    "label": "network-deny",
+    "request": {
+      "body": "echo A5SF_NET_BODY_RAN",
+      "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside",
+      "reads": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside"
+      ],
+      "writes": null,
+      "chmod": null
+    },
+    "memberSession": "session-team-child-e523f17a1dc02d55d6e8f51801c75ea0",
+    "memberInstanceId": "inst-0vzx5580rczo",
+    "status": 200,
+    "ok": false,
+    "errorMessage": "NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (the confined provider exposes no capability probe, so network enforcement cannot be proven); refusing before any process instead of running a network-capable child under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this spawn",
+    "errorInfo": null,
+    "codes": {
+      "errorInfo": null,
+      "probeRow": "NETWORK_UNCONFINED_REALM",
+      "messagePrefix": "NETWORK_UNCONFINED_REALM",
+      "guardFact": null
+    },
+    "typedCode": "NETWORK_UNCONFINED_REALM",
+    "value": null,
+    "facts": [],
+    "confinedSpawnRows": [],
+    "realmProbeRows": [
+      {
+        "at": "2026-11-06T11:11:00.934Z",
+        "tool": "bash_probe",
+        "mount": "realm",
+        "program": "/bin/bash",
+        "body": "echo A5SF_NET_BODY_RAN",
+        "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside",
+        "reads": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-pty-devlive/tests/homes/u5a5sfptydv-20261106T11-10-23Z/workspace/lane/inside"
+        ],
+        "writes": [],
+        "chmod": [],
+        "stage": "done-rejected",
+        "code": "NETWORK_UNCONFINED_REALM",
+        "name": "ConfinedSubprocessRefusal",
+        "message": "NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the confined provider's capability probe reports network-destination='unsupported' (the confined provider exposes no capability probe, so network enforcement cannot be proven); refusing before any process instead of running a network-capable child under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this spawn"
+      }
+    ],
+    "presetProbeRows": [],
+    "locus": "confined subprocess face (shipped admission + P1-07 OS profile)"
+  },
+  "checks": {
+    "typedRefusal": true,
+    "refusedAtAdmission": true,
+    "theGuardWasNeverConsulted": true,
+    "zeroProcesses": true,
+    "bodyNeverRan": true,
+    "reachedTheConfinedFace": true,
+    "networkDenyLaneOnThisMember": true
+  },
+  "verdict": "PASS",
+  "locus": {
+    "layer": "the shipped confined face (team-services subprocess adapter): `probeNetworkDenial(provider)` answers `network-destination: unsupported`, and the face throws `ConfinedSubprocessRefusal(NETWORK_UNCONFINED_REALM)` BEFORE any process exists",
+    "neverConsulted": "the guard-consult sink: this branch throws directly, so it writes no `a5sf-guard-consult` fact. Recorded so a reader does not read \"zero facts\" as \"no refusal\".",
+    "refusedBeforeTheOs": "the refusal is a statement about our own admission code; no child was forked, so the OS was never asked"
+  },
+  "guardFactsObserved": 0,
+  "limitQuotedVerbatim": "Refusing to spawn is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+  "limitSource": "dev/agent-workflow/evidence/a5sf-subprocess-face/README.md §7",
+  "claimsConfinement": false,
+  "osLevelNetworkIsolationClaimed": false
+}
