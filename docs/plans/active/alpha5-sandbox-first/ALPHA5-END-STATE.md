@@ -108,9 +108,12 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 **小计：8 条 OPEN（全部需 owner 决策），2 条 FIXED（有已合并 PR）。**
 
 > **2026-11-10 更正（只追加）**：上表在 2026-11-08 是 **10 行 / 8 OPEN / 2 FIXED**；现在登记册是
-> **14 行 / 12 OPEN / 2 FIXED**，并且 **governance hole 从 2 条变成 4 条**：PD-12 与 PD-13 是 dev-live
-> 实测出来的新洞（PD-1 已 FIXED，PD-2 仍是潜伏的）。四条新行里 PD-11 的证据在 master，PD-12/PD-13/PD-14
-> 的证据在未合并分支上（登记册 §6 机器校验）。**状态变化不代表任何 grade 或 `V@B` 变化。**
+> **14 行**，按登记册的状态口径是 **11 OPEN / 3 FIXED**，并且 **governance hole 从 2 条变成 4 条**
+> （PD-12 与 PD-13 是 dev-live 实测出来的新洞；PD-2 仍是潜伏的）。**注意本表自身已有一处过期**：
+> 上表 PD-1 行仍写 **OPEN**，而 `PRODUCT-DEBT-REGISTER.md` 的 PD-1 是 **FIXED**（PR **#629**，
+> master 提交 `d7d6a8e00`）——本次**不改**那一格（只追加纪律），只在此点名，请读者以登记册为准。
+> 四条新行里 PD-11 的证据在 master，PD-12/PD-13/PD-14 的证据在未合并分支上（登记册 §6 机器校验）。
+> **状态变化不代表任何 grade 或 `V@B` 变化。**
 `PRODUCT-DEBT-REGISTER.md` 把 PD-7/PD-9 写成 “draft PR #619/#620”；`git log origin/master` 显示两者
 已 squash 合入（提交号见上表）。这是**状态更新，不是内容改写**。
 

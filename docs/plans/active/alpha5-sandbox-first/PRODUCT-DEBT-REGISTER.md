@@ -96,7 +96,8 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 > web locator 或拒绝记录不对称新建行（并入 PD-10 的 2026-11-10 标注）。PD-6 的后果类别句子在
 > deny 车道上被实测推翻，**行文保留、追加标注**，新洞记在 PD-12。四条新行的证据分布见 §6：
 > PD-11 的证据在 master；PD-12/PD-13/PD-14 的证据在两条**未合并**分支上。
-> 因此“行数 14、待裁决 12”这个数字里，有 3 行的证据还不是本树的字节；`V@B` 不因此变动。
+> 因此“行数 14、待裁决 **11**（PD-1/PD-7/PD-9 已 FIXED）”这个数字里，有 3 行的证据还不是本树的字节；
+> `V@B` 不因此变动。
 
 ## 2. The rows
 
