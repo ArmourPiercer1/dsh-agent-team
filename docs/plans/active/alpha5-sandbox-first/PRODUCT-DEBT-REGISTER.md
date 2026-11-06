@@ -31,7 +31,7 @@
 | PD-6 (GAP-SUB-CONTRACT-1) | Subprocess | The shipped transient shell cannot ride the confined face | behavioural divergence | semantics |
 | PD-7 (F4) | Shell-PTY | A stale-but-live shell is reported `active` **(FIXED)** | evidence-quality | correctness |
 | PD-8 (F1) | Shell-PTY | The shutdown receipt cannot tell an exit from a kill | evidence-quality | semantics |
-| PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1's "write" and "read" are a command gate and an audit | evidence-quality | correctness |
+| PD-9 (GAP-PTY-CONTRACT-2) | Shell-PTY | P1's "write" and "read" were a command gate and an audit **(FIXED)** | evidence-quality | correctness |
 | PD-10 (GAP-WEB-CONTRACT-1) | Web | Every real `web_search` fact records a malformed marker | evidence-quality | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
@@ -58,7 +58,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   in `revoke()`'s signature, or record an owner-scoped revocation that does not require a live
   domain (~10–20 lines plus the arm). Changes public API → owner decision.
 - **proof**: `P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY` flips from a finding arm to a refusal
-  assertion (post-revoke `acquire` → `DOMAIN_REVOKED`, 0 port calls); `P1-NO-COMMAND-AFTER-KILL`
+  assertion (post-revoke `acquire` → `DOMAIN_REVOKED`, 0 port calls); `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL`
   and `P5-KILL-ONE-NOT-THE-OTHER` stay green.
 - **acceptance criterion**: [`tests/world-factory/a5sf-pd1-revocation-escape.test.mjs`](../../../../tests/world-factory/a5sf-pd1-revocation-escape.test.mjs)
   is the executable pin (`KNOWN-DEFECT PD-1:` — no live domain at revoke, acquire afterwards,
@@ -239,21 +239,35 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 ### PD-9 (GAP-PTY-CONTRACT-2) — P1's "write" and "read" are a command gate and an audit
 
 - **source**: `GAP-PTY-CONTRACT-2` in [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §4
-- **true today**: the product face has no I/O channel (`PtyHandle` is pid, backend,
-  `descendants()`, `kill()`), so P1's "write" is pinned on `assertCurrent` and its "read" on the
-  port's `descendants()`; nothing about bytes through a PTY (flow control, EOF, `SIGHUP`,
-  scrollback) is representable.
-- **not true**: that the layer-B arms prove the PTY write/read path — they prove the command gate
-  and the port's report. The substitution is disclosed in the README; the arm names are not.
-- **security consequence**: **evidence-quality** — the arm names claim more than the assertion, so
-  a later reader can cite P1 as byte-path evidence it never was.
+- **true today**: **fixed.** Before this fix the P1 contract property was written
+  `create → write → read → kill → reap` and the gate arm was named
+  `P1-NO-COMMAND-AFTER-KILL`, so a reader could take both for a byte channel. The product
+  face still has no I/O channel (`PtyHandle` is pid, backend, `descendants()`, `kill()`):
+  the per-command operation is the **command gate** (`assertCurrent` admits or refuses a
+  *command request* against the current policy revision) and the only "read" is the
+  **descendant audit** (what the recorded handle reports about descendants). Nothing about
+  bytes through a PTY (flow control, EOF, `SIGHUP`, scrollback) is representable.
+- **not true**: that the layer-B arms prove the PTY write/read path — they prove the command
+  gate and the port's report. The README now states this once explicitly, the property label
+  names the gate and the audit, and the gate arm is
+  `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL`.
+- **security consequence**: **evidence-quality** — the arm names claimed more than the
+  assertion, so a later reader could cite P1 as byte-path evidence it never was. No Member
+  capability changes; nothing about enforcement moved.
 - **current backstop**: not applicable — no product path exposes bytes; the pinned service's own
   arms (`P1-HOST-SESSION-LIFECYCLE`, `P2-HOST-*`) cover its channel.
-- **smallest honest fix**: rename the two P1 arms to say what they measure (or add the channel as
-  part of PD-3). Correctness only (test names plus README §3).
-- **proof**: the renamed arms; `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay green.
+- **smallest honest fix**: **landed.** Rename/re-describe only: the P1 gate arm, the P1
+  property label and its prose in the test header and README §3/§4; every assertion is
+  unchanged. A targeted guard in `a5sf-debt-register.test.mjs` fails if a product-registry
+  arm title names WRITE/READ while `PtyHandle` has no such channel, or if the README sentence
+  disappears.
+- **proof**: `P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL` (same assertions as the old
+  `P1-NO-COMMAND-AFTER-KILL`); `P1-ONE-ALLOCATE-PER-SESSION` and `P3-REGISTRY-REAP` stay
+  green; PTY suite 15/15; all `a5sf-*` 410/410 before and 411/411 after (the
+  extra case is this guard).
 - **blocked by**: nothing for the rename; the channel itself is PD-3's build.
-- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]` ; `tests/world-factory/a5sf-pty-contract.test.mjs#L91` contains `P1-ONE-ALLOCATE-PER-SESSION`
+- **anchors**: `packages/runtime/team-sandbox/src/terminal.ts#L51-L57` contains `descendants(): readonly number[]` ; `tests/world-factory/a5sf-pty-contract.test.mjs#L98` contains `P1-ONE-ALLOCATE-PER-SESSION`
+- **status**: FIXED — branch `task/a5sf-pd9-20261108`, fix commit `7182b8f7678123eaeccfbe603533c990d0706586` (draft PR #620, first line `PD-9-FIX`). Correction note: [a5sf-pty-face/README.md](../../../../dev/agent-workflow/evidence/a5sf-pty-face/README.md) §3 (PD-9).
 
 ### PD-10 (GAP-WEB-CONTRACT-1) — every real `web_search` fact records a malformed marker
 

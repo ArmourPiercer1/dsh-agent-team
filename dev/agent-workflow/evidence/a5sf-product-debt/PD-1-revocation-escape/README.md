@@ -100,7 +100,9 @@ loader); the arm needs no pinned-host checkout and no boot.
 
 It does **not** mean a command ran. `PtyHandle` (`terminal.ts:51-57`) carries `pid`, `backend`,
 `descendants()` and `kill()`; there is no write/read channel, so this registry cannot execute a
-command at all (PD-9 in the register is precisely that "write"/"read" are a gate and an audit). The
+command at all (PD-9 in the register is precisely that "write"/"read" are a gate and an audit; PD-9
+was fixed 2026-11-08 and now names them the **command gate** and the **descendant audit** — the
+quoted words are retained here as the vocabulary of the register at the time of this recording). The
 arm's assertion message and the log state this; the README does too.
 
 What the arm does **not** claim: a real OS PTY, a live host session, a model-facing tool reaching the

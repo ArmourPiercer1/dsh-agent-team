@@ -29,7 +29,7 @@
  *   M1  removes the existing-domain lookup used by BOTH the reuse arm and the
  *       replace-on-tighten arm.
  *   M2  removes the "this domain does not exist" refusal, which BOTH the
- *       no-command-after-kill arm and the reap arm read: after revoke the
+ *       command-gate-after-kill arm and the reap arm read: after revoke the
  *       registry DELETES the domain (it does not merely flag it), so "the
  *       terminal is gone" is the one mechanism behind both assertions.
  *   M5 and M5b are the two SITES of one property: the pre-mount site reds the
@@ -59,7 +59,7 @@ const sha256 = (text) => createHash('sha256').update(text).digest('hex')
 /** Arms named by the suite title prefix; a mutation is scored by these only. */
 const ARM_LABELS = [
   'P1-ONE-ALLOCATE-PER-SESSION',
-  'P1-NO-COMMAND-AFTER-KILL',
+  'P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL',
   'P1-REVOKE-WITHOUT-DOMAIN-IS-NOT-STICKY',
   'P1-HOST-SESSION-LIFECYCLE',
   'P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES',
@@ -90,8 +90,8 @@ const SOURCE_MUTATIONS = [
     file: REGISTRY,
     old: "      if (domain === undefined) {\n        return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `domain '${domainId}' does not exist (terminated or never created)` })\n      }",
     new: '      if (domain === undefined) {\n        return Object.freeze({ ok: true as const, revision: domainId })\n      }',
-    expected: ['P1-NO-COMMAND-AFTER-KILL', 'P3-REGISTRY-REAP'],
-    why: 'a command addressed to a KILLED terminal is admitted (the removed domain no longer refuses), so "no write after kill" is violated',
+    expected: ['P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL', 'P3-REGISTRY-REAP'],
+    why: 'a command request addressed to a KILLED terminal is admitted (the removed domain no longer refuses), so "the gate refuses after kill" is violated',
   },
   {
     id: 'M3-kill-error-propagated',
