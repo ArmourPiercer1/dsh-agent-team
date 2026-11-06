@@ -107,6 +107,36 @@ export function overallVerdict(cases) {
  *        REFUSES it when the record class is `DEV-LIVE` — the hard rule of the
  *        2026-11-09 ruling.
  */
+/** A run record is evidence only when it says WHICH TREE and WHICH HOST produced
+ *  it. The strict `EB3-RUN-MANIFEST --new` lane grades an unbound record
+ *  `RUN_SOURCE_UNRESOLVED` + `RUN_SCHEMA`; three separate lanes shipped such
+ *  records (each a DEV-LIVE run whose verdicts were real) before this existed,
+ *  and every one of them was patched by hand afterwards. The writer is the right
+ *  place: a record that cannot be bound never gets written, instead of being
+ *  discovered by a gate two hours later.
+ *
+ *  `teamSha` = the tree under test (a git commit, not a branch name);
+ *  `hostSha` = the pinned test-use HEAD. Both must be full 40-hex.
+ *  `authority` is NOT required here: readers resolve the current pointer, and a
+ *  record that names a stale pointer is still bound to a tree. */
+const SHA40_RE = /^[0-9a-f]{40}$/
+export class UnboundRunRecordError extends Error {
+  constructor(problems) {
+    super(`unbound run record: ${problems.join('; ')} (a record without teamSha/hostSha is not evidence — see EB3-RUN-MANIFEST strict lane)`)
+    this.name = 'UnboundRunRecordError'
+    this.code = 'RUN_RECORD_UNBOUND'
+    this.problems = Object.freeze([...problems])
+  }
+}
+export function assertBoundRecord(record) {
+  const b = record?.bindings ?? {}
+  const problems = []
+  if (!SHA40_RE.test(String(b.teamSha ?? ''))) problems.push(`bindings.teamSha=${JSON.stringify(b.teamSha)} is not a full 40-hex commit id`)
+  if (!SHA40_RE.test(String(b.hostSha ?? ''))) problems.push(`bindings.hostSha=${JSON.stringify(b.hostSha)} is not a full 40-hex commit id`)
+  if (problems.length > 0) throw new UnboundRunRecordError(problems)
+  return record
+}
+
 export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerPath, recordClass = DEFAULT_RECORD_CLASS, candidateClaim = null }) {
   const cases = new Map()
   const record = {
@@ -180,6 +210,8 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
      * one is recorded FAIL (a case that never reported is not a pass).
      */
     finalize() {
+      // Fail closed at the WRITER, not at the gate: see assertBoundRecord().
+      assertBoundRecord(record)
       for (const id of record.selectedCases) {
         if (!cases.has(id)) cases.set(id, { id, verdict: 'FAIL', at: new Date().toISOString(), detail: { reason: 'selected case produced no verdict (fail-closed)' } })
       }
