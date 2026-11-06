@@ -1,0 +1,32 @@
+{
+  "schema": "a5sf-bl17-live2/chmod-gap/1",
+  "item": 3,
+  "question": "On a file inside the effective READ lane but outside the effective WRITE lane, does an UNDECLARED `chmod 600` still change the mode (Landlock has no chmod right, so the declaration is the only layer that could refuse it)?",
+  "verdict": "NOT_REACHED",
+  "reason": "RUN_ABORTED_AT_TEAM_CREATE",
+  "observed": {
+    "modeBefore": null,
+    "modeAfter": null,
+    "chmodCalls": 0,
+    "note": "The fixture file was created and stat-ed by the driver before boot, but the home was deleted by teardown and no chmod call was ever made."
+  },
+  "priorRecordOnThisQuestion": {
+    "path": "dev/agent-workflow/evidence/a5sf-bash/README.md §6.2",
+    "recorded": "Undeclared `chmod` is not mediated by Landlock: Landlock has no 'change mode' right at all, so a same-uid inode the shell can reach can be chmod-ed even if the composition did not declare it. This is why chmod targets are a DECLARATION (consulted on the write lane).",
+    "status": "host-free disclosure, not a live measurement"
+  },
+  "plannedObservable": [
+    "stat mode before the call and after the call",
+    "the mode changes to 0600 although the composition declared no chmod target",
+    "the call itself is admitted (it declares a read inside the read lane), so the refusal cannot come from admission"
+  ],
+  "whatWouldProveIt": [
+    "modeBefore != modeAfter and modeAfter == 0o600, with the call's own exit code and stdout recorded",
+    "a declared-chmod negative control on a second file (`chmod` target outside the write lane) showing `IO_WRITE_DENIED`, 0 spawns, mode AND bytes unchanged — so the gap is shown to be the absence of a chmod right, not a broken declaration path",
+    "the result recorded whether or not it matches the a5sf-bash §6.2 prediction; a NOT-REPRODUCED would be as reportable as a GAP-REPRODUCED"
+  ],
+  "honestLimits": [
+    "No measurement was taken on this tree. The §6.2 record above remains the only statement, and it is host-free.",
+    "A future reproduction would prove a same-UID mode change outside the declared write lane; it would NOT prove that a confined face can read the file, and it would not change any matrix grade by itself."
+  ]
+}

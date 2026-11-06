@@ -1,0 +1,30 @@
+{
+  "schema": "a5sf-bl17-live2/write-only-read/1",
+  "item": 2,
+  "question": "On a Member whose effective WRITE lane contains a root but whose effective READ lane does not, is a live `bash_probe` call that DECLARES that root as a read refused on the READ axis, with zero provider calls and no secret bytes?",
+  "verdict": "NOT_REACHED",
+  "reason": "RUN_ABORTED_AT_TEAM_CREATE",
+  "observed": {
+    "guardFacts": 0,
+    "providerCalls": 0,
+    "confinedSpawnAttempts": 0,
+    "secretBytesReturned": false,
+    "evidenceFilesAbsent": ["consultations.jsonl", "confined-counter.jsonl", "bash-probe-ledger.jsonl"],
+    "note": "The files are absent because the driver copies them only if the World home produced them; the World never installed a realm, so no guard fact, no provider counter row and no probe ledger row exists. Absence here is NOT a refusal."
+  },
+  "plannedObservable": [
+    "exactly one `a5sf-guard-consult/1` fact for the secret path with decision=deny and decidedBy=IO_READ_DENIED",
+    "no `confined-spawn-attempt` counter row",
+    "the secret claim token absent from the tool result and from the error body",
+    "supplementary (not preflighted): the same body with NO declared read is admitted, exits non-zero at the kernel, and returns no bytes"
+  ],
+  "whatWouldProveIt": [
+    "the guard fact must name the READ axis (`IO_READ_DENIED`), not the write axis, and the tool result must contain zero bytes of the secret",
+    "the counter must show 0 provider calls: a read-axis admission refusal is a statement about our own admission code, made before the OS was asked, and the fact must say so",
+    "the supplementary kernel call must show the OS layer separately (admitted, child exit != 0, no bytes), so 'the tool said no' and 'the kernel said no' are not conflated"
+  ],
+  "honestLimits": [
+    "No Member, no realm, no tool call: this run measured nothing about the read axis.",
+    "`team.create` was refused by the A2C-2 permission coverage gate before any agent session existed; zero model requests were made (final-mock-requests.json = [])."
+  ]
+}
