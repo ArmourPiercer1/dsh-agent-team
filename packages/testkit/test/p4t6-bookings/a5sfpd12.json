@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD12",
+  "paths": [
+    "packages/runtime/src/plugin/live/confined-bash-tool.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1434,
+    "to": 1435
+  },
+  "reason": "a5sf-pd12-fix: the confined `bash` native module (route C shadow, PD-12). One new scannable production\nfile (.mjs, under packages/runtime/src/plugin/live, same home as the other confined rows); it carries no\ndenylist vocabulary. The two test files this lane adds (a5sf-pd12-bash-governance.test.mjs,\na5sf-run-record-binding.test.mjs) are NOT in the scan population - measured, not assumed: the scanner's own\n`files` array contains the .mjs and neither test path, because packages/testkit/fault-injection scans\npackages/** production source plus the enumerated test roots it knows, not every packages/*/test path.",
+  "tieNote": "Re-anchored by MEASURING on this tree rather than copying a chain value: the scanner run reports\n1435 files scanned and the ledger derived 983 + 451 = 1434 with this path unbooked, i.e. exactly one new\nscannable file on disk and no other movement. Booking it by name ends the chain at the measured total.",
+  "pathNotes": {
+    "packages/runtime/src/plugin/live/confined-bash-tool.mjs": "PD-12 confined bash shadow (model-visible `bash` served by the confined subprocess face)"
+  }
+}

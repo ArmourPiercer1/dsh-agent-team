@@ -258,3 +258,15 @@ master `3313bdf08`、`hostSha` = pin `639ed0153972…`、`authority` = `as202611
 
 两处都是**仪器/格式缺陷，不是测量缺陷**：P0 翻转、MA/MB 变异控制、boot02/boot03 的 4/4 一字未改，
 `a5sf-pd12-bash-governance` 7/7、`a5sf-sub-contract` 15/15、`pnpm -r typecheck` rc 0。
+
+## 2026-11-10 — census 记账（新文件进入被扫描总体）
+
+PD-12 新增 1 个**被 census 扫描的**生产文件 `packages/runtime/src/plugin/live/confined-bash-tool.mjs`，因此
+`p4t6` 的总体台账必须记一笔，否则 `census` 腿红（`scanner counts 1435, ledger derives 983 + 451 = 1434`）。
+新增 booking `packages/testkit/test/p4t6-bookings/a5sfpd12.json`：单路径、`from 1434 → to 1435`。
+
+数字是**在本树实测**的，不是抄链上值：scanner 报 1435，台账未 booking 时推导 1434，差值恰好是这一个文件。
+同时实测确认本 lane 的两个测试文件**不在**扫描总体内（scanner 的 `files` 数组里没有它们），所以不虚报为 3 个。
+
+这是台账的正常维护动作（"新 lane 加一个 booking 文件，不改别处"），不是为了让门禁变绿而放宽：`p4t6` 的定律仍然精确
+（`scanner total === 983 + Σ`），只是总体变大了 1。
