@@ -3,14 +3,20 @@
  * Alpha.5 product-debt register.
  *
  * The register (docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md)
- * is a decision document: it claims that ten specific product findings are still
- * open, and it points at the evidence line and the source line that establish
- * each one. That kind of file rots silently — a fix lands, a finding id is
- * deleted, a refactor moves the line, and the register keeps asserting the old
+ * is a decision document: it claims that a specific list of product findings is
+ * still open, and it points at the evidence line and the source line that
+ * establish each one. That kind of file rots silently — a fix lands, a finding id
+ * is deleted, a refactor moves the line, and the register keeps asserting the old
  * world. This test is the cheap tripwire, not a behaviour test:
  *
  *   (a) every finding id in a row's heading is still present in the evidence
- *       file that originated it;
+ *       file that originated it. The id is compared after normalising case and
+ *       punctuation, because evidence files write the same finding as prose
+ *       ("no read axis") and as a register id ("READ-AXIS"). A row whose
+ *       evidence is NOT yet on master must instead be declared in the
+ *       register's §6 table with the same id, path, branch and PR; the moment
+ *       that path appears in the tree the declaration reds, so a row cannot
+ *       keep pointing at a branch after the branch landed;
  *   (b) every anchor `path#Lstart-Lend` still resolves and still contains the
  *       substring the row claims (a coarse existence check, not semantics);
  *   (c) ids are unique and contiguous `PD-1…PD-n` in document order, and the
@@ -19,8 +25,9 @@
  *       of the closed set.
  *
  * It reads one markdown file plus a handful of repository sources: no host, no
- * port, no DSH_HOME, no child process, no clock. Anchors are tracked files only;
- * the gitignored pinned host tree is cited in prose and never asserted here.
+ * port, no DSH_HOME, no child process, no git, no clock. Anchors are tracked
+ * files only; the gitignored pinned host tree is cited in prose and never
+ * asserted here.
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -82,6 +89,31 @@ function parseSummary(doc) {
 const rows = parseRows(text)
 const summary = parseSummary(text)
 
+/**
+ * §6 — rows whose evidence is not yet on master.
+ *
+ * `| PD-12 | Q5 | \`task/branch\` | #635 | \`dev/…/README.md\` | §Q5 |`
+ *
+ * Deliberately its own table shape: the id cell carries no parenthesised finding
+ * id, so `parseSummary` cannot mistake these rows for register rows.
+ */
+function parseUnmerged(doc) {
+  const out = []
+  for (const line of doc.split('\n')) {
+    const m = /^\|\s*(PD-\d+)\s*\|\s*([A-Za-z][A-Za-z0-9_.:-]*)\s*\|\s*`([^`]+)`\s*\|\s*(#\d+)\s*\|\s*`([^`]+\.md)`\s*\|\s*([^|]+?)\s*\|$/.exec(line)
+    if (m) out.push({ id: m[1], sourceId: m[2], branch: m[3].trim(), pr: m[4], path: m[5].trim(), section: m[6].trim() })
+  }
+  return out
+}
+
+/** Compare a finding id to evidence prose: case and punctuation are presentation. */
+function idKey(value) {
+  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+const unmerged = parseUnmerged(text)
+const unmergedById = new Map(unmerged.map((u) => [u.id, u]))
+
 test('the register parses into rows and a summary table', () => {
   assert.ok(rows.length >= 5, `expected the register to define rows, parsed ${rows.length}`)
   assert.equal(summary.length, rows.length, 'the summary table and the detail blocks must have the same number of rows')
@@ -133,11 +165,51 @@ test('(a) every finding id is still present in the evidence file that originated
     const token = /((?:\.\.\/)+dev\/agent-workflow\/evidence\/[^\s`)\]]+\.md|dev\/agent-workflow\/evidence\/[^\s`)\]]+\.md)/.exec(src[1])
     assert.ok(token, `${row.id}: source must name a dev/agent-workflow/evidence/**.md file`)
     const relPath = token[1].startsWith('..') ? resolve(ROOT, dirname(REGISTER_REL), token[1]) : join(ROOT, token[1])
-    assert.ok(existsSync(relPath), `${row.id}: source file ${token[1]} does not exist`)
+    const repoRelative = token[1].replace(/^(?:\.\.\/)+/, '')
+
+    if (!existsSync(relPath)) {
+      // Not on this tree: the row must declare where the evidence actually is.
+      const decl = unmergedById.get(row.id)
+      assert.ok(
+        decl,
+        `${row.id}: source file ${repoRelative} does not exist and the row is not declared in §6 — either the evidence moved or the row points at nothing`,
+      )
+      assert.equal(decl.path, repoRelative, `${row.id}: §6 declares ${decl.path}, the row cites ${repoRelative}`)
+      assert.equal(decl.sourceId, row.sourceId, `${row.id}: §6 declares finding "${decl.sourceId}", the row says "${row.sourceId}"`)
+      assert.match(decl.branch, /^task\/[a-z0-9-]+$/, `${row.id}: §6 branch "${decl.branch}" is not a task branch`)
+      assert.match(decl.pr, /^#\d+$/, `${row.id}: §6 PR "${decl.pr}" is not a PR number`)
+      assert.ok(decl.section.length > 0, `${row.id}: §6 must name the section a reviewer should read`)
+      assert.ok(
+        row.body.includes(decl.branch),
+        `${row.id}: the row itself must name its unmerged evidence branch (${decl.branch}) so a reader cannot miss it`,
+      )
+      continue
+    }
+
+    // The path is on this tree. A §6 declaration that outlived it is stale.
+    assert.ok(
+      !unmergedById.has(row.id),
+      `${row.id}: §6 still declares ${repoRelative} as unmerged, but the file is on this tree — delete the declaration`,
+    )
+
     const evidence = readFileSync(relPath, 'utf8')
     assert.ok(
-      evidence.includes(row.sourceId),
+      idKey(evidence).includes(idKey(row.sourceId)),
       `${row.id}: finding "${row.sourceId}" is no longer mentioned in ${token[1]} — a fix landed without updating the register`,
+    )
+  }
+})
+
+test('§6 declarations map one-to-one onto live register rows', () => {
+  const ids = new Set(rows.map((r) => r.id))
+  assert.equal(new Set(unmerged.map((u) => u.id)).size, unmerged.length, '§6 declares the same row twice')
+  for (const decl of unmerged) {
+    const row = rows.find((r) => r.id === decl.id)
+    assert.ok(row, `§6 declares ${decl.id}, which is not a register row`)
+    assert.equal(row.sourceId, decl.sourceId, `§6 says ${decl.id} carries finding "${decl.sourceId}", the row says "${row.sourceId}"`)
+    assert.ok(
+      /^[A-Za-z0-9][A-Za-z0-9_.:/-]*$/.test(decl.branch),
+      `${decl.id}: §6 branch "${decl.branch}" is not a plain branch name`,
     )
   }
 })
