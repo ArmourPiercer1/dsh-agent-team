@@ -257,3 +257,18 @@ human entry so the Plane PA leg exists; this is a crash-window probe, not an
 approval-path claim.
 
 The gate at `28b61d4b2` is 9/9 independently of this review.
+
+
+## Constraint 2 interpretation after the closing proof
+
+"Invalidated invocation" is treated as a call whose PA allow was already
+decided (and possibly consumed) and whose process died: those rows are
+abandoned and are not actionable. An **undecided** PA row is a review task, not
+an executable invocation — after a restart its Member guard/wait is gone, so an
+allow recorded for it still cannot execute the dead call. Such rows remain in
+the audit ledger and remain visible as pending review work (needed for the
+Inbox replacement-wake liveness path). This is the precise remaining P2: the
+row is still surfaced by pending reads, but it cannot be turned into an
+execution by the dead invocation. If the product wants zero pending actionability
+after any crash, that requires a separate ruling because it conflicts with the
+required replacement-wake liveness proof.
