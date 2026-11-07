@@ -1,0 +1,310 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_SRF_DISC\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon fs session\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_SRF_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **v",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_SRF_DISC_DONE\"}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:dcd1d934ec8b7f00d8346734741c0a6da7afda7d7687ad2626d31bf6f56bdf32] A5SF_SRF_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5srf-team\",\"requestToken\":\"a5srf-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5srf-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace\",\"prompt\":\"a5srf-turn: run the thirteen"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:dcd1d934ec8b7f00d8346734741c0a6da7afda7d7687ad2626d31bf6f56bdf32] A5SF_SRF_L1_DRIVE\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon fs session\"}"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5srf-turn-delegate] a5srf-turn: run the thirteen filesystem probes in the FIXED order you were given, exactly once each, one tool call at a time, then report. Probe A (control) reads and probes B..M follow. Do not skip a probe and do not repeat one.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from:",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-bash-allow\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/bash-allow.txt'; sleep 0.3\",\"description\":\"Read the in-lane control fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u"
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5srf-turn-delegate] a5srf-turn: run the thirteen filesystem probes in the FIXED order you were given, exactly once each, one tool call at a time, then report. Probe A (control) reads and probes B..M follow. Do not skip a probe and do not repeat one.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon fs session\"}"
+    },
+    {
+      "seq": 6,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-bash-allow\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RECON_FS_BASH_ALLOW_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_RECON_FS_BASH_ALLOW_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-bash-deny\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/bash-deny.txt'; sleep 0.3\",\"description\":\"Read the out-of-lane control fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/test"
+    },
+    {
+      "seq": 7,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-bash-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/bash-deny.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-read-allow\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt\"}}]}"
+    },
+    {
+      "seq": 8,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-read-allow\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_RECON_FS_READ_ALLOW_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-read-deny\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt\"}}]}"
+    },
+    {
+      "seq": 9,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-read-deny\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_RECON_FS_READ_DENY_SECRET_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-write-allow\",\"name\":\"write\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt\",\"content\":\"A5SF_RECON_FS_WRITE_ALLOW_BYTES\\n\"}}]}"
+    },
+    {
+      "seq": 10,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-write-allow\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-write-deny\",\"name\":\"write\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt\",\"content\":\"A5SF_RECON_FS_WRITE_DENY_BYTES\\n\"}}]}"
+    },
+    {
+      "seq": 11,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-write-deny\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-write-host-fence\",\"name\":\"write\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/host-fence/write-host-fence.txt\",\"content\":\"A5SF_RECON_FS_HOST_FENCE_BYTES\\n\"}}]}"
+    },
+    {
+      "seq": 12,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-write-host-fence\",\"content\":[{\"type\":\"text\",\"text\":\"Error: [sandbox: file access denied under workspace-write mode]\\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-edit-allow-preread\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt\"}}]}"
+    },
+    {
+      "seq": 13,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-edit-allow-preread\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_RECON_FS_EDIT_ALLOW_ORIGINAL\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-edit-allow\",\"name\":\"edit\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt\",\"old_string\":\"A5SF_RECON_FS_EDIT_ALLOW_ORIGINAL\\n\",\"new_string\":\"A5SF_RECON_FS_EDIT_ALLOW_EDITED\\n\"}}]}"
+    },
+    {
+      "seq": 14,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-edit-allow\",\"content\":[{\"type\":\"text\",\"text\":\"The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt has been updated successfully.\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-edit-deny-preread\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt\"}}]}"
+    },
+    {
+      "seq": 15,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-edit-deny-preread\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_RECON_FS_EDIT_DENY_ORIGINAL\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-edit-deny\",\"name\":\"edit\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt\",\"old_string\":\"A5SF_RECON_FS_EDIT_DENY_ORIGINAL\\n\",\"new_string\":\"A5SF_RECON_FS_EDIT_DENY_EDITED\\n\"}}]}"
+    },
+    {
+      "seq": 16,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-edit-deny\",\"content\":[{\"type\":\"text\",\"text\":\"The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt has been updated successfully.\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-read-image-allow\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png\"}}]}"
+    },
+    {
+      "seq": 17,
+      "lastUser": "",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "null"
+    },
+    {
+      "seq": 18,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-read-image-allow\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 1x1 px, 70 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"Image \\\"probe-allow.png\\\" (sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77); request preview 1x1px. Normalized copy (read-only; may be resized or re-encoded): \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-read-image-deny\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png\"}}]}"
+    },
+    {
+      "seq": 19,
+      "lastUser": "",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "null"
+    },
+    {
+      "seq": 20,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-read-image-deny\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 1x1 px, 70 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"Image \\\"probe-deny.png\\\" (sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77); request preview 1x1px. Normalized copy (read-only; may be resized or re-encoded): \\\"/home/armourpiercer/projects/dsh-agent-team/.worktr",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5srf-read-host-reach\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/etc/hostname\"}}]}"
+    },
+    {
+      "seq": 21,
+      "lastUser": "",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "null"
+    },
+    {
+      "seq": 22,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-read-host-reach\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/etc/hostname</path>\\n<type>file</type>\\n<content>\\n1: DESKTOP-D\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_SRF_MEMBER_DONE <path>/etc/hostname</path>\\n<type>file</type>\\n<content>\\n1: DESKTOP-D\\n\\n(End of file - total 1 lines)\\n</content>\"}"
+    },
+    {
+      "seq": 23,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5srf-delegate\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5srf-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1kdc3xx12yhw\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-04cfa33fab776112327d75ba70f8423b\\\",\\\"operationId\\\":\\\"op-1ap001j0of9dma1vek1lx0tc\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5srf-tur",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_SRF_L1_DONE\"}"
+    }
+  ],
+  "delegateCall": {
+    "id": "call-a5srf-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5srf-team",
+      "requestToken": "a5srf-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5srf-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace",
+      "prompt": "a5srf-turn: run the thirteen filesystem probes in the FIXED order you were given, exactly once each, one tool call at a time, then report. Probe A (control) reads and probes B..M follow. Do not skip a probe and do not repeat one.",
+      "async": false
+    }
+  },
+  "delegateResult": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5srf-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1kdc3xx12yhw\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-04cfa33fab776112327d75ba70f8423b\",\"operationId\":\"op-1ap001j0of9dma1vek1lx0tc\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5srf-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_SRF_MEMBER_DONE <path>/etc/hostname</path>\\n<type>file</type>\\n<content>\\n1: DESKTOP-D\\n\\n(End of file - total 1 lines)\\n</content>\"}},\"requestToken\":\"a5srf-turn-delegate\"}",
+    "images": []
+  },
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3187/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\na5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface\n",
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1kdc3xx12yhw",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/bash-allow.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:17:14.239Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1kdc3xx12yhw",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:17:14.245Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1kdc3xx12yhw",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:17:14.247Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1kdc3xx12yhw",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/bash-deny.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:17:17.841Z"
+    }
+  ],
+  "sessions": [
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-a5srf-boot/session.lock",
+      "bytes": 0,
+      "id": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-a5srf-boot/session.v4.jsonl.zstd",
+      "bytes": 25938,
+      "id": "session-a5srf-boot"
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-a5srf-team/session.lock",
+      "bytes": 0,
+      "id": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-a5srf-team/session.v4.jsonl.zstd",
+      "bytes": 27780,
+      "id": "session-a5srf-team"
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-team-child-04cfa33fab776112327d75ba70f8423b/session.lock",
+      "bytes": 0,
+      "id": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-a-fs-tests-homes-u5a5sffsrecon1-20261107T16-16-32Z-workspace--/session-team-child-04cfa33fab776112327d75ba70f8423b/session.v4.jsonl.zstd",
+      "bytes": 43061,
+      "id": "session-team-child-04cfa33fab776112327d75ba70f8423b"
+    }
+  ],
+  "counters": {
+    "confinedTurnLaunchers": 1,
+    "preflightLaunchers": 4,
+    "payloadInLaneSightings": 1,
+    "procSecretCommandSightings": 0,
+    "nativeFsPayloadSightings": 0,
+    "baseBwrapWithMarkers": 0,
+    "guardFacts": {
+      "total": 4,
+      "allow": 3,
+      "deny": 1,
+      "byMethod": {
+        "shellRead": 2,
+        "spawn": 1,
+        "spawn:write": 1
+      }
+    },
+    "mockRequests": 24,
+    "memberModelRequests": 15,
+    "procBatches": 87,
+    "otherBwrapPids": 1,
+    "memberWindow": {
+      "from": "2026-11-07T16:17:13.790Z",
+      "to": "2026-11-07T16:17:18.647Z"
+    },
+    "policyRevisions": [
+      "a5sf1:2e7933642913ac441a25c7831fc517ec"
+    ],
+    "memberIdentitiesInFacts": [
+      "inst-1kdc3xx12yhw"
+    ]
+  }
+}

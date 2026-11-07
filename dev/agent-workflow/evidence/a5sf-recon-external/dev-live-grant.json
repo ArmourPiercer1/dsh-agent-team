@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-external-recon-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner task 2026-11-13, relayed to this recon lane by the parent agent (session-76eeddd5-4e2e-472f-a3ba-750a70c8a374): E-face External/non-data-plane reachability recon, repeated self-authorised development starts, machine-wide cap 6 (own lane cap 2 unchanged)",
+  "face": "External execution",
+  "world": "u5a5sfext1",
+  "note": "DEV-LIVE reachability recon of the governed Member's External/non-data-plane tool surface (presence + dispatch attribution). Development evidence only: this class can never produce V@B=yes and no candidate claim is made."
+}

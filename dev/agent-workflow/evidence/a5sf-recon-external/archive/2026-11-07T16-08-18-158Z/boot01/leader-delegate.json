@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sfre-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-lm-team",
+      "requestToken": "a5sf-re-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sfre-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/tests/homes/u5u5a5sfext1-20261107T16-06-04Z/workspace",
+      "prompt": "a5sf-re-turn: run the two read probes exactly once each, then call job_list once, skill with the name 'a5sf-recon-nonexistent' once, and workflow with a constant-returning script once, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-lm-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1mmotar0aymr\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-9b8137221e8ebe8f8863aca5aee0fbaa\",\"operationId\":\"op-0xmmife13n30kf1236fus17m\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-re-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RE_MEMBER_DONE workflow \\\"a5sf-recon-e-face-probe\\\" completed (0 agents).\\nReturn value:\\n42\"}},\"requestToken\":\"a5sf-re-turn-delegate\"}"
+  }
+}

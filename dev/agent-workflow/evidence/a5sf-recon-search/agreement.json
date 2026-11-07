@@ -1,0 +1,30 @@
+{
+  "schema": "a5sf-live-member/agreement/1",
+  "at": "2026-11-07T16:16:02.527Z",
+  "boots": 1,
+  "agreeing": false,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "FAIL",
+      "admittedVerdict": "REFUTED",
+      "deniedVerdict": "REFUTED",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "REFUTED",
+      "spawnsVerdict": "REFUTED",
+      "allowFacts": 0,
+      "denyFacts": 0,
+      "confinedTurnLaunchers": 0,
+      "preflightLaunchers": 0,
+      "payloadInLane": 0,
+      "procSecretCommandSightings": 0,
+      "baseBwrapWithMarkers": 0,
+      "governedSurface": true,
+      "admittedBytes": false,
+      "deniedSecretAbsent": false,
+      "transcriptSourceCount": 10
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1\noverall                       FAIL\nadmittedVerdict               REFUTED\ndeniedVerdict                 REFUTED\nsurfaceVerdict                PROVEN\nfactsVerdict                  REFUTED\nspawnsVerdict                 REFUTED\nallowFacts                    0\ndenyFacts                     0\nconfinedTurnLaunchers         0\npayloadInLane                 0\nprocSecretCommandSightings    0\nbaseBwrapWithMarkers          0\ngovernedSurface               true\nadmittedBytes                 false\ndeniedSecretAbsent            false\ntranscriptSourceCount         10\n\nagreeing=false differing=[]"
+}

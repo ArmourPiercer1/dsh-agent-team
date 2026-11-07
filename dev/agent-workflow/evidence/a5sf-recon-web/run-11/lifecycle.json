@@ -1,0 +1,40 @@
+{
+  "schema": "a5sf-recon-web/lifecycle/1",
+  "at": "2026-11-07T16:29:52.218Z",
+  "question": "After the governed Member is ARCHIVED, is the model path still reachable (and did the endpoint see anything)?",
+  "member": {
+    "instanceId": "inst-1msngdn0q2ln"
+  },
+  "archive": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "archive-member",
+        "rootSessionId": "session-a5sf-recon-web-team",
+        "callerRole": "leader",
+        "targetInstanceId": "inst-1msngdn0q2ln",
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-1msngdn0q2ln",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 13
+        },
+        "requestToken": "recon-web-lifecycle-archive"
+      }
+    }
+  },
+  "archivedLifecycle": "ARCHIVED",
+  "followUp": {
+    "status": 200,
+    "body": "{\"ok\":true,\"value\":{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"recon-web-lifecycle-followup\",\"reason\":\"target-stale\"}}",
+    "refused": true,
+    "productReason": "target-stale"
+  },
+  "endpointRequestsAfterArchive": 0,
+  "endpointTotalAtLifecycle": 2,
+  "note": "the ENDPOINT observation covers the model-facing lifecycle path: the follow-up attempt is refused by the PRODUCT (target-stale) and the endpoint saw nothing. Whether a RETAINED in-process face reference would still fetch after its realm is gone is a DIFFERENT question and is NOT measured here or host-free; this round does not claim it either way.",
+  "osLevelNetworkIsolationClaimed": false
+}

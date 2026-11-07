@@ -1,0 +1,459 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-fs-2026-11-07T16-19-29-900Z-b1",
+  "suite": "a5sf-recon-fs",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:19:29.901Z",
+  "selectedCases": [
+    "fs:surface",
+    "fs:read-allowed",
+    "fs:read-ceiling-denied",
+    "fs:write-allowed",
+    "fs:write-ceiling-denied",
+    "fs:edit-allowed",
+    "fs:edit-ceiling-denied",
+    "fs:read-image-allowed",
+    "fs:read-image-ceiling-denied",
+    "fs:provider-attribution",
+    "fs:guard-facts",
+    "fs:bash-control",
+    "fs:lifecycle-post-archive"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-recon-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "a5sffsrecon1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE recon: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5a5sffsrecon1-20261107T16-19-29Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "fs:surface",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the four native fs tools are on the governed Member's model-visible surface with the preset's own schemas",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "all-present",
+          "ok": true,
+          "detail": "missing=[]"
+        },
+        {
+          "id": "schemas",
+          "ok": true,
+          "detail": "wrong-schema=[]"
+        },
+        {
+          "id": "read_image-present",
+          "ok": true,
+          "detail": "read_image is registered (which also says `attachments` resolved on the preset scope)"
+        }
+      ]
+    },
+    {
+      "id": "fs:read-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the read ALLOW-axis call succeeds and returns its effect",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "outcome",
+          "ok": true,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "verdict",
+          "ok": true,
+          "detail": "allow verdict=PASS"
+        },
+        {
+          "id": "result-bytes",
+          "ok": true,
+          "detail": "result bytes=258 sha256=1c5769a3cba9d0ec…"
+        }
+      ]
+    },
+    {
+      "id": "fs:read-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the read DENY-axis call is refused AT THE MEMBER CEILING (guard deny fact + typed code + zero bytes)",
+      "failed": [
+        "verdict: deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "outcome-is-refusal: outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "zero-secret-bytes: the deny fixture's marker is absent from the result=false",
+        "effect-absent: on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/read-deny.txt\",\"exists\":true,\"bytes\":37,\"sha256\":\"b5dc20701b92e75c7b2bced357af91726849081e70d68d9a08b306d8036bedd6\",\"content\":\"A5SF_RECON_FS_READ_DENY_SECRET_BYTES\\n\",\"markerPresent\":true}"
+      ],
+      "clauses": [
+        {
+          "id": "verdict",
+          "ok": false,
+          "detail": "deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "outcome-is-refusal",
+          "ok": false,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": false,
+          "detail": "the deny fixture's marker is absent from the result=false"
+        },
+        {
+          "id": "effect-absent",
+          "ok": false,
+          "detail": "on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/read-deny.txt\",\"exists\":true,\"bytes\":37,\"sha256\":\"b5dc20701b92e75c7b2bced357af91726849081e70d68d9a08b306d8036bedd6\",\"content\":\"A5SF_RECON_FS_READ_DENY_SECRET_BYTES\\n\",\"markerPresent\":true}"
+        }
+      ]
+    },
+    {
+      "id": "fs:write-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the write ALLOW-axis call succeeds and returns its effect",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "outcome",
+          "ok": true,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "verdict",
+          "ok": true,
+          "detail": "allow verdict=PASS"
+        },
+        {
+          "id": "result-bytes",
+          "ok": true,
+          "detail": "result bytes=207 sha256=f9bb60f851154ee6…"
+        }
+      ]
+    },
+    {
+      "id": "fs:write-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the write DENY-axis call is refused AT THE MEMBER CEILING (guard deny fact + typed code + zero bytes)",
+      "failed": [
+        "verdict: deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "outcome-is-refusal: outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "effect-absent: on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/write-deny.txt\",\"exists\":true,\"bytes\":31,\"sha256\":\"fd03ffe428408edf97ce65bd20841e5e3609eebc7a23fbc3a2926a4d6bf82921\",\"content\":\"A5SF_RECON_FS_WRITE_DENY_BYTES\\n\",\"markerPresent\":true}"
+      ],
+      "clauses": [
+        {
+          "id": "verdict",
+          "ok": false,
+          "detail": "deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "outcome-is-refusal",
+          "ok": false,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "the deny fixture's marker is absent from the result=true"
+        },
+        {
+          "id": "effect-absent",
+          "ok": false,
+          "detail": "on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/write-deny.txt\",\"exists\":true,\"bytes\":31,\"sha256\":\"fd03ffe428408edf97ce65bd20841e5e3609eebc7a23fbc3a2926a4d6bf82921\",\"content\":\"A5SF_RECON_FS_WRITE_DENY_BYTES\\n\",\"markerPresent\":true}"
+        }
+      ]
+    },
+    {
+      "id": "fs:edit-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the edit ALLOW-axis call succeeds and returns its effect",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "outcome",
+          "ok": true,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "verdict",
+          "ok": true,
+          "detail": "allow verdict=PASS"
+        },
+        {
+          "id": "result-bytes",
+          "ok": true,
+          "detail": "result bytes=181 sha256=0af60a746452f2e9…"
+        }
+      ]
+    },
+    {
+      "id": "fs:edit-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the edit DENY-axis call is refused AT THE MEMBER CEILING (guard deny fact + typed code + zero bytes)",
+      "failed": [
+        "verdict: deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "outcome-is-refusal: outcomeClass=COMPLETED_NO_GUARD_FACT",
+        "effect-absent: on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/edit-deny.txt\",\"exists\":true,\"bytes\":31,\"sha256\":\"feffcd31072368a4d8d8528b1dec01f9a4d2b84fe35306bcb9b49d79e53592a8\",\"content\":\"A5SF_RECON_FS_EDIT_DENY_EDITED\\n\",\"markerPresent\":true}"
+      ],
+      "clauses": [
+        {
+          "id": "verdict",
+          "ok": false,
+          "detail": "deny verdict=FAIL outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "outcome-is-refusal",
+          "ok": false,
+          "detail": "outcomeClass=COMPLETED_NO_GUARD_FACT"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "the deny fixture's marker is absent from the result=true"
+        },
+        {
+          "id": "effect-absent",
+          "ok": false,
+          "detail": "on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/edit-deny.txt\",\"exists\":true,\"bytes\":31,\"sha256\":\"feffcd31072368a4d8d8528b1dec01f9a4d2b84fe35306bcb9b49d79e53592a8\",\"content\":\"A5SF_RECON_FS_EDIT_DENY_EDITED\\n\",\"markerPresent\":true}"
+        }
+      ]
+    },
+    {
+      "id": "fs:read-image-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.240Z",
+      "proposition": "the read_image ALLOW-axis call succeeds and returns its effect",
+      "failed": [
+        "outcome: outcomeClass=NOT_REACHED_ROUTE_GATE",
+        "verdict: allow verdict=FAIL"
+      ],
+      "clauses": [
+        {
+          "id": "outcome",
+          "ok": false,
+          "detail": "outcomeClass=NOT_REACHED_ROUTE_GATE"
+        },
+        {
+          "id": "verdict",
+          "ok": false,
+          "detail": "allow verdict=FAIL"
+        },
+        {
+          "id": "result-bytes",
+          "ok": true,
+          "detail": "result bytes=280 sha256=4517604dee7865b5…"
+        }
+      ]
+    },
+    {
+      "id": "fs:read-image-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.241Z",
+      "proposition": "the read_image DENY-axis call is refused AT THE MEMBER CEILING (guard deny fact + typed code + zero bytes)",
+      "failed": [
+        "verdict: deny verdict=FAIL outcomeClass=NOT_REACHED_ROUTE_GATE",
+        "outcome-is-refusal: outcomeClass=NOT_REACHED_ROUTE_GATE"
+      ],
+      "clauses": [
+        {
+          "id": "verdict",
+          "ok": false,
+          "detail": "deny verdict=FAIL outcomeClass=NOT_REACHED_ROUTE_GATE"
+        },
+        {
+          "id": "outcome-is-refusal",
+          "ok": false,
+          "detail": "outcomeClass=NOT_REACHED_ROUTE_GATE"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "the deny fixture's marker is absent from the result=true"
+        },
+        {
+          "id": "effect-absent",
+          "ok": true,
+          "detail": "on-disk effect={\"locator\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/probe-deny.png\",\"exists\":true,\"bytes\":70,\"sha256\":\"c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77\",\"content\":\"�PNG\\r\\n\\u001a\\n\\u0000\\u0000\\u0000\\rIHDR\\u0000\\u0000\\u0000\\u0001\\u0000\\u0000\\u0000\\u0001\\b\\u0006\\u0000\\u0000\\u0000\\u001f\\u0015ĉ\\u0000\\u0000\\u0000\\rIDATx�c���P\\u000f\\u0000\\u0004�\\u0001����!\\u0000\\u0000\\u0000\\u0000IEND�B`�\",\"markerPresent\":false}"
+        }
+      ]
+    },
+    {
+      "id": "fs:provider-attribution",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.241Z",
+      "proposition": "every native fs call was decided by the Member's confined fs Provider",
+      "failed": [
+        "native-facts-present: native fs guard facts=0 for 12 calls; face=host ctx.fs (no a5sf guard consult)"
+      ],
+      "clauses": [
+        {
+          "id": "native-facts-present",
+          "ok": false,
+          "detail": "native fs guard facts=0 for 12 calls; face=host ctx.fs (no a5sf guard consult)"
+        },
+        {
+          "id": "bash-facts-present",
+          "ok": true,
+          "detail": "the SAME boot's governed terminal face wrote 2 shellRead fact(s) — the realm guard exists, so the native zero is not \"no guard mounted\""
+        }
+      ]
+    },
+    {
+      "id": "fs:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:20:33.241Z",
+      "proposition": "each native fs call has a guard fact carrying the real Member identity and the realm policyRevision",
+      "failed": [
+        "facts-for-all-tools: per-tool evidence: read=FAIL,write=FAIL,edit=FAIL,read_image=FAIL"
+      ],
+      "clauses": [
+        {
+          "id": "facts-for-all-tools",
+          "ok": false,
+          "detail": "per-tool evidence: read=FAIL,write=FAIL,edit=FAIL,read_image=FAIL"
+        },
+        {
+          "id": "identity",
+          "ok": true,
+          "detail": "fact identities=[\"inst-1kdc3xx12yhw\"] member=inst-1kdc3xx12yhw"
+        }
+      ]
+    },
+    {
+      "id": "fs:bash-control",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.241Z",
+      "proposition": "the same Member, in the same boot, is refused an out-of-ceiling read by the governed terminal face (typed IO_READ_DENIED, zero secret bytes) — so the realm guard EXISTS and is the contrast for the native tools",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "allow-result",
+          "ok": true,
+          "detail": "bash allow isError=false"
+        },
+        {
+          "id": "allow-bytes",
+          "ok": true,
+          "detail": "the in-lane bash read returned the planted bytes"
+        },
+        {
+          "id": "deny-error",
+          "ok": true,
+          "detail": "bash deny isError=true"
+        },
+        {
+          "id": "deny-typed",
+          "ok": true,
+          "detail": "the denied bash result names IO_READ_DENIED"
+        },
+        {
+          "id": "deny-zero-secret",
+          "ok": true,
+          "detail": "NO bash secret bytes reached the Member"
+        },
+        {
+          "id": "deny-fact",
+          "ok": true,
+          "detail": "one shellRead DENY guard fact at the denied locator, for the real Member identity"
+        }
+      ]
+    },
+    {
+      "id": "fs:lifecycle-post-archive",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:20:33.241Z",
+      "proposition": "no native fs call can execute after the Member is archived",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-execution",
+          "ok": true,
+          "detail": "post-archive read=422 write=422 executed=false"
+        },
+        {
+          "id": "no-new-facts",
+          "ok": true,
+          "detail": "guard facts written by the post-archive probes=0"
+        },
+        {
+          "id": "layer-named",
+          "ok": true,
+          "detail": "refusal layer=session route (NO_LIVE_AGENT) — NOT the fs guard"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:19:29.932Z",
+        "runId": "a5sf-recon-fs-2026-11-07T16-19-29-900Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-recon-1",
+        "grantId": "devlive-fs-recon-1",
+        "grantedBy": "owner 2026-11-13 A-face FS recon ruling (relayed in this lane's task): self-arranged dev boots at will, no per-start approval, <=2 concurrent bots per subagent (machine-wide cap raised to 6 the same day), :3080 untouchable, ports only from the 3180 family, DSH_HOME inside the worktree",
+        "face": "FS Provider",
+        "worldLine": "a5sffsrecon1",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T16:19:55.967Z",
+        "runId": "a5sf-recon-fs-2026-11-07T16-19-29-900Z-b1",
+        "suite": "a5sf-recon-fs",
+        "recordClass": "DEV-LIVE",
+        "world": "u5a5sffsrecon1-20261107T16-19-29Z",
+        "phase": "a5sf-recon-fs-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-recon-fs-boot1",
+      "world": "u5a5sffsrecon1-20261107T16-19-29Z",
+      "port": 3187,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/driver/logs/u5a5sffsrecon1-20261107T16-19-29Z/instance-port3187.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-fs-2026-11-07T16-19-29-900Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-07T16:20:33.243Z"
+}

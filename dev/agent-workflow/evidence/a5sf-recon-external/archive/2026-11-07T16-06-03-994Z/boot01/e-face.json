@@ -1,0 +1,117 @@
+{
+  "schema": "a5sf-recon-external/e-face/1",
+  "at": "2026-11-07T16:04:19.962Z",
+  "memberSurfaceSize": 43,
+  "surfaceNames": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "workflow",
+    "write"
+  ],
+  "presence": {
+    "run_code": false,
+    "lsp": false,
+    "mcp": [],
+    "jobsTrio": [
+      "job_list",
+      "job_output",
+      "job_kill"
+    ],
+    "skill": true,
+    "workflow": true
+  },
+  "probes": {
+    "job_list": {
+      "call": {
+        "id": "call-a5sfre-joblist",
+        "name": "job_list",
+        "arguments": {}
+      },
+      "result": {
+        "callId": "call-a5sfre-joblist",
+        "isError": false,
+        "text": "(no background jobs)",
+        "at": 1794067458262
+      },
+      "reached": true
+    },
+    "skill": {
+      "call": {
+        "id": "call-a5sfre-skill",
+        "name": "skill",
+        "arguments": {
+          "name": "a5sf-recon-nonexistent"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfre-skill",
+        "isError": true,
+        "text": "Error: skill \"a5sf-recon-nonexistent\" is unknown or no longer available",
+        "at": 1794067458295
+      },
+      "reached": true
+    },
+    "workflow": {
+      "call": {
+        "id": "call-a5sfre-workflow",
+        "name": "workflow",
+        "arguments": {
+          "script": "return 42",
+          "meta": {
+            "name": "a5sf-recon-e-face-probe",
+            "description": "E-face recon dispatch probe: no subagents, returns a constant."
+          }
+        }
+      },
+      "result": {
+        "callId": "call-a5sfre-workflow",
+        "isError": false,
+        "text": "workflow \"a5sf-recon-e-face-probe\" completed (0 agents).\nReturn value:\n42",
+        "at": 1794067458447
+      },
+      "reached": true
+    }
+  },
+  "guardFacts": {
+    "total": 4
+  }
+}

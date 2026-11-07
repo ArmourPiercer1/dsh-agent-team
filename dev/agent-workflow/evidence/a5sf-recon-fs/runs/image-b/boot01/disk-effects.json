@@ -1,0 +1,114 @@
+{
+  "bash-allow": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/bash-allow.txt",
+    "exists": true,
+    "bytes": 31,
+    "sha256": "dee6b1d29329daf672711a749bb7e8167074d0b7de69652454e4b805f6155733",
+    "content": "A5SF_RECON_FS_BASH_ALLOW_BYTES\n",
+    "markerPresent": true
+  },
+  "bash-deny": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/bash-deny.txt",
+    "exists": true,
+    "bytes": 37,
+    "sha256": "e244f51d2ff4a4e785ac7bf6f06cadb1cc694c4e425327b4646d6152486a54aa",
+    "content": "A5SF_RECON_FS_BASH_DENY_SECRET_BYTES\n",
+    "markerPresent": true
+  },
+  "read-allow": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt",
+    "exists": true,
+    "bytes": 31,
+    "sha256": "d7a1c2808a826c33a944801b3ea6ced1e55c33d3d5130473fa12d6d163871c63",
+    "content": "A5SF_RECON_FS_READ_ALLOW_BYTES\n",
+    "markerPresent": true
+  },
+  "read-deny": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt",
+    "exists": true,
+    "bytes": 37,
+    "sha256": "b5dc20701b92e75c7b2bced357af91726849081e70d68d9a08b306d8036bedd6",
+    "content": "A5SF_RECON_FS_READ_DENY_SECRET_BYTES\n",
+    "markerPresent": true
+  },
+  "write-allow": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt",
+    "exists": true,
+    "bytes": 32,
+    "sha256": "2de3a2fedc1d2dbfb2b04b3be04cba0a0e01c66d0198510120a583b19eeea0e4",
+    "content": "A5SF_RECON_FS_WRITE_ALLOW_BYTES\n",
+    "markerPresent": true
+  },
+  "write-deny": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt",
+    "exists": true,
+    "bytes": 31,
+    "sha256": "fd03ffe428408edf97ce65bd20841e5e3609eebc7a23fbc3a2926a4d6bf82921",
+    "content": "A5SF_RECON_FS_WRITE_DENY_BYTES\n",
+    "markerPresent": true
+  },
+  "write-host-fence": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/host-fence/write-host-fence.txt",
+    "exists": false,
+    "bytes": 0,
+    "sha256": null,
+    "content": null,
+    "markerPresent": null
+  },
+  "edit-allow-preread": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt",
+    "exists": true,
+    "bytes": 32,
+    "sha256": "5dcc6379a89827e0a27393b0fe48d6c88078faf254596d7e8b49998161d7159b",
+    "content": "A5SF_RECON_FS_EDIT_ALLOW_EDITED\n",
+    "markerPresent": false
+  },
+  "edit-allow": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt",
+    "exists": true,
+    "bytes": 32,
+    "sha256": "5dcc6379a89827e0a27393b0fe48d6c88078faf254596d7e8b49998161d7159b",
+    "content": "A5SF_RECON_FS_EDIT_ALLOW_EDITED\n",
+    "markerPresent": true
+  },
+  "edit-deny-preread": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt",
+    "exists": true,
+    "bytes": 31,
+    "sha256": "feffcd31072368a4d8d8528b1dec01f9a4d2b84fe35306bcb9b49d79e53592a8",
+    "content": "A5SF_RECON_FS_EDIT_DENY_EDITED\n",
+    "markerPresent": false
+  },
+  "edit-deny": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt",
+    "exists": true,
+    "bytes": 31,
+    "sha256": "feffcd31072368a4d8d8528b1dec01f9a4d2b84fe35306bcb9b49d79e53592a8",
+    "content": "A5SF_RECON_FS_EDIT_DENY_EDITED\n",
+    "markerPresent": true
+  },
+  "read-image-allow": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png",
+    "exists": true,
+    "bytes": 70,
+    "sha256": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+    "content": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\b\u0006\u0000\u0000\u0000\u001f\u0015ĉ\u0000\u0000\u0000\rIDATx�c���P\u000f\u0000\u0004�\u0001����!\u0000\u0000\u0000\u0000IEND�B`�",
+    "markerPresent": false
+  },
+  "read-image-deny": {
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png",
+    "exists": true,
+    "bytes": 70,
+    "sha256": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+    "content": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\b\u0006\u0000\u0000\u0000\u001f\u0015ĉ\u0000\u0000\u0000\rIDATx�c���P\u000f\u0000\u0004�\u0001����!\u0000\u0000\u0000\u0000IEND�B`�",
+    "markerPresent": false
+  },
+  "read-host-reach": {
+    "locator": "/etc/hostname",
+    "exists": true,
+    "bytes": 10,
+    "sha256": "b084d5f63247d36cdb2782a0618d6278224f1f3d96f117db95a014278e793699",
+    "content": "DESKTOP-D\n",
+    "markerPresent": null
+  }
+}

@@ -1,0 +1,543 @@
+[2026-11-07T16:05:06.451Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-07T16:05:06.452Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-07T16:05:06.476Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-07T16:05:06.477Z] rows: [{"id":"dsh-agent-team"},{"id":"preset-a5sf-governed-member"},{"id":"p6t6-team-tools"}]
+[2026-11-07T16:05:06.477Z] governed preset plugins (18): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,planning,compaction,delegation,tool-ask-user,tool-todo,tool-web,present,tool-plugin-manager
+[2026-11-07T16:05:06.477Z] PLAN OK
+[2026-11-07T16:05:16.584Z] ARCHIVE: (nothing to archive)
+[2026-11-07T16:05:16.588Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T16:05:16.619Z] host porcelain before: []
+[2026-11-07T16:05:16.688Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:05:16.689Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:05:16.694Z] [boot1] world=u5a5sffsrecon1-20261107T16-05-16Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-05-16Z
+[2026-11-07T16:05:16.696Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T16:05:32.954Z] [boot1] mock on 3494
+[2026-11-07T16:05:55.901Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/driver/logs/u5a5sffsrecon1-20261107T16-05-16Z/instance-port3185.log
+[2026-11-07T16:05:56.282Z] [boot1] p6t6 health=true
+[2026-11-07T16:05:56.556Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:06:01.384Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5srf-o4ejozvl09","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5srf-team","blueprint":{"blueprintId":"team.a5sf.reconfs.main","revision":"1","contentHash":"sha256:bce2a83e5c397c8a71a93f849a829489ab96e16e1925f840604f0080e82651a1"},"createdAt":"2026-11-07T16:05:56.604Z","generation":1
+[2026-11-07T16:06:02.185Z] [boot1] leader chain closed (A5SF_SRF_L1_DONE)=true
+[2026-11-07T16:06:02.186Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSessionId":"session-team-child-04cfa33fab776112327d75ba70f8423b","operationId":"op-1ap001j0of9dma1vek1lx0tc","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSet
+[2026-11-07T16:06:02.192Z] [boot1] members=[{"instanceId":"inst-1kdc3xx12yhw","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-04cfa33fab776112327d75ba70f8423b
+[2026-11-07T16:06:02.210Z] [boot1] crosscheck read(deny locator) as member: status=200 body={"ok":true,"value":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-05-16Z/workspace/not-in-lane/read-deny.txt","offset":1,"lines":[{"number":1,"text":"A5SF_RECON_FS_READ_DENY_SECRET_BYTES"}],"totalLines":1}}
+[2026-11-07T16:06:02.269Z] [boot1] lifecycle: archive=200 postRead=422 postWrite=422 probeFacts=0
+[2026-11-07T16:06:02.272Z] [boot1] case fs:surface: PASS
+[2026-11-07T16:06:02.273Z] [boot1] case fs:read-allowed: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:read-ceiling-denied: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:write-allowed: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:write-ceiling-denied: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:edit-allowed: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:edit-ceiling-denied: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:read-image-allowed: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:read-image-ceiling-denied: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:provider-attribution: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:guard-facts: FAIL
+[2026-11-07T16:06:02.273Z] [boot1] case fs:bash-control: PASS
+[2026-11-07T16:06:02.273Z] [boot1] case fs:lifecycle-post-archive: PASS
+[2026-11-07T16:06:02.276Z] [boot1] diagnostics(final): mockRequests=20 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSes sessions=[null,"session-a5srf-boot",null,"session-a5srf-team",null,"session-team-child-04cfa33fab776112327d75ba70f8423b"]
+[2026-11-07T16:06:02.276Z] [boot1] RUN-SUMMARY run=a5sf-recon-fs-2026-11-07T16-05-16-652Z-b1 suite=a5sf-recon-fs overall=FAIL cases=13 FAIL:10 PASS:3 worlds=u5a5sffsrecon1-20261107T16-05-16Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:06:02.382Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-05-16Z","releasedPorts":[3185,3494,3185],"killedPids":[101],"notes":[]}
+[2026-11-07T16:06:02.436Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                boot1
+read.surface                        PASS
+read.dispatch                       PASS
+read.provider                       FAIL
+read.allow                          FAIL
+read.deny                           FAIL
+read.evidence                       FAIL
+read.lifecycle                      PASS
+write.surface                       PASS
+write.dispatch                      PASS
+write.provider                      FAIL
+write.allow                         FAIL
+write.deny                          FAIL
+write.evidence                      FAIL
+write.lifecycle                     PASS
+edit.surface                        PASS
+edit.dispatch                       PASS
+edit.provider                       FAIL
+edit.allow                          FAIL
+edit.deny                           FAIL
+edit.evidence                       FAIL
+edit.lifecycle                      PASS
+read_image.surface                  PASS
+read_image.dispatch                 PASS
+read_image.provider                 FAIL
+read_image.allow                    FAIL
+read_image.deny                     FAIL
+read_image.evidence                 FAIL
+read_image.lifecycle                PASS
+classes                             bash:allow:NOT_ON_SURFACE|bash:deny:NOT_ON_SURFACE|read:allow:NOT_ON_SURFACE|read:deny:NOT_ON_SURFACE|write:allow:NOT_ON_SURFACE|write:deny:NOT_ON_SURFACE|write:probe:NOT_ON_SURFACE|read:prereq:NOT_ON_SURFACE|edit:allow:NOT_ON_SURFACE|read:prereq:NOT_ON_SURFACE|edit:deny:NOT_ON_SURFACE|read_image:allow:NOT_ON_SURFACE|read_image:probe-deny:NOT_ON_SURFACE
+bashControlFacts                    2
+nativeFsFacts                       0
+guardFactTotal                      4
+memberIdentity                      inst-1kdc3xx12yhw
+lifecycleExecuted                   false
+
+agreeing=false differing=[]
+[2026-11-07T16:06:02.472Z] host porcelain after: []
+[2026-11-07T16:06:02.472Z] RESULT COMPLETE (1/1 boots; agreeing pair=false)
+[2026-11-07T16:09:07.991Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/archive/2026-11-07T16-09-07-990Z
+[2026-11-07T16:09:07.999Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2 imageRoute=true
+[2026-11-07T16:09:08.084Z] host porcelain before: []
+[2026-11-07T16:09:08.189Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:09:08.190Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:09:08.192Z] [boot1] FAILED at pre-boot: DevLiveSlotError: DEV_LIVE_LIMIT_REACHED: the machine already runs 2 dev Host(s), the owner ruling caps development boots at 2; finish or tear down one before starting another (slots: #0 pid=3 run=a5sf-recon-external-2026-11-07T16-08-18-233Z-b1 world=u5a5sfext1; #1 pid=3 run=a5sf-live-member-2026-11-07T16-08-25-161Z-b1 world=u5a5sfsub1)
+    at acquireDevLiveSlot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/dev-live-slots.mjs:206:11)
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/suites/150-a5sf-read.mjs:628:16)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:976:28)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1742:15)
+[2026-11-07T16:09:08.240Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-07T16:09:08.240Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact
+
+agreeing=false differing=[]
+[2026-11-07T16:09:08.285Z] host porcelain after: []
+[2026-11-07T16:09:08.285Z] RESULT INCOMPLETE (1/2 boots; agreeing pair=false)
+[2026-11-07T16:11:42.826Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/archive/2026-11-07T16-11-42-825Z
+[2026-11-07T16:11:42.831Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2 imageRoute=true
+[2026-11-07T16:11:42.866Z] host porcelain before: []
+[2026-11-07T16:11:42.943Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:11:42.945Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:11:42.949Z] [boot1] world=u5a5sffsrecon1-20261107T16-11-42Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-11-42Z
+[2026-11-07T16:11:42.952Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools,llm-deepseek imageRoute=true
+[2026-11-07T16:12:04.047Z] [boot1] mock on 3496
+[2026-11-07T16:12:25.261Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/driver/logs/u5a5sffsrecon1-20261107T16-11-42Z/instance-port3185.log
+[2026-11-07T16:12:25.729Z] [boot1] p6t6 health=true
+[2026-11-07T16:12:26.001Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:12:30.926Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5srf-l3k32lkv6o","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5srf-team","blueprint":{"blueprintId":"team.a5sf.reconfs.main","revision":"1","contentHash":"sha256:0306eb8b1d9ed4c778fc8e99be2a0780e489e4a9dca54b147af9bd238fcac3db"},"createdAt":"2026-11-07T16:12:26.049Z","generation":1
+[2026-11-07T16:12:31.727Z] [boot1] leader chain closed (A5SF_SRF_L1_DONE)=true
+[2026-11-07T16:12:31.728Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSessionId":"session-team-child-04cfa33fab776112327d75ba70f8423b","operationId":"op-1ap001j0of9dma1vek1lx0tc","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSet
+[2026-11-07T16:12:31.734Z] [boot1] members=[{"instanceId":"inst-1kdc3xx12yhw","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-04cfa33fab776112327d75ba70f8423b
+[2026-11-07T16:12:31.748Z] [boot1] crosscheck read(deny locator) as member: status=200 body={"ok":true,"value":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-11-42Z/workspace/not-in-lane/read-deny.txt","offset":1,"lines":[{"number":1,"text":"A5SF_RECON_FS_READ_DENY_SECRET_BYTES"}],"totalLines":1}}
+[2026-11-07T16:12:31.810Z] [boot1] lifecycle: archive=200 postRead=422 postWrite=422 probeFacts=0
+[2026-11-07T16:12:31.813Z] [boot1] case fs:surface: PASS
+[2026-11-07T16:12:31.813Z] [boot1] case fs:read-allowed: PASS
+[2026-11-07T16:12:31.813Z] [boot1] case fs:read-ceiling-denied: FAIL
+[2026-11-07T16:12:31.813Z] [boot1] case fs:write-allowed: PASS
+[2026-11-07T16:12:31.813Z] [boot1] case fs:write-ceiling-denied: FAIL
+[2026-11-07T16:12:31.813Z] [boot1] case fs:edit-allowed: PASS
+[2026-11-07T16:12:31.813Z] [boot1] case fs:edit-ceiling-denied: FAIL
+[2026-11-07T16:12:31.813Z] [boot1] case fs:read-image-allowed: PASS
+[2026-11-07T16:12:31.814Z] [boot1] case fs:read-image-ceiling-denied: FAIL
+[2026-11-07T16:12:31.814Z] [boot1] case fs:provider-attribution: FAIL
+[2026-11-07T16:12:31.814Z] [boot1] case fs:guard-facts: FAIL
+[2026-11-07T16:12:31.814Z] [boot1] case fs:bash-control: PASS
+[2026-11-07T16:12:31.814Z] [boot1] case fs:lifecycle-post-archive: PASS
+[2026-11-07T16:12:31.817Z] [boot1] diagnostics(final): mockRequests=24 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSes sessions=[null,"session-a5srf-boot",null,"session-a5srf-team",null,"session-team-child-04cfa33fab776112327d75ba70f8423b"]
+[2026-11-07T16:12:31.817Z] [boot1] RUN-SUMMARY run=a5sf-recon-fs-2026-11-07T16-11-42-903Z-b1 suite=a5sf-recon-fs overall=FAIL cases=13 FAIL:6 PASS:7 worlds=u5a5sffsrecon1-20261107T16-11-42Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:12:31.945Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-11-42Z","releasedPorts":[3185,3496,3185],"killedPids":[101],"notes":[]}
+[2026-11-07T16:12:32.012Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:12:32.013Z] [boot2] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:12:32.014Z] [boot2] FAILED at pre-boot: DevLiveSlotError: DEV_LIVE_LIMIT_REACHED: the machine already runs 2 dev Host(s), the owner ruling caps development boots at 2; finish or tear down one before starting another (slots: #0 pid=5 run=a5sf-recon-fs-2026-11-07T16-11-42-903Z-b1 world=a5sffsrecon1; #1 pid=3 run=a5sf-live-member-2026-11-07T16-11-21-643Z-b1 world=u5a5sfsub1)
+    at acquireDevLiveSlot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/dev-live-slots.mjs:206:11)
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/suites/150-a5sf-read.mjs:628:16)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:976:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1742:15)
+[2026-11-07T16:12:32.050Z] boot 2 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-07T16:12:32.051Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                boot1
+read.surface                        PASS
+read.dispatch                       PASS
+read.provider                       FAIL
+read.allow                          PASS
+read.deny                           FAIL
+read.evidence                       FAIL
+read.lifecycle                      PASS
+write.surface                       PASS
+write.dispatch                      PASS
+write.provider                      FAIL
+write.allow                         PASS
+write.deny                          FAIL
+write.evidence                      FAIL
+write.lifecycle                     PASS
+edit.surface                        PASS
+edit.dispatch                       PASS
+edit.provider                       FAIL
+edit.allow                          PASS
+edit.deny                           FAIL
+edit.evidence                       FAIL
+edit.lifecycle                      PASS
+read_image.surface                  PASS
+read_image.dispatch                 PASS
+read_image.provider                 FAIL
+read_image.allow                    PASS
+read_image.deny                     FAIL
+read_image.evidence                 FAIL
+read_image.lifecycle                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2
+nativeFsFacts                       0
+guardFactTotal                      4
+memberIdentity                      inst-1kdc3xx12yhw
+lifecycleExecuted                   false
+
+agreeing=false differing=[]
+[2026-11-07T16:12:32.084Z] host porcelain after: []
+[2026-11-07T16:12:32.084Z] RESULT INCOMPLETE (2/2 boots; agreeing pair=false)
+[2026-11-07T16:16:32.243Z] ARCHIVE: (nothing to archive)
+[2026-11-07T16:16:32.248Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1 imageRoute=true runTag=image-b
+[2026-11-07T16:16:32.279Z] host porcelain before: []
+[2026-11-07T16:16:32.345Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:16:32.346Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:16:32.350Z] [boot1] world=u5a5sffsrecon1-20261107T16-16-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z
+[2026-11-07T16:16:32.353Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools,llm-deepseek imageRoute=true
+[2026-11-07T16:16:52.101Z] [boot1] mock on 3496
+[2026-11-07T16:17:13.112Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/driver/logs/u5a5sffsrecon1-20261107T16-16-32Z/instance-port3187.log
+[2026-11-07T16:17:13.494Z] [boot1] p6t6 health=true
+[2026-11-07T16:17:13.769Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:17:18.647Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5srf-jb3f8ygy3l","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5srf-team","blueprint":{"blueprintId":"team.a5sf.reconfs.main","revision":"1","contentHash":"sha256:1d01a83bb1fbc274f805e2d82b6ded9ef42c0dd9b0001658e3c7b146668f33bc"},"createdAt":"2026-11-07T16:17:13.809Z","generation":1
+[2026-11-07T16:17:19.447Z] [boot1] leader chain closed (A5SF_SRF_L1_DONE)=true
+[2026-11-07T16:17:19.448Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSessionId":"session-team-child-04cfa33fab776112327d75ba70f8423b","operationId":"op-1ap001j0of9dma1vek1lx0tc","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSet
+[2026-11-07T16:17:19.455Z] [boot1] members=[{"instanceId":"inst-1kdc3xx12yhw","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-04cfa33fab776112327d75ba70f8423b
+[2026-11-07T16:17:19.472Z] [boot1] crosscheck read(deny locator) as member: status=200 body={"ok":true,"value":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt","offset":1,"lines":[{"number":1,"text":"A5SF_RECON_FS_READ_DENY_SECRET_BYTES"}],"totalLines":1}}
+[2026-11-07T16:17:19.544Z] [boot1] lifecycle: archive=200 postRead=422 postWrite=422 probeFacts=0
+[2026-11-07T16:17:19.549Z] [boot1] case fs:surface: PASS
+[2026-11-07T16:17:19.549Z] [boot1] case fs:read-allowed: PASS
+[2026-11-07T16:17:19.549Z] [boot1] case fs:read-ceiling-denied: FAIL
+[2026-11-07T16:17:19.549Z] [boot1] case fs:write-allowed: PASS
+[2026-11-07T16:17:19.549Z] [boot1] case fs:write-ceiling-denied: FAIL
+[2026-11-07T16:17:19.549Z] [boot1] case fs:edit-allowed: PASS
+[2026-11-07T16:17:19.549Z] [boot1] case fs:edit-ceiling-denied: FAIL
+[2026-11-07T16:17:19.549Z] [boot1] case fs:read-image-allowed: PASS
+[2026-11-07T16:17:19.549Z] [boot1] case fs:read-image-ceiling-denied: FAIL
+[2026-11-07T16:17:19.550Z] [boot1] case fs:provider-attribution: FAIL
+[2026-11-07T16:17:19.550Z] [boot1] case fs:guard-facts: FAIL
+[2026-11-07T16:17:19.550Z] [boot1] case fs:bash-control: PASS
+[2026-11-07T16:17:19.550Z] [boot1] case fs:lifecycle-post-archive: PASS
+[2026-11-07T16:17:19.552Z] [boot1] diagnostics(final): mockRequests=24 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSes sessions=[null,"session-a5srf-boot",null,"session-a5srf-team",null,"session-team-child-04cfa33fab776112327d75ba70f8423b"]
+[2026-11-07T16:17:19.553Z] [boot1] RUN-SUMMARY run=a5sf-recon-fs-2026-11-07T16-16-32-310Z-b1 suite=a5sf-recon-fs overall=FAIL cases=13 FAIL:6 PASS:7 worlds=u5a5sffsrecon1-20261107T16-16-32Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:17:19.681Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":102,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z","releasedPorts":[3187,3496,3187],"killedPids":[102],"notes":[]}
+[2026-11-07T16:17:19.730Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                boot1
+read.surface                        PASS
+read.dispatch                       PASS
+read.provider                       FAIL
+read.allow                          PASS
+read.deny                           FAIL
+read.evidence                       FAIL
+read.lifecycle                      PASS
+write.surface                       PASS
+write.dispatch                      PASS
+write.provider                      FAIL
+write.allow                         PASS
+write.deny                          FAIL
+write.evidence                      FAIL
+write.lifecycle                     PASS
+edit.surface                        PASS
+edit.dispatch                       PASS
+edit.provider                       FAIL
+edit.allow                          PASS
+edit.deny                           FAIL
+edit.evidence                       FAIL
+edit.lifecycle                      PASS
+read_image.surface                  PASS
+read_image.dispatch                 PASS
+read_image.provider                 FAIL
+read_image.allow                    PASS
+read_image.deny                     FAIL
+read_image.evidence                 FAIL
+read_image.lifecycle                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2
+nativeFsFacts                       0
+guardFactTotal                      4
+memberIdentity                      inst-1kdc3xx12yhw
+lifecycleExecuted                   false
+
+agreeing=false differing=[]
+[2026-11-07T16:17:19.763Z] host porcelain after: []
+[2026-11-07T16:17:19.763Z] RESULT COMPLETE (1/1 boots; agreeing pair=false)
+[2026-11-07T16:18:30.751Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootimage-b
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                PASS
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=true differing=[]
+[2026-11-07T16:18:30.752Z] COMPARE tags=image-a,image-b agreeing=true
+[2026-11-07T16:18:43.087Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/archive/2026-11-07T16-18-43-087Z-as-shipped
+[2026-11-07T16:18:43.091Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1 imageRoute=false runTag=as-shipped
+[2026-11-07T16:18:43.121Z] host porcelain before: []
+[2026-11-07T16:18:43.188Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:18:43.188Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:18:43.192Z] [boot1] world=u5a5sffsrecon1-20261107T16-18-43Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-18-43Z
+[2026-11-07T16:18:43.194Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools imageRoute=false
+[2026-11-07T16:18:59.909Z] [boot1] mock on 3495
+[2026-11-07T16:18:59.911Z] [boot1] FAILED at pre-boot: DevLiveSlotError: DEV_LIVE_SLOT_REQUIRED: record 'a5sf-recon-fs-2026-11-07T16-18-43-154Z-b1' is DEV-LIVE but holds no dev-Host slot under /home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp/port-leases/dev-live-hosts; a dev-live Host may only start through the scope-aware grant gate (preRegisterDevLiveBudget), which acquires one of the 2 machine slots
+    at assertDevLiveSlotHeld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/dev-live-slots.mjs:271:11)
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/a5sf-harness.mjs:315:9)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1069:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/suites/150-a5sf-read.mjs:638:16)
+    at async bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1001:16)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1769:15)
+[2026-11-07T16:18:59.912Z] [boot1] teardown: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-18-43Z","releasedPorts":[3495],"killedPids":[],"notes":[]}
+[2026-11-07T16:18:59.944Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-07T16:18:59.945Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact
+
+agreeing=false differing=[]
+[2026-11-07T16:18:59.978Z] host porcelain after: []
+[2026-11-07T16:18:59.978Z] RESULT INCOMPLETE (1/1 boots; agreeing pair=false)
+[2026-11-07T16:19:29.840Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/archive/2026-11-07T16-19-29-839Z-as-shipped
+[2026-11-07T16:19:29.843Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1 imageRoute=false runTag=as-shipped
+[2026-11-07T16:19:29.871Z] host porcelain before: []
+[2026-11-07T16:19:29.931Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:19:29.932Z] [boot1] dev-live lease grant=devlive-fs-recon-1 face=FS Provider world=a5sffsrecon1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:19:29.936Z] [boot1] world=u5a5sffsrecon1-20261107T16-19-29Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z
+[2026-11-07T16:19:29.938Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools imageRoute=false
+[2026-11-07T16:19:55.966Z] [boot1] mock on 3496
+[2026-11-07T16:20:26.892Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/driver/logs/u5a5sffsrecon1-20261107T16-19-29Z/instance-port3187.log
+[2026-11-07T16:20:27.249Z] [boot1] p6t6 health=true
+[2026-11-07T16:20:27.521Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:20:32.336Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5srf-i9p1fg451o","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5srf-team","blueprint":{"blueprintId":"team.a5sf.reconfs.main","revision":"1","contentHash":"sha256:2ec2387098926fc8f7e80bfc2e6222bbedc93f22acf3b1d71b95ed636ee04cba"},"createdAt":"2026-11-07T16:20:27.570Z","generation":1
+[2026-11-07T16:20:33.137Z] [boot1] leader chain closed (A5SF_SRF_L1_DONE)=true
+[2026-11-07T16:20:33.138Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSessionId":"session-team-child-04cfa33fab776112327d75ba70f8423b","operationId":"op-1ap001j0of9dma1vek1lx0tc","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSet
+[2026-11-07T16:20:33.145Z] [boot1] members=[{"instanceId":"inst-1kdc3xx12yhw","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-04cfa33fab776112327d75ba70f8423b
+[2026-11-07T16:20:33.162Z] [boot1] crosscheck read(deny locator) as member: status=200 body={"ok":true,"value":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/not-in-lane/read-deny.txt","offset":1,"lines":[{"number":1,"text":"A5SF_RECON_FS_READ_DENY_SECRET_BYTES"}],"totalLines":1}}
+[2026-11-07T16:20:33.236Z] [boot1] lifecycle: archive=200 postRead=422 postWrite=422 probeFacts=0
+[2026-11-07T16:20:33.240Z] [boot1] case fs:surface: PASS
+[2026-11-07T16:20:33.240Z] [boot1] case fs:read-allowed: PASS
+[2026-11-07T16:20:33.240Z] [boot1] case fs:read-ceiling-denied: FAIL
+[2026-11-07T16:20:33.240Z] [boot1] case fs:write-allowed: PASS
+[2026-11-07T16:20:33.240Z] [boot1] case fs:write-ceiling-denied: FAIL
+[2026-11-07T16:20:33.240Z] [boot1] case fs:edit-allowed: PASS
+[2026-11-07T16:20:33.240Z] [boot1] case fs:edit-ceiling-denied: FAIL
+[2026-11-07T16:20:33.240Z] [boot1] case fs:read-image-allowed: FAIL
+[2026-11-07T16:20:33.241Z] [boot1] case fs:read-image-ceiling-denied: FAIL
+[2026-11-07T16:20:33.241Z] [boot1] case fs:provider-attribution: FAIL
+[2026-11-07T16:20:33.241Z] [boot1] case fs:guard-facts: FAIL
+[2026-11-07T16:20:33.241Z] [boot1] case fs:bash-control: PASS
+[2026-11-07T16:20:33.241Z] [boot1] case fs:lifecycle-post-archive: PASS
+[2026-11-07T16:20:33.243Z] [boot1] diagnostics(final): mockRequests=21 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5srf-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-1kdc3xx12yhw","templateId":"worker","childSes sessions=[null,"session-a5srf-boot",null,"session-a5srf-team",null,"session-team-child-04cfa33fab776112327d75ba70f8423b"]
+[2026-11-07T16:20:33.244Z] [boot1] RUN-SUMMARY run=a5sf-recon-fs-2026-11-07T16-19-29-900Z-b1 suite=a5sf-recon-fs overall=FAIL cases=13 FAIL:7 PASS:6 worlds=u5a5sffsrecon1-20261107T16-19-29Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:20:33.377Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z","releasedPorts":[3187,3496,3187],"killedPids":[101],"notes":[]}
+[2026-11-07T16:20:33.410Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                boot1
+read.surface                        PASS
+read.dispatch                       PASS
+read.provider                       FAIL
+read.allow                          PASS
+read.deny                           FAIL
+read.evidence                       FAIL
+read.lifecycle                      PASS
+write.surface                       PASS
+write.dispatch                      PASS
+write.provider                      FAIL
+write.allow                         PASS
+write.deny                          FAIL
+write.evidence                      FAIL
+write.lifecycle                     PASS
+edit.surface                        PASS
+edit.dispatch                       PASS
+edit.provider                       FAIL
+edit.allow                          PASS
+edit.deny                           FAIL
+edit.evidence                       FAIL
+edit.lifecycle                      PASS
+read_image.surface                  PASS
+read_image.dispatch                 PASS
+read_image.provider                 FAIL
+read_image.allow                    FAIL
+read_image.deny                     FAIL
+read_image.evidence                 FAIL
+read_image.lifecycle                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:NOT_REACHED_ROUTE_GATE|read_image:probe-deny:NOT_REACHED_ROUTE_GATE|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2
+nativeFsFacts                       0
+guardFactTotal                      4
+memberIdentity                      inst-1kdc3xx12yhw
+lifecycleExecuted                   false
+
+agreeing=false differing=[]
+[2026-11-07T16:20:33.440Z] host porcelain after: []
+[2026-11-07T16:20:33.440Z] RESULT COMPLETE (1/1 boots; agreeing pair=false)
+[2026-11-07T16:21:21.404Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootas-shipped
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                FAIL
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:NOT_REACHED_ROUTE_GATE|read_image:probe-deny:NOT_REACHED_ROUTE_GATE|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=false differing=["read_image.allow","classes"]
+[2026-11-07T16:21:21.404Z] COMPARE tags=image-a,as-shipped agreeing=false
+[2026-11-07T16:27:11.349Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootimage-b
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                PASS
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=true differing=[]
+[2026-11-07T16:27:11.349Z] COMPARE tags=image-a,image-b agreeing=true
+[2026-11-07T16:27:11.408Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootas-shipped
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                FAIL
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:NOT_REACHED_ROUTE_GATE|read_image:probe-deny:NOT_REACHED_ROUTE_GATE|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=false differing=["read_image.allow","classes"]
+[2026-11-07T16:27:11.408Z] COMPARE tags=image-a,as-shipped agreeing=false
+[2026-11-07T16:27:11.466Z] AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootimage-b
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                PASS
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=true differing=[]
+[2026-11-07T16:27:11.466Z] COMPARE tags=image-a,image-b agreeing=true

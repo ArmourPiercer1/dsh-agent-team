@@ -1,0 +1,323 @@
+{
+  "schema": "a5sf-recon-search/1",
+  "at": "2026-11-07T16:11:13.693Z",
+  "question": "does the governed Member's model-visible grep/glob execute the packaged rg on the CONFINED Member subprocess face, or on the inherited host service?",
+  "transcriptFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-b-search-tests-homes-u5u5a5sfsub1-20261107T16-10-25Z-workspace--/session-team-child-0226b704a7da0775ef20a7e9fd467475/session.v4.jsonl.zstd",
+  "samples": [
+    {
+      "id": "call-rs-01-grep-inlane",
+      "label": "grep-inlane-hit",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_INLANE_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "Found 2 matches\n\nin-lane.txt\nLine 1: A5SF_RS_INLANE_NEEDLE\n\nsub/nested.txt\nLine 1: A5SF_RS_INLANE_NEEDLE"
+    },
+    {
+      "id": "call-rs-02-grep-outlane",
+      "label": "grep-out-of-lane",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_OUTLANE_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/out-of-lane"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "Found 1 match\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/out-of-lane/secret-out-of-lane.txt\nLine 1: A5SF_RS_OUTLANE_NEEDLE"
+    },
+    {
+      "id": "call-rs-03-grep-ignore",
+      "label": "grep-gitignore",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_IGNORED_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "No matches found"
+    },
+    {
+      "id": "call-rs-04-grep-hidden",
+      "label": "grep-hidden-vcs",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_HIDDEN_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "No matches found"
+    },
+    {
+      "id": "call-rs-05-grep-nomatch",
+      "label": "grep-no-match",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_ABSENT_NEEDLE_9f13",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "No matches found"
+    },
+    {
+      "id": "call-rs-06-grep-badregex",
+      "label": "grep-invalid-regex",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "[",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: grep pattern rejected by ripgrep: rg: regex parse error:\n    (?:[)\n       ^\nerror: unclosed character class"
+    },
+    {
+      "id": "call-rs-07-glob-workspace",
+      "label": "glob-workspace",
+      "tool": "glob",
+      "arguments": {
+        "pattern": "**/*.txt",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "in-lane.txt\nignored.txt\nsub/nested.txt\nclean.txt\n.hidden/hidden.txt"
+    },
+    {
+      "id": "call-rs-08-glob-outlane",
+      "label": "glob-out-of-lane",
+      "tool": "glob",
+      "arguments": {
+        "pattern": "*",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/out-of-lane"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/out-of-lane/secret-out-of-lane.txt\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/out-of-lane/other.txt"
+    },
+    {
+      "id": "call-rs-09-grep-parent",
+      "label": "grep-parent-dir",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_OUTLANE_NEEDLE",
+        "path": ".."
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "Found 1 match\n\n../out-of-lane/secret-out-of-lane.txt\nLine 1: A5SF_RS_OUTLANE_NEEDLE"
+    },
+    {
+      "id": "call-rs-10-grep-slow",
+      "label": "grep-timeout",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_ABSENT_NEEDLE_9f13",
+        "path": "/usr"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: tool call timed out after 1500ms"
+    }
+  ],
+  "process": {
+    "host": {
+      "pid": 101,
+      "cmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+      "ns": {
+        "mnt": null,
+        "pid": null,
+        "net": null,
+        "user": null,
+        "cgroup": null
+      },
+      "mountinfo": {
+        "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+        "lines": 51
+      },
+      "status": {
+        "NSpid": "101",
+        "CapEff": "0000000000000000",
+        "NoNewPrivs": "1",
+        "Seccomp": "2"
+      }
+    },
+    "rgSightings": [
+      {
+        "at": "2026-11-07T16:11:10.463Z",
+        "pid": 219,
+        "ppid": 101,
+        "state": "R",
+        "kind": "rg",
+        "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_IGNORED_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "219",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": null,
+          "pid": null,
+          "net": null,
+          "user": null,
+          "cgroup": null
+        },
+        "mountinfo": {
+          "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T16:11:10.504Z",
+        "pid": 233,
+        "ppid": 101,
+        "state": "R",
+        "kind": "rg",
+        "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_HIDDEN_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "233",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": null,
+          "pid": null,
+          "net": null,
+          "user": null,
+          "cgroup": null
+        },
+        "mountinfo": {
+          "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T16:11:10.544Z",
+        "pid": 247,
+        "ppid": 101,
+        "state": "R",
+        "kind": "rg",
+        "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "247",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": null,
+          "pid": null,
+          "net": null,
+          "user": null,
+          "cgroup": null
+        },
+        "mountinfo": {
+          "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T16:11:10.704Z",
+        "pid": 267,
+        "ppid": 101,
+        "state": "R",
+        "kind": "rg",
+        "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_OUTLANE_NEEDLE -- ..",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "267",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": null,
+          "pid": null,
+          "net": null,
+          "user": null,
+          "cgroup": null
+        },
+        "mountinfo": {
+          "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T16:11:10.785Z",
+        "pid": 281,
+        "ppid": 101,
+        "state": "S",
+        "kind": "rg",
+        "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /usr",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "281",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": null,
+          "pid": null,
+          "net": null,
+          "user": null,
+          "cgroup": null
+        },
+        "mountinfo": {
+          "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+          "lines": 51
+        }
+      }
+    ],
+    "confinedLaunchers": [],
+    "bwrap": 1,
+    "rgArgv": [
+      "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_IGNORED_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+      "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_HIDDEN_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+      "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+      "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_OUTLANE_NEEDLE -- ..",
+      "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /usr"
+    ],
+    "distinctRgPpid": [
+      101
+    ],
+    "allRgHostChildren": true,
+    "sameMntNsAsHost": true,
+    "samePidNsAsHost": true,
+    "sameMountinfoAsHost": true
+  },
+  "guardFacts": [],
+  "ownership": {
+    "worldId": "u5u5a5sfsub1-20261107T16-10-25Z",
+    "runnerPid": 3,
+    "runnerStartedAt": "2026-11-07T16:11:07.556Z",
+    "hostPid": 101,
+    "hostPort": 3186,
+    "mockPort": 3495
+  }
+}

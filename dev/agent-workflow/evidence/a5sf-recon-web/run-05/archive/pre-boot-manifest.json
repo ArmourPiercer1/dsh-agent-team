@@ -1,0 +1,44 @@
+{
+  "archivedAt": "2026-11-07T16:17:42.841Z",
+  "reason": "archive-before-start: a second run must never overwrite the first run's evidence",
+  "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+  "authorityPointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+  "files": [
+    {
+      "name": "preflight-bundle.json",
+      "bytes": 15824,
+      "sha256": "87d52f07778cbe6be60f9931e87cf47e0cb454096238d0f34e13539b58f078f5"
+    },
+    {
+      "name": "preflight.log",
+      "bytes": 5997,
+      "sha256": "00acc027a805b65ff5c944b834e7e92ff8731f4e6dccdf3fd2b4d65ec9ffb1cf"
+    },
+    {
+      "name": "plan.log",
+      "bytes": 8868,
+      "sha256": "7ff00658eb6ce8454b7f5337767ec3998e45cfaf1f53b287ee33a05126f86fa0"
+    },
+    {
+      "name": "grant.json",
+      "bytes": 589,
+      "sha256": "9ad0770aed895489bab5ba08fb6bdd126cfd48b5ea5eb8ad598582c56b70e7c7"
+    },
+    {
+      "name": "run-boot.mjs",
+      "bytes": 70310,
+      "sha256": "8b9a3e066c4704f57c628f25678b889e9cc33ec3769b6c15266c293bbca40b0a"
+    },
+    {
+      "name": "recon-web-offer-row.mjs",
+      "bytes": 11889,
+      "sha256": "36ce6ae0108f76a58ee7d81f2f7f007770d97104300d8b619fd82d759a298cda"
+    },
+    {
+      "name": "recon-marker-mock.mjs",
+      "bytes": 6197,
+      "sha256": "e8c9a26edb28d54243ed1f76b2576151eb7eba550d4778f04fdf05e415d6f6b7"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

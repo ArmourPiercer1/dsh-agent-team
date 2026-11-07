@@ -1,0 +1,20 @@
+TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1
+overall                       FAIL
+admittedVerdict               REFUTED
+deniedVerdict                 REFUTED
+surfaceVerdict                PROVEN
+factsVerdict                  REFUTED
+spawnsVerdict                 REFUTED
+allowFacts                    0
+denyFacts                     0
+confinedTurnLaunchers         0
+payloadInLane                 0
+procSecretCommandSightings    0
+baseBwrapWithMarkers          0
+governedSurface               true
+admittedBytes                 false
+deniedSecretAbsent            false
+transcriptSourceCount         10
+
+agreeing=false differing=[]

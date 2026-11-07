@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-07T16:19:29.812Z",
+  "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "d45c26d348bd652021483212e12b754f2b1d679d3407ce7430da612d7705c844",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "command": "node tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs --run-tag as-shipped",
+  "derivedFrom": "tests/world-factory/drivers/a5sf-live-member/run-boot.mjs @ 235e1af8b",
+  "composition": {
+    "preset": "a5sf-governed-member",
+    "a5sfGovernedRealm": true,
+    "a5sfNativeToolModules": null,
+    "ceiling": "read = write = <workspace>/lane",
+    "imageCapableRouteDeclared": false,
+    "runTag": "as-shipped"
+  }
+}

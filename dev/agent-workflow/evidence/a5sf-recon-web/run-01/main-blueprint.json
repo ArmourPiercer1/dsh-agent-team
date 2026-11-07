@@ -1,0 +1,12 @@
+{
+  "yaml": "---\nschemaVersion: 3\nblueprintId: team.a5sf.recon.web.main\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf recon-web team. The driver delegates the recon probes; do not call tools on your own.\"\n  capabilities:\n    teamTools:\n      kind: allow\n      items:\n        - team_delegate\n        - team_archive_member\n        - team_follow_up\n        - team_collect\n    builtinToolDeny:\n        - u5_canary\n        - u6fs_probe\n    skills:\n      kind: allow\n      items: []\n    mcp:\n      kind: allow\n      items: []\n    permissions:\n      default: deny\n      allow: []\n      ask: []\n      deny: []\nteamEnvelope:\n  allow:\n    - create-member\n    - assign-task\n    - send-message\n    - report-progress\n    - archive-member\n  deny: []\nmembers:\n  - templateId: weballow\n    displayName: \"a5sf recon web allow worker\"\n    persona: \"You are an a5sf recon web worker on the ALLOW lane. On your first turn call web_fetch exactly once on the URL in the instruction; on your next turn call web_search exactly once; then report the exact bytes you received. Call nothing else.\"\n  - templateId: webdeny\n    displayName: \"a5sf recon web deny worker\"\n    persona: \"You are an a5sf recon web worker on the DENY lane. On your first turn call web_fetch exactly once on the URL in the instruction; on your next turn call web_search exactly once; then report the exact error text you received. Call nothing else.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n",
+  "parsed": {
+    "ok": true,
+    "via": "parseBlueprint(dist domain facade = the host own import)",
+    "builtinToolDeny": [
+      "u5_canary",
+      "u6fs_probe"
+    ]
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "a5sf-recon-fs/agreement/1",
+  "at": "2026-11-07T16:18:59.944Z",
+  "boots": 1,
+  "agreeing": false,
+  "differing": [],
+  "rows": [],
+  "table": "AGREEMENT (the same command, every boot; every REQUIRED row must be identical)\nfact\n\nagreeing=false differing=[]"
+}

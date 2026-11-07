@@ -1,0 +1,8 @@
+{
+  "origin": "http://127.0.0.1:44723",
+  "port": 44723,
+  "totalRequests": 0,
+  "requests": [],
+  "note": "SERVER-SIDE observation: the controlled endpoint's own request log. For the deny lane this list must contain no request attributable to the deny window; for the allow lane exactly the fetch + search requests.",
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,70 @@
+{
+  "at": "2026-11-07T16:17:19.472Z",
+  "stopInstant": "2026-11-07T16:17:19.529Z",
+  "archive": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "archive-member",
+        "rootSessionId": "session-a5srf-team",
+        "callerRole": "leader",
+        "targetInstanceId": "inst-1kdc3xx12yhw",
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-1kdc3xx12yhw",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        },
+        "requestToken": "a5srf-archive"
+      }
+    }
+  },
+  "memberBefore": {
+    "instanceId": "inst-1kdc3xx12yhw",
+    "lifecycle": "SETTLED",
+    "childSessionId": "session-team-child-04cfa33fab776112327d75ba70f8423b"
+  },
+  "membersAfterArchive": [
+    {
+      "instanceId": "inst-1kdc3xx12yhw",
+      "templateId": "worker",
+      "lifecycle": "ARCHIVED"
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined"
+    }
+  ],
+  "postArchive": {
+    "read": {
+      "status": 422,
+      "body": {
+        "error": "no live agent for 'session-team-child-04cfa33fab776112327d75ba70f8423b': agent-bindings: session 'session-team-child-04cfa33fab776112327d75ba70f8423b' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+      },
+      "executed": false
+    },
+    "write": {
+      "status": 422,
+      "body": {
+        "error": "no live agent for 'session-team-child-04cfa33fab776112327d75ba70f8423b': agent-bindings: session 'session-team-child-04cfa33fab776112327d75ba70f8423b' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+      },
+      "executed": false
+    }
+  },
+  "factsBeforeStop": 4,
+  "factsAfterProbes": 4,
+  "probeFacts": [],
+  "executedAfterArchive": false,
+  "refusalLayer": "session route (NO_LIVE_AGENT) — NOT the fs guard",
+  "defaultRow": {
+    "verdict": "PASS",
+    "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+    "postArchiveReadStatus": 422,
+    "postArchiveWriteStatus": 422,
+    "executedAfterArchive": false
+  }
+}

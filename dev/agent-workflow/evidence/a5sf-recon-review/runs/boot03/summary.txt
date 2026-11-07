@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-recon-review-2026-11-07T17-42-36-335Z-b1 suite=a5sf-recon-review overall=FAIL cases=8 FAIL:1 PASS:7 worlds=none recordClass=DEV-LIVE (not candidate evidence)

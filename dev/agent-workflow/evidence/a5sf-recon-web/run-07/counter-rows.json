@@ -1,0 +1,119 @@
+{
+  "all": [
+    {
+      "at": "2026-11-07T16:23:52.211Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1msngdn0q2ln",
+      "templateId": "weballow",
+      "networkAccess": "allow",
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+    },
+    {
+      "at": "2026-11-07T16:23:52.450Z",
+      "leg": "provider-entry",
+      "channel": "fetch",
+      "realm": "member:inst-1msngdn0q2ln",
+      "url": "http://127.0.0.1:46351/page?lane=allow"
+    },
+    {
+      "at": "2026-11-07T16:23:52.477Z",
+      "leg": "provider-entry",
+      "channel": "search",
+      "realm": "member:inst-1msngdn0q2ln",
+      "requestKeys": [
+        "maxResults",
+        "query"
+      ],
+      "hasQueryString": true,
+      "hasQueriesArray": false
+    },
+    {
+      "at": "2026-11-07T16:23:52.762Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "templateId": "webdeny",
+      "networkAccess": "deny",
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+    },
+    {
+      "at": "2026-11-07T16:23:52.985Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-07T16:23:53.007Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-07T16:23:53.008Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    }
+  ],
+  "providerEntries": [
+    {
+      "at": "2026-11-07T16:23:52.450Z",
+      "leg": "provider-entry",
+      "channel": "fetch",
+      "realm": "member:inst-1msngdn0q2ln",
+      "url": "http://127.0.0.1:46351/page?lane=allow"
+    },
+    {
+      "at": "2026-11-07T16:23:52.477Z",
+      "leg": "provider-entry",
+      "channel": "search",
+      "realm": "member:inst-1msngdn0q2ln",
+      "requestKeys": [
+        "maxResults",
+        "query"
+      ],
+      "hasQueryString": true,
+      "hasQueriesArray": false
+    }
+  ],
+  "capabilityProbes": [
+    {
+      "at": "2026-11-07T16:23:52.985Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-07T16:23:53.007Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    },
+    {
+      "at": "2026-11-07T16:23:53.008Z",
+      "leg": "capability-probe",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "level": "unsupported"
+    }
+  ],
+  "compiledLanes": [
+    {
+      "at": "2026-11-07T16:23:52.211Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1msngdn0q2ln",
+      "templateId": "weballow",
+      "networkAccess": "allow",
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+    },
+    {
+      "at": "2026-11-07T16:23:52.762Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "templateId": "webdeny",
+      "networkAccess": "deny",
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+    }
+  ],
+  "hostWebRows": [],
+  "note": "provider entries = the composition transport was entered. capability probes = the guard's own question to the backend. compiled-lane = the lane the ONE compiler produced for that realm.",
+  "osLevelNetworkIsolationClaimed": false
+}

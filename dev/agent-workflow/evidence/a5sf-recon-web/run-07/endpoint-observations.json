@@ -1,0 +1,25 @@
+{
+  "origin": "http://127.0.0.1:46351",
+  "port": 46351,
+  "totalRequests": 2,
+  "requests": [
+    {
+      "at": "2026-11-07T16:23:52.453Z",
+      "method": "GET",
+      "path": "/page",
+      "query": "?lane=allow",
+      "host": "127.0.0.1:46351",
+      "userAgent": null
+    },
+    {
+      "at": "2026-11-07T16:23:52.479Z",
+      "method": "GET",
+      "path": "/search",
+      "query": "",
+      "host": "127.0.0.1:46351",
+      "userAgent": null
+    }
+  ],
+  "note": "SERVER-SIDE observation: the controlled endpoint's own request log. For the deny lane this list must contain no request attributable to the deny window; for the allow lane exactly the fetch + search requests.",
+  "osLevelNetworkIsolationClaimed": false
+}

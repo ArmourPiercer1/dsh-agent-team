@@ -1,0 +1,11 @@
+[2026-11-07T16:15:38.037Z] dev-live lease open: intent row written; grant=devlive-web-recon-1 face=Web world=a5sfreconweb slotHeld=false
+[2026-11-07T16:15:38.038Z] archive-before-start: 7 file(s) under archive/
+[2026-11-07T16:15:38.042Z] row handoff: ["a5sf-recon-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-recon-web-leader","preset-a5sf-recon-web-member"]
+[2026-11-07T16:16:00.681Z] mock started on port 3498
+[2026-11-07T16:16:00.683Z] ABORT at boot-host: DevLiveSlotError: DEV_LIVE_LIMIT_REACHED: the machine already runs 2 dev Host(s), the owner ruling caps development boots at 2; finish or tear down one before starting another (slots: #0 pid=3 run=a5sf-live-member-2026-11-07T16-15-13-868Z-b1 world=u5a5sfsub1; #1 pid=3 run=a5sf-live-member-2026-11-07T16-15-31-159Z-b1 world=u5a5sfsub1)
+    at acquireDevLiveSlot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/world-factory/lib/dev-live-slots.mjs:206:11)
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/world-factory/suites/150-a5sf-read.mjs:628:16)
+    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs:922:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-07T16:16:00.685Z] RUN-SUMMARY run=a5sf-recon-web-2026-11-07T16-15-38-035Z suite=a5sf-recon-web overall=FAIL cases=4 FAIL:4 worlds=none partial=true abortedAt=boot-host recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:16:00.686Z] OVERALL=FAIL

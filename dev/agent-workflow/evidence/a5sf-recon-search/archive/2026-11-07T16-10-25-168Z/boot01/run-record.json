@@ -1,0 +1,192 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-member-2026-11-07T16-05-49-307Z-b1",
+  "suite": "a5sf-live-member",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:05:49.307Z",
+  "selectedCases": [
+    "rs:grep-on-surface",
+    "rs:grep-inlane-hit",
+    "rs:grep-out-of-lane",
+    "rs:grep-parent-dir",
+    "rs:grep-ignore",
+    "rs:grep-hidden-vcs",
+    "rs:grep-exit-nomatch",
+    "rs:grep-exit-error",
+    "rs:glob-workspace",
+    "rs:glob-out-of-lane",
+    "rs:grep-timeout",
+    "rs:guard-facts",
+    "rs:process-host-direct"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "rs:grep-on-surface",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-inlane-hit",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-out-of-lane",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-parent-dir",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-ignore",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-hidden-vcs",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-exit-nomatch",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-exit-error",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:glob-workspace",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:glob-out-of-lane",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:grep-timeout",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "rs:process-host-direct",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:06:05.574Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/dev/agent-workflow/evidence/a5sf-recon-search/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:05:49.340Z",
+        "runId": "a5sf-live-member-2026-11-07T16-05-49-307Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      }
+    ]
+  },
+  "partial": true,
+  "abortedAt": "pre-boot",
+  "abort": {
+    "stage": "pre-boot",
+    "detail": "boot 1 aborted at pre-boot",
+    "error": "DevLiveSlotError: DEV_LIVE_SLOT_REQUIRED: record 'a5sf-live-member-2026-11-07T16-05-49-307Z-b1' is DEV-LIVE but holds no dev-Host slot under /home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp/port-leases/dev-live-hosts; a dev-live Host may only start through the scope-aware grant gate (preRegisterDevLiveBudget), which acquires one of the 2 machine slots\n    at assertDevLiveSlotHeld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/lib/dev-live-slots.mjs:271:11)\n    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/lib/a5sf-harness.mjs:315:9)\n    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:848:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/suites/150-a5sf-read.mjs:638:16)\n    at async bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:815:16)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1374:15)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-member-2026-11-07T16-05-49-307Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-07T16:06:05.574Z"
+}

@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-07T16:19:13.435Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 22,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-18-35Z",
+    "releasedPorts": [
+      3184,
+      3494,
+      3184
+    ],
+    "killedPids": [
+      22
+    ],
+    "notes": []
+  },
+  "port": 3184,
+  "portClosedAfterTeardown": true,
+  "homeRemoved": true,
+  "homePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-18-35Z",
+  "hostAliveAtEnd": false,
+  "endpointStillListening": true,
+  "osLevelNetworkIsolationClaimed": false
+}

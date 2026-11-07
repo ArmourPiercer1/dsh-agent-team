@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-rc-delegate-a",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-rc-team",
+      "requestToken": "a5sf-rc-a-delegate",
+      "delegationTemplateId": "worker",
+      "label": "rc-worker-a",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "prompt": "a5sf-rc-a: run the shell probe suite exactly once each, one tool call at a time, then report.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-088uk8104uxo\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-3628753bbaead6c4976ca7641f20acf3\",\"operationId\":\"op-12ub6jj0v2b5hi19ta9dp1ce\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rc-a-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RC_MEMBER_A_DONE (no background jobs)\"}},\"requestToken\":\"a5sf-rc-a-delegate\"}"
+  }
+}
