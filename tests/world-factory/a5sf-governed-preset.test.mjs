@@ -459,7 +459,7 @@ async function runBash(world, command, workdir = world.workspace) {
 // G0 — the shipped preset row: opt-in only, no second shell, names resolve
 // ===========================================================================
 
-test('G0 the shipped preset is declared, opt-in, shell-free and resolvable', () => {
+test('G0 the shipped preset is declared, opt-in, shell-free, PD-18 closed and resolvable', () => {
   const YAML = runtimeRequire('yaml')
   const composition = YAML.parse(readFileSync(join(REPO_ROOT, 'cordis.patch.yml'), 'utf8').replace(/!!js /g, ''))
   const rows = []
@@ -484,6 +484,12 @@ test('G0 the shipped preset is declared, opt-in, shell-free and resolvable', () 
   const ids = preset.config.plugins.filter((row) => row?.group !== true).map((row) => row.id)
   assert.equal(ids.includes('tool-bash'), true, 'the preset exposes `bash` (the shadow needs a visible name)')
   assert.equal(ids.includes('tool-pwsh'), false, 'NO second shell: tool-pwsh is not on the governed preset')
+  // PD-18 (2026-11-13): the two executors that resolved to BASE host services
+  // with zero a5sf facts are removed from the governed preset. This is a
+  // capability regression, pinned by tests/world-factory/a5sf-pd18-web-ptc.test.mjs.
+  for (const closed of ['tool-web', 'tool-workflow', 'workflow-ptc']) {
+    assert.equal(ids.includes(closed), false, `PD-18 fail-closed: ${closed} is not on the governed preset`)
+  }
   const flat = []
   const flatten = (list) => {
     for (const row of list ?? []) {

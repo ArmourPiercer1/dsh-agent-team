@@ -1,0 +1,396 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd18-web-ptc-2026-11-07T22-13-22-240Z-b2",
+  "suite": "a5sf-pd18-web-ptc",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T22:13:22.240Z",
+  "selectedCases": [
+    "pd18:member-bash-admitted",
+    "pd18:member-bash-denied",
+    "pd18:member-surface-closed",
+    "pd18:member-workflow-typed-refusal",
+    "pd18:member-web-typed-refusal",
+    "pd18:leader-workflow-allowed",
+    "pd18:guard-facts-shell-only",
+    "pd18:no-member-code-exec"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "d590d58a0f35191225ddeec9f9d1b96a7e4ff668",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "d590d58a0f35191225ddeec9f9d1b96a7e4ff668",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfsub1-20261107T22-13-22Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd18:member-bash-admitted",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the Member's model-visible `bash` admits an in-ceiling read through the confined terminal face and returns its bytes",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the admitted `bash` call"
+        },
+        {
+          "id": "call-is-bash",
+          "ok": true,
+          "detail": "name=bash"
+        },
+        {
+          "id": "result-present",
+          "ok": true,
+          "detail": "the Member received a tool result for the admitted call"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "confined-terminal-kind",
+          "ok": true,
+          "detail": "kind=confined-terminal"
+        },
+        {
+          "id": "exit-zero",
+          "ok": true,
+          "detail": "exitCode=0"
+        },
+        {
+          "id": "in-lane-bytes",
+          "ok": true,
+          "detail": "the admitted read returned the in-lane bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd18:member-bash-denied",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the Member's model-visible `bash` REFUSES an out-of-ceiling read before it runs: a typed IO_READ_DENIED tool error and zero secret bytes",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the denied `bash` call"
+        },
+        {
+          "id": "result-present",
+          "ok": true,
+          "detail": "the Member received a tool result for the denied call"
+        },
+        {
+          "id": "result-is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-denial",
+          "ok": true,
+          "detail": "the tool result names the typed refusal code"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "NO secret bytes reached the Member transcript"
+        }
+      ]
+    },
+    {
+      "id": "pd18:member-surface-closed",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the governed Member surface does NOT name the two executors PD-18 fail-closed (workflow, web_fetch/web_search) nor run_code, while `bash` stays present",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "workflow-absent",
+          "ok": true,
+          "detail": "workflow on surface=false"
+        },
+        {
+          "id": "web_fetch-absent",
+          "ok": true,
+          "detail": "web_fetch on surface=false"
+        },
+        {
+          "id": "web_search-absent",
+          "ok": true,
+          "detail": "web_search on surface=false"
+        },
+        {
+          "id": "run_code-absent",
+          "ok": true,
+          "detail": "run_code on surface=false"
+        },
+        {
+          "id": "bash-still-present",
+          "ok": true,
+          "detail": "the governed shell is still on the surface (this is not a blanket strip)"
+        },
+        {
+          "id": "closed-set",
+          "ok": true,
+          "detail": "closed names=web_fetch,web_search,workflow,run_code"
+        },
+        {
+          "id": "endpoint-untouched",
+          "ok": true,
+          "detail": "the controlled endpoint saw 0 request(s) during the whole boot"
+        }
+      ]
+    },
+    {
+      "id": "pd18:member-workflow-typed-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the governed Member `workflow` call is a typed host-router refusal (UNKNOWN_TOOL) and returns NO workflow value — zero execution",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "name=workflow"
+        },
+        {
+          "id": "result-is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-unknown-tool",
+          "ok": true,
+          "detail": "text=\"Error: unknown tool \\\"workflow\\\"\""
+        },
+        {
+          "id": "no-workflow-value",
+          "ok": true,
+          "detail": "the deterministic 42 never came back (the PTC body never ran)"
+        },
+        {
+          "id": "not-host-ssrf-path",
+          "ok": true,
+          "detail": "the refusal is not the web provider SSRF path (this arm is the executor)"
+        }
+      ]
+    },
+    {
+      "id": "pd18:member-web-typed-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the governed Member `web_fetch` call is a typed host-router refusal (UNKNOWN_TOOL): ZERO provider calls, ZERO endpoint requests, ZERO bytes",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "name=web_fetch"
+        },
+        {
+          "id": "result-is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-unknown-tool",
+          "ok": true,
+          "detail": "text=\"Error: unknown tool \\\"web_fetch\\\"\""
+        },
+        {
+          "id": "not-host-ssrf-refusal",
+          "ok": true,
+          "detail": "pre-fix the refusal was the BASE provider SSRF policy; now the tool is not dispatchable at all"
+        },
+        {
+          "id": "endpoint-zero-requests",
+          "ok": true,
+          "detail": "controlled endpoint requests=0"
+        },
+        {
+          "id": "zero-endpoint-bytes",
+          "ok": true,
+          "detail": "no endpoint bytes reached the Member"
+        }
+      ]
+    },
+    {
+      "id": "pd18:leader-workflow-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "OUTSIDE the governed preset the SAME tree still executes `workflow` and returns its deterministic value (capability positive control)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "name=workflow"
+        },
+        {
+          "id": "result-present",
+          "ok": true,
+          "detail": "the Leader received a workflow tool result"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "deterministic-value",
+          "ok": true,
+          "detail": "text=\"workflow \\\"pd18-return-42\\\" completed (0 agents).\\nReturn value:\\n42\""
+        }
+      ]
+    },
+    {
+      "id": "pd18:guard-facts-shell-only",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the guard ADMITTED the in-lane locator and DENIED the out-of-lane locator, as shellRead facts from the product sink",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "one-allow",
+          "ok": true,
+          "detail": "allow=1"
+        },
+        {
+          "id": "allow-identity",
+          "ok": true,
+          "detail": "the ALLOW fact names the real Member identity"
+        },
+        {
+          "id": "allow-decidedBy",
+          "ok": true,
+          "detail": "decidedBy=ALLOW"
+        },
+        {
+          "id": "one-deny",
+          "ok": true,
+          "detail": "deny=1"
+        },
+        {
+          "id": "deny-code",
+          "ok": true,
+          "detail": "decidedBy=IO_READ_DENIED"
+        },
+        {
+          "id": "deny-locator",
+          "ok": true,
+          "detail": "locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/out-of-lane/secret-out-of-lane.txt"
+        },
+        {
+          "id": "shellRead-method",
+          "ok": true,
+          "detail": "both decisions came from the shellRead lane"
+        }
+      ]
+    },
+    {
+      "id": "pd18:no-member-code-exec",
+      "verdict": "PASS",
+      "at": "2026-11-07T22:15:38.986Z",
+      "proposition": "the Member turn ran exactly ONE confined-provider child for its TWO commands (the denied one spawned nothing), and ZERO base `bwrap` children ran the Member tool",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "one-confined-launcher",
+          "ok": true,
+          "detail": "--confined-exec-stream launchers under the World scratch=1 for TWO commands; the guard recorded 1 DENY and the refused call returned no confined-terminal record, so the single spawn is the admitted command"
+        },
+        {
+          "id": "denied-spawn-absent",
+          "ok": true,
+          "detail": "no second launcher and no process argv carrying the secret locator (sightings=0)"
+        },
+        {
+          "id": "zero-base-spawn",
+          "ok": true,
+          "detail": "base bwrap argv carrying the Member markers=0"
+        },
+        {
+          "id": "no-ptc-child-in-member-window",
+          "ok": true,
+          "detail": "ptc-runtime processes observed after the discovery (positive) turn=0; the Leader's allowed run happened BEFORE this window"
+        },
+        {
+          "id": "preflight-excluded",
+          "ok": true,
+          "detail": "4 pre-attach probe launcher(s) were observed and are EXCLUDED from the turn count (their scratch path names probe-*)"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/dev/agent-workflow/evidence/a5sf-pd18-web-ptc/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T22:13:22.279Z",
+        "runId": "a5sf-pd18-web-ptc-2026-11-07T22-13-22-240Z-b2",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "d590d58a0f35191225ddeec9f9d1b96a7e4ff668",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T22:13:53.622Z",
+        "runId": "a5sf-pd18-web-ptc-2026-11-07T22-13-22-240Z-b2",
+        "suite": "a5sf-pd18-web-ptc",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfsub1-20261107T22-13-22Z",
+        "phase": "a5sf-pd18-web-ptc-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd18-web-ptc-boot2",
+      "world": "u5u5a5sfsub1-20261107T22-13-22Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/dev/agent-workflow/evidence/a5sf-pd18-web-ptc/driver/logs/u5u5a5sfsub1-20261107T22-13-22Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd18-web-ptc-2026-11-07T22-13-22-240Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-07T22:15:38.987Z"
+}

@@ -1,0 +1,24 @@
+TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+workflowRefusalVerdict        PROVEN                        PROVEN
+webRefusalVerdict             PROVEN                        PROVEN
+leaderWorkflowVerdict         PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+allowFacts                    1                             1
+denyFacts                     1                             1
+confinedTurnLaunchers         1                             1
+ptcRuntimeInMemberWindow      0                             0
+endpointRequests              0                             0
+procSecretCommandSightings    0                             0
+baseBwrapWithMarkers          0                             0
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         4                             4
+
+agreeing=true differing=[]
