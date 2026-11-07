@@ -100,6 +100,7 @@ export type {
  * deliberately does not own.
  */
 export {
+  A5SF_GOVERNED_REALM_KEY,
   A5SF_MEMBER_AUTHORITY_KEY,
   A5SF_MEMBER_POLICIES_KEY,
   A5SF_PRODUCT_ASSEMBLY_RESIDUALS,
@@ -107,9 +108,11 @@ export {
   createProductRealmProvider,
   deriveProductRealmDeclaration,
   deriveProductRealmPlan,
+  deriveProductRealmPlanFromBlueprint,
   parseProductRealmDeclaration,
 } from './product-assembly.js'
 export type {
+  A5sfBoundBlueprintRealmInput,
   A5sfDerivedRealmInput,
   A5sfProductAssemblyResidual,
   A5sfProductCompiledAnswer,

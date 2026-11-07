@@ -1,0 +1,183 @@
+{
+  "schema": "a5sf-governed-preset-surface/1",
+  "generatedBy": "scripts/a5sf-governed-preset-surface.mjs",
+  "pinnedStandard": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml (0.2.0-rc.2 @ 639ed01539)",
+  "shippedPreset": {
+    "id": "a5sf-governed-member",
+    "file": "cordis.patch.yml"
+  },
+  "declaration": {
+    "standardRowCount": 29,
+    "shippedRowCount": 28,
+    "removed": [
+      {
+        "id": "tool-pwsh",
+        "name": "@deepseek-ai/dsh-tool-pwsh"
+      }
+    ],
+    "added": [],
+    "changed": [],
+    "unchangedCount": 28,
+    "shippedRows": [
+      {
+        "id": "agent-instructions",
+        "name": "@deepseek-ai/dsh-agent-instructions"
+      },
+      {
+        "id": "command-compact",
+        "name": "@deepseek-ai/dsh-command-compact"
+      },
+      {
+        "id": "command-goal",
+        "name": "@deepseek-ai/dsh-command-goal"
+      },
+      {
+        "id": "compaction-basic",
+        "name": "@deepseek-ai/dsh-compaction-basic"
+      },
+      {
+        "id": "persona",
+        "name": "@deepseek-ai/dsh-persona"
+      },
+      {
+        "id": "plan-mode",
+        "name": "@deepseek-ai/dsh-plan-mode"
+      },
+      {
+        "id": "present",
+        "name": "@deepseek-ai/dsh-tool-present"
+      },
+      {
+        "id": "skill-filesystem",
+        "name": "@deepseek-ai/dsh-skill-filesystem"
+      },
+      {
+        "id": "tool-ask-user",
+        "name": "@deepseek-ai/dsh-tool-ask-user"
+      },
+      {
+        "id": "tool-bash",
+        "name": "@deepseek-ai/dsh-tool-bash"
+      },
+      {
+        "id": "tool-fs",
+        "name": "@deepseek-ai/dsh-tool-fs"
+      },
+      {
+        "id": "tool-fs-search",
+        "name": "@deepseek-ai/dsh-tool-fs-search"
+      },
+      {
+        "id": "tool-goal",
+        "name": "@deepseek-ai/dsh-tool-goal"
+      },
+      {
+        "id": "tool-jobs",
+        "name": "@deepseek-ai/dsh-tool-jobs"
+      },
+      {
+        "id": "tool-plugin-manager",
+        "name": "@deepseek-ai/dsh-plugin-manager/tools",
+        "disabled": true
+      },
+      {
+        "id": "tool-ralph",
+        "name": "@deepseek-ai/dsh-tool-ralph",
+        "disabled": true
+      },
+      {
+        "id": "tool-result-pruner",
+        "name": "@deepseek-ai/dsh-compaction-tool-result-pruner"
+      },
+      {
+        "id": "tool-skill",
+        "name": "@deepseek-ai/dsh-tool-skill"
+      },
+      {
+        "id": "tool-subagent",
+        "name": "@deepseek-ai/dsh-tool-subagent"
+      },
+      {
+        "id": "tool-subagent-claude-code",
+        "name": "@deepseek-ai/dsh-tool-subagent",
+        "disabled": true
+      },
+      {
+        "id": "tool-subagent-codex",
+        "name": "@deepseek-ai/dsh-tool-subagent",
+        "disabled": true
+      },
+      {
+        "id": "tool-subagent-control",
+        "name": "@deepseek-ai/dsh-tool-subagent-control"
+      },
+      {
+        "id": "tool-subagent-fork",
+        "name": "@deepseek-ai/dsh-tool-subagent"
+      },
+      {
+        "id": "tool-subagent-list-agents",
+        "name": "@deepseek-ai/dsh-tool-subagent-control/list-agents"
+      },
+      {
+        "id": "tool-todo",
+        "name": "@deepseek-ai/dsh-tool-todo"
+      },
+      {
+        "id": "tool-web",
+        "name": "@deepseek-ai/dsh-tool-web"
+      },
+      {
+        "id": "tool-workflow",
+        "name": "@deepseek-ai/dsh-tool-workflow"
+      },
+      {
+        "id": "workflow-ptc",
+        "name": "@deepseek-ai/dsh-workflow-ptc"
+      }
+    ]
+  },
+  "resolvedBash": {
+    "standard": {
+      "resolved": true,
+      "parameterNames": [
+        "command",
+        "description",
+        "timeoutMs",
+        "workdir"
+      ],
+      "required": [
+        "command",
+        "description"
+      ],
+      "descriptionLength": 738,
+      "descriptionFirstLine": "Execute a bash command (`bash -c`) and return its stdout/stderr. Each call runs in a fresh shell; pass `workdir` instead of using `cd`. Managed `$DSH_*` variables expose current harness environment facts. Long output is truncated to its tail; the full output is saved to a file whose path is reported when available. Before any delete or move, verify that the resolved absolute target path is the intended one; never run it against a computed path you have not checked. An unset variable expands to an empty string, so guard variables in such paths with `${VAR:?}`. Commands may run under a file sandbox; a blocked file operation is reported as `[sandbox: file access denied under <mode> mode]`, a policy denial: do not retry another way."
+    },
+    "governed": {
+      "resolved": true,
+      "parameterNames": [
+        "command",
+        "description",
+        "workdir"
+      ],
+      "required": [
+        "command",
+        "description"
+      ],
+      "additionalProperties": false,
+      "descriptionLength": 353,
+      "descriptionFirstLine": "Execute a bash command through this Member's confined terminal face and return its stdout/stderr. Each call runs in a fresh confined shell; pass `workdir` instead of using `cd`. Every path the command names is admitted against the compiled read lane before the shell starts; a refused read returns no bytes and names the typed refusal code in its error."
+    },
+    "parameterDelta": {
+      "removed": [
+        "timeoutMs"
+      ],
+      "added": []
+    }
+  },
+  "notes": [
+    "The standard preset is the PINNED host baseline; its rows are declarations, not a live mount, because the transient shell and the skills/compaction/subagent rows are host-provided.",
+    "The governed preset is a copy of those declarations minus tool-pwsh; the only row whose RESOLVED definition differs at runtime is `bash` (route-C shadow onto the confined terminal face).",
+    "Retained-but-idle: tool-jobs has no producer on the governed preset (the confined face cannot hand a command to the job registry)."
+  ]
+}

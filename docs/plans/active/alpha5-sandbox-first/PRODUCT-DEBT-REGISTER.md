@@ -459,7 +459,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **blocked by**: nothing for (a)/(b); the owner decides the code/name. A positive Host control (the
   same plan under a polling health gate) is not required to establish the mechanism and was
   deliberately not spent.
-- **anchors**: `packages/runtime/src/plugin/host.ts#L3159` contains `const ready: Promise<TeamProductionRoot> = bootstrap()` ; `packages/runtime/src/plugin/host.ts#L3168` contains `void ready.catch(` ; `packages/storage/schema/errors.ts#L166` contains `the TeamDomain is closed` ; `packages/runtime/root-binding/write-port.ts#L47` contains `putSessionBinding(binding: SessionBindingDto)` ; `packages/runtime/root-binding/fresh-root.ts#L192` contains `ports.writes.putSessionBinding({`
+- **anchors**: `packages/runtime/src/plugin/host.ts#L3229` contains `const ready: Promise<TeamProductionRoot> = bootstrap()` ; `packages/runtime/src/plugin/host.ts#L3238` contains `void ready.catch(` ; `packages/storage/schema/errors.ts#L166` contains `the TeamDomain is closed` ; `packages/runtime/root-binding/write-port.ts#L47` contains `putSessionBinding(binding: SessionBindingDto)` ; `packages/runtime/root-binding/fresh-root.ts#L192` contains `ports.writes.putSessionBinding({`
 - **status**: OPEN — adopted 2026-11-10 from the row filed at `dev/agent-workflow/evidence/a5sf-domain-attrib/DEBT-ROW-PD-11.md`; that lane was host-free (0 boots), and its verdict was `TEST-WORLD` (the boot #5 abort was a readiness-gate race in the evidence driver, not this defect).
 
 ### PD-12 (Q5) — `network: deny` does not govern the model-visible `bash`
@@ -585,7 +585,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
   declare a terminal face in a shipped composition (no product composition declares one yet, so the
   shipped product still has no confined shell — residual (4)). [BL-42](ALPHA5-SANDBOX-BACKLOG.md)'s
   network backend is unrelated to this row.
-- **anchors**: `packages/runtime/team-services/src/terminal.ts#L530-L535` contains `for (const locator of shellReadIntentsOf(text, session.cwd))` ; `packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L914-L926` contains `confinedTerminalSpecOf` ; `packages/runtime/team-services/src/types.ts#L255` contains `readonly terminals: ConfinedTerminalSurface | null`
+- **anchors**: `packages/runtime/team-services/src/terminal.ts#L530-L535` contains `for (const locator of shellReadIntentsOf(text, session.cwd))` ; `packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L961-L973` contains `confinedTerminalSpecOf` ; `packages/runtime/team-services/src/types.ts#L255` contains `readonly terminals: ConfinedTerminalSurface | null`
 - **invariant (EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction)**: violated at the **ToolRestriction
   term** — route C shadows only the tools it re-registers (the FS/search pair); `bash` is not one of
   them, so the Member's `bash` is served by the preset's own tool row, carries the preset's legacy

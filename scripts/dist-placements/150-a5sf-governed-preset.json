@@ -1,0 +1,12 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-governed-preset",
+  "summary": "GOVERNED-PRESET (owner ruling 2026-11-11): the shipped governed Member realm provider (`src/plugin/live/a5sf-governed-realm.mjs`) is plain JS imported by the emitted Host wiring (`packages/runtime/dist/packages/runtime/src/plugin/host.js` imports `./live/a5sf-governed-realm.mjs`) and re-exported by the byte-copied realm row's config block. tsc never emits `.mjs`, so without this entry the installed/dist Host would fail at import time with ERR_MODULE_NOT_FOUND — not at build time — and the shipped preset row could never compile a realm. The module's own relative edges (`../../../team-services/src/product-assembly.js`) resolve in the mirror because `tsconfig.build.json` already enrols `team-services/src`, and the emitted lane sits at the same `dist/packages/runtime/...` depth.",
+  "migratedFrom": "new lane (governed preset product assembly) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs"
+    }
+  ]
+}

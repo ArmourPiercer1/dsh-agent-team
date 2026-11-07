@@ -65,6 +65,8 @@ import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } fro
 // handed to the production root as a port. The persistence-only face
 // (`append`/`latest`/`history`) is what crosses; nothing else reaches the
 // repository (PR1 ADR §1).
+import { tmpdir } from 'os';
+import { createGovernedRealmProvider, governedAuthorityReference, GOVERNED_REALM_ID } from './live/a5sf-governed-realm.mjs';
 import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js';
 import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './permission-plane.js';
 // A4-PR6 §6.A — the governance-warning lane: the ONE service instance the
@@ -1404,6 +1406,60 @@ export async function apply(ctx, config) {
         // fs provider is consulted only for rules that actually exist (a world
         // without `capabilities.permissions` performs ZERO fs calls); failures are
         // never cached, so the next read retries (bounded recovery).
+        // GOVERNED MEMBER REALM (2026-11-11, owner-ruled governed preset): the
+        // OPT-IN, composition-provided compiled-realm source. Built ONLY when the row
+        // carries the neutral key `a5sfGovernedRealm: true`; every other row (the
+        // shipped default included) keeps the pre-existing accessor byte-for-byte.
+        //
+        // WHAT IT READS — all of it LIVE, none of it from config:
+        //   - the Team's BOUND blueprint through `resolveBoundBlueprint` (the BP-F
+        //     three-case resolver below: a bound ref resolves through the live
+        //     authority and NEVER the row anchor);
+        //   - the Alpha.4 authority: the durable permission-overlay GENERATION (the
+        //     HIGHEST-generation snapshot — the port's own `latest()` law) plus the
+        //     durable MemberInstance lifecycle admission. The generation is the SAME
+        //     number the A5-M1 reader hands the tool Guard, so a policy compiled here
+        //     and a Guard stamped there speak about one generation;
+        //   - the Member identity/generation handed to `compiledFor` by the live glue
+        //     (`resolveConsumptionViews`).
+        // The lanes themselves are compiled by the ONE product compiler inside the
+        // provider (`deriveProductRealmPlanFromBlueprint`); this block decides nothing
+        // about permissions and never evaluates an approval.
+        const governedRealmScratch = () => {
+            const laneProcess = globalThis.process;
+            const fromEnv = laneProcess?.env?.['A5SF_GOVERNED_SCRATCH'];
+            return typeof fromEnv === 'string' && fromEnv.trim() !== ''
+                ? fromEnv
+                : `${tmpdir()}/a5sf-governed-realm/${String(resolvedRowConfig.rootSessionId)}`;
+        };
+        const readGovernedAuthority = async (input) => {
+            const latest = await permissionOverlay.latest({
+                teamSessionId: input.teamSessionId,
+                memberInstanceId: input.memberInstanceId,
+            });
+            const generation = latest === undefined ? 0 : latest.metadata.generation;
+            if (!Number.isInteger(generation) || generation < 0) {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_PERMISSION_AUTHORITY_UNAVAILABLE, `the durable authority generation of Member '${input.memberInstanceId}' is not a non-negative integer (${JSON.stringify(generation)}); a governed realm never compiles at a generation nobody read`);
+            }
+            // ADMISSION is the durable MemberInstance lifecycle, read from the TeamDomain
+            // roster — the same durable row the rest of this plugin resolves identities
+            // from. ARCHIVED/DISPOSED (or a vanished row) is NOT admitted: the compiler
+            // then refuses `AUTHORITY_REFUSED` and the realm never mounts, which is what
+            // "revoked on Member lifecycle" means at this layer.
+            const row = domain.repositories.memberInstances.get(input.teamSessionId, input.memberInstanceId);
+            // The mapping lives in the provider module (ONE rule shared by the Host and
+            // the tests): CREATED/RUNNING/SETTLED are admissions; ARCHIVED/DISPOSED (or a
+            // vanished row) are not.
+            return governedAuthorityReference({ generation, lifecycle: row?.lifecycle });
+        };
+        const governedRealmProvider = resolvedRowConfig.a5sfGovernedRealm === true
+            ? createGovernedRealmProvider({
+                realmId: GOVERNED_REALM_ID,
+                scratchRoot: governedRealmScratch(),
+                resolveBoundBlueprint: (teamRootSid) => resolveBoundBlueprint(teamRootSid),
+                readAuthority: readGovernedAuthority,
+            })
+            : undefined;
         // PR4 ROUND 5 (FIX-2a): the ONE server-side canonicalizer over the row's
         // fs provider — shared by the authority facts and the Leader permission
         // grant/revoke tool (client-supplied paths are NEVER authorization
@@ -1601,7 +1657,8 @@ export async function apply(ctx, config) {
             // per setup call via the strict ctx.get (the jobs/agentPresets accessor
             // pattern), so the providing row may apply after this one. Additive
             // optional dep: never in the hard inject array.
-            a5sfRealmProvider: () => ctx.get('teamA5sfRealm'),
+            a5sfRealmProvider: () => ctx.get('teamA5sfRealm')
+                ?? governedRealmProvider,
             // strict-read + core-spill (Phase D/E): the shared artifact-authority
             // reference (filled by the bootstrap after the authority is
             // constructed + rebuilt — see the ref's rationale). Additive optional

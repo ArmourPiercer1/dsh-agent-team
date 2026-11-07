@@ -256,6 +256,41 @@ export interface TeamPluginConfig {
         admitted: boolean;
     }>;
     /**
+     * NEUTRAL ENABLEMENT KEY OF THE GOVERNED MEMBER REALM (2026-11-11,
+     * owner-ruled governed preset; optional and ADDITIVE).
+     *
+     * Set it to `true` to make the COMPOSITION'S `teamA5sfRealm` provider this
+     * row's ONLY compiled-realm source. The row config then carries NO policy: no
+     * declaration, no authority reference and no machine path, so the
+     * machine-agnostic shipped layer can carry the key and the row cannot fork the
+     * compiler (it has nothing to fork WITH).
+     *
+     * WHY IT EXISTS (measured `a5sf-face-decl-impact` §6.3): the only enablement
+     * that did not set `memberPolicies` was `a5sfEvidencePath` — an evidence FILE
+     * PATH that the shipped layer forbids. `a5sfMemberPolicies` and
+     * `a5sfMemberAuthority` both set `memberPolicies`, and a row carrying a
+     * declaration AND a provided service is the "two compiled-realm sources" fork
+     * the mount refuses.
+     *
+     * SEMANTICS:
+     *   - the provider must be present; a governed row with no provider REFUSES at
+     *     mount (`governed row that compiles nothing and has no provider would
+     *     leave the Member with NO realm`) rather than silently mounting nothing;
+     *   - a template the provider does not manage still answers `undefined` (that
+     *     Member is UNMANAGED — no realm, unchanged surface);
+     *   - combining this key with `a5sfMemberPolicies` or `a5sfMemberAuthority`
+     *     REFUSES with `REALM_DECLARATION_INVALID` (two compiled-realm sources);
+     *   - `a5sfEvidencePath` may ride along as the OPTIONAL observation sink, as
+     *     it does for a declaration.
+     *
+     * The provider behind the key is the shipped governed provider, built by the
+     * Host from the Team's REAL bound blueprint, the live Alpha.4 authority and
+     * the actual Member identity/generation; the policy lanes are compiled by the
+     * ONE product compiler. The value is `true` or absent — `false` is refused so a
+     * half-written opt-out cannot look like a clean default.
+     */
+    readonly a5sfGovernedRealm?: boolean;
+    /**
      * ROUTE C (this round, optional): the NATIVE tool modules to re-mount INSIDE
      * each Member's isolated `fs` scope, so the model-visible native
      * `read`/`write`/`edit` rows (registered by the Agent preset under its own

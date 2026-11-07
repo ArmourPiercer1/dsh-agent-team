@@ -155,6 +155,9 @@ describe('a5w compile surface', () => {
     { file: '../../tools/search-family/src/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
     // U7-G6b: search-mechanics.mjs left this list — its one mount was the
     // retired archived CANDIDATE-A glob factory.
+    // GOVERNED-PRESET (owner ruling 2026-11-11): the opt-in governed Member realm
+    // builds its provider through the SAME public face — one edge, no deep import.
+    { file: 'plugin/live/a5sf-governed-realm.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
   ]
 
   it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {
