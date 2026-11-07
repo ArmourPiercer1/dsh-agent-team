@@ -204,3 +204,18 @@ strict own-root (kept as a future probe, excluded from acceptance); the
 `ownerRootSessionId` field is written but not yet honored (reserved for the
 safe fix, comments corrected in the follow-up design note); `isStopped`'s
 non-ENOENT branch is code-read, not unit-tested.
+
+
+## Closing round — `d37ed8a3f..28b61d4b2`
+
+A separate independent review was requested for exactly this increment:
+non-authorizing invocation settlement, A6-only timeout abandon, boot settlement
+of dead PA invocations, accepted/claimed Inbox replacement wake, and marker
+owner readback. Its verdict is recorded below when returned. No product change
+may be claimed as reviewed before that verdict; the gate at `28b61d4b2` is
+9/9 independently of it.
+
+Disclosed scope: the body-started-result-unknown real-Host probe is NOT proven
+(the delaying command routes to the A5 parameter-permission lane, so no Plane
+PA row is created); the consume case proves zero execution and the shared
+`execution-outcome-unknown` settlement, not a real body start.

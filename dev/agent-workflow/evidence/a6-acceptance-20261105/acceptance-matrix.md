@@ -1,8 +1,11 @@
 # Alpha.6 isolated integration + real-Host E2E — acceptance matrix
 
-- **Integrated code HEAD under test:** `fb6ccb4f4` (durable Stop/resume,
-  trusted provenance, real resume re-plan, owner-scoped row recovery; markers still strict own-root; full gate 9/9
-  in `gate.md`).
+- **Integrated code HEAD under test:** `28b61d4b2` (adds non-authorizing
+  invocation settlement, Inbox replacement wake, marker owner readback; full
+  gate 9/9 in `gate.md`). Earlier full-arc evidence was taken at `fb6ccb4f4`;
+  the closing-round runs `a6-normal-r9`, `a6-timeout-r9`,
+  `a6-crash-allow-r4`, `a6-crash-consume-r8`, `a6-inbox-r14` are bound to
+  `28b61d4b2` by their `run-manifest.json`.
 - **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
   `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
   `a6-exception-r2`, `a6-human-r9`, `a6-handoff-only-r6` and `a6-stop-r3`, whose
@@ -34,19 +37,20 @@
 | 11 | Officer self-review | **PASS** | real Host `a6-recipients-r6` / `r12`: Officer's own PA leg `ctrl-1lc9fk11mqfnfy168muob00k` decided by Leader seq 19, consumed seq 20, command executed; see `recipients.md` |
 | 12 | Handoff successor notification / production `reviewEvents` consumer | **PASS** | clean real Host `a6-handoff-only-r6`: transfer seq 22 → Leader decision seq 23 → execution once. The missing production `reviewEvents` consumer was the defect; fixed in `fd7a5d6c1`; `recipients.md` |
 | 13 | Human escalation authority / final approval | **PASS (authority); Host human wake NOT_REACHED** | clean real Host `a6-human-r9`: Officer escalate seq 12, human leg seq 13 (`reviewAuthority:'human-user'`), human allow seq 14 (`decider.kind:'human'`), consumed seq 15, command executed once; see `human.md`. The human is resolved through the remote `team.resolveControl` entry; `human-current-leg` routes to `native-human`, a deliberate no-op, so no Host human wake is claimed |
-| 14 | Execution-time revalidation, Stop/cancel/timeout non-revival | **PASS (timeout/Stop); cancel-racing-guard NOT_REACHED** | Stop: allow seq 14, cancel accepted, no consumption/execution, second allow `CONTROL_REQUEST_DECIDED` (`a6-stop-r3`). Bounded wait: `alpha6WaitTimeoutMs=5000`, PA stays pending, no consumption/execution, late allow fail-closed `authority-undetermined` (`a6-timeout-r4`, A6-19/20). A cancel racing the guard is still not injected; see `timeout-and-queue.md` |
-| 15 | queued / claim / release under crash, Sticky Stop, four crash windows, native Inbox reconciliation | **PARTIAL** | two real windows: post-write (`a6-crash-r4`: request durable, post-restart human allow fail-closed `authority-undetermined`, no execution) and after-allow-before-consume (`a6-crash-allow-r1`: allow seq 11 with `consBefore=0`, restart leaves `consAfter=0`, no duplicate consumption/execution, but the approved call is **not reconciled/replayed** — a lost approved call). after-consume-before-result (`a6-crash-consume-r2`: `consBefore=1`, restart keeps `consAfter=1`, no duplicate execution, but the consumed allow's command is never executed — a lost execution). before-PA-write (`a6-crash-before-r1`: kill at the Guard admission, restart leaves no phantom PA request/consumption and no execution). All four crash windows now have real-Host evidence; the two approval-window gaps above remain FAIL for recovery. Sticky Stop is **WIRED and Host-proven** (`a6-sticky-stop-r14`: durable marker before dispatch, no post-restart redelivery, explicit human resume clears it and re-plans the wake without reviving the historical call; `sticky-stop.md`); native-Inbox crash reconciliation is **PASS**: `a6-inbox-r9`, A6-25 (claimed wake crashed; stale row discarded, no duplicate, durable pending request survives). Owner-scoped recovery touches intent rows written by this mount; Stop markers are still matched by strict own-root (the marker reader does not surface the owner field), which is availability-only: `isStopped` keeps the Stop enforced and resume finds it by target. See `crash-and-inbox.md` |
+| 14 | Execution-time revalidation, Stop/cancel/timeout non-revival | **PASS (timeout/Stop); cancel-racing-guard NOT_REACHED** | Stop: allow seq 14, cancel accepted, no consumption/execution, second allow `CONTROL_REQUEST_DECIDED` (`a6-stop-r3`). Bounded A6 wait (`a6-timeout-r9`, code `28b61d4b2`): the invocation is abandoned with reason `invocation-abandoned`; the durable decision stays absent (never a Deny), zero consumption/execution, late allow refused (A6-19/20). A cancel racing the guard is still not injected. |
+| 15 | queued / claim / release under crash, Sticky Stop, crash windows, native Inbox reconciliation | **PARTIAL (one scenario not real-Host)** | Closing round at `28b61d4b2`: after-allow (`a6-crash-allow-r4`, A6-15) keeps `decision=allow`, adds `invocation-abandoned`, zero consumption/execution; after-consume-before-body (`a6-crash-consume-r8`, A6-16) keeps `decision=allow`, one consumption, adds `execution-outcome-unknown`, zero execution/no replay. Body-started-result-unknown is **NOT PROVEN on the real Host** (the delaying command routes to the A5 parameter-permission lane); the same settlement reason covers it and the gap is disclosed. Before-write (`a6-crash-before-r1`, A6-17) has no phantom request. Inbox (`a6-inbox-r14`, A6-25): crashed claimed wake is replaced by exactly one NEW wake (distinct wakeIds 1 -> 2), old wake not redelivered, request decided. Sticky Stop marker now reads back `ownerRootSessionId` and has a cross-root isolation unit test; Stop behavior unchanged. |
 | 16 | Duplicate-approval elimination | **NOT_IMPLEMENTED** | evidence collected; recommendation only (see duplicate report) |
 
 ## Gate
 
-Full local gate **9/9 PASS, zero skips** on `fb6ccb4f4`; the evidence commits after
-it change docs/evidence only. `gate.md` records the exact SHA and outputs:
+Full local gate **9/9 PASS, zero skips** on `28b61d4b2` (298.7 s); the evidence
+commits after it change docs/evidence only. `gate.md` records the exact SHA and
+outputs:
 `node scripts/ci-pr-gate.mjs --full`, `CI=true`,
 `DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
 
-Census result on the passing final run: **677 files / 8830 legs**, `COUNTS MOVED, SET DID NOT`,
-0 new reds / 0 collection errors. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
+Census result on the passing final run: **677 files / 8833 legs**, `COUNTS MOVED, SET DID NOT`,
+0 new reds / 0 collection errors; identity set identical to the published baseline. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
 census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 and
 `alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
 See `gate.md` for the exact outputs and the flake disclosure.

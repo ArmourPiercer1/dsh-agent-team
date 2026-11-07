@@ -1,0 +1,26 @@
+{
+  "busySeen": false,
+  "wakesBefore": 1,
+  "wakesAfterRestart": 2,
+  "wakesAfterDrain": 1,
+  "intentBefore": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-07T10-29-21",
+      "reviewerInstanceId": "inst-1g796hd0deca",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T10-29-21:inst-1g796hd0deca:1:a6wake%3Av1%3A1%3Ae7380579",
+    "workFingerprint": "a6wake:v1:1:e7380579",
+    "ownerRootSessionId": "session-c1-smoke-root-2026-11-07T10-29-21",
+    "status": "accepted"
+  },
+  "rowsAfterRestart": [
+    "wake-65b82a92.json"
+  ],
+  "rowsAfterDrain": [],
+  "pendingBefore": [
+    "ctrl-0726l1z0cqrbw80g8ibl51y1"
+  ],
+  "restartError": null,
+  "mockRequests": 15
+}

@@ -1,0 +1,56 @@
+{
+  "timeoutMs": 8000,
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0gzr8vw1fzzyub1mllvx217x",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0c3jdav1gpp4",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-07T10-15-29:inst-0c3jdav1gpp4:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0c3jdav1gpp4-bash:hexec:46cf0ba0-9dea-433c-bd70-8caa1f7ac567-1",
+    "approvalCaseId": "case-1y1g5o81h4j5231dg4cre1dw",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-07T10:19:47.563Z"
+  },
+  "paDecision": null,
+  "paConsumption": null,
+  "executed": false,
+  "late": {
+    "type": "server-response",
+    "rpcId": "c1a6timeout-kwqvsums1n",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: request 'ctrl-0gzr8vw1fzzyub1mllvx217x' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: request 'ctrl-0gzr8vw1fzzyub1mllvx217x' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+            "details": {
+              "rootSessionId": "session-c1-smoke-a6-2026-11-07T10-15-29",
+              "requestId": "ctrl-0gzr8vw1fzzyub1mllvx217x"
+            }
+          }
+        }
+      }
+    }
+  },
+  "lateDecision": null,
+  "lateAbandonment": {
+    "sequence": 11,
+    "factType": "control-request-abandoned",
+    "requestId": "ctrl-0gzr8vw1fzzyub1mllvx217x",
+    "reason": "invocation-abandoned",
+    "createdAt": "2026-11-07T10:19:55.586Z"
+  },
+  "lateConsumption": null,
+  "lateFile": false
+}

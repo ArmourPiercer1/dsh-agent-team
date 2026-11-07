@@ -1,5 +1,25 @@
 # Gate record
 
+## Closing-round acceptance HEAD — `28b61d4b2`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **298.7 s**
+- Census: **677 files / 8833 legs** (one new cross-root marker test), `COUNTS
+  MOVED, SET DID NOT`; identity set IDENTICAL to the published baseline
+- Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
+- Blueprint fence: kit identities re-recorded at L624/L813/L1785/L2475 (same
+  four v5 fixtures; line shifts only)
+- Log: `.drill/ci-gate-28b61d4b2.log` (untracked local artifact)
+- Product delta: non-authorizing invocation settlement (A6-only bounded wait
+  abandon; boot settlement of dead PA invocations), Inbox accepted/claimed
+  crash rebuilds exactly one new wake, Sticky Stop marker owner readback.
+- Intermediate attempts are recorded locally and were NOT accepted:
+  `0a468812a`/`d3fe94ec4` failed lint/census/fence (unused local, A5 M1
+  timeout semantics temporarily changed, stale fence line numbers). The
+  passing commit restores A5 semantics (`deps.a6` guard) and updates the named
+  ARC-A center override for `pa-control-bridge.ts`.
+
 ## Final acceptance HEAD — `fb6ccb4f4`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
