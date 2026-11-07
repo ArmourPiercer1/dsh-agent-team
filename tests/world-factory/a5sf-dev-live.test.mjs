@@ -25,7 +25,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRunRecord } from './lib/run-record.mjs'
@@ -38,11 +38,14 @@ import {
   assertCandidateClaim,
 } from './lib/acceptance-claim.mjs'
 import {
+  DEAD_SLOT_GRACE_MS,
   DEV_LIVE_SLOT_LIMIT,
   DevLiveSlotError,
   acquireDevLiveSlot,
   assertDevLiveSlotHeld,
+  currentPidNamespace,
   scanDevLiveSlots,
+  sweepStaleSlot,
 } from './lib/dev-live-slots.mjs'
 import {
   A5sfReadGateError,
@@ -263,17 +266,101 @@ test('(c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-p
   retried.release()
   for (const slot of held.slice(1)) slot.release()
 
-  // Crash recovery: a slot whose pid is dead is stale and is swept, not counted.
+  // Crash recovery: a slot whose pid is provably dead IN THIS PROCESS'S PID
+  // NAMESPACE and whose age passed DEAD_SLOT_GRACE_MS is stale and is swept,
+  // not counted. (E1: a slot with no `pidNs` — a legacy writer, or a peer in
+  // another namespace — is NOT swept on liveness alone; see the (e1-*) arms.)
   const deadPid = 999_999
-  writeFileSync(join(leaseRoot, 'dev-live-hosts', '0.json'), JSON.stringify({
-    slot: 0, token: 'dead', pid: deadPid, startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
+  const deadPath = join(leaseRoot, 'dev-live-hosts', '0.json')
+  writeFileSync(deadPath, JSON.stringify({
+    slot: 0, token: 'dead', pid: deadPid, pidNs: currentPidNamespace(), startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
   }))
+  const old = new Date(Date.now() - (DEAD_SLOT_GRACE_MS + 60_000))
+  utimesSync(deadPath, old, old)
   const scan = scanDevLiveSlots({ leaseRoot })
   assert.equal(scan.live.length, 0)
   assert.equal(scan.stale.length, 1)
   const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'reclaim', face: 'FS Provider', world: 'wreclaim' })
   assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 1)
   reclaimed.release()
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// (e1) DEV-LIVE slot liveness must not be judged across PID namespaces
+// ─────────────────────────────────────────────────────────────────────────────
+// MEASURED (2026-11-07, recon `a5sf-recon-search` E-1): a peer lane's sweep read
+// our live slot's pid as dead — the pid number is namespace-local — unlinked the
+// file, and our boot was refused at the spawn chokepoint with
+// `DEV_LIVE_SLOT_REQUIRED` although we held a slot. These arms pin the fix.
+test('(e1-foreign-namespace) a slot written in ANOTHER pid namespace is never swept on liveness, and its owner is not locked out', () => {
+  const dir = tmp('e1foreign')
+  const leaseRoot = join(dir, 'leases')
+  const slotDir = join(leaseRoot, 'dev-live-hosts')
+  mkdirSync(slotDir, { recursive: true })
+  const own = currentPidNamespace()
+  const foreign = own === 'pid:[4026532416]' ? 'pid:[4026532417]' : 'pid:[4026532416]'
+  const path = join(slotDir, '0.json')
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 'peer', pid: 999_999, pidNs: foreign, startedAt: new Date().toISOString(), runId: 'peer-run', face: 'Subprocess', world: 'wpeer', headCommit: HEAD,
+  }))
+  const scan = scanDevLiveSlots({ leaseRoot })
+  assert.equal(scan.entries.length, 1)
+  assert.equal(scan.entries[0].alive, false, 'the raw pidAlive answer is still recorded')
+  assert.equal(scan.entries[0].liveness, 'foreign-namespace', 'the answer is NOT judgeable from this namespace')
+  assert.equal(scan.stale.length, 0, 'a pid we cannot judge is never evidence of death')
+  assert.equal(scan.live.length, 1)
+  assert.equal(sweepStaleSlot(scan.entries[0]), false, 'the sweep refuses a slot it cannot judge')
+  assert.equal(existsSync(path), true, 'the peer\'s slot file survived')
+  // The peer's own boot chokepoint check passes: it is counted as live.
+  const held = assertDevLiveSlotHeld({ leaseRoot, runId: 'peer-run', pid: 999_999 })
+  assert.equal(held.slot, 0)
+  // A NEW boot takes a DIFFERENT slot: the foreign slot is not stolen.
+  const mine = acquireDevLiveSlot({ leaseRoot, runId: 'mine', face: 'Subprocess', world: 'wmine' })
+  assert.notEqual(mine.slot, 0)
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
+  mine.release()
+  // A legacy slot (no `pidNs`) is equally unjudgeable — the same rule, so an
+  // old-code peer is never the victim of a new-code sweep.
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 'legacy', pid: 999_999, startedAt: new Date().toISOString(), runId: 'legacy-run', face: 'Subprocess', world: 'wlegacy', headCommit: HEAD,
+  }))
+  const legacy = scanDevLiveSlots({ leaseRoot })
+  assert.equal(legacy.entries[0].liveness, 'foreign-namespace')
+  assert.equal(legacy.stale.length, 0)
+})
+
+test('(e1-same-namespace) a provably dead pid is swept only after the write grace, and never after a token change', () => {
+  const dir = tmp('e1dead')
+  const leaseRoot = join(dir, 'leases')
+  const slotDir = join(leaseRoot, 'dev-live-hosts')
+  mkdirSync(slotDir, { recursive: true })
+  const path = join(slotDir, '0.json')
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't1', pid: 999_999, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r1', face: 'Subprocess', world: 'w1', headCommit: HEAD,
+  }))
+  // Fresh write: dead, but inside the grace window → NOT stale (a writer that
+  // has not yet been scheduled must not lose its own slot).
+  const fresh = scanDevLiveSlots({ leaseRoot })
+  assert.equal(fresh.entries[0].liveness, 'dead')
+  assert.equal(fresh.stale.length, 0, 'inside DEAD_SLOT_GRACE_MS nothing is swept')
+  // Past the grace window the same slot IS stale and IS swept.
+  const later = Date.now() + DEAD_SLOT_GRACE_MS + 1_000
+  const aged = scanDevLiveSlots({ leaseRoot, now: later })
+  assert.equal(aged.stale.length, 1)
+  assert.equal(sweepStaleSlot(aged.entries[0]), true)
+  assert.equal(existsSync(path), false)
+  // Token re-check: a slot re-written by a peer after our scan is not ours to
+  // delete, even when the entry we classified is stale.
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't2', pid: 999_999, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r2', face: 'Subprocess', world: 'w2', headCommit: HEAD,
+  }))
+  const pre = scanDevLiveSlots({ leaseRoot })
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't3', pid: process.pid, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r3', face: 'Subprocess', world: 'w3', headCommit: HEAD,
+  }))
+  assert.equal(sweepStaleSlot(pre.entries[0]), false, 'a changed token means a new owner')
+  assert.equal(existsSync(path), true)
+  assert.equal(JSON.parse(readFileSync(path, 'utf8')).token, 't3')
 })
 
 test('(c-lease) the cap applies through the dev-live gate, not just the counter', async () => {
