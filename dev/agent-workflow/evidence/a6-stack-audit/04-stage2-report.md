@@ -20,7 +20,9 @@
 | original product HEAD | `54f39e09d` | preserved in archive |
 | original docs HEAD | `e2135cb4e` | preserved in archive |
 
-Preview merge parents: first `c8af5fc6f` (A5), second `bf2d693c8` (A6 stack).
+Preview merge parents (current resync commit `0c646897b`): first `c8af5fc6f` (A5),
+second `6fcd82696` (A6 stack). The earlier merge `0e5528b98` had
+second parent `bf2d693c8`; it remains in history.
 
 New branches were pushed as Draft refs; no force-push, no update to
 `alpha6/int-20261103`, no master write.
