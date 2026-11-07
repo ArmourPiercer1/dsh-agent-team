@@ -1,0 +1,21 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6PR3PR4",
+  "paths": [
+    "packages/runtime/review-wake/coordinator.ts",
+    "packages/runtime/review-wake/delivery.ts",
+    "packages/runtime/review-wake/errors.ts",
+    "packages/runtime/review-wake/index.ts",
+    "packages/runtime/review-wake/types.ts",
+    "packages/runtime/test/a6-pr3-lane-hygiene.test.ts",
+    "packages/runtime/test/a6-pr3-wake-coordinator.test.ts",
+    "packages/runtime/test/a6-pr4-review-wake-delivery.test.ts",
+    "packages/runtime/test/a6-pr4-review-wake-glue.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1396,
+    "to": 1405
+  },
+  "reason": "Alpha.6 PR3 (pure ReviewWakeCoordinator) adds its five lane sources + its two specs; PR4 (delivery seam + live inbox glue) adds delivery.ts + its two specs. agent-bindings.mjs is an in-place edit on an already-counted file. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on THIS tree: the unbooked coverage leg read `expected 1396 to be 1405`; exactly these nine paths; no chain value copied."
+}
