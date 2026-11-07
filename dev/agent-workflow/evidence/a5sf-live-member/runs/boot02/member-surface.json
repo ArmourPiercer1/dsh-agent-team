@@ -1,0 +1,51 @@
+{
+  "tools": [
+    "bash",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message"
+  ],
+  "bash": {
+    "name": "bash",
+    "description": "Execute a bash command through this Member's confined terminal face and return its stdout/stderr. Each call runs in a fresh confined shell; pass `workdir` instead of using `cd`. Every path the command names is admitted against the compiled read lane before the shell starts; a refused read returns no bytes and names the typed refusal code in its error.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The bash command line to run (`bash -c`)."
+        },
+        "description": {
+          "type": "string",
+          "description": "One short sentence describing what the command does."
+        },
+        "workdir": {
+          "type": "string",
+          "description": "Optional working directory; absolute, or relative to the session cwd."
+        }
+      },
+      "required": [
+        "command",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  }
+}

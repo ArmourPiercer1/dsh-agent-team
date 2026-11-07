@@ -26,6 +26,8 @@ export declare const GOVERNED_ADMITTED_LIFECYCLES: readonly string[]
 export declare function governedAuthorityReference(input: {
   readonly generation: number
   readonly lifecycle: unknown
+  /** The live glue's fresh-child-creation window (activation ordering). */
+  readonly freshCreate?: boolean
 }): GovernedRealmAuthority
 
 /** The durable Alpha.4 authority read the Host supplies per Member attach. */
@@ -33,6 +35,8 @@ export interface GovernedRealmAuthorityRead {
   readonly teamSessionId: string
   readonly memberInstanceId: string
   readonly templateId: string
+  /** True only inside the live glue's fresh-child-creation window. */
+  readonly freshCreate?: boolean
 }
 
 export interface GovernedRealmAuthority {
