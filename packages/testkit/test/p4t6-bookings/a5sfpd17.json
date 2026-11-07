@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD17",
+  "paths": [
+    "packages/runtime/src/plugin/live/confined-fs-tool.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1440,
+    "to": 1441
+  },
+  "reason": "a5sf PD-17 (branch task/pd17-fs-20261113): the confined FILESYSTEM native tool module the realm row re-mounts inside the Member's isolated scope, so the model-visible `read`/`write`/`edit`/`read_image` execute on the confined `fs` face (recon a5sf-recon-fs measured them on the inherited base fs-sandbox service, reading outside the compiled lane and a sibling Member's lane with zero guard facts). It registers the four tools by delegating to the pinned host package's PUBLIC `apply` and only narrows WHICH visible names are forwarded, so it carries no tool implementation, no schema copy and no policy of its own. The rebuilt dist mirror (confined-fs-tool.mjs under packages/runtime/dist) is generated output and is not scannable. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this branch with the module on disk and no booking: `scanner counts 1441, ledger derives 983 + 457 = 1440` (vitest run packages/testkit/test/p4t6-session-event-scan.test.ts, 2026-11-13). Evidence: dev/agent-workflow/evidence/a5sf-pd17-fs/README.md \u00a79."
+}

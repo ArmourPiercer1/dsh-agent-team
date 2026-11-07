@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD17B",
+  "paths": [
+    "packages/runtime/test/a5sf-pd17-fs-policy.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1441,
+    "to": 1442
+  },
+  "reason": "a5sf PD-17 supplemental (same branch): the provider-policy arm file. It pins the second half of the fix \u2014 the confined Provider forwards the per-call HOST policy (so the session workspace root survives and an in-lane write is not refused by the host fence, measured live in boot01) but caps its mode at the deployment default (so an escalation stamp can never widen the host fence) and still lets the Member ceiling decide first. Test-only file; no production source.",
+  "tieNote": "MEASURED on this branch with BOTH files on disk and only the module booked: `scanner counts 1442, ledger derives 983 + 458 = 1441` (vitest run packages/testkit/test/p4t6-session-event-scan.test.ts, 2026-11-13). Evidence: dev/agent-workflow/evidence/a5sf-pd17-fs/README.md \u00a79."
+}
