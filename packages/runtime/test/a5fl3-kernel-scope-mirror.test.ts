@@ -103,12 +103,26 @@ describe('a5fl3 the ceiling reader follows the RUN SET (the flip runtime atom, r
     expect(Object.keys(ctx4?.documents ?? {}).sort()).toEqual(Object.keys(ctx3?.documents ?? {}).sort())
   })
 
-  it('the arms the flip did NOT move stay put: {1,2} still take the existential skip, a never-defined version still refuses unreadable', async () => {
+  it('a v5-bound Team is a GOVERNED context too (the activation mirrors v3/v4), while a never-defined version still refuses unreadable', async () => {
+    const reader5 = createAuthorityCeilingReader({ facts: factsFor(5) as never })
+    const ctx5 = await reader5('team-1', 'member-1', 'leader')
+    expect(ctx5).toBeDefined()
+    expect(ctx5?.documents.teamHardEnvelope).toMatchObject({ status: 'declared' })
+    // v5's core face IS the v4/v3 output restamped, so the ceiling lane reads
+    // the same documents — the activation added a RUN row, not a new ladder.
+    const reader3 = createAuthorityCeilingReader({ facts: factsFor(3) as never })
+    const ctx3 = await reader3('team-1', 'member-1', 'leader')
+    expect(Object.keys(ctx5?.documents ?? {}).sort()).toEqual(Object.keys(ctx3?.documents ?? {}).sort())
+  })
+
+  it('the arms the flips did NOT move stay put: {1,2} still take the existential skip, a never-defined version still refuses unreadable', async () => {
     for (const retired of [1, 2]) {
       const reader = createAuthorityCeilingReader({ facts: factsFor(retired) as never })
       expect(await reader('team-1', 'member-1', 'leader')).toBeUndefined()
     }
-    for (const unknownVersion of [5, 99, undefined]) {
+    // The witness is one past the DEFINED set (6 today): 5 is DEFINED and RUN
+    // since the activation, so it must NOT appear in this list.
+    for (const unknownVersion of [6, 99, undefined]) {
       const reader = createAuthorityCeilingReader({ facts: factsFor(unknownVersion) as never })
       const ctx = await reader('team-1', 'member-1', 'leader')
       expect(ctx?.documents.teamHardEnvelope).toMatchObject({ status: 'unavailable' })

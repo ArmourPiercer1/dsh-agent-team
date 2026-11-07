@@ -140,6 +140,8 @@ export interface A5P5Assembly {
    *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
    *  byte-identical). Never model-visible: it rides the assembly, not args. */
   readonly effectAnchorRoot?: string
+  /** Optional A6 post-backend observation (never changes execution). */
+  readonly onExecutionResult?: (input: { readonly callId: string; readonly outcome: 'succeeded' | 'failed' }) => void
 }
 
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
@@ -259,6 +261,7 @@ function createRowExecutionState(assembly: A5P5Assembly) {
           // law), computed here from the CLOSED parsed args — the fact the PA
           // edge asks, consumes and rechecks against.
           parametersFingerprint: canonicalJsonFingerprint(parsed.value),
+          ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
           // B3: the host's cancel signal rides the call untouched. This face
           // only CARRIES it — the cancelled fact belongs to the row that can
           // actually stop a payload (the shell arm), never to the presentation.

@@ -1,0 +1,72 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a6-stack-20261108/packages/runtime
+
+··xx········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/u6-arc-a-fitness.test.ts > ARC-A fitness L1 — the protected center is digest-locked > the working tree answers the ledger with ZERO drift (the PR5 zero-center-diff law)
+AssertionError: [
+ {
+  "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+  "kind": "digest-drift",
+  "detail": "booked bf081ae267fe… now 164c42491f46… — a family addition must not move the center"
+ }
+]: expected [ { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "detail": "booked bf081ae267fe… now 164c42491f46… — a family addition must not move the center",
++     "kind": "digest-drift",
++     "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
++   },
++ ]
+
+ ❯ test/u6-arc-a-fitness.test.ts:70:61
+     68|   it('the working tree answers the ledger with ZERO drift (the PR5 zer…
+     69|     const { violations } = scanProtectedLedger({ current, ledger, trac…
+     70|     expect(violations, JSON.stringify(violations, null, 1)).toEqual([])
+       |                                                             ^
+     71|   })
+     72|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/u6-arc-a-fitness.test.ts > ARC-A fitness L1 — the protected center is digest-locked > sensitivity: a drifted byte, a smuggled new file, and a vanished file ALL light up; only a NAMED override silences drift
+AssertionError: expected [ { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "detail": "booked bf081ae267fe… now 164c42491f46… — a family addition must not move the center",
++     "kind": "digest-drift",
++     "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
++   },
++ ]
+
+ ❯ test/u6-arc-a-fitness.test.ts:97:98
+     95|     // surface their baseline drift as false positives of this self-te…
+     96|     const withOverride = { ...ledger, overrides: [...(ledger.overrides…
+     97|     expect(scanProtectedLedger({ current: tampered, ledger: withOverri…
+       |                                                                                                  ^
+     98|     const wrongOverride = { ...ledger, overrides: [...(ledger.override…
+     99|     expect(scanProtectedLedger({ current: tampered, ledger: wrongOverr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 10 passed (12)
+   Start at  03:24:29
+   Duration  320ms (transform 26ms, setup 0ms, import 56ms, tests 175ms, environment 0ms)
+
+undefined
+/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a6-stack-20261108/packages/runtime:
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with exit code 1: vitest run test/u6-arc-a-fitness.test.ts '--reporter=dot'

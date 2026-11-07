@@ -182,6 +182,7 @@ import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
 
 import { createTeamProductionRoot } from './root.js'
+import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js'
 import { createTeamSessionActivationFence } from './team-session-activation.js'
 import type {
   TeamActivationAgent,
@@ -2996,6 +2997,109 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   policyReaderRef.current = builtRoot.policyReader
   paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current
 
+  // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
+  // `agent/inbox/claimed` is the message's owning turn start; `agent/status`
+  // idle is the turn end. The marker filter keeps ordinary user turns from
+  // claiming a wake latch.
+  const alpha6TurnLatchStart = builtRoot.alpha6TurnLatchStart
+  const alpha6TurnLatchEnd = builtRoot.alpha6TurnLatchEnd
+  if (
+    (alpha6TurnLatchStart !== undefined || alpha6TurnLatchEnd !== undefined) &&
+    typeof ctx.on === 'function'
+  ) {
+    // Cordis' event-map typing is not augmented in this host module, so the
+    // two agent-scoped events are bound through one narrow local shape.
+    type WakeEventPayload = {
+      readonly agent: { readonly id: unknown }
+      readonly status?: string
+      readonly message?: {
+        readonly content?: readonly { readonly type: string; readonly text?: string }[]
+      }
+    }
+    const onHostEvent = ctx.on.bind(ctx) as unknown as (
+      event: string,
+      listener: (payload: WakeEventPayload) => void,
+      options: { global: boolean },
+    ) => void
+    if (alpha6TurnLatchStart !== undefined) {
+      onHostEvent(
+        'agent/inbox/claimed',
+        (payload) => {
+          const parts = payload.message?.content ?? []
+          const isLatchWake = parts.some(
+            (part) => part.type === 'text' && part.text?.includes(ALPHA6_WAKE_MARKER) === true,
+          )
+          if (!isLatchWake) return
+          alpha6TurnLatchStart(String(payload.agent.id))
+        },
+        { global: true },
+      )
+    }
+    if (alpha6TurnLatchEnd !== undefined) {
+      onHostEvent(
+        'agent/status',
+        (payload) => {
+          if (payload.status !== 'idle') return
+          void alpha6TurnLatchEnd(String(payload.agent.id)).catch(() => undefined)
+        },
+        { global: true },
+      )
+    }
+  }
+
+  // Alpha.6 (opt-in only): the production producer for Sticky Stop. ONLY the
+  // user's own cancellation request reaches `turn/end` with
+  // `reason.kind==='aborted' && reason.reason.kind==='user'`; an ordinary tool
+  // Abort, a timeout or an internal cancel never maps to a global Stop. An
+  // explicit user message to the stopped reviewer is the only resume.
+  const alpha6WakeUserStop = builtRoot.alpha6WakeUserStop
+  const alpha6WakeUserResume = builtRoot.alpha6WakeUserResume
+  if (
+    (alpha6WakeUserStop !== undefined || alpha6WakeUserResume !== undefined) &&
+    typeof ctx.on === 'function'
+  ) {
+    type SessionEventPayload = {
+      readonly type?: string
+      readonly data?: { readonly reason?: { readonly kind?: string; readonly reason?: { readonly kind?: string } } }
+    }
+    const onSessionEvent = ctx.on.bind(ctx) as unknown as (
+      event: string,
+      listener: (session: { readonly id: unknown }, payload: SessionEventPayload) => void,
+      options: { global: boolean },
+    ) => void
+    if (alpha6WakeUserStop !== undefined) {
+      onSessionEvent(
+        'session/event',
+        (session, payload) => {
+          if (payload.type !== 'turn/end') return
+          const reason = payload.data?.reason
+          if (reason?.kind !== 'aborted' || reason.reason?.kind !== 'user') return
+          void alpha6WakeUserStop(String(session.id)).catch(() => undefined)
+        },
+        { global: true },
+      )
+    }
+    if (alpha6WakeUserResume !== undefined) {
+      type ClaimedPayload = {
+        readonly agent: { readonly id: unknown }
+        readonly message?: { readonly source?: { readonly kind?: string } }
+      }
+      const onClaimed = ctx.on.bind(ctx) as unknown as (
+        event: string,
+        listener: (payload: ClaimedPayload) => void,
+        options: { global: boolean },
+      ) => void
+      onClaimed(
+        'agent/inbox/claimed',
+        (payload) => {
+          if (payload.message?.source?.kind !== 'user') return
+          void alpha6WakeUserResume(String(payload.agent.id)).catch(() => undefined)
+        },
+        { global: true },
+      )
+    }
+  }
+
   // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
   // --- one artifact-read authority per production root, built over the
   // --- OPEN domain's durable repositories (session identity + the
@@ -3224,6 +3328,19 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       )
     }
     teamRuntimeReadiness = 'ready'
+    // Alpha.6 (opt-in only): crash recovery is a LIVENESS step, not a boot
+    // precondition. It runs after readiness (its re-plan may start a
+    // recipient turn) and a fault is logged loud but never bricks the world;
+    // the durable pending list / GUI remain the recovery path.
+    try {
+      await builtRoot.alpha6RecoverWakeLatches?.()
+    } catch (error: unknown) {
+      console.error(
+        `[dsh-agent-team] Alpha.6 wake recovery failed after readiness (${
+          error instanceof Error ? error.message : String(error)
+        }) — the Team stays booted; pending control rows and the GUI remain the recovery path`,
+      )
+    }
   } catch (error) {
     teamRuntimeReadiness = 'failed'
     throw error

@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6AUTHGEN",
+  "paths": ["packages/runtime/alpha6/authority-generation.ts"],
+  "expectedDelta": { "from": 1436, "to": 1437 },
+  "reason": "Alpha.6 composition: the authority-generation reader over the durable permission overlay, the single generation authority for the trusted assigned-Officer facts port. Zero defaulting, non-generation throws.",
+  "tieNote": "MEASURED on this tree: unbooked scanner read total 1436 vs booked 1437."
+}

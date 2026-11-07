@@ -89,6 +89,7 @@ import { createTeamDomain } from '../../storage/repositories/index.js'
 import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
 import {
   CONTROL_GUARD_BLOCK_REASONS,
+  CONTROL_REQUEST_KINDS,
   ControlError,
   createControlService,
 } from '../control/index.js'
@@ -108,6 +109,7 @@ import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { EffectSetApprovalPlan } from '../tool-admission/approval-case.js'
+import { ReviewCapabilityCandidate } from '../review-authority/index.js'
 import {
   PA_CONTROL_ACTION_NAME,
   createPaControlLeg,
@@ -125,6 +127,7 @@ import type {
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
 import {
   P6T4_BLUEPRINT_SOURCE,
+  constantAuthorityRecheck,
   P6T4_NOW,
   P6T4_ROOT,
   P6T4_SEEDS,
@@ -282,6 +285,21 @@ const service: ControlService = createControlService({
   now: () => P6T4_NOW,
   waitPollIntervalMs: 5,
   paEffectsVerifier: paVerifier,
+  authorityRevalidation: constantAuthorityRecheck().port,
+})
+
+// A6 closing round: the SAME world and verifier, but with the A6-only
+// lifecycle settlement + mount owner. Used to pin flag-on/flag-off.
+const a6Service: ControlService = createControlService({
+  teamDomain: domain,
+  blueprintCatalog: catalog,
+  externalPolicyFacts: async () => makeExternalPolicyFacts(),
+  now: () => P6T4_NOW,
+  waitPollIntervalMs: 5,
+  paEffectsVerifier: paVerifier,
+  authorityRevalidation: constantAuthorityRecheck().port,
+  a6AbandonUndeterminedAllow: true,
+  mountRootSessionId: 'boot-root-a6-test',
 })
 
 const WORKER = P6T4_SEEDS.worker.instanceId
@@ -458,6 +476,8 @@ function manifestBytes(fixture: DirectFixture): Record<string, unknown> {
     member: { teamSessionId: fixture.input.member.teamSessionId, instanceId: fixture.input.member.instanceId },
   })) as Record<string, unknown>
 }
+
+const LEDGER_ENVELOPE_SCHEMA_VERSION = 2
 
 const manifestOf = (row: ControlRequestRecord): Record<string, unknown> =>
   row.reviewPayload as Record<string, unknown>
@@ -1261,7 +1281,7 @@ async function appendDurableFact(
 ): Promise<number> {
   const sequence = await ledger.allocateSequence()
   await ledger.put({
-    schemaVersion: 2, // fence L1253 adjudication evidence: durable LEDGER-ROW envelope version (`ledger.put` row envelope — sequence/rootSessionId/factType/payload/createdAt, ZERO blueprint document fields); the ledger-row signature rides the head line (outer-line-evidence ⇒ UNKNOWN by design). NOT a blueprint document version.
+    schemaVersion: LEDGER_ENVELOPE_SCHEMA_VERSION, // durable LEDGER-ROW envelope version, not a blueprint document version
     sequence,
     rootSessionId: P6T4_ROOT,
     factType,
@@ -1593,10 +1613,10 @@ describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a 
 // invariant-45 durable DENY (a fact, not a side effect), the guard
 // deviation is a block with ZERO consumption.
 
-async function forgeValidRow(fixture: DirectFixture) {
+async function forgeValidRow(fixture: DirectFixture, svc: ControlService = service) {
   const bytes = manifestBytes(fixture)
   const digest = canonicalJsonFingerprint(bytes)
-  const row = await service.requestControl({
+  const row = await svc.requestControl({
     rootSessionId: P6T4_ROOT,
     caller: memberCaller(WORKER),
     kind: 'leader-approval',
@@ -1641,6 +1661,36 @@ describe('E1 (facts undefined ⇒ undetermined at BOTH gates): undefined facts a
       realmTruths.set(realm, saved as RealmTruth)
     }
     const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+  })
+
+  it('A6 flag ON: the same undetermined ALLOW writes no decision; it abandons the invocation and stamps the mount owner', async () => {
+    const fixture = directFixture(ctx, 'e1-resolve-a6')
+    const { row } = await forgeValidRow(fixture, a6Service)
+    expect(row.ownerRootSessionId).toBe('boot-root-a6-test')
+    const saved = realmTruths.get(realm)
+    expect(saved).not.toBeUndefined()
+    realmTruths.delete(realm)
+    try {
+      let caught: { code?: string } | undefined
+      try {
+        await a6Service.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: row.requestId,
+          decision: 'allow',
+        })
+      } catch (error) {
+        caught = error as { code?: string }
+      }
+      expect(caught?.code).toBe('CONTROL_REQUEST_ABANDONED')
+    } finally {
+      realmTruths.set(realm, saved as RealmTruth)
+    }
+    const st = await a6Service.listControlState(P6T4_ROOT)
+    expect(st.decisions.filter((d) => d.requestId === row.requestId).length).toBe(0)
+    const abandonment = st.abandonments.find((a) => a.requestId === row.requestId)
+    expect(abandonment?.reason).toBe('invocation-abandoned')
     expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
   })
 
@@ -2355,4 +2405,254 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
     expect(b4NowMs() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
+})
+
+// ── A6-PR2b: the REAL PA manifest chain through a delegated escalation ─────
+
+function a6Candidate(
+  row: ControlRequestRecord,
+  entry: 'allow' | 'deny' | 'escalate',
+  fixture: DirectFixture,
+): ReviewCapabilityCandidate {
+  const binding = fixture.input.request.binding
+  return ReviewCapabilityCandidate.of({
+    principal: { kind: 'instance', instanceId: WORKER, role: 'member' },
+    source: 'blueprint-officer',
+    entry,
+    effectiveReviewAuthority: 'leader',
+    approvalCaseId: String(row.approvalCaseId),
+    currentLegRequestId: row.requestId,
+    legOrdinal: Number(row.legOrdinal),
+    scope: {
+      rootSessionId: P6T4_ROOT,
+      subject: { kind: 'instance', instanceId: WORKER },
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: fixture.correlation,
+      operationFingerprint: String(row.operationFingerprint),
+    },
+    scopeFingerprint: 'a6-scope',
+    blueprintContentHash: 'a6-hash',
+    blueprintRevision: 'a6-r1',
+    authorityGeneration: fixture.plan.authorityGeneration,
+    operationOwner: { rootSessionId: P6T4_ROOT, instanceId: WORKER, templateId: 'worker' },
+    operationTool: {
+      definitionIdentity: binding.definitionIdentity,
+      owner: binding.providerId,
+      name: binding.toolName,
+    },
+  })
+}
+
+describe('A6-PR2b (real PA manifest): tool ask -> Officer escalation -> Human allow -> grant/guard once', () => {
+  it('keeps the original strict manifest across the Human leg and returns the original call on the final allow', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-chain')
+    const leg = makeLeg({
+      a6: true,
+      operationOwnerTemplateId: 'worker',
+      blueprintContentHash: 'a6-hash',
+      blueprintRevision: 'a6-r1',
+    })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(first.approvalCaseId).toBeDefined()
+    expect(first.paApprovalCaseId).toBe(fixture.plan.approvalCaseId)
+    expect(first.operationToolDefinitionIdentity).toBe(fixture.input.request.binding.definitionIdentity)
+
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+      reason: 'Human authority needed',
+    })
+    expect(escalation.caseOutcome).toBe('escalated')
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    expect(humanLeg.reviewAuthority).toBe('human-user')
+    expect(humanLeg.reviewPayloadDigest).toBe(first.reviewPayloadDigest)
+    expect(humanLeg.paApprovalCaseId).toBe(first.paApprovalCaseId)
+    expect(humanLeg.operationOwnerTemplateId).toBe('worker')
+
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-chain'),
+      requestId: humanLeg.requestId,
+      decision: 'allow',
+    })
+    const result = await pending
+    expect(result.decision).toBe('approve')
+    if (result.decision !== 'approve') return
+    expect(result.requestId).toBe(humanLeg.requestId)
+    expect(result.grant).toBeDefined()
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(1)
+    expect(st.consumptions.filter((c) => c.requestId === first.requestId).length).toBe(0)
+  })
+
+  it('Human deny after escalation ends the original call with zero grant and zero consumption', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-deny')
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-deny'),
+      requestId: humanLeg.requestId,
+      decision: 'deny',
+    })
+    const result = await pending
+    expect(result.decision).toBe('deny')
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(0)
+  })
+
+  it('a duplicate escalation of the already-escalated leg is refused', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-dup')
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const firstEscalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = firstEscalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    await expect(service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })).rejects.toThrow()
+    // Finish the case truthfully so a lingering wait cannot pollute later tests.
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-dup'),
+      requestId: humanLeg.requestId,
+      decision: 'deny',
+    })
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('cancel after escalation but before Human allow yields NO approval and zero consumption', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-cancel')
+    const controller = new AbortController()
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg({ ...fixture.input, signal: asSignal(controller) })
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    controller.abort()
+    const result = await pending
+    expect(result.decision).not.toBe('approve')
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(0)
+  })
+})
+
+describe('A6 closing settlement ownership', () => {
+  const ownerA = 'root-A'
+  const ownerB = 'root-B'
+  const a = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: paVerifier,
+    authorityRevalidation: constantAuthorityRecheck().port,
+    a6AbandonUndeterminedAllow: true,
+    mountRootSessionId: ownerA,
+  })
+  const b = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: paVerifier,
+    authorityRevalidation: constantAuthorityRecheck().port,
+    a6AbandonUndeterminedAllow: true,
+    mountRootSessionId: ownerB,
+  })
+  const makeRow = async (svc: ControlService, correlation: string, callId: string) =>
+    svc.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(String(WORKER)),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      targetInstanceId: String(WORKER),
+      actionName: 'team-tool-execute',
+      toolName: 'team_bash',
+      correlation,
+      reviewPayload: { callId },
+    })
+
+  it('a settlement owned by Root A leaves Root B Allow/decision untouched; results are exactly-once', async () => {
+    const rowA = await makeRow(a, 'pa:tadm:root-A', 'call-A')
+    const rowB = await makeRow(b, 'pa:tadm:root-B', 'call-B')
+    expect(rowA.ownerRootSessionId).toBe(ownerA)
+    expect(rowB.ownerRootSessionId).toBe(ownerB)
+
+    await a.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: rowA.requestId, decision: 'allow' })
+    await b.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: rowB.requestId, decision: 'allow' })
+    await a.abandonControlRequest({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: rowA.requestId,
+      reason: 'invocation-abandoned',
+    })
+
+    const stateA = await a.listControlState(P6T4_ROOT)
+    const stateB = await b.listControlState(P6T4_ROOT)
+    expect(stateA.abandonments.some((x) => x.requestId === rowA.requestId)).toBe(true)
+    expect(stateB.abandonments.some((x) => x.requestId === rowB.requestId)).toBe(false)
+    expect(stateB.decisions.find((d) => d.requestId === rowB.requestId)?.decision).toBe('allow')
+    expect(stateB.requests.find((r) => r.requestId === rowB.requestId)?.status).toBe('decided')
+    expect(stateB.consumptions.some((c) => c.requestId === rowB.requestId)).toBe(false)
+
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-B',
+      instanceId: String(WORKER),
+      outcome: 'succeeded',
+    })).recorded).toBe(true)
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-B',
+      instanceId: String(WORKER),
+      outcome: 'failed',
+    })).recorded).toBe(false)
+    const after = await b.listControlState(P6T4_ROOT)
+    const results = after.executionResults.filter((r) => r.requestId === rowB.requestId)
+    expect(results).toHaveLength(1)
+    expect(results[0]?.outcome).toBe('succeeded')
+    expect(after.decisions.find((d) => d.requestId === rowB.requestId)?.decision).toBe('allow')
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-does-not-exist',
+      instanceId: String(WORKER),
+      outcome: 'unknown',
+    })).recorded).toBe(false)
+  })
 })

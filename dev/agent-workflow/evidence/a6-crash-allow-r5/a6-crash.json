@@ -1,0 +1,185 @@
+{
+  "mode": "allow",
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0s0nc2h13zlu",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-07T15-57-16:inst-0s0nc2h13zlu:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0s0nc2h13zlu-bash:hexec:4de3ea10-6b62-4b45-8445-95782e821ff2-1",
+    "approvalCaseId": "case-1wm20th0xc90020kep7fv03f",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-07T15:57:40.373Z"
+  },
+  "beforeKill": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0s0nc2h13zlu",
+        "correlation": "call-c1-u70bwajk",
+        "approvalCaseId": "case-0ltr0qb1h0j06k15jxr4t109",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-07T15:57:38.475Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0s0nc2h13zlu",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-07T15-57-16:inst-0s0nc2h13zlu:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0s0nc2h13zlu-bash:hexec:4de3ea10-6b62-4b45-8445-95782e821ff2-1",
+        "approvalCaseId": "case-1wm20th0xc90020kep7fv03f",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-07T15:57:40.373Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-07T15:57:40.000Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-04sw5nl09lfu",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-07T15:57:42.179Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "createdAt": "2026-11-07T15:57:40.322Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "durable": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0s0nc2h13zlu",
+        "correlation": "call-c1-u70bwajk",
+        "approvalCaseId": "case-0ltr0qb1h0j06k15jxr4t109",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-07T15:57:38.475Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0s0nc2h13zlu",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-07T15-57-16:inst-0s0nc2h13zlu:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0s0nc2h13zlu-bash:hexec:4de3ea10-6b62-4b45-8445-95782e821ff2-1",
+        "approvalCaseId": "case-1wm20th0xc90020kep7fv03f",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-07T15:57:40.373Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-07T15:57:40.000Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-04sw5nl09lfu",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-07T15:57:42.179Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0fjcjys07etkbj1s4vvgy1sc",
+        "createdAt": "2026-11-07T15:57:40.322Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "restart": {
+    "error": null
+  },
+  "decisionAfter": {
+    "sequence": 11,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-04sw5nl09lfu",
+      "kind": "instance",
+      "role": "member"
+    },
+    "createdAt": "2026-11-07T15:57:42.179Z"
+  },
+  "abandonment": {
+    "sequence": 12,
+    "factType": "control-request-abandoned",
+    "requestId": "ctrl-08ylgla1y8mxl50qme0lw1rc",
+    "reason": "invocation-abandoned",
+    "createdAt": "2026-11-07T15:57:44.178Z"
+  },
+  "revived": false,
+  "consBefore": 0,
+  "consAfter": 0,
+  "beforeFileCount": 0,
+  "fileCount": 0,
+  "bodyStart": false
+}

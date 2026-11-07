@@ -1,0 +1,12 @@
+$ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/check-artifacts-at-head.mjs --store-dir /tmp/dsh-pnpm-store-a6p5c
+# exit=0 signal=null error=none seconds=20.6
+--- stdout ---
+[check-artifacts-at-head] installing the scratch from --store-dir: /tmp/dsh-pnpm-store-a6p5c
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1907 glue=100
+[check-artifacts-committed] OK: 1907 files — working tree equals the git INDEX for both install surfaces (incl. 100 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1907 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1907 compared file(s)).
+
+--- stderr ---
+

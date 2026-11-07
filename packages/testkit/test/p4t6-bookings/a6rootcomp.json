@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6ROOTCOMP",
+  "paths": ["packages/runtime/alpha6/root-composition.ts"],
+  "expectedDelta": { "from": 1437, "to": 1438 },
+  "reason": "Alpha.6 root-side offline composition: parses the bound v5 source once, applies the fail-closed unique-Officer decision, and assembles both trusted Control ports from durable member/control rows plus the resolved-reviewer authority generation. Returns ports only; no root mutation, no notifier swap.",
+  "tieNote": "MEASURED on this tree: unbooked scanner read total 1437 vs booked 1438."
+}

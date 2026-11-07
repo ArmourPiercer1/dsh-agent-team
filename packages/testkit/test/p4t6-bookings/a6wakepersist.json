@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6WAKEPERSIST",
+  "paths": [
+    "packages/runtime/alpha6/wake-intent.ts",
+    "packages/runtime/test/a6-wake-persist.test.ts"
+  ],
+  "expectedDelta": { "from": 1432, "to": 1434 },
+  "reason": "A6 wake-persist lifecycle: the minimal persisted queued-intent seam (persistQueued/markAccepted/recover, Inbox-truth adoption) plus its crash-window suite. wake-dispatch edits ride an already-scanned file; dist is outside the scan.",
+  "tieNote": "MEASURED on this tree: the unbooked scanner run reports `scanner counts 1434, ledger derives 983 + 449 = 1432`; exactly these two paths."
+}

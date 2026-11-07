@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "promptStatus": 200,
+  "doneSeen": true,
+  "requestId": "ctrl-08vjszh1pvyxoi1aiju230o5",
+  "transfer": {
+    "sequence": 22,
+    "factType": "control-current-leg-transferred",
+    "actor": {
+      "instanceId": "inst-1lc3i6l0evcz",
+      "kind": "officer"
+    },
+    "approvalCaseId": "case-11ums140z0c3xf0fcpbwm0kj",
+    "blueprintContentHash": "sha256:86ca3b5e429b890e36e0c452e9790a39bcf4b9b17747877610c867936e8c527d",
+    "blueprintRevision": "1",
+    "cause": "officer-handoff",
+    "currentLegRequestId": "ctrl-08vjszh1pvyxoi1aiju230o5",
+    "legOrdinal": 1,
+    "target": "leader",
+    "transferredAt": "2026-11-06T07:12:26.396Z"
+  },
+  "decision": {
+    "sequence": 23,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-08vjszh1pvyxoi1aiju230o5",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "createdAt": "2026-11-06T07:12:27.798Z"
+  },
+  "leaderNotifications": 6,
+  "executed": true,
+  "execText": "c1-a6-handoff-2026-11-06T07-12-03\n",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T07-12-03/workspace/c1-a6-handoff-2026-11-06T07-12-03.txt"
+}

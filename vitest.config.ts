@@ -51,5 +51,11 @@ export default defineConfig({
     ],
     environment: 'node',
     pool: 'threads',
+    // A6 integration round: the census single-capture runs nine package
+    // roots concurrently; the historical 5 s vitest default made two
+    // otherwise-green specs (a5g6 install-face render, alpha5-glob X3
+    // timeout arm) fail only under that load. This is a harness bound, not
+    // a semantics change; each test keeps its own assertions.
+    testTimeout: 20_000,
   },
 })

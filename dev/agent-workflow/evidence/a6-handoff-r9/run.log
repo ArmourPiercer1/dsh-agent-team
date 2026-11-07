@@ -1,0 +1,23 @@
+[2026-11-06T10:50:23.827Z] c1 real-host smoke — stamp 2026-11-06T10-50-23
+[2026-11-06T10:50:23.828Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-06T10:50:23.828Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-06T10:50:23.828Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-handoff-r9
+[2026-11-06T10:50:25.360Z] ports: host=3794 mock=3795
+[2026-11-06T10:50:30.390Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-06T10:50:30.391Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-06T10:50:30.398Z] mock model listening on 3795
+[2026-11-06T10:50:32.943Z] host booted at http://127.0.0.1:3794; row ready — toolCount=15
+[2026-11-06T10:50:32.943Z] ── L0: discovery ──
+[2026-11-06T10:50:33.367Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-06T10:50:33.368Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-06T10:50:33.368Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-06T10:50:33.369Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-06T10:50:36.766Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-ttqwtwi9yj","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-06T10-50-23","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:d70df0e03c041a8e36e7b9666c665c7959370043008cbd9731d277f0328575f2"},"createdAt":"2026-11-06T10:50:33.406Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-06T10:50:40.770Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-06T10:50:40.770Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 notifications=0 requests=14
+[2026-11-06T10:50:40.770Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-06T10:50:40.770Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T10-50-23/workspace/c1-a6-allow-2026-11-06T10-50-23.txt text="c1-a6-allow-2026-11-06T10-50-23\n"
+[2026-11-06T10:50:40.770Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0 notifications=0
+[2026-11-06T10:50:40.770Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=
+[2026-11-06T10:50:40.770Z] ── A6-HANDOFF: Officer hands the PA leg to the Leader -> allow -> execute ──
+[2026-11-06T10:50:48.992Z] PASS A6-8: Officer handoff made the Leader the successor recipient and the call executed once — requestId=ctrl-0g4j7td0rcrgby0ns6tlz1hj transfer={"sequence":22,"factType":"control-current-leg-transferred","actor":{"instanceId":"inst-1xq5xvh0sojw","kind":"officer"},"approvalCaseId":"case-133bhk91l5gqfi0h22xsb1f5","blueprintContentHash":"sha256:d70df0e03c041a8e36e7b9666c665c7959370043008cbd9731d277f0328575f2","blueprintRevision":"1","cause":"officer-handoff","currentLegRequestId":"ctrl-0g4j7td0rcrgby0ns6tlz1hj","legOrdinal":1,"target":"leader","transferredAt":"2026-11-06T10:50:46.775Z"} deci

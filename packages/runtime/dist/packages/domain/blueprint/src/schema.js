@@ -81,16 +81,32 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1;
  * DURATION and EXIT condition are the T-1 pending ruling — this constant does
  * not pre-set them (翻档 ≠ 退役; the derived retired set below is the proof:
  * it still reads `[1, 2]`).
+ *
+ * **The v5 activation (the alpha6-v5flip DRILL round).** This run set is
+ * `[3, 4, 5]`: the v5 document (the v4 face plus the optional `reviewRouting`
+ * family, defined by the dormant fifth parser `blueprint-v5.ts`) joins the RUN
+ * set through the same one-line join the v4 flip used. `3` and `4` stay in the
+ * set UNCHANGED — the v3/v4 branches are frozen, and the derived retired set
+ * below does not move. This is a DRILL branch only: the activation is NOT to
+ * be merged from it (the rollback is literally this array losing `5`).
  */
-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4];
+export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4, 5];
 /**
  * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
  * `1` (the frozen Alpha.1/2 document), `2` (Alpha.3's requirements document),
  * `3` (Alpha.4's authority-document form), `4` (the alpha5 vNext document —
  * the v3 face plus the optional `toolBindings` effect-governance family,
  * defined by the schema-rev round's dormant fourth parser and RUN-enabled by
- * the v4-flip round). This is a HISTORY set, not a permission set — nothing
+ * the v4-flip round), `5` (the Alpha.6 document — the v4 face plus the
+ * optional `reviewRouting` family, RUN-enabled by the v5-activation DRILL
+ * round). This is a HISTORY set, not a permission set — nothing
  * consults it to decide what may run.
+ *
+ * `5` MUST join this set together with the run set: `RETIRED` is DERIVED as
+ * `DEFINED − SUPPORTED`, and the tree derives its "version nobody defined"
+ * probes as `max(DEFINED) + 1`. A `5` in SUPPORTED but not here would make
+ * those probes render a version this build now RUNS, turning every
+ * never-defined arm into a false refusal.
  *
  * It exists because "the reader cannot parse this" and "the reader can parse
  * this but will not run it" are DIFFERENT facts with different operator actions
@@ -99,7 +115,7 @@ export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4];
  * it but outside {@link SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS} is a document the
  * operator owns and can migrate.
  */
-export const DEFINED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3, 4];
+export const DEFINED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3, 4, 5];
 /**
  * The versions this product DEFINED and no longer RUNS: a document carrying one
  * still has a readable identity (`blueprintId`, `revision`, `schemaVersion`), so

@@ -1,0 +1,50 @@
+$ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/check-artifacts-at-head.mjs --store-dir /tmp/dsh-pnpm-store-a6
+# exit=1 signal=null error=none seconds=15
+--- stdout ---
+[check-artifacts-at-head] installing the scratch from --store-dir: /tmp/dsh-pnpm-store-a6
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1907 drift=38 sites=38
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=stale compared=1907 drift=38
+[check-artifacts-at-head] HEAD does NOT carry its own build — the 38 listed path(s) (relayed above on stderr) are what a build of this commit changes and this commit did not include.
+
+--- stderr ---
+[check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+  B produced-but-untracked (git add): packages/runtime/dist/packages/domain/blueprint/src/blueprint-v5.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/domain/blueprint/src/blueprint-v5.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/domain/blueprint/src/blueprint-v5.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/domain/blueprint/src/blueprint-v5.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/evaluator.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/evaluator.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/evaluator.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/evaluator.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/index.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/index.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/index.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/index.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/types.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/types.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/types.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-authority/types.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/policy.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/policy.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/policy.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/policy.js.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/types.d.ts
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/types.d.ts.map
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/types.js
+  B produced-but-untracked (git add): packages/runtime/dist/packages/runtime/review-router/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.js
+  C content-drift (git add): packages/runtime/dist/packages/domain/blueprint/src/index.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/service.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/control/types.js.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.d.ts
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.d.ts.map
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js
+  C content-drift (git add): packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js.map
+

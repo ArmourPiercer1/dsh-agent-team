@@ -346,6 +346,16 @@ export interface TeamProductionRootParams {
     readonly permissionPlaneRef?: {
         current: TeamPermissionPlane | undefined;
     };
+    /**
+     * Diagnostic only: a rejected/sync-throwing request notification. It never
+     * changes the request outcome (the durable row stands); tests use it to
+     * surface a liveness fault that is otherwise swallowed.
+     */
+    readonly onNotificationFailure?: (failure: {
+        readonly requestId: string;
+        readonly kind: string;
+        readonly error: unknown;
+    }) => void;
     /** PR358-B: the ONE authority facts object (host-built); its
      *  `currentCallFacts` read is published on the plane ref for the PA
      *  call-level adapter. Absent = the face stays unpublished (old worlds

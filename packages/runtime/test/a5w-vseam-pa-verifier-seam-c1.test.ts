@@ -765,3 +765,39 @@ describe('P (source pins): the seam arrives through the mount face end to end; t
     expect(src).not.toContain('a5w-vseam')
   })
 })
+
+describe('A6 reviewerAuthority wire — an assigned Officer covers the leg rung it exercised', () => {
+  const ctx = seamAssembly(subtreeAskPolicy(WS), () => EMPTY_DOCS)
+  seamWorlds.set(ctx.realm, () => countedSeam)
+  const fixture = seamFixture(ctx, 'a6-rung-call', imageEffects(ctx.realm, `${WS}/nested/a6-rung.png`), 'read_image')
+  const raw = manifestBytes(fixture)
+  const requested = fixture.input.request.requestedEffects as RequestedEffectSet
+  const manifest = {
+    ...raw,
+    effects: { fingerprint: requested.fingerprint, effects: requested.effects },
+  } as never
+
+  it('passes with the durable exercised leader rung that the member principal would not derive', async () => {
+    const verdict = await verifierWithSeam({
+      stage: 'guard',
+      rootSessionId: P6T4_ROOT,
+      requestId: 'ctrl-a6-rung',
+      manifest,
+      decider: { kind: 'instance', instanceId: WORKER, role: 'member' },
+      reviewerAuthority: 'leader',
+    })
+    expect(verdict).toEqual({ ok: true })
+  })
+
+  it('falls back to the principal-derived member rung when no evidence is present (fail closed)', async () => {
+    const verdict = await verifierWithSeam({
+      stage: 'guard',
+      rootSessionId: P6T4_ROOT,
+      requestId: 'ctrl-a6-rung',
+      manifest,
+      decider: { kind: 'instance', instanceId: WORKER, role: 'member' },
+    })
+    expect(verdict.ok).toBe(false)
+    if (verdict.ok === false) expect(verdict.reason).toBe('pa-authority-drift')
+  })
+})

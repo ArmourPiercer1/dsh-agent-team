@@ -1,0 +1,25 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3614/?token=<redacted>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-05T14-18-07 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-05T14-18-07
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-05T14-18-07 selectedRunner=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-05T14-18-07 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-05T14-18-07
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-05T14-18-07 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-05T14-18-07
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1 grantId=grant:a2fd03365531a523a130dfff4fd241e5 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1 grantId=grant:a2fd03365531a523a130dfff4fd241e5 caseId=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=c1-plane-realm-2026-11-05T14-18-07 rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1-plane-realm-2026-11-05T14-18-07 call=team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1 pid=214 exit=0 timedOut=false cancelled=false
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-15fuult1qf2p-bash:hexec:eccb5a60-cdb1-49da-b02b-cb0e4300bfdd-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15fuult1qf2p:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-15fuult1qf2p-bash:hexec:eccb5a60-cdb1-49da-b02b-cb0e4300bfdd-1 grantId=grant:c753feb998b048e63e2a76d13257f4d8 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-15fuult1qf2p-bash:hexec:eccb5a60-cdb1-49da-b02b-cb0e4300bfdd-1 grantId=grant:c753feb998b048e63e2a76d13257f4d8 caseId=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15fuult1qf2p:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=c1-plane-realm-2026-11-05T14-18-07 rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1-plane-realm-2026-11-05T14-18-07 call=team-inst-15fuult1qf2p-bash:hexec:eccb5a60-cdb1-49da-b02b-cb0e4300bfdd-1 pid=356 exit=0 timedOut=false cancelled=false
