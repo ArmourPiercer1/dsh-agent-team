@@ -332,3 +332,13 @@ itself (the old "no production caller" sentence was stale; the refusal is unchan
   itself forbids (`candidateClaimEligibility` is false by construction). A refusal that
   spends **zero** host starts is the correct fail-closed state until the read-driver
   contract exists.
+
+## 2026-11-13 — 并发上限 2 → 6（所有者裁决，按本机测量）
+
+所有者批准解除旧的"每机最多 2 个并发 dev Host"总限制。本机实测：**30 GiB 内存（可用约 25 GiB）、16 vCPU**，
+单个 dev Host（Host + confined 子进程）峰值远低于 1 GiB。取 **6** 并发：内存留约 5 倍余量，核心留给 agent 自身进程；
+**每个 subagent 同时最多 2 个 boot** 的独立约束不变。
+
+`DEV_LIVE_SLOT_LIMIT` 是唯一常量。两条并发法则测试已改为**由常量驱动**（先占满 `DEV_LIVE_SLOT_LIMIT` 个槽，再断言
+第 N+1 个被 `DEV_LIVE_LIMIT_REACHED` 拒绝，然后释放一个并断言重试被接纳），并把数字本身钉在一处——改数字必须是一次
+有意的编辑，而不是顺手调参。

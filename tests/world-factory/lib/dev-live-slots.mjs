@@ -1,6 +1,13 @@
 /**
- * dev-live-slots.mjs — the machine-wide "at most 2 dev Hosts" counter
- * (owner ruling 2026-11-09).
+ * dev-live-slots.mjs — the machine-wide dev-Host concurrency counter.
+ *
+ * Limit history: 2 (owner ruling 2026-11-09, chosen while product behaviour was
+ * still moving). RAISED to 6 by owner ruling 2026-11-13 ("我批准解除之前的总并发数
+ * 限制"), after measuring this development machine: 30 GiB RAM with ~25 GiB
+ * available and 16 vCPUs, against a measured peak well under 1 GiB per dev Host
+ * (Host + its confined children). 6 keeps ~5x headroom on memory and leaves
+ * cores for the agent processes themselves; the per-subagent cap of 2 stays in
+ * force independently.
  *
  * THIS IS NOT A NEW SUBSYSTEM. It is the smallest counter that can answer one
  * question — "how many dev-live Hosts are live on this machine right now?" —
@@ -39,7 +46,7 @@ import { randomBytes } from 'node:crypto'
 import { pidAlive } from './port-lease.mjs'
 
 /** The owner's 2026-11-09 cap: at most 2 concurrent dev Hosts per machine. */
-export const DEV_LIVE_SLOT_LIMIT = 2
+export const DEV_LIVE_SLOT_LIMIT = 6
 
 /** Safety valve only; liveness is normally decided by `pidAlive`. */
 export const DEV_LIVE_SLOT_TTL_MS = 4 * 60 * 60 * 1000

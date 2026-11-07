@@ -239,57 +239,62 @@ test('(b-control) a dev-live record with no slot at the harness chokepoint is re
 // ─────────────────────────────────────────────────────────────────────────────
 // (c) the 2-concurrent cap refuses a third dev Host
 // ─────────────────────────────────────────────────────────────────────────────
-test('(c-negative) a third concurrent dev Host is refused; stale (dead-pid) slots are reclaimed', async () => {
+test('(c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-pid) slots are reclaimed', async () => {
   const dir = tmp('slots')
   const leaseRoot = join(dir, 'leases')
-  const first = acquireDevLiveSlot({ leaseRoot, runId: 'r1', face: 'FS Provider', world: 'w1' })
-  const second = acquireDevLiveSlot({ leaseRoot, runId: 'r2', face: 'FS Provider', world: 'w2' })
-  assert.notEqual(first.slot, second.slot)
-  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
+  // The NUMBER is not the law, but it is pinned in ONE place: the owner raised it
+  // from 2 to 6 on 2026-11-13 after measuring this machine (30 GiB RAM / 16 vCPU,
+  // well under 1 GiB per dev Host). Moving it must be a deliberate edit here too.
+  assert.equal(DEV_LIVE_SLOT_LIMIT, 6)
+  const held = []
+  for (let i = 0; i < DEV_LIVE_SLOT_LIMIT; i += 1) {
+    held.push(acquireDevLiveSlot({ leaseRoot, runId: `r${String(i)}`, face: 'FS Provider', world: `w${String(i)}` }))
+  }
+  assert.equal(new Set(held.map((slot) => slot.slot)).size, DEV_LIVE_SLOT_LIMIT, 'every concurrent slot gets its own number')
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, DEV_LIVE_SLOT_LIMIT)
   assert.throws(
-    () => acquireDevLiveSlot({ leaseRoot, runId: 'r3', face: 'FS Provider', world: 'w3' }),
+    () => acquireDevLiveSlot({ leaseRoot, runId: 'over', face: 'FS Provider', world: 'wover' }),
     (error) => error instanceof DevLiveSlotError && error.code === 'DEV_LIVE_LIMIT_REACHED',
   )
-  // Release one → the third (same call re-tried) is admitted.
-  assert.equal(first.release(), true)
-  const third = acquireDevLiveSlot({ leaseRoot, runId: 'r3', face: 'FS Provider', world: 'w3' })
-  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
-  third.release()
+  // Release one → the refused call is admitted on retry.
+  assert.equal(held[0].release(), true)
+  const retried = acquireDevLiveSlot({ leaseRoot, runId: 'over', face: 'FS Provider', world: 'wover' })
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, DEV_LIVE_SLOT_LIMIT)
+  retried.release()
+  for (const slot of held.slice(1)) slot.release()
 
-  // Crash recovery: a slot whose pid is dead is stale and is swept, not
-  // counted. `second` is still held (slot 1); slot 0 is now dead residue.
+  // Crash recovery: a slot whose pid is dead is stale and is swept, not counted.
   const deadPid = 999_999
   writeFileSync(join(leaseRoot, 'dev-live-hosts', '0.json'), JSON.stringify({
     slot: 0, token: 'dead', pid: deadPid, startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
   }))
   const scan = scanDevLiveSlots({ leaseRoot })
-  assert.equal(scan.live.length, 1)
+  assert.equal(scan.live.length, 0)
   assert.equal(scan.stale.length, 1)
-  const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'r4', face: 'FS Provider', world: 'w4' })
-  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
+  const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'reclaim', face: 'FS Provider', world: 'wreclaim' })
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 1)
   reclaimed.release()
-  second.release()
 })
 
 test('(c-lease) the cap applies through the dev-live gate, not just the counter', async () => {
   const dir = tmp('leasecap')
   const leaseRoot = join(dir, 'leases')
   const grantPath = grantFile(dir, DEV_GRANT)
-  const a = devRecord(dir, { ledger: join(dir, 'a.jsonl'), leaseRoot })
-  const b = devRecord(dir, { ledger: join(dir, 'b.jsonl'), leaseRoot })
-  const c = devRecord(dir, { ledger: join(dir, 'c.jsonl'), leaseRoot })
   const bootStub = (record) => () => record.logHostStart({ world: 'u5a5sfdev1', phase: 'boot', suite: 'a5sf-read' })
-  for (const record of [a, b]) {
+  const leased = []
+  for (let i = 0; i < DEV_LIVE_SLOT_LIMIT; i += 1) {
+    const record = devRecord(dir, { ledger: join(dir, `r${String(i)}.jsonl`), leaseRoot })
     const lease = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: record, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
     await lease.boot(bootStub(record))
+    leased.push(record)
   }
-  const third = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: c, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
+  const over = devRecord(dir, { ledger: join(dir, 'over.jsonl'), leaseRoot })
+  const refused = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: over, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
   await assert.rejects(
-    () => third.boot(bootStub(c)),
+    () => refused.boot(bootStub(over)),
     (error) => error instanceof DevLiveSlotError && error.code === 'DEV_LIVE_LIMIT_REACHED',
   )
-  assert.equal(DEV_LIVE_SLOT_LIMIT, 2)
-  assert.equal(ledgerRows(join(dir, 'c.jsonl')).length, 1, 'the refused third boot wrote only its intent row, never a start row')
+  assert.equal(ledgerRows(join(dir, 'over.jsonl')).length, 1, 'the refused boot wrote only its intent row, never a start row')
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
