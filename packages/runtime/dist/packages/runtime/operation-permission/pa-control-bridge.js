@@ -239,31 +239,78 @@ export function createPaControlLeg(deps) {
         const correlation = paCorrelation(plan.approvalCaseId, callId);
         // ── 1. the durable Control row (create OR idempotently REUSE) ───────
         let record;
-        try {
-            record = await deps.controlService.requestControl({
-                rootSessionId: deps.rootSessionId,
-                caller: deps.caller,
-                kind: requestKind,
-                targetInstanceId: member.instanceId,
-                actionName,
-                toolName,
-                correlation,
-                // A5-M1: the row identity binds the PAYLOAD-INTEGRITY digest (the
-                // service recomputes and enforces it; the parameters fingerprint
-                // rides the manifest as the separate execution-side fact). Same
-                // case replayed with ANY different manifest bytes = different
-                // scope key = a new row, never a silent reuse.
-                operationFingerprint: digest,
-                summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
-                // The manifest is a pure JSON round-trip (deepLossless), i.e. a
-                // lossless JSON value BY CONSTRUCTION; the type carries that fact.
-                reviewPayload: manifest,
-                reviewPayloadDigest: digest,
-            });
+        if (deps.a6 === true) {
+            if (deps.controlService.requestApprovalLeg === undefined || deps.controlService.awaitApprovalCaseDecision === undefined) {
+                return deny('A6 review chain requires requestApprovalLeg + awaitApprovalCaseDecision on the ControlService');
+            }
+            const kind = authorityRank(plan.requiredAuthority) <= authorityRank('leader')
+                ? CONTROL_REQUEST_KINDS.LEADER_APPROVAL
+                : CONTROL_REQUEST_KINDS.USER_APPROVAL;
+            let outcome;
+            try {
+                outcome = await deps.controlService.requestApprovalLeg({
+                    rootSessionId: deps.rootSessionId,
+                    caller: deps.caller,
+                    kind,
+                    reviewAuthority: plan.requiredAuthority,
+                    requiredAuthorityAtCreation: plan.requiredAuthority,
+                    identity: {
+                        subject: { kind: 'instance', instanceId: member.instanceId },
+                        beneficiaryAuthority: deps.beneficiaryAuthority,
+                        requestedEffect: 'ask',
+                        operationFingerprint: digest,
+                        authorityScope,
+                        correlation,
+                    },
+                    actionName,
+                    toolName,
+                    summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
+                    reviewPayload: manifest,
+                    reviewPayloadDigest: digest,
+                    paApprovalCaseId: plan.approvalCaseId,
+                    ...(deps.operationOwnerTemplateId !== undefined
+                        ? { operationOwnerTemplateId: deps.operationOwnerTemplateId }
+                        : {}),
+                    ...(request.binding !== undefined
+                        ? {
+                            operationToolDefinitionIdentity: request.binding.definitionIdentity,
+                            operationToolOwner: request.binding.providerId,
+                            operationToolName: request.binding.toolName,
+                        }
+                        : {}),
+                    authorityGeneration: plan.authorityGeneration,
+                    ...(deps.blueprintContentHash !== undefined ? { blueprintContentHash: deps.blueprintContentHash } : {}),
+                    ...(deps.blueprintRevision !== undefined ? { blueprintRevision: deps.blueprintRevision } : {}),
+                    perEffectRequiredAuthorities: plan.perEffectRequired,
+                });
+            }
+            catch (error) {
+                return deny(`durable approval case creation failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
+            if (outcome.kind !== 'leg') {
+                return deny(`the approval case closed without a reviewable leg (${outcome.kind}: ${outcome.detail})`);
+            }
+            record = outcome.leg;
         }
-        catch (error) {
-            // No row → no decision → no grant. Approved-by-default does not exist.
-            return deny(`durable control request failed: ${error instanceof Error ? error.message : String(error)}`);
+        else {
+            try {
+                record = await deps.controlService.requestControl({
+                    rootSessionId: deps.rootSessionId,
+                    caller: deps.caller,
+                    kind: requestKind,
+                    targetInstanceId: member.instanceId,
+                    actionName,
+                    toolName,
+                    correlation,
+                    operationFingerprint: digest,
+                    summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
+                    reviewPayload: manifest,
+                    reviewPayloadDigest: digest,
+                });
+            }
+            catch (error) {
+                return deny(`durable control request failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
         }
         observe({ stage: 'request-created', callId, requestId: record.requestId, paCaseId: plan.approvalCaseId, correlation });
         // Reuse honesty: the SAME scope key may only ever answer the SAME strict
@@ -295,15 +342,33 @@ export function createPaControlLeg(deps) {
                 timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs);
                 signals.push(controller.signal);
             }
-            decision = await deps.controlService.awaitControlDecision({
-                rootSessionId: deps.rootSessionId,
-                requestId: record.requestId,
-                ...(signals.length === 1
-                    ? { signal: signals[0] }
-                    : signals.length > 1
-                        ? { signal: AbortSignal.any(signals.map((s) => s)) }
-                        : {}),
-            });
+            const waitSignal = signals.length === 1
+                ? signals[0]
+                : signals.length > 1
+                    ? AbortSignal.any(signals.map((s) => s))
+                    : undefined;
+            if (deps.a6 === true) {
+                if (record.approvalCaseId === undefined)
+                    return deny('A6 leg carries no approval case id', record.requestId);
+                decision = await deps.controlService.awaitApprovalCaseDecision({
+                    rootSessionId: deps.rootSessionId,
+                    approvalCaseId: record.approvalCaseId,
+                    ...(waitSignal === undefined ? {} : { signal: waitSignal }),
+                });
+                const finalState = await deps.controlService.listControlState(deps.rootSessionId);
+                const finalRecord = finalState.requests.find((row) => row.requestId === decision.requestId);
+                if (finalRecord === undefined) {
+                    return deny(`the final decision '${decision.requestId}' has no durable request row`, decision.requestId);
+                }
+                record = finalRecord;
+            }
+            else {
+                decision = await deps.controlService.awaitControlDecision({
+                    rootSessionId: deps.rootSessionId,
+                    requestId: record.requestId,
+                    ...(waitSignal === undefined ? {} : { signal: waitSignal }),
+                });
+            }
         }
         catch (error) {
             if (isControlError(error)
@@ -401,6 +466,10 @@ export function createPaControlLeg(deps) {
             // digest the row was created under (the parameters binding is
             // inside the manifest the digest covers).
             operationFingerprint: digest,
+            // A6: the authority point rides the decision snapshot once the case
+            // leg carries it; the guard must present the SAME point or its exact
+            // scope comparison refuses a legitimate final allow.
+            ...(deps.a6 === true && authorityScope !== undefined ? { authorityScope } : {}),
         });
         let verdict;
         try {

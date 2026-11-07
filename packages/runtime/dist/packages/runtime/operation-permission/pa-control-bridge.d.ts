@@ -89,7 +89,7 @@
  */
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js';
 import type { AdmissionRequest, GovernanceResult, OperationGrant } from '../../domain/tool-governance/src/index.js';
-import type { ControlDecisionRecord, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlWaitSignal } from '../control/index.js';
+import type { ApprovalCaseIdentityInput, ControlDecisionRecord, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlWaitSignal } from '../control/index.js';
 import type { ControlCallerRef, PaCallFacts, PaControlManifest, PaEffectsVerifier, PaEffectsVerifierStage } from '../control/types.js';
 import type { SubtreeContains } from '../../domain/authority-envelope/src/index.js';
 import type { RuntimeAuthority } from '../governance/runtime-authority.js';
@@ -175,6 +175,44 @@ export interface PaControlServiceLike {
         readonly reviewPayload?: RemoteSafeJsonValue;
         readonly reviewPayloadDigest?: string;
     }): Promise<ControlRequestRecord>;
+    /**
+     * A6-PR2b: create the first CASE leg (instead of a legacy row) and keep the
+     * strict PA manifest on it. Optional so every legacy stand-in remains valid.
+     */
+    requestApprovalLeg?: (args: {
+        readonly rootSessionId: string;
+        readonly caller: PaControlCaller;
+        readonly kind: ControlRequestKind;
+        readonly reviewAuthority: 'member' | 'leader' | 'human-user' | 'human-admin';
+        readonly requiredAuthorityAtCreation: 'member' | 'leader' | 'human-user' | 'human-admin';
+        readonly identity: ApprovalCaseIdentityInput;
+        readonly actionName: string;
+        readonly toolName?: string;
+        readonly summary?: string;
+        readonly reviewPayload?: RemoteSafeJsonValue;
+        readonly reviewPayloadDigest?: string;
+        readonly paApprovalCaseId?: string;
+        readonly operationOwnerTemplateId?: string;
+        readonly operationToolDefinitionIdentity?: string;
+        readonly operationToolOwner?: string;
+        readonly operationToolName?: string;
+        readonly authorityGeneration?: number;
+        readonly blueprintContentHash?: string;
+        readonly blueprintRevision?: string;
+        readonly perEffectRequiredAuthorities?: readonly ('member' | 'leader' | 'human-user' | 'human-admin')[];
+    }) => Promise<{
+        readonly kind: 'leg';
+        readonly leg: ControlRequestRecord;
+    } | {
+        readonly kind: 'authority-unavailable';
+        readonly approvalCaseId: string;
+        readonly detail: string;
+    }>;
+    awaitApprovalCaseDecision?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly signal?: ControlWaitSignal;
+    }) => Promise<ControlDecisionRecord>;
     awaitControlDecision(input: {
         readonly rootSessionId: string;
         readonly requestId: string;
@@ -209,6 +247,12 @@ export interface PaControlBridgeDeps {
     readonly caller: PaControlCaller;
     /** Whose authority the case elevates (the plane's beneficiary rung). */
     readonly beneficiaryAuthority: RuntimeAuthority;
+    /** A6-PR2b: opt in to the REAL approval-case chain (default = legacy row). */
+    readonly a6?: boolean;
+    /** A6-PR2b: the actual OperationOwner template from trusted call identity. */
+    readonly operationOwnerTemplateId?: string;
+    readonly blueprintContentHash?: string;
+    readonly blueprintRevision?: string;
     /** The logical operation name of the guarded execution (scope identity;
      *  request and guard MUST carry the same one — the bridge derives both). */
     readonly actionName?: string;
