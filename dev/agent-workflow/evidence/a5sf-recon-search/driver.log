@@ -1,0 +1,211 @@
+[2026-11-07T16:04:26.116Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-07T16:04:26.116Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-07T16:04:26.139Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"} toolBindings=0
+[2026-11-07T16:04:26.139Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/pac"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/pac"}]
+[2026-11-07T16:04:26.140Z] governed preset plugins (18): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,planning,compaction,delegation,tool-ask-user,tool-todo,tool-web,present,tool-plugin-manager
+[2026-11-07T16:04:26.140Z] PLAN OK
+[2026-11-07T16:04:29.848Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-07T16:04:29.848Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-07T16:04:29.871Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"} toolBindings=1
+[2026-11-07T16:04:29.872Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/pac"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/pac"}]
+[2026-11-07T16:04:29.872Z] governed preset plugins (18): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,planning,compaction,delegation,tool-ask-user,tool-todo,tool-web,present,tool-plugin-manager
+[2026-11-07T16:04:29.872Z] PLAN OK
+[2026-11-07T16:05:49.240Z] ARCHIVE: (nothing to archive)
+[2026-11-07T16:05:49.244Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T16:05:49.273Z] host porcelain before: []
+[2026-11-07T16:05:49.339Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:05:49.340Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:05:49.346Z] [boot1] world=u5u5a5sfsub1-20261107T16-05-49Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-05-49Z
+[2026-11-07T16:05:49.350Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T16:06:05.572Z] [boot1] mock on 3494
+[2026-11-07T16:06:05.574Z] [boot1] FAILED at pre-boot: DevLiveSlotError: DEV_LIVE_SLOT_REQUIRED: record 'a5sf-live-member-2026-11-07T16-05-49-307Z-b1' is DEV-LIVE but holds no dev-Host slot under /home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp/port-leases/dev-live-hosts; a dev-live Host may only start through the scope-aware grant gate (preRegisterDevLiveBudget), which acquires one of the 2 machine slots
+    at assertDevLiveSlotHeld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/lib/dev-live-slots.mjs:271:11)
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/lib/a5sf-harness.mjs:315:9)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:848:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/suites/150-a5sf-read.mjs:638:16)
+    at async bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:815:16)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1374:15)
+[2026-11-07T16:06:05.575Z] [boot1] teardown: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-05-49Z","releasedPorts":[3494],"killedPids":[],"notes":[]}
+[2026-11-07T16:06:05.613Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-07T16:06:05.613Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedTurnLaunchers
+payloadInLane
+procSecretCommandSightings
+baseBwrapWithMarkers
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T16:06:05.646Z] host porcelain after: []
+[2026-11-07T16:06:05.646Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T16:06:05.647Z] RECON-SEARCH summary  head=235e1af8bab954bbca4852d2f5a538de043b66e8  host=639ed015397290b3745d163aafe02ffee4aa3f84  binding=false
+recordClass=DEV-LIVE eligible=false
+
+
+grep out-of-lane bytes=undefined parent=undefined guardFacts=undefined
+glob out-of-lane bytes=undefined
+lifecycle archive=undefined postArchivePrompt=undefined
+[2026-11-07T16:10:25.168Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/dev/agent-workflow/evidence/a5sf-recon-search/archive/2026-11-07T16-10-25-168Z
+[2026-11-07T16:10:25.172Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T16:10:25.204Z] host porcelain before: []
+[2026-11-07T16:10:25.274Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:10:25.275Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:10:25.280Z] [boot1] world=u5u5a5sfsub1-20261107T16-10-25Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z
+[2026-11-07T16:10:25.283Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T16:10:46.367Z] [boot1] mock on 3495
+[2026-11-07T16:11:09.060Z] [boot1] BOOTED port=3186 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/dev/agent-workflow/evidence/a5sf-recon-search/driver/logs/u5u5a5sfsub1-20261107T16-10-25Z/instance-port3186.log
+[2026-11-07T16:11:09.604Z] [boot1] p6t6 health=true
+[2026-11-07T16:11:09.877Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:11:09.877Z] [boot1] leader builtinToolDeny:
+[2026-11-07T16:11:12.475Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-0vkit3fwsl","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:38f0c44a3084a654b621c258b60479b50c9934b87704a4ae00a756145f00f8ac"},"createdAt":"2026-11-07T16:11:09.920Z","generation":1,"
+[2026-11-07T16:11:13.676Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T16:11:13.677Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-06oi8u902ggh","templateId":"worker","childSessionId":"session-team-child-0226b704a7da0775ef20a7e9fd467475","operationId":"op-11hnjf80p3dz7h00wbbqe0dp","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-rs-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T16:11:13.683Z] [boot1] members=[{"instanceId":"inst-06oi8u902ggh","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-0226b704a7da0775ef20a7e9fd467475
+[2026-11-07T16:11:13.693Z] [boot1] recon: grep out-of-lane bytes=true parent=true glob=true guardFacts=0
+[2026-11-07T16:11:13.768Z] [boot1] lifecycle: archive=200 postArchivePrompt=200
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-on-surface: PASS
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-inlane-hit: PASS
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-out-of-lane: FAIL
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-parent-dir: FAIL
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-ignore: PASS
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-hidden-vcs: PASS
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-exit-nomatch: PASS
+[2026-11-07T16:11:13.768Z] [boot1] case rs:grep-exit-error: FAIL
+[2026-11-07T16:11:13.768Z] [boot1] case rs:glob-workspace: PASS
+[2026-11-07T16:11:13.769Z] [boot1] case rs:glob-out-of-lane: FAIL
+[2026-11-07T16:11:13.769Z] [boot1] case rs:grep-timeout: FAIL
+[2026-11-07T16:11:13.769Z] [boot1] case rs:guard-facts: PASS
+[2026-11-07T16:11:13.769Z] [boot1] case rs:process-host-direct: PASS
+[2026-11-07T16:11:13.770Z] [boot1] diagnostics(final): mockRequests=17 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-06oi8u902ggh","templateId":"worker","childSessionId":"session-team-child-0226b704a7da0775ef20a7e9fd467475","operationId":"op-11hnjf80p3dz7h00wb sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-0226b704a7da0775ef20a7e9fd467475"]
+[2026-11-07T16:11:13.771Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T16-10-25-238Z-b1 suite=a5sf-live-member overall=FAIL cases=13 FAIL:5 PASS:8 worlds=u5u5a5sfsub1-20261107T16-10-25Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:11:13.901Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z","releasedPorts":[3186,3495,3186],"killedPids":[101],"notes":[]}
+[2026-11-07T16:11:13.940Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1
+overall                       FAIL
+admittedVerdict               REFUTED
+deniedVerdict                 REFUTED
+surfaceVerdict                PROVEN
+factsVerdict                  REFUTED
+spawnsVerdict                 REFUTED
+allowFacts                    0
+denyFacts                     0
+confinedTurnLaunchers         0
+payloadInLane                 0
+procSecretCommandSightings    0
+baseBwrapWithMarkers          0
+governedSurface               true
+admittedBytes                 false
+deniedSecretAbsent            false
+transcriptSourceCount         10
+
+agreeing=false differing=[]
+[2026-11-07T16:11:13.974Z] host porcelain after: []
+[2026-11-07T16:11:13.975Z] RESULT PASS (1/1 boots; agreeing pair=false)
+[2026-11-07T16:11:13.975Z] RECON-SEARCH summary  head=235e1af8bab954bbca4852d2f5a538de043b66e8  host=639ed015397290b3745d163aafe02ffee4aa3f84  binding=false
+recordClass=DEV-LIVE eligible=false
+
+PROVEN    rs:grep-on-surface
+PROVEN    rs:grep-inlane-hit
+REFUTED   rs:grep-out-of-lane  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+REFUTED   rs:grep-parent-dir  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+PROVEN    rs:grep-ignore
+PROVEN    rs:grep-hidden-vcs
+PROVEN    rs:grep-exit-nomatch
+REFUTED   rs:grep-exit-error  failed=[typed-code: the result names SEARCH_INVALID_PATTERN]
+PROVEN    rs:glob-workspace
+REFUTED   rs:glob-out-of-lane  failed=[no-secret-file: the out-of-lane file name is absent; typed-refusal: a typed refusal, if refused, must be named]
+REFUTED   rs:grep-timeout  failed=[aborted-code: the result names SEARCH_ABORTED]
+PROVEN    rs:guard-facts
+PROVEN    rs:process-host-direct
+
+grep out-of-lane bytes=true parent=true guardFacts=0
+glob out-of-lane bytes=true
+lifecycle archive=200 postArchivePrompt=200
+[2026-11-07T16:15:13.795Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/dev/agent-workflow/evidence/a5sf-recon-search/archive/2026-11-07T16-15-13-794Z
+[2026-11-07T16:15:13.799Z] START head=235e1af8bab954bbca4852d2f5a538de043b66e8 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T16:15:13.830Z] host porcelain before: []
+[2026-11-07T16:15:13.903Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T16:15:13.904Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:15:13.908Z] [boot1] world=u5u5a5sfsub1-20261107T16-15-13Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-15-13Z
+[2026-11-07T16:15:13.911Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T16:15:35.024Z] [boot1] mock on 3495
+[2026-11-07T16:15:57.727Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/dev/agent-workflow/evidence/a5sf-recon-search/driver/logs/u5u5a5sfsub1-20261107T16-15-13Z/instance-port3185.log
+[2026-11-07T16:15:58.247Z] [boot1] p6t6 health=true
+[2026-11-07T16:15:58.520Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T16:15:58.520Z] [boot1] leader builtinToolDeny:
+[2026-11-07T16:16:01.057Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-w3vb3nma7k","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:70915a980c5258e5dac4f92a88a1cea6078a847800a64acdd02af3380c808e01"},"createdAt":"2026-11-07T16:15:58.563Z","generation":1,"
+[2026-11-07T16:16:02.257Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T16:16:02.258Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-06oi8u902ggh","templateId":"worker","childSessionId":"session-team-child-0226b704a7da0775ef20a7e9fd467475","operationId":"op-11hnjf80p3dz7h00wbbqe0dp","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-rs-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T16:16:02.265Z] [boot1] members=[{"instanceId":"inst-06oi8u902ggh","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-0226b704a7da0775ef20a7e9fd467475
+[2026-11-07T16:16:02.271Z] [boot1] recon: grep out-of-lane bytes=true parent=true glob=true guardFacts=0
+[2026-11-07T16:16:02.349Z] [boot1] lifecycle: archive=200 postArchivePrompt=200
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-on-surface: PASS
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-inlane-hit: PASS
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-out-of-lane: FAIL
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-parent-dir: FAIL
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-ignore: PASS
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-hidden-vcs: PASS
+[2026-11-07T16:16:02.350Z] [boot1] case rs:grep-exit-nomatch: PASS
+[2026-11-07T16:16:02.351Z] [boot1] case rs:grep-exit-error: FAIL
+[2026-11-07T16:16:02.351Z] [boot1] case rs:glob-workspace: PASS
+[2026-11-07T16:16:02.351Z] [boot1] case rs:glob-out-of-lane: FAIL
+[2026-11-07T16:16:02.351Z] [boot1] case rs:grep-timeout: PASS
+[2026-11-07T16:16:02.351Z] [boot1] case rs:guard-facts: PASS
+[2026-11-07T16:16:02.351Z] [boot1] case rs:process-host-direct: PASS
+[2026-11-07T16:16:02.353Z] [boot1] diagnostics(final): mockRequests=17 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-06oi8u902ggh","templateId":"worker","childSessionId":"session-team-child-0226b704a7da0775ef20a7e9fd467475","operationId":"op-11hnjf80p3dz7h00wb sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-0226b704a7da0775ef20a7e9fd467475"]
+[2026-11-07T16:16:02.354Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T16-15-13-868Z-b1 suite=a5sf-live-member overall=FAIL cases=13 FAIL:4 PASS:9 worlds=u5u5a5sfsub1-20261107T16-15-13Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:16:02.489Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":101,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-15-13Z","releasedPorts":[3185,3495,3185],"killedPids":[101],"notes":[]}
+[2026-11-07T16:16:02.527Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1
+overall                       FAIL
+admittedVerdict               REFUTED
+deniedVerdict                 REFUTED
+surfaceVerdict                PROVEN
+factsVerdict                  REFUTED
+spawnsVerdict                 REFUTED
+allowFacts                    0
+denyFacts                     0
+confinedTurnLaunchers         0
+payloadInLane                 0
+procSecretCommandSightings    0
+baseBwrapWithMarkers          0
+governedSurface               true
+admittedBytes                 false
+deniedSecretAbsent            false
+transcriptSourceCount         10
+
+agreeing=false differing=[]
+[2026-11-07T16:16:02.561Z] host porcelain after: []
+[2026-11-07T16:16:02.561Z] RESULT PASS (1/1 boots; agreeing pair=false)
+[2026-11-07T16:16:02.562Z] RECON-SEARCH summary  head=235e1af8bab954bbca4852d2f5a538de043b66e8  host=639ed015397290b3745d163aafe02ffee4aa3f84  binding=false
+recordClass=DEV-LIVE eligible=false
+
+PROVEN    rs:grep-on-surface
+PROVEN    rs:grep-inlane-hit
+REFUTED   rs:grep-out-of-lane  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+REFUTED   rs:grep-parent-dir  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+PROVEN    rs:grep-ignore
+PROVEN    rs:grep-hidden-vcs
+PROVEN    rs:grep-exit-nomatch
+REFUTED   rs:grep-exit-error  failed=[typed-code: the result names SEARCH_INVALID_PATTERN (measured: the wire carries only rg's stderr words)]
+PROVEN    rs:glob-workspace
+REFUTED   rs:glob-out-of-lane  failed=[no-secret-file: the out-of-lane file name is absent; typed-refusal: a typed refusal, if refused, must be named]
+PROVEN    rs:grep-timeout
+PROVEN    rs:guard-facts
+PROVEN    rs:process-host-direct
+
+grep out-of-lane bytes=true parent=true guardFacts=0
+glob out-of-lane bytes=true
+lifecycle archive=200 postArchivePrompt=200

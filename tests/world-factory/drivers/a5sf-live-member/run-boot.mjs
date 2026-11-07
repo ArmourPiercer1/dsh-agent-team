@@ -77,10 +77,19 @@ import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5
 import {
   lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
 } from '../../lib/u6-fs-assembly.mjs'
+import { acquireDevLiveSlot, scanDevLiveSlots } from '../../lib/dev-live-slots.mjs'
+import {
+  RECON, judgeReconSearch, reconBindingMode, reconFixtures, reconMemberStep, reconMode,
+  reconPresetConfig, reconSamples, reconScanProc, reconScript, reconToolBindings, writeReconArtefacts,
+} from './recon-search.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..', '..', '..')
-const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'a5sf-live-member')
+/** The Search recon arm writes its own evidence root; every default byte is unchanged. */
+const RECON_SEARCH = reconMode()
+const RECON_BINDING = reconBindingMode()
+const EVIDENCE_NAME = RECON_SEARCH ? 'a5sf-recon-search' : 'a5sf-live-member'
+const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', EVIDENCE_NAME)
 const RUNS = join(EVIDENCE, 'runs')
 const ARCHIVE = join(EVIDENCE, 'archive')
 const LEDGER_PATH = join(EVIDENCE, 'run-ledger.jsonl')
@@ -95,33 +104,49 @@ const PRESET_ID = 'a5sf-governed-member'
 
 const MK_DISC = 'A5SF_LM_DISC'
 const MK_L1 = 'A5SF_LM_L1_DRIVE'
-const TOK_MEMBER = 'a5sf-lm-turn'
+const TOK_MEMBER = RECON_SEARCH ? RECON.token : 'a5sf-lm-turn'
 const CALL_ADMIT = 'call-a5sflm-admit'
 const CALL_DENY = 'call-a5sflm-deny'
-const DONE_MEMBER = 'A5SF_LM_MEMBER_DONE'
+const DONE_MEMBER = RECON_SEARCH ? RECON.done : 'A5SF_LM_MEMBER_DONE'
 const DONE_L1 = 'A5SF_LM_L1_DONE'
 const IN_LANE_TEXT = 'A5SF_LIVE_MEMBER_IN_LANE_BYTES'
 const SECRET_TEXT = 'A5SF_LIVE_MEMBER_OUT_OF_LANE_SECRET'
-const IN_LANE_FILE = 'in-lane.txt'
+const IN_LANE_FILE = RECON_SEARCH ? RECON.inLaneFile : 'in-lane.txt'
 const SECRET_FILE = 'secret-out-of-lane.txt'
 
 const LEADER_TOOL_ALLOW = Object.freeze(['bash', 'read', 'write', 'edit', 'read_image'])
 const LEADER_DENY_SAFE = Object.freeze(['todo_write'])
 const TEAM_TOOL_NAMES = Object.freeze(['team_delegate', 'team_archive_member', 'team_follow_up', 'team_collect', 'team_list_members'])
 
-const SELECTED_CASES = Object.freeze([
-  'lm:member-bash-admitted',
-  'lm:member-bash-denied',
-  'lm:governed-surface',
-  'lm:guard-facts',
-  'lm:no-base-spawn',
-])
+const SELECTED_CASES = Object.freeze(RECON_SEARCH
+  ? [
+      'rs:grep-on-surface',
+      'rs:grep-inlane-hit',
+      'rs:grep-out-of-lane',
+      'rs:grep-parent-dir',
+      'rs:grep-ignore',
+      'rs:grep-hidden-vcs',
+      'rs:grep-exit-nomatch',
+      'rs:grep-exit-error',
+      'rs:glob-workspace',
+      'rs:glob-out-of-lane',
+      'rs:grep-timeout',
+      'rs:guard-facts',
+      'rs:process-host-direct',
+    ]
+  : [
+      'lm:member-bash-admitted',
+      'lm:member-bash-denied',
+      'lm:governed-surface',
+      'lm:guard-facts',
+      'lm:no-base-spawn',
+    ])
 
 const argv = process.argv.slice(2)
 const PLAN_ONLY = argv.includes('--plan')
 const BOOTS_WANTED = (() => {
   const i = argv.indexOf('--boots')
-  if (i === -1) return 2
+  if (i === -1) return RECON_SEARCH ? 1 : 2
   const n = Number(argv[i + 1])
   return Number.isInteger(n) && n > 0 ? n : 2
 })()
@@ -222,7 +247,7 @@ function lane(allow) {
  * statement is the `memberIoCeilings` family: read/write are the World
  * workspace, and `secret-out-of-lane.txt` lives one directory ABOVE it.
  */
-function mainBlueprintYaml({ denyList, workspace }) {
+function mainBlueprintYaml({ denyList, workspace, toolBindings }) {
   const doc = {
     schemaVersion: 4,
     blueprintId: BP_MAIN_ID,
@@ -261,6 +286,9 @@ function mainBlueprintYaml({ denyList, workspace }) {
         network: { mode: 'allow' },
       },
     }],
+    // RECON-SEARCH binding arm only (`--recon-binding`): present-only, exactly
+    // the v4 family shape. Absent on the default arm so its bytes are unchanged.
+    ...(Array.isArray(toolBindings) && toolBindings.length > 0 ? { toolBindings } : {}),
   }
   return `---\n${JSON.stringify(doc, null, 2)}\n---\n`
 }
@@ -316,7 +344,9 @@ function composedRows({ home, workspaceDir, anchorYaml, layer }) {
       name: pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js')).href,
       config,
     },
-    { id: 'preset-a5sf-governed-member', name: '@deepseek-ai/dsh-agent-preset', config: presetRow.config },
+    // RECON-SEARCH: the preset rows are the shipped ones; the ONLY recon
+    // change is the disclosed `tool-fs-search.timeoutMs` fixture knob.
+    { id: 'preset-a5sf-governed-member', name: '@deepseek-ai/dsh-agent-preset', config: RECON_SEARCH ? reconPresetConfig(presetRow.config) : presetRow.config },
     { id: 'p6t6-team-tools', name: pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'harness', 'plugin.mjs')).href },
   ]
 }
@@ -394,7 +424,7 @@ function toolResultFor(requests, callId) {
  * The scripted model. The MEMBER branch is selected STRUCTURALLY by the token
  * that only our delegated prompt carries (a title/compaction call never does).
  */
-function makeDecide({ inLanePath, secretPath, workspaceDir }) {
+function makeDecide({ inLanePath, secretPath, workspaceDir, reconScript }) {
   const bashCall = (id, command, description) => ({
     kind: 'tool-call',
     toolCalls: [{ id, name: 'bash', arguments: { command, description, workdir: workspaceDir } }],
@@ -405,8 +435,11 @@ function makeDecide({ inLanePath, secretPath, workspaceDir }) {
     const userText = userTextOf(req)
     if (allText.includes('Generate the session title')) return { kind: 'text', content: 'a5sf live member session' }
 
-    // ── THE MEMBER TURN: admitted read, then ceiling-denied read ───────────
+    // ── THE MEMBER TURN ────────────────────────────────────────────────────
     if (isMemberRequest(req)) {
+      if (RECON_SEARCH) {
+        return reconMemberStep({ req, resultIdsOf, lastToolResultText, script: reconScript })
+      }
       const seen = resultIdsOf(req)
       if (!seen.has(CALL_ADMIT)) {
         // The sleep keeps the confined payload alive so the independent /proc
@@ -437,7 +470,9 @@ function makeDecide({ inLanePath, secretPath, workspaceDir }) {
               delegationTemplateId: 'worker',
               label: 'a5sflm-worker',
               workspace: workspaceDir,
-              prompt: `${TOK_MEMBER}: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.`,
+              prompt: RECON_SEARCH
+                ? `${TOK_MEMBER}: run the search probes exactly once each, in the given order, one tool call at a time, then report.`
+                : `${TOK_MEMBER}: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.`,
               async: false,
             },
           }],
@@ -722,10 +757,14 @@ function planOnly() {
   log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA}`)
   log(`shipped !!js substitutions: ${JSON.stringify(layer.jsSubstitutions)}`)
   const anchor = anchorBlueprintYaml()
-  const main = mainBlueprintYaml({ denyList: ['u5_canary'], workspace: join(EVIDENCE, 'plan-workspace') })
+  const planWorkspace = join(EVIDENCE, 'plan-workspace')
+  const planBindings = RECON_BINDING
+    ? reconToolBindings({ workspaceDir: planWorkspace, outOfLaneDir: join(EVIDENCE, 'plan-home', 'out-of-lane') })
+    : undefined
+  const main = mainBlueprintYaml({ denyList: ['u5_canary'], workspace: planWorkspace, toolBindings: planBindings })
   const a = assertBlueprintText(anchor, BP_ANCHOR_ID, 'anchor.yaml')
   const m = assertBlueprintText(main, BP_MAIN_ID, 'main.yaml')
-  log(`blueprints accepted: anchor=${JSON.stringify(a)} main=${JSON.stringify(m)}`)
+  log(`blueprints accepted: anchor=${JSON.stringify(a)} main=${JSON.stringify(m)} toolBindings=${String(Array.isArray(planBindings) ? planBindings.length : 0)}`)
   const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: join(EVIDENCE, 'plan-workspace'), anchorYaml: anchor, layer })
   writeFileSync(join(EVIDENCE, 'plan-patch.yml'), emitPatchLayer(['a5sf-live-member plan (no World)'], rows) + '\n')
   log(`rows: ${JSON.stringify(rows.map((r) => ({ id: r.id, name: String(r.name).slice(0, 80) })))}`)
@@ -779,13 +818,19 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       log(`[boot${String(index)}] world=${world.id} home=${world.home}`)
       mkdirSync(join(world.home, 'blueprints'), { recursive: true })
       const workspace = world.workspaceDir
-      const inLanePath = join(workspace, IN_LANE_FILE)
+      // RECON-SEARCH: the fixture tree carries the ignore/hidden/VCS classes and
+      // a secret one directory ABOVE the ceiling. `recon` is null on every
+      // default run, so the default fixture bytes are unchanged.
+      const recon = RECON_SEARCH ? reconFixtures({ workspaceDir: workspace, homeDir: world.home }) : null
+      const inLanePath = recon === null ? join(workspace, IN_LANE_FILE) : join(workspace, RECON.inLaneFile)
       // The out-of-lane fixture sits OUTSIDE the compiled read ceiling.
       const outsideDir = join(world.home, 'out-of-lane')
       mkdirSync(outsideDir, { recursive: true })
-      const secretPath = join(outsideDir, SECRET_FILE)
-      writeFileSync(inLanePath, `${IN_LANE_TEXT}\n`, 'utf8')
-      writeFileSync(secretPath, `${SECRET_TEXT}\n`, 'utf8')
+      const secretPath = recon === null ? join(outsideDir, SECRET_FILE) : recon.secretPath
+      if (recon === null) {
+        writeFileSync(inLanePath, `${IN_LANE_TEXT}\n`, 'utf8')
+        writeFileSync(secretPath, `${SECRET_TEXT}\n`, 'utf8')
+      }
       writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2) + '\n')
 
       const anchor = anchorBlueprintYaml()
@@ -796,19 +841,38 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       world.u6Fs.rows.push(...rows)
       log(`[boot${String(index)}] rows: ${rows.map((r) => r.id).join(',')}`)
 
-      const decide = makeDecide({ inLanePath, secretPath, workspaceDir: workspace })
+      const decide = makeDecide({ inLanePath, secretPath, workspaceDir: workspace, reconScript: recon?.script })
       process.env.A5SF_GOVERNED_SCRATCH = join(world.home, 'governed-scratch')
       mkdirSync(process.env.A5SF_GOVERNED_SCRATCH, { recursive: true })
       await world.startMock({ decide })
       log(`[boot${String(index)}] mock on ${String(world.mock?.port)}`)
+      if (RECON_SEARCH) {
+        // Cross-PID-namespace slot sweep (measured 2026-11-13, README §6):
+        // every dev Host runs in its own PID namespace, so a concurrent peer's
+        // liveness sweep can read OUR slot pid as dead and unlink the file.
+        // Re-taking the SAME slot (same run id/pid) immediately before the ONE
+        // spawn chokepoint keeps the shared counter honest.
+        const leaseRoot = harness.factory.leaseRoot
+        const runId = String(record.record.runId)
+        const held = scanDevLiveSlots({ leaseRoot }).live.find((e) => e.runId === runId && e.pid === process.pid)
+        if (held === undefined) {
+          const reacquired = acquireDevLiveSlot({
+            leaseRoot, runId, face: 'Subprocess', world: LINE, headCommit: resolveHeadCommit(REPO_ROOT),
+          })
+          log(`[boot${String(index)}] dev-live slot RE-ACQUIRED #${String(reacquired.slot)} after a peer sweep`)
+        }
+      }
       return await harness.boot({ world, phase, bootTimeoutMs: 300_000 })
     })
     hostReached = true
     abortStage = 'composition'
     paths = {
       workspace: world.workspaceDir,
+      home: world.home,
+      ownership: join(world.home, '.u5-ownership.json'),
       inLane: join(world.workspaceDir, IN_LANE_FILE),
       secret: join(world.home, 'out-of-lane', SECRET_FILE),
+      outOfLane: join(world.home, 'out-of-lane'),
       sink: join(world.home, 'a5sf-consult.jsonl'),
     }
     log(`[boot${String(index)}] BOOTED port=${bootInfo.port} log=${bootInfo.logPath}`)
@@ -840,9 +904,22 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     // started afterwards sees an empty window and reads as "no spawn".
     const procLog = []
     const otherBwrapPids = new Set()
+    const procPidsSeen = new Set()
     const memberPromptAt = new Date().toISOString()
     const watcher = setInterval(() => {
       try {
+        if (RECON_SEARCH) {
+          // The recon arm records EVERY `rg`/launcher/bwrap sighting with its
+          // argv, ppid, namespaces and status, and dedupes per pid.
+          const hostPid = (() => {
+            try { return Number(JSON.parse(readFileSync(paths.ownership, 'utf8')).hostPid) } catch { return null }
+          })()
+          const hits = reconScanProc({ hostPid })
+          const fresh = hits.filter((h) => !procPidsSeen.has(`${String(h.pid)}:${String(h.kind)}`))
+          for (const h of fresh) procPidsSeen.add(`${String(h.pid)}:${String(h.kind)}`)
+          if (fresh.length > 0) procLog.push({ at: new Date().toISOString(), hostPid, hits: fresh })
+          return
+        }
         const hits = scanProc({ inLanePath: paths.inLane, secretPath: paths.secret })
         const kept = []
         for (const hit of hits) {
@@ -876,9 +953,14 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       throw new Error(`the Leader surface carries no team tools (${leaderSurface.join(',')}) — the composition did not register them`)
     }
     writeFileSync(join(bootDir, 'leader-surface.json'), JSON.stringify({ at: new Date().toISOString(), tools: leaderSurface, denyList }, null, 2) + '\n')
-    const mainText = mainBlueprintYaml({ denyList, workspace: paths.workspace })
+    const mainText = mainBlueprintYaml({
+      denyList,
+      workspace: paths.workspace,
+      toolBindings: RECON_BINDING ? reconToolBindings({ workspaceDir: paths.workspace, outOfLaneDir: paths.outOfLane }) : undefined,
+    })
     assertBlueprintText(mainText, BP_MAIN_ID, 'main.yaml')
     writeFileSync(join(world.home, 'blueprints', 'main.yaml'), mainText)
+    if (RECON_BINDING) log(`[boot${String(index)}] RECON toolBindings: ${JSON.stringify(reconToolBindings({ workspaceDir: paths.workspace, outOfLaneDir: paths.outOfLane }))}`)
 
     // ── team.create: the Leader's first turn delegates the governed Member ─
     abortStage = 'team-create'
@@ -1008,12 +1090,18 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
         parameters: params,
         schemaKeys: schema === null || schema === undefined ? [] : Object.keys(schema),
       }
-    }).filter((s) => s.name === 'bash' || s.name.startsWith('team_'))
+    }).filter((s) => RECON_SEARCH || s.name === 'bash' || s.name.startsWith('team_'))
     const bashEntry = memberSurface.find((s) => s.name === 'bash') ?? null
-    writeFileSync(join(bootDir, 'member-surface.json'), JSON.stringify({ tools: memberSurface.map((s) => s.name), bash: bashEntry }, null, 2) + '\n')
+    writeFileSync(join(bootDir, 'member-surface.json'), JSON.stringify({
+      tools: memberSurface.map((s) => s.name),
+      bash: bashEntry,
+      ...(RECON_SEARCH ? { entries: memberSurface } : {}),
+    }, null, 2) + '\n')
 
-    const factsAll = parseJsonl(paths.sink).filter((f) => f?.schema === 'a5sf-guard-consult/1' || f?.method === 'shellRead')
-    const facts = factsAll.filter((f) => f?.method === 'shellRead')
+    const factsAll = parseJsonl(paths.sink).filter((f) => f?.schema === 'a5sf-guard-consult/1' || typeof f?.method === 'string')
+    // The default arm's guard-fact judge is shellRead-shaped; the recon arm
+    // counts EVERY method so "zero facts for grep/glob" is not a filter effect.
+    const facts = RECON_SEARCH ? factsAll : factsAll.filter((f) => f?.method === 'shellRead')
     writeFileSync(join(bootDir, 'guard-facts.json'), JSON.stringify(factsAll, null, 2) + '\n')
 
     // Independent /proc counters (deduped by pid inside the Member-turn window).
@@ -1060,6 +1148,42 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       sightings: procLog,
     }, null, 2) + '\n')
 
+    // ── RECON-SEARCH: samples, process evidence, and the lifecycle probe ────
+    // The lifecycle probe runs LAST: archive the Member, then try to dispatch
+    // one more turn on its child session. A refusal here is a LIFECYCLE
+    // refusal (it does not tell us what the tool would do), so it is recorded
+    // as its own fact rather than folded into the search verdicts.
+    let reconReport = null
+    let lifecycle = null
+    if (RECON_SEARCH) {
+      const script = reconScript({ workspaceDir: paths.workspace, outOfLaneDir: paths.outOfLane })
+      const hostPid = (() => {
+        try { return Number(JSON.parse(readFileSync(paths.ownership, 'utf8')).hostPid) } catch { return null }
+      })()
+      const proc = procLog.flatMap((b) => b.hits)
+      const samples = reconSamples(transcript, script)
+      reconReport = judgeReconSearch({ samples, proc, facts: factsAll, hostPid, bindingMode: RECON_BINDING })
+      const processPayload = writeReconArtefacts({
+        bootDir, samples, proc, facts: factsAll, hostPid,
+        ownershipPath: paths.ownership, transcript,
+      })
+      reconReport = { ...reconReport, process: processPayload.process }
+      log(`[boot${String(index)}] recon: grep out-of-lane bytes=${String(reconReport.governance.grep.outOfLaneLeak)} parent=${String(reconReport.governance.grep.parentLeak)} glob=${String(reconReport.governance.glob.outOfLaneLeak)} guardFacts=${String(factsAll.length)}`)
+      if (instanceId !== null) {
+        const archived = await remoteCall(fetchJson, origin, cookie, 'member.archive', { teamSessionId: ACCEPTANCE_ROOT, instanceId }, 'rs')
+        const post = childSessionId === null
+          ? null
+          : await apiPrompt(origin, cookie, childSessionId, 'A5SF_RS_POST_ARCHIVE', 'rs')
+        lifecycle = {
+          archive: { status: archived.status, ok: archived.body?.result?.ok ?? null, body: String(JSON.stringify(archived.body ?? null)).slice(0, 800) },
+          postArchivePrompt: post === null ? null : { status: post.status, body: String(JSON.stringify(post.body ?? null)).slice(0, 800) },
+          note: 'a post-archive dispatch is refused by LIFECYCLE admission; it cannot exercise (or exonerate) the search tool path',
+        }
+        writeFileSync(join(bootDir, 'lifecycle.json'), JSON.stringify(lifecycle, null, 2) + '\n')
+        log(`[boot${String(index)}] lifecycle: archive=${String(lifecycle.archive.status)} postArchivePrompt=${String(lifecycle.postArchivePrompt?.status)}`)
+      }
+    }
+
     // ── judges ─────────────────────────────────────────────────────────────
     const verdicts = {
       admitted: judgeAdmitted(admitted),
@@ -1076,11 +1200,15 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       record.addCase(id, runVerdict, rest)
       log(`[boot${String(index)}] case ${id}: ${runVerdict}`)
     }
-    add('lm:member-bash-admitted', verdicts.admitted.verdict, verdicts.admitted)
-    add('lm:member-bash-denied', verdicts.denied.verdict, verdicts.denied)
-    add('lm:governed-surface', verdicts.surface.verdict, verdicts.surface)
-    add('lm:guard-facts', verdicts.facts.verdict, verdicts.facts)
-    add('lm:no-base-spawn', verdicts.spawns.verdict, verdicts.spawns)
+    if (RECON_SEARCH) {
+      for (const c of reconReport.cases) add(c.id, c.verdict, c)
+    } else {
+      add('lm:member-bash-admitted', verdicts.admitted.verdict, verdicts.admitted)
+      add('lm:member-bash-denied', verdicts.denied.verdict, verdicts.denied)
+      add('lm:governed-surface', verdicts.surface.verdict, verdicts.surface)
+      add('lm:guard-facts', verdicts.facts.verdict, verdicts.facts)
+      add('lm:no-base-spawn', verdicts.spawns.verdict, verdicts.spawns)
+    }
 
     collectDiagnostics('final')
     const final = record.finalize()
@@ -1099,6 +1227,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
         calls: transcript.calls,
       },
       counters, facts, verdicts,
+      recon: reconReport, lifecycle,
       locus: buildLocus({ world, bootInfo, transcript, facts, paths, bootDir }),
       paths,
       memberPromptAt, memberDoneAt,
@@ -1279,11 +1408,43 @@ async function main() {
   writeFileSync(join(EVIDENCE, 'host-tree-porcelain.txt'), porcelain.length === 0 ? 'empty\n' : porcelain.join('\n') + '\n')
   log(`host porcelain after: ${JSON.stringify(porcelain)}`)
   if (porcelain.length !== 0) process.exitCode = 1
-  const allOk = results.length === BOOTS_WANTED && results.every((r) => r?.failed !== true && r?.overall === 'PASS')
   // A pair is required only when two or more boots were asked for; a single
   // `--boots 1` development iteration is judged on its own record.
   const pairOk = BOOTS_WANTED < 2 || agreement.agreeing === true
+  // The RECON arm's cases are OBSERVATIONS (a "grep leaks" observation is
+  // PASS when it was measured, not when governance held). Completion is the
+  // success criterion there; the governance verdict lives in the report.
+  const allOk = results.length === BOOTS_WANTED
+    && results.every((r) => r?.failed !== true && (RECON_SEARCH === true || r?.overall === 'PASS'))
   log(`RESULT ${allOk ? 'PASS' : 'FAIL'} (${String(results.length)}/${String(BOOTS_WANTED)} boots; agreeing pair=${String(agreement.agreeing)})`)
+  if (RECON_SEARCH) {
+    const r = results[0] ?? null
+    const payload = {
+      schema: 'a5sf-recon-search/summary/1',
+      at: new Date().toISOString(),
+      head, hostSha: TEST_USE_BASELINE_SHA, bindingMode: RECON_BINDING,
+      recordClass: 'DEV-LIVE',
+      candidateClaimEligibility: { eligible: false, reason: 'DEV_LIVE_EVIDENCE_NOT_CANDIDATE' },
+      runId: r?.runId ?? null, overall: r?.overall ?? null,
+      verdicts: (r?.recon?.cases ?? []).map((c) => ({ id: c.id, verdict: c.verdict, failed: c.failed })),
+      governance: r?.recon?.governance ?? null,
+      lifecycle: r?.lifecycle ?? null,
+      process: r?.recon?.process ?? null,
+    }
+    writeFileSync(join(EVIDENCE, 'recon-summary.json'), JSON.stringify(payload, null, 2) + '\n')
+    const lines = [
+      `RECON-SEARCH summary  head=${head}  host=${TEST_USE_BASELINE_SHA}  binding=${String(RECON_BINDING)}`,
+      `recordClass=DEV-LIVE eligible=false`,
+      '',
+      ...payload.verdicts.map((v) => `${v.verdict.padEnd(9)} ${v.id}${v.failed.length > 0 ? `  failed=[${v.failed.join('; ')}]` : ''}`),
+      '',
+      `grep out-of-lane bytes=${String(payload.governance?.grep?.outOfLaneLeak)} parent=${String(payload.governance?.grep?.parentLeak)} guardFacts=${String(payload.governance?.grep?.guardFacts)}`,
+      `glob out-of-lane bytes=${String(payload.governance?.glob?.outOfLaneLeak)}`,
+      `lifecycle archive=${String(payload.lifecycle?.archive?.status)} postArchivePrompt=${String(payload.lifecycle?.postArchivePrompt?.status)}`,
+    ]
+    writeFileSync(join(EVIDENCE, 'recon-summary.txt'), lines.join('\n') + '\n')
+    log(lines.join('\n'))
+  }
   if (!allOk || !pairOk) process.exitCode = 1
 }
 
