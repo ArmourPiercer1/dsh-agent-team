@@ -278,3 +278,30 @@ row is still surfaced by pending reads, but it cannot be turned into an
 execution by the dead invocation. If the product wants zero pending actionability
 after any crash, that requires a separate ruling because it conflicts with the
 required replacement-wake liveness proof.
+
+
+## Second independent incremental review — `28b61d4b2..f05de98ea` (product delta)
+
+Verdict: **PASS WITH NOTES — 0 P0/P1, 1 P2, 4 P3.** Verified: the flag is
+enabled only through `alpha6Wiring.mode === 'alpha6'` and defaults off; both
+hunks are inside the existing `withTeamLock` and use the exactly-once
+`commitAbandonmentFact`; a storage fault leaves the request pending with no
+decision; corrupt/undetermined is PA-only and forcing it yields terminal
+abandonment (no allow, no consumption, no later leg); external-policy and
+explicit deny still commit DENY; dist mirrors TS; targeted suites 67/67 include
+the flag-off durable-DENY assertion.
+
+Disposition:
+- **P2 coverage** (no in-repo unit test naming the flag): disclosed. Correctness
+  rests on `a6-crash-request-r6` plus the A5 flag-off assertion; a future rename
+  could regress silently. Not fixed in this round.
+- **P3 stale comments**: FIXED (`types.ts` PaManifestReadBack and the resolve
+  comment now state the A6 conditional).
+- **P3 duplicated literal**: FIXED (named `A6_UNDETERMINED_ABANDON_REASON`).
+- **P3 no decider in the abandonment fact**: inherent to constraint 1 (it is not
+  an approval decision); noted for forensics.
+- **P3 transient verifier throw now terminal-abandons in A6**: fail-closed and
+  no execution; a fresh request is required. Noted for the A6 runbook.
+
+The comment/constant change was re-gated at `36167927f`; product behavior is
+identical to the reviewed `f05de98ea`.

@@ -1,7 +1,7 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `f05de98ea`
-(9/9 local, 313.1 s, census 677 files / 8833 legs, identity set identical;
+Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `36167927f`
+(9/9 local, 305.1 s, census 677 files / 8833 legs, identity set identical;
 `gate.md`). Product code adds the A6-gated undetermined-allow lifecycle fix; all other
 product code is unchanged from `28b61d4b2`. Closing-round runs carry
 `run-manifest.json`; the body/Inbox proof runs were taken while the product tree

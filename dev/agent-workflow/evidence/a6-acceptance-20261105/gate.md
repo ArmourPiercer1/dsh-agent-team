@@ -1,6 +1,19 @@
 # Gate record
 
-## Final closing-round HEAD — `f05de98ea`
+## Final closing-round HEAD — `36167927f`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **305.1 s**
+- Census: **677 files / 8833 legs**, `COUNTS MOVED, SET DID NOT`; identity set
+  IDENTICAL to the published baseline
+- Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
+- Product behavior at this HEAD is the reviewed `f05de98ea` fix; the delta to
+  `36167927f` is corrected source comments, a named reason constant, dist, and
+  the ARC-A override digests. No behavior change.
+- Log: `.drill/ci-gate-36167927f.log`
+
+## Closing-round HEAD — `f05de98ea`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
