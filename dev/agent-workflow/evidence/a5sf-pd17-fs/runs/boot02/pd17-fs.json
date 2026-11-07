@@ -1,0 +1,451 @@
+{
+  "at": "2026-11-07T18:52:13.906Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "reason": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE"
+  },
+  "host": {
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "port": 3184,
+    "world": "u5u5a5sfpd17-20261107T18-50-41Z"
+  },
+  "head": "bd952e7d09b293ee99e0c96ec228f8af2380ed90",
+  "members": [
+    {
+      "instanceId": "inst-02d04nx1cb8c",
+      "templateId": "lane-b",
+      "lifecycle": "SETTLED",
+      "policyRevision": null
+    },
+    {
+      "instanceId": "inst-1y3th5a0xs71",
+      "templateId": "lane-a",
+      "lifecycle": "SETTLED",
+      "policyRevision": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined",
+      "policyRevision": null
+    }
+  ],
+  "lanes": {
+    "A": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a",
+    "B": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b"
+  },
+  "surfaces": {
+    "A": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "todo_write",
+      "u5_canary",
+      "u6fs_probe",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "B": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "todo_write",
+      "u5_canary",
+      "u6fs_probe",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "facts": {
+    "total": 16,
+    "byMethod": {
+      "stat": 7,
+      "readText": 2,
+      "writeText": 2,
+      "editText": 1,
+      "shellRead": 2,
+      "spawn": 1,
+      "spawn:write": 1
+    },
+    "identities": {
+      "A": {
+        "instanceId": "inst-1y3th5a0xs71",
+        "count": 12,
+        "facts": [
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "readText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "writeText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/written-by-a.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 3,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 4,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "readText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 5,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "editText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 6,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 7,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "stat",
+            "locator": "/etc/hostname",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 8,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "writeText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/cross-write-by-a.txt",
+            "decision": "deny",
+            "decidedBy": "IO_WRITE_DENIED",
+            "sequence": 9,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/edit.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 10,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 11,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          },
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 1,
+            "policyRevision": "a5sf1:cc02ecf2938d7e84581014798a9c5931"
+          }
+        ]
+      },
+      "B": {
+        "instanceId": "inst-02d04nx1cb8c",
+        "count": 4,
+        "facts": [
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:4b88b26af9df32f74d36faf783d1d960"
+          },
+          {
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:4b88b26af9df32f74d36faf783d1d960"
+          },
+          {
+            "method": "spawn:write",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "policyRevision": "a5sf1:4b88b26af9df32f74d36faf783d1d960"
+          },
+          {
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 1,
+            "policyRevision": "a5sf1:4b88b26af9df32f74d36faf783d1d960"
+          }
+        ]
+      }
+    },
+    "crossLaneAllowFacts": [
+      {
+        "method": "shellRead",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt",
+        "memberIdentity": "inst-02d04nx1cb8c"
+      },
+      {
+        "method": "spawn",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b",
+        "memberIdentity": "inst-02d04nx1cb8c"
+      },
+      {
+        "method": "spawn:write",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b",
+        "memberIdentity": "inst-02d04nx1cb8c"
+      }
+    ]
+  },
+  "crossDispatch": {
+    "readB": {
+      "status": 200,
+      "body": {
+        "ok": false,
+        "error": {
+          "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+        }
+      }
+    },
+    "bashB": {
+      "status": 200,
+      "body": {
+        "ok": false,
+        "error": {
+          "message": "IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+        }
+      }
+    }
+  },
+  "transcripts": {
+    "A": {
+      "sessionId": "session-team-child-519735c1550dc6f573d94524213e64ec",
+      "lineCount": 72,
+      "calls": [
+        {
+          "callId": "call-a5sfpd17-a-read-own",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt"
+          },
+          "isError": false,
+          "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD17_LANE_A_BYTES\n\n(End of file - total 1 lines)\n</content>"
+        },
+        {
+          "callId": "call-a5sfpd17-a-write-own",
+          "name": "write",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/written-by-a.txt",
+            "content": "A5SF_PD17_INLANE_WRITE\n"
+          },
+          "isError": false,
+          "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/written-by-a.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        {
+          "callId": "call-a5sfpd17-a-read-edit-own",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt"
+          },
+          "isError": false,
+          "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD17_EDIT_TARGET\n\n(End of file - total 1 lines)\n</content>"
+        },
+        {
+          "callId": "call-a5sfpd17-a-edit-own",
+          "name": "edit",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt",
+            "old_string": "A5SF_PD17_EDIT_TARGET",
+            "new_string": "A5SF_PD17_EDIT_DONE"
+          },
+          "isError": false,
+          "result": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/edit.txt has been updated successfully."
+        },
+        {
+          "callId": "call-a5sfpd17-a-read-cross",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt"
+          },
+          "isError": true,
+          "result": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "callId": "call-a5sfpd17-a-read-host",
+          "name": "read",
+          "arguments": {
+            "file_path": "/etc/hostname"
+          },
+          "isError": true,
+          "result": "Error: authored locator '/etc/hostname' is outside every allow subtree of the lane"
+        },
+        {
+          "callId": "call-a5sfpd17-a-write-cross",
+          "name": "write",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/cross-write-by-a.txt",
+            "content": "A5SF_PD17_CROSS_WRITE\n"
+          },
+          "isError": true,
+          "result": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/cross-write-by-a.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "callId": "call-a5sfpd17-a-read-edit-cross",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/edit.txt"
+          },
+          "isError": true,
+          "result": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/edit.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "callId": "call-a5sfpd17-a-edit-cross",
+          "name": "edit",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/edit.txt",
+            "old_string": "A5SF_PD17_EDIT_TARGET",
+            "new_string": "A5SF_PD17_EDIT_DONE"
+          },
+          "isError": true,
+          "result": "Error: edit requires reading \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/edit.txt\" first"
+        },
+        {
+          "callId": "call-a5sfpd17-a-image-cross",
+          "name": "read_image",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/probe.png"
+          },
+          "isError": true,
+          "result": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images"
+        }
+      ]
+    },
+    "B": {
+      "sessionId": "session-team-child-6969eaa68780fb1fbafc60b135a52246",
+      "lineCount": 31,
+      "calls": [
+        {
+          "callId": "call-a5sfpd17-b-read-own",
+          "name": "bash",
+          "arguments": {
+            "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b/b.txt'",
+            "description": "Control: read lane B through the governed shell",
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-b"
+          },
+          "isError": false,
+          "result": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD17_SIBLING_LANE_B_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD17_SIBLING_LANE_B_BYTES\"}"
+        },
+        {
+          "callId": "call-a5sfpd17-b-read-cross",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt"
+          },
+          "isError": true,
+          "result": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace/lane-a/a.txt' is outside every allow subtree of the lane"
+        }
+      ]
+    }
+  }
+}

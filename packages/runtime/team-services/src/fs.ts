@@ -29,7 +29,10 @@
  * WHAT IT DOES NOT DO: it does not resolve or read anything itself (every
  * operation is `super.<method>`), does not REQUEST or CONSUME approvals, and
  * does not weaken the host Provider — a refusal is raised BEFORE the operation,
- * a permitted call behaves byte-for-byte like the base Provider.
+ * a permitted call behaves byte-for-byte like the base Provider, and the
+ * per-call HOST policy it forwards is narrowed to at most this deployment's own
+ * default mode (PD-17: the session's workspace root must survive, its
+ * escalation must not).
  *
  * @module @dsh-agent-team/runtime/team-services/fs
  */
@@ -68,6 +71,9 @@ export interface FsProviderSurface {
 
 /** A Provider constructor that Cordis can mount as the `fs` service. */
 export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface
+
+/** Host sandbox modes, strictest first — the ladder `hostPolicyOf` narrows on. */
+const STRICTNESS: readonly string[] = Object.freeze(['read-only', 'workspace-write', 'danger-full-access'])
 
 /** The write half of the managed surface (everything else is read). */
 const WRITE_METHODS: ReadonlySet<string> = new Set(['writeText', 'editText'])
@@ -231,11 +237,7 @@ export function createConfinedFileSystemClass(
       policy?: unknown,
     ): Promise<unknown> {
       await this.admitted('writeText', target)
-      // The caller's `policy` argument is deliberately NOT forwarded: it can only
-      // weaken the host fence (e.g. `danger-full-access`) and the Member ceiling
-      // has already decided this write. The base provider's own default applies.
-      void policy
-      return super.writeText(target, content, expected, signal)
+      return super.writeText(target, content, expected, signal, this.hostPolicyOf(policy))
     }
 
     override async editText(
@@ -246,8 +248,39 @@ export function createConfinedFileSystemClass(
       policy?: unknown,
     ): Promise<unknown> {
       await this.admitted('editText', target)
-      void policy
-      return super.editText(target, edit, expected, signal)
+      return super.editText(target, edit, expected, signal, this.hostPolicyOf(policy))
+    }
+
+    /**
+     * The per-call HOST policy, always NARROWED, never substituted (PD-17).
+     *
+     * WHY IT IS FORWARDED AT ALL: the host `write`/`edit` tools build a policy
+     * from the CALLING SESSION (mode + the session workspace root) and hand it
+     * to the provider on every mutation. Without it the base `fs-sandbox`
+     * falls back to the DEPLOYMENT default root, which is not the session
+     * workspace, so a write the Member lane had just admitted inside its own
+     * ceiling was refused by the HOST fence (`FS_SANDBOX_DENIED` under
+     * `workspace-write`) — measured live: Member A could read `workspace/lane-a`
+     * but not write it. The Member ceiling is decided BEFORE this call and is
+     * not re-derived here; this only restores the host fence's own root.
+     *
+     * WHY IT CANNOT WIDEN ANYTHING: the forwarded mode is the STRICTER of the
+     * caller's mode and this deployment's default (`read-only` <
+     * `workspace-write` < `danger-full-access`). An escalation stamp can
+     * therefore never make the host fence weaker than this deployment's own
+     * default, and it can never make the MEMBER lane admit a locator it refused
+     * — that decision is already final. When the base provider exposes no
+     * `sandboxMode` (not a sandboxing backend) the policy is forwarded
+     * untouched: there is no deployment mode to narrow against.
+     */
+    private hostPolicyOf(policy: unknown): unknown {
+      if (policy === undefined || policy === null || typeof policy !== 'object') return policy
+      const deployment = (this as unknown as { sandboxMode?: unknown }).sandboxMode
+      if (typeof deployment !== 'string') return policy
+      const caller = (policy as { mode?: unknown }).mode
+      if (typeof caller !== 'string') return policy
+      const narrowed = STRICTNESS.indexOf(caller) < STRICTNESS.indexOf(deployment) ? caller : deployment
+      return Object.freeze({ ...(policy as Record<string, unknown>), mode: narrowed })
     }
   }
 
