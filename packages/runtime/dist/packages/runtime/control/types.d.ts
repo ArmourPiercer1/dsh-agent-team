@@ -464,6 +464,8 @@ export interface ApprovalCaseState {
     readonly status: 'open' | 'decided' | 'abandoned';
     /** The terminal decision of the current leg, when it has one. */
     readonly terminalDecision?: ControlDecisionRecord;
+    /** A6-PR2c: the current leg's routing transfer, when one was recorded. */
+    readonly transfer?: CurrentLegTransferRecord;
     /**
      * The principals that have ALREADY acted on an earlier leg of this case
      * (ADR A1-10 / 24.5: a set of principals, not of legs). A principal in
@@ -1635,6 +1637,45 @@ export interface ControlServiceOptions {
      * recheck port above; the lock law, point 6, included).
      */
     readonly paEffectsVerifier?: PaEffectsVerifier;
+    /**
+     * A6-PR2c: the trusted CURRENT reviewer of a leg, used only to authorize an
+     * Officer handoff. ABSENT = no transfer authority exists in this composition
+     * (fail closed, never "any member may transfer"). The port must be a trusted
+     * runtime fact, not model input.
+     */
+    readonly currentReviewerForTransfer?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly instanceId: string;
+    } | null>;
+    /**
+     * A6-PR2c: non-authority review events for the wake/notification plane
+     * (Human successor visibility; current-leg transfer). A throwing sink must
+     * not roll back the durable fact — the caller decides delivery.
+     */
+    readonly reviewEvents?: (event: ControlReviewEvent) => void;
+    /**
+     * A6-PR2c — the TRUSTED runtime unavailable-takeover evidence port. It is the
+     * only entrance for `cause: 'officer-unavailable'`: the composition must have
+     * proven the Blueprint's explicit `whenOfficerUnavailable: leader` policy and
+     * the Officer's durable ARCHIVED/DISPOSED/missing-with-history state. ABSENT
+     * = the takeover does not exist in this composition (fail closed). The port
+     * grants only the routing transfer; it never approves a leg.
+     */
+    readonly trustedRuntimeTakeover?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly ok: true;
+    } | {
+        readonly ok: false;
+        readonly detail: string;
+    }>;
 }
 /**
  * C1 (leader-approval reachability) — the non-authority notification port
@@ -1797,6 +1838,8 @@ export interface ControlService {
          *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
          *  defaulted (ADR A2-9), and never a gate. */
         readonly corruptLegs: readonly ControlCorruptLegRecord[];
+        /** A6-PR2c: durable current-leg transfer facts (routing only). */
+        readonly transfers: readonly CurrentLegTransferRecord[];
     }>;
     /**
      * The TOOL PIPELINE LAST-MILE GUARD (the public seam P6-T6 wires into
@@ -2073,6 +2116,15 @@ export interface ControlService {
         readonly reviewCapability?: ReviewCapabilityCandidate;
     }): Promise<ControlEscalationOutcome>;
     /**
+     * A6-PR2c — transfer the CURRENT leg of a case to the Leader (Officer
+     * handoff). This is a durable routing fact only: it grants no approval
+     * capability, never mints/consumes a Grant, and never rewrites an already
+     * signed decision. The caller must be the trusted current reviewer supplied
+     * by the configured reviewer port; when no port is configured the transfer
+     * is refused. Repeating the same transfer is idempotent.
+     */
+    transferCurrentLeg(input: TransferCurrentLegInput): Promise<CurrentLegTransferRecord>;
+    /**
      * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
      * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
      * strict — a leg row that carries a case id without a leg ordinal, an
@@ -2219,4 +2271,59 @@ export interface ControlService {
         readonly kind?: ControlRequestKind;
     }): Promise<ApprovalCaseIdentityLookup>;
 }
+/** The closed transfer causes. Runtime takeover is added with its trusted
+ *  evidence path; a Busy officer never transfers. */
+export declare const CURRENT_LEG_TRANSFER_CAUSES: {
+    readonly OFFICER_HANDOFF: "officer-handoff";
+    readonly OFFICER_UNAVAILABLE: "officer-unavailable";
+};
+export type CurrentLegTransferCause = (typeof CURRENT_LEG_TRANSFER_CAUSES)[keyof typeof CURRENT_LEG_TRANSFER_CAUSES];
+/** The actor of a transfer. Never a reviewer/decider and never a capability. */
+export type CurrentLegTransferActor = {
+    readonly kind: 'officer';
+    readonly instanceId: string;
+} | {
+    readonly kind: 'trusted-team-runtime';
+};
+/** The two legal entrances to the SAME minimal transfer fact. */
+export type TransferCurrentLegInput = {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF;
+    readonly caller: ActionCaller;
+    readonly reason?: string;
+} | {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE;
+    readonly actor: 'trusted-team-runtime';
+    readonly reason?: string;
+};
+/** The durable current-leg transfer fact (one minimal fact, not an Assignment ledger). */
+export interface CurrentLegTransferRecord {
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly target: 'leader';
+    readonly cause: CurrentLegTransferCause;
+    readonly actor: CurrentLegTransferActor;
+    readonly blueprintContentHash?: string;
+    readonly blueprintRevision?: string;
+    readonly transferredAt: string;
+}
+/** Non-authority projection event for the wake/notification plane. */
+export type ControlReviewEvent = {
+    readonly kind: 'current-leg-transferred';
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly transfer: CurrentLegTransferRecord;
+} | {
+    readonly kind: 'human-current-leg';
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+};
 //# sourceMappingURL=types.d.ts.map
