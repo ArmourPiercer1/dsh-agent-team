@@ -172,7 +172,7 @@ Root `session-c1-smoke-a6-2026-11-07T10-24-59`, blueprint `sha256:5c3b52cc…`.
   `control-request-abandoned reason=execution-outcome-unknown`. The spent allow
   is NOT replayed and the decision remains `allow`.
 
-## Request written, no decision — `a6-crash-request-r5` (A6-13/A6-14 PASS)
+## Request written, no decision — `a6-crash-request-r6` (A6-13/A6-14 PASS)
 
 Root `session-c1-smoke-a6-2026-11-07T11-34-22`, blueprint
 `sha256:837cc967…`.

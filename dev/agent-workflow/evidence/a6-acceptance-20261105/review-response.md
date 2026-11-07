@@ -235,7 +235,7 @@ commit and a new full gate, so they are disclosed rather than claimed closed):
   (FIXED).** `resolveControl` committed `deny reason=authority-undetermined`
   when the PA manifest/authority was undetermined. Under the A6 composition it
   now instead writes `control-request-abandoned reason=invocation-abandoned`
-  and refuses; proven by `a6-crash-request-r5`. The flag defaults off so non-A6
+  and refuses; proven by `a6-crash-request-r6`. The flag defaults off so non-A6
   behavior is unchanged.
 - **Settlement cannot distinguish "consumed then completed" from "consumed then
   crashed" (P2).** There is no result fact, so a successful PA execution gets

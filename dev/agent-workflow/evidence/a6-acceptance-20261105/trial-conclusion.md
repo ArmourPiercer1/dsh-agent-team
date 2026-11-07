@@ -1,9 +1,9 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `c2592cdf5`
-(9/9 local, 312.3 s, census 677 files / 8833 legs, identity set identical;
-`gate.md`). Product code is unchanged from the reviewed `28b61d4b2`; the delta
-to `c2592cdf5` is kit/test + evidence only. Closing-round runs carry
+Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `f05de98ea`
+(9/9 local, 313.1 s, census 677 files / 8833 legs, identity set identical;
+`gate.md`). Product code adds the A6-gated undetermined-allow lifecycle fix; all other
+product code is unchanged from `28b61d4b2`. Closing-round runs carry
 `run-manifest.json`; the body/Inbox proof runs were taken while the product tree
 was `28b61d4b2` (recorded repo HEAD `b04974c4f`, docs-only above that product). Earlier full-arc runs were taken at
 `fb6ccb4f4` and are retained as the prior evidence head. Branch

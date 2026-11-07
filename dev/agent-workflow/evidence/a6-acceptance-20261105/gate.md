@@ -1,6 +1,21 @@
 # Gate record
 
-## Final closing-round HEAD — `c2592cdf5`
+## Final closing-round HEAD — `f05de98ea`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **313.1 s**
+- Census: **677 files / 8833 legs**, `COUNTS MOVED, SET DID NOT`; identity set
+  IDENTICAL to the published baseline
+- Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
+- Product delta vs reviewed `28b61d4b2`: the A6-gated
+  `a6AbandonUndeterminedAllow` lifecycle settlement (late allow on an
+  undetermined PA row becomes `control-request-abandoned`, never deny), plus
+  kit/test/evidence. Independent incremental review of that delta is recorded
+  separately.
+- Log: `.drill/ci-gate-f05de98ea.log`
+
+## Closing-round HEAD — `c2592cdf5`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
 - Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
