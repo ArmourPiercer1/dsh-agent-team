@@ -1,0 +1,14 @@
+# PD-18 mutation controls (host-free; every row is an observed suite run)
+
+| mutation | expected RED arm | observed RED arms | exit | verdict |
+| --- | --- | --- | --- | --- |
+| BASELINE | (none red) | (none) | 0 | EXPECTED |
+| M1 SURFACE-READD tool-web | PD18-SURFACE-CLOSED | PD18-SURFACE-CLOSED | 1 | EXPECTED |
+| M2 DISPATCHABLE workflow | PD18-TYPED-REFUSAL | PD18-TYPED-REFUSAL | 1 | EXPECTED |
+
+overall: PASS (baseline green; each mutation reddened its named arm)
+
+M1 rewrites a temporary copy of `cordis.patch.yml` (the repo file is never touched); the
+suite is pointed at it with `A5SF_PD18_COMPOSITION`. M2 sets
+`A5SF_PD18_MUTATE_REGISTER_WORKFLOW=1`, which registers a tripwire `workflow` definition
+in the test registry: the arm must then observe EXECUTION instead of `unknown tool`.

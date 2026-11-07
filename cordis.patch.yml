@@ -155,17 +155,35 @@
     #
     # SURFACE (measured, see dev/agent-workflow/evidence/a5sf-governed-preset/
     # tool-surface.json): this list is the pinned `standard` preset VERBATIM
-    # minus `tool-pwsh`, plus nothing else. `tool-pwsh` is removed on purpose:
-    # it is a second, UNINSTRUMENTED shell — leaving it in place would keep an
-    # un-attributed read path beside the governed `bash`.
+    # minus the rows enumerated below, plus nothing else. Each removal is a FAIL-CLOSED
+    # capability regression, not a fix that keeps the capability:
+    #   - `tool-pwsh` — a second, UNINSTRUMENTED shell; leaving it in place
+    #     would keep an un-attributed read path beside the governed `bash`.
+    #   - `tool-web` and `workflow-ptc`/`tool-workflow` (PD-18, 2026-11-13) — on
+    #     the SHIPPED governed preset these resolved to the host's base
+    #     services: `web_fetch`/`web_search` ran on the inherited `ctx.web`
+    #     provider (its refusal is that provider's SSRF policy, with ZERO
+    #     a5sf-guard-consult facts), and `workflow` executed model-written
+    #     JavaScript in a real PTC child under the HOST sandbox policy (again
+    #     zero a5sf facts; `confinedTurnLaunchers` unchanged). Neither could be
+    #     routed onto this realm inside the PD-18 budget: the web face needs a
+    #     composition-owned transport (the shipped layer has none, and the
+    #     product assembly refuses a narrowed network lane with
+    #     `NETWORK_UNCONFINED_REALM`), and the confined subprocess face refuses
+    #     `node`/interpreter argv at admission by design. A Member that cannot
+    #     name these tools gets the host router's typed `UNKNOWN_TOOL` and runs
+    #     nothing; the capability is GONE from the governed preset until a
+    #     governed face exists for it. `run_code` was never on this surface.
     #   - `bash` KEEPS its name but is served by the confined terminal face once
     #     the realm mounts, so it loses `run_in_background`, per-call
     #     `timeoutMs`, `sandbox_permissions`/`justification` and the structured
     #     result object (the face's answer is bounded text).
-    #   - `tool-jobs`, skills (`skill-filesystem`/`tool-skill`), fs, search, web,
-    #     goal/plan/todo/present, subagent/workflow and compaction are RETAINED.
+    #   - `tool-jobs`, skills (`skill-filesystem`/`tool-skill`), fs, search,
+    #     goal/plan/todo/present, subagent and compaction are RETAINED.
     #     `tool-jobs` is retained but has no producer on this preset (the
-    #     confined face cannot hand a command to the job registry).
+    #     confined face cannot hand a command to the job registry). `subagent`
+    #     is retained; its child-session assembly on a governed row is
+    #     UNMEASURED (PD-18 adjacent finding — see the evidence README).
     #   - NO `persistent-shell`/`dsh-terminal` row appears anywhere on this
     #     preset's scope: a persistent PTY would turn the realm install into
     #     `TERMINALS_DOUBLE_TERMINAL_REFUSED` (no Member at all), and the
@@ -281,12 +299,6 @@
                   toolName: subagent_claude_code
                   backgroundMode: one-shot
                   maxDepth: provider-managed
-              - id: workflow-ptc
-                name: '@deepseek-ai/dsh-workflow-ptc'
-                config:
-                  provider: spawn
-              - id: tool-workflow
-                name: '@deepseek-ai/dsh-tool-workflow'
               - id: tool-ralph
                 name: '@deepseek-ai/dsh-tool-ralph'
                 disabled: true
@@ -299,11 +311,6 @@
             name: '@deepseek-ai/dsh-tool-todo'
             config:
               allowParallelInProgress: true
-          - id: tool-web
-            name: '@deepseek-ai/dsh-tool-web'
-            config:
-              fetch: true
-              searchTimeoutMs: 60000
           - id: present
             name: '@deepseek-ai/dsh-tool-present'
           - id: tool-plugin-manager

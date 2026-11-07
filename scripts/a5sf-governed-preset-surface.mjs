@@ -172,7 +172,8 @@ const report = {
   },
   notes: [
     'The standard preset is the PINNED host baseline; its rows are declarations, not a live mount, because the transient shell and the skills/compaction/subagent rows are host-provided.',
-    'The governed preset is a copy of those declarations minus tool-pwsh; the only row whose RESOLVED definition differs at runtime is `bash` (route-C shadow onto the confined terminal face).',
+    'The governed preset is a copy of those declarations minus the `declaration.removed` rows (tool-pwsh, and since PD-18 tool-web + workflow-ptc/tool-workflow); the only row whose RESOLVED definition differs at runtime is `bash` (route-C shadow onto the confined terminal face).',
+    'PD-18 FAIL-CLOSED SURFACE: web_fetch/web_search and workflow are REMOVED from the governed preset because they resolved to the host base services with zero a5sf facts. Their absence here is a measured capability regression, not a claimed fix; the standard preset still declares workflow-ptc/tool-workflow and tool-web, so the capability exists outside the governed preset.',
     'Retained-but-idle: tool-jobs has no producer on the governed preset (the confined face cannot hand a command to the job registry).',
   ],
 }

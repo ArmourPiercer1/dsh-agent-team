@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-07T22:15:38.985Z",
+  "schema": "a5sf-pd18-web-ptc/endpoint-observations/1",
+  "url": "http://127.0.0.1:45477/pd18-web",
+  "hits": [],
+  "note": "server-side observation of a controlled 127.0.0.1 endpoint; the governed Member must never reach it"
+}

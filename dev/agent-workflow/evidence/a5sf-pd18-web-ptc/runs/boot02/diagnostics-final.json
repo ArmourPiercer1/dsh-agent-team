@@ -1,0 +1,229 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD18_DISC\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd18 session\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD18_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-workflow-leader\",\"name\":\"workflow\",\"arguments\":{\"script\":\"return 42\",\"meta\":{\"name\":\"pd18-return-42\",\"description\":\"Return the deterministic value 42.\"}}}]}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-workflow-leader\",\"content\":[{\"type\":\"text\",\"text\":\"workflow \\\"pd18-return-42\\\" completed (0 agents).\\nReturn value:\\n42\"}],\"is_error\":false}]",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD18_NOOP\"}"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:d038a5663acb3ecbccc61b0db3e68bcb07e38713ef3497cc0a887e57a21154a3] A5SF_PD18_L1_DRIVE\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd18 session\"}"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:d038a5663acb3ecbccc61b0db3e68bcb07e38713ef3497cc0a887e57a21154a3] A5SF_PD18_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-lm-team\",\"requestToken\":\"a5sf-pd18-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd18-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace\",\"prompt\":\"a5sf-pd18-turn: "
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-pd18-turn-delegate] a5sf-pd18-turn: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd18 session\"}"
+    },
+    {
+      "seq": 6,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd18-turn-delegate] a5sf-pd18-turn: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-bas",
+      "isMemberRequest": true,
+      "tools": 40,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-admit\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace/in-lane.txt'; sleep 1.5\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-2026"
+    },
+    {
+      "seq": 7,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-admit\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_PD18_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_PD18_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 40,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-deny\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/out-of-lane/secret-out-of-lane.txt'; sleep 1.5\",\"description\":\"Read the out-of-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u"
+    },
+    {
+      "seq": 8,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 40,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-workflow-member\",\"name\":\"workflow\",\"arguments\":{\"script\":\"return 42\",\"meta\":{\"name\":\"pd18-return-42\",\"description\":\"Return the deterministic value 42.\"}}}]}"
+    },
+    {
+      "seq": 9,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-workflow-member\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"workflow\\\"\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 40,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd18-web-member\",\"name\":\"web_fetch\",\"arguments\":{\"url\":\"http://127.0.0.1:45477/pd18-web\"}}]}"
+    },
+    {
+      "seq": 10,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-web-member\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"web_fetch\\\"\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 40,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD18_MEMBER_DONE Error: unknown tool \\\"web_fetch\\\"\"}"
+    },
+    {
+      "seq": 11,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd18-delegate\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-lm-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0dvpdt71qrwk\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-0bd5b545621fd7ba1f559c40274110a7\\\",\\\"operationId\\\":\\\"op-0q3oaxf1yp0v5i0jbxmwl1g5\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5sf",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD18_L1_DONE\"}"
+    }
+  ],
+  "delegateCall": {
+    "id": "call-a5sfpd18-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-lm-team",
+      "requestToken": "a5sf-pd18-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sfpd18-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace",
+      "prompt": "a5sf-pd18-turn: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "delegateResult": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-lm-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0dvpdt71qrwk\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-0bd5b545621fd7ba1f559c40274110a7\",\"operationId\":\"op-0q3oaxf1yp0v5i0jbxmwl1g5\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-pd18-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_PD18_MEMBER_DONE Error: unknown tool \\\"web_fetch\\\"\"}},\"requestToken\":\"a5sf-pd18-turn-delegate\"}"
+  },
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3188/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n(node:363) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+  "sessions": [
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-boot/session.v4.jsonl.zstd",
+      "bytes": 27048,
+      "id": "session-a5sf-lm-boot",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-team/session.v4.jsonl.zstd",
+      "bytes": 27699,
+      "id": "session-a5sf-lm-team",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-team-child-0bd5b545621fd7ba1f559c40274110a7/session.v4.jsonl.zstd",
+      "bytes": 28616,
+      "id": "session-team-child-0bd5b545621fd7ba1f559c40274110a7",
+      "kind": null
+    }
+  ],
+  "sessionFiles": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-boot/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-boot/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-team/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-a5sf-lm-team/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-team-child-0bd5b545621fd7ba1f559c40274110a7/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd18-web-ptc-tests-homes-u5u5a5sfsub1-20261107T22-13-22Z-workspace--/session-team-child-0bd5b545621fd7ba1f559c40274110a7/session.v4.jsonl.zstd"
+  ],
+  "homeListing": [
+    ".anonymous-user-id",
+    ".credentials.yaml",
+    ".u5-created.json",
+    ".u5-ownership.json",
+    "a5sf-consult.jsonl",
+    "blueprints",
+    "canary-ledger.jsonl",
+    "governed-scratch",
+    "out-of-lane",
+    "p6t6-directive.json",
+    "profiles",
+    "sessions",
+    "storages",
+    "u6fs-probe-ledger.jsonl",
+    "workspace"
+  ],
+  "sessionsExists": true,
+  "sessionCopy": false,
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0dvpdt71qrwk",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:58ed65c394a7414eb373e43f9669b1ab",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T22:15:32.645Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0dvpdt71qrwk",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:58ed65c394a7414eb373e43f9669b1ab",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T22:15:32.650Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0dvpdt71qrwk",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:58ed65c394a7414eb373e43f9669b1ab",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T22:15:32.652Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0dvpdt71qrwk",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:58ed65c394a7414eb373e43f9669b1ab",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-13-22Z/out-of-lane/secret-out-of-lane.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 2,
+      "observedAt": "2026-11-07T22:15:37.422Z"
+    }
+  ],
+  "counters": {
+    "confinedTurnLaunchers": 1,
+    "preflightLaunchers": 4,
+    "payloadInLaneSightings": 0,
+    "procSecretCommandSightings": 0,
+    "baseBwrapWithMarkers": 0,
+    "ptcRuntimeInMemberWindow": 0,
+    "endpointRequests": 0,
+    "guardFacts": {
+      "allow": 1,
+      "deny": 1
+    },
+    "mockRequests": 12,
+    "memberModelRequests": 5,
+    "procBatches": 117,
+    "otherBwrapPids": 1,
+    "memberWindow": {
+      "from": "2026-11-07T22:15:32.044Z",
+      "to": "2026-11-07T22:15:37.773Z"
+    }
+  }
+}
