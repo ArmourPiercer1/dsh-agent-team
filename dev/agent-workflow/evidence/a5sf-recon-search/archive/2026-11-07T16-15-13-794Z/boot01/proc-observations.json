@@ -1,0 +1,205 @@
+{
+  "schema": "a5sf-live-member/proc-observations/1",
+  "at": "2026-11-07T16:11:13.691Z",
+  "note": "independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not a product counter",
+  "sightings": [
+    {
+      "at": "2026-11-07T16:11:09.646Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:09.646Z",
+          "pid": 1,
+          "ppid": 0,
+          "state": "S",
+          "kind": "bwrap",
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team /home/armourpiercer/projects/dsh-agent-team -- bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search && node tests/world-factory/drivers/a5sf-live-member/run-boot.mjs --recon-search --boots 1 2>&1 | tee .recon-scratch/boot1b.log | tail -30",
+          "ppidCmdline": "",
+          "isHostChild": false,
+          "status": {
+            "NSpid": "1",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:11:10.464Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:10.463Z",
+          "pid": 219,
+          "ppid": 101,
+          "state": "R",
+          "kind": "rg",
+          "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_IGNORED_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "219",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:11:10.504Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:10.504Z",
+          "pid": 233,
+          "ppid": 101,
+          "state": "R",
+          "kind": "rg",
+          "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_HIDDEN_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "233",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:11:10.545Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:10.544Z",
+          "pid": 247,
+          "ppid": 101,
+          "state": "R",
+          "kind": "rg",
+          "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "247",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:11:10.704Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:10.704Z",
+          "pid": 267,
+          "ppid": 101,
+          "state": "R",
+          "kind": "rg",
+          "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_OUTLANE_NEEDLE -- ..",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "267",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:11:10.785Z",
+      "hostPid": 101,
+      "hits": [
+        {
+          "at": "2026-11-07T16:11:10.785Z",
+          "pid": 281,
+          "ppid": 101,
+          "state": "S",
+          "kind": "rg",
+          "cmdline": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /usr",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "281",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": null,
+            "pid": null,
+            "net": null,
+            "user": null,
+            "cgroup": null
+          },
+          "mountinfo": {
+            "sha256": "b8ae9fad00489d0c6880b7c56c715cac7eddf585274e9083055181ca75698667",
+            "lines": 51
+          }
+        }
+      ]
+    }
+  ]
+}

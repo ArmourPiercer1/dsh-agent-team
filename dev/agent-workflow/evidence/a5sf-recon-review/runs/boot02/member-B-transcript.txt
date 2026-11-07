@@ -1,0 +1,13 @@
+SESSION session-team-child-d1676ee8a4302e31123e801d78ab6dfe (/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-review-tests-homes-u5u5a5sfrev1-20261107T17-40-24Z-workspace--/session-team-child-d1676ee8a4302e31123e801d78ab6dfe/session.v4.jsonl.zstd)
+
+TOOL CALL [bash] call-a5sfrv-b-bash-allow
+  {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-b/b.txt'; sleep 1.0","description":"Control: read lane B","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-b"}
+TOOL RESULT isError=false
+  {"kind":"confined-terminal","sessionId":"confined-pty-1","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"cancelled":false,"stdout":"A5SF_RV_LANE_B_BYTES\n","stderr":"","scrollback":"A5SF_RV_LANE_B_BYTES"}
+
+TOOL CALL [bash] call-a5sfrv-b-bash-cross
+  {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-a/a.txt'; sleep 1.0","description":"Probe: read lane A through the governed face","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-b"}
+TOOL RESULT isError=true
+  Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-a/a.txt' is outside every allow subtree of the lane
+
+FINAL: A5SF_RV_B_DONE Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspa

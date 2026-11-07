@@ -1,0 +1,380 @@
+[
+  {
+    "at": 1794069977358,
+    "atIso": "2026-11-07T16:46:17.358Z",
+    "isMember": false,
+    "member": null,
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794069977380,
+    "atIso": "2026-11-07T16:46:17.380Z",
+    "isMember": false,
+    "member": null,
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070037689,
+    "atIso": "2026-11-07T16:47:17.689Z",
+    "isMember": false,
+    "member": null,
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070037690,
+    "atIso": "2026-11-07T16:47:17.690Z",
+    "isMember": false,
+    "member": null,
+    "seen": [],
+    "replyCalls": [
+      {
+        "id": "call-rc-delegate-a",
+        "name": "team_delegate"
+      }
+    ]
+  },
+  {
+    "at": 1794070038302,
+    "atIso": "2026-11-07T16:47:18.302Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-allow",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070038303,
+    "atIso": "2026-11-07T16:47:18.303Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070043147,
+    "atIso": "2026-11-07T16:47:23.147Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-deny-read",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070043190,
+    "atIso": "2026-11-07T16:47:23.190Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-deny-write",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070043276,
+    "atIso": "2026-11-07T16:47:23.276Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read",
+      "call-rc-a-deny-write"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-dyn-var",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070043383,
+    "atIso": "2026-11-07T16:47:23.383Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read",
+      "call-rc-a-deny-write",
+      "call-rc-a-dyn-var"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-dyn-subst",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070043482,
+    "atIso": "2026-11-07T16:47:23.482Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read",
+      "call-rc-a-deny-write",
+      "call-rc-a-dyn-var",
+      "call-rc-a-dyn-subst"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-bg",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070043683,
+    "atIso": "2026-11-07T16:47:23.683Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read",
+      "call-rc-a-deny-write",
+      "call-rc-a-dyn-var",
+      "call-rc-a-dyn-subst",
+      "call-rc-a-bg"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-a-joblist",
+        "name": "job_list"
+      }
+    ]
+  },
+  {
+    "at": 1794070043724,
+    "atIso": "2026-11-07T16:47:23.724Z",
+    "isMember": true,
+    "member": "A",
+    "seen": [
+      "call-rc-a-allow",
+      "call-rc-a-deny-read",
+      "call-rc-a-deny-write",
+      "call-rc-a-dyn-var",
+      "call-rc-a-dyn-subst",
+      "call-rc-a-bg",
+      "call-rc-a-joblist"
+    ],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070043952,
+    "atIso": "2026-11-07T16:47:23.952Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-archive-a",
+        "name": "team_archive_member"
+      }
+    ]
+  },
+  {
+    "at": 1794070044081,
+    "atIso": "2026-11-07T16:47:24.081Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-followup-a",
+        "name": "team_follow_up"
+      }
+    ]
+  },
+  {
+    "at": 1794070044121,
+    "atIso": "2026-11-07T16:47:24.121Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a",
+      "call-rc-followup-a"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-delegate-b",
+        "name": "team_delegate"
+      }
+    ]
+  },
+  {
+    "at": 1794070044385,
+    "atIso": "2026-11-07T16:47:24.385Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a",
+      "call-rc-followup-a",
+      "call-rc-delegate-b"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-collect-b-1",
+        "name": "team_collect"
+      }
+    ]
+  },
+  {
+    "at": 1794070044429,
+    "atIso": "2026-11-07T16:47:24.429Z",
+    "isMember": true,
+    "member": "B",
+    "seen": [],
+    "replyCalls": [
+      {
+        "id": "call-rc-b-long",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070044430,
+    "atIso": "2026-11-07T16:47:24.430Z",
+    "isMember": true,
+    "member": "B",
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070044454,
+    "atIso": "2026-11-07T16:47:24.454Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a",
+      "call-rc-followup-a",
+      "call-rc-delegate-b",
+      "call-rc-collect-b-1"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-archive-b",
+        "name": "team_archive_member"
+      }
+    ]
+  },
+  {
+    "at": 1794070052721,
+    "atIso": "2026-11-07T16:47:32.721Z",
+    "isMember": true,
+    "member": "B",
+    "seen": [
+      "call-rc-b-long"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-b-second",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070052797,
+    "atIso": "2026-11-07T16:47:32.797Z",
+    "isMember": true,
+    "member": "B",
+    "seen": [
+      "call-rc-b-long",
+      "call-rc-b-second"
+    ],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070053013,
+    "atIso": "2026-11-07T16:47:33.013Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a",
+      "call-rc-followup-a",
+      "call-rc-delegate-b",
+      "call-rc-collect-b-1",
+      "call-rc-archive-b"
+    ],
+    "replyCalls": [
+      {
+        "id": "call-rc-delegate-c",
+        "name": "team_delegate"
+      }
+    ]
+  },
+  {
+    "at": 1794070053261,
+    "atIso": "2026-11-07T16:47:33.261Z",
+    "isMember": true,
+    "member": "C",
+    "seen": [],
+    "replyCalls": [
+      {
+        "id": "call-rc-c-one",
+        "name": "bash"
+      }
+    ]
+  },
+  {
+    "at": 1794070053262,
+    "atIso": "2026-11-07T16:47:33.262Z",
+    "isMember": true,
+    "member": "C",
+    "seen": [],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070053485,
+    "atIso": "2026-11-07T16:47:33.485Z",
+    "isMember": true,
+    "member": "C",
+    "seen": [
+      "call-rc-c-one"
+    ],
+    "replyCalls": []
+  },
+  {
+    "at": 1794070053677,
+    "atIso": "2026-11-07T16:47:33.677Z",
+    "isMember": false,
+    "member": null,
+    "seen": [
+      "call-rc-delegate-a",
+      "call-rc-archive-a",
+      "call-rc-followup-a",
+      "call-rc-delegate-b",
+      "call-rc-collect-b-1",
+      "call-rc-archive-b",
+      "call-rc-delegate-c"
+    ],
+    "replyCalls": []
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "confinedTurnLaunchers": 7,
+  "preflightLaunchers": 4,
+  "shellChildPids": 3,
+  "ptyHolders": 0,
+  "shellChildFd0": {
+    "socket": 3
+  },
+  "shellChildCommandSightings": [
+    {
+      "pid": 545,
+      "ppid": 544,
+      "fd0": "socket:[72372943]",
+      "state": "S",
+      "namesInLane": false,
+      "namesSecret": false,
+      "cmdline": "/bin/bash -c sleep 0.1; printf 'A5SF_RC_BG_MARK\\n'"
+    },
+    {
+      "pid": 594,
+      "ppid": 593,
+      "fd0": "socket:[72374147]",
+      "state": "S",
+      "namesInLane": true,
+      "namesSecret": false,
+      "cmdline": "/bin/bash -c printf 'A5SF_RC_B_START=%s\\n' \"$(date +%s)\"; sleep 8; printf 'A5SF_RC_B_TTY=%s\\n' \"$(tty 2>&1)\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16"
+    },
+    {
+      "pid": 600,
+      "ppid": 599,
+      "fd0": "socket:[72393763]",
+      "state": "R",
+      "namesInLane": true,
+      "namesSecret": false,
+      "cmdline": "/bin/bash -c cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'"
+    }
+  ],
+  "payloadInLaneSightings": 2,
+  "procSecretCommandSightings": 0,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "allow": 20,
+    "deny": 1,
+    "shellReadAllow": 4,
+    "shellReadDeny": 1,
+    "spawnWriteDeny": 0
+  },
+  "mockRequests": 27,
+  "memberModelRequests": 13,
+  "procBatches": 317,
+  "otherBwrapPids": 1,
+  "memberWindow": {
+    "from": "2026-11-07T16:49:29.541Z",
+    "to": "2026-11-07T16:50:46.410Z"
+  }
+}

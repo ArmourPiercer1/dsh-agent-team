@@ -1,0 +1,5 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3186/?token=RMGHfW7wwpdeDMQP-cH9sdc0DlW5fYKC42Og7ELwpoA
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+(node:330) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

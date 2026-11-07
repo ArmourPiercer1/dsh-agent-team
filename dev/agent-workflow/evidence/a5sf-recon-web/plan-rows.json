@@ -1,0 +1,14 @@
+{
+  "world": "plan-only",
+  "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+  "presets": [
+    "a5sf-recon-web-leader",
+    "a5sf-recon-web-member"
+  ],
+  "templates": [
+    "weballow",
+    "webdeny"
+  ],
+  "endpoint": "http://127.0.0.1:46407",
+  "osLevelNetworkIsolationClaimed": false
+}

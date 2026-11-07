@@ -1,0 +1,19 @@
+{
+  "confinedTurnLaunchers": 1,
+  "preflightLaunchers": 4,
+  "payloadInLaneSightings": 1,
+  "procSecretCommandSightings": 0,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "allow": 1,
+    "deny": 1
+  },
+  "mockRequests": 12,
+  "memberModelRequests": 6,
+  "procBatches": 117,
+  "otherBwrapPids": 1,
+  "memberWindow": {
+    "from": "2026-11-07T16:06:33.296Z",
+    "to": "2026-11-07T16:06:39.318Z"
+  }
+}

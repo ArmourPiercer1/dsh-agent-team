@@ -1,0 +1,13 @@
+members.instanceIds                    | SAME | inst-1jxdzet1noi1:lane-b,inst-1tbexue1i25w:lane-a
+surface.count                          | SAME | 43
+surface.names                          | SAME | ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,l
+facts.total                            | SAME | 9
+facts.byMethod                         | SAME | {"shellRead":5,"spawn":2,"spawn:write":2}
+facts.A.count                          | SAME | 5
+facts.B.count                          | SAME | 4
+facts.A.policyRevision.differsFromB    | SAME | true
+facts.crossLaneAllowFacts.aOwnsBallow  | SAME | true
+calls.A+B                              | SAME | call-a5sfrv-a-bash-allow:OK|call-a5sfrv-a-bash-cross:ERR|call-a5sfrv-a-read-cross:OK|call-a5sfrv-a-grep-cross:OK|call-a5
+crossDispatch.read.isError             | SAME | true
+crossDispatch.bash.refusal             | SAME | IO_READ_DENIED
+webFacts                               | SAME | 0

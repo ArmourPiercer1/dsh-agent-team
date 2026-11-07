@@ -1,0 +1,780 @@
+{
+  "schema": "a5sf-recon-web/arms-hostfree/1",
+  "at": "2026-11-07T16:20:18.822Z",
+  "question": "Which layer answers a governed Member's web_fetch/web_search: the guard (admission), the composition provider, or the OS?",
+  "repo": {
+    "sha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "dist": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/packages/runtime/dist/packages/runtime"
+  },
+  "endpoint": {
+    "origin": "http://127.0.0.1:45027",
+    "port": 45027,
+    "requests": [
+      {
+        "at": 1794068418791,
+        "method": "GET",
+        "path": "/page",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      },
+      {
+        "at": 1794068418794,
+        "method": "GET",
+        "path": "/search",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      },
+      {
+        "at": 1794068418795,
+        "method": "GET",
+        "path": "/search",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      },
+      {
+        "at": 1794068418797,
+        "method": "GET",
+        "path": "/page",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      },
+      {
+        "at": 1794068418811,
+        "method": "GET",
+        "path": "/redirect",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      },
+      {
+        "at": 1794068418812,
+        "method": "GET",
+        "path": "/page",
+        "query": "",
+        "host": "127.0.0.1:45027"
+      }
+    ],
+    "byPath": {
+      "/page": 3,
+      "/search": 2,
+      "/redirect": 1
+    }
+  },
+  "verifier": {
+    "face": "packages/runtime/dist/packages/runtime/team-services/src/web.js",
+    "compiler": "packages/runtime/dist/packages/runtime/member-io-policy/src/index.js",
+    "note": "the SHIPPED compiled face and the ONE compiler; the provider and the fixture capability rows are THIS FILE's composition and are labelled as such"
+  },
+  "arms": [
+    {
+      "id": "A1-allow-fetch",
+      "at": "2026-11-07T16:20:18.792Z",
+      "durationMs": 5,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "guard-admitted+provider-entered",
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "ok": true,
+          "status": 200,
+          "url": "http://127.0.0.1:45027/page",
+          "body": "A5SF_RECON_WEB_ALLOW_BYTES",
+          "headers": {
+            "content-type": "text/plain",
+            "x-a5sf-recon": "allow",
+            "date": "Sat, 07 Nov 2026 16:20:18 GMT",
+            "connection": "close",
+            "transfer-encoding": "chunked"
+          }
+        }
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.787Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 1,
+        "search": 0,
+        "transport": 1,
+        "dns": 1,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "fetch",
+          "request": {
+            "url": "http://127.0.0.1:45027/page"
+          }
+        }
+      ],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [
+          {
+            "at": 1794068418791,
+            "method": "GET",
+            "path": "/page",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          }
+        ],
+        "countDuringArm": 1,
+        "totalSoFar": 1
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A2a-allow-search-queries-array",
+      "at": "2026-11-07T16:20:18.794Z",
+      "durationMs": 1,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "guard-admitted+provider-entered",
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "ok": true,
+          "status": 200,
+          "body": "A5SF_RECON_WEB_SEARCH_BYTES"
+        }
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:search",
+          "locator": "queries:1",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.793Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 1,
+        "transport": 1,
+        "dns": 1,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "search",
+          "request": {
+            "queries": [
+              "a5sf recon d web"
+            ]
+          }
+        }
+      ],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [
+          {
+            "at": 1794068418794,
+            "method": "GET",
+            "path": "/search",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          }
+        ],
+        "countDuringArm": 1,
+        "totalSoFar": 2
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A2b-allow-search-query-singular",
+      "at": "2026-11-07T16:20:18.796Z",
+      "durationMs": 2,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "guard-admitted+provider-entered",
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "ok": true,
+          "status": 200,
+          "body": "A5SF_RECON_WEB_SEARCH_BYTES"
+        }
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:search",
+          "locator": "<search:malformed-request>",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.794Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 1,
+        "transport": 1,
+        "dns": 1,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "search",
+          "request": {
+            "query": "a5sf recon d web",
+            "maxResults": 3
+          }
+        }
+      ],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [
+          {
+            "at": 1794068418795,
+            "method": "GET",
+            "path": "/search",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          }
+        ],
+        "countDuringArm": 1,
+        "totalSoFar": 3
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A3-deny-unsupported",
+      "at": "2026-11-07T16:20:18.796Z",
+      "durationMs": 0,
+      "lane": {
+        "networkAccess": "deny",
+        "providerProbe": "present"
+      },
+      "layer": "guard-refused",
+      "outcome": {
+        "kind": "threw",
+        "name": "TeamIoDenial",
+        "code": "NETWORK_UNCONFINED_REALM",
+        "message": "the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (this host's providers report no enforced network capability (recon fixture)); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call",
+        "details": null
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.796Z"
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0,
+        "proxy": 0
+      },
+      "providerCalls": [],
+      "probeCalls": 1,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 3
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A4-deny-subprocess-face-proof",
+      "at": "2026-11-07T16:20:18.796Z",
+      "durationMs": 0,
+      "lane": {
+        "networkAccess": "deny",
+        "providerProbe": "present"
+      },
+      "layer": "guard-refused",
+      "outcome": {
+        "kind": "threw",
+        "name": "TeamIoDenial",
+        "code": "NETWORK_PROOF_FACE_MISMATCH",
+        "message": "the effective lane requests network=deny, but the web provider offered a network-enforcement proof minted for a different face (network profile 'deny' was offered a proof minted for the 'subprocess' face while the 'web' face is asking (realm 'inst-recon-web'); the mechanism is evidence about the face that produced it, not about the caller — refused (NETWORK_PROOF_FACE_MISMATCH)); an in-process web transport cannot inherit the confined launcher's network namespace, so another face's measurement is not evidence about this face — refusing before any provider call (PD-15)",
+        "details": null
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "deny",
+          "decidedBy": "NETWORK_PROOF_FACE_MISMATCH",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.796Z"
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0,
+        "proxy": 0
+      },
+      "providerCalls": [],
+      "probeCalls": 1,
+      "proofCalls": 1,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 3
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A5-deny-web-face-proof-admitted",
+      "at": "2026-11-07T16:20:18.797Z",
+      "durationMs": 1,
+      "lane": {
+        "networkAccess": "deny",
+        "providerProbe": "present"
+      },
+      "layer": "guard-admitted+provider-entered",
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "ok": true,
+          "status": 200,
+          "url": "http://127.0.0.1:45027/page",
+          "body": "A5SF_RECON_WEB_ALLOW_BYTES",
+          "headers": {
+            "content-type": "text/plain",
+            "x-a5sf-recon": "allow",
+            "date": "Sat, 07 Nov 2026 16:20:18 GMT",
+            "connection": "close",
+            "transfer-encoding": "chunked"
+          }
+        }
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.796Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 1,
+        "search": 0,
+        "transport": 1,
+        "dns": 1,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "fetch",
+          "request": {
+            "url": "http://127.0.0.1:45027/page"
+          }
+        }
+      ],
+      "probeCalls": 1,
+      "proofCalls": 1,
+      "endpoint": {
+        "requestsDuringArm": [
+          {
+            "at": 1794068418797,
+            "method": "GET",
+            "path": "/page",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          }
+        ],
+        "countDuringArm": 1,
+        "totalSoFar": 4
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A9-deny-enforced-without-proof",
+      "at": "2026-11-07T16:20:18.797Z",
+      "durationMs": 0,
+      "lane": {
+        "networkAccess": "deny",
+        "providerProbe": "present"
+      },
+      "layer": "guard-refused",
+      "outcome": {
+        "kind": "threw",
+        "name": "TeamIoDenial",
+        "code": "NETWORK_UNCONFINED_REALM",
+        "message": "the effective lane requests network=deny, and the web provider's probe reports 'enforced' (RECON FIXTURE: this row is authored, not measured; it exists to reach the PD-15 arm), but it offered no face-bound proof for the 'web' face (network profile 'deny' is not offered in realm 'inst-recon-web': no provider in this lane demonstrates full network deny (PoC-4b); Landlock TCP bits do not count, and a mechanism without a recorded applied-evidence row is not a mechanism); a capability level alone does not prove this face, so the call is refused before any provider call",
+        "details": null
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.797Z"
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0,
+        "proxy": 0
+      },
+      "providerCalls": [],
+      "probeCalls": 1,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 4
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A10-deny-web-proof-but-unsupported-probe",
+      "at": "2026-11-07T16:20:18.797Z",
+      "durationMs": 0,
+      "lane": {
+        "networkAccess": "deny",
+        "providerProbe": "present"
+      },
+      "layer": "guard-refused",
+      "outcome": {
+        "kind": "threw",
+        "name": "TeamIoDenial",
+        "code": "NETWORK_UNCONFINED_REALM",
+        "message": "the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (this host's providers report no enforced network capability (recon fixture)); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call",
+        "details": null
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/page",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.797Z"
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0,
+        "proxy": 0
+      },
+      "providerCalls": [],
+      "probeCalls": 1,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 4
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A6-allow-search-provider-without-search",
+      "at": "2026-11-07T16:20:18.798Z",
+      "durationMs": 0,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "guard-refused",
+      "outcome": {
+        "kind": "threw",
+        "name": "TeamIoDenial",
+        "code": "IO_POLICY_UNSUPPORTED",
+        "message": "this web face was installed with a provider that exposes no search; refusing instead of returning a fabricated result",
+        "details": null
+      },
+      "guardFacts": [],
+      "guardFactCount": 0,
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0,
+        "proxy": 0
+      },
+      "providerCalls": [],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 4
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A7-allow-transport-error",
+      "at": "2026-11-07T16:20:18.810Z",
+      "durationMs": 11,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "provider-entered-then-threw",
+      "outcome": {
+        "kind": "threw",
+        "name": "Error",
+        "code": "ECONNRESET",
+        "message": "read ECONNRESET",
+        "details": null
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45373/page",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.799Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 1,
+        "search": 0,
+        "transport": 1,
+        "dns": 0,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "fetch",
+          "request": {
+            "url": "http://127.0.0.1:45373/page"
+          },
+          "note": "closed port"
+        }
+      ],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [],
+        "countDuringArm": 0,
+        "totalSoFar": 4
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A8-allow-redirect-followed-by-provider",
+      "at": "2026-11-07T16:20:18.813Z",
+      "durationMs": 3,
+      "lane": {
+        "networkAccess": "allow",
+        "providerProbe": "present"
+      },
+      "layer": "guard-admitted+provider-entered",
+      "outcome": {
+        "kind": "returned",
+        "value": {
+          "ok": true,
+          "status": 200,
+          "url": "http://127.0.0.1:45027/redirect",
+          "body": "A5SF_RECON_WEB_ALLOW_BYTES",
+          "headers": {
+            "content-type": "text/plain",
+            "x-a5sf-recon": "allow",
+            "date": "Sat, 07 Nov 2026 16:20:18 GMT",
+            "connection": "close",
+            "transfer-encoding": "chunked"
+          }
+        }
+      },
+      "guardFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-recon-web",
+          "toolBindingIdentity": "team/web",
+          "policyRevision": "recon-web:g1",
+          "method": "web:fetch",
+          "locator": "http://127.0.0.1:45027/redirect",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T16:20:18.810Z",
+          "annotations": [
+            "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+            "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+          ]
+        }
+      ],
+      "guardFactCount": 1,
+      "providerEntries": {
+        "fetch": 1,
+        "search": 0,
+        "transport": 1,
+        "dns": 1,
+        "connect": 1,
+        "proxy": 0
+      },
+      "providerCalls": [
+        {
+          "channel": "fetch",
+          "request": {
+            "url": "http://127.0.0.1:45027/redirect"
+          }
+        }
+      ],
+      "probeCalls": 0,
+      "proofCalls": 0,
+      "endpoint": {
+        "requestsDuringArm": [
+          {
+            "at": 1794068418811,
+            "method": "GET",
+            "path": "/redirect",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          },
+          {
+            "at": 1794068418812,
+            "method": "GET",
+            "path": "/page",
+            "query": "",
+            "host": "127.0.0.1:45027"
+          }
+        ],
+        "countDuringArm": 2,
+        "totalSoFar": 6
+      },
+      "osLevelNetworkIsolationClaimed": false
+    },
+    {
+      "id": "A11-assembly-network-deny-blueprint",
+      "at": "2026-11-07T16:20:18.820Z",
+      "parsedOk": true,
+      "layers": [
+        {
+          "label": "deriveProductRealmPlanFromBlueprint",
+          "kind": "threw",
+          "name": "TeamServiceInstallError",
+          "code": "NETWORK_UNCONFINED_REALM",
+          "message": "NETWORK_UNCONFINED_REALM: a5sfMemberPolicies.members[0].ceiling.network narrows the network axis (mode=\"deny\"); the Member realm installs no web face, so the narrowing could not be enforced",
+          "where": null
+        },
+        {
+          "label": "parseProductRealmDeclaration",
+          "kind": "threw",
+          "name": "TeamServiceInstallError",
+          "code": "NETWORK_UNCONFINED_REALM",
+          "message": "NETWORK_UNCONFINED_REALM: a5sfMemberPolicies.members[0].ceiling.network narrows the network axis (mode=\"deny\"); the Member realm installs no web face, so the narrowing could not be enforced",
+          "where": null
+        }
+      ],
+      "observation": "a network=deny ceiling is refused by the PRODUCT ASSEMBLY, above the web guard: no realm, no Member turn, no guard fact, no provider entry",
+      "osLevelNetworkIsolationClaimed": false
+    }
+  ],
+  "limits": {
+    "wording": "Refusing to fetch is a statement about our own admission code, made before the OS was asked. An admitted fetch is ordinary in-process loopback egress. Nothing here is network confinement or isolation, and no booted Host is exercised.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

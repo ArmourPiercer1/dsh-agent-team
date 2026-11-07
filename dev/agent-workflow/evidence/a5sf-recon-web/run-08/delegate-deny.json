@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "body": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-a5sf-recon-web-team",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-1fq2hno0l8w8",
+        "templateId": "webdeny",
+        "childSessionId": "session-team-child-026753e6b216c82cf31a527967a951e7",
+        "operationId": "op-1l8zof309yqnu808petk50yt",
+        "replayed": false,
+        "ledgerSequence": 8,
+        "admissionCode": "ADMISSION_OPEN",
+        "workSequence": 9,
+        "workSettled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "recon-web-delegate-deny"
+    }
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

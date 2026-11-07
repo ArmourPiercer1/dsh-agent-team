@@ -1,0 +1,19 @@
+RECON-SEARCH — process evidence (raw)
+host pid: 101
+host cmdline: /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3186 --no-open
+rg sightings: 5; distinct ppids: [101]
+same mnt ns as host: true; same pid ns: true; same mountinfo: true
+confined launchers during the Member turn: 0
+
+rg argv seen:
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_IGNORED_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_HIDDEN_NEEDLE -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-b-search/tests/homes/u5u5a5sfsub1-20261107T16-10-25Z/workspace
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_OUTLANE_NEEDLE -- ..
+  /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5SF_RS_ABSENT_NEEDLE_9f13 -- /usr
+
+host status:
+  {"NSpid":"101","CapEff":"0000000000000000","NoNewPrivs":"1","Seccomp":"2"}
+
+guard facts:
+  []

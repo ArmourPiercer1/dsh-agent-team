@@ -1,0 +1,292 @@
+{
+  "status": 200,
+  "body": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "session-a5sf-recon-web-team",
+    "teamSession": {
+      "rootSessionId": "session-a5sf-recon-web-team",
+      "blueprintId": "team.a5sf.recon.web.main",
+      "revision": "1",
+      "contentHash": "sha256:aa5fff50c0ba913168585001217a95a15d5f678a75cde033fd9d6cf475fd1599",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-23-15Z/workspace",
+      "createdAt": "2026-11-07T16:23:51.956Z",
+      "generation": 15
+    },
+    "members": [
+      {
+        "instanceId": "inst-1fq2hno0l8w8",
+        "templateId": "webdeny",
+        "label": "recon-web-deny",
+        "childSessionId": "session-team-child-026753e6b216c82cf31a527967a951e7",
+        "lifecycle": "SETTLED",
+        "activityVersion": 3
+      },
+      {
+        "instanceId": "inst-1msngdn0q2ln",
+        "templateId": "weballow",
+        "label": "recon-web-allow",
+        "childSessionId": "session-team-child-ad9c5265e37acd0e25b88e4932066c4e",
+        "lifecycle": "ARCHIVED",
+        "activityVersion": 4
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": [],
+      "abandonments": []
+    },
+    "activity": [
+      {
+        "globalSequence": 5,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-1msngdn0q2ln",
+        "subject": "work-unit",
+        "sequence": 1,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "recon-web-delegate-allow",
+        "requestToken": "recon-web-delegate-allow"
+      },
+      {
+        "globalSequence": 6,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-1msngdn0q2ln",
+        "subject": "work-unit",
+        "sequence": 2,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "recon-web-delegate-allow",
+        "requestToken": "recon-web-delegate-allow"
+      },
+      {
+        "globalSequence": 10,
+        "factType": "activity-interval-opened",
+        "instanceId": "inst-1fq2hno0l8w8",
+        "subject": "work-unit",
+        "sequence": 1,
+        "op": "interval-open",
+        "progress": "in-progress",
+        "correlation": "recon-web-delegate-deny",
+        "requestToken": "recon-web-delegate-deny"
+      },
+      {
+        "globalSequence": 11,
+        "factType": "activity-interval-closed",
+        "instanceId": "inst-1fq2hno0l8w8",
+        "subject": "work-unit",
+        "sequence": 2,
+        "op": "interval-close",
+        "progress": "completed",
+        "correlation": "recon-web-delegate-deny",
+        "requestToken": "recon-web-delegate-deny"
+      }
+    ],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "session-a5sf-recon-web-anchor": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-a5sf-recon-web-team": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-team-child-026753e6b216c82cf31a527967a951e7": {
+          "instanceId": "inst-1fq2hno0l8w8",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5sf-recon-web-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        }
+      }
+    },
+    "observations": [
+      "a5p1-guard: dispatcher-preparing agent=session-a5sf-recon-web-team to=PREPARING",
+      "a5p1-guard: guard-installed agent=session-a5sf-recon-web-team scope=session-a5sf-recon-web-team",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-recon-web-team seam=tools/pre-execute armed=1 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-recon-web-team seam=tools/post-execute armed=2 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-recon-web-team seam=tools/result armed=3 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-recon-web-team seam=tools/execute armed=4 required=5",
+      "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-recon-web-team seam=tools.guard armed=5 required=5",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-recon-web-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-recon-web-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-recon-web-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-recon-web-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_collect\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+      "a5p1-guard: tools-change-unbound-names agent=session-a5sf-recon-web-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_collect\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+      "a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-recon-web-team verified=0 surface=9",
+      "a5p1-guard: published-surface-unverified agent=session-a5sf-recon-web-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+      "a5p1-guard: surface-inherited agent=session-a5sf-recon-web-team verified=0",
+      "a5p1-guard: dispatcher-active agent=session-a5sf-recon-web-team to=ACTIVE",
+      "a5p1-guard: agent-published agent=session-a5sf-recon-web-team surface=9 masked=2 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-a5sf-recon-web-team",
+      "alpha2-artifact-grant: shell-result-observer installed",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-recon-web-team tool=team_delegate callId=recon-web-delegate-allow inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-recon-web-team callId=recon-web-delegate-allow inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-recon-web-team tool=team_delegate callId=recon-web-delegate-allow inFlight=0",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-recon-web-team tool=team_delegate callId=recon-web-delegate-deny inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-recon-web-team callId=recon-web-delegate-deny inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-recon-web-team tool=team_delegate callId=recon-web-delegate-deny inFlight=0",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-recon-web-team tool=team_archive_member callId=recon-web-lifecycle-archive inFlight=1",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-recon-web-team state=ACTIVE drifted=[] added=[] removed=[]",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-recon-web-team callId=recon-web-lifecycle-archive inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-recon-web-team tool=team_archive_member callId=recon-web-lifecycle-archive inFlight=0",
+      "a5p1-guard: dispatcher-call-begin agent=session-a5sf-recon-web-team tool=team_follow_up callId=recon-web-lifecycle-followup inFlight=1",
+      "a5p1-guard: dispatcher-result-observed agent=session-a5sf-recon-web-team callId=recon-web-lifecycle-followup inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+      "a5p1-guard: dispatcher-call-end agent=session-a5sf-recon-web-team tool=team_follow_up callId=recon-web-lifecycle-followup inFlight=0"
+    ]
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

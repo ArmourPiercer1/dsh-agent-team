@@ -1,0 +1,92 @@
+{
+  "schema": "a5sf-recon-review-agreement/1",
+  "at": "2026-11-07T17:44:26.961Z",
+  "pair": [
+    "runs/boot02",
+    "runs/boot03"
+  ],
+  "rows": [
+    {
+      "key": "members.instanceIds",
+      "boot02": "inst-1jxdzet1noi1:lane-b,inst-1tbexue1i25w:lane-a",
+      "boot03": "inst-1jxdzet1noi1:lane-b,inst-1tbexue1i25w:lane-a",
+      "equal": true
+    },
+    {
+      "key": "surface.count",
+      "boot02": "43",
+      "boot03": "43",
+      "equal": true
+    },
+    {
+      "key": "surface.names",
+      "boot02": "ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write",
+      "boot03": "ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write",
+      "equal": true
+    },
+    {
+      "key": "facts.total",
+      "boot02": "9",
+      "boot03": "9",
+      "equal": true
+    },
+    {
+      "key": "facts.byMethod",
+      "boot02": "{\"shellRead\":5,\"spawn\":2,\"spawn:write\":2}",
+      "boot03": "{\"shellRead\":5,\"spawn\":2,\"spawn:write\":2}",
+      "equal": true
+    },
+    {
+      "key": "facts.A.count",
+      "boot02": "5",
+      "boot03": "5",
+      "equal": true
+    },
+    {
+      "key": "facts.B.count",
+      "boot02": "4",
+      "boot03": "4",
+      "equal": true
+    },
+    {
+      "key": "facts.A.policyRevision.differsFromB",
+      "boot02": "true",
+      "boot03": "true",
+      "equal": true
+    },
+    {
+      "key": "facts.crossLaneAllowFacts.aOwnsBallow",
+      "boot02": "true",
+      "boot03": "true",
+      "equal": true
+    },
+    {
+      "key": "calls.A+B",
+      "boot02": "call-a5sfrv-a-bash-allow:OK|call-a5sfrv-a-bash-cross:ERR|call-a5sfrv-a-read-cross:OK|call-a5sfrv-a-grep-cross:OK|call-a5sfrv-a-web-fetch:ERR ; call-a5sfrv-b-bash-allow:OK|call-a5sfrv-b-bash-cross:ERR",
+      "boot03": "call-a5sfrv-a-bash-allow:OK|call-a5sfrv-a-bash-cross:ERR|call-a5sfrv-a-read-cross:OK|call-a5sfrv-a-grep-cross:OK|call-a5sfrv-a-web-fetch:ERR ; call-a5sfrv-b-bash-allow:OK|call-a5sfrv-b-bash-cross:ERR",
+      "equal": true
+    },
+    {
+      "key": "crossDispatch.read.isError",
+      "boot02": "true",
+      "boot03": "true",
+      "equal": true
+    },
+    {
+      "key": "crossDispatch.bash.refusal",
+      "boot02": "IO_READ_DENIED",
+      "boot03": "IO_READ_DENIED",
+      "equal": true
+    },
+    {
+      "key": "webFacts",
+      "boot02": "0",
+      "boot03": "0",
+      "equal": true
+    }
+  ],
+  "differing": [],
+  "notes": [
+    "policyRevision VALUES differ across boots (world-derived) but the INVARIANT (A revision != B revision) holds in both; that invariant is compared here, not the literal hash."
+  ]
+}

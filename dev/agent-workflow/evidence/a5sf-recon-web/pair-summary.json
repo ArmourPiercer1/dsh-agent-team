@@ -1,0 +1,281 @@
+{
+  "schema": "a5sf-recon-web/pair/1",
+  "note": "the agreeing pair: same instrument, two independent boots",
+  "pair": [
+    {
+      "run": "run-10",
+      "at": "2026-11-07T16:27:38.451Z",
+      "overall": "PASS",
+      "allowVerdict": "PROVEN",
+      "denyVerdict": "PROVEN",
+      "allowMember": "inst-1msngdn0q2ln",
+      "denyMember": "inst-1fq2hno0l8w8",
+      "allowChild": "session-team-child-ad9c5265e37acd0e25b88e4932066c4e",
+      "denyChild": "session-team-child-026753e6b216c82cf31a527967a951e7",
+      "allowFacts": [
+        {
+          "method": "web:fetch",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "locator": "http://127.0.0.1:46379/page?lane=allow",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+          "sequence": 1
+        },
+        {
+          "method": "web:search",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+          "sequence": 2
+        }
+      ],
+      "denyFacts": [
+        {
+          "method": "web:fetch",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "http://127.0.0.1:46379/page?lane=deny",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 1
+        },
+        {
+          "method": "web:search",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 2
+        },
+        {
+          "method": "web:search",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 3
+        }
+      ],
+      "allowChecks": {
+        "memberSurfaceHasPair": true,
+        "modelTurnRan": true,
+        "expectedFactTotal": true,
+        "expectedSearchFacts": true,
+        "fetchFactMethod": true,
+        "searchFactMethod": true,
+        "decisionsMatchLane": true,
+        "endpointObservedExpected": true,
+        "providerEntriesMatchLane": true,
+        "noHostWebFallback": true,
+        "fetchBytesReturned": true,
+        "searchBytesReturned": true
+      },
+      "denyChecks": {
+        "memberSurfaceHasPair": true,
+        "modelTurnRan": true,
+        "expectedFactTotal": true,
+        "expectedSearchFacts": true,
+        "fetchFactMethod": true,
+        "searchFactMethod": true,
+        "decisionsMatchLane": true,
+        "endpointObservedExpected": true,
+        "providerEntriesMatchLane": true,
+        "noHostWebFallback": true,
+        "refusalTextNamesCapability": true,
+        "noProviderEntry": true
+      },
+      "allowEndpoint": 2,
+      "denyEndpoint": 0,
+      "allowEntries": 2,
+      "denyEntries": 0,
+      "allowProbes": 0,
+      "denyProbes": 3,
+      "allowRequests": 3,
+      "denyRequests": 3,
+      "endpointTotal": 2,
+      "endpointLog": [
+        {
+          "at": "2026-11-07T16:27:38.177Z",
+          "method": "GET",
+          "path": "/page",
+          "query": "?lane=allow",
+          "host": "127.0.0.1:46379",
+          "userAgent": null
+        },
+        {
+          "at": "2026-11-07T16:27:38.202Z",
+          "method": "GET",
+          "path": "/search",
+          "query": "",
+          "host": "127.0.0.1:46379",
+          "userAgent": null
+        }
+      ],
+      "compiledLanes": [
+        {
+          "at": "2026-11-07T16:27:37.920Z",
+          "leg": "compiled-lane",
+          "realm": "member:inst-1msngdn0q2ln",
+          "templateId": "weballow",
+          "networkAccess": "allow",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+        },
+        {
+          "at": "2026-11-07T16:27:38.468Z",
+          "leg": "compiled-lane",
+          "realm": "member:inst-1fq2hno0l8w8",
+          "templateId": "webdeny",
+          "networkAccess": "deny",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+        }
+      ],
+      "hostWeb": 0,
+      "lifecycle": {
+        "refused": true,
+        "reason": "target-stale",
+        "endpointAfter": 0,
+        "totalAtLifecycle": 2,
+        "archiveStatus": 200,
+        "archivedLifecycle": "ARCHIVED"
+      }
+    },
+    {
+      "run": "run-11",
+      "at": "2026-11-07T16:29:51.584Z",
+      "overall": "PASS",
+      "allowVerdict": "PROVEN",
+      "denyVerdict": "PROVEN",
+      "allowMember": "inst-1msngdn0q2ln",
+      "denyMember": "inst-1fq2hno0l8w8",
+      "allowChild": "session-team-child-ad9c5265e37acd0e25b88e4932066c4e",
+      "denyChild": "session-team-child-026753e6b216c82cf31a527967a951e7",
+      "allowFacts": [
+        {
+          "method": "web:fetch",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "locator": "http://127.0.0.1:45417/page?lane=allow",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+          "sequence": 1
+        },
+        {
+          "method": "web:search",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+          "sequence": 2
+        }
+      ],
+      "denyFacts": [
+        {
+          "method": "web:fetch",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "http://127.0.0.1:45417/page?lane=deny",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 1
+        },
+        {
+          "method": "web:search",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 2
+        },
+        {
+          "method": "web:search",
+          "decision": "deny",
+          "decidedBy": "NETWORK_UNCONFINED_REALM",
+          "locator": "<search:malformed-request>",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+          "sequence": 3
+        }
+      ],
+      "allowChecks": {
+        "memberSurfaceHasPair": true,
+        "modelTurnRan": true,
+        "expectedFactTotal": true,
+        "expectedSearchFacts": true,
+        "fetchFactMethod": true,
+        "searchFactMethod": true,
+        "decisionsMatchLane": true,
+        "endpointObservedExpected": true,
+        "providerEntriesMatchLane": true,
+        "noHostWebFallback": true,
+        "fetchBytesReturned": true,
+        "searchBytesReturned": true
+      },
+      "denyChecks": {
+        "memberSurfaceHasPair": true,
+        "modelTurnRan": true,
+        "expectedFactTotal": true,
+        "expectedSearchFacts": true,
+        "fetchFactMethod": true,
+        "searchFactMethod": true,
+        "decisionsMatchLane": true,
+        "endpointObservedExpected": true,
+        "providerEntriesMatchLane": true,
+        "noHostWebFallback": true,
+        "refusalTextNamesCapability": true,
+        "noProviderEntry": true
+      },
+      "allowEndpoint": 2,
+      "denyEndpoint": 0,
+      "allowEntries": 2,
+      "denyEntries": 0,
+      "allowProbes": 0,
+      "denyProbes": 3,
+      "allowRequests": 3,
+      "denyRequests": 3,
+      "endpointTotal": 2,
+      "endpointLog": [
+        {
+          "at": "2026-11-07T16:29:51.331Z",
+          "method": "GET",
+          "path": "/page",
+          "query": "?lane=allow",
+          "host": "127.0.0.1:45417",
+          "userAgent": null
+        },
+        {
+          "at": "2026-11-07T16:29:51.355Z",
+          "method": "GET",
+          "path": "/search",
+          "query": "",
+          "host": "127.0.0.1:45417",
+          "userAgent": null
+        }
+      ],
+      "compiledLanes": [
+        {
+          "at": "2026-11-07T16:29:51.043Z",
+          "leg": "compiled-lane",
+          "realm": "member:inst-1msngdn0q2ln",
+          "templateId": "weballow",
+          "networkAccess": "allow",
+          "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+        },
+        {
+          "at": "2026-11-07T16:29:51.617Z",
+          "leg": "compiled-lane",
+          "realm": "member:inst-1fq2hno0l8w8",
+          "templateId": "webdeny",
+          "networkAccess": "deny",
+          "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+        }
+      ],
+      "hostWeb": 0,
+      "lifecycle": {
+        "refused": true,
+        "reason": "target-stale",
+        "endpointAfter": 0,
+        "totalAtLifecycle": 2,
+        "archiveStatus": 200,
+        "archivedLifecycle": "ARCHIVED"
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

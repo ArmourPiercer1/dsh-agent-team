@@ -1,0 +1,20 @@
+RECON-SEARCH summary  head=235e1af8bab954bbca4852d2f5a538de043b66e8  host=639ed015397290b3745d163aafe02ffee4aa3f84  binding=false
+recordClass=DEV-LIVE eligible=false
+
+PROVEN    rs:grep-on-surface
+PROVEN    rs:grep-inlane-hit
+REFUTED   rs:grep-out-of-lane  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+REFUTED   rs:grep-parent-dir  failed=[no-secret-bytes: NO out-of-lane needle appeared in the result; typed-refusal: a typed refusal, if refused, must be named]
+PROVEN    rs:grep-ignore
+PROVEN    rs:grep-hidden-vcs
+PROVEN    rs:grep-exit-nomatch
+REFUTED   rs:grep-exit-error  failed=[typed-code: the result names SEARCH_INVALID_PATTERN (measured: the wire carries only rg's stderr words)]
+PROVEN    rs:glob-workspace
+REFUTED   rs:glob-out-of-lane  failed=[no-secret-file: the out-of-lane file name is absent; typed-refusal: a typed refusal, if refused, must be named]
+PROVEN    rs:grep-timeout
+PROVEN    rs:guard-facts
+PROVEN    rs:process-host-direct
+
+grep out-of-lane bytes=true parent=true guardFacts=0
+glob out-of-lane bytes=true
+lifecycle archive=200 postArchivePrompt=200

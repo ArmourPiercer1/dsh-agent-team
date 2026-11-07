@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-07T16:16:00.686Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-web-2026-11-07T16-15-38-035Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "grantId": "devlive-web-recon-1",
+  "face": "Web",
+  "world": "a5sfreconweb",
+  "overall": "FAIL",
+  "abortedAt": "boot-host",
+  "partial": true,
+  "cases": [
+    {
+      "id": "web-allow-fetch",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "web-allow-search",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "web-deny-fetch",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "FAIL"
+    }
+  ],
+  "devLiveOutcomeRecorded": true,
+  "endpoint": {
+    "origin": "http://127.0.0.1:44997",
+    "port": 44997,
+    "totalRequests": 0
+  },
+  "limit": "Refusing to fetch is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+  "osLevelNetworkIsolationClaimed": false
+}

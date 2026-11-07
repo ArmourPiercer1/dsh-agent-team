@@ -1,0 +1,32 @@
+{
+  "confinedTurnLaunchers": 1,
+  "preflightLaunchers": 4,
+  "payloadInLaneSightings": 1,
+  "procSecretCommandSightings": 0,
+  "nativeFsPayloadSightings": 0,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "total": 4,
+    "allow": 3,
+    "deny": 1,
+    "byMethod": {
+      "shellRead": 2,
+      "spawn": 1,
+      "spawn:write": 1
+    }
+  },
+  "mockRequests": 24,
+  "memberModelRequests": 15,
+  "procBatches": 87,
+  "otherBwrapPids": 1,
+  "memberWindow": {
+    "from": "2026-11-07T16:17:13.790Z",
+    "to": "2026-11-07T16:17:18.647Z"
+  },
+  "policyRevisions": [
+    "a5sf1:2e7933642913ac441a25c7831fc517ec"
+  ],
+  "memberIdentitiesInFacts": [
+    "inst-1kdc3xx12yhw"
+  ]
+}

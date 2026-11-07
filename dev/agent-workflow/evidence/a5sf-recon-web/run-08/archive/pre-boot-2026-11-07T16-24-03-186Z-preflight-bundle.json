@@ -1,0 +1,564 @@
+{
+  "schema": "a5sf-zero-boot-preflight/1",
+  "label": "Web face DEV-LIVE RECON — same governed Member, allow + deny lanes, controlled local endpoint",
+  "sources": {
+    "note": "Derived from this driver at the frozen recon SHA. NOT a candidate bundle and NOT a grade: it exists to run the SHARED preflight over this plan so its verdict (including its own vocabulary limits) is recorded before a start.",
+    "driver": "dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs",
+    "providerRow": "dev/agent-workflow/evidence/a5sf-recon-web/recon-web-offer-row.mjs",
+    "markerMock": "dev/agent-workflow/evidence/a5sf-recon-web/recon-marker-mock.mjs",
+    "limit": "Refusing to fetch is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked."
+  },
+  "candidate": {
+    "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "productTreeProof": []
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "devlive-web-recon-1",
+    "scope": "DEV-LIVE",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), Web face scope; recon use",
+    "face": "Web",
+    "world": "a5sfreconweb",
+    "allocationItem": "D-face (Web) recon — attribution of allow/deny lanes on a governed Member",
+    "boundCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "priorRows": 0,
+    "plannedStarts": 1,
+    "maxStarts": 2,
+    "aborts": 0,
+    "note": "scope=DEV-LIVE: reusable authorisation, no cumulative cap; one fresh lease per run"
+  },
+  "runRecord": {
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "recordClass": "DEV-LIVE",
+    "ledger": {
+      "bootRows": 1,
+      "plannedStarts": 1,
+      "aborts": 0
+    },
+    "bindings": {
+      "authority": {
+        "pointer": {
+          "snapshot_version": "as20261105r2",
+          "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+        },
+        "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+        "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+      },
+      "osLevelNetworkIsolationClaimed": false
+    }
+  },
+  "assembly": {
+    "requiredDistFaces": [
+      "web"
+    ],
+    "distFaces": {
+      "web": true,
+      "fs": false,
+      "subprocess": false
+    },
+    "hostModules": [
+      {
+        "path": "tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js",
+        "exists": true,
+        "role": "the pinned @deepseek-ai/dsh-tool-web module route-C re-mounts on the realm scope"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-recon-web/recon-web-offer-row.mjs",
+        "exists": true,
+        "role": "the teamA5sfRealm provider: one compiled Member + the confined web face + the local-endpoint transport"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs",
+        "exists": true,
+        "role": "this driver"
+      },
+      {
+        "path": "dev/agent-workflow/evidence/a5sf-recon-web/recon-marker-mock.mjs",
+        "exists": true,
+        "role": "the marker routing table"
+      }
+    ],
+    "rowHandoff": {
+      "usesHandOverRows": true,
+      "beforeBoot": true,
+      "emittedRowIds": [
+        "a5sf-recon-web-offer",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-recon-web-leader",
+        "preset-a5sf-recon-web-member"
+      ],
+      "worldRowIds": [
+        "a5sf-recon-web-offer",
+        "dsh-agent-team",
+        "p6t6-team-tools",
+        "preset-a5sf-recon-web-leader",
+        "preset-a5sf-recon-web-member"
+      ],
+      "healthProbeRowPresent": true
+    }
+  },
+  "fixtures": {
+    "web-allow-fetch": {
+      "url": "http://127.0.0.1:46407/page",
+      "tool": "web_fetch"
+    },
+    "web-allow-search": {
+      "queries": [
+        "a5sf recon web allow"
+      ],
+      "tool": "web_search"
+    },
+    "web-deny-fetch": {
+      "url": "http://127.0.0.1:46407/page",
+      "tool": "web_fetch"
+    },
+    "web-deny-search": {
+      "queries": [
+        "a5sf recon web deny"
+      ],
+      "tool": "web_search"
+    },
+    "workspace": "tests/homes/<world>/workspace",
+    "endpoint": "http://127.0.0.1:46407"
+  },
+  "policy": {
+    "kind": "two-lane-composition",
+    "network": "deny",
+    "networkAccess": "deny",
+    "networkProbeEnforced": false,
+    "effectiveReadAllow": [
+      "tests/homes/<world>/workspace"
+    ],
+    "effectiveWriteAllow": [
+      "tests/homes/<world>/workspace"
+    ],
+    "effectiveNetwork": [
+      "allow",
+      "deny"
+    ],
+    "note": "two lanes, two Members: the allow Member and the deny Member are separate templates; each lane is compiled by the ONE compiler (compileEffectiveIo) in the composition row. The deny lane is composition-only: a product blueprint that declares network=deny is refused at ASSEMBLY (see arms-hostfree A11).",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "web-allow-fetch",
+      "face": "web",
+      "axis": "network",
+      "locator": "http://127.0.0.1:46407/page?lane=allow",
+      "guardFactKey": "web-allow-fetch",
+      "method": "fetch",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-allow-fetch"
+      ],
+      "claimsConfinement": false,
+      "expected": "allow",
+      "observable": "admitted-egress",
+      "note": "the ALLOW lane: the guard admits and the composition provider reaches the local endpoint. Declared honestly; the shared preflight's closed vocabulary has no admitted-network case (see the recorded findings)"
+    },
+    {
+      "id": "web-allow-search",
+      "face": "web",
+      "axis": "network",
+      "locator": "queries:1",
+      "guardFactKey": "web-allow-search",
+      "method": "search",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-allow-search"
+      ],
+      "claimsConfinement": false,
+      "expected": "allow",
+      "observable": "admitted-egress",
+      "note": "the ALLOW lane: the guard admits and the composition provider reaches the local endpoint. Declared honestly; the shared preflight's closed vocabulary has no admitted-network case (see the recorded findings)"
+    },
+    {
+      "id": "web-deny-fetch",
+      "face": "web",
+      "axis": "network",
+      "locator": "http://127.0.0.1:46407/page?lane=deny",
+      "guardFactKey": "web-deny-fetch",
+      "method": "fetch",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-deny-fetch"
+      ],
+      "claimsConfinement": false,
+      "expected": "deny",
+      "observable": "pre-provider-refusal",
+      "expectedCode": "NETWORK_UNCONFINED_REALM",
+      "expectedFact": {
+        "method": "web:fetch",
+        "decision": "deny",
+        "decidedBy": "NETWORK_UNCONFINED_REALM"
+      },
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0
+      },
+      "caseClass": "admission-refusal",
+      "guardFacts": 1,
+      "refusalNaming": "capability",
+      "note": "the Member model turn calls the tool on the local endpoint; the confined web face refuses at admission, before the composition provider is entered"
+    },
+    {
+      "id": "web-deny-search",
+      "face": "web",
+      "axis": "network",
+      "locator": "queries:2",
+      "guardFactKey": "web-deny-search",
+      "method": "search",
+      "collector": "guard-fact",
+      "returnShape": [
+        "call",
+        "result",
+        "claim"
+      ],
+      "terminate": true,
+      "archiveBeforeStart": true,
+      "corpus": [
+        "web-deny-search"
+      ],
+      "claimsConfinement": false,
+      "expected": "deny",
+      "observable": "pre-provider-refusal",
+      "expectedCode": "NETWORK_UNCONFINED_REALM",
+      "expectedFact": {
+        "method": "web:search",
+        "decision": "deny",
+        "decidedBy": "NETWORK_UNCONFINED_REALM"
+      },
+      "providerEntries": {
+        "fetch": 0,
+        "search": 0,
+        "transport": 0,
+        "dns": 0,
+        "connect": 0
+      },
+      "caseClass": "admission-refusal",
+      "guardFacts": 1,
+      "refusalNaming": "capability",
+      "note": "the Member model turn calls the tool on the local endpoint; the confined web face refuses at admission, before the composition provider is entered"
+    }
+  ],
+  "driver": {
+    "steps": [
+      {
+        "id": "pre-boot-refusals",
+        "canFail": false
+      },
+      {
+        "id": "compose-rows",
+        "produces": [
+          "rows"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "boot-host",
+        "produces": [
+          "host"
+        ],
+        "canFail": false
+      },
+      {
+        "id": "health-gate",
+        "requires": [
+          "host"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "discover-leader-surface",
+        "requires": [
+          "host"
+        ],
+        "produces": [
+          "leader-surface"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "mock-requests"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "write-main-blueprint",
+        "requires": [
+          "leader-surface"
+        ],
+        "produces": [
+          "blueprint"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "create-team",
+        "requires": [
+          "blueprint"
+        ],
+        "produces": [
+          "team-session"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "state-gate",
+        "requires": [
+          "team-session"
+        ],
+        "canFail": true,
+        "gate": true,
+        "captures": [
+          "status",
+          "body"
+        ],
+        "captureLimits": {
+          "body": {
+            "maxChars": null
+          }
+        }
+      },
+      {
+        "id": "allow-member-turn",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "guard-facts",
+          "provider-entries",
+          "endpoint-requests"
+        ]
+      },
+      {
+        "id": "deny-member-turn",
+        "requires": [
+          "team-session"
+        ],
+        "produces": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body",
+          "guard-facts",
+          "provider-entries",
+          "endpoint-requests"
+        ]
+      },
+      {
+        "id": "lifecycle-archive-followup",
+        "requires": [
+          "member"
+        ],
+        "canFail": true,
+        "captures": [
+          "status",
+          "body"
+        ]
+      },
+      {
+        "id": "teardown",
+        "canFail": false
+      }
+    ],
+    "plannedCases": [
+      "web-allow-fetch",
+      "web-allow-search",
+      "web-deny-fetch",
+      "web-deny-search"
+    ],
+    "caseManifest": {
+      "source": "dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs",
+      "cases": [
+        "web-allow-fetch",
+        "web-allow-search",
+        "web-deny-fetch",
+        "web-deny-search"
+      ]
+    },
+    "blueprint": {
+      "leader": {
+        "teamTools": [
+          "team_delegate",
+          "team_archive_member",
+          "team_follow_up",
+          "team_collect"
+        ],
+        "managed": [
+          "read",
+          "read_image",
+          "write",
+          "edit",
+          "lsp",
+          "bash",
+          "pwsh"
+        ],
+        "safeUnmanaged": [
+          "todo_write"
+        ],
+        "builtinToolDeny": "discovery-first"
+      }
+    },
+    "caller": {
+      "kind": "member",
+      "strict": false,
+      "templates": [
+        "weballow",
+        "webdeny"
+      ],
+      "preset": {
+        "module": "@deepseek-ai/dsh-tool-web",
+        "tools": [
+          "web_fetch",
+          "web_search"
+        ]
+      },
+      "note": "legacy (non-strict) Members: neither template declares a capabilities block, so permissionPolicy is absent; the MEMBER preset surfaces the pair, which route-C re-mounts on the governed realm scope"
+    }
+  },
+  "identity": {
+    "bootRoot": "session-a5sf-recon-web-anchor",
+    "teamRoot": "session-a5sf-recon-web-team",
+    "createRoot": "session-a5sf-recon-web-team",
+    "stateQueryRoot": "session-a5sf-recon-web-team",
+    "toolRouteRoot": "session-a5sf-recon-web-team",
+    "archiveRoot": "session-a5sf-recon-web-team",
+    "oracleRoot": "session-a5sf-recon-web-team",
+    "directiveRoot": "session-a5sf-recon-web-team",
+    "memberBindings": [
+      {
+        "caseId": "web-allow-fetch",
+        "memberIdentity": "inst-recon-web-allow-0",
+        "toolBindingIdentity": "team/web"
+      },
+      {
+        "caseId": "web-allow-search",
+        "memberIdentity": "inst-recon-web-allow-1",
+        "toolBindingIdentity": "team/web"
+      },
+      {
+        "caseId": "web-deny-fetch",
+        "memberIdentity": "inst-recon-web-deny-2",
+        "toolBindingIdentity": "team/web"
+      },
+      {
+        "caseId": "web-deny-search",
+        "memberIdentity": "inst-recon-web-deny-3",
+        "toolBindingIdentity": "team/web"
+      }
+    ],
+    "blueprints": [
+      {
+        "blueprintId": "team.a5sf.recon.web.anchor",
+        "members": 1
+      },
+      {
+        "blueprintId": "team.a5sf.recon.web.main",
+        "members": 2
+      }
+    ]
+  },
+  "nativeModules": [
+    {
+      "name": "@deepseek-ai/dsh-tool-web",
+      "path": "tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js",
+      "inject": [
+        "tools",
+        "web",
+        "systemPrompt"
+      ],
+      "config": {
+        "fetch": true,
+        "search": true,
+        "searchTimeoutMs": 60000
+      },
+      "expectedTools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "role": "the pinned native module route-C re-mounts on the governed realm scope (its ctx.web resolves the confined face)"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "limits": {
+    "wording": "Refusing to fetch is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "The allow lane is ordinary in-process loopback egress through the composition provider. The deny lane refuses before the provider. The OS was never asked to deny anything.",
+    "osLevelNetworkIsolationClaimed": false
+  }
+}

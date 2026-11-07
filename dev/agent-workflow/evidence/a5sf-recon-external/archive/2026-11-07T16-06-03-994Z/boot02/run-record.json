@@ -1,0 +1,120 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-external-2026-11-07T16-04-20-152Z-b2",
+  "suite": "a5sf-recon-external",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:04:20.153Z",
+  "selectedCases": [
+    "lm:member-bash-admitted",
+    "lm:member-bash-denied",
+    "lm:governed-surface",
+    "lm:guard-facts",
+    "lm:no-base-spawn"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-external-recon-1",
+      "scope": "DEV-LIVE",
+      "face": "External execution",
+      "world": "u5a5sfext1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "lm:member-bash-admitted",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:04:20.186Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "lm:member-bash-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:04:20.186Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "lm:governed-surface",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:04:20.186Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "lm:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:04:20.186Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "lm:no-base-spawn",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:04:20.186Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/dev/agent-workflow/evidence/a5sf-recon-external/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:04:20.185Z",
+        "runId": "a5sf-recon-external-2026-11-07T16-04-20-152Z-b2",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-external-recon-1",
+        "grantId": "devlive-external-recon-1",
+        "grantedBy": "owner task 2026-11-13, relayed to this recon lane by the parent agent (session-76eeddd5-4e2e-472f-a3ba-750a70c8a374): E-face External/non-data-plane reachability recon, repeated self-authorised development starts, machine-wide cap 6 (own lane cap 2 unchanged)",
+        "face": "External execution",
+        "worldLine": "u5a5sfext1",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      }
+    ]
+  },
+  "partial": true,
+  "abortedAt": "pre-boot",
+  "abort": {
+    "stage": "pre-boot",
+    "detail": "boot 2 aborted at pre-boot",
+    "error": "DevLiveSlotError: DEV_LIVE_LIMIT_REACHED: the machine already runs 2 dev Host(s), the owner ruling caps development boots at 2; finish or tear down one before starting another (slots: #0 pid=3 run=a5sf-live-member-2026-11-07T16-02-52-227Z-b1 world=u5a5sfsub1; #1 pid=3 run=a5sf-recon-external-2026-11-07T16-03-33-107Z-b1 world=u5a5sfext1)\n    at acquireDevLiveSlot (file:///home/armourpiercer/projects/dsh-agent-team/tests/world-factory/lib/dev-live-slots.mjs:206:11)\n    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/tests/world-factory/suites/150-a5sf-read.mjs:628:16)\n    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/tests/world-factory/drivers/a5sf-recon-external/run-boot.mjs:819:28)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/tests/world-factory/drivers/a5sf-recon-external/run-boot.mjs:1357:15)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-external-2026-11-07T16-04-20-152Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-07T16:04:20.186Z"
+}

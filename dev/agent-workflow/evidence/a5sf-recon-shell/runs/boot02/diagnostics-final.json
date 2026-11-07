@@ -1,0 +1,633 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_RC_DISC\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon shell session\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_RC_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **vN",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_RC_DISC_DONE\"}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:6b7a0b1bba7e55c2072b4d77205f5a17caf6942cd201eedf1a038861919f76b8] A5SF_RC_L1_DRIVE\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon shell session\"}"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6b7a0b1bba7e55c2072b4d77205f5a17caf6942cd201eedf1a038861919f76b8] A5SF_RC_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-a-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"rc-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace\",\"prompt\":\"a5sf-rc-a: run the shell pro"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-rc-a-delegate] a5sf-rc-a: run the shell probe suite exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 b",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-allow\",\"name\":\"bash\",\"arguments\":{\"command\":\"printf 'A5SF_RC_TTY=%s\\\\n' \\\"$(tty 2>&1)\\\"; printf 'A5SF_RC_PS=%s\\\\n' \\\"$(ps -o stat= -p $$)\\\"; printf x >/dev/null; printf 'A5SF_RC_DEVNULL_RC=%s\\\\n' \\\"$?\\\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'; slee"
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-rc-a-delegate] a5sf-rc-a: run the shell probe suite exactly once each, one tool call at a time, then report.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon shell session\"}"
+    },
+    {
+      "seq": 6,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-allow\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_TTY=not a tty\\\\nA5SF_RC_PS=S\\\\nA5SF_RC_DEVNULL_RC=1\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"/bin/bash: line 1: /dev/null: Permission denied\\\\n\\\",\\\"scrollback\\\":\\\"A5SF_RC_TTY=not a tty\\\\nA5SF_RC_PS=S\\\\nA5SF_RC_DEVNULL_RC=1\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\\n/bin/bash: line 1: /dev/null: Permission denied\\\"}\"}],\"is_error\":fals",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-deny-read\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt'\",\"description\":\"Out-of-ceiling read\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261"
+    },
+    {
+      "seq": 7,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-deny-read\",\"content\":[{\"type\":\"text\",\"text\":\"Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-deny-write\",\"name\":\"bash\",\"arguments\":{\"command\":\"printf A5SF_RC_WRITE_MARK > '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/rc-write.txt'; printf 'A5SF_RC_WRITE_RC=%s\\\\n' \\\"$?\\\"\",\"description\":\"Out-of-ceiling write\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team"
+    },
+    {
+      "seq": 8,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-deny-write\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-3\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_WRITE_RC=1\\\\n\\\",\\\"stderr\\\":\\\"/bin/bash: line 1: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/rc-write.txt: Permission denied\\\\n\\\",\\\"scrollback\\\":\\\"A5SF_RC_WRITE_RC=1\\\\n/bin/bash: line 1: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-sh",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-dyn-var\",\"name\":\"bash\",\"arguments\":{\"command\":\"P='/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt'; cat \\\"$P\\\"; printf 'A5SF_RC_DYN_VAR_RC=%s\\\\n' \\\"$?\\\"\",\"description\":\"Dynamic read through a shell variable\",\"workdir\":\"/home/armourpiercer/projects/ds"
+    },
+    {
+      "seq": 9,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-dyn-var\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-4\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_DYN_VAR_RC=1\\\\n\\\",\\\"stderr\\\":\\\"cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt: Permission denied\\\\n\\\",\\\"scrollback\\\":\\\"A5SF_RC_DYN_VAR_RC=1\\\\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-dyn-subst\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat \\\"$(printf %s '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt')\\\"; printf 'A5SF_RC_DYN_SUBST_RC=%s\\\\n' \\\"$?\\\"\",\"description\":\"Dynamic read through command substitution\",\"workdir\":\"/home/armourpier"
+    },
+    {
+      "seq": 10,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-dyn-subst\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-5\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_DYN_SUBST_RC=1\\\\n\\\",\\\"stderr\\\":\\\"cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt: Permission denied\\\\n\\\",\\\"scrollback\\\":\\\"A5SF_RC_DYN_SUBST_RC=1\\\\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/h",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-bg\",\"name\":\"bash\",\"arguments\":{\"command\":\"sleep 0.1; printf 'A5SF_RC_BG_MARK\\\\n'\",\"description\":\"Ask for a background job\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace\",\"run_in_background\":true}}]}"
+    },
+    {
+      "seq": 11,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-bg\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-6\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_BG_MARK\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_RC_BG_MARK\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-a-joblist\",\"name\":\"job_list\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 12,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-a-joblist\",\"content\":[{\"type\":\"text\",\"text\":\"(no background jobs)\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_RC_MEMBER_A_DONE (no background jobs)\"}"
+    },
+    {
+      "seq": 13,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-delegate-a\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-088uk8104uxo\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-3628753bbaead6c4976ca7641f20acf3\\\",\\\"operationId\\\":\\\"op-12ub6jj0v2b5hi19ta9dp1ce\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5sf-rc-",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-archive-a\",\"name\":\"team_archive_member\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-a-archive\",\"targetInstanceId\":\"inst-088uk8104uxo\"}}]}"
+    },
+    {
+      "seq": 14,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-archive-a\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-088uk8104uxo\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-changed\\\",\\\"instanceId\\\":\\\"inst-088uk8104uxo\\\",\\\"from\\\":\\\"SETTLED\\\",\\\"to\\\":\\\"ARCHIVED\\\",\\\"sequence\\\":7},\\\"requestToken\\\":\\\"a5sf-rc-a-archive\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-followup-a\",\"name\":\"team_follow_up\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-a-followup\",\"targetInstanceId\":\"inst-088uk8104uxo\",\"prompt\":\"a5sf-rc-a: this follow-up must be refused after revocation.\",\"async\":false}}]}"
+    },
+    {
+      "seq": 15,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-followup-a\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"blocked\\\",\\\"toolName\\\":\\\"team_follow_up\\\",\\\"correlation\\\":\\\"a5sf-rc-a-followup\\\",\\\"reason\\\":\\\"target-stale\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-delegate-b\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-b-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"rc-worker-b\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace\",\"prompt\":\"a5sf-rc-b: run the long prob"
+    },
+    {
+      "seq": 16,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-delegate-b\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-fd811a7489c72d880d4eecdd03b01548\\\",\\\"operationId\\\":\\\"op-1v7ooxb1y7dgp21mhkpi91pf\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":8,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":9,\\\"workSettled\\\":false,\\\"workStatus\\\":\\\"admitted\\\"},\\\"requestToken\\",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-collect-b-1\",\"name\":\"team_collect\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-collect\",\"requestTokens\":[\"a5sf-rc-b-delegate\"]}}]}"
+    },
+    {
+      "seq": 17,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-rc-b-delegate] a5sf-rc-b: run the long probe once, then the short probe, one tool call at a time.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-b-long\",\"name\":\"bash\",\"arguments\":{\"command\":\"printf 'A5SF_RC_B_START=%s\\\\n' \\\"$(date +%s)\\\"; sleep 8; printf 'A5SF_RC_B_TTY=%s\\\\n' \\\"$(tty 2>&1)\\\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'\",\"description\":\"Long admitted command (the mid-flight archive "
+    },
+    {
+      "seq": 18,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-rc-b-delegate] a5sf-rc-b: run the long probe once, then the short probe, one tool call at a time.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon shell session\"}"
+    },
+    {
+      "seq": 19,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-collect-b-1\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5sf-rc-b-delegate\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"admittedSequence\\\":9,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"a5sf-rc-collect\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-archive-b\",\"name\":\"team_archive_member\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-b-archive\",\"targetInstanceId\":\"inst-0lui9he0atse\"}}]}"
+    },
+    {
+      "seq": 20,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-b-long\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_B_START=1794070236\\\\nA5SF_RC_B_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_RC_B_START=1794070236\\\\nA5SF_RC_B_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-b-second\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'\",\"description\":\"Second command after a possible mid-flight archive\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u"
+    },
+    {
+      "seq": 21,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-b-second\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-2\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RECON_SHELL_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_RECON_SHELL_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_RC_MEMBER_B_DONE {\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-2\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RECON_SHELL_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollba\"}"
+    },
+    {
+      "seq": 22,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-archive-b\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-changed\\\",\\\"instanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"from\\\":\\\"RUNNING\\\",\\\"to\\\":\\\"ARCHIVED\\\",\\\"sequence\\\":11},\\\"requestToken\\\":\\\"a5sf-rc-b-archive\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-delegate-c\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-rc-team\",\"requestToken\":\"a5sf-rc-c-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"rc-worker-c\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace\",\"prompt\":\"a5sf-rc-c: run the short pro"
+    },
+    {
+      "seq": 23,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-rc-c-delegate] a5sf-rc-c: run the short probe once, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-rc-c-one\",\"name\":\"bash\",\"arguments\":{\"command\":\"printf 'A5SF_RC_C_TTY=%s\\\\n' \\\"$(tty 2>&1)\\\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'\",\"description\":\"New-generation admitted read\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-"
+    },
+    {
+      "seq": 24,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-rc-c-delegate] a5sf-rc-c: run the short probe once, then report.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf recon shell session\"}"
+    },
+    {
+      "seq": 25,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-c-one\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_C_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_RC_C_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_RC_MEMBER_C_DONE {\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_C_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\"}"
+    },
+    {
+      "seq": 26,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-rc-delegate-c\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-14284nz189hs\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-bceb06ca58176ac4621e45b23edda5fc\\\",\\\"operationId\\\":\\\"op-1io9b1q17uroln1tovxf804h\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":13,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":14,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5sf-r",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_RC_LEADER_DONE\"}"
+    }
+  ],
+  "delegateCall": {
+    "id": "call-rc-delegate-a",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-rc-team",
+      "requestToken": "a5sf-rc-a-delegate",
+      "delegationTemplateId": "worker",
+      "label": "rc-worker-a",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "prompt": "a5sf-rc-a: run the shell probe suite exactly once each, one tool call at a time, then report.",
+      "async": false
+    }
+  },
+  "delegateResult": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-088uk8104uxo\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-3628753bbaead6c4976ca7641f20acf3\",\"operationId\":\"op-12ub6jj0v2b5hi19ta9dp1ce\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rc-a-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RC_MEMBER_A_DONE (no background jobs)\"}},\"requestToken\":\"a5sf-rc-a-delegate\"}"
+  },
+  "revocation": {
+    "archiveA": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-088uk8104uxo\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-088uk8104uxo\",\"from\":\"SETTLED\",\"to\":\"ARCHIVED\",\"sequence\":7},\"requestToken\":\"a5sf-rc-a-archive\"}"
+    },
+    "followupA": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"a5sf-rc-a-followup\",\"reason\":\"target-stale\"}"
+    },
+    "archiveB": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0lui9he0atse\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-0lui9he0atse\",\"from\":\"RUNNING\",\"to\":\"ARCHIVED\",\"sequence\":11},\"requestToken\":\"a5sf-rc-b-archive\"}"
+    },
+    "delegateC": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14284nz189hs\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-bceb06ca58176ac4621e45b23edda5fc\",\"operationId\":\"op-1io9b1q17uroln1tovxf804h\",\"replayed\":false,\"ledgerSequence\":13,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":14,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rc-c-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RC_MEMBER_C_DONE {\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_C_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\"}},\"requestToken\":\"a5sf-rc-c-delegate\"}"
+    },
+    "bSecond": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-2\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RECON_SHELL_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RECON_SHELL_IN_LANE_BYTES\"}"
+    }
+  },
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3188/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\na5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface\na5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface\n",
+  "sessions": [
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-boot/session.v4.jsonl.zstd",
+      "bytes": 25942,
+      "id": "session-a5sf-rc-boot",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-team/session.v4.jsonl.zstd",
+      "bytes": 35136,
+      "id": "session-a5sf-rc-team",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-3628753bbaead6c4976ca7641f20acf3/session.v4.jsonl.zstd",
+      "bytes": 34545,
+      "id": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-bceb06ca58176ac4621e45b23edda5fc/session.v4.jsonl.zstd",
+      "bytes": 27050,
+      "id": "session-team-child-bceb06ca58176ac4621e45b23edda5fc",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-fd811a7489c72d880d4eecdd03b01548/session.v4.jsonl.zstd",
+      "bytes": 28340,
+      "id": "session-team-child-fd811a7489c72d880d4eecdd03b01548",
+      "kind": null
+    }
+  ],
+  "sessionFiles": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-boot/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-boot/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-team/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-a5sf-rc-team/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-3628753bbaead6c4976ca7641f20acf3/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-3628753bbaead6c4976ca7641f20acf3/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-bceb06ca58176ac4621e45b23edda5fc/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-bceb06ca58176ac4621e45b23edda5fc/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-fd811a7489c72d880d4eecdd03b01548/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-recon-c-shell-tests-homes-u5u5a5sfsub1-20261107T16-48-20Z-workspace--/session-team-child-fd811a7489c72d880d4eecdd03b01548/session.v4.jsonl.zstd"
+  ],
+  "homeListing": [
+    ".anonymous-user-id",
+    ".credentials.yaml",
+    ".u5-created.json",
+    ".u5-ownership.json",
+    "a5sf-consult.jsonl",
+    "blueprints",
+    "canary-ledger.jsonl",
+    "governed-scratch",
+    "out-of-lane",
+    "p6t6-directive.json",
+    "profiles",
+    "sessions",
+    "storages",
+    "u6fs-probe-ledger.jsonl",
+    "workspace"
+  ],
+  "sessionsExists": true,
+  "sessionCopy": false,
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:30.646Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:30.653Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:50:30.657Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/out-of-lane/secret-out-of-lane.txt",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:50:35.239Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 3,
+      "observedAt": "2026-11-07T16:50:35.303Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 4,
+      "observedAt": "2026-11-07T16:50:35.305Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 5,
+      "observedAt": "2026-11-07T16:50:35.394Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 6,
+      "observedAt": "2026-11-07T16:50:35.397Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 7,
+      "observedAt": "2026-11-07T16:50:35.500Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 8,
+      "observedAt": "2026-11-07T16:50:35.503Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 9,
+      "observedAt": "2026-11-07T16:50:35.602Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-088uk8104uxo",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:ab34902acb10ced9f7856b31cfe0d28a",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 10,
+      "observedAt": "2026-11-07T16:50:35.605Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:36.800Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:36.803Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:50:36.806Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:50:44.936Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 3,
+      "observedAt": "2026-11-07T16:50:44.940Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0lui9he0atse",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:6ab5ca0eced79a2644d3761e4dc6521d",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 4,
+      "observedAt": "2026-11-07T16:50:44.942Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-14284nz189hs",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:42f7b582fee2cebd7f49512c1a3c5e28",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:45.848Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-14284nz189hs",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:42f7b582fee2cebd7f49512c1a3c5e28",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:50:45.850Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-14284nz189hs",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:42f7b582fee2cebd7f49512c1a3c5e28",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:50:45.853Z"
+    }
+  ],
+  "counters": {
+    "confinedTurnLaunchers": 7,
+    "preflightLaunchers": 4,
+    "shellChildPids": 3,
+    "ptyHolders": 0,
+    "shellChildFd0": {
+      "socket": 3
+    },
+    "shellChildCommandSightings": [
+      {
+        "pid": 545,
+        "ppid": 544,
+        "fd0": "socket:[72372943]",
+        "state": "S",
+        "namesInLane": false,
+        "namesSecret": false,
+        "cmdline": "/bin/bash -c sleep 0.1; printf 'A5SF_RC_BG_MARK\\n'"
+      },
+      {
+        "pid": 594,
+        "ppid": 593,
+        "fd0": "socket:[72374147]",
+        "state": "S",
+        "namesInLane": true,
+        "namesSecret": false,
+        "cmdline": "/bin/bash -c printf 'A5SF_RC_B_START=%s\\n' \"$(date +%s)\"; sleep 8; printf 'A5SF_RC_B_TTY=%s\\n' \"$(tty 2>&1)\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16"
+      },
+      {
+        "pid": 600,
+        "ppid": 599,
+        "fd0": "socket:[72393763]",
+        "state": "R",
+        "namesInLane": true,
+        "namesSecret": false,
+        "cmdline": "/bin/bash -c cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-c-shell/tests/homes/u5u5a5sfsub1-20261107T16-48-20Z/workspace/in-lane.txt'"
+      }
+    ],
+    "payloadInLaneSightings": 2,
+    "procSecretCommandSightings": 0,
+    "baseBwrapWithMarkers": 0,
+    "guardFacts": {
+      "allow": 20,
+      "deny": 1,
+      "shellReadAllow": 4,
+      "shellReadDeny": 1,
+      "spawnWriteDeny": 0
+    },
+    "mockRequests": 27,
+    "memberModelRequests": 13,
+    "procBatches": 317,
+    "otherBwrapPids": 1,
+    "memberWindow": {
+      "from": "2026-11-07T16:49:29.541Z",
+      "to": "2026-11-07T16:50:46.410Z"
+    }
+  }
+}

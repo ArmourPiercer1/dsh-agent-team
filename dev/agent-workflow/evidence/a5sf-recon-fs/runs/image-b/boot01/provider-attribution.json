@@ -1,0 +1,150 @@
+{
+  "schema": "a5sf-recon-fs/provider-attribution/1",
+  "at": "2026-11-07T16:17:19.548Z",
+  "memberIdentity": "inst-1kdc3xx12yhw",
+  "realmPolicyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+  "nativeFs": {
+    "calls": 12,
+    "guardFacts": 0,
+    "face": "host ctx.fs (no a5sf guard consult)",
+    "conclusion": "ZERO guard facts exist for the native fs calls whose locators are unique: the Member's confined fs Provider was never consulted. The bytes came from a provider that is not the realm's."
+  },
+  "bash": {
+    "calls": 2,
+    "guardFacts": 2,
+    "facts": [
+      {
+        "method": "shellRead",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/bash-allow.txt",
+        "decision": "allow",
+        "decidedBy": "ALLOW"
+      },
+      {
+        "method": "shellRead",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/bash-deny.txt",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED"
+      }
+    ],
+    "face": "realm confined terminal face (shellRead guard)"
+  },
+  "compositionFact": {
+    "a5sfNativeToolModules": null,
+    "note": "the shipped governed preset configures NO native tool modules; `attachA5sfNativeToolModules` therefore has an empty spec list and shadows nothing. The four native fs tools stay the preset's own definitions, mounted on the preset registry scope — whose `ctx.fs` is the base host provider, not the Member's isolated `fs` label."
+  },
+  "readImageOutcome": "COMPLETED_NO_GUARD_FACT",
+  "imageRouteDeclared": true,
+  "hostReach": {
+    "callId": "call-a5srf-read-host-reach",
+    "locator": "/etc/hostname",
+    "isError": false,
+    "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+    "bytes": 109,
+    "sha256": "b1dd883d3f6db57dcebfb507ad2845188c6a9450a16e875a0ef145bd4c18a4af",
+    "excerpt": "<path>/etc/hostname</path>\n<type>file</type>\n<content>\n1: DESKTOP-D\n\n(End of file - total 1 lines)\n</content>",
+    "guardFacts": 0
+  },
+  "hostSandboxProbe": {
+    "callId": "call-a5srf-write-host-fence",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/host-fence/write-host-fence.txt",
+    "isError": true,
+    "outcomeClass": "REFUSED_BY_HOST_SANDBOX",
+    "bytes": 248,
+    "excerpt": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]",
+    "onDisk": {
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/host-fence/write-host-fence.txt",
+      "exists": false,
+      "bytes": 0,
+      "sha256": null,
+      "content": null,
+      "markerPresent": null
+    }
+  },
+  "crosscheck": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt",
+        "offset": 1,
+        "lines": [
+          {
+            "number": 1,
+            "text": "A5SF_RECON_FS_READ_DENY_SECRET_BYTES"
+          }
+        ],
+        "totalLines": 1
+      }
+    }
+  },
+  "lifecycle": {
+    "at": "2026-11-07T16:17:19.472Z",
+    "stopInstant": "2026-11-07T16:17:19.529Z",
+    "archive": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "value": {
+          "status": "executed",
+          "action": "archive-member",
+          "rootSessionId": "session-a5srf-team",
+          "callerRole": "leader",
+          "targetInstanceId": "inst-1kdc3xx12yhw",
+          "effect": {
+            "kind": "lifecycle-changed",
+            "instanceId": "inst-1kdc3xx12yhw",
+            "from": "SETTLED",
+            "to": "ARCHIVED",
+            "sequence": 8
+          },
+          "requestToken": "a5srf-archive"
+        }
+      }
+    },
+    "memberBefore": {
+      "instanceId": "inst-1kdc3xx12yhw",
+      "lifecycle": "SETTLED",
+      "childSessionId": "session-team-child-04cfa33fab776112327d75ba70f8423b"
+    },
+    "membersAfterArchive": [
+      {
+        "instanceId": "inst-1kdc3xx12yhw",
+        "templateId": "worker",
+        "lifecycle": "ARCHIVED"
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "lifecycle": "undefined"
+      }
+    ],
+    "postArchive": {
+      "read": {
+        "status": 422,
+        "body": {
+          "error": "no live agent for 'session-team-child-04cfa33fab776112327d75ba70f8423b': agent-bindings: session 'session-team-child-04cfa33fab776112327d75ba70f8423b' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+        },
+        "executed": false
+      },
+      "write": {
+        "status": 422,
+        "body": {
+          "error": "no live agent for 'session-team-child-04cfa33fab776112327d75ba70f8423b': agent-bindings: session 'session-team-child-04cfa33fab776112327d75ba70f8423b' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+        },
+        "executed": false
+      }
+    },
+    "factsBeforeStop": 4,
+    "factsAfterProbes": 4,
+    "probeFacts": [],
+    "executedAfterArchive": false,
+    "refusalLayer": "session route (NO_LIVE_AGENT) — NOT the fs guard",
+    "defaultRow": {
+      "verdict": "PASS",
+      "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+      "postArchiveReadStatus": 422,
+      "postArchiveWriteStatus": 422,
+      "executedAfterArchive": false
+    }
+  }
+}

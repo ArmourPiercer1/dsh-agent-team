@@ -1,0 +1,179 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-web-2026-11-07T16-17-42-838Z",
+  "suite": "a5sf-recon-web",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:17:42.838Z",
+  "selectedCases": [
+    "web-allow-fetch",
+    "web-allow-search",
+    "web-deny-fetch",
+    "web-deny-search"
+  ],
+  "bindings": {
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use",
+    "line": "a5sfreconweb",
+    "recordClass": "DEV-LIVE",
+    "candidateClaimEligibility": "DEV-LIVE record: never eligible for a V@B=yes or any frozen-candidate claim (enforced by run-record.mjs#finalize)",
+    "face": "Web",
+    "worldLine": "a5sfreconweb",
+    "grantScope": "DEV-LIVE",
+    "grantId": "devlive-web-recon-1",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+    "sink": "world-home a5sf-consult.jsonl (copy: guard-facts.json)",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261105r2",
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+      },
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+    },
+    "providerComposition": "test row recon-web-offer-row.mjs (composition compiles the lane with the ONE compiler compileEffectiveIo); the confined web face, the guard, the capability probe and PD-15 are the shipped dist modules",
+    "providerSelection": "the in-process composition transport to the controlled 127.0.0.1 endpoint; the inherited host web service is wrapped read-only as a tripwire",
+    "transport": "REAL in-process loopback HTTP to the driver-owned local endpoint (127.0.0.1:ephemeral); no external egress",
+    "endpoint": "http://127.0.0.1:46563",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "web-allow-fetch",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:18:11.466Z",
+      "decidedBy": "ALLOW",
+      "endpointRequests": 2,
+      "providerEntries": 2,
+      "locator": "http://127.0.0.1:46563/page?lane=allow",
+      "artifact": "item-web-allow.json"
+    },
+    {
+      "id": "web-allow-search",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:18:11.466Z",
+      "decidedBy": "ALLOW",
+      "locator": "<search:malformed-request>",
+      "artifact": "item-web-allow.json"
+    },
+    {
+      "id": "web-deny-fetch",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:18:12.011Z",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "decision": "deny",
+      "locator": "http://127.0.0.1:46563/page?lane=deny",
+      "endpointRequests": 0,
+      "providerEntries": 0,
+      "artifact": "item-web-deny.json"
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "PASS",
+      "at": "2026-11-07T16:18:12.011Z",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "decision": "deny",
+      "locator": "<search:malformed-request>",
+      "endpointRequests": 0,
+      "providerEntries": 0,
+      "artifact": "item-web-deny.json"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-05/run-ledger.jsonl",
+    "thisRunCount": 3,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:17:42.839Z",
+        "runId": "a5sf-recon-web-2026-11-07T16-17-42-838Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-web-recon-1",
+        "grantId": "devlive-web-recon-1",
+        "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+        "face": "Web",
+        "worldLine": "a5sfreconweb",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T16:17:59.915Z",
+        "runId": "a5sf-recon-web-2026-11-07T16-17-42-838Z",
+        "suite": "a5sf-recon-web",
+        "recordClass": "DEV-LIVE",
+        "world": "u5a5sfreconweb-20261107T16-17-42Z",
+        "phase": "a5sf-recon-web-boot1"
+      },
+      {
+        "at": "2026-11-07T16:18:12.269Z",
+        "runId": "a5sf-recon-web-2026-11-07T16-17-42-838Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "dev-live-outcome",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-outcome",
+        "world": "a5sfreconweb",
+        "grantId": "devlive-web-recon-1",
+        "face": "Web",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "overall": "PASS",
+        "cases": [
+          {
+            "id": "web-allow-fetch",
+            "verdict": "PASS"
+          },
+          {
+            "id": "web-allow-search",
+            "verdict": "PASS"
+          },
+          {
+            "id": "web-deny-fetch",
+            "verdict": "PASS"
+          },
+          {
+            "id": "web-deny-search",
+            "verdict": "PASS"
+          }
+        ],
+        "teardown": {
+          "host": {
+            "wasRunning": true,
+            "pid": 22,
+            "killed": true,
+            "portFree": true
+          },
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-17-42Z",
+          "releasedPorts": [
+            3183,
+            3494,
+            3183
+          ],
+          "killedPids": [
+            22
+          ],
+          "notes": []
+        }
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-recon-web-boot1",
+      "world": "u5a5sfreconweb-20261107T16-17-42Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-05/logs/u5a5sfreconweb-20261107T16-17-42Z/instance-port3183.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-web-2026-11-07T16-17-42-838Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-07T16:18:12.269Z",
+  "osLevelNetworkIsolationClaimed": false
+}

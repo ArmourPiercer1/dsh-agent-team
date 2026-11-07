@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-recon-external-2026-11-07T16-04-20-152Z-b2 suite=a5sf-recon-external overall=FAIL cases=5 FAIL:5 worlds=none partial=true abortedAt=pre-boot recordClass=DEV-LIVE (not candidate evidence)

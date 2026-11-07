@@ -1,0 +1,192 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-fs-2026-11-07T16-18-43-154Z-b1",
+  "suite": "a5sf-recon-fs",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:18:43.154Z",
+  "selectedCases": [
+    "fs:surface",
+    "fs:read-allowed",
+    "fs:read-ceiling-denied",
+    "fs:write-allowed",
+    "fs:write-ceiling-denied",
+    "fs:edit-allowed",
+    "fs:edit-ceiling-denied",
+    "fs:read-image-allowed",
+    "fs:read-image-ceiling-denied",
+    "fs:provider-attribution",
+    "fs:guard-facts",
+    "fs:bash-control",
+    "fs:lifecycle-post-archive"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-recon-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "a5sffsrecon1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE recon: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "fs:surface",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:read-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:read-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:write-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:write-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:edit-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:edit-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:read-image-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:read-image-ceiling-denied",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:provider-attribution",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:bash-control",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "fs:lifecycle-post-archive",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:18:59.910Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/dev/agent-workflow/evidence/a5sf-recon-fs/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:18:43.188Z",
+        "runId": "a5sf-recon-fs-2026-11-07T16-18-43-154Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-recon-1",
+        "grantId": "devlive-fs-recon-1",
+        "grantedBy": "owner 2026-11-13 A-face FS recon ruling (relayed in this lane's task): self-arranged dev boots at will, no per-start approval, <=2 concurrent bots per subagent (machine-wide cap raised to 6 the same day), :3080 untouchable, ports only from the 3180 family, DSH_HOME inside the worktree",
+        "face": "FS Provider",
+        "worldLine": "a5sffsrecon1",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      }
+    ]
+  },
+  "partial": true,
+  "abortedAt": "pre-boot",
+  "abort": {
+    "stage": "pre-boot",
+    "detail": "boot 1 aborted at pre-boot",
+    "error": "DevLiveSlotError: DEV_LIVE_SLOT_REQUIRED: record 'a5sf-recon-fs-2026-11-07T16-18-43-154Z-b1' is DEV-LIVE but holds no dev-Host slot under /home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp/port-leases/dev-live-hosts; a dev-live Host may only start through the scope-aware grant gate (preRegisterDevLiveBudget), which acquires one of the 2 machine slots\n    at assertDevLiveSlotHeld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/dev-live-slots.mjs:271:11)\n    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/lib/a5sf-harness.mjs:315:9)\n    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1069:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/suites/150-a5sf-read.mjs:638:16)\n    at async bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1001:16)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/world-factory/drivers/a5sf-recon-fs/run-boot.mjs:1769:15)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-fs-2026-11-07T16-18-43-154Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-07T16:18:59.911Z"
+}

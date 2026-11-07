@@ -1,0 +1,43 @@
+{
+  "all": [
+    {
+      "at": "2026-11-07T16:07:05.830Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1msngdn0q2ln",
+      "templateId": "weballow",
+      "networkAccess": "allow",
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+    },
+    {
+      "at": "2026-11-07T16:09:36.225Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "templateId": "webdeny",
+      "networkAccess": "deny",
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+    }
+  ],
+  "providerEntries": [],
+  "capabilityProbes": [],
+  "compiledLanes": [
+    {
+      "at": "2026-11-07T16:07:05.830Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1msngdn0q2ln",
+      "templateId": "weballow",
+      "networkAccess": "allow",
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1"
+    },
+    {
+      "at": "2026-11-07T16:09:36.225Z",
+      "leg": "compiled-lane",
+      "realm": "member:inst-1fq2hno0l8w8",
+      "templateId": "webdeny",
+      "networkAccess": "deny",
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1"
+    }
+  ],
+  "hostWebRows": [],
+  "note": "provider entries = the composition transport was entered. capability probes = the guard's own question to the backend. compiled-lane = the lane the ONE compiler produced for that realm.",
+  "osLevelNetworkIsolationClaimed": false
+}

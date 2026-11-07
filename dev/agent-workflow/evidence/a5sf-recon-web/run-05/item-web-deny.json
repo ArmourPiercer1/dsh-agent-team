@@ -1,0 +1,167 @@
+{
+  "schema": "a5sf-recon-web/item/1",
+  "at": "2026-11-07T16:18:12.011Z",
+  "lane": "deny",
+  "caseIds": [
+    "web-deny-fetch",
+    "web-deny-search"
+  ],
+  "member": {
+    "instanceId": "inst-1fq2hno0l8w8",
+    "childSessionId": "session-team-child-026753e6b216c82cf31a527967a951e7",
+    "templateId": "webdeny",
+    "label": "recon-web-deny",
+    "legacy": true,
+    "note": "the template declares NO capabilities block -> permissionPolicy absent -> the legacy (non-strict) caller path"
+  },
+  "preset": {
+    "member": "a5sf-recon-web-member",
+    "module": "@deepseek-ai/dsh-tool-web",
+    "tools": [
+      "web_fetch",
+      "web_search"
+    ]
+  },
+  "surface": {
+    "memberToolsFromModelRequest": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "web_fetch",
+      "web_search",
+      "write"
+    ],
+    "hasWebFetch": true,
+    "hasWebSearch": true
+  },
+  "model": {
+    "requests": 4,
+    "toolResults": [
+      {
+        "isError": true,
+        "text": "Error: the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (a5sf recon composition boundary: network-destination=unsupported (this host's providers report no enforced network capability)); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call"
+      },
+      {
+        "isError": true,
+        "text": "Error: the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (a5sf recon composition boundary: network-destination=unsupported (this host's providers report no enforced network capability)); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call"
+      }
+    ]
+  },
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:fetch",
+      "locator": "http://127.0.0.1:46563/page?lane=deny",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:18:11.698Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:18:11.721Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 3,
+      "observedAt": "2026-11-07T16:18:11.721Z"
+    }
+  ],
+  "guardFactCount": 3,
+  "endpoint": {
+    "origin": "http://127.0.0.1:46563",
+    "requestsDuringTurn": [],
+    "countDuringTurn": 0,
+    "totalAfterTurn": 2
+  },
+  "providerEntries": {
+    "rows": [],
+    "count": 0,
+    "counterFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-17-42Z/web-provider.jsonl"
+  },
+  "capabilityProbes": {
+    "rows": [
+      {
+        "at": "2026-11-07T16:18:11.698Z",
+        "leg": "capability-probe",
+        "realm": "member:inst-1fq2hno0l8w8",
+        "level": "unsupported"
+      },
+      {
+        "at": "2026-11-07T16:18:11.720Z",
+        "leg": "capability-probe",
+        "realm": "member:inst-1fq2hno0l8w8",
+        "level": "unsupported"
+      },
+      {
+        "at": "2026-11-07T16:18:11.721Z",
+        "leg": "capability-probe",
+        "realm": "member:inst-1fq2hno0l8w8",
+        "level": "unsupported"
+      }
+    ],
+    "count": 3,
+    "note": "the guard's own question to the backend; it enters no fetch/search/transport/dns/connect channel"
+  },
+  "hostWebEntries": 0,
+  "checks": {
+    "memberSurfaceHasPair": true,
+    "modelTurnRan": true,
+    "expectedFactTotal": true,
+    "expectedSearchFacts": true,
+    "fetchFactMethod": true,
+    "searchFactMethod": true,
+    "decisionsMatchLane": true,
+    "endpointObservedExpected": true,
+    "providerEntriesMatchLane": true,
+    "noHostWebFallback": true,
+    "typedRefusalText": false,
+    "noProviderEntry": true
+  },
+  "verdict": "REFUTED",
+  "limits": {
+    "wording": "Refusing to fetch is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "The refusal is our admission code, made before the provider was entered; the endpoint saw no request. Zero provider entries is a counter of our own code, not an OS observation. This does NOT prove network isolation.",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

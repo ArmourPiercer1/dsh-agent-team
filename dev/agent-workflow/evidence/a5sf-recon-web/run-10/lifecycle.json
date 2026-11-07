@@ -1,0 +1,40 @@
+{
+  "schema": "a5sf-recon-web/lifecycle/1",
+  "at": "2026-11-07T16:27:39.086Z",
+  "question": "After the governed Member is ARCHIVED, is the model path still reachable (and did the endpoint see anything)?",
+  "member": {
+    "instanceId": "inst-1msngdn0q2ln"
+  },
+  "archive": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "archive-member",
+        "rootSessionId": "session-a5sf-recon-web-team",
+        "callerRole": "leader",
+        "targetInstanceId": "inst-1msngdn0q2ln",
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-1msngdn0q2ln",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 13
+        },
+        "requestToken": "recon-web-lifecycle-archive"
+      }
+    }
+  },
+  "archivedLifecycle": "ARCHIVED",
+  "followUp": {
+    "status": 200,
+    "body": "{\"ok\":true,\"value\":{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"recon-web-lifecycle-followup\",\"reason\":\"target-stale\"}}",
+    "refused": true,
+    "productReason": "target-stale"
+  },
+  "endpointRequestsAfterArchive": 0,
+  "endpointTotalAtLifecycle": 2,
+  "note": "the ENDPOINT observations here cover the whole lifecycle window: the follow-up attempt is the model-facing path. A retained in-process face reference is a different question and is measured host-free (arms-hostfree A12).",
+  "osLevelNetworkIsolationClaimed": false
+}

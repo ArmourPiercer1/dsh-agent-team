@@ -1,0 +1,206 @@
+{
+  "at": "2026-11-07T16:06:12.922Z",
+  "preflight": {
+    "schema": "a5sf-zero-boot-preflight/1",
+    "verdict": "FAIL",
+    "checks": [
+      {
+        "id": "assembly.usable",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.roots",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.blueprints",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.member-tool-binding",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "identity.authority",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "native.module-config",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "policy.paths",
+        "verdict": "FAIL",
+        "findings": [
+          {
+            "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+            "detail": "case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+          },
+          {
+            "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+            "detail": "case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+          },
+          {
+            "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+            "detail": "case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+          },
+          {
+            "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+            "detail": "case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+          }
+        ],
+        "notes": [
+          "case web-deny-fetch: admission refusal (NETWORK_UNCONFINED_REALM) — a decision made by our own admission code before any provider/transport entry; NOT network confinement and NOT isolation",
+          "case web-deny-search: admission refusal (NETWORK_UNCONFINED_REALM) — a decision made by our own admission code before any provider/transport entry; NOT network confinement and NOT isolation"
+        ]
+      },
+      {
+        "id": "policy.fifo",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "cases.isolation",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "bundle.case-coverage",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "driver.gate-order",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "driver.leader-surface",
+        "verdict": "UNKNOWN",
+        "findings": [],
+        "reason": "DRIVER_LEADER_SURFACE_UNDECLARED",
+        "detail": "bundle.driver.blueprint.leader declares no tools list; the model-facing surface is not stated (UNKNOWN, not PASS)"
+      },
+      {
+        "id": "driver.caller-surface",
+        "verdict": "PASS",
+        "findings": [],
+        "notes": [
+          "driver.caller-surface: legacy/non-strict Member caller confirmed — the preset surfaces web_fetch+web_search (tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml:137-141), permissionPolicy is absent so A2C-2 does not run (packages/runtime/src/plugin/live/agent-bindings.mjs:2472), builtinToolDeny is selective-only (packages/runtime/src/plugin/live/agent-bindings.mjs:2981), and the realm mounts for a Member (packages/runtime/src/plugin/live/agent-bindings.mjs:2598)"
+        ]
+      },
+      {
+        "id": "driver.log-capture",
+        "verdict": "UNKNOWN",
+        "findings": [],
+        "reason": "DRIVER_CAPTURE_LIMIT_UNDECLARED",
+        "detail": "step(s) \"allow-member-turn\", \"deny-member-turn\", \"lifecycle-archive-followup\" declare a body capture but no captureLimits.body retention; \"no truncation\" cannot be certified from silence (UNKNOWN, not PASS)"
+      },
+      {
+        "id": "collector.shape",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.candidate",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.grant",
+        "verdict": "PASS",
+        "findings": []
+      },
+      {
+        "id": "wiring.run-record",
+        "verdict": "PASS",
+        "findings": []
+      }
+    ],
+    "findings": [
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      },
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      }
+    ],
+    "unknown": [
+      {
+        "id": "driver.leader-surface",
+        "reason": "DRIVER_LEADER_SURFACE_UNDECLARED",
+        "detail": "bundle.driver.blueprint.leader declares no tools list; the model-facing surface is not stated (UNKNOWN, not PASS)"
+      },
+      {
+        "id": "driver.log-capture",
+        "reason": "DRIVER_CAPTURE_LIMIT_UNDECLARED",
+        "detail": "step(s) \"allow-member-turn\", \"deny-member-turn\", \"lifecycle-archive-followup\" declare a body capture but no captureLimits.body retention; \"no truncation\" cannot be certified from silence (UNKNOWN, not PASS)"
+      }
+    ],
+    "summary": "FAIL 15/18 checks blocks=POLICY_EXPECTATION_CONTRADICTS_LANE,POLICY_NETWORK_PROBE_NOT_ENFORCED unknown=driver.leader-surface,driver.log-capture",
+    "inputs": {
+      "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web",
+      "hostRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use",
+      "hostPrefixRemapped": true
+    }
+  },
+  "gate": {
+    "verdict": "FAIL",
+    "findings": [
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      },
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      }
+    ],
+    "toleratedFindings": [
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      },
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      }
+    ],
+    "blockingFindings": [],
+    "ok": true,
+    "note": "the shared preflight grades the DENY half as PASS-contract cases; the ALLOW half is outside its closed vocabulary and is recorded rather than hidden. This gate blocks on anything outside that known gap."
+  },
+  "osLevelNetworkIsolationClaimed": false
+}
