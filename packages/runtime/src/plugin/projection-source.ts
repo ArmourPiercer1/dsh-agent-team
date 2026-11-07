@@ -248,6 +248,10 @@ const FACT_CONTROL_REQUEST_ABANDONED = 'control-request-abandoned'
 // writer's, so the closed-set guard test — not this table — is what catches a
 // drift between the two.
 const FACT_CONTROL_ESCALATION_RECORDED = 'control-escalation-recorded'
+// A6-PR2c: the current-leg transfer fact (officer handoff / unavailable
+// takeover) closes the former reviewer's leg; it belongs beside the other
+// control-leg rows in the frozen `control` category.
+const FACT_CONTROL_CURRENT_LEG_TRANSFERRED = 'control-current-leg-transferred'
 const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded'
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened'
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed'
@@ -298,6 +302,7 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_CONTROL_DECISION_RECORDED, 'control'],
   [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
   [FACT_CONTROL_ESCALATION_RECORDED, 'control'],
+  [FACT_CONTROL_CURRENT_LEG_TRANSFERRED, 'control'],
   // A4-PR0a: the abandonment terminal mark — a control fact, paired with the
   // request/decision rows it closes (same home the artifact-read grant repair
   // chose for a non-ControlRequest control fact). The eight categories are frozen:

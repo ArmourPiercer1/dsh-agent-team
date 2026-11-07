@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6WAKEDISPATCH",
+  "paths": [
+    "packages/runtime/alpha6/wake-dispatch.ts",
+    "packages/runtime/test/a6-pr6-wake-dispatch.test.ts"
+  ],
+  "expectedDelta": { "from": 1429, "to": 1431 },
+  "reason": "Alpha.6 wake dispatch slice: the deterministic plan-to-coordinator dispatcher (one delivery cycle, delivery-failed on port failure, held routes never dispatched) plus its acceptance spec. No denylist vocabulary.",
+  "tieNote": "MEASURED on this tree: the unbooked coverage leg read `expected 1431 to be 1429`; exactly these two paths."
+}

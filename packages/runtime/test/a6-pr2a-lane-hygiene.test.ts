@@ -16,7 +16,14 @@ function sourceFiles(dir: string): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'dist') continue
     const full = join(dir, entry)
-    const stat = statSync(full)
+    // A concurrently-removed test temp dir must not red the population scan.
+    let stat
+    try {
+      stat = statSync(full)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue
+      throw error
+    }
     if (stat.isDirectory()) out.push(...sourceFiles(full))
     else if (/\.(ts|tsx|mjs|cjs)$/.test(entry)) out.push(full)
   }
@@ -33,7 +40,10 @@ describe('a6-pr2a lane hygiene', () => {
       const text = readFileSync(file, 'utf8')
       if (/from\s+['"][^'"]*review-authority/.test(text) && !/Alpha\.6 PR2a/.test(text)) offenders.push(rel)
     }
-    expect(offenders).toEqual([])
+    // A6-PR2b is the first production consumer: the Control chain imports
+    // the capability evaluator. PR2a's own law (no third consumer surface)
+    // remains, so only the control service/types are exempted.
+    expect(offenders.filter((f) => !f.startsWith('packages/runtime/control/'))).toEqual([])
   })
 
   it('has no I/O, clock, service, PA or second-ledger import', () => {

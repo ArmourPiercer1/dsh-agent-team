@@ -2094,6 +2094,23 @@ export interface ControlServiceOptions {
     readonly legOrdinal: number
   }) => Promise<{ readonly instanceId: string } | null>
   /**
+   * A6-PR5 (review P0 fix, PoC): the TRUSTED world facts an assigned-Officer
+   * capability evaluation needs and whose only trusted source is the
+   * composition — the Blueprint `reviewRouting` policy currently in force and
+   * the leg's frozen category classification. The service supplies everything
+   * else (principal, case, leg, scope, operation owner/tool, durable
+   * generation/Blueprint identity, manifest effect set), so this port can
+   * never forge a case, a leg, a principal or a scope.
+   *
+   * It MUST be derived from the durable leg + the bound Blueprint, never from
+   * model/tool arguments. ABSENT = the delegated Officer entry is refused
+   * (fail closed; the assigned-Officer path never falls back to a locally
+   * minted candidate).
+   */
+  readonly reviewCallFactsForAssignedOfficer?: (
+    input: AssignedOfficerReviewFactsQuery,
+  ) => Promise<AssignedOfficerReviewFacts | null>
+  /**
    * A6-PR2c: non-authority review events for the wake/notification plane
    * (Human successor visibility; current-leg transfer). A throwing sink must
    * not roll back the durable fact — the caller decides delivery.
@@ -2116,6 +2133,36 @@ export interface ControlServiceOptions {
 }
 
 /**
+ * A6-PR5 (review P0 fix, PoC) — the query an assigned-Officer facts port
+ * receives. It names the durable leg only; it carries no authority claim.
+ */
+export interface AssignedOfficerReviewFactsQuery {
+  readonly rootSessionId: string
+  readonly approvalCaseId: string
+  readonly currentLegRequestId: string
+  readonly legOrdinal: number
+  /** The durable carrier kind and rung (for the composition's own lookup). */
+  readonly kind: ControlRequestKind
+  readonly reviewAuthority: ProposalAuthorityPosition
+}
+
+/**
+ * A6-PR5 (review P0 fix, PoC) — the trusted WORLD facts for one assigned-Officer
+ * capability evaluation. Deliberately narrow: case identity, principal, scope,
+ * operation owner/tool, generation, Blueprint hash/revision and the manifest
+ * effect set are all derived by the service from the durable leg, so returning
+ * this overlay cannot widen authority beyond what the row already froze.
+ */
+export interface AssignedOfficerReviewFacts {
+  /** The Blueprint `reviewRouting` policy in force for this leg's Blueprint. */
+  readonly reviewRouting: import('../../domain/blueprint/src/index.js').ReviewRouting
+  /** A fixed Leader management/governance or Human-only category (never delegable). */
+  readonly fixedLeaderOrHumanCategory: boolean
+  /** The leg's legal authority path requires Human (never delegable). */
+  readonly requiresHuman: boolean
+}
+
+/**
  * C1 (leader-approval reachability) — the non-authority notification port
  * the control service invokes for a newly-created durable `leader-approval`
  * request (AFTER the per-team lock is released). The implementation is
@@ -2130,11 +2177,37 @@ export interface ControlRequestNotificationPort {
 }
 
 /**
+ * A6-PR5 (integration: A6 non-locking control reader) — the record
+ * projections of ONE team's durable control state. Both read routes
+ * (`listControlState` and `readControlState`) return EXACTLY this shape from
+ * the same internal projection helper, so the locking and non-locking reads
+ * cannot drift apart.
+ *
+ * This is a REPORT of what the append-only ledger holds. It grants nothing:
+ * no consumer may derive authority, consumability, or a gate verdict from a
+ * snapshot — the guarded mutations remain the only authority paths.
+ */
+export interface ControlStateSnapshot {
+  readonly requests: readonly ControlRequestRecord[]
+  readonly decisions: readonly ControlDecisionRecord[]
+  readonly consumptions: readonly ControlConsumptionRecord[]
+  /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
+   *  `control-request-abandoned` facts). */
+  readonly abandonments: readonly ControlAbandonmentRecord[]
+  /** The rows the strict request reader refused, in durable sequence order
+   *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
+   *  defaulted (ADR A2-9), and never a gate. */
+  readonly corruptLegs: readonly ControlCorruptLegRecord[]
+  /** A6-PR2c: durable current-leg transfer facts (routing only). */
+  readonly transfers: readonly CurrentLegTransferRecord[]
+}
+
+/**
  * The durable control plane service (P6-T4 acceptance object):
  * requestControl / resolveControl / abandonControlRequest (the pre-alpha3
- * PR-D inline abort path) / listControlState / guardOperation /
- * checkExternalOperation (the A2C-4 shared read-only external recheck) /
- * awaitControlDecision.
+ * PR-D inline abort path) / listControlState / readControlState /
+ * guardOperation / checkExternalOperation (the A2C-4 shared read-only
+ * external recheck) / awaitControlDecision.
  *
  * Invariant: the service NEVER executes tool operations — the decision
  * only authorizes; execution stays in the DSH tool pipeline (the guard is
@@ -2268,20 +2341,29 @@ export interface ControlService {
    * from an absent one.
    * @param rootSessionId - the team (root) session id.
    */
-  listControlState(rootSessionId: string): Promise<{
-    readonly requests: readonly ControlRequestRecord[]
-    readonly decisions: readonly ControlDecisionRecord[]
-    readonly consumptions: readonly ControlConsumptionRecord[]
-    /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
-     *  `control-request-abandoned` facts). */
-    readonly abandonments: readonly ControlAbandonmentRecord[]
-    /** The rows the strict request reader refused, in durable sequence order
-     *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
-     *  defaulted (ADR A2-9), and never a gate. */
-    readonly corruptLegs: readonly ControlCorruptLegRecord[]
-    /** A6-PR2c: durable current-leg transfer facts (routing only). */
-    readonly transfers: readonly CurrentLegTransferRecord[]
-  }>
+  listControlState(rootSessionId: string): Promise<ControlStateSnapshot>
+  /**
+   * A6-PR5 (integration: A6 non-locking control reader) — read the team's
+   * durable control state WITHOUT taking the per-team lock, so a caller that
+   * already runs inside a control operation (a port evaluated while
+   * `withTeamLock` is held) can read the durable rows without deadlocking on
+   * the non-re-entrant chain.
+   *
+   * Semantics are deliberately identical to {@link listControlState} MINUS the
+   * lock: the same root/TeamSession validation, the same fresh append-only
+   * ledger read, and the same record projections (one shared internal
+   * projection helper — the two routes cannot drift).
+   *
+   * This is a READ-ONLY SNAPSHOT WITH NO AUTHORITY. It is a point-in-time
+   * report that does not serialize against concurrent writers: a row may be
+   * absent at read time and appear a moment later, or a just-appended row may
+   * or may not be visible. Consumers may use it for routing/liveness facts
+   * (e.g. "which leg is this, is it transferred"), NEVER to decide that an
+   * operation is authorized or that an allow is consumable — those decisions
+   * stay in the guarded mutation paths that hold the lock and re-verify.
+   * @param rootSessionId - the team (root) session id.
+   */
+  readControlState(rootSessionId: string): Promise<ControlStateSnapshot>
   /**
    * The TOOL PIPELINE LAST-MILE GUARD (the public seam P6-T6 wires into
    * the tool registration BEFORE the DSH tool pipeline executes the

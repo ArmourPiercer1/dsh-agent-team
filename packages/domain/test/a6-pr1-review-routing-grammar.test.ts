@@ -1,9 +1,12 @@
 /**
- * Alpha.6 PR1 — the dormant v5 reviewRouting grammar.
+ * Alpha.6 PR1 — the v5 reviewRouting grammar.
  *
- * The production entry deliberately stays at [3, 4]; these tests call the v5
- * pipeline directly. The one production-entry leg proves the dormancy is real
- * rather than a comment.
+ * Originally the DORMANT fifth parser: the production entry stayed at [3, 4]
+ * and the one production-entry leg proved the dormancy was real. The alpha6
+ * v5-activation drill INVERTS that leg (the a4p1 V1 / a5fl1 precedent): the
+ * production entry now RUNS v5 and must agree with the direct pipeline on the
+ * document and its content hash — the single-source-of-truth law, not a new
+ * one. v3/v4 zero-movement is still pinned in the same leg.
  */
 import { describe, expect, it } from 'vitest'
 import { isTeamContractError } from '../../contracts/src/index.js'
@@ -86,13 +89,19 @@ describe('v5 reviewRouting grammar', () => {
     expect(toHashableBlueprintV5(parsed)).not.toHaveProperty('reviewRouting')
   })
 
-  it('v3 and v4 canaries are untouched by the dormant v5 parser (zero movement)', () => {
+  it('v3 and v4 canaries are untouched; the production entry RUNS the same v5 parser (activation, one source of truth)', () => {
     const v3 = parseBlueprint(source(3))
     const v4 = parseBlueprintV4(source(4))
     expect(v3.schemaVersion).toBe(3)
     expect(v4.schemaVersion).toBe(4)
-    // Production still refuses v5: the dormant parser cannot widen the run set.
-    expect(() => parseBlueprint(source(BLUEPRINT_V5_SCHEMA_VERSION, ROUTING))).toThrow()
+    // Post-activation the entry accepts v5 and must produce EXACTLY what the
+    // direct pipeline produces — parse core and content hash. (Pre-activation
+    // this leg asserted a throw; the dormancy is in git history.)
+    const direct = parseBlueprintV5(source(BLUEPRINT_V5_SCHEMA_VERSION, ROUTING))
+    const viaEntry = parseBlueprint(source(BLUEPRINT_V5_SCHEMA_VERSION, ROUTING))
+    expect(viaEntry.schemaVersion).toBe(BLUEPRINT_V5_SCHEMA_VERSION)
+    expect(viaEntry).toEqual(direct)
+    expect(viaEntry.contentHash).toBe(direct.contentHash)
   })
 
   it('refuses an Officer that names the LeaderTemplate', () => {

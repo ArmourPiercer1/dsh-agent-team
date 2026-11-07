@@ -3173,11 +3173,32 @@ export function createAgentBindings(deps) {
             return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
           }
           const a5IsLeaderPlane = sessionId === String(teamRoot)
+          // Alpha.6 (opt-in, v5 only): the PA leg becomes an approval CASE
+          // leg, so the executing Member's identity/generation and the bound
+          // Blueprint identity are frozen on the durable row. Absent the
+          // opt-in (or on v4) the exact legacy requestControl path is used.
+          const a6BoundBlueprint = getBoundBlueprint(String(teamRoot))
+          const a6PaCase = config?.alpha6ReviewRouting === true
+            && Number(a6BoundBlueprint?.schemaVersion) === 5
           const a5Leg = createPaControlLeg({
             controlService: a5ControlService,
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            ...(a6PaCase
+              ? {
+                  a6: true,
+                  ...(boundTemplate?.templateId === undefined
+                    ? {}
+                    : { operationOwnerTemplateId: String(boundTemplate.templateId) }),
+                  ...(a6BoundBlueprint?.contentHash === undefined
+                    ? {}
+                    : { blueprintContentHash: String(a6BoundBlueprint.contentHash) }),
+                  ...(a6BoundBlueprint?.revision === undefined
+                    ? {}
+                    : { blueprintRevision: String(a6BoundBlueprint.revision) }),
+                }
+              : {}),
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)
@@ -5891,6 +5912,63 @@ export function createAgentBindings(deps) {
    * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
    * @returns {Promise<void>}
    */
+  /**
+   * Alpha.6 — the native-Inbox truth for ONE recipient session. `has` reads
+   * the LIVE pending lists only (never materializes an agent), matching the
+   * wakeId inside the rendered text; `remove` withdraws that exact message.
+   * @param {string} targetSessionId
+   * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
+   */
+  function reviewWakeInbox(targetSessionId) {
+    const sid = String(targetSessionId)
+    const handle = async () => {
+      const existing = liveAgents.get(sid)
+      if (existing !== undefined) return existing
+      try {
+        // Boot recovery runs before the recipient handle exists; materialising
+        // its durable session is what makes the native Inbox readable at all.
+        return await ensureLiveAgent(sid)
+      } catch {
+        return undefined
+      }
+    }
+    const pending = async () => {
+      const live = await handle()
+      if (live === undefined) return []
+      return [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+    }
+    const matches = (message, wakeId) => {
+      const content = Array.isArray(message?.content) ? message.content : []
+      return content.some(
+        (part) => part?.type === 'text' && typeof part.text === 'string' && part.text.includes(wakeId),
+      )
+    }
+    return {
+      async has(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // An unreadable Inbox is NOT evidence of absence. Callers must keep
+          // the queued row and retry rather than release + duplicate.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const messages = [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+        return messages.some((message) => matches(message, String(wakeId)))
+      },
+      async remove(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // Same contract as `has`: unreadable is not evidence the message is
+          // gone. Keep the intent instead of reporting a refusal that the
+          // caller would mistake for an absent message.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
+        if (message === undefined) return false
+        return live.agent.inbox.remove(message.id)
+      },
+    }
+  }
+
   async function deliverReviewWake(input) {
     const rootSessionId = String(input?.rootSessionId ?? '')
     const targetSessionId = String(input?.targetSessionId ?? '')
@@ -6690,6 +6768,7 @@ export function createAgentBindings(deps) {
     // resolves the recipient session; idle -> followup, busy -> steer, and a
     // rejection releases the coordinator's queued latch.
     deliverReviewWake,
+    reviewWakeInbox,
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,

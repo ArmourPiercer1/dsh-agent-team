@@ -367,18 +367,19 @@ describe('A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the 
     // The list the whole argument rests on, re-pinned HERE because this is the lane whose
     // skip depends on it. If someone re-opens the bridge, this leg and R2 fail together.
     // v4-flip round: the run set widened to `[3, 4]` — the argument does NOT weaken.
+    // alpha6 v5-activation drill: it widened again to `[3, 4, 5]` — same argument.
     // This lane refuses to let a NON-RUN document reach the facts layer; which stamps
     // RUN is exactly what this constant says, and the never-defined witness below moved
-    // from 4 to one past DEFINED (4 now parses — a v4 document is a CONTEXT on the same
-    // face as v3, which R2 re-measures).
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
+    // from 4 to one past DEFINED (4/5 now parse — they are CONTEXTs on the same face
+    // as v3, which R2 re-measures).
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4, 5])
     // Sanity: the unedited source really does parse, so a refusal below is about the
     // version and not about the fixture.
     expect(parseBlueprint(P6T4_BLUEPRINT_SOURCE).schemaVersion).toBe(3)
     const seen: string[] = []
-    // 1/2 = defined-but-retired (operator-owns arm); 5/9 = never-defined. `4`
-    // LEFT this list with the flip — it runs; R2 covers its context shape.
-    for (const version of [1, 2, 5, 9]) {
+    // 1/2 = defined-but-retired (operator-owns arm); 6/9 = never-defined. `4` and
+    // `5` LEFT this list with the flips — they run; R2 covers their context shape.
+    for (const version of [1, 2, 6, 9]) {
       let code: string | undefined
       try {
         parseBlueprint(sourceAtVersion(version))
@@ -388,7 +389,7 @@ describe('A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the 
       expect(code, `v${String(version)} was accepted by the strong parse`).toBe('SCHEMA_VERSION_MISMATCH')
       seen.push(`v${String(version)}:${code ?? 'ACCEPTED'}`)
     }
-    expect(seen.join(' ')).toBe('v1:SCHEMA_VERSION_MISMATCH v2:SCHEMA_VERSION_MISMATCH v5:SCHEMA_VERSION_MISMATCH v9:SCHEMA_VERSION_MISMATCH')
+    expect(seen.join(' ')).toBe('v1:SCHEMA_VERSION_MISMATCH v2:SCHEMA_VERSION_MISMATCH v6:SCHEMA_VERSION_MISMATCH v9:SCHEMA_VERSION_MISMATCH')
   })
 
   it('R2 MEASUREMENT — through the shipped reader over the shipped facts, NO reachable binding answers undefined; only v3 is a context, everything else is a refusal', async () => {

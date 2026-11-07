@@ -34,8 +34,9 @@ export { MIGRATION_PERMISSION_WIDENING, planBlueprintV3toV4Migration, } from './
 export { parseModelPreferenceToken, } from './model-preference.js';
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js';
 export { blueprintNotFound, compareBlueprintRevisions, createBlueprintCatalog, createBlueprintCatalogFromSource, } from './catalog.js';
-// Alpha.6 PR1: the DORMANT v5 authoring grammar for review routing.
-// `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` deliberately stays [3, 4]; the
-// production entry keeps refusing v5 until the explicit PR6 flip.
+// Alpha.6 PR1: the v5 authoring grammar for review routing. It was DORMANT
+// until the v5-activation DRILL round; on this drill branch
+// `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` carries 5, so the production entry
+// runs it. (The drill is not merged; rollback = dropping 5 from that array.)
 export { BLUEPRINT_V5_LEADER_EXCEPTION_FIELDS, BLUEPRINT_V5_ORDINARY_DEFAULTS, BLUEPRINT_V5_ORDINARY_TOOL_APPROVAL_FIELDS, BLUEPRINT_V5_REVIEW_ROUTING_FAMILY, BLUEPRINT_V5_REVIEW_ROUTING_FIELDS, BLUEPRINT_V5_SCHEMA_VERSION, BLUEPRINT_V5_TOOL_COORDINATE_FIELDS, BLUEPRINT_V5_TOP_LEVEL_FIELDS, BLUEPRINT_V5_WHEN_OFFICER_UNAVAILABLE, parseBlueprintV5, toHashableBlueprintV5, validateBlueprintV5Document, } from './blueprint-v5.js';
 //# sourceMappingURL=index.js.map

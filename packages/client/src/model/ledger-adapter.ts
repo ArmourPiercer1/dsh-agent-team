@@ -119,6 +119,7 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   // decision row (reason `escalated`) is what closes leg 1, and the risen leg
   // is an ordinary request row — so no pending count can double-count a case.
   'control-escalation-recorded': 'control',
+  'control-current-leg-transferred': 'control',
   // Strict-read durable authorization grant: a control-and-persistence
   // fact, NOT a control request/decision (it never enters the pairing
   // switch below, never increments a pending count, and is hidden from

@@ -24,6 +24,8 @@
     // only; tsconfig.build.json deliberately does not emit it (the lane's
     // hygiene spec pins both halves).
     "review-wake",
+
+    "alpha6",
     // A5 integration wiring (G-d, Scope-2): PR3 ControlledFs and PR4
     // sandbox-provider join the SHARED typecheck surface (their reviews'
     // "lane never entered a repo-wide tsc" condition). `controlled-fs` is

@@ -20,7 +20,14 @@ function sourceFiles(dir: string): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'dist') continue
     const full = join(dir, entry)
-    const stat = statSync(full)
+    // A concurrently-removed test temp dir must not red the population scan.
+    let stat
+    try {
+      stat = statSync(full)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue
+      throw error
+    }
     if (stat.isDirectory()) out.push(...sourceFiles(full))
     else if (/\.(ts|tsx|mjs|cjs)$/.test(entry)) out.push(full)
   }
@@ -42,7 +49,14 @@ describe('a6-pr1 lane hygiene', () => {
       const text = readFileSync(file, 'utf8')
       if (/review-router|reviewRouter/.test(text) && !/review-router is dormant|Alpha\.6 PR1/.test(text)) offenders.push(rel)
     }
-    expect(offenders).toEqual([])
+    // A6-PR2a is the first legitimate importer (the capability evaluator
+    // consumes the shared policy/router vocabulary); the router-first wake
+    // PLAN and the root ROUTER INPUT are the PR6 composition consumers. No
+    // OTHER alpha6 file and no root/plugin path may import the lane: the
+    // root consumes the composition, never the pure lane directly.
+    expect(offenders.filter((f) => !f.includes('review-authority/')
+      && !f.endsWith(join('runtime', 'alpha6', 'wake-plan.ts'))
+      && !f.endsWith(join('runtime', 'alpha6', 'root-router.ts')))).toEqual([])
   })
 
   it('keeps the module set pure: no node builtins, no host/control/PA imports, no clock', () => {

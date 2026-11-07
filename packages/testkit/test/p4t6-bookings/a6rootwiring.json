@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6ROOTWIRING",
+  "paths": ["packages/runtime/test/a6-root-wiring.test.ts"],
+  "expectedDelta": { "from": 1439, "to": 1440 },
+  "reason": "Alpha.6 root-wiring candidate: the PURE opt-in assembly spec for createAlpha6RootWiring (flag absent/false => no ports and the live input is never read; flag true + v5 + one live Officer => both trusted ports over the live reader; a refused source => refused with no ports, no Leader fallback). Production edits ride already-counted sources (root.ts, types.ts, alpha6/root-composition.ts) and dist is outside the scan. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this candidate tree: the unbooked p4t6 run read `scanner counts 1440, ledger derives 983 + 456 = 1439`; exactly this one path."
+}
