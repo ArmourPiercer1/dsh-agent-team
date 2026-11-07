@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-recon-external-2026-11-07T16-03-33-107Z-b1 suite=a5sf-recon-external overall=PASS cases=5 PASS:5 worlds=u5u5a5sfext1-20261107T16-03-33Z recordClass=DEV-LIVE (not candidate evidence)

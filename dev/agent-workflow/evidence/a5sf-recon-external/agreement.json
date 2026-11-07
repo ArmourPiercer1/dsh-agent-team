@@ -1,0 +1,50 @@
+{
+  "schema": "a5sf-recon-external/agreement/1",
+  "at": "2026-11-07T16:10:01.482Z",
+  "boots": 2,
+  "agreeing": true,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "PASS",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "PROVEN",
+      "spawnsVerdict": "PROVEN",
+      "allowFacts": 1,
+      "denyFacts": 1,
+      "confinedTurnLaunchers": 1,
+      "preflightLaunchers": 5,
+      "payloadInLane": 0,
+      "procSecretCommandSightings": 0,
+      "baseBwrapWithMarkers": 0,
+      "governedSurface": true,
+      "admittedBytes": true,
+      "deniedSecretAbsent": true,
+      "transcriptSourceCount": 5
+    },
+    {
+      "boot": 2,
+      "overall": "PASS",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "PROVEN",
+      "spawnsVerdict": "PROVEN",
+      "allowFacts": 1,
+      "denyFacts": 1,
+      "confinedTurnLaunchers": 1,
+      "preflightLaunchers": 4,
+      "payloadInLane": 0,
+      "procSecretCommandSightings": 0,
+      "baseBwrapWithMarkers": 0,
+      "governedSurface": true,
+      "admittedBytes": true,
+      "deniedSecretAbsent": true,
+      "transcriptSourceCount": 5
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\noverall                       PASS                          PASS\nadmittedVerdict               PROVEN                        PROVEN\ndeniedVerdict                 PROVEN                        PROVEN\nsurfaceVerdict                PROVEN                        PROVEN\nfactsVerdict                  PROVEN                        PROVEN\nspawnsVerdict                 PROVEN                        PROVEN\nallowFacts                    1                             1\ndenyFacts                     1                             1\nconfinedTurnLaunchers         1                             1\npayloadInLane                 0                             0\nprocSecretCommandSightings    0                             0\nbaseBwrapWithMarkers          0                             0\ngovernedSurface               true                          true\nadmittedBytes                 true                          true\ndeniedSecretAbsent            true                          true\ntranscriptSourceCount         5                             5\n\nagreeing=true differing=[]"
+}
