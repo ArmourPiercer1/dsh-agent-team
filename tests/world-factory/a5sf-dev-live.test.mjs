@@ -42,6 +42,7 @@ import {
   DevLiveSlotError,
   acquireDevLiveSlot,
   assertDevLiveSlotHeld,
+  currentPidNamespace,
   scanDevLiveSlots,
 } from './lib/dev-live-slots.mjs'
 import {
@@ -263,14 +264,17 @@ test('(c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-p
   retried.release()
   for (const slot of held.slice(1)) slot.release()
 
-  // Crash recovery: a slot whose pid is dead is stale and is swept, not counted.
+  // Crash recovery: a slot whose pid is dead IN OUR OWN NAMESPACE is stale and
+  // is swept immediately. (A bare pid from a file with no `pidNs` is treated as
+  // unjudgeable instead — see a5sf-dev-live-slots.test.mjs.)
   const deadPid = 999_999
   writeFileSync(join(leaseRoot, 'dev-live-hosts', '0.json'), JSON.stringify({
-    slot: 0, token: 'dead', pid: deadPid, startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
+    slot: 0, token: 'dead', pid: deadPid, pidNs: currentPidNamespace(), startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
   }))
   const scan = scanDevLiveSlots({ leaseRoot })
   assert.equal(scan.live.length, 0)
   assert.equal(scan.stale.length, 1)
+  assert.equal(scan.stale[0].liveness, 'dead')
   const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'reclaim', face: 'FS Provider', world: 'wreclaim' })
   assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 1)
   reclaimed.release()
