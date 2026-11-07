@@ -100,6 +100,27 @@ candidate 资格、**不**产出 `V@B`；表中“仍未被证”一列就是每
 **一句话**：`enforced` 描述的是**车道在本机被 OS 拒绝**；它不描述 Member、不描述产品接线、不描述隔离。
 这四行今天的最强真话都必须与 §7 的 **4/5（宽读 5/5）** 和 **0 次启动** 同时出现，否则就是升级。
 
+## 1.3 2026-11-12：opt-in 受治 Member 之后，每条受影响面的“最强真话 / 最弱未证”（只追加）
+
+本节只写 **2026-11-12** 变强或不变的那一句；它不覆盖 §1 / §1.1 / §1.2 的任何字节，也不新增等级或
+`V@B`。证据 = `dev/agent-workflow/evidence/a5sf-live-member/README.md`（run pair `boot01`/`boot02`，
+head `11991c2d4`，两次 `agreeing=true differing=[]`）与 `dev/agent-workflow/evidence/a5sf-governed-preset/README.md`。
+**记录类别 = `DEV-LIVE`：`candidateClaimEligibility.eligible=false`、`DEV_LIVE_EVIDENCE_NOT_CANDIDATE`；
+no `V@B`。** 每一条都只在「operator 显式 `memberPresetId: a5sf-governed-member`（并
+`a5sfGovernedRealm: true`）」这个前提下成立；默认 `standard` preset 未变。
+
+| face | 2026-11-12 的最强真话（有证据） | 2026-11-12 的最弱未证（不能写） |
+|---|---|---|
+| **Subprocess** | 在一个 opt-in 受治 Member 上，`bash` 由 confined terminal face 服务：in-lane 读返回 lane 字节、out-of-lane 读返回 `IO_READ_DENIED` 且 **0** secret 字节，两个结果都在 Member **自己的 durable transcript** 里；**1** 次 confined-provider launch 服务 **2** 条命令、带夹具的 base bwrap **0**、guard 事实恰 1 ALLOW + 1 DENY；两次一致。`DEV-LIVE`，no `V@B`。 | `network: deny` 未在 OS 层证明：受治 preset 只声明 `network: allow`，收窄 lane 在 assembly 期拒绝（BL-39 / PD-5 不变）。`$(…)`/反引号等动态 shell 读不可词法归因、准入层不拒。per-Team scratch isolation `NOT_WIRED`。 |
+| **Shell-PTY** | 同一个 opt-in 受治 Member 的 `bash` 是 confined terminal face（每条命令一个 fresh confined child），**不是持久 shell**；产品组合臂 `G7` 另证持久/legacy PTY 在 realm 旁被 `TERMINALS_DOUBLE_TERMINAL_REFUSED` 拒绝（0 legacy 分配），但该拒绝没有在这次 live turn 里被驱动。`DEV-LIVE`，no `V@B`。 | **一个 Member 在默认 preset 上仍然既没有 confined terminal face、也没有持久受管 shell**——实测继承的是 legacy PTY，且该路径在 realm 之外（PD-13）。同 PTY 多命令 / cwd 存活 / 前后台 / 信号与超时在 confined face 上不适用；真实 PTY 的 OS 级行为仍未观测。 |
+| **FS Provider** | in-lane / out-of-lane 这一对在 opt-in 受治 Member 上成立，但它走的是 **`bash` 中介的读轴**（`shellRead` / `spawn` guard 事实），**不是原生 `read` / `write` 工具**；in-lane 返回 lane 字节，out-of-lane 返回 `IO_READ_DENIED` 且 0 字节。`DEV-LIVE`，no `V@B`。 | 原生 `read` / `write` 的等级与 `V@B` 不动；**write 没有被走到**，写 lane、原子替换、read-before-write 未在这条路径上测；PD-5（route-C 下 `read_image` 不可用）不变。 |
+| **Web** | **没有变强**：本 lane 没有驱动任何 `web_fetch` / `web_search` 调用；受治 preset 只是原样保留 web 行。 | Web 面没有新增 live 证据；"Web 面被 OS 隔离"仍不可写。 |
+| **Cross-face（发布）** | 受治路径从"有装配"变成"有一个真实 Member turn"，并因此逼出了 activation 窗口缺陷且已修复、有负控（`DEV-LIVE`）。 | `release BLOCKED` 不变：缺的是 G2/Q7 重基线、G3–G5、独立 `CANDIDATE-C2`——不是机制，也不是路径。 |
+
+**一句话**：一个**显式 opt-in** 的 Team 今天可以在真实 Host 上让受治 Member 的 `bash` 读 in-lane、拒
+out-of-lane——`DEV-LIVE`、no `V@B`；这**不是**"Members 已受治"：默认 preset 一个字节未改，大多数
+Member 仍在它上面。
+
 ## 2. 十条产品债：当前状态与 owner 决策
 
 状态词只有两个：**`FIXED`（有已合并 PR）** 与 **`OPEN`**。`PRODUCT-DEBT-REGISTER.md` 的正文仍是
