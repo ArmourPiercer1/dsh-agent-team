@@ -180,3 +180,28 @@ export {
   createBlueprintCatalogFromSource,
 } from './catalog.js'
 export type { BlueprintCatalog, BlueprintCatalogSource } from './catalog.js'
+
+// Alpha.6 PR1: the DORMANT v5 authoring grammar for review routing.
+// `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` deliberately stays [3, 4]; the
+// production entry keeps refusing v5 until the explicit PR6 flip.
+export {
+  BLUEPRINT_V5_LEADER_EXCEPTION_FIELDS,
+  BLUEPRINT_V5_ORDINARY_DEFAULTS,
+  BLUEPRINT_V5_ORDINARY_TOOL_APPROVAL_FIELDS,
+  BLUEPRINT_V5_REVIEW_ROUTING_FAMILY,
+  BLUEPRINT_V5_REVIEW_ROUTING_FIELDS,
+  BLUEPRINT_V5_SCHEMA_VERSION,
+  BLUEPRINT_V5_TOOL_COORDINATE_FIELDS,
+  BLUEPRINT_V5_TOP_LEVEL_FIELDS,
+  BLUEPRINT_V5_WHEN_OFFICER_UNAVAILABLE,
+  parseBlueprintV5,
+  toHashableBlueprintV5,
+  validateBlueprintV5Document,
+} from './blueprint-v5.js'
+export type {
+  ReviewLeaderException,
+  ReviewRouting,
+  ReviewToolCoordinate,
+  TeamBlueprintV5,
+  TeamBlueprintV5Core,
+} from './blueprint-v5.js'

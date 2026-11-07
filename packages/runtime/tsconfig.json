@@ -35,6 +35,9 @@
     "team-services/src",
     // Alpha.5 P1-07: the OS execution lane (profile + runner + subprocess).
     "team-sandbox/src",
+    // Alpha.6 PR1: the pure Blueprint-first router + shared review policy.
+    // No production consumer yet; named here so repo-wide tsc reads the lane.
+    "review-router",
     "test",
     "vitest.config.ts"
   ]
