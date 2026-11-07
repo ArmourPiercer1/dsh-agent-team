@@ -1,0 +1,39 @@
+✖ P0 PD-16 defect pin (PRE-FIX): the Member grep reads the lane-denied secret by parent path AND by absolute path, with no guard fact naming it (29.914043ms)
+✔ D1 fix (parent path): grep {path:".."} is a typed refusal, 0 confined calls, 0 secret bytes, 1 deny fact (8.271699ms)
+✔ D2 fix (absolute path): grep {path:<out-of-lane dir>} is refused the same way (8.638053ms)
+✔ D3 fix (glob): glob {path:<out-of-lane dir>} is refused by the same confined face (7.829482ms)
+✔ A1 allow: an in-lane grep finds the needle through the confined face and never reaches the inherited service (3257.543023ms)
+✔ A2 exit-code fidelity: no-match (exit 1) is not an error, an invalid pattern (exit 2) is (3283.80188ms)
+✔ A3 lane-safe ignore discovery: an out-of-lane ancestor turns .gitignore discovery off, with the disclosure on the allow fact (3235.710155ms)
+✔ A4 ignore semantics kept where they can be: a valid in-lane repository root keeps .gitignore, no disclosure (3243.987023ms)
+✔ A5 glob allow: an in-lane glob lists the workspace through the same confined face (3224.499343ms)
+✔ A6 lane-safe discovery under a worktree `.git` FILE above the lane: the in-lane search succeeds and the flags are disclosed (3249.85112ms)
+✔ S1 surface neutral: same tool names, byte-identical grep/glob parameter schemas, after the shadow (4.380601ms)
+✔ C1 control (shadow removed): the ungoverned path returns the lane-denied bytes again (13.871734ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 11
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23068.170248
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:444:1
+✖ P0 PD-16 defect pin (PRE-FIX): the Member grep reads the lane-denied secret by parent path AND by absolute path, with no guard fact naming it (29.914043ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: grep {path:".."} executed
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:452:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

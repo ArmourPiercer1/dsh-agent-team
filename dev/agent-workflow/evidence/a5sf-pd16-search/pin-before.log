@@ -1,0 +1,174 @@
+✔ P0 PD-16 defect pin (PRE-FIX): the Member grep reads the lane-denied secret by parent path AND by absolute path, with no guard fact naming it (37.518749ms)
+✖ D1 fix (parent path): grep {path:".."} is a typed refusal, 0 confined calls, 0 secret bytes, 1 deny fact (14.297438ms)
+✖ D2 fix (absolute path): grep {path:<out-of-lane dir>} is refused the same way (12.041886ms)
+✖ D3 fix (glob): glob {path:<out-of-lane dir>} is refused by the same confined face (9.054191ms)
+✖ A1 allow: an in-lane grep finds the needle through the confined face and never reaches the inherited service (15.114263ms)
+✔ A2 exit-code fidelity: no-match (exit 1) is not an error, an invalid pattern (exit 2) is (15.017873ms)
+✖ A3 lane-safe ignore discovery: an out-of-lane ancestor turns .gitignore discovery off, with the disclosure on the allow fact (11.466005ms)
+✖ A4 ignore semantics kept where they can be: a valid in-lane repository root keeps .gitignore, no disclosure (11.282833ms)
+✖ A5 glob allow: an in-lane glob lists the workspace through the same confined face (12.918326ms)
+✖ A6 lane-safe discovery under a worktree `.git` FILE above the lane: the in-lane search succeeds and the flags are disclosed (19.043429ms)
+✖ S1 surface neutral: same tool names, byte-identical grep/glob parameter schemas, after the shadow (5.381859ms)
+✔ C1 control (shadow removed): the ungoverned path returns the lane-denied bytes again (10.406872ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 3
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3647.46175
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:467:1
+✖ D1 fix (parent path): grep {path:".."} is a typed refusal, 0 confined calls, 0 secret bytes, 1 deny fact (14.297438ms)
+  AssertionError [ERR_ASSERTION]: the inherited base service was never reached
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:474:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:491:1
+✖ D2 fix (absolute path): grep {path:<out-of-lane dir>} is refused the same way (12.041886ms)
+  AssertionError [ERR_ASSERTION]: the inherited base service was never reached
+  
+  4 !== 3
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:498:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:510:1
+✖ D3 fix (glob): glob {path:<out-of-lane dir>} is refused by the same confined face (9.054191ms)
+  AssertionError [ERR_ASSERTION]: the inherited base service was never reached
+  
+  5 !== 4
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:517:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:532:1
+✖ A1 allow: an in-lane grep finds the needle through the confined face and never reaches the inherited service (15.114263ms)
+  AssertionError [ERR_ASSERTION]: the confined provider ran the search
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:543:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:571:1
+✖ A3 lane-safe ignore discovery: an out-of-lane ancestor turns .gitignore discovery off, with the disclosure on the allow fact (11.466005ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:581:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:588:1
+✖ A4 ignore semantics kept where they can be: a valid in-lane repository root keeps .gitignore, no disclosure (11.282833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:617:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:624:1
+✖ A5 glob allow: an in-lane glob lists the workspace through the same confined face (12.918326ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(world.confined.calls.length > before.confined)
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:634:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:644:1
+✖ A6 lane-safe discovery under a worktree `.git` FILE above the lane: the in-lane search succeeds and the flags are disclosed (19.043429ms)
+  AssertionError [ERR_ASSERTION]: the VCS-ignore removal is observable, not just declared
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:661:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'No matches found',
+    expected: /ignored\.txt/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:673:1
+✖ S1 surface neutral: same tool names, byte-identical grep/glob parameter schemas, after the shadow (5.381859ms)
+  AssertionError [ERR_ASSERTION]: grep WAS shadowed (a new definition, not the preset one)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-prefix/tests/world-factory/a5sf-pd16-search-read-axis.test.mjs:684:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Object],
+    expected: [Object],
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

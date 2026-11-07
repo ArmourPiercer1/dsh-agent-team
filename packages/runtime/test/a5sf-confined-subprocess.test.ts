@@ -389,6 +389,37 @@ describe('BL-16 lane-safe search argv (pure: no process)', () => {
     expect(decision.addedFlags).toEqual([])
     expect(decision.argv).toEqual(grepArgv(worktreeInside))
   })
+
+  // PD-16 (2026-11-13): the SEARCH face routed a governed Member's `grep`/`glob`
+  // onto this admission and the first live boot measured both of these. Each is
+  // a shape in which the OLD heuristic claimed containment that did not exist.
+  it('PD-16: a `.git` DIRECTORY without HEAD is NOT a repository root — the walk continues and the flags are added', async () => {
+    // rg keeps walking above an empty `.git` directory, and the ancestor that
+    // then carries a worktree pointer is outside the lane, so the search would
+    // die on the denied open (measured exit 2 with the answer already found).
+    const notARepo = join(worktree, 'not-a-repo')
+    await mkdir(join(notARepo, '.git'), { recursive: true })
+    await writeFile(join(notARepo, 'needle.txt'), 'WT-NEEDLE\n', 'utf8')
+    // The lane covers ONLY the search root: the worktree pointer above it is
+    // outside, and the old heuristic stopped at the empty `.git` and claimed
+    // containment, so the search then died on the denied open.
+    const decision = await laneSafeSearchArgv({ argv: grepArgv(notARepo), cwd: world }, lane([notARepo]))
+    expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FLAGS])
+  })
+
+  it('PD-16: a worktree `.git` FILE ABOVE a nested repository root still forces the flags (rg opens it; a kernel denial is fatal)', async () => {
+    // A complete repository root INSIDE the lane whose ancestors still carry a
+    // `.git` FILE: rg opens the pointer file above the nested repo, so the
+    // readable-repo-root early return must not end the walk.
+    const nested = join(worktree, 'lane', 'nested-repo')
+    await mkdir(join(nested, '.git', 'objects'), { recursive: true })
+    await writeFile(join(nested, '.git', 'HEAD'), 'ref: refs/heads/main\n', 'utf8')
+    await writeFile(join(nested, 'needle.txt'), 'WT-NEEDLE\n', 'utf8')
+    // Only the nested repo is in lane; the `.git` FILE above it is not.
+    const decision = await laneSafeSearchArgv({ argv: grepArgv(nested), cwd: world }, lane([nested]))
+    expect(decision.addedFlags).toEqual([...SEARCH_IGNORE_DISCOVERY_FLAGS])
+    expect(decision.annotatedRoots).toEqual([nested])
+  })
 })
 
 // ---------------------------------------------------------------------------

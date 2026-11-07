@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-lm-team",
+      "requestToken": "a5sf-rs-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "prompt": "a5sf-rs-turn: run the search probes exactly once each, in the given order, one tool call at a time, then report.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-lm-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06oi8u902ggh\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-0226b704a7da0775ef20a7e9fd467475\",\"operationId\":\"op-11hnjf80p3dz7h00wbbqe0dp\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rs-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RS_MEMBER_DONE Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)\"}},\"requestToken\":\"a5sf-rs-turn-delegate\"}"
+  }
+}

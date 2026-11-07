@@ -73,6 +73,7 @@ import {
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
 import { TEST_USE_BASELINE_SHA } from '../../../paths.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
+import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
 import {
   lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
@@ -1116,9 +1117,18 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       }
       return pids
     }
-    // Attribution rule (measured): the confined TERMINAL writes the command
-    // text to a PTY, so the command never appears in any process argv. The
-    // independent witness is therefore the PROVIDER's launcher process:
+    // Attribution rule (MEASURED; corrected 2026-11-13 — the earlier text of this
+    // comment asserted the opposite and was WRONG): the confined terminal does
+    // NOT write the command text to a PTY. `packages/runtime/team-services/src/terminal.ts:535`
+    // spawns `argv: [program, '-c', text]`, and `:538` sets `stdin: 'ignore'` —
+    // there is no stdin/PTY to write to. The command body therefore IS in the
+    // shell child's `/proc/<pid>/cmdline`, readable by any same-machine process:
+    // a process-list leak surface, not a lane-isolation defect.
+    // `payloadInLaneSightings` is a POSITIVE visibility witness when non-zero; a
+    // ZERO means the ~240 ms sampler missed the short-lived child, never that
+    // argv is clean (Face C recon, PR #660, measured 3 sightings boot01 / 2
+    // boot02 on this same face while these two boots recorded 0). The independent
+    // witness for "the command RAN" is still the PROVIDER's launcher process:
     //   - `--confined-exec-stream` under THIS World's scratch `plans/` dir is a
     //     Member tool execution; exactly one for the whole turn;
     //   - `probe-*` / `--enforce-leg` / `--net-leg` launchers are the realm's
@@ -1243,13 +1253,29 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     writeFileSync(join(bootDir, 'summary.txt'), formatSummary(final) + '\n')
     log(`[boot${String(index)}] FAILED at ${abortStage}: ${String(error?.stack ?? error)}`)
   } finally {
-    try { lease.release?.() } catch { /* slot cleanup */ }
     if (world !== null) {
       try {
         teardown = await world.teardown({ keepHome: false })
         log(`[boot${String(index)}] teardown: ${JSON.stringify(teardown).slice(0, 600)}`)
       } catch (error) {
         log(`[boot${String(index)}] teardown failed: ${String(error?.message ?? error)}`)
+      }
+    }
+    // The slot represents a LIVE Host, so it is released AFTER teardown, and
+    // through the lease's REAL API (`releaseSlot`), never a guessed method: the
+    // historical `lease.release?.()` was a silent no-op and leaked one machine
+    // slot per boot (fixed 2026-11-13; dev/agent-workflow/evidence/recon-infra
+    // and evidence/a5sf-recon-external D1).
+    // `settleDevLiveLease` throws when the API is absent or the lease still
+    // reports a held slot, so a leak can no longer be silent.
+    try {
+      const settled = settleDevLiveLease(lease)
+      log(`[boot${String(index)}] dev-live slot released (released=${String(settled.released)} held=${String(settled.held)})`)
+    } catch (error) {
+      log(`[boot${String(index)}] SLOT RELEASE FAILED: ${String(error?.stack ?? error)}`)
+      if (failure === null) {
+        failure = error
+        abortStage = 'slot-release'
       }
     }
     const porcelain = hostPorcelain()
