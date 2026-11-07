@@ -220,6 +220,9 @@ const DEFAULT_WAIT_POLL_INTERVAL_MS = 250;
  *  (pre-alpha3 PR-D, D.4 — the inline lifecycle's `abort` node:
  *  `abort → durable abandon/close → zero effect`). */
 const WAIT_ABORT_ABANDON_REASON = 'wait-aborted';
+/** A6 closing constraint 1: the lifecycle reason an undetermined late ALLOW
+ *  records instead of a durable DENY (see `a6AbandonUndeterminedAllow`). */
+const A6_UNDETERMINED_ABANDON_REASON = 'invocation-abandoned';
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -2628,14 +2631,18 @@ export function createControlService(options) {
             // the closed reason (the external-policy pattern): never a silent
             // skip, never an allow, never a fourth decision value (A2-1). The
             // f5 fix: a THIS-CLASS corrupt row (see `paManifestClassOf` in
-            // types.ts) lands on the SAME durable-DENY pattern unconditionally —
-            // it is never skipped as an ordinary old row, and no verifier is
+            // types.ts) is never skipped as an ordinary old row, and no verifier is
             // consulted for it (undetermined is already the answer).
+            // A6 closing constraint 1: in the A6 composition ONLY, an undetermined
+            // answer is a lifecycle failure, not an approval decision. It records
+            // `control-request-abandoned` (reason invocation-abandoned) and refuses;
+            // it never persists a DENY, so a requested Allow is not rewritten. Every
+            // other composition keeps the durable-DENY path (flag defaults off).
             if (args.decision === 'allow') {
                 const paRead = paManifestClassOf(request.payload);
                 if (paRead.state === 'corrupt') {
                     if (options.a6AbandonUndeterminedAllow === true) {
-                        await commitAbandonmentFact(root, request.payload.requestId, 'invocation-abandoned');
+                        await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON);
                         throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: allow impossible — the PA operation manifest is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`, { rootSessionId: root, requestId: request.payload.requestId });
                     }
                     return await commitDecision({
@@ -2651,7 +2658,7 @@ export function createControlService(options) {
                     const denyReason = await paEffectsDenyReason('resolve', root, request.payload.requestId, paRead.manifest, callerRefOf(caller), resolvedCapability?.capability.effectiveReviewAuthority);
                     if (denyReason !== undefined) {
                         if (denyReason === CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED && options.a6AbandonUndeterminedAllow === true) {
-                            await commitAbandonmentFact(root, request.payload.requestId, 'invocation-abandoned');
+                            await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON);
                             throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED, `ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`, { rootSessionId: root, requestId: request.payload.requestId });
                         }
                         return await commitDecision({

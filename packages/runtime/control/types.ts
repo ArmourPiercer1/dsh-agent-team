@@ -1239,10 +1239,11 @@ export function parsePaControlManifest(value: unknown): PaControlManifest | unde
 /** The strict read-back class of one durable request row against the PA
  *  operation-manifest effect-set (PR358 f5). `not-effect-set` keeps today's
  *  legacy behaviour at BOTH gates (skip); `valid` rides the verifier flow;
- *  `corrupt` is a THIS-CLASS damaged row and NEVER skips: resolve commits a
- *  durable DENY (`authority-undetermined`), guard blocks with ZERO
- *  consumption (`authority-undetermined`) — fail closed, with or without an
- *  injected verifier. */
+ *  `corrupt` is a THIS-CLASS damaged row and NEVER skips: non-A6 resolve
+ *  commits a durable DENY (`authority-undetermined`); the A6 composition
+ *  instead records `control-request-abandoned` (lifecycle) and refuses. The
+ *  guard blocks with ZERO consumption (`authority-undetermined`) in both.
+ *  Fail closed, with or without an injected verifier. */
 export type PaManifestReadBack =
   | { readonly state: 'not-effect-set' }
   | { readonly state: 'valid'; readonly manifest: PaControlManifest }
