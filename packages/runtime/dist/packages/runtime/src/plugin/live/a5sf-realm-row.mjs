@@ -1093,6 +1093,110 @@ function confinedSearchSpecOf(realm, nativeSpecs, surface) {
 }
 
 /**
+ * The confined FILESYSTEM native module (PD-17), resolved from THIS file's own
+ * location: the row rides the dist mirror beside it, so source and installed
+ * faces use the same relative specifier. Never a host path, never a guess.
+ */
+const A5SF_CONFINED_FS_TOOL = new URL('./confined-fs-tool.mjs', import.meta.url).href
+
+/**
+ * The pinned host package the governed preset mounts as its own `read`/`write`/
+ * `edit`/`read_image` row. A configured entry naming this specifier is a
+ * DECLARED filesystem owner: the composition already routed (or explicitly
+ * placed) the host module, so this seam must not add a second registration
+ * beside it.
+ */
+const A5SF_HOST_FS_PACKAGE = '@deepseek-ai/dsh-tool-fs'
+
+/** The four model-visible filesystem names this shadow can place (shipped spellings). */
+const A5SF_FS_TOOL_NAMES = Object.freeze(['read', 'write', 'edit', 'read_image'])
+
+/**
+ * PD-17 — decide whether THIS realm's `read`/`write`/`edit`/`read_image` must
+ * be shadowed onto the confined `fs` face, and answer the module spec to
+ * append.
+ *
+ * THE MEASURED HOLE (`a5sf-recon-fs`, PR #657; two-Member confirmation
+ * `a5sf-recon-review`, PR #662): the preset's host `tool-fs` row is mounted by
+ * `@deepseek-ai/dsh-agent-preset-registry` on a scope ABOVE every agent
+ * context, so its injected `fs` resolves the INHERITED base `fs-sandbox`
+ * service. The realm shadowed the shell (PD-12/PD-13) and search (PD-16)
+ * faces but never the filesystem tools: twelve locators produced ZERO
+ * `a5sf-guard-consult/1` facts, `read` returned the HOST file etc/hostname
+ * and a SIBLING Member's lane bytes, and the write/edit tools touched any
+ * workspace path. The read
+ * half has no service-level fence in `fs-sandbox` at all ("Reads pass through
+ * untouched"), while the realm's confined provider refuses before the base
+ * Provider runs — so placing the SAME host definitions on the realm scope is
+ * the fix, not a new policy.
+ *
+ * The conditions are each a refusal to guess:
+ *   1. at least one of the four names is on the POST-DENY surface. The attach
+ *      is surface-neutral: it may replace the preset definition, never add or
+ *      remove a name, so the placed subset is the VISIBLE subset (the module
+ *      narrows its own registration to it);
+ *   2. the realm answers a confined `fs` face. The face is TOTAL by type
+ *      (`RealmServiceFaces.fs: 'confined'`), so this is a shape check, not a
+ *      preference: a realm that cannot answer one is not a realm this row
+ *      mounted;
+ *   3. the composition has not already configured a filesystem owner — this
+ *      module, the host `tool-fs` package (by specifier), any entry declaring
+ *      `expectedTools` that names one of the four, or a MODULE whose Cordis
+ *      name is the host package's (`tool-fs`) or this shadow's. Auto-adding
+ *      beside a declared owner would register the name twice.
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED configured
+ *   modules (`{ module, specifier }`), so a specifier this seam cannot spell
+ *   (an absolute path to the pinned package, a re-export) is still recognised
+ *   by the module's own exported `name`.
+ * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
+ */
+/**
+ * The service names a plugin module DECLARES it will inject, in the shapes
+ * Cordis accepts (an array, or a name→config object). Used only to answer "is
+ * this configured module a filesystem-face module?" — never to grant anything.
+ */
+function declaredInjectNamesOf(module) {
+  const declared = module?.inject
+  if (declared === undefined || declared === null) return []
+  if (Array.isArray(declared)) return declared.map((name) => String(name))
+  if (typeof declared !== 'object') return []
+  return Object.keys(declared)
+}
+
+function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null || faces.fs !== 'confined') return undefined
+  const tools = A5SF_FS_TOOL_NAMES.filter((name) => surface.has(name))
+  if (tools.length === 0) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_CONFINED_FS_TOOL) return undefined
+    if (spec?.url === A5SF_HOST_FS_PACKAGE) return undefined
+    if (Array.isArray(spec?.expectedTools)
+      && spec.expectedTools.some((name) => A5SF_FS_TOOL_NAMES.includes(name))) return undefined
+  }
+  for (const entry of configuredModules) {
+    const moduleName = entry?.module?.name
+    if (moduleName === 'tool-fs' || moduleName === 'a5sf-confined-fs') return undefined
+    // A module that DECLARES `fs` is a filesystem-face module: it resolves the
+    // confined provider itself and may register any of these names. Registering
+    // a second copy in the same scope is not a shadow (Cordis refuses the
+    // duplicate prompt section and tool row), so the composition that owns the
+    // face keeps this seam silent. A module that declares no `fs` (a shell or
+    // search module) does not suppress the shadow.
+    if (declaredInjectNamesOf(entry?.module).includes('fs')) return undefined
+  }
+  return Object.freeze({
+    url: A5SF_CONFINED_FS_TOOL,
+    config: Object.freeze({ tools: Object.freeze([...tools]) }),
+    expectedTools: Object.freeze([...tools]),
+  })
+}
+
+/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -1150,30 +1254,17 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // so BOTH shadows may be appended in one attach.
   const searchSpec = confinedSearchSpecOf(realm, nativeSpecs, before)
   const shellSpec = terminalSpec ?? bashSpec
-  const appended = [shellSpec, searchSpec].filter((spec) => spec !== undefined)
-  const specs = appended.length === 0 ? nativeSpecs : [...nativeSpecs, ...appended]
-  if (specs.length === 0) return undefined
-  // The baseline DEFINITIONS, by name: the coverage check below needs identity,
-  // not just the name set (a module that registers nothing, or registers late,
-  // leaves the preset definition in place — same name, ZERO guard facts).
-  const coverageScope = runtimeAgent ?? scopeOf(root)
-  const toolsService = root.get('tools')
-  // Identity coverage needs the scoped reader. ASSEMBLY GAP 2 (2026-11-03): on
-  // the product path a missing `get()` must NOT silently degrade to the
-  // name-set gate. The composition DECLARED managed native modules, so the only
-  // honest options are "verify by definition identity" or "refuse" — a
-  // name-set-only double is fine for tests, never for a live Member.
-  const canReadDefinitions = toolsService !== undefined && toolsService !== null && typeof toolsService.get === 'function'
-  if (!canReadDefinitions) {
-    throw new A5sfNativeAssemblyError(
-      'A5SF_COVERAGE_UNDEFINED',
-      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} need a tools service that can answer definition identity`
-      + ' (tools.get); refusing the native mount instead of degrading to a name-set-only check that cannot prove the router'
-      + ' shadowed each forwarded tool',
-    )
-  }
-  const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
-  const nativeToolModules = await Promise.all(specs.map(async (spec) => {
+  // PD-17 (2026-11-13): the model-visible `read`/`write`/`edit`/`read_image`
+  // must ride the confined `fs` face. The 2026-11 `a5sf-recon-fs` measurement
+  // (confirmed across two Members by `a5sf-recon-review`) is the reason: the
+  // preset's host `tool-fs` row injects `fs`, its scope sits ABOVE the agent, so
+  // it resolved the inherited base `fs-sandbox` service — twelve locators, zero
+  // guard facts, the host file etc/hostname and a sibling Member's lane bytes
+  // returned.
+  // The configured modules are imported FIRST so a specifier this seam cannot
+  // spell (an absolute path to the pinned package) is still recognised by the
+  // module's own exported `name`; a declared FS owner keeps this seam silent.
+  const loadNativeModule = async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
     // as a bare ERR_MODULE_NOT_FOUND from the middle of agent setup.
@@ -1196,7 +1287,32 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
       ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
       ...(spec.allowEmpty === undefined ? {} : { allowEmpty: spec.allowEmpty }),
     })
-  }))
+  }
+  const configuredModules = await Promise.all(nativeSpecs.map(loadNativeModule))
+  const fsSpec = confinedFsSpecOf(realm, nativeSpecs, before, configuredModules)
+  const appended = [shellSpec, searchSpec, fsSpec].filter((spec) => spec !== undefined)
+  if (nativeSpecs.length === 0 && appended.length === 0) return undefined
+  // The baseline DEFINITIONS, by name: the coverage check below needs identity,
+  // not just the name set (a module that registers nothing, or registers late,
+  // leaves the preset definition in place — same name, ZERO guard facts).
+  const coverageScope = runtimeAgent ?? scopeOf(root)
+  const toolsService = root.get('tools')
+  // Identity coverage needs the scoped reader. ASSEMBLY GAP 2 (2026-11-03): on
+  // the product path a missing `get()` must NOT silently degrade to the
+  // name-set gate. The composition DECLARED managed native modules, so the only
+  // honest options are "verify by definition identity" or "refuse" — a
+  // name-set-only double is fine for tests, never for a live Member.
+  const canReadDefinitions = toolsService !== undefined && toolsService !== null && typeof toolsService.get === 'function'
+  if (!canReadDefinitions) {
+    throw new A5sfNativeAssemblyError(
+      'A5SF_COVERAGE_UNDEFINED',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} need a tools service that can answer definition identity`
+      + ' (tools.get); refusing the native mount instead of degrading to a name-set-only check that cannot prove the router'
+      + ' shadowed each forwarded tool',
+    )
+  }
+  const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
+  const nativeToolModules = [...configuredModules, ...await Promise.all(appended.map(loadNativeModule))]
   const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
     expansion.mounts,
