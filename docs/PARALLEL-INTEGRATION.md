@@ -110,10 +110,19 @@ What it reads: the run records **committed** at the checkout's `HEAD` (`git ls-t
 `git cat-file --batch`), never the disk. Untracked files and uncommitted edits do not change the
 result; the `LIMIT` line names the commit the evidence was read at.
 
-Bounds (declared): ≤ 200 **run records** graded (non-record `.json` costs one read and no budget),
+Bounds (declared): ≤ 400 **run records** graded (non-record `.json` costs one read and no budget),
 ≤ 4000 candidate `.json` blobs, each ≤ 512 KiB, ≤ 40 rows per class, stdout ≤ 24 KiB, no child
 process beyond `git`. Measured at `f3f415aa0`: 174 tracked `.json` under the evidence root, 50 of
-them `u5-run-record/1` records, so 200 is 4× headroom. **A bound hit is a refusal** (`BOUND HIT …
+them `u5-run-record/1` records, so 200 was 4× headroom *then*.
+
+**2026-11-13 — the bound was raised 200 → 400, with a measurement.** The tree reached **199 of 200** at
+`c8af5fc6f` (`records=199`), so a single new DEV-LIVE recon boot would have refused the audit for
+everyone. The bound is a **capacity budget, not a safety assertion** — the script's own header says a
+bound may be raised "with a measurement" — and this is that measurement: 199 committed records at
+`c8af5fc6f`, six recon faces each adding at most a handful, 400 leaves room for the rest of Alpha.5
+without turning every evidence PR into a negotiation with the cap. What is **not** raised: a bound
+hit is still a refusal, `--strict` still fails on any record that does not bind the candidate, and
+nothing about C2 binding or the `RULE` line changes. **A bound hit is a refusal** (`BOUND HIT …
 REFUSED`, exit 2, no class counts, no `RULE` line): a partial corpus is never printed as an audit.
 
 PR #394 shipped a disk walk that spent a 400-file budget on every `.json` in name order and printed

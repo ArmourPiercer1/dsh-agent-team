@@ -39,7 +39,10 @@
  * report is never printed as if it were the audit; `--strict` exits 1 unless every record is
  * EXACT_MERGED_HEAD.
  *
- * BOUNDS (declared, enforced): RECORDS graded ≤ 200 — the budget is spent on files that parse and
+ * BOUNDS (declared, enforced): RECORDS graded ≤ 400 (raised from 200 on 2026-11-13 with the
+ * measurement below — the tree reached 199 of the old 200 at c8af5fc6f, so a single new recon
+ * boot would have refused the audit; the bound is a capacity budget, not a safety assertion,
+ * and the header's own rule is "raise the bound with a measurement") — the budget is spent on files that parse and
  * carry the run-record schema, not on arbitrary json (PR #394 spent 400 on every `.json` in name
  * order, so at f3f415aa0 it graded 24 of the 50 committed records and dropped the rest). Measured
  * at origin/master f3f415aa0: 174 tracked `.json` under the evidence root, 55 mention the schema,
@@ -58,7 +61,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const BOUNDS = Object.freeze({ maxRecords: 200, maxCandidates: 4000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+export const BOUNDS = Object.freeze({ maxRecords: 400, maxCandidates: 4000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 
