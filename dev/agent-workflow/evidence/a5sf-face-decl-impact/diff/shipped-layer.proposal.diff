@@ -1,0 +1,56 @@
+PROPOSAL — NOT APPLIED. The mechanical half of declaring the governed faces in
+the SHIPPED bundle layer (`cordis.patch.yml`), shown so the size of the change
+is visible. READ THE LAST PARAGRAPH: on today's tree this patch is INERT — it
+adds a provider the shipped row never consults, because the row has no
+enablement key that does not fork with the provided service.
+
+Two files, three hunks, ~20 added lines. Everything else the exemplar needs
+(the v4 blueprint with `memberIoCeilings`, the Member preset row, the
+declaration) already exists in `../exemplar/governed-member-preset.patch.yml`
+and is a product-design change, not a wiring change.
+
+--- a/package.json
++++ b/package.json
+@@ exports
+   ".": "./packages/client/composition-shim/index.js",
+   "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
+   "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
++  "./governed-realm": "./packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+   "./client": "./packages/client/composition-shim/client-bundle.js",
+   "./package.json": "./package.json"
+
+--- a/cordis.patch.yml
++++ b/cordis.patch.yml
+@@ -105,6 +105,15 @@
+     - id: "team-spill-local"
+       name: "dsh-agent-team/spill-local"
++    # The governed realm: provides `teamA5sfRealm`, which the host row above
++    # reads lazily. The Member preset that pairs with it must NOT mount
++    # `persistent-shell` (install would refuse with
++    # TERMINALS_DOUBLE_TERMINAL_REFUSED and the Member would not come up).
++    - id: "a5sf-governed-realm"
++      name: "dsh-agent-team/governed-realm"
++      config:
++        realmId: "a5sf-governed-member"
++        scratchRoot: !!js process.env.A5SF_GOVERNED_SCRATCH ?? '/tmp/a5sf-governed-realm'
++        blueprintSource: *governedBlueprint
++        memberPolicies: *governedDeclaration
+     - id: "dsh-agent-team-client"
+       name: "dsh-agent-team"
+
+THE INERTNESS (the seam gap this proposal cannot close by itself):
+`a5sfRealmConfigOf` (`packages/runtime/src/plugin/live/a5sf-realm-row.mjs#L323`)
+answers `undefined` — and the mount is never attempted — unless the TEAM row
+carries one of `a5sfEvidencePath`, `a5sfMemberPolicies`, `a5sfMemberAuthority`.
+All three are wrong here:
+  - `a5sfEvidencePath` is a FILE PATH, and this layer's own header forbids
+    machine paths ("Machine-agnostic by contract ... no machine paths").
+  - `a5sfMemberPolicies` / `a5sfMemberAuthority` both set `config.memberPolicies`
+    on the row, and a row with BOTH a declaration and a provided
+    `teamA5sfRealm` throws (`two compiled-realm sources for one Member is
+    ambiguous`).
+So shipping the faces in this layer needs ONE small product change first: a
+neutral enablement key (e.g. `a5sfGovernedRealm: true`) honoured by
+`a5sfRealmConfigOf` and declared in `plugins/types.ts`. That is the smallest
+real blocker, and it is OURS — not a pinned-host schema refusal. `CORE PATCH
+BUDGET` stays 0 either way.
