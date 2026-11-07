@@ -1,0 +1,15 @@
+mock: listening on 127.0.0.1:3903
+mock: 1 [messages] text reply (16 chars): "C1 smoke session"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] tool-call reply: team_create_member
+mock: 5 [messages] tool-call reply: team_delegate
+mock: 6 [messages] text reply (17 chars): "C1_A6_LEADER_DONE"
+mock: 7 [messages] tool-call reply: bash
+mock: 8 [messages] tool-call reply: team_list_pending_control
+mock: 9 [messages] tool-call reply: team_resolve_control
+mock: 10 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 11 [messages] tool-call reply: team_list_pending_control
+mock: 12 [messages] tool-call reply: team_resolve_control
+mock: 13 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 14 [messages] text reply (17 chars): "C1_A6_MEMBER_DONE"

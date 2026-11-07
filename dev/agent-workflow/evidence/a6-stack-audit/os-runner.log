@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108
+
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > compiles read and write independently, with a real write-only lane 2ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > a locator on both axes is one read+write entry 0ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > a deny EQUAL to the allow removes the rule (expressible), a NESTED deny is refused 1ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > refuses an unrestricted axis instead of inventing an allowlist 0ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > refuses an ask destination (an ask is not an OS grant) 0ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 execution profile (pure) > maps network deny to the provider profile and never invents enforcement 0ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 real OS leg (Landlock launcher) > enforces the read allowlist and the write-only lane inside the child 3217ms
+ × packages/runtime/test/a5sf-os-runner.test.ts > P1-07 real OS leg (Landlock launcher) > refuses a network-deny policy when the backend cannot enforce it (no bare process) 3227ms
+   → expected { ok: true, value: { …(3) } } to match object { ok: false, …(1) }
+(4 matching properties omitted from actual)
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts > P1-07 real OS leg (Landlock launcher) > refuses an empty argv and an inexpressible profile before any process 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-os-runner.test.ts > P1-07 real OS leg (Landlock launcher) > refuses a network-deny policy when the backend cannot enforce it (no bare process)
+AssertionError: expected { ok: true, value: { …(3) } } to match object { ok: false, …(1) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "code": "ENFORCEMENT_UNAVAILABLE",
+-   "ok": false,
++   "ok": true,
+  }
+
+ ❯ packages/runtime/test/a5sf-os-runner.test.ts:173:20
+    171|       argv: ['/bin/true'], cwd: world, env: [],
+    172|     })
+    173|     expect(result).toMatchObject({ ok: false, code: 'ENFORCEMENT_UNAVA…
+       |                    ^
+    174|   })
+    175|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  03:46:39
+   Duration  6.64s (transform 65ms, setup 0ms, import 83ms, tests 6.47s, environment 0ms)
+

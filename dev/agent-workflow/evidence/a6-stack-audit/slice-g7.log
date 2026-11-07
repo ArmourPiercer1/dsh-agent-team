@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a6-slice-tests
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  03:30:43
+   Duration  1.05s (transform 747ms, setup 0ms, import 907ms, tests 55ms, environment 0ms)
+

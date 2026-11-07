@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a6-slice-tests
+
+·················································stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5m1-auth-plane-realm templateId=a5m1-auth-tpl
+
+·································stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-p6t4seedw01-bash:mount:c0204bed-6bc7-4640-be63-6eeddc7c6202-1 approvalCaseId=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+········stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-p6t4seedw01-bash:mount:c0204bed-6bc7-4640-be63-6eeddc7c6202-1 grantId=grant:c9aa8c17871d0f29aab00b590c574845 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-p6t4seedw01-bash:mount:c0204bed-6bc7-4640-be63-6eeddc7c6202-1 grantId=grant:c9aa8c17871d0f29aab00b590c574845 caseId=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5m1-auth-plane-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: one real approval (human decider) → ONE body through the real landlock launcher
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5m1-auth-plane-realm call=team-inst-p6t4seedw01-bash:mount:c0204bed-6bc7-4640-be63-6eeddc7c6202-1 pid=159 exit=0 timedOut=false cancelled=false
+
+·stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > team_bash: a durable DENY on the next run stays zero-body
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-p6t4seedw01-bash:mount:c0204bed-6bc7-4640-be63-6eeddc7c6202-2 approvalCaseId=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > read: one real approval (leader decider) → the governed read body once
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-read-374e52bd-9d04-4c81-9a27-7eaf5973400a-1 approvalCaseId=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:2b8499919cafac6735c78faaa34d5c94e37193838c959b2c414bd731294fa7ea:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > read: one real approval (leader decider) → the governed read body once
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-read-374e52bd-9d04-4c81-9a27-7eaf5973400a-1 grantId=grant:34cc1c9be60e538345b22f8982d89ec4 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-read-374e52bd-9d04-4c81-9a27-7eaf5973400a-1 grantId=grant:34cc1c9be60e538345b22f8982d89ec4 caseId=tadm:session-root-p6t1:inst-p6t4seedw01:sha256:2b8499919cafac6735c78faaa34d5c94e37193838c959b2c414bd731294fa7ea:g0
+
+stdout | packages/runtime/test/a5-m1-auth-bridge.test.ts > B (plane integration): ask → durable approval → exactly one body > read: one real approval (leader decider) → the governed read body once
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=22 path=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a6-slice-tests/tests/homes/a5m1-auth-mw6stn5h/root/notes.txt
+
+···············
+
+ Test Files  5 passed (5)
+      Tests  106 passed (106)
+   Start at  03:30:52
+   Duration  7.88s (transform 3.07s, setup 0ms, import 2.79s, tests 7.84s, environment 0ms)
+

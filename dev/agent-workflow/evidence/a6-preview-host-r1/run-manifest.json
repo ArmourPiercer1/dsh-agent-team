@@ -1,0 +1,15 @@
+{
+  "runId": "2026-11-07T19-47-08",
+  "productSha": "0e5528b98aa69fdda671c8aae16f9631e8735699",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "blueprintHash": "sha256:0b4f1725cf5355ffe69024159bbc0faa8fd652e2f9d02d595bfed8aad33b8dab",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-07T19-47-08",
+  "optIn": {
+    "alpha6Officer": true,
+    "planeTakeover": true,
+    "stickyStop": false,
+    "inboxReconcile": false,
+    "timeoutMs": 0
+  }
+}

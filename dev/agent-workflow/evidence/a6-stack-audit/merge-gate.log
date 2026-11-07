@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108
+
+·············lint-visibility: eslint read 1622 of 3237 OFFERED tracked lintable file(s); 1615 are hidden by an ignore pattern (dev/ 230, docs/ 4, packages/client/composition-shim/ 2, packages/runtime/dist/ 1085, tests/ 294); 1622 + 1615 = 3237 offered, + 0 skipped = 3237 tracked lintable path(s); nothing skipped
+······················
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  03:44:39
+   Duration  110.42s (transform 100ms, setup 0ms, import 125ms, tests 110.20s, environment 0ms)
+
