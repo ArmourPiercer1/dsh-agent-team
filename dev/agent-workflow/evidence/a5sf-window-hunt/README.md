@@ -1,7 +1,8 @@
 # `a5sf-window-hunt` — the activation-window defect class, hunted deliberately
 
 **Status: produced.** Base `origin/master` = `ff04b6f41`. Branch
-`task/a5sf-window-hunt-20261112`. Worktree `.worktrees/a5sf-window-hunt`.
+`task/a5sf-window-hunt-20261112` (**draft PR #651**). Worktree
+`.worktrees/a5sf-window-hunt`.
 `CORE PATCH BUDGET = 0` — the pinned Host is untouched (`git status` under
 `tests/deepseek-harness-test-use` is clean; it is not in this diff).
 
