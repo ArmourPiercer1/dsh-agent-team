@@ -507,7 +507,7 @@ test('F1-7 the glue places the Member tool plane on the realm scope and routes t
     // import: the native shadow is attached AFTER the capability deny lane, on
     // the realm object this mount returns. Additive: the ONE mount, the naming
     // call and the safe disposer factory are unchanged.
-    ["import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'", 'the tool-plane naming import'],
+    ["import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'", 'the tool-plane naming import'],
     ['a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)', 'the per-setup tool-plane assignment'],
     ['const toolPlaneCtx = a5sfToolPlane === undefined ? agentCtx : a5sfToolPlane.ctx', 'the default-path ternary (ctx)'],
     ['const toolPlaneFsBackend = a5sfToolPlane === undefined ? fsBackend : () => a5sfToolPlane.fs', 'the default-path ternary (fs)'],

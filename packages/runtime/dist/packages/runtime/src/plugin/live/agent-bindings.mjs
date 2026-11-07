@@ -489,7 +489,7 @@ import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // plane's fs family uses its own hardened root provider rather than `ctx.fs`.
 // Evidence: dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7
 // + the BEFORE/AFTER probe over the committed dist).
-import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
+import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
 // dependency-injected below).
@@ -2324,7 +2324,7 @@ export function createAgentBindings(deps) {
     let templateId
     if (row !== undefined) {
       templateId = String(row.templateId)
-    } else if (bindPath === 'fresh-member' && templateIdHint !== undefined && templateIdHint !== '') {
+    } else if (freshCreateHintAdmits(bindPath) && templateIdHint !== undefined && templateIdHint !== '') {
       // The fresh-create window ONLY: the row commits AFTER this setup runs.
       // P0-1 §3.4: the hint is NOT an authorization fallback for a cold
       // resume or a request boundary — the durable identity must exist there
@@ -4474,8 +4474,14 @@ export function createAgentBindings(deps) {
       if (row !== undefined) {
         target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId: String(row.instanceId) }
         record = row
-      } else if (templateIdHint !== undefined && templateIdHint !== '') {
-        // The fresh-create window: the row commits AFTER this setup runs.
+      } else if (freshCreateHintAdmits(bindPath) && templateIdHint !== undefined && templateIdHint !== '') {
+        // The fresh-create window ONLY (the SAME gate locateTemplate applies):
+        // the row commits AFTER this setup runs. On any other path the durable
+        // row is the authority — a missing one fails closed here too, rather
+        // than fabricating a persona from a hint a cold/state path also
+        // carries (WINDOW-HUNT 2026-11-12: this arm used to accept the hint
+        // ungated; the earlier locate made it unreachable, which is ordering,
+        // not an invariant).
         target = { kind: 'member', sessionId, rootSessionId: membersRoot, instanceId }
         record = { childSessionId: sessionId, instanceId, templateId: templateIdHint }
       } else {

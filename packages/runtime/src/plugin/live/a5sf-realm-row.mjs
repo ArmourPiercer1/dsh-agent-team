@@ -95,6 +95,36 @@ import { TeamServiceInstallError } from '../../../team-services/src/types.js'
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
 
 /**
+ * THE FRESH-CREATE HINT GATE — the ONE rule saying when a setup may stand in a
+ * not-yet-durable fact with the value the activation contract is about to
+ * commit (WINDOW-HUNT, 2026-11-12).
+ *
+ * The activation order (`activation/provider.ts` steps 13→14→15) runs the
+ * child's setup BEFORE the MemberInstance row is durably written:
+ *
+ *     createChildSession (the setup runs inside it)
+ *       -> bindChildSession
+ *       -> commitInstance     (the MemberInstance row)
+ *
+ * So a member setup legitimately sees NO durable roster row for the very
+ * instance it is composing. The child factory carries the two values the flow
+ * commits moments later (`instanceId`, `templateId`) and names the call path
+ * with `bindPath`. The hint may bridge ONLY `fresh-member`; a cold resume, a
+ * request boundary or any other path reads the row it resumed and fails closed
+ * when it is absent (P0-1 §3.4: a hint is never an authorization fallback).
+ *
+ * It lives HERE (not in the glue) so the rule is importable by the host-free
+ * suites without loading the whole agent-bindings module graph; the glue's two
+ * consumers both spell it through this ONE function.
+ * @param {string} [bindPath] - the T1 bind path (fresh-member / cold-member /
+ *   fresh-root / cold-root), `undefined` for the state route.
+ * @returns {boolean} true only for the fresh member creation window.
+ */
+export function freshCreateHintAdmits(bindPath) {
+  return bindPath === 'fresh-member'
+}
+
+/**
  * The row-config key carrying the PRODUCT declaration that gives declared
  * Members their compiled realm (2026-11-05).
  *
@@ -782,9 +812,11 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   // GOVERNED REALM (2026-11-11): the neutral key promised that the COMPOSITION
   // provides the compiled realm. A row that carries it and finds no provider
   // would silently give the Member no realm at all — the exact failure mode a
-  // declared-but-unmounted confinement must never have, so it refuses here. The
-  // provider may answer `undefined` per TEMPLATE (that Member is UNMANAGED);
-  // "no provider at all" is a composition fault, never "no realm".
+  // declared-but-unmounted confinement must never have, so it refuses here.
+  // "no provider at all" is a composition fault, never "no realm". A provider
+  // that answers `undefined` for ONE template is refused at the compiled read
+  // below when the row is governed (a governed Member is never silently
+  // unmanaged); on an UNGOVERNED row it keeps the legacy `undefined` = no realm.
   const governedRealm = a5sfConfig.governedRealm === true
   if (governedRealm) {
     const provided = typeof provider === 'function' ? provider() : undefined
@@ -821,7 +853,32 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   }
 
   const compiled = await resolved.compiledFor(Object.freeze({ ...member }))
-  if (compiled === undefined || compiled === null) return undefined
+  if (compiled === undefined || compiled === null) {
+    // GOVERNED ROW, NO COMPILED REALM (WINDOW-HUNT, 2026-11-12). The neutral
+    // key is a promise that THIS row's compiled-realm source covers its
+    // Members: the preset that carries the key is the ordinary deployment
+    // preset (nothing about it confines a shell), so the confinement lives
+    // ENTIRELY in the realm. A provider that answers `undefined` for a
+    // template (a v4 blueprint may declare a Member template with no
+    // `memberIoCeilings` entry — the plan then has no Member to compile)
+    // would leave that Member running the preset's inherited, ungoverned
+    // `bash` while the row still says `a5sfGovernedRealm: true`. That is the
+    // "declared-but-unmounted confinement" this seam already refuses for a
+    // missing provider; a per-template `undefined` is the same state and is
+    // refused here too, rather than silently proceeding on it. An UNGOVERNED
+    // row keeps the legacy `undefined` = no realm.
+    if (governedRealm) {
+      throw new TeamServiceInstallError(
+        'REALM_DECLARATION_INVALID',
+        `agent-bindings: config.${A5SF_GOVERNED_REALM_KEY} is set but the composition's provider compiled no realm for`
+        + ` Member '${String(member?.instanceId)}' (template '${String(member?.templateId)}'); a governed Member never`
+        + ' silently falls back to the preset\'s unconfined shell — declare a Member ceiling for this template or do not'
+        + ' opt the row into the governed realm',
+        'member.templateId',
+      )
+    }
+    return undefined
+  }
   if (!Array.isArray(compiled.members) || compiled.members.length === 0) {
     throw new TypeError('agent-bindings: a5sfRealmProvider.compiledFor must answer { members: [...] } with at least one compiled Member ceiling')
   }
