@@ -509,6 +509,37 @@ assembly 期以 `NETWORK_UNCONFINED_REALM` 拒绝，无 netns 声明；BL-39 / P
 反过来读同样成立：**不能因为默认路径未变，就把这次 Member turn 读成"什么都没发生"**——机制第一次在
 真实 Host 上走上了一个 Member 的调用路径，并且它逼出的 activation-window 缺陷是真实的、已修的、有负控的。
 
+### 1.5.5 2026-11-13 勘误（ARGV-ERRATA）：`payloadInLaneSightings=0` 曾被读成"命令正文在 argv 里不可见"（只追加；不改任何 ⑧ / ⑨ / 等级 / 历史数字 / 上方任何 dated 块）
+
+**记录类别**：Docs-only + 引用一份 `DEV-LIVE` 侦察证据；**0 boots、0 产品代码改动**。本节**只追加**，
+§1.5.1 与 §1.5.2 的原句一字未改（它们保留为历史），更正以本块为准。
+
+- **旧断言（错，本矩阵两处引用过）**：§1.5.1 的计数器段（本文件 `:467`）与 §1.5.2 的 `M-09` 行
+  （本文件 `:485`）把 `payloadInLaneSightings=0` 并列进"精确计数器"，其上游解释是
+  `dev/agent-workflow/evidence/a5sf-live-member/README.md` §5 的原句："the confined terminal writes
+  the command text to a PTY, so the command never appears in any process's `argv`"。**该解释是错的**，
+  因此把它当"payload 不可见"的证据也是错的。
+- **代码**：`packages/runtime/team-services/src/terminal.ts:535` = `argv: [program, '-c', text]`，
+  `:538` = `stdio.stdin: 'ignore'`；命令正文**在** shell 子进程 argv 里，没有 PTY 可写
+  （`confined-pty-N` 只是 `terminal.ts:489` 的 label；实测 `ptyHolders=0`）。
+- **实测**：Face C 侦察（PR **#660**，分支 `recon/c-shell-20261113`，`DEV-LIVE`、`eligible=false`、
+  候选 SHA `235e1af8b`、宿主 `639ed01539`）在同一受限终端面两 boot：`runs/boot01/counters.json`
+  `payloadInLaneSightings=3`、`runs/boot02/counters.json` `=2`（该报告 §D-1 散文写 2 / 1，
+  以 JSON 捕获为准），且子进程 cmdline 明含 `<world>/workspace/in-lane.txt`；
+  同两 boot `ptyHolders=0`、`baseBwrapWithMarkers=0`。
+- **正确结论**：**受治 Member 执行的命令正文，对同机其它进程可见**（`/proc/<pid>/cmdline`，0444）。
+  这是**一条必须披露的进程列表泄漏面**；它**不是** lane 隔离的失败——in-lane/out-of-lane 判定、
+  `IO_READ_DENIED`、0 字节外泄、`baseBwrapWithMarkers=0`、launcher 计数全部不受影响，
+  本节**不移动任何等级或 `V@B`**。任何"受治 = 命令不可见"的读法都必须撤回。
+- **对 §1.5.1 / §1.5.2 的引用约束**：`payloadInLaneSightings=0` 只能读作"本轮采样未捕到"
+  （采样间隔约 240 ms，短命 `bash` 子进程会被漏抓），**不得**再作为"payload 不可见"的支持证据；
+  `M-09` 行的真 witness 仍是 `confinedTurnLaunchers=1` 与 `baseBwrapWithMarkers=0`，这两项不变。
+- **计数器判断**：`payloadInLane` 测的正是"命令正文出现在某进程 argv 里"，**计数器是对的、结论是错的**；
+  但它在 driver 里被当成**精确相等的 agreement 行**（`run-boot.mjs` 的 `buildAgreement` `keys`），
+  而一次诚实的 sighting 计数必然随采样抖动，于是该项配置在系统性地奖励 0。**未来该看**：
+  可见性 = `payloadInLaneSightings >= 1` 的布尔（记录项，不作精确相等行）；"跑过没有" = `confinedTurnLaunchers`。
+  本轮只改 `run-boot.mjs` 的归因**注释**，不改采样逻辑、judge 或 agreement 行。
+
 ## 1.6 2026-11-13 FINAL-DOCS 注记：标了治理、却没有机制（只追加；不改任何 ⑧ / ⑨ / 历史数字 / 上方任何 dated 块）
 
 **记录类别**：进程内证据（0 boots；真实产品模块、Host 调用的同一 seam）+ 本注记本身 Docs-only。证据 =
