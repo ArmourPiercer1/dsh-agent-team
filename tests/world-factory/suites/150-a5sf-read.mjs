@@ -27,15 +27,27 @@
  *   --live (needs a budget grant AND a live read driver, spawns ONE Host):
  *          the same scenario code driven through `A5SF_READ_DRIVER` — a
  *          module that mounts the compiled ceiling's confined Provider on the
- *          LIVE Host root and performs the native read. THAT DRIVER DOES NOT
- *          EXIST IN THIS TREE: no production caller of
- *          `installMemberIoProviders` / `installToolBindingRealm` exists
- *          (grep: only `team-services/src/index.ts` re-exports them), so the
- *          a5sf realm is provable in-process but inert in a booted Host. Live
- *          mode therefore REFUSES at the seam probe
+ *          LIVE Host root and performs the native `read`. THAT DRIVER DOES NOT
+ *          EXIST IN THIS TREE, and this suite still REFUSES at the seam probe
  *          (`LIVE_SEAM_UNAVAILABLE`) BEFORE the grant gate and BEFORE any
  *          World/ledger write — it spends ZERO host starts and prints why.
  *          See evidence/a5sf-p2-read/README.md §2/§5.
+ *
+ *          2026-11-12 DATED NOTE (the sentence above is no longer the whole
+ *          truth, the REFUSAL is unchanged). A production caller of the realm
+ *          mount DOES exist now for live Members: `agent-bindings.mjs` calls
+ *          `mountMemberA5sfRealm`, and
+ *          `evidence/a5sf-live-member/` drives a real Member turn through the
+ *          shipped governed preset on a booted Host (admitted + denied reads,
+ *          the Member's own transcript). That is a DIFFERENT seam and a
+ *          DIFFERENT proposition: it proves the Member's confined `bash` on a
+ *          `team_delegate` child, not this suite's native `read` on the LIVE
+ *          root, and it is DEV-LIVE evidence only. Wiring `--live` to that
+ *          driver would swap the proposition and launder a dev boot into a
+ *          candidate run, so `resolveReadDriver` keeps refusing. The missing
+ *          contract is unchanged: a module that runs where the compiled
+ *          Provider is mounted (the Host process, or an RPC into it) and
+ *          performs the native read.
  *
  * BUDGET PRE-REGISTRATION (the law this file exists to make enforceable).
  * The shared host-start budget pool is 0 and every new boot needs a USER
@@ -725,7 +737,7 @@ export async function resolveReadDriver(opts = {}) {
     throw new A5sfReadGateError(
       'LIVE_SEAM_UNAVAILABLE',
       'NO_READ_DRIVER',
-      'no live read driver: nothing in this tree mounts the compiled ceiling\'s confined Provider on a booted Host (no production caller of installMemberIoProviders/installToolBindingRealm), so the native read cannot be driven through it. Pass A5SF_READ_DRIVER=<module> once that seam exists. Zero host starts spent.',
+      'no live read driver: no module in this tree mounts the compiled ceiling\'s confined Provider on a booted Host AND performs the native read through it. The Member realm now mounts for live Members (agent-bindings.mjs#mountMemberA5sfRealm, evidence a5sf-live-member), but that is the confined `bash` on a delegate child, not this suite\'s native `read` on the LIVE root, and it is DEV-LIVE only. Pass A5SF_READ_DRIVER=<module> once the read-driver contract exists. Zero host starts spent.',
     )
   }
   let mod

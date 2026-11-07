@@ -705,6 +705,36 @@ test('G5b a live Member (RUNNING) IS admitted — the negative arm above is not 
   }
 })
 
+// The FRESH-CREATE WINDOW (measured by the live Member turn, 2026-11-12): the
+// activation contract commits the MemberInstance row AFTER the child session
+// exists, so the realm mount inside `createChildSession` reads no row for the
+// instance being activated. Without this window every governed Member failed
+// live activation with AUTHORITY_REFUSED — a gap in-process acceptance could
+// not see. A durable row still WINS: the window never resurrects a revoked
+// Member, and it is only open when the live glue says `fresh-member`.
+test('G5c the fresh-create window admits ONLY a not-yet-written row, and a durable row always wins', () => {
+  const fresh = governed.governedAuthorityReference({ generation: 0, lifecycle: undefined, freshCreate: true })
+  assert.equal(fresh.admitted, true, 'the instance being created is admitted while its durable row does not exist yet')
+  assert.equal(fresh.revision, 'a4:overlay-generation:0')
+  assert.equal(fresh.instanceGeneration, 0)
+
+  assert.equal(governed.governedAuthorityReference({ generation: 0, lifecycle: undefined }).admitted, false, 'no window => a vanished row is still NOT admitted (G5 arm)')
+  for (const lifecycle of ['ARCHIVED', 'DISPOSED']) {
+    assert.equal(
+      governed.governedAuthorityReference({ generation: 0, lifecycle, freshCreate: true }).admitted,
+      false,
+      `${lifecycle} is a durable fact and must beat the creation window`,
+    )
+  }
+  for (const lifecycle of governed.GOVERNED_ADMITTED_LIFECYCLES) {
+    assert.equal(
+      governed.governedAuthorityReference({ generation: 0, lifecycle, freshCreate: true }).admitted,
+      true,
+      `${lifecycle} stays admitted in the window`,
+    )
+  }
+})
+
 // ===========================================================================
 // G6 — invalidation after a generation move
 // ===========================================================================

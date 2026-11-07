@@ -1450,7 +1450,11 @@ export async function apply(ctx, config) {
             // The mapping lives in the provider module (ONE rule shared by the Host and
             // the tests): CREATED/RUNNING/SETTLED are admissions; ARCHIVED/DISPOSED (or a
             // vanished row) are not.
-            return governedAuthorityReference({ generation, lifecycle: row?.lifecycle });
+            // `freshCreate` is the live creation window: the activation contract writes
+            // the MemberInstance row AFTER the child session exists, so the realm mount
+            // inside `createChildSession` must not read "row not yet written" as
+            // "revoked". A durable row always wins (see governedAuthorityReference).
+            return governedAuthorityReference({ generation, lifecycle: row?.lifecycle, freshCreate: input.freshCreate === true });
         };
         const governedRealmProvider = resolvedRowConfig.a5sfGovernedRealm === true
             ? createGovernedRealmProvider({

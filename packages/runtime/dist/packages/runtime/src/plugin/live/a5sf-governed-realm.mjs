@@ -114,8 +114,23 @@ export const GOVERNED_ADMITTED_LIFECYCLES = Object.freeze(['CREATED', 'RUNNING',
  * read fault, never a default). The reference is CONSUMED verbatim by the
  * compiler: it grants nothing.
  */
-export function governedAuthorityReference({ generation, lifecycle }) {
+export function governedAuthorityReference({ generation, lifecycle, freshCreate = false }) {
+  // THE FRESH-CREATE WINDOW (measured 2026-11-12 by the live Member driver).
+  // The activation contract creates the child session BEFORE it durably
+  // commits the MemberInstance row (adapter.ts: "the child artifact is durable
+  // BEFORE the MemberInstance record is written; the operation stays PREPARED
+  // until then"). The child-session factory mounts THIS Member's realm inside
+  // that window, so the durable roster lookup is legitimately EMPTY for the
+  // very instance being activated. Treating "no row yet" as non-admitted made
+  // every live governed Member fail activation with AUTHORITY_REFUSED, which
+  // in-process acceptance could not see.
+  //
+  // The window is admitted ONLY when the live glue says this is a fresh child
+  // creation (`bindPath === 'fresh-member'`) AND no durable row exists to
+  // contradict it. A durable row always wins: ARCHIVED/DISPOSED still refuse,
+  // and a cold mount has no window at all (it reads the row it resumed).
   const admitted = GOVERNED_ADMITTED_LIFECYCLES.includes(lifecycle)
+    || (lifecycle === undefined && freshCreate === true)
   return Object.freeze({
     revision: `a4:overlay-generation:${String(generation)}`,
     admitted,
@@ -267,7 +282,14 @@ export function createGovernedRealmProvider(options = {}) {
       // THE REAL ALPHA.4 AUTHORITY. Read per attach (not captured at assembly).
       let authority
       try {
-        authority = await readAuthority({ teamSessionId, memberInstanceId: instanceId, templateId })
+        authority = await readAuthority({
+          teamSessionId,
+          memberInstanceId: instanceId,
+          templateId,
+          // The ONE creation-window fact the live glue already carries (the
+          // same `bindPath` that bridges the persona/consumption resolution).
+          freshCreate: member?.bindPath === 'fresh-member',
+        })
       } catch (error) {
         fail(
           'REALM_DECLARATION_INVALID',
