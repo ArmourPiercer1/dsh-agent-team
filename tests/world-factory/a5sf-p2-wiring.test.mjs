@@ -459,7 +459,7 @@ test('W6 the glue call site is guarded, keeps a SAFE row disposer, and imports t
     // the same way (the native shadow is attached after the deny lane, on the
     // realm this mount returns). The pin tracks the additive import, not a
     // second path.
-    /import \{ a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
+    /import \{ a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
     'the glue imports the ONE helper + the tool-plane naming + the safe disposer factory',
   )
   assert.match(glue, /const a5sfRowConfig = a5sfRealmConfigOf\(config\)/, 'the row config is read once at assembly')

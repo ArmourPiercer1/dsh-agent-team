@@ -318,8 +318,17 @@ function presetTopology(root, workspace) {
  * Build one governed world. The `state` object is the LABELLED durable-authority
  * fixture: `generation`/`lifecycle` are what the Host would read from the
  * permission overlay and the MemberInstance row.
+ *
+ * THE DEFAULT STATE IS THE PRODUCT'S ORDER (WINDOW-HUNT, 2026-11-12): the
+ * activation contract mounts the realm INSIDE `createChildSession`, i.e. BEFORE
+ * the MemberInstance row is durably written (`activation/provider.ts` steps
+ * 13→15). So the default fixture has NO durable row (`lifecycle: undefined`)
+ * and the read is made `freshCreate`-aware exactly as the Host's
+ * `readGovernedAuthority` is. A suite that defaulted to a committed `RUNNING`
+ * row was kinder than production and could not see the window (the #649
+ * lesson). Tests that need a durable row pass one explicitly.
  */
-async function makeGovernedWorld(label, { blueprintSource, legacyTerminal = false, state = { generation: 0, lifecycle: 'RUNNING' } } = {}) {
+async function makeGovernedWorld(label, { blueprintSource, legacyTerminal = false, state = { generation: 0, lifecycle: undefined } } = {}) {
   const { dir, workspace, writeOnly, secret } = makeWorldDirs(label)
   const source = blueprintSource ?? v4Blueprint({ workspace })
   const boundBlueprint = blueprintModule.parseBlueprint(source)
@@ -342,8 +351,16 @@ async function makeGovernedWorld(label, { blueprintSource, legacyTerminal = fals
     scratchRoot: dir,
     // REAL bound-blueprint resolution seam: the Host's `resolveBoundBlueprint`.
     resolveBoundBlueprint: () => boundBlueprint,
-    // DOUBLE 2 (labelled): the durable read. The MAPPING below is the Host's.
-    readAuthority: async () => governed.governedAuthorityReference({ generation: state.generation, lifecycle: state.lifecycle }),
+    // DOUBLE 2 (labelled): the durable read. The MAPPING below is the Host's,
+    // including the fresh-create window: `freshCreate` is forwarded from the
+    // Member descriptor exactly as `host.ts#readGovernedAuthority` does
+    // (`input.freshCreate === true`), so the fixture mounts in the SAME order
+    // the product does — the row may not exist yet.
+    readAuthority: async (input) => governed.governedAuthorityReference({
+      generation: state.generation,
+      lifecycle: state.lifecycle,
+      freshCreate: input?.freshCreate === true,
+    }),
     // DOUBLE 1 (labelled): no kernel process is spawned by this suite.
     processProvider: confined,
   })
@@ -370,22 +387,22 @@ function governedConfig(extra = {}) {
   return row.a5sfRealmConfigOf({ a5sfGovernedRealm: true, ...extra })
 }
 
-function memberOf(world) {
+function memberOf(world, bindPath = 'fresh-member') {
   return {
     sessionId: `session-${world.label}`,
     instanceId: MEMBER,
     teamRootSessionId: `team-root-${world.label}`,
     templateId: TEMPLATE,
-    bindPath: 'fresh-member',
+    bindPath,
   }
 }
 
-async function mountGoverned(world, config = governedConfig()) {
+async function mountGoverned(world, config = governedConfig(), bindPath = 'fresh-member') {
   return row.mountMemberA5sfRealm({
     root: world.agentCtx,
     a5sfConfig: config,
     provider: () => world.provider,
-    member: memberOf(world),
+    member: memberOf(world, bindPath),
   })
 }
 
@@ -684,9 +701,14 @@ test('G5 ARCHIVED / DISPOSED / vanished Member rows are NOT admitted, and the pr
     assert.equal(reference.instanceGeneration, 3, 'the generation is still reported honestly')
     assert.equal(reference.revision, 'a4:overlay-generation:3')
 
+    // A VANISHED row means "the row a resume expected is gone" — that is the
+    // COLD path, not the fresh-create window (a fresh creation with no row is
+    // admitted by design, G5c). ARCHIVED/DISPOSED are durable rows and refuse
+    // on both paths.
+    const bindPath = label === 'missing' ? 'cold-member' : 'fresh-member'
     const world = await makeGovernedWorld(`g5-${label}`, { state: { generation: 3, lifecycle } })
     await assert.rejects(
-      () => world.provider.compiledFor(memberOf(world)),
+      () => world.provider.compiledFor(memberOf(world, bindPath)),
       (error) => {
         assert.equal(error.code, 'MEMBER_POLICY_UNAVAILABLE', 'the ONE compiler refused before any realm existed')
         assert.match(error.message, /AUTHORITY_REFUSED/)
@@ -695,7 +717,7 @@ test('G5 ARCHIVED / DISPOSED / vanished Member rows are NOT admitted, and the pr
       `${label} must not get a realm`,
     )
     // And the MOUNT refuses too (no realm, no faces, no shadow).
-    await assert.rejects(() => mountGoverned(world), /AUTHORITY_REFUSED/)
+    await assert.rejects(() => mountGoverned(world, governedConfig(), bindPath), /AUTHORITY_REFUSED/)
   }
 })
 
@@ -732,6 +754,40 @@ test('G5c the fresh-create window admits ONLY a not-yet-written row, and a durab
       true,
       `${lifecycle} stays admitted in the window`,
     )
+  }
+})
+
+// G5d — THE FIXTURE'S OWN ORDERING IS PINNED (WINDOW-HUNT, 2026-11-12). The
+// class #649 found was "in-process tests mount after the row existed; the
+// product mounts before it". G5c pins the mapping; this arm pins that the
+// SUITE mounts in the product's order: the default world has no durable row,
+// the mount goes through the window, and the row that lands AFTER the mount is
+// what a later cold attach reads (and its absence refuses).
+test('G5d the suite mounts BEFORE the row exists, and the row written after the mount wins on a cold re-attach', async () => {
+  const world = await makeGovernedWorld('g5d')
+  try {
+    assert.equal(world.state.lifecycle, undefined, 'the fixture must start with NO durable MemberInstance row (the product order)')
+    const mounted = await mountGoverned(world)
+    assert.notEqual(mounted, undefined, 'the realm mounts inside the pre-row window, exactly as in createChildSession')
+    assert.equal(world.state.lifecycle, undefined, 'the mount itself did not invent a durable row')
+
+    // The activation flow commits the row AFTER the child session exists; a cold
+    // re-attach (no window) then reads that durable fact.
+    world.state.lifecycle = 'CREATED'
+    const cold = await world.provider.compiledFor(memberOf(world, 'cold-member'))
+    assert.notEqual(cold, undefined, 'a cold attach reads the committed row')
+    assert.equal(cold.members[0].policy.ok, true)
+
+    // ... and once the durable row is gone again, the COLD path refuses: the
+    // window is not a general "missing row is fine" fallback.
+    world.state.lifecycle = undefined
+    await assert.rejects(
+      () => world.provider.compiledFor(memberOf(world, 'cold-member')),
+      /AUTHORITY_REFUSED/,
+      'a cold resume with no row is a vanished Member, not a fresh creation',
+    )
+  } finally {
+    await world.root.dispose?.()
   }
 })
 
