@@ -1054,6 +1054,19 @@ function lastTriggerIndex(req) {
 }
 
 /** The chain trigger text (see lastTriggerIndex). */
+/**
+ * Count wake TURN STARTS. A fresh wake delivery has exactly the wake text as
+ * its only message (`messageCount === 1`); later model calls of that same turn
+ * carry prior assistant/tool messages. A native resume of the crashed turn
+ * therefore appears as `messageCount > 1`, while a newly delivered wake
+ * appears as `messageCount === 1`. Two starts = two deliveries.
+ */
+function wakeStartCount(requests) {
+  return requests.filter((request) =>
+    /^\[team-review-wake wakeId=([^\]]+)\]/.test(lastUserTextOf(request))
+    && (request.body?.messages?.length ?? 0) === 1).length
+}
+
 function lastUserTextOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
@@ -1192,9 +1205,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       wakeRows = existsSync(markerDir)
         ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
         : []
-      wakesBefore = new Set(mock.requests
-        .map((r) => /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1])
-        .filter((id) => id !== undefined)).size
+      wakesBefore = wakeStartCount(mock.requests)
       if (wakeRows.length > 0 && wakesBefore > 0) break
       await new Promise((resolve) => setTimeout(resolve, 250))
     }
@@ -1205,6 +1216,11 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const pendingBefore = readControlLedger(CREATE_ROOT_A6).requests.filter(
       (r) => !readControlLedger(CREATE_ROOT_A6).decisions.some((d) => d.requestId === r.requestId),
     ).map((r) => r.requestId)
+    const requestsAtRestart = mock.requests.length
+    const wakeTraceBefore = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null }
+    }).filter((row) => row !== null)
     let restartError = null
     let wakesAfterRestart = wakesBefore
     let rowsAfterRestart = wakeRows
@@ -1231,7 +1247,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       rowsAfterRestart = existsSync(markerDir)
         ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
         : []
-      wakesAfterRestart = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      wakesAfterRestart = wakeStartCount(mock.requests)
       const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
       const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
       if (bootUrl === undefined) throw new Error('no boot URL after inbox crash')
@@ -1245,9 +1261,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       // ledger: one replacement wake, never a duplicate of the consumed one.
       const replacementDeadline = Date.now() + 90_000
       while (Date.now() < replacementDeadline) {
-        wakesAfterDrain = new Set(mock.requests
-          .map((r) => /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1])
-          .filter((id) => id !== undefined)).size
+        wakesAfterDrain = wakeStartCount(mock.requests)
         if (wakesAfterDrain > wakesAfterRestart) break
         await new Promise((resolve) => setTimeout(resolve, 250))
       }
@@ -1275,8 +1289,15 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       && pendingBefore.every((id) => decidedAfter.has(id) || pendingAfter.some((r) => r.requestId === id))
     check('A6-25', 'a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided', inboxOk,
       `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} pendingBefore=${pendingBefore.length} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
+    const wakeTraceAfter = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+    }).filter((row) => row !== null)
     writeEvidence('a6-inbox-reconcile.json', {
       busySeen,
+      requestsAtRestart,
+      wakeTraceBefore,
+      wakeTraceAfter,
       wakesBefore,
       wakesAfterRestart,
       wakesAfterDrain,
@@ -1483,6 +1504,22 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       pa = current.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
       decided = pa === null ? null : current.decisions.find((d) => d.requestId === pa.requestId) ?? null
       consumed = pa === null ? null : current.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+      if (crashMode === 'body') {
+        // A delaying command is classified into the A5 parameter-permission
+        // lane in this fixture; approve any open row through the same remote
+        // human entry so the Plane PA leg can be created and the body can
+        // start. This is a crash-window probe, not an approval-path claim.
+        for (const request of current.requests) {
+          if (current.decisions.some((d) => d.requestId === request.requestId)) continue
+          if (current.abandonments.some((a) => a.requestId === request.requestId)) continue
+          await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: request.requestId,
+            decision: 'allow',
+            note: 'c1 smoke A6 body-start probe: approve the parameter lane',
+          }, 'c1a6body', 4)
+        }
+      }
       const ready = crashMode === 'request'
         || (crashMode === 'allow' && decided !== null && decided.decision === 'allow')
         || (crashMode === 'consume' && consumed !== null)
@@ -1526,6 +1563,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       if (cookie2 === null) throw new Error(`restart auth failed: ${authError?.message ?? 'unknown'}`)
       afterRestart.booted = { origin: origin2, cookie: cookie2, host: h2 }
       afterRestart.error = null
+      // Recovery runs after readiness; give it a beat to finish the
+      // settlement write before the probe reads the final ledger.
+      await new Promise((resolve) => setTimeout(resolve, 3000))
     } catch (error) {
       afterRestart.error = String(error?.message ?? error)
     }
