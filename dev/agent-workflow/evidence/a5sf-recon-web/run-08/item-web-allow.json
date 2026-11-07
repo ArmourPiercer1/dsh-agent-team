@@ -1,0 +1,171 @@
+{
+  "schema": "a5sf-recon-web/item/1",
+  "at": "2026-11-07T16:25:05.892Z",
+  "lane": "allow",
+  "caseIds": [
+    "web-allow-fetch",
+    "web-allow-search"
+  ],
+  "member": {
+    "instanceId": "inst-1msngdn0q2ln",
+    "childSessionId": "session-team-child-ad9c5265e37acd0e25b88e4932066c4e",
+    "templateId": "weballow",
+    "label": "recon-web-allow",
+    "legacy": true,
+    "note": "the template declares NO capabilities block -> permissionPolicy absent -> the legacy (non-strict) caller path"
+  },
+  "preset": {
+    "member": "a5sf-recon-web-member",
+    "module": "@deepseek-ai/dsh-tool-web",
+    "tools": [
+      "web_fetch",
+      "web_search"
+    ]
+  },
+  "surface": {
+    "memberToolsFromModelRequest": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "web_fetch",
+      "web_search",
+      "write"
+    ],
+    "hasWebFetch": true,
+    "hasWebSearch": true
+  },
+  "model": {
+    "requests": 1,
+    "toolResults": []
+  },
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1msngdn0q2ln",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+      "method": "web:fetch",
+      "locator": "http://127.0.0.1:45605/page?lane=allow",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:25:05.625Z",
+      "annotations": [
+        "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+        "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1msngdn0q2ln",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:25:05.654Z",
+      "annotations": [
+        "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+        "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+      ]
+    }
+  ],
+  "guardFactCount": 2,
+  "endpoint": {
+    "origin": "http://127.0.0.1:45605",
+    "requestsDuringTurn": [
+      {
+        "at": "2026-11-07T16:25:05.631Z",
+        "method": "GET",
+        "path": "/page",
+        "query": "?lane=allow",
+        "host": "127.0.0.1:45605",
+        "userAgent": null
+      },
+      {
+        "at": "2026-11-07T16:25:05.658Z",
+        "method": "GET",
+        "path": "/search",
+        "query": "",
+        "host": "127.0.0.1:45605",
+        "userAgent": null
+      }
+    ],
+    "countDuringTurn": 2,
+    "totalAfterTurn": 2
+  },
+  "providerEntries": {
+    "rows": [
+      {
+        "at": "2026-11-07T16:25:05.627Z",
+        "leg": "provider-entry",
+        "channel": "fetch",
+        "realm": "member:inst-1msngdn0q2ln",
+        "url": "http://127.0.0.1:45605/page?lane=allow"
+      },
+      {
+        "at": "2026-11-07T16:25:05.656Z",
+        "leg": "provider-entry",
+        "channel": "search",
+        "realm": "member:inst-1msngdn0q2ln",
+        "requestKeys": [
+          "maxResults",
+          "query"
+        ],
+        "hasQueryString": true,
+        "hasQueriesArray": false
+      }
+    ],
+    "count": 2,
+    "counterFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-24-03Z/web-provider.jsonl"
+  },
+  "capabilityProbes": {
+    "rows": [],
+    "count": 0,
+    "note": "the guard's own question to the backend; it enters no fetch/search/transport/dns/connect channel"
+  },
+  "hostWebEntries": 0,
+  "checks": {
+    "memberSurfaceHasPair": true,
+    "modelTurnRan": true,
+    "expectedFactTotal": true,
+    "expectedSearchFacts": true,
+    "fetchFactMethod": true,
+    "searchFactMethod": true,
+    "decisionsMatchLane": true,
+    "endpointObservedExpected": true,
+    "providerEntriesMatchLane": true,
+    "noHostWebFallback": true,
+    "fetchBytesReturned": false,
+    "searchBytesReturned": false
+  },
+  "verdict": "REFUTED",
+  "limits": {
+    "wording": "Refusing to fetch is **not** evidence of network isolation: it is a statement about our own admission code, made before the OS was asked.",
+    "detail": "The bytes came back over an ordinary in-process loopback connection made by the composition transport. This is not confinement of anything.",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

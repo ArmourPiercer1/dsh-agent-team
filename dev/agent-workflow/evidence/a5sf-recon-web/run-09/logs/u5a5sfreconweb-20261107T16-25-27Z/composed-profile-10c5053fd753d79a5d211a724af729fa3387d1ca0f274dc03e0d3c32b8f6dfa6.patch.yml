@@ -1,0 +1,145 @@
+# U6-fs World: canary + probe rows + the production Team row, p6t6
+# observer and preset declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "u6-fs-probe-host"
+      name: "./u6-fs-probe-host.mjs"
+    - id: "a5sf-recon-web-offer"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/recon-web-offer-row.mjs"
+      config:
+        allowRoot: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/workspace"
+        readAllow:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/workspace"
+        writeAllow:
+          - "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/workspace"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/web-provider.jsonl"
+        hostWebCounterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/host-web.jsonl"
+        endpoint: "http://127.0.0.1:44671"
+        networkAllowTemplates:
+          - "weballow"
+        networkDenyTemplates:
+          - "webdeny"
+        bindingIdentity: "team/web"
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-a5sf-recon-web-anchor"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5sf.recon.web.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5sf recon-web anchor team. The driver measures your model-facing tool surface. MK_RECON_WEB_DISC. Reply with one short line and stop; call no tool.\"\nmembers:\n  - templateId: weballow\n    persona: \"You are an a5sf recon web worker.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/blueprints"
+        rootPresetId: "a5sf-recon-web-leader"
+        memberPresetId: "a5sf-recon-web-member"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "a5sf-recon-web-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/packages/runtime/root-binding/harness/seam.mjs"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/a5sf-consult.jsonl"
+        a5sfNativeToolModules:
+          - url: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js"
+            config:
+              fetch: true
+              search: true
+              searchTimeoutMs: 60000
+        defaultWorkspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-25-27Z/workspace"
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-recon-web-leader"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-recon-web-leader"
+        name: "a5sf recon-web leader base"
+        description: "the LEADER preset: persona + tool-fs + persistent shell. It deliberately does NOT surface web_fetch/web_search."
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+    - id: "preset-a5sf-recon-web-member"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-recon-web-member"
+        name: "a5sf recon-web member base"
+        description: "the MEMBER preset: the smoke preset plus the pinned @deepseek-ai/dsh-tool-web (both tools). This is the pair route-C re-mounts on the realm scope."
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+          - id: "tool-web"
+            name: "@deepseek-ai/dsh-tool-web"
+            config:
+              fetch: true
+              search: true
+              searchTimeoutMs: 60000
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false

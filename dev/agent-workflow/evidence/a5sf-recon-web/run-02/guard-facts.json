@@ -1,0 +1,79 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-14-03Z/a5sf-consult.jsonl",
+  "facts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1msngdn0q2ln",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+      "method": "web:fetch",
+      "locator": "http://127.0.0.1:46071/page",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:14:48.974Z",
+      "annotations": [
+        "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+        "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1msngdn0q2ln",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1msngdn0q2ln:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:14:49.004Z",
+      "annotations": [
+        "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+        "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:fetch",
+      "locator": "http://127.0.0.1:46071/page",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 1,
+      "observedAt": "2026-11-07T16:14:49.519Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 2,
+      "observedAt": "2026-11-07T16:14:49.540Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-1fq2hno0l8w8",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf-recon-web:inst-1fq2hno0l8w8:g1",
+      "method": "web:search",
+      "locator": "<search:malformed-request>",
+      "decision": "deny",
+      "decidedBy": "NETWORK_UNCONFINED_REALM",
+      "sequence": 3,
+      "observedAt": "2026-11-07T16:14:49.540Z"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false
+}

@@ -1,0 +1,129 @@
+{
+  "recordClass": "DEV-LIVE",
+  "ledgerPath": "run-ledger.jsonl",
+  "plannedStarts": 1,
+  "boots": 0,
+  "rows": [
+    {
+      "at": "2026-11-07T16:15:38.036Z",
+      "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "budget-intent",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-intent",
+      "world": "intent:devlive-web-recon-1",
+      "grantId": "devlive-web-recon-1",
+      "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+      "face": "Web",
+      "worldLine": "a5sfreconweb",
+      "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-07T16:16:00.685Z",
+      "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "dev-live-outcome",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-outcome",
+      "world": "a5sfreconweb",
+      "grantId": "devlive-web-recon-1",
+      "face": "Web",
+      "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "overall": "FAIL",
+      "cases": [
+        {
+          "id": "web-allow-fetch",
+          "verdict": "FAIL"
+        },
+        {
+          "id": "web-allow-search",
+          "verdict": "FAIL"
+        },
+        {
+          "id": "web-deny-fetch",
+          "verdict": "FAIL"
+        },
+        {
+          "id": "web-deny-search",
+          "verdict": "FAIL"
+        }
+      ],
+      "teardown": {
+        "host": {
+          "wasRunning": false
+        },
+        "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z",
+        "releasedPorts": [
+          3498
+        ],
+        "killedPids": [],
+        "notes": []
+      }
+    }
+  ],
+  "intentRow": {
+    "at": "2026-11-07T16:15:38.036Z",
+    "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "budget-intent",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-intent",
+    "world": "intent:devlive-web-recon-1",
+    "grantId": "devlive-web-recon-1",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+    "face": "Web",
+    "worldLine": "a5sfreconweb",
+    "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "plannedStarts": 1
+  },
+  "bootRow": null,
+  "outcomeRow": {
+    "at": "2026-11-07T16:16:00.685Z",
+    "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "dev-live-outcome",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-outcome",
+    "world": "a5sfreconweb",
+    "grantId": "devlive-web-recon-1",
+    "face": "Web",
+    "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "overall": "FAIL",
+    "cases": [
+      {
+        "id": "web-allow-fetch",
+        "verdict": "FAIL"
+      },
+      {
+        "id": "web-allow-search",
+        "verdict": "FAIL"
+      },
+      {
+        "id": "web-deny-fetch",
+        "verdict": "FAIL"
+      },
+      {
+        "id": "web-deny-search",
+        "verdict": "FAIL"
+      }
+    ],
+    "teardown": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z",
+      "releasedPorts": [
+        3498
+      ],
+      "killedPids": [],
+      "notes": []
+    }
+  },
+  "devLiveOutcomeRecorded": true,
+  "osLevelNetworkIsolationClaimed": false
+}

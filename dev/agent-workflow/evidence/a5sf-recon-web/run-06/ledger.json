@@ -1,0 +1,158 @@
+{
+  "recordClass": "DEV-LIVE",
+  "ledgerPath": "run-ledger.jsonl",
+  "plannedStarts": 1,
+  "boots": 1,
+  "rows": [
+    {
+      "at": "2026-11-07T16:18:35.144Z",
+      "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "budget-intent",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-intent",
+      "world": "intent:devlive-web-recon-1",
+      "grantId": "devlive-web-recon-1",
+      "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+      "face": "Web",
+      "worldLine": "a5sfreconweb",
+      "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-07T16:18:52.116Z",
+      "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+      "suite": "a5sf-recon-web",
+      "recordClass": "DEV-LIVE",
+      "world": "u5a5sfreconweb-20261107T16-18-35Z",
+      "phase": "a5sf-recon-web-boot1"
+    },
+    {
+      "at": "2026-11-07T16:19:13.435Z",
+      "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "dev-live-outcome",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-outcome",
+      "world": "a5sfreconweb",
+      "grantId": "devlive-web-recon-1",
+      "face": "Web",
+      "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+      "overall": "PASS",
+      "cases": [
+        {
+          "id": "web-allow-fetch",
+          "verdict": "PASS"
+        },
+        {
+          "id": "web-allow-search",
+          "verdict": "PASS"
+        },
+        {
+          "id": "web-deny-fetch",
+          "verdict": "PASS"
+        },
+        {
+          "id": "web-deny-search",
+          "verdict": "PASS"
+        }
+      ],
+      "teardown": {
+        "host": {
+          "wasRunning": true,
+          "pid": 22,
+          "killed": true,
+          "portFree": true
+        },
+        "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-18-35Z",
+        "releasedPorts": [
+          3184,
+          3494,
+          3184
+        ],
+        "killedPids": [
+          22
+        ],
+        "notes": []
+      }
+    }
+  ],
+  "intentRow": {
+    "at": "2026-11-07T16:18:35.144Z",
+    "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "budget-intent",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-intent",
+    "world": "intent:devlive-web-recon-1",
+    "grantId": "devlive-web-recon-1",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+    "face": "Web",
+    "worldLine": "a5sfreconweb",
+    "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "plannedStarts": 1
+  },
+  "bootRow": {
+    "at": "2026-11-07T16:18:52.116Z",
+    "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+    "suite": "a5sf-recon-web",
+    "recordClass": "DEV-LIVE",
+    "world": "u5a5sfreconweb-20261107T16-18-35Z",
+    "phase": "a5sf-recon-web-boot1"
+  },
+  "outcomeRow": {
+    "at": "2026-11-07T16:19:13.435Z",
+    "runId": "a5sf-recon-web-2026-11-07T16-18-35-143Z",
+    "suite": "a5sf-read",
+    "recordClass": "DEV-LIVE",
+    "kind": "dev-live-outcome",
+    "scope": "dev-live",
+    "phase": "a5sf-read-dev-live-outcome",
+    "world": "a5sfreconweb",
+    "grantId": "devlive-web-recon-1",
+    "face": "Web",
+    "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "overall": "PASS",
+    "cases": [
+      {
+        "id": "web-allow-fetch",
+        "verdict": "PASS"
+      },
+      {
+        "id": "web-allow-search",
+        "verdict": "PASS"
+      },
+      {
+        "id": "web-deny-fetch",
+        "verdict": "PASS"
+      },
+      {
+        "id": "web-deny-search",
+        "verdict": "PASS"
+      }
+    ],
+    "teardown": {
+      "host": {
+        "wasRunning": true,
+        "pid": 22,
+        "killed": true,
+        "portFree": true
+      },
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-18-35Z",
+      "releasedPorts": [
+        3184,
+        3494,
+        3184
+      ],
+      "killedPids": [
+        22
+      ],
+      "notes": []
+    }
+  },
+  "devLiveOutcomeRecorded": true,
+  "osLevelNetworkIsolationClaimed": false
+}

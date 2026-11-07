@@ -1,0 +1,6 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z/a5sf-consult.jsonl",
+  "facts": [],
+  "abortedAt": "boot-host",
+  "osLevelNetworkIsolationClaimed": false
+}

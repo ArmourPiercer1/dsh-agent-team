@@ -1,0 +1,53 @@
+[2026-11-07T16:04:14.791Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web
+[2026-11-07T16:04:14.792Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use
+[2026-11-07T16:04:14.792Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-07T16:04:14.831Z] offer row imports; exports apply + name
+[2026-11-07T16:04:14.831Z] marker routing table present
+[2026-11-07T16:04:14.834Z] HEAD=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:04:14.843Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-07T16:04:14.847Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-07T16:04:14.852Z] controlled local endpoint listening at http://127.0.0.1:45657
+[2026-11-07T16:04:14.895Z] shared preflight verdict=FAIL findings=31 tolerated=0 blocking=31
+[2026-11-07T16:04:14.896Z] preflight blocking findings: [{"code":"IDENTITY_ROOT_MISMATCH","detail":"ACCEPTANCE_ROOT_MISMATCH: createRoot must be a non-blank session id (got undefined)"},{"code":"IDENTITY_MEMBER_BINDING_MISSING","detail":"case web-allow-fetch rides a data-plane face but declares no Member/ToolBinding identity; a verdict would not be attributable"},{"code":"IDENTITY_MEMBER_BINDING_MISSING","detail":"case web-allow-search rides a data-plane face but declares no Member/ToolBinding identity; a verdict would not be attributable"},{"code":"IDENTITY_MEMBER_BINDING_MISSING","detail":"case web-deny-fetch rides a data-plane face but declares no Member/ToolBinding identity; a verdict would not be attributable"},{"code":"IDENTITY_MEMBER_BINDING_MISSING","detail":"case web-deny-search rides a data-plane face but declares no Member/ToolBinding identity; a verdict would not be attributable"},{"code":"POLICY_EFFECTIVE_LANE_EMPTY","detail":"policy.effectiveReadAllow is empty; every read case would be vacuous and every deny case trivially true"},{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"},{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-fetch expects DENY on the network axis but policy.networkAccess=undefined"},{"code":"POLICY_NETWORK_PROBE_NOT_ENFORCED","detail":"case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"},{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow
+[2026-11-07T16:04:14.896Z] FATAL: Error: PREFLIGHT_BLOCKING_FINDINGS: the shared preflight refused the plan for a reason outside the recorded ALLOW-vocabulary gap
+    at plan (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs:696:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-07T16:05:59.501Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web
+[2026-11-07T16:05:59.503Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use
+[2026-11-07T16:05:59.503Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-07T16:05:59.539Z] offer row imports; exports apply + name
+[2026-11-07T16:05:59.539Z] marker routing table present
+[2026-11-07T16:05:59.543Z] HEAD=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:05:59.553Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-07T16:05:59.557Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-07T16:05:59.562Z] controlled local endpoint listening at http://127.0.0.1:45289
+[2026-11-07T16:05:59.612Z] shared preflight verdict=FAIL findings=4 tolerated=0 blocking=4
+[2026-11-07T16:05:59.613Z] preflight blocking findings: [{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"},{"code":"POLICY_NETWORK_PROBE_NOT_ENFORCED","detail":"case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"},{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"},{"code":"POLICY_NETWORK_PROBE_NOT_ENFORCED","detail":"case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"}]
+[2026-11-07T16:05:59.613Z] FATAL: Error: PREFLIGHT_BLOCKING_FINDINGS: the shared preflight refused the plan for a reason outside the recorded ALLOW-vocabulary gap
+    at plan (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs:715:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-07T16:06:07.590Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web
+[2026-11-07T16:06:07.591Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use
+[2026-11-07T16:06:07.591Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-07T16:06:07.627Z] offer row imports; exports apply + name
+[2026-11-07T16:06:07.627Z] marker routing table present
+[2026-11-07T16:06:07.631Z] HEAD=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:06:07.640Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-07T16:06:07.644Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-07T16:06:07.648Z] controlled local endpoint listening at http://127.0.0.1:46155
+[2026-11-07T16:06:07.695Z] shared preflight verdict=FAIL findings=4 tolerated=0 blocking=4
+[2026-11-07T16:06:07.696Z] preflight blocking findings: [{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"},{"code":"POLICY_NETWORK_PROBE_NOT_ENFORCED","detail":"case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"},{"code":"POLICY_EXPECTATION_CONTRADICTS_LANE","detail":"case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"},{"code":"POLICY_NETWORK_PROBE_NOT_ENFORCED","detail":"case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"}]
+[2026-11-07T16:06:07.696Z] FATAL: Error: PREFLIGHT_BLOCKING_FINDINGS: the shared preflight refused the plan for a reason outside the recorded ALLOW-vocabulary gap
+    at plan (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs:721:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-07T16:06:12.823Z] PLAN MODE — host-free composition. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web
+[2026-11-07T16:06:12.824Z] pinned host=639ed015397290b3745d163aafe02ffee4aa3f84 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use
+[2026-11-07T16:06:12.824Z] pinned module present: tool-web -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+[2026-11-07T16:06:12.856Z] offer row imports; exports apply + name
+[2026-11-07T16:06:12.856Z] marker routing table present
+[2026-11-07T16:06:12.859Z] HEAD=235e1af8bab954bbca4852d2f5a538de043b66e8
+[2026-11-07T16:06:12.868Z] anchor blueprint parses (leader legacy, one member template)
+[2026-11-07T16:06:12.872Z] main blueprint template parses; expected deny=["u5_canary","u6fs_probe"]
+[2026-11-07T16:06:12.876Z] controlled local endpoint listening at http://127.0.0.1:46407
+[2026-11-07T16:06:12.922Z] shared preflight verdict=FAIL findings=4 tolerated=4 blocking=0
+[2026-11-07T16:06:12.923Z] PLAN OK — zero Host starts spent

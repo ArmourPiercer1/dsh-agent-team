@@ -1,0 +1,156 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+  "suite": "a5sf-recon-web",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T16:15:38.035Z",
+  "selectedCases": [
+    "web-allow-fetch",
+    "web-allow-search",
+    "web-deny-fetch",
+    "web-deny-search"
+  ],
+  "bindings": {
+    "teamSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use",
+    "line": "a5sfreconweb",
+    "recordClass": "DEV-LIVE",
+    "candidateClaimEligibility": "DEV-LIVE record: never eligible for a V@B=yes or any frozen-candidate claim (enforced by run-record.mjs#finalize)",
+    "face": "Web",
+    "worldLine": "a5sfreconweb",
+    "grantScope": "DEV-LIVE",
+    "grantId": "devlive-web-recon-1",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+    "sink": "world-home a5sf-consult.jsonl (copy: guard-facts.json)",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261105r2",
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0"
+      },
+      "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+    },
+    "providerComposition": "test row recon-web-offer-row.mjs (composition compiles the lane with the ONE compiler compileEffectiveIo); the confined web face, the guard, the capability probe and PD-15 are the shipped dist modules",
+    "providerSelection": "the in-process composition transport to the controlled 127.0.0.1 endpoint; the inherited host web service is wrapped read-only as a tripwire",
+    "transport": "REAL in-process loopback HTTP to the driver-owned local endpoint (127.0.0.1:ephemeral); no external egress",
+    "endpoint": "http://127.0.0.1:44997",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "cases": [
+    {
+      "id": "web-allow-fetch",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:16:00.684Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "web-allow-search",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:16:00.684Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "web-deny-fetch",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:16:00.684Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "web-deny-search",
+      "verdict": "FAIL",
+      "at": "2026-11-07T16:16:00.684Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-03/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T16:15:38.036Z",
+        "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-web-recon-1",
+        "grantId": "devlive-web-recon-1",
+        "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+        "face": "Web",
+        "worldLine": "a5sfreconweb",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T16:16:00.685Z",
+        "runId": "a5sf-recon-web-2026-11-07T16-15-38-035Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "dev-live-outcome",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-outcome",
+        "world": "a5sfreconweb",
+        "grantId": "devlive-web-recon-1",
+        "face": "Web",
+        "headCommit": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+        "overall": "FAIL",
+        "cases": [
+          {
+            "id": "web-allow-fetch",
+            "verdict": "FAIL"
+          },
+          {
+            "id": "web-allow-search",
+            "verdict": "FAIL"
+          },
+          {
+            "id": "web-deny-fetch",
+            "verdict": "FAIL"
+          },
+          {
+            "id": "web-deny-search",
+            "verdict": "FAIL"
+          }
+        ],
+        "teardown": {
+          "host": {
+            "wasRunning": false
+          },
+          "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z",
+          "releasedPorts": [
+            3498
+          ],
+          "killedPids": [],
+          "notes": []
+        }
+      }
+    ]
+  },
+  "partial": true,
+  "abortedAt": "boot-host",
+  "abort": {
+    "stage": "boot-host",
+    "detail": null,
+    "error": "DevLiveSlotError: DEV_LIVE_LIMIT_REACHED: the machine already runs 2 dev Host(s), the owner ruling caps development boots at 2; finish or tear down one before starting another (slots: #0 pid=3 run=a5sf-live-member-2026-11-07T16-15-13-868Z-b1 world=u5a5sfsub1; #1 pid=3 run=a5sf-live-member-2026-11-07T16-15-31-159Z-b1 world=u5a5sfsub1)\n    at acquireDevLiveSlot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/world-factory/lib/dev-live-slots.mjs:206:11)\n    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/world-factory/suites/150-a5sf-read.mjs:628:16)\n    at boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/dev/agent-workflow/evidence/a5sf-recon-web/run-boot.mjs:922:28)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-web-2026-11-07T16-15-38-035Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-07T16:16:00.685Z",
+  "osLevelNetworkIsolationClaimed": false
+}

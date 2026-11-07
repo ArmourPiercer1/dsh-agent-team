@@ -1,0 +1,9 @@
+{
+  "grantId": "devlive-web-recon-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+  "face": "Web",
+  "world": "a5sfreconweb",
+  "note": "D-face (Web) recon: attribution of the allow and deny lanes on one governed Member, against a controlled local endpoint. No candidate claim, no cumulative cap, at most 2 concurrent dev Hosts for this lane (machine-wide cap raised to 6 by the 2026-11-13 ruling).",
+  "osLevelNetworkIsolationClaimed": false
+}

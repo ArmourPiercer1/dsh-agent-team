@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-07T16:15:38.043Z",
+  "head": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/deepseek-harness-test-use",
+  "worldId": "u5a5sfreconweb-20261107T16-15-38Z",
+  "rows": [
+    "a5sf-recon-web-offer",
+    "dsh-agent-team",
+    "p6t6-team-tools",
+    "preset-a5sf-recon-web-leader",
+    "preset-a5sf-recon-web-member"
+  ],
+  "paths": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z/workspace",
+    "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z/a5sf-consult.jsonl",
+    "counter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z/web-provider.jsonl",
+    "hostWebCounter": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-d-web/tests/homes/u5a5sfreconweb-20261107T16-15-38Z/host-web.jsonl"
+  },
+  "endpoint": {
+    "origin": "http://127.0.0.1:44997",
+    "port": 44997
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "snapshotVersion": "as20261105r2",
+    "contentDigest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+    "baseline": "1484fa4ee0ff9326a3dafcac060bf63f8d334a1f",
+    "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a"
+  },
+  "grant": {
+    "grantId": "devlive-web-recon-1",
+    "scope": "DEV-LIVE",
+    "grantedBy": "owner 2026-11-09 ruling (docs/DEV-LIVE-OPERATOR-GUIDE.md), relayed for the Web face; recon reuse for the D-face (Web) attribution round 2026-11-13",
+    "face": "Web",
+    "world": "a5sfreconweb",
+    "note": "D-face (Web) recon: attribution of the allow and deny lanes on one governed Member, against a controlled local endpoint. No candidate claim, no cumulative cap, at most 2 concurrent dev Hosts for this lane (machine-wide cap raised to 6 by the 2026-11-13 ruling).",
+    "osLevelNetworkIsolationClaimed": false
+  },
+  "preflight": {
+    "verdict": "FAIL",
+    "toleratedFindings": [
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-fetch expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-fetch claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      },
+      {
+        "code": "POLICY_EXPECTATION_CONTRADICTS_LANE",
+        "detail": "case web-allow-search expects ALLOW on the network axis; network=restricted is UNSUPPORTED this round"
+      },
+      {
+        "code": "POLICY_NETWORK_PROBE_NOT_ENFORCED",
+        "detail": "case web-allow-search claims a network denial but the backend probe is not declared enforced; on this host the call is REFUSED, so \"zero connects\" is unmeasurable"
+      }
+    ],
+    "blockingFindings": []
+  },
+  "osLevelNetworkIsolationClaimed": false
+}

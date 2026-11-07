@@ -1,0 +1,24 @@
+[2026-11-07T16:06:27.212Z] dev-live lease open: intent row written; grant=devlive-web-recon-1 face=Web world=a5sfreconweb slotHeld=false
+[2026-11-07T16:06:27.216Z] archive-before-start: 7 file(s) under archive/
+[2026-11-07T16:06:27.221Z] row handoff: ["a5sf-recon-web-offer","dsh-agent-team","p6t6-team-tools","preset-a5sf-recon-web-leader","preset-a5sf-recon-web-member"]
+[2026-11-07T16:06:43.471Z] mock started on port 3494
+[2026-11-07T16:07:04.602Z] BOOTED port=3185 (lease bootsSpent=1)
+[2026-11-07T16:07:04.616Z] authenticated (token never recorded)
+[2026-11-07T16:07:05.123Z] health 200 ready=true after 507ms (2 probe(s))
+[2026-11-07T16:07:05.546Z] discovery surface (22); deny list=["u5_canary","u6fs_probe"]
+[2026-11-07T16:07:05.583Z] main blueprint parsed; builtinToolDeny=["u5_canary","u6fs_probe"]
+[2026-11-07T16:07:05.803Z] team.create ok on session-a5sf-recon-web-team
+[2026-11-07T16:07:05.807Z] state-gate open
+[2026-11-07T16:07:05.809Z] live leader gate open: ["session-a5sf-recon-web-anchor","session-a5sf-recon-web-team"]
+[2026-11-07T16:07:05.954Z] delegate recon-web-allow: status=200
+[2026-11-07T16:09:36.181Z] only 0 qualifying fact(s) for inst-1msngdn0q2ln after 150210ms
+[2026-11-07T16:09:36.186Z] case web-allow-fetch: FAIL {"decidedBy":null,"endpointRequests":0,"providerEntries":0,"locator":null,"artifact":"item-web-allow.json"}
+[2026-11-07T16:09:36.186Z] case web-allow-search: FAIL {"decidedBy":null,"locator":null,"artifact":"item-web-allow.json"}
+[2026-11-07T16:09:36.380Z] delegate recon-web-deny: status=200
+[2026-11-07T16:12:06.616Z] only 0 qualifying fact(s) for inst-1fq2hno0l8w8 after 150205ms
+[2026-11-07T16:12:06.617Z] case web-deny-fetch: FAIL {"decidedBy":null,"decision":null,"locator":null,"endpointRequests":0,"providerEntries":0,"artifact":"item-web-deny.json"}
+[2026-11-07T16:12:06.617Z] case web-deny-search: FAIL {"decidedBy":null,"decision":null,"locator":null,"endpointRequests":0,"providerEntries":0,"artifact":"item-web-deny.json"}
+[2026-11-07T16:12:06.685Z] lifecycle: archiveStatus=200 archivedLifecycle=ARCHIVED followUpStatus=200 followUpOk=true
+[2026-11-07T16:12:06.836Z] teardown: portClosed=true homeRemoved=true
+[2026-11-07T16:12:06.836Z] RUN-SUMMARY run=a5sf-recon-web-2026-11-07T16-06-27-210Z suite=a5sf-recon-web overall=FAIL cases=4 FAIL:4 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T16:12:06.837Z] OVERALL=FAIL

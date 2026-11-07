@@ -1,0 +1,14 @@
+{"seq":1,"at":"2026-11-07T16:18:10.293Z","kind":"title","servedCount":1,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":2,"at":"2026-11-07T16:18:10.294Z","kind":"discovery","servedCount":1,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":3,"at":"2026-11-07T16:18:10.821Z","kind":"create","servedCount":1,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":4,"at":"2026-11-07T16:18:10.822Z","kind":"title","servedCount":2,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":5,"at":"2026-11-07T16:18:11.093Z","kind":"allow","servedCount":1,"disposition":"tool-call-fetch","replyKind":"tool-call","toolName":"web_fetch"}
+{"seq":6,"at":"2026-11-07T16:18:11.093Z","kind":"title","servedCount":3,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":7,"at":"2026-11-07T16:18:11.171Z","kind":"allow","servedCount":2,"disposition":"tool-call-search","replyKind":"tool-call","toolName":"web_search"}
+{"seq":8,"at":"2026-11-07T16:18:11.194Z","kind":"allow","servedCount":3,"disposition":"final-text","replyKind":"text","toolName":null}
+{"seq":9,"at":"2026-11-07T16:18:11.358Z","kind":"create","servedCount":2,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":10,"at":"2026-11-07T16:18:11.639Z","kind":"deny","servedCount":1,"disposition":"tool-call-fetch","replyKind":"tool-call","toolName":"web_fetch"}
+{"seq":11,"at":"2026-11-07T16:18:11.639Z","kind":"title","servedCount":4,"disposition":"harmless-text","replyKind":"text","toolName":null}
+{"seq":12,"at":"2026-11-07T16:18:11.715Z","kind":"deny","servedCount":2,"disposition":"tool-call-search","replyKind":"tool-call","toolName":"web_search"}
+{"seq":13,"at":"2026-11-07T16:18:11.739Z","kind":"deny","servedCount":3,"disposition":"final-text","replyKind":"text","toolName":null}
+{"seq":14,"at":"2026-11-07T16:18:11.892Z","kind":"create","servedCount":3,"disposition":"harmless-text","replyKind":"text","toolName":null}
