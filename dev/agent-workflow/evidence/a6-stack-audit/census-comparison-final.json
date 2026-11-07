@@ -1,0 +1,41 @@
+{
+  "head": "dc954c268998e414cce14f63876082da3be58934",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108/.artifacts/census/census-20261107T195315Z-3-1.json",
+      "files": 691,
+      "legs": 9056,
+      "ids": [
+        "TEST /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108/packages/runtime/test/a5sf-os-runner.test.ts::P1-07 real OS leg (Landlock launcher) refuses a network-deny policy when the backend cannot enforce it (no bare process)"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108/packages/runtime/test/a5sf-os-runner.test.ts::P1-07 real OS leg (Landlock launcher) refuses a network-deny policy when the backend cannot enforce it (no bare process)"
+    ],
+    "newReds": [
+      "TEST /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/a5a6-preview-20261108/packages/runtime/test/a5sf-os-runner.test.ts::P1-07 real OS leg (Landlock launcher) refuses a network-deny policy when the backend cannot enforce it (no bare process)"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 691,
+      "legs": 9056,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "691f/9056l",
+      "totalsNote": "captured 691f/9056l vs baseline-declared 626 / 7936"
+    }
+  }
+}

@@ -16,7 +16,7 @@
 | A6 commits since base | 283 | unchanged |
 | `archive/a6-int-20261108` | `e2135cb4e8b0452ca07edadb46b0ca1f121057f2` | original A6 docs HEAD preserved |
 | `alpha6/stack-20261108` | `bf2d693c85856f3c6c0a286e02270e146d0bb71f` | 9 product + 1 docs/evidence |
-| `preview/alpha5-alpha6-rc1` | `0e5528b98aa69fdda671c8aae16f9631e8735699` | merge of A5 + A6 stack |
+| `preview/alpha5-alpha6-rc1` | `0e5528b98aa69fdda671c8aae16f9631e8735699` | **merge commit** of A5 + A6 stack; later commits on this ref are evidence-only |
 | original product HEAD | `54f39e09d` | preserved in archive |
 | original docs HEAD | `e2135cb4e` | preserved in archive |
 
@@ -120,7 +120,7 @@ file was hand-merged.
 - Typecheck: all packages clean.
 - Testkit fence/merge-gate: 108/108 after the test-use symlink and stale
   adjudication correction.
-- Full gate at `0e5528b98`: **8/9 PASS**. The only failing leg is census,
+- Full gate at `0e5528b98` and again at the evidence tip: **8/9 PASS**. The only failing leg is census,
   with exactly one NEW RED:
 
   `packages/runtime/test/a5sf-os-runner.test.ts::P1-07 ... refuses a
