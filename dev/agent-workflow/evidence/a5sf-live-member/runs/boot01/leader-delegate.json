@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-lm-team",
+      "requestToken": "a5sf-lm-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-09-30Z/workspace",
+      "prompt": "a5sf-lm-turn: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-lm-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0htk69p0jfud\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e\",\"operationId\":\"op-1ll6r3t0u1qhh81rs3uon1cd\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-lm-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_LM_MEMBER_DONE Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-09-30Z/out-of-lane/secret-out-of-lane.txt' is outs\"}},\"requestToken\":\"a5sf-lm-turn-delegate\"}"
+  }
+}

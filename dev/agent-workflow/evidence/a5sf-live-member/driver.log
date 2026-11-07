@@ -1,0 +1,684 @@
+[2026-11-07T10:27:15.340Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-07T10:27:15.340Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-07T10:27:15.362Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-07T10:27:15.363Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/p"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/p"}]
+[2026-11-07T10:27:15.363Z] governed preset plugins (18): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,planning,compaction,delegation,tool-ask-user,tool-todo,tool-web,present,tool-plugin-manager
+[2026-11-07T10:27:15.363Z] PLAN OK
+[2026-11-07T10:27:21.741Z] ARCHIVE: (nothing to archive)
+[2026-11-07T10:27:21.744Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:27:21.773Z] host porcelain before: []
+[2026-11-07T10:27:21.832Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:27:21.833Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:27:21.841Z] [boot1] world=u5u5a5sfsub1-20261107T10-27-21Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-27-21Z
+[2026-11-07T10:27:21.843Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:27:38.041Z] [boot1] mock on 3494
+[2026-11-07T10:28:00.968Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-27-21Z/instance-port3185.log
+[2026-11-07T10:28:01.525Z] [boot1] p6t6 health=true
+[2026-11-07T10:28:01.795Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:28:01.796Z] [boot1] leader builtinToolDeny: ask_user_question,create_goal,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,send_message,skill,subagent,subagent_fork,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow
+[2026-11-07T10:28:01.888Z] [boot1] team.create status=200 ok=false {"type":"server-response","rpcId":"a5sflm-eyhkptvk4h","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5sf-lm-team' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agen
+[2026-11-07T10:28:01.889Z] [boot1] FAILED at team-create: Error: team.create failed: status=200 body={"type":"server-response","rpcId":"a5sflm-eyhkptvk4h","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5sf-lm-team' failed: tools.restrict() names unknown global tool \"subagent\"; known global tools: ask_user_question, bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, interrupt_agen
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:828:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1102:15)
+[2026-11-07T10:28:01.978Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-27-21Z","releasedPorts":[3185,3494,3185],"killedPids":[100],"notes":[]}
+[2026-11-07T10:28:02.006Z] boot 1 failed at team-create; continuing is pointless (no agreeing pair)
+[2026-11-07T10:28:02.007Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+f
+a
+c
+t
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedLauncherSpawns
+payloadInLane
+payloadSecret
+baseSpawnsWithMarker
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T10:28:02.035Z] host porcelain after: []
+[2026-11-07T10:28:02.035Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:28:59.247Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-28-59-246Z
+[2026-11-07T10:28:59.250Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:28:59.278Z] host porcelain before: []
+[2026-11-07T10:28:59.341Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:28:59.341Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:28:59.345Z] [boot1] world=u5u5a5sfsub1-20261107T10-28-59Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-28-59Z
+[2026-11-07T10:28:59.346Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:29:15.562Z] [boot1] mock on 3494
+[2026-11-07T10:29:38.196Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-28-59Z/instance-port3185.log
+[2026-11-07T10:29:38.547Z] [boot1] p6t6 health=true
+[2026-11-07T10:29:38.818Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:29:38.818Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:29:38.925Z] [boot1] team.create status=200 ok=false {"type":"server-response","rpcId":"a5sflm-tquwqnp1gf","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5sf-lm-team' failed: permission coverage gate failed for instance 'inst-leader': 21 unmanaged tool(s) on the final model-facing surface: ask_user_question (unknown-unmanaged), create_goal (unkno
+[2026-11-07T10:29:38.926Z] [boot1] FAILED at team-create: Error: team.create failed: status=200 body={"type":"server-response","rpcId":"a5sflm-tquwqnp1gf","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-a5sf-lm-team' failed: permission coverage gate failed for instance 'inst-leader': 21 unmanaged tool(s) on the final model-facing surface: ask_user_question (unknown-unmanaged), create_goal (unkno
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:834:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1108:15)
+[2026-11-07T10:29:39.017Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-28-59Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:29:39.046Z] boot 1 failed at team-create; continuing is pointless (no agreeing pair)
+[2026-11-07T10:29:39.047Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedLauncherSpawns
+payloadInLane
+payloadSecret
+baseSpawnsWithMarker
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T10:29:39.077Z] host porcelain after: []
+[2026-11-07T10:29:39.077Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:31:48.928Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-31-48-927Z
+[2026-11-07T10:31:48.931Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:31:48.961Z] host porcelain before: []
+[2026-11-07T10:31:49.020Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:31:49.021Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:31:49.025Z] [boot1] world=u5u5a5sfsub1-20261107T10-31-49Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-31-49Z
+[2026-11-07T10:31:49.026Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:32:05.241Z] [boot1] mock on 3494
+[2026-11-07T10:32:27.889Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-31-49Z/instance-port3185.log
+[2026-11-07T10:32:28.196Z] [boot1] p6t6 health=true
+[2026-11-07T10:32:28.466Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:32:28.467Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:32:28.803Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-w3vkh3v63o","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:6219b67e552c39dbb9bc901c44fefd6f2a479e69a2eae547998a0ba9918dfa1c"},"createdAt":"2026-11-07T10:32:28.507Z","generation":1,"
+[2026-11-07T10:32:30.004Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:32:30.010Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=undefined
+[2026-11-07T10:32:30.012Z] [boot1] case lm:member-bash-admitted: FAIL
+[2026-11-07T10:32:30.012Z] [boot1] case lm:member-bash-denied: FAIL
+[2026-11-07T10:32:30.012Z] [boot1] case lm:governed-surface: FAIL
+[2026-11-07T10:32:30.012Z] [boot1] case lm:guard-facts: FAIL
+[2026-11-07T10:32:30.012Z] [boot1] case lm:no-base-spawn: FAIL
+[2026-11-07T10:32:30.012Z] [boot1] FAILED at evidence-collection: Error: not a RUN verdict: "REFUTED" (allowed: PASS,FAIL,REFUSED,ENV_BLOCK,SKIP,TIMEOUT,START_FAILED,NOT_REACHED)
+    at assertVerdict (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/lib/run-record.mjs:82:36)
+    at overallVerdict (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/lib/run-record.mjs:90:5)
+    at Object.finalize (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/lib/run-record.mjs:229:41)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:931:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1105:15)
+[2026-11-07T10:32:30.125Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-31-49Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:32:30.155Z] boot 1 failed at evidence-collection; continuing is pointless (no agreeing pair)
+[2026-11-07T10:32:30.156Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedLauncherSpawns
+payloadInLane
+payloadSecret
+baseSpawnsWithMarker
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T10:32:30.184Z] host porcelain after: []
+[2026-11-07T10:32:30.184Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:33:18.184Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-33-18-184Z
+[2026-11-07T10:33:18.188Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:33:18.218Z] host porcelain before: []
+[2026-11-07T10:33:18.286Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:33:18.287Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:33:18.291Z] [boot1] world=u5u5a5sfsub1-20261107T10-33-18Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-33-18Z
+[2026-11-07T10:33:18.292Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:33:34.504Z] [boot1] mock on 3494
+[2026-11-07T10:33:57.192Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-33-18Z/instance-port3185.log
+[2026-11-07T10:33:57.522Z] [boot1] p6t6 health=true
+[2026-11-07T10:33:57.793Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:33:57.793Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:33:58.154Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-nejsc851n7","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:728977418a21b26f2f406dc41e5e8867eafcacba44ec215ad6475b5a57ae1efa"},"createdAt":"2026-11-07T10:33:57.836Z","generation":1,"
+[2026-11-07T10:33:59.355Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:33:59.356Z] [boot1] delegate call=true result={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for member 'inst-0htk69p0jfud': TeamServiceInstallError: MEMBER_POLICY_UNAVAILABLE: Member 'inst-0htk69p0jfud' (template 'worker') could not compile its ceiling (AUTHORITY_REFUSED: Alpha.4 does not admit this member; no I/O policy is compiled for a non-admitted member); a declared realm never mounts on an uncompiled policy","details":{"source":"activation-provider","providerCode":
+[2026-11-07T10:33:59.362Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=undefined
+[2026-11-07T10:33:59.364Z] [boot1] case lm:member-bash-admitted: FAIL
+[2026-11-07T10:33:59.364Z] [boot1] case lm:member-bash-denied: FAIL
+[2026-11-07T10:33:59.364Z] [boot1] case lm:governed-surface: FAIL
+[2026-11-07T10:33:59.364Z] [boot1] case lm:guard-facts: FAIL
+[2026-11-07T10:33:59.364Z] [boot1] case lm:no-base-spawn: FAIL
+[2026-11-07T10:33:59.364Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-33-18-252Z-b1 suite=a5sf-live-member overall=FAIL cases=5 FAIL:5 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:33:59.500Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-33-18Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:33:59.538Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                      boot1
+overall                   FAIL
+admittedVerdict           REFUTED
+deniedVerdict             REFUTED
+surfaceVerdict            REFUTED
+factsVerdict              REFUTED
+spawnsVerdict             REFUTED
+allowFacts                0
+denyFacts                 0
+confinedLauncherSpawns    0
+payloadInLane             0
+payloadSecret             0
+baseSpawnsWithMarker      0
+governedSurface           false
+admittedBytes             false
+deniedSecretAbsent        false
+transcriptSourceCount     null
+
+agreeing=false differing=[]
+[2026-11-07T10:33:59.572Z] host porcelain after: []
+[2026-11-07T10:33:59.572Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:38:14.070Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-38-14-069Z
+[2026-11-07T10:38:14.074Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:38:14.104Z] host porcelain before: []
+[2026-11-07T10:38:14.169Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:38:14.169Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:38:14.173Z] [boot1] world=u5u5a5sfsub1-20261107T10-38-14Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-38-14Z
+[2026-11-07T10:38:14.174Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:38:30.396Z] [boot1] mock on 3494
+[2026-11-07T10:38:53.057Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-38-14Z/instance-port3185.log
+[2026-11-07T10:38:53.368Z] [boot1] p6t6 health=true
+[2026-11-07T10:38:53.640Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:38:53.640Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:39:02.347Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-oodoxasi3l","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:0f00193b10623a6b50abe1a6d21c20dc374abc38b5070dc42b1671b687988282"},"createdAt":"2026-11-07T10:38:53.683Z","generation":1,"
+[2026-11-07T10:44:03.768Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=false
+[2026-11-07T10:44:03.769Z] [boot1] FAILED at evidence-collection: Error: the Leader chain never closed: no Member turn settled
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:850:25)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1122:15)
+[2026-11-07T10:44:03.943Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-38-14Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:44:03.980Z] boot 1 failed at evidence-collection; continuing is pointless (no agreeing pair)
+[2026-11-07T10:44:03.981Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedLauncherSpawns
+payloadInLane
+payloadSecret
+baseSpawnsWithMarker
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T10:44:04.016Z] host porcelain after: []
+[2026-11-07T10:44:04.017Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:45:04.066Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-45-04-066Z
+[2026-11-07T10:45:04.070Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:45:04.102Z] host porcelain before: []
+[2026-11-07T10:45:04.164Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:45:04.165Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:45:04.169Z] [boot1] world=u5u5a5sfsub1-20261107T10-45-04Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-45-04Z
+[2026-11-07T10:45:04.170Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:45:20.384Z] [boot1] mock on 3494
+[2026-11-07T10:45:43.050Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-45-04Z/instance-port3185.log
+[2026-11-07T10:45:43.385Z] [boot1] p6t6 health=true
+[2026-11-07T10:45:43.656Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:45:43.656Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:45:52.361Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-9gowro687s","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:1cc043aa1b282a142be3938cfa22146634cf8cc105026cca71bfc0f6983bc191"},"createdAt":"2026-11-07T10:45:43.697Z","generation":1,"
+[2026-11-07T10:47:33.604Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=false
+[2026-11-07T10:47:33.606Z] [boot1] diagnostics(chain-timeout): mockRequests=11 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=[]
+[2026-11-07T10:47:33.607Z] [boot1] diagnostics(abort): mockRequests=11 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=[]
+[2026-11-07T10:47:33.608Z] [boot1] FAILED at evidence-collection: Error: the Leader chain never closed: no Member turn settled
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:893:13)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/world-factory/drivers/a5sf-live-member/run-boot.mjs:1169:15)
+[2026-11-07T10:47:35.287Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-45-04Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:47:35.323Z] boot 1 failed at evidence-collection; continuing is pointless (no agreeing pair)
+[2026-11-07T10:47:35.324Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+spawnsVerdict
+allowFacts
+denyFacts
+confinedLauncherSpawns
+payloadInLane
+payloadSecret
+baseSpawnsWithMarker
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-07T10:47:35.358Z] host porcelain after: []
+[2026-11-07T10:47:35.359Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:49:22.512Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-49-22-511Z
+[2026-11-07T10:49:22.516Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:49:22.543Z] host porcelain before: []
+[2026-11-07T10:49:22.603Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:49:22.604Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:49:22.607Z] [boot1] world=u5u5a5sfsub1-20261107T10-49-22Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-49-22Z
+[2026-11-07T10:49:22.608Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:49:38.840Z] [boot1] mock on 3494
+[2026-11-07T10:50:01.261Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-49-22Z/instance-port3185.log
+[2026-11-07T10:50:01.796Z] [boot1] p6t6 health=true
+[2026-11-07T10:50:02.066Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:50:02.067Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:50:07.524Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-q8n8xw6jg5","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:d0ad936b2ae12fb2a34e31c26e6cfa8d02f0996f2e00b5a5ee9a36118b3ab4a9"},"createdAt":"2026-11-07T10:50:02.108Z","generation":1,"
+[2026-11-07T10:50:08.725Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:50:08.726Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:50:08.731Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:50:08.733Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T10:50:08.733Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T10:50:08.733Z] [boot1] case lm:governed-surface: FAIL
+[2026-11-07T10:50:08.733Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T10:50:08.733Z] [boot1] case lm:no-base-spawn: FAIL
+[2026-11-07T10:50:08.734Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-49-22-572Z-b1 suite=a5sf-live-member overall=FAIL cases=5 FAIL:2 PASS:3 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:50:08.869Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-49-22Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:50:08.899Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                      boot1
+overall                   FAIL
+admittedVerdict           PROVEN
+deniedVerdict             PROVEN
+surfaceVerdict            REFUTED
+factsVerdict              PROVEN
+spawnsVerdict             REFUTED
+allowFacts                1
+denyFacts                 1
+confinedLauncherSpawns    0
+payloadInLane             0
+payloadSecret             0
+baseSpawnsWithMarker      0
+governedSurface           false
+admittedBytes             false
+deniedSecretAbsent        false
+transcriptSourceCount     null
+
+agreeing=false differing=[]
+[2026-11-07T10:50:08.930Z] host porcelain after: []
+[2026-11-07T10:50:08.930Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:51:32.052Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-51-32-052Z
+[2026-11-07T10:51:32.055Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:51:32.082Z] host porcelain before: []
+[2026-11-07T10:51:32.143Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:51:32.144Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:51:32.148Z] [boot1] world=u5u5a5sfsub1-20261107T10-51-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-51-32Z
+[2026-11-07T10:51:32.149Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:51:48.378Z] [boot1] mock on 3494
+[2026-11-07T10:52:10.813Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-51-32Z/instance-port3185.log
+[2026-11-07T10:52:11.347Z] [boot1] p6t6 health=true
+[2026-11-07T10:52:11.619Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:52:11.619Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:52:17.080Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-k407idjdox","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:2f45a26c987f58d2570c0dfaa3791ebaa4c19529c332b92649942f0922d325c0"},"createdAt":"2026-11-07T10:52:11.662Z","generation":1,"
+[2026-11-07T10:52:18.282Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:52:18.282Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:52:18.290Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:52:18.293Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T10:52:18.293Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T10:52:18.293Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T10:52:18.293Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T10:52:18.293Z] [boot1] case lm:no-base-spawn: FAIL
+[2026-11-07T10:52:18.297Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=[]
+[2026-11-07T10:52:18.297Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-51-32-112Z-b1 suite=a5sf-live-member overall=FAIL cases=5 FAIL:1 PASS:4 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:52:18.463Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-51-32Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:52:18.501Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                      boot1
+overall                   FAIL
+admittedVerdict           PROVEN
+deniedVerdict             PROVEN
+surfaceVerdict            PROVEN
+factsVerdict              PROVEN
+spawnsVerdict             REFUTED
+allowFacts                1
+denyFacts                 1
+confinedLauncherSpawns    3
+payloadInLane             0
+payloadSecret             0
+baseSpawnsWithMarker      0
+governedSurface           true
+admittedBytes             false
+deniedSecretAbsent        false
+transcriptSourceCount     null
+
+agreeing=false differing=[]
+[2026-11-07T10:52:18.537Z] host porcelain after: []
+[2026-11-07T10:52:18.537Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-07T10:53:46.809Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-53-46-809Z
+[2026-11-07T10:53:46.813Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-07T10:53:46.839Z] host porcelain before: []
+[2026-11-07T10:53:46.901Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:53:46.902Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:53:46.905Z] [boot1] world=u5u5a5sfsub1-20261107T10-53-46Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-53-46Z
+[2026-11-07T10:53:46.906Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:54:03.127Z] [boot1] mock on 3494
+[2026-11-07T10:54:25.810Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-53-46Z/instance-port3185.log
+[2026-11-07T10:54:26.137Z] [boot1] p6t6 health=true
+[2026-11-07T10:54:26.408Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:54:26.408Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:54:31.939Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-lm5a0cgpkk","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:74acad2849fc10aaeb6084ca7da5a14f5c77971c67dd5475f2bc20a8499e27a1"},"createdAt":"2026-11-07T10:54:26.449Z","generation":1,"
+[2026-11-07T10:54:33.140Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:54:33.141Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:54:33.146Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:54:33.151Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T10:54:33.151Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T10:54:33.151Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T10:54:33.151Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T10:54:33.151Z] [boot1] case lm:no-base-spawn: PASS
+[2026-11-07T10:54:33.155Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T10:54:33.155Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-53-46-869Z-b1 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:54:33.328Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-53-46Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:54:33.359Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                      boot1
+overall                   PASS
+admittedVerdict           PROVEN
+deniedVerdict             PROVEN
+surfaceVerdict            PROVEN
+factsVerdict              PROVEN
+spawnsVerdict             PROVEN
+allowFacts                1
+denyFacts                 1
+confinedTurnLaunchers     1
+preflightLaunchers        4
+payloadInLane             0
+procSecretCommandSightings0
+baseBwrapWithMarkers      0
+governedSurface           true
+admittedBytes             true
+deniedSecretAbsent        true
+transcriptSourceCount     2
+
+agreeing=false differing=[]
+[2026-11-07T10:54:33.394Z] host porcelain after: []
+[2026-11-07T10:54:33.394Z] RESULT PASS (1/1 boots; agreeing pair=false)
+[2026-11-07T10:56:01.971Z] ARCHIVE: (nothing to archive)
+[2026-11-07T10:56:01.974Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-07T10:56:02.001Z] host porcelain before: []
+[2026-11-07T10:56:02.059Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:56:02.060Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:56:02.064Z] [boot1] world=u5u5a5sfsub1-20261107T10-56-02Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-56-02Z
+[2026-11-07T10:56:02.065Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:56:18.288Z] [boot1] mock on 3494
+[2026-11-07T10:56:40.940Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-56-02Z/instance-port3185.log
+[2026-11-07T10:56:41.352Z] [boot1] p6t6 health=true
+[2026-11-07T10:56:41.624Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:56:41.624Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:56:47.175Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-koi1r7kok","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:89ca49db17581d2e8c2f77b63827e431dc8303534854d204d3a9964a7e6def50"},"createdAt":"2026-11-07T10:56:41.671Z","generation":1,"d
+[2026-11-07T10:56:48.376Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:56:48.377Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:56:48.384Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:56:48.390Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T10:56:48.390Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T10:56:48.390Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T10:56:48.390Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T10:56:48.390Z] [boot1] case lm:no-base-spawn: PASS
+[2026-11-07T10:56:48.395Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T10:56:48.395Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-56-02-030Z-b1 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:56:48.533Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-56-02Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:56:48.600Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:56:48.600Z] [boot2] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:56:48.603Z] [boot2] world=u5u5a5sfsub1-20261107T10-56-48Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-56-48Z
+[2026-11-07T10:56:48.604Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:57:04.829Z] [boot2] mock on 3494
+[2026-11-07T10:57:26.033Z] [boot2] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-56-48Z/instance-port3185.log
+[2026-11-07T10:57:26.485Z] [boot2] p6t6 health=true
+[2026-11-07T10:57:26.760Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:57:26.761Z] [boot2] leader builtinToolDeny:
+[2026-11-07T10:57:32.254Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-hkoi065fvh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:3addb297d625707d97aac153bac47d8853469f48659ea9e75ed14b3eee915ed5"},"createdAt":"2026-11-07T10:57:26.790Z","generation":1,"
+[2026-11-07T10:57:33.454Z] [boot2] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:57:33.454Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:57:33.461Z] [boot2] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:57:33.465Z] [boot2] case lm:member-bash-admitted: PASS
+[2026-11-07T10:57:33.465Z] [boot2] case lm:member-bash-denied: PASS
+[2026-11-07T10:57:33.465Z] [boot2] case lm:governed-surface: PASS
+[2026-11-07T10:57:33.465Z] [boot2] case lm:guard-facts: PASS
+[2026-11-07T10:57:33.465Z] [boot2] case lm:no-base-spawn: PASS
+[2026-11-07T10:57:33.469Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T10:57:33.469Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-56-48-567Z-b2 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:57:33.621Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":311,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-56-48Z","releasedPorts":[3185,3494,3185],"killedPids":[311],"notes":[]}
+[2026-11-07T10:57:33.660Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                      boot1                     boot2
+overall                   PASS          PASS
+admittedVerdict           PROVEN        PROVEN
+deniedVerdict             PROVEN        PROVEN
+surfaceVerdict            PROVEN        PROVEN
+factsVerdict              PROVEN        PROVEN
+spawnsVerdict             PROVEN        PROVEN
+allowFacts                1             1
+denyFacts                 1             1
+confinedTurnLaunchers     1             1
+preflightLaunchers        4             3
+payloadInLane             0             0
+procSecretCommandSightings0             0
+baseBwrapWithMarkers      0             0
+governedSurface           true          true
+admittedBytes             true          true
+deniedSecretAbsent        true          true
+transcriptSourceCount     2             2
+
+agreeing=false differing=["preflightLaunchers"]
+[2026-11-07T10:57:33.697Z] host porcelain after: []
+[2026-11-07T10:57:33.697Z] RESULT PASS (2/2 boots; agreeing pair=false)
+[2026-11-07T10:59:04.073Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T10-59-04-072Z
+[2026-11-07T10:59:04.077Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-07T10:59:04.110Z] host porcelain before: []
+[2026-11-07T10:59:04.177Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:59:04.179Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:59:04.183Z] [boot1] world=u5u5a5sfsub1-20261107T10-59-04Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-59-04Z
+[2026-11-07T10:59:04.184Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T10:59:20.428Z] [boot1] mock on 3494
+[2026-11-07T10:59:43.130Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-59-04Z/instance-port3185.log
+[2026-11-07T10:59:43.516Z] [boot1] p6t6 health=true
+[2026-11-07T10:59:43.790Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T10:59:43.790Z] [boot1] leader builtinToolDeny:
+[2026-11-07T10:59:49.316Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-94e4r0wxvd","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:69321ab74e198c91de7823692ed551615d3779c9e9d7ad801b6fd40317b240f9"},"createdAt":"2026-11-07T10:59:43.836Z","generation":1,"
+[2026-11-07T10:59:50.517Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T10:59:50.518Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T10:59:50.525Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T10:59:50.532Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T10:59:50.532Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T10:59:50.532Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T10:59:50.532Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T10:59:50.532Z] [boot1] case lm:no-base-spawn: PASS
+[2026-11-07T10:59:50.536Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T10:59:50.537Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-59-04-144Z-b1 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T10-59-04Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T10:59:50.670Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-59-04Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T10:59:50.732Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T10:59:50.732Z] [boot2] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T10:59:50.735Z] [boot2] world=u5u5a5sfsub1-20261107T10-59-50Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-59-50Z
+[2026-11-07T10:59:50.736Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T11:00:06.986Z] [boot2] mock on 3494
+[2026-11-07T11:00:27.951Z] [boot2] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T10-59-50Z/instance-port3185.log
+[2026-11-07T11:00:28.511Z] [boot2] p6t6 health=true
+[2026-11-07T11:00:28.778Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T11:00:28.779Z] [boot2] leader builtinToolDeny:
+[2026-11-07T11:00:34.385Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-9iyhim1riu","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:cc9184fda5e486573a16067121da7bfceeaa963fe665c7f83df5f710f1d9da56"},"createdAt":"2026-11-07T11:00:28.810Z","generation":1,"
+[2026-11-07T11:00:35.587Z] [boot2] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T11:00:35.587Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T11:00:35.593Z] [boot2] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T11:00:35.596Z] [boot2] case lm:member-bash-admitted: PASS
+[2026-11-07T11:00:35.596Z] [boot2] case lm:member-bash-denied: PASS
+[2026-11-07T11:00:35.596Z] [boot2] case lm:governed-surface: PASS
+[2026-11-07T11:00:35.596Z] [boot2] case lm:guard-facts: PASS
+[2026-11-07T11:00:35.596Z] [boot2] case lm:no-base-spawn: PASS
+[2026-11-07T11:00:35.600Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T11:00:35.600Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-07T10-59-50-700Z-b2 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T10-59-50Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T11:00:35.731Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":311,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T10-59-50Z","releasedPorts":[3185,3494,3185],"killedPids":[311],"notes":[]}
+[2026-11-07T11:00:35.761Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+allowFacts                    1                             1
+denyFacts                     1                             1
+confinedTurnLaunchers         1                             1
+payloadInLane                 0                             0
+procSecretCommandSightings    0                             0
+baseBwrapWithMarkers          0                             0
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         2                             2
+
+agreeing=true differing=[]
+[2026-11-07T11:00:35.790Z] host porcelain after: []
+[2026-11-07T11:00:35.791Z] RESULT PASS (2/2 boots; agreeing pair=true)
+[2026-11-07T11:02:22.022Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T11-02-22-022Z
+[2026-11-07T11:02:22.026Z] START head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-07T11:02:22.053Z] host porcelain before: []
+[2026-11-07T11:02:22.115Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T11:02:22.116Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T11:02:22.120Z] [boot1] world=u5u5a5sfsub1-20261107T11-02-22Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-02-22Z
+[2026-11-07T11:02:22.121Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T11:02:38.380Z] [boot1] mock on 3494
+[2026-11-07T11:03:01.098Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T11-02-22Z/instance-port3185.log
+[2026-11-07T11:03:01.494Z] [boot1] p6t6 health=true
+[2026-11-07T11:03:01.765Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T11:03:01.765Z] [boot1] leader builtinToolDeny:
+[2026-11-07T11:03:07.345Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-geq6qhoqwd","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:0a7a663c7f985acd5da55b03e802828fd7e8453bf81287bc01c4aa0b303b1875"},"createdAt":"2026-11-07T11:03:01.808Z","generation":1,"
+[2026-11-07T11:03:08.545Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T11:03:08.546Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T11:03:08.553Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T11:03:08.557Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T11:03:08.557Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T11:03:08.557Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T11:03:08.557Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T11:03:08.557Z] [boot1] case lm:no-base-spawn: PASS
+[2026-11-07T11:03:08.558Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T11:03:08.559Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T11-02-22-083Z-b1 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T11-02-22Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T11:03:08.700Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-02-22Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T11:03:08.765Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T11:03:08.766Z] [boot2] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=dc4f26fea3e7cb272da9f8925d7b5c808b400d9b
+[2026-11-07T11:03:08.769Z] [boot2] world=u5u5a5sfsub1-20261107T11-03-08Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-03-08Z
+[2026-11-07T11:03:08.771Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T11:03:25.014Z] [boot2] mock on 3494
+[2026-11-07T11:03:46.219Z] [boot2] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T11-03-08Z/instance-port3185.log
+[2026-11-07T11:03:46.528Z] [boot2] p6t6 health=true
+[2026-11-07T11:03:46.796Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T11:03:46.796Z] [boot2] leader builtinToolDeny:
+[2026-11-07T11:03:52.297Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-4did7du3mm","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:dfed666b01f96345d0184f494159ba0c475e585393de9b5cac154b23b1fb856e"},"createdAt":"2026-11-07T11:03:46.822Z","generation":1,"
+[2026-11-07T11:03:53.497Z] [boot2] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T11:03:53.497Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T11:03:53.503Z] [boot2] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T11:03:53.506Z] [boot2] case lm:member-bash-admitted: PASS
+[2026-11-07T11:03:53.506Z] [boot2] case lm:member-bash-denied: PASS
+[2026-11-07T11:03:53.506Z] [boot2] case lm:governed-surface: PASS
+[2026-11-07T11:03:53.506Z] [boot2] case lm:guard-facts: PASS
+[2026-11-07T11:03:53.506Z] [boot2] case lm:no-base-spawn: PASS
+[2026-11-07T11:03:53.507Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T11:03:53.508Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-07T11-03-08-732Z-b2 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T11-03-08Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T11:03:53.651Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":311,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-03-08Z","releasedPorts":[3185,3494,3185],"killedPids":[311],"notes":[]}
+[2026-11-07T11:03:53.684Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+allowFacts                    1                             1
+denyFacts                     1                             1
+confinedTurnLaunchers         1                             1
+payloadInLane                 0                             0
+procSecretCommandSightings    0                             0
+baseBwrapWithMarkers          0                             0
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         2                             2
+
+agreeing=true differing=[]
+[2026-11-07T11:03:53.716Z] host porcelain after: []
+[2026-11-07T11:03:53.716Z] RESULT PASS (2/2 boots; agreeing pair=true)
+[2026-11-07T11:09:30.764Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/archive/2026-11-07T11-09-30-763Z
+[2026-11-07T11:09:30.767Z] START head=11991c2d47a9bdc8fb6e128a4a859d6656e33020 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-07T11:09:30.795Z] host porcelain before: []
+[2026-11-07T11:09:30.860Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T11:09:30.861Z] [boot1] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=11991c2d47a9bdc8fb6e128a4a859d6656e33020
+[2026-11-07T11:09:30.864Z] [boot1] world=u5u5a5sfsub1-20261107T11-09-30Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-09-30Z
+[2026-11-07T11:09:30.865Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T11:09:33.612Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-07T11:09:33.613Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-07T11:09:33.634Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-07T11:09:33.635Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/p"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/p"}]
+[2026-11-07T11:09:33.635Z] governed preset plugins (18): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,planning,compaction,delegation,tool-ask-user,tool-todo,tool-web,present,tool-plugin-manager
+[2026-11-07T11:09:33.635Z] PLAN OK
+[2026-11-07T11:09:47.129Z] [boot1] mock on 3494
+[2026-11-07T11:10:09.869Z] [boot1] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T11-09-30Z/instance-port3185.log
+[2026-11-07T11:10:10.232Z] [boot1] p6t6 health=true
+[2026-11-07T11:10:10.504Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T11:10:10.504Z] [boot1] leader builtinToolDeny:
+[2026-11-07T11:10:16.052Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-vt7gtthtwy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:541e30d835b5d9766d44fc4f7073c547c98075774ce0f45ae218d16b3694a01e"},"createdAt":"2026-11-07T11:10:10.548Z","generation":1,"
+[2026-11-07T11:10:17.253Z] [boot1] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T11:10:17.254Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T11:10:17.261Z] [boot1] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T11:10:17.267Z] [boot1] case lm:member-bash-admitted: PASS
+[2026-11-07T11:10:17.267Z] [boot1] case lm:member-bash-denied: PASS
+[2026-11-07T11:10:17.267Z] [boot1] case lm:governed-surface: PASS
+[2026-11-07T11:10:17.267Z] [boot1] case lm:guard-facts: PASS
+[2026-11-07T11:10:17.267Z] [boot1] case lm:no-base-spawn: PASS
+[2026-11-07T11:10:17.268Z] [boot1] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T11:10:17.268Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-07T11-09-30-828Z-b1 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T11-09-30Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T11:10:17.458Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-09-30Z","releasedPorts":[3185,3494,3185],"killedPids":[99],"notes":[]}
+[2026-11-07T11:10:17.540Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T11:10:17.541Z] [boot2] dev-live lease grant=devlive-subprocess-1 world=u5a5sfsub1 head=11991c2d47a9bdc8fb6e128a4a859d6656e33020
+[2026-11-07T11:10:17.544Z] [boot2] world=u5u5a5sfsub1-20261107T11-10-17Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-10-17Z
+[2026-11-07T11:10:17.546Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T11:10:33.796Z] [boot2] mock on 3494
+[2026-11-07T11:10:55.018Z] [boot2] BOOTED port=3185 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/dev/agent-workflow/evidence/a5sf-live-member/driver/logs/u5u5a5sfsub1-20261107T11-10-17Z/instance-port3185.log
+[2026-11-07T11:10:55.350Z] [boot2] p6t6 health=true
+[2026-11-07T11:10:55.618Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T11:10:55.618Z] [boot2] leader builtinToolDeny:
+[2026-11-07T11:11:01.149Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-77omlsp1tf","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-lm-team","blueprint":{"blueprintId":"team.a5sf.lm.main","revision":"1","contentHash":"sha256:fe1822028b9bd2a033ce18a6970faa7310bc1879b46cb6d9caa78cb757299c7f"},"createdAt":"2026-11-07T11:10:55.640Z","generation":1,"
+[2026-11-07T11:11:02.349Z] [boot2] leader chain closed (A5SF_LM_L1_DONE)=true
+[2026-11-07T11:11:02.350Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3uon1cd","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-lm-turn-delegate","status":"succeeded","body":"A5S
+[2026-11-07T11:11:02.356Z] [boot2] members=[{"instanceId":"inst-0htk69p0jfud","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e
+[2026-11-07T11:11:02.360Z] [boot2] case lm:member-bash-admitted: PASS
+[2026-11-07T11:11:02.360Z] [boot2] case lm:member-bash-denied: PASS
+[2026-11-07T11:11:02.360Z] [boot2] case lm:governed-surface: PASS
+[2026-11-07T11:11:02.360Z] [boot2] case lm:guard-facts: PASS
+[2026-11-07T11:11:02.360Z] [boot2] case lm:no-base-spawn: PASS
+[2026-11-07T11:11:02.361Z] [boot2] diagnostics(final): mockRequests=9 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-lm-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0htk69p0jfud","templateId":"worker","childSessionId":"session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e","operationId":"op-1ll6r3t0u1qhh81rs3 sessions=["session-a5sf-lm-boot","session-a5sf-lm-team","session-team-child-cb24a8f5a8c5515a69d57e13a5167e0e"]
+[2026-11-07T11:11:02.361Z] [boot2] RUN-SUMMARY run=a5sf-live-member-2026-11-07T11-10-17-498Z-b2 suite=a5sf-live-member overall=PASS cases=5 PASS:5 worlds=u5u5a5sfsub1-20261107T11-10-17Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T11:11:02.557Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":311,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-member/tests/homes/u5u5a5sfsub1-20261107T11-10-17Z","releasedPorts":[3185,3494,3185],"killedPids":[311],"notes":[]}
+[2026-11-07T11:11:02.595Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+factsVerdict                  PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+allowFacts                    1                             1
+denyFacts                     1                             1
+confinedTurnLaunchers         1                             1
+payloadInLane                 0                             0
+procSecretCommandSightings    0                             0
+baseBwrapWithMarkers          0                             0
+governedSurface               true                          true
+admittedBytes                 true                          true
+deniedSecretAbsent            true                          true
+transcriptSourceCount         2                             2
+
+agreeing=true differing=[]
+[2026-11-07T11:11:02.631Z] host porcelain after: []
+[2026-11-07T11:11:02.632Z] RESULT PASS (2/2 boots; agreeing pair=true)
