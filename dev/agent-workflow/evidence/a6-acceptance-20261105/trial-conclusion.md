@@ -74,21 +74,23 @@ is closed by the clean 9/9 at `1e50d55fc`.
 ## Decision
 
 **NO-GO for production enablement, master merge, or release.** The isolated
-line is accepted for continued isolated internal trial / E2E under the opt-in
-`alpha6ReviewRouting` flag and a non-production workspace. It is a DRAFT
-candidate and must not be treated as an authority switch. The remaining
-limitations are availability/recovery and one resume-delivery proof, not a
-newly found authority violation: no double execution, no repeat consumption,
-no replay of an invalidated call, and no stale Grant reuse was observed.
+line is accepted only for continued **isolated, opt-in, non-production internal
+trial / E2E** under `alpha6ReviewRouting` and a non-production workspace. It is
+a DRAFT candidate and must not be treated as an authority switch.
 
-## Conditions to revisit
+The authority constraints are met: no persisted Allow is rewritten to Deny, a
+late allow on a dead request is a lifecycle abandonment, an invalidated call is
+never executed/replayed, and no stale Grant is reused. Availability/recovery
+proof is complete for timeout, after-allow, after-consume-before-body,
+body-started-result-unknown, and claimed-Inbox replacement wake.
 
-1. Ratify the two crash availability windows as accepted losses or add a
-   non-authorizing settlement row that marks the original call invalid.
-2. Prove explicit resume delivers a new WorkChanged wake.
-3. Exercise native Inbox cold-start reconciliation.
-4. Either wire a real Host human delivery path or explicitly ratify remote-only
-   as v1 (RULING 5 already allows remote-only for v1; `a6-human-r15` now proves
-   discovery of the leg id from the remote ledger page itself).
-5. Add the sink wiring unit test and re-run hosted CI, not only the local 9/9
-   gate.
+## Conditions before any production/merge decision
+
+1. Add an owner/liveness proof to HOME-wide boot settlement so a sibling
+   mount's living Allow cannot be abandoned on a plugin reload (P2).
+2. Add a result/success fact so a completed PA case is not flipped to
+   `abandoned` at the next boot (P2, audit accuracy).
+3. Add the service-level flag-on/flag-off regression test (P2 review note).
+4. Inject the ACCEPTED-but-never-CLAIMED Inbox crash (current proof covers
+   claimed).
+5. Run hosted CI, not only the local 9/9 gate.
