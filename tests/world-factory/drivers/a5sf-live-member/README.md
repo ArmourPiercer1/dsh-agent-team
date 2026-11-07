@@ -70,7 +70,7 @@ no custom realm row.
 
 ## Artefacts
 
-Per boot (`dev/agent-workflow/evidence/a5sf-live-member/runs/boot0N/`):
+Per boot (one directory per boot under `dev/agent-workflow/evidence/a5sf-live-member/runs/`):
 
 | file | content |
 | --- | --- |
