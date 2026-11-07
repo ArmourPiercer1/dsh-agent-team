@@ -38,7 +38,9 @@
  * different live processes in different namespaces. A slot therefore also
  * records `pidNs` (`/proc/self/ns/pid`), and the prober classifies:
  *
- *   - `dead`    same namespace, `pidAlive(pid)` false ⇒ stale immediately;
+ *   - `dead`    same namespace, `pidAlive(pid)` false ⇒ stale once the file is
+ *               older than `DEAD_SLOT_GRACE_MS` (a just-written slot is never
+ *               swept out from under its own writer);
  *   - `alive`   same namespace, pid alive ⇒ live;
  *   - `unknown` another namespace (or a legacy file with no `pidNs`) ⇒ this
  *               prober CANNOT decide. Such a slot is left alone until it is
@@ -51,11 +53,19 @@
  * slot), so a running boot never ages past the grace window while a crashed
  * one does. `DEV_LIVE_SLOT_TTL_MS` stays as the last-resort valve.
  *
- * A slot is STALE when `liveness === 'dead'`, when the file is unparsable and
- * older than `UNPARSABLE_STALE_MS`, when the liveness is undecidable and the
- * file is older than `CROSS_NAMESPACE_GRACE_MS`, or when its age exceeds the
- * TTL. Deletion ALWAYS re-reads the token first: a slot whose on-disk token
- * changed between scan and unlink belongs to a peer now and is never unlinked.
+ * A slot is STALE when `liveness === 'dead'` AND the file is older than
+ * `DEAD_SLOT_GRACE_MS`, when the file is unparsable and older than
+ * `UNPARSABLE_STALE_MS`, when the liveness is undecidable and the file is older
+ * than `CROSS_NAMESPACE_GRACE_MS`, or when its age exceeds the TTL. Deletion
+ * ALWAYS re-reads the token first: a slot whose on-disk token changed between
+ * scan and unlink belongs to a peer now and is never unlinked.
+ *
+ * THE TWO GRACES ARE DIFFERENT QUESTIONS, and both are needed: the
+ * cross-namespace grace is long (5 min) because this prober cannot judge the
+ * owner at all — it must not delete on a guess; the dead-slot grace is short
+ * (5 s) because the judgement IS available (same namespace, pid gone) and the
+ * only thing worth waiting for is a writer that has not been scheduled since it
+ * created the file.
  *
  * CORE PATCH BUDGET = 0. No upstream tree is touched.
  *
@@ -87,6 +97,14 @@ export const CROSS_NAMESPACE_GRACE_MS = 5 * 60 * 1000
 /** How often the dev-live lease refreshes a held slot's mtime. Must be well
  *  below {@link CROSS_NAMESPACE_GRACE_MS}. */
 export const DEV_LIVE_SLOT_HEARTBEAT_MS = 30_000
+
+/** How long a slot is left alone after its owner was PROVABLY dead (same PID
+ *  namespace, `pidAlive` false). Short, because the judgement is authoritative;
+ *  it exists only so a writer that has just created the file cannot lose it
+ *  before its next instruction. Deliberately orthogonal to
+ *  {@link CROSS_NAMESPACE_GRACE_MS}: that grace covers "I cannot judge", this
+ *  one covers "I judged, and the loser may still be mid-acquire". */
+export const DEAD_SLOT_GRACE_MS = 5_000
 
 export const DEV_LIVE_SLOT_CODES = Object.freeze([
   /** the machine already runs `limit` live dev Hosts */
@@ -173,7 +191,7 @@ function classifySlotEntry({ raw, ageMs, currentNs, ttlMs }) {
     liveness = 'unknown'
   }
   const stale = liveness === 'dead'
-    ? true
+    ? ageMs > DEAD_SLOT_GRACE_MS
     : ageMs > ttlMs
       ? true
       : liveness === 'unknown'
