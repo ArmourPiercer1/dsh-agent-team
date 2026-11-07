@@ -38,6 +38,7 @@
     // Alpha.6 PR1: the pure Blueprint-first router + shared review policy.
     // No production consumer yet; named here so repo-wide tsc reads the lane.
     "review-router",
+    "review-authority",
     "test",
     "vitest.config.ts"
   ]
