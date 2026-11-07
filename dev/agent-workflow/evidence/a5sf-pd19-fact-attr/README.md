@@ -143,7 +143,7 @@ question and is stated as such below.
 | `pnpm -r typecheck` | **PASS** | `typecheck.log` |
 | eslint (changed TS) | **PASS** (0 errors; the `.mjs` test is in the repo's eslint-ignore surface) | `eslint.log` |
 | `check-artifacts-committed` | **PASS** (1973 compared, 106 glue; staged tree matches) | `artifacts.log` |
-| `doc-checks` | **PASS** | `doc-checks.log` |
+| `doc-checks` | **PASS** (script silent on success; exit 0 recorded) | `doc-checks.txt` |
 | register tests | **PASS** (part of the a5sf family; register untouched) | `a5sf-family.log` |
 | `ci-pr-gate --only state-freshness` | **PASS** | `state-freshness.log` |
 

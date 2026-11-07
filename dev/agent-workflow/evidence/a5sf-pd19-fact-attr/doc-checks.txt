@@ -1,0 +1,4 @@
+command: node scripts/doc-checks.mjs
+at:      d7c5401e5 (PD-19 head), worktree .worktrees/pd19-fact-attr
+output:  (none — the script is silent on success)
+exit:    0
