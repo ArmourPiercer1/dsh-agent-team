@@ -1,0 +1,17 @@
+✔ (d1-pin) the historical `lease.release?.()` is a silent no-op that keeps the slot (3.820242ms)
+✔ (d1-regression) a released boot admits the next boot instead of DEV_LIVE_LIMIT_REACHED (3.007022ms)
+✔ (d1-old-path-control) the old no-op cleanup still refuses the next boot — the failure D1 recorded (2.423496ms)
+✔ (d1-fail-loud) a missing or ineffective release API is a typed ERROR, never "nothing to do" (0.58656ms)
+✔ (d1-wiring) the live-member driver releases through the real API in its finally (0.631355ms)
+✔ (ns-unknown) a slot from another PID namespace is NOT immediately reclaimed (1.679802ms)
+✔ (ns-legacy) a legacy slot with no pidNs is unjudgeable, then reclaimed after the grace window (0.911786ms)
+✔ (ns-token) a peer re-acquiring the same slot is never unlinked by a stale scan (0.515326ms)
+✔ (ns-heartbeat) touch() keeps a live cross-namespace slot out of the grace window (0.5179ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.072478

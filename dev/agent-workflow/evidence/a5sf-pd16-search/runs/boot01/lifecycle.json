@@ -1,0 +1,12 @@
+{
+  "archive": {
+    "status": 200,
+    "ok": true,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"rs-vg9o51ad8y\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"member\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5sf-lm-team\",\"instanceId\":\"inst-06oi8u902ggh\",\"templateId\":\"worker\",\"label\":\"a5sflm-worker\",\"childSessionId\":\"session-team-child-0226b704a7da0775ef20a7e9fd467475\",\"lifecycle\":\"ARCHIVED\",\"createdAt\":\"2026-11-07T17:18:14.708Z\",\"activityVersion\":4,\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace\"},\"steps\":[\"close-admission\",\"interrupt\",\"drain-descendants\",\"wait-quiescence\",\"release-residency\",\"commit-archive\"],\"settledCommitted\":false,\"drained\":0,\"residencyDropped\":true},\"provenance\":{\"origin\":\"team-remote\",\"method\":\"member.archive\",\"endpoint\":\"member.archive\",\"cont"
+  },
+  "postArchivePrompt": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"rs-k7av3riwm8\",\"result\":{\"ok\":false,\"error\":{\"code\":\"gateway/internal\",\"message\":\"resume failed for session \\\"session-team-child-0226b704a7da0775ef20a7e9fd467475\\\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \\\"session-team-child-0226b704a7da0775ef20a7e9fd467475\\\"\",\"details\":{}}}}"
+  },
+  "note": "a post-archive dispatch is refused by LIFECYCLE admission; it cannot exercise (or exonerate) the search tool path"
+}
