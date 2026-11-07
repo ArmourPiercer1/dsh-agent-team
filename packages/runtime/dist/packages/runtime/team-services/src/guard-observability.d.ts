@@ -9,7 +9,7 @@
  * call" was an inference from the base Provider having run, not an observation.
  * An in-process callback alone could not fix that for a C2 suite: the suite
  * runs in its own process, the Host in another. This module therefore owns
- * exactly two things, and nothing else:
+ * exactly three things, and nothing else:
  *
  *   1. {@link observeGuard} — an additive wrapper around the ONE guard the
  *      confined Provider already calls. It records the guard's OWN decision
@@ -20,6 +20,11 @@
  *      append-only JSONL transport (and its strict reader). The file is
  *      EVIDENCE TRANSPORT, NOT AUTHORITY: it carries facts the installing
  *      process reported; it grants nothing and is not a ledger.
+ *   3. PD-19 {@link attachGuardToolCallAttribution} — an ATTRIBUTION-ONLY
+ *      carrier that names the `tools/execute` dispatch a consultation happened
+ *      inside, so the fact carries `tool` + `callId` instead of only a
+ *      timestamp and a locator. It is not a policy input and cannot admit,
+ *      refuse, select or reorder anything.
  *
  * FAIL-CLOSED ON THE TRANSPORT: when an observer/sink is supplied and a
  * consultation record cannot be written, the observed call is REFUSED with
@@ -74,6 +79,28 @@ export interface GuardConsultFact {
     readonly sequence: number;
     readonly observedAt: string;
     /**
+     * PD-19 (additive): the NATIVE tool whose dispatch asked this guard, as the
+     * registry's own `ToolExecution.name` (`read`, `grep`, `bash`, …), or `null`
+     * when the consultation did not happen inside a tool dispatch (a direct
+     * Provider call, a host-side service read, or a fact written before this
+     * field existed).
+     *
+     * ATTRIBUTION ONLY. The guard never reads these fields and the decision is
+     * computed exactly as before; they name the call the decision belongs to so a
+     * reader can join this fact to the tool-call record instead of inferring the
+     * join from time and locator. Absent on pre-PD-19 facts — an old sink/reader
+     * pair stays valid.
+     */
+    readonly tool?: string | null;
+    /**
+     * PD-19 (additive): the registry-owned tool-call identity
+     * (`ToolExecution.callId`) of the dispatch that produced this consultation, or
+     * `null` when there was no tool dispatch in scope. Same attribution-only law
+     * as {@link GuardConsultFact.tool}: it is never an admission input and never
+     * widens, selects or reorders a policy.
+     */
+    readonly callId?: string | null;
+    /**
      * OPTIONAL, additive: what the consulting face did to the request BEYOND the
      * lane decision (BL-16: the confined `spawn` face records that it disabled
      * rg's ancestor/VCS ignore discovery, and exactly which semantics that
@@ -92,6 +119,46 @@ export interface GuardConsultContext {
     readonly toolBindingIdentity: string | null;
     readonly policyRevision: string;
 }
+/**
+ * PD-19 — the TOOL-CALL identity a consultation happened inside, taken from the
+ * registry's own dispatch (`@deepseek-ai/dsh-tools` `ToolExecution`). This is
+ * the join key the fact was missing: `tool` is the model-visible native tool
+ * name and `callId` is the registry-owned per-call id.
+ *
+ * This type is ATTRIBUTION ONLY. It is not a policy input, not a capability,
+ * not a second invocation binder, and it never selects a Provider or a lane.
+ */
+export interface GuardToolCallAttribution {
+    readonly tool: string;
+    readonly callId: string;
+}
+/**
+ * The minimal public event surface {@link attachGuardToolCallAttribution}
+ * needs. `@deepseek-ai/cordis`' `Context` satisfies it structurally; it is
+ * spelled out here so this module does not import the tool runtime (and cannot
+ * grow a dependency on it).
+ */
+export interface GuardToolCallEventContext {
+    on(event: 'tools/execute', listener: (exec: Readonly<{
+        name?: unknown;
+        callId?: unknown;
+    }>, next: () => Promise<unknown>) => Promise<unknown>): unknown;
+}
+/** The tool call this async context is running under, if any. */
+export declare function currentGuardToolCallAttribution(): GuardToolCallAttribution | undefined;
+/**
+ * Wrap every `tools/execute` dispatch in this context so guard consultations
+ * made by the tool body are attributed to that dispatch.
+ *
+ * The listener is deliberately inert with respect to the waterfall: it calls
+ * `next()` exactly once and returns its value untouched, never mutates `exec`
+ * (not even `exec.signal`), and never throws on its own. A dispatch without a
+ * usable `name`/`callId` runs unattributed — the honest `null`, never a
+ * synthetic id.
+ *
+ * @returns an idempotent detach function.
+ */
+export declare function attachGuardToolCallAttribution(ctx: GuardToolCallEventContext): () => void;
 /** A consultation that could not be transported. The call is refused. */
 export declare class GuardObservationError extends Error {
     readonly code: "GUARD_OBSERVATION_FAILED";

@@ -26,7 +26,7 @@ import { createConfinedFileSystemClass, createMemberFsGuard, } from './fs.js';
 import { createConfinedSubprocessClass, } from './subprocess.js';
 import { createConfinedWebClass, } from './web.js';
 import { createConfinedTerminalFace, } from './terminal.js';
-import { observeGuard } from './guard-observability.js';
+import { attachGuardToolCallAttribution, observeGuard } from './guard-observability.js';
 import { TeamServiceInstallError, } from './types.js';
 /** Member id → installed, per root Context. Guards double installation. */
 const INSTALLED = new WeakMap();
@@ -393,6 +393,17 @@ export async function installMemberIoProviders(input) {
         registry.set(spec.identity.memberInstanceId, installation);
         INSTALLED.set(root, registry);
     }
+    // PD-19 (ATTRIBUTION ONLY): attach AFTER every realm mounted successfully, so
+    // a failed install can never leave the listener behind. It wraps every
+    // `tools/execute` dispatch in this Context so a guard consultation made from
+    // inside the tool body can name the dispatch (`tool` + `callId`) instead of
+    // being joinable only by timestamp. The listener changes no decision: it calls
+    // `next()` once and returns its value untouched, and no guard reads the
+    // carrier. No observer ⇒ no listener, so the default path is byte-identical
+    // to before this field existed.
+    const detachGuardAttribution = input.onGuardConsult === undefined
+        ? undefined
+        : attachGuardToolCallAttribution(root);
     let allDisposed = false;
     return Object.freeze({
         members: Object.freeze([...installed]),
@@ -400,6 +411,8 @@ export async function installMemberIoProviders(input) {
             if (allDisposed)
                 return;
             allDisposed = true;
+            if (detachGuardAttribution !== undefined)
+                detachGuardAttribution();
             await rollback();
         },
     });
