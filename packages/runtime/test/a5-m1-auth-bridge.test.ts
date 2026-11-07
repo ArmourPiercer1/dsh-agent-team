@@ -89,6 +89,7 @@ import { createTeamDomain } from '../../storage/repositories/index.js'
 import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
 import {
   CONTROL_GUARD_BLOCK_REASONS,
+  CONTROL_REQUEST_KINDS,
   ControlError,
   createControlService,
 } from '../control/index.js'
@@ -285,6 +286,20 @@ const service: ControlService = createControlService({
   waitPollIntervalMs: 5,
   paEffectsVerifier: paVerifier,
   authorityRevalidation: constantAuthorityRecheck().port,
+})
+
+// A6 closing round: the SAME world and verifier, but with the A6-only
+// lifecycle settlement + mount owner. Used to pin flag-on/flag-off.
+const a6Service: ControlService = createControlService({
+  teamDomain: domain,
+  blueprintCatalog: catalog,
+  externalPolicyFacts: async () => makeExternalPolicyFacts(),
+  now: () => P6T4_NOW,
+  waitPollIntervalMs: 5,
+  paEffectsVerifier: paVerifier,
+  authorityRevalidation: constantAuthorityRecheck().port,
+  a6AbandonUndeterminedAllow: true,
+  mountRootSessionId: 'boot-root-a6-test',
 })
 
 const WORKER = P6T4_SEEDS.worker.instanceId
@@ -1598,10 +1613,10 @@ describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a 
 // invariant-45 durable DENY (a fact, not a side effect), the guard
 // deviation is a block with ZERO consumption.
 
-async function forgeValidRow(fixture: DirectFixture) {
+async function forgeValidRow(fixture: DirectFixture, svc: ControlService = service) {
   const bytes = manifestBytes(fixture)
   const digest = canonicalJsonFingerprint(bytes)
-  const row = await service.requestControl({
+  const row = await svc.requestControl({
     rootSessionId: P6T4_ROOT,
     caller: memberCaller(WORKER),
     kind: 'leader-approval',
@@ -1646,6 +1661,36 @@ describe('E1 (facts undefined ⇒ undetermined at BOTH gates): undefined facts a
       realmTruths.set(realm, saved as RealmTruth)
     }
     const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+  })
+
+  it('A6 flag ON: the same undetermined ALLOW writes no decision; it abandons the invocation and stamps the mount owner', async () => {
+    const fixture = directFixture(ctx, 'e1-resolve-a6')
+    const { row } = await forgeValidRow(fixture, a6Service)
+    expect(row.ownerRootSessionId).toBe('boot-root-a6-test')
+    const saved = realmTruths.get(realm)
+    expect(saved).not.toBeUndefined()
+    realmTruths.delete(realm)
+    try {
+      let caught: { code?: string } | undefined
+      try {
+        await a6Service.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: row.requestId,
+          decision: 'allow',
+        })
+      } catch (error) {
+        caught = error as { code?: string }
+      }
+      expect(caught?.code).toBe('CONTROL_REQUEST_ABANDONED')
+    } finally {
+      realmTruths.set(realm, saved as RealmTruth)
+    }
+    const st = await a6Service.listControlState(P6T4_ROOT)
+    expect(st.decisions.filter((d) => d.requestId === row.requestId).length).toBe(0)
+    const abandonment = st.abandonments.find((a) => a.requestId === row.requestId)
+    expect(abandonment?.reason).toBe('invocation-abandoned')
     expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
   })
 
@@ -2523,5 +2568,91 @@ describe('A6-PR2b (real PA manifest): tool ask -> Officer escalation -> Human al
     expect(result.decision).not.toBe('approve')
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(0)
+  })
+})
+
+describe('A6 closing settlement ownership', () => {
+  const ownerA = 'root-A'
+  const ownerB = 'root-B'
+  const a = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: paVerifier,
+    authorityRevalidation: constantAuthorityRecheck().port,
+    a6AbandonUndeterminedAllow: true,
+    mountRootSessionId: ownerA,
+  })
+  const b = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: paVerifier,
+    authorityRevalidation: constantAuthorityRecheck().port,
+    a6AbandonUndeterminedAllow: true,
+    mountRootSessionId: ownerB,
+  })
+  const makeRow = async (svc: ControlService, correlation: string, callId: string) =>
+    svc.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(String(WORKER)),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      targetInstanceId: String(WORKER),
+      actionName: 'team-tool-execute',
+      toolName: 'team_bash',
+      correlation,
+      reviewPayload: { callId },
+    })
+
+  it('a settlement owned by Root A leaves Root B Allow/decision untouched; results are exactly-once', async () => {
+    const rowA = await makeRow(a, 'pa:tadm:root-A', 'call-A')
+    const rowB = await makeRow(b, 'pa:tadm:root-B', 'call-B')
+    expect(rowA.ownerRootSessionId).toBe(ownerA)
+    expect(rowB.ownerRootSessionId).toBe(ownerB)
+
+    await a.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: rowA.requestId, decision: 'allow' })
+    await b.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: rowB.requestId, decision: 'allow' })
+    await a.abandonControlRequest({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId: rowA.requestId,
+      reason: 'invocation-abandoned',
+    })
+
+    const stateA = await a.listControlState(P6T4_ROOT)
+    const stateB = await b.listControlState(P6T4_ROOT)
+    expect(stateA.abandonments.some((x) => x.requestId === rowA.requestId)).toBe(true)
+    expect(stateB.abandonments.some((x) => x.requestId === rowB.requestId)).toBe(false)
+    expect(stateB.decisions.find((d) => d.requestId === rowB.requestId)?.decision).toBe('allow')
+    expect(stateB.requests.find((r) => r.requestId === rowB.requestId)?.status).toBe('decided')
+    expect(stateB.consumptions.some((c) => c.requestId === rowB.requestId)).toBe(false)
+
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-B',
+      instanceId: String(WORKER),
+      outcome: 'succeeded',
+    })).recorded).toBe(true)
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-B',
+      instanceId: String(WORKER),
+      outcome: 'failed',
+    })).recorded).toBe(false)
+    const after = await b.listControlState(P6T4_ROOT)
+    const results = after.executionResults.filter((r) => r.requestId === rowB.requestId)
+    expect(results).toHaveLength(1)
+    expect(results[0]?.outcome).toBe('succeeded')
+    expect(after.decisions.find((d) => d.requestId === rowB.requestId)?.decision).toBe('allow')
+    expect((await b.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-does-not-exist',
+      instanceId: String(WORKER),
+      outcome: 'unknown',
+    })).recorded).toBe(false)
   })
 })

@@ -2809,6 +2809,17 @@ export function createAgentBindings(deps) {
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
+          onExecutionResult: ({ callId, outcome }) => {
+            const service = controlServiceRef?.current
+            if (service === undefined || service === null || typeof service.recordExecutionResult !== 'function') return
+            void service.recordExecutionResult({
+              rootSessionId: String(teamRoot),
+              callId,
+              outcome,
+            }).catch((error) => {
+              observations.push(`alpha6-execution-result: failed callId=${String(callId)}: ${error instanceof Error ? error.message : String(error)}`)
+            })
+          },
           // PR358 fix-2: the DURABLE attribution the Control rows live under
           // is the real TeamSession root — never a `plane:<template>`
           // fallback. Missing teamSessionId is a wiring bug the plane now

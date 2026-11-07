@@ -99,6 +99,7 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   'team-coordination-recorded': 'message',
   'control-request-recorded': 'control',
   'control-decision-recorded': 'control',
+  'control-execution-result': 'control',
   'control-allow-consumed': 'control',
   // A4-PR0a: mirror of the host category map — the inline-abort terminal mark.
   // The renderer already had a case for this fact type while the category map

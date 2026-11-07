@@ -80,6 +80,10 @@ export interface RunToolCallDeps {
   readonly pa?: PaAdmitEdge
   readonly backend: ToolEffectBackend
   readonly spill?: { readonly store: SpillStore }
+  /** Optional A6 execution-result observation: called ONCE after the backend
+   *  answered (success or failure), with the callId. It observes only; it can
+   *  never change the result. Cancelled/refused paths do not call it. */
+  readonly onExecutionResult?: (input: { readonly callId: string; readonly outcome: 'succeeded' | 'failed' }) => void
 }
 
 export interface SpillPointerFact {
@@ -179,6 +183,7 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
     { lease, sink },
   )
 
+  deps.onExecutionResult?.({ callId: request.callId, outcome: result.ok ? 'succeeded' : 'failed' })
   const settlement: LeaseSettlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT
   const settled = lease.settle(settlement)
   if (!settled.ok) return deepFreezeContracts({ kind: 'refused-spill', refusal: settled.refusal })

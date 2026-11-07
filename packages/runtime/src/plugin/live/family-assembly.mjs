@@ -64,7 +64,7 @@ export const CAPABILITY_KEYS = Object.freeze([
   'planeConfig', 'names', 'readName', 'fsInstance', 'confinedCfg', 'permissionPolicy', 'subtreeContains',
   // row-level admission edges the rows are constructed over (NOT the
   // kernel: approval entries and grant consumption stay the plane's)
-  'decide', 'pa',
+  'decide', 'pa', 'onExecutionResult',
   // the shared effect backends (filled in phase order)
   'backends',
   // host/presentation faces

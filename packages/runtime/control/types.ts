@@ -1591,6 +1591,11 @@ export interface ControlRequestRecord {
   readonly requestId: string
   /** The TeamSession (root session id) the request belongs to. */
   readonly rootSessionId: string
+  /** A6 closing round: the mount RootSessionId that created this row.
+   *  ABSENT on pre-A6/legacy rows. Boot settlement only ever touches rows
+   *  whose owner is exactly this boot root; an absent owner is unowned and is
+   *  NEVER settled (fail closed). */
+  readonly ownerRootSessionId?: string
   /** The closed request kind. */
   readonly kind: ControlRequestKind
   /** The requesting principal (the member, or the leader where the
@@ -2100,6 +2105,12 @@ export interface ControlServiceOptions {
    * durable-DENY behaviour for every non-A6 composition.
    */
   readonly a6AbandonUndeterminedAllow?: boolean
+  /** A6 closing round: the mount RootSessionId stamped on every Control row
+   *  this service creates (`ownerRootSessionId`). Boot settlement only settles
+   *  rows owned by exactly this root; absent = rows are unowned and never
+   *  settled. Passed only by the A6 composition, so non-A6 row bytes and
+   *  behaviour are unchanged. */
+  readonly mountRootSessionId?: string
   /**
    * A6-PR2c: the trusted CURRENT reviewer of a leg, used only to authorize an
    * Officer handoff. ABSENT = no transfer authority exists in this composition
@@ -2206,6 +2217,19 @@ export interface ControlRequestNotificationPort {
  * no consumer may derive authority, consumability, or a gate verdict from a
  * snapshot — the guarded mutations remain the only authority paths.
  */
+/** A6 closing round — one durable, minimal execution-result fact. It records
+ *  only what the execution lifecycle observed (`succeeded` | `failed`), or
+ *  `unknown` when a consumed invocation died before any result was durable.
+ *  It NEVER authorizes, consumes, or replays anything; settlement only uses it
+ *  to avoid mislabelling a completed execution as abandoned. */
+export interface ControlExecutionResultRecord {
+  readonly requestId: string
+  readonly callId: string
+  readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  readonly recordedAt: string
+  readonly sequence: number
+}
+
 export interface ControlStateSnapshot {
   readonly requests: readonly ControlRequestRecord[]
   readonly decisions: readonly ControlDecisionRecord[]
@@ -2213,6 +2237,8 @@ export interface ControlStateSnapshot {
   /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
    *  `control-request-abandoned` facts). */
   readonly abandonments: readonly ControlAbandonmentRecord[]
+  /** A6 closing round: the durable minimal execution-result facts. */
+  readonly executionResults: readonly ControlExecutionResultRecord[]
   /** The rows the strict request reader refused, in durable sequence order
    *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
    *  defaulted (ADR A2-9), and never a gate. */
@@ -2349,6 +2375,19 @@ export interface ControlService {
     readonly requestId: string
     readonly reason?: string
   }): Promise<ControlAbandonmentRecord>
+  /**
+   * A6 closing round — record ONE minimal execution result for a PA request,
+   * matched by its durable `callId` (and target instance when supplied).
+   * Writes `control-execution-result` exactly once per request; an unknown
+   * callId records nothing. The fact is lifecycle observation, never an
+   * approval, a consumption, or a replay authorization.
+   */
+  recordExecutionResult(args: {
+    readonly rootSessionId: string
+    readonly callId: string
+    readonly instanceId?: string
+    readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  }): Promise<{ readonly recorded: boolean; readonly requestId?: string }>
   /**
    * Read the team's durable control state (fresh ledger read; the
    * in-process holds NO cached authority — invariant 45).

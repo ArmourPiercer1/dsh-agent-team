@@ -80,6 +80,7 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
   'team-coordination-recorded': 'message',
   'control-request-recorded': 'control-request',
   'control-decision-recorded': 'control-decision',
+  'control-execution-result': 'control-decision',
   'control-allow-consumed': 'control-consumed',
   'activity-progress-recorded': 'progress-recorded',
   'activity-interval-opened': 'interval-opened',

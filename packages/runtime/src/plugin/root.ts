@@ -2855,12 +2855,46 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
                 continue
               }
               for (const request of state.requests) {
-                const row = request as unknown as { requestId: string; correlation?: string; actionName?: string }
+                const row = request as unknown as {
+                  requestId: string
+                  correlation?: string
+                  actionName?: string
+                  ownerRootSessionId?: string
+                  targetInstanceId?: string
+                  reviewPayload?: unknown
+                }
+                // Strict OWNER: only a row this boot root created may be
+                // settled. An absent owner (legacy/pre-change row) is
+                // unowned, never ours to close — fail closed.
+                if (row.ownerRootSessionId !== rootSid) continue
                 if (!String(row.correlation ?? '').startsWith('pa:') && row.actionName !== 'team-tool-execute') continue
                 const decision = [...state.decisions].reverse().find((entry) => entry.requestId === row.requestId)
                 if (decision === undefined || decision.decision !== 'allow') continue
                 if (state.abandonments.some((entry) => entry.requestId === row.requestId)) continue
                 const consumed = state.consumptions.some((entry) => entry.requestId === row.requestId)
+                const result = state.executionResults.find((entry) => entry.requestId === row.requestId)
+                // A durable succeeded/failed result means the invocation
+                // COMPLETED; it is not a dead call and must never be flipped
+                // to abandoned by a later boot.
+                if (result !== undefined && result.outcome !== 'unknown') continue
+                if (consumed && result === undefined) {
+                  const review = row.reviewPayload
+                  const callId = review !== null && typeof review === 'object' && !Array.isArray(review)
+                    ? (review as Record<string, unknown>)['callId']
+                    : undefined
+                  if (typeof callId === 'string' && callId.length > 0 && control.recordExecutionResult !== undefined) {
+                    try {
+                      await control.recordExecutionResult({
+                        rootSessionId: root,
+                        callId,
+                        ...(row.targetInstanceId === undefined ? {} : { instanceId: row.targetInstanceId }),
+                        outcome: 'unknown',
+                      })
+                    } catch (error: unknown) {
+                      console.error(`[a6-settlement] result-unknown failed root=${root} request=${row.requestId} error=${error instanceof Error ? error.message : String(error)}`)
+                    }
+                  }
+                }
                 try {
                   await control.abandonControlRequest({
                     rootSessionId: root,
@@ -3137,7 +3171,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
       : undefined
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
-    ...(alpha6Wiring.mode === 'alpha6' ? { a6AbandonUndeterminedAllow: true } : {}),
+    ...(alpha6Wiring.mode === 'alpha6'
+      ? { a6AbandonUndeterminedAllow: true, mountRootSessionId: rootSid }
+      : {}),
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,

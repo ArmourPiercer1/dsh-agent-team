@@ -3722,6 +3722,7 @@ var __dshFactory = (require) => {
 			    'team-coordination-recorded': 'message',
 			    'control-request-recorded': 'control',
 			    'control-decision-recorded': 'control',
+			    'control-execution-result': 'control',
 			    'control-allow-consumed': 'control',
 			    // A4-PR0a: mirror of the host category map — the inline-abort terminal mark.
 			    // The renderer already had a case for this fact type while the category map
@@ -10091,6 +10092,7 @@ REMOTE_CORRUPT_CONTROL_LEGS_CAP });
 			    'team-coordination-recorded': 'message',
 			    'control-request-recorded': 'control-request',
 			    'control-decision-recorded': 'control-decision',
+			    'control-execution-result': 'control-decision',
 			    'control-allow-consumed': 'control-consumed',
 			    'activity-progress-recorded': 'progress-recorded',
 			    'activity-interval-opened': 'interval-opened',
