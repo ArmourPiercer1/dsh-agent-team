@@ -15,8 +15,8 @@
 | A5 commits since base | 119 | recomputed after fetch |
 | A6 commits since base | 283 | unchanged |
 | `archive/a6-int-20261108` | `e2135cb4e8b0452ca07edadb46b0ca1f121057f2` | original A6 docs HEAD preserved |
-| `alpha6/stack-20261108` | `bf2d693c85856f3c6c0a286e02270e146d0bb71f` | 9 product + 1 docs/evidence |
-| `preview/alpha5-alpha6-rc1` | `0e5528b98aa69fdda671c8aae16f9631e8735699` | **merge commit** of A5 + A6 stack; later commits on this ref are evidence-only |
+| `alpha6/stack-20261108` | `6fcd82696` | 9 product + D1/D1b docs/evidence |
+| `preview/alpha5-alpha6-rc1` | `0c646897b` | **merge commit** (first A5/A6 merge `0e5528b98`, resynced after D1b) of A5 + A6 stack; later commits on this ref are evidence-only |
 | original product HEAD | `54f39e09d` | preserved in archive |
 | original docs HEAD | `e2135cb4e` | preserved in archive |
 
@@ -41,6 +41,7 @@ All commits are on `alpha6/stack-20261108` after `c8af5fc6f`.
 | G8 PR6 + integration consolidation | `7554d047d` | 187 | +14022/−388 | 35 passed |
 | G9 closing settlements/result | `40b6b4b01` | 98 | +3690/−294 | 106 passed |
 | D1 docs/evidence | `bf2d693c8` | 418 | +53478/−0 | n/a (docs only) |
+| D1b scratch cleanup | `6fcd82696` | 1 | −72 | removes local `.drill` log |
 
 Per-slice targeted tests were run at each detached commit in a separate
 worktree; raw logs are `slice-g1.log` … `slice-g9.log`.

@@ -1,7 +1,7 @@
 # Final Preview tip and final gate
 
 - Preview merge commit (A5 first parent / A6 second parent):
-  `0e5528b98aa69fdda671c8aae16f9631e8735699`
+  `0c646897bbb03b01c48abfc7abbc9a93de45e107`
 - Evidence commits after the merge change only `dev/agent-workflow/evidence/**`;
   they do not touch `packages/**`, `tests/**`, `scripts/**` or dist.
 - Final full gate was run on the evidence tip with the same product tree:
