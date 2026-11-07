@@ -1029,9 +1029,18 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       }
       return pids
     }
-    // Attribution rule (measured): the confined TERMINAL writes the command
-    // text to a PTY, so the command never appears in any process argv. The
-    // independent witness is therefore the PROVIDER's launcher process:
+    // Attribution rule (MEASURED; corrected 2026-11-13 — the earlier text of this
+    // comment asserted the opposite and was WRONG): the confined terminal does
+    // NOT write the command text to a PTY. `packages/runtime/team-services/src/terminal.ts:535`
+    // spawns `argv: [program, '-c', text]`, and `:538` sets `stdin: 'ignore'` —
+    // there is no stdin/PTY to write to. The command body therefore IS in the
+    // shell child's `/proc/<pid>/cmdline`, readable by any same-machine process:
+    // a process-list leak surface, not a lane-isolation defect.
+    // `payloadInLaneSightings` is a POSITIVE visibility witness when non-zero; a
+    // ZERO means the ~240 ms sampler missed the short-lived child, never that
+    // argv is clean (Face C recon, PR #660, measured 3 sightings boot01 / 2
+    // boot02 on this same face while these two boots recorded 0). The independent
+    // witness for "the command RAN" is still the PROVIDER's launcher process:
     //   - `--confined-exec-stream` under THIS World's scratch `plans/` dir is a
     //     Member tool execution; exactly one for the whole turn;
     //   - `probe-*` / `--enforce-leg` / `--net-leg` launchers are the realm's
