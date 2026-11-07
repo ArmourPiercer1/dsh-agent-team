@@ -25,7 +25,7 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRunRecord } from './lib/run-record.mjs'
@@ -38,11 +38,14 @@ import {
   assertCandidateClaim,
 } from './lib/acceptance-claim.mjs'
 import {
+  DEAD_SLOT_GRACE_MS,
   DEV_LIVE_SLOT_LIMIT,
   DevLiveSlotError,
   acquireDevLiveSlot,
   assertDevLiveSlotHeld,
+  currentPidNamespace,
   scanDevLiveSlots,
+  sweepStaleDevLiveSlot,
 } from './lib/dev-live-slots.mjs'
 import {
   A5sfReadGateError,
@@ -239,57 +242,146 @@ test('(b-control) a dev-live record with no slot at the harness chokepoint is re
 // ─────────────────────────────────────────────────────────────────────────────
 // (c) the 2-concurrent cap refuses a third dev Host
 // ─────────────────────────────────────────────────────────────────────────────
-test('(c-negative) a third concurrent dev Host is refused; stale (dead-pid) slots are reclaimed', async () => {
+test('(c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-pid) slots are reclaimed', async () => {
   const dir = tmp('slots')
   const leaseRoot = join(dir, 'leases')
-  const first = acquireDevLiveSlot({ leaseRoot, runId: 'r1', face: 'FS Provider', world: 'w1' })
-  const second = acquireDevLiveSlot({ leaseRoot, runId: 'r2', face: 'FS Provider', world: 'w2' })
-  assert.notEqual(first.slot, second.slot)
-  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
+  // The NUMBER is not the law, but it is pinned in ONE place: the owner raised it
+  // from 2 to 6 on 2026-11-13 after measuring this machine (30 GiB RAM / 16 vCPU,
+  // well under 1 GiB per dev Host). Moving it must be a deliberate edit here too.
+  assert.equal(DEV_LIVE_SLOT_LIMIT, 6)
+  const held = []
+  for (let i = 0; i < DEV_LIVE_SLOT_LIMIT; i += 1) {
+    held.push(acquireDevLiveSlot({ leaseRoot, runId: `r${String(i)}`, face: 'FS Provider', world: `w${String(i)}` }))
+  }
+  assert.equal(new Set(held.map((slot) => slot.slot)).size, DEV_LIVE_SLOT_LIMIT, 'every concurrent slot gets its own number')
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, DEV_LIVE_SLOT_LIMIT)
   assert.throws(
-    () => acquireDevLiveSlot({ leaseRoot, runId: 'r3', face: 'FS Provider', world: 'w3' }),
+    () => acquireDevLiveSlot({ leaseRoot, runId: 'over', face: 'FS Provider', world: 'wover' }),
     (error) => error instanceof DevLiveSlotError && error.code === 'DEV_LIVE_LIMIT_REACHED',
   )
-  // Release one → the third (same call re-tried) is admitted.
-  assert.equal(first.release(), true)
-  const third = acquireDevLiveSlot({ leaseRoot, runId: 'r3', face: 'FS Provider', world: 'w3' })
-  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
-  third.release()
+  // Release one → the refused call is admitted on retry.
+  assert.equal(held[0].release(), true)
+  const retried = acquireDevLiveSlot({ leaseRoot, runId: 'over', face: 'FS Provider', world: 'wover' })
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, DEV_LIVE_SLOT_LIMIT)
+  retried.release()
+  for (const slot of held.slice(1)) slot.release()
 
-  // Crash recovery: a slot whose pid is dead is stale and is swept, not
-  // counted. `second` is still held (slot 1); slot 0 is now dead residue.
+  // Crash recovery: a slot whose pid is dead IN OUR OWN NAMESPACE is stale once
+  // it is older than `DEAD_SLOT_GRACE_MS` (the union law with E1's fix: the
+  // judgement is authoritative, but a writer that has not been scheduled since
+  // it created the file must not lose it). The fixture is therefore aged past
+  // the grace instead of being reclaimed from a just-written file. A bare pid
+  // from a file with no `pidNs` is unjudgeable — see the e1 arms below and
+  // a5sf-dev-live-slots.test.mjs.
   const deadPid = 999_999
-  writeFileSync(join(leaseRoot, 'dev-live-hosts', '0.json'), JSON.stringify({
-    slot: 0, token: 'dead', pid: deadPid, startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
+  const deadPath = join(leaseRoot, 'dev-live-hosts', '0.json')
+  writeFileSync(deadPath, JSON.stringify({
+    slot: 0, token: 'dead', pid: deadPid, pidNs: currentPidNamespace(), startedAt: new Date(0).toISOString(), runId: 'dead', face: 'FS Provider', world: 'wdead', headCommit: HEAD,
+  }))
+  const aged = new Date(Date.now() - (DEAD_SLOT_GRACE_MS + 60_000))
+  utimesSync(deadPath, aged, aged)
+  const scan = scanDevLiveSlots({ leaseRoot })
+  assert.equal(scan.live.length, 0)
+  assert.equal(scan.stale.length, 1)
+  assert.equal(scan.stale[0].liveness, 'dead')
+  const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'reclaim', face: 'FS Provider', world: 'wreclaim' })
+  assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 1)
+  reclaimed.release()
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// E1 — a slot is never deleted on liveness this process cannot judge
+// ─────────────────────────────────────────────────────────────────────────────
+test('(e1-foreign-namespace) a slot written in ANOTHER pid namespace is never swept on liveness, and its owner is not locked out', () => {
+  const dir = tmp('e1foreign')
+  const leaseRoot = join(dir, 'leases')
+  const slotDir = join(leaseRoot, 'dev-live-hosts')
+  mkdirSync(slotDir, { recursive: true })
+  const own = currentPidNamespace()
+  const foreign = own !== null && own !== 'pid:[4026532416]' ? 'pid:[4026532416]' : 'pid:[4026532417]'
+  const path = join(slotDir, '0.json')
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 'peer', pid: 999_999, pidNs: foreign, startedAt: new Date().toISOString(), runId: 'peer-run', face: 'Subprocess', world: 'wpeer', headCommit: HEAD,
   }))
   const scan = scanDevLiveSlots({ leaseRoot })
-  assert.equal(scan.live.length, 1)
-  assert.equal(scan.stale.length, 1)
-  const reclaimed = acquireDevLiveSlot({ leaseRoot, runId: 'r4', face: 'FS Provider', world: 'w4' })
+  assert.equal(scan.entries.length, 1)
+  assert.equal(scan.entries[0].alive, false, 'the raw pidAlive answer is still recorded')
+  assert.equal(scan.entries[0].liveness, 'unknown', 'a pid from another namespace is NOT a verdict')
+  assert.equal(scan.stale.length, 0, 'a pid we cannot judge is never evidence of death')
+  assert.equal(scan.live.length, 1, 'it keeps its capacity until the cross-namespace grace')
+  assert.equal(sweepStaleDevLiveSlot(scan.entries[0]), false, 'the sweep refuses a slot it cannot judge')
+  assert.equal(existsSync(path), true, "the peer's slot file survived")
+  // The peer's own boot chokepoint check passes: it is counted as live.
+  const held = assertDevLiveSlotHeld({ leaseRoot, runId: 'peer-run', pid: 999_999 })
+  assert.equal(held.slot, 0)
+  // A NEW boot takes a DIFFERENT slot: the foreign slot is not stolen.
+  const mine = acquireDevLiveSlot({ leaseRoot, runId: 'mine', face: 'Subprocess', world: 'wmine' })
+  assert.notEqual(mine.slot, 0)
   assert.equal(scanDevLiveSlots({ leaseRoot }).live.length, 2)
-  reclaimed.release()
-  second.release()
+  mine.release()
+  // A legacy slot (no `pidNs`) is equally unjudgeable — the same rule, so an
+  // old-code peer is never the victim of a new-code sweep while it is fresh.
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 'legacy', pid: 999_999, startedAt: new Date().toISOString(), runId: 'legacy-run', face: 'Subprocess', world: 'wlegacy', headCommit: HEAD,
+  }))
+  const legacy = scanDevLiveSlots({ leaseRoot })
+  assert.equal(legacy.entries[0].liveness, 'unknown')
+  assert.equal(legacy.stale.length, 0)
+})
+
+test('(e1-same-namespace) a provably dead pid is swept only after the write grace, and never after a token change', () => {
+  const dir = tmp('e1dead')
+  const leaseRoot = join(dir, 'leases')
+  const slotDir = join(leaseRoot, 'dev-live-hosts')
+  mkdirSync(slotDir, { recursive: true })
+  const path = join(slotDir, '0.json')
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't1', pid: 999_999, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r1', face: 'Subprocess', world: 'w1', headCommit: HEAD,
+  }))
+  // Fresh write: dead, but inside the grace window → NOT stale (a writer that
+  // has not yet been scheduled must not lose its own slot).
+  const fresh = scanDevLiveSlots({ leaseRoot })
+  assert.equal(fresh.entries[0].liveness, 'dead')
+  assert.equal(fresh.stale.length, 0, 'inside DEAD_SLOT_GRACE_MS nothing is swept')
+  // Past the grace window the same slot IS stale and IS swept.
+  const later = Date.now() + DEAD_SLOT_GRACE_MS + 1_000
+  const agedScan = scanDevLiveSlots({ leaseRoot, now: later })
+  assert.equal(agedScan.stale.length, 1)
+  assert.equal(sweepStaleDevLiveSlot(agedScan.entries[0], { now: later }), true, 'the sweep re-reads and re-classifies with the same clock')
+  assert.equal(existsSync(path), false)
+  // Token re-check: a slot re-written by a peer after our scan is not ours to
+  // delete, even when the entry we classified is stale.
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't2', pid: 999_999, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r2', face: 'Subprocess', world: 'w2', headCommit: HEAD,
+  }))
+  const pre = scanDevLiveSlots({ leaseRoot, now: Date.now() + DEAD_SLOT_GRACE_MS + 2_000 })
+  writeFileSync(path, JSON.stringify({
+    slot: 0, token: 't3', pid: process.pid, pidNs: currentPidNamespace(), startedAt: new Date().toISOString(), runId: 'r3', face: 'Subprocess', world: 'w3', headCommit: HEAD,
+  }))
+  assert.equal(sweepStaleDevLiveSlot(pre.entries[0], { now: Date.now() + DEAD_SLOT_GRACE_MS + 2_000 }), false, 'a changed token means a new owner')
+  assert.equal(existsSync(path), true)
+  assert.equal(JSON.parse(readFileSync(path, 'utf8')).token, 't3')
 })
 
 test('(c-lease) the cap applies through the dev-live gate, not just the counter', async () => {
   const dir = tmp('leasecap')
   const leaseRoot = join(dir, 'leases')
   const grantPath = grantFile(dir, DEV_GRANT)
-  const a = devRecord(dir, { ledger: join(dir, 'a.jsonl'), leaseRoot })
-  const b = devRecord(dir, { ledger: join(dir, 'b.jsonl'), leaseRoot })
-  const c = devRecord(dir, { ledger: join(dir, 'c.jsonl'), leaseRoot })
   const bootStub = (record) => () => record.logHostStart({ world: 'u5a5sfdev1', phase: 'boot', suite: 'a5sf-read' })
-  for (const record of [a, b]) {
+  const leased = []
+  for (let i = 0; i < DEV_LIVE_SLOT_LIMIT; i += 1) {
+    const record = devRecord(dir, { ledger: join(dir, `r${String(i)}.jsonl`), leaseRoot })
     const lease = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: record, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
     await lease.boot(bootStub(record))
+    leased.push(record)
   }
-  const third = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: c, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
+  const over = devRecord(dir, { ledger: join(dir, 'over.jsonl'), leaseRoot })
+  const refused = await preRegisterDevLiveBudget({ grantPath, headCommit: HEAD, runRecord: over, face: 'FS Provider', world: 'u5a5sfdev1', leaseRoot })
   await assert.rejects(
-    () => third.boot(bootStub(c)),
+    () => refused.boot(bootStub(over)),
     (error) => error instanceof DevLiveSlotError && error.code === 'DEV_LIVE_LIMIT_REACHED',
   )
-  assert.equal(DEV_LIVE_SLOT_LIMIT, 2)
-  assert.equal(ledgerRows(join(dir, 'c.jsonl')).length, 1, 'the refused third boot wrote only its intent row, never a start row')
+  assert.equal(ledgerRows(join(dir, 'over.jsonl')).length, 1, 'the refused boot wrote only its intent row, never a start row')
 })
 
 // ─────────────────────────────────────────────────────────────────────────────

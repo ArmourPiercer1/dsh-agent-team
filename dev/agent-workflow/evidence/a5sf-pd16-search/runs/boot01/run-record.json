@@ -1,0 +1,431 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-member-2026-11-07T17-17-05-011Z-b1",
+  "suite": "a5sf-live-member",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T17:17:05.012Z",
+  "selectedCases": [
+    "rs:grep-on-surface",
+    "rs:grep-inlane-hit",
+    "rs:grep-out-of-lane",
+    "rs:grep-parent-dir",
+    "rs:grep-ignore",
+    "rs:grep-hidden-vcs",
+    "rs:grep-exit-nomatch",
+    "rs:grep-exit-error",
+    "rs:glob-workspace",
+    "rs:glob-out-of-lane",
+    "rs:grep-timeout",
+    "rs:guard-facts",
+    "rs:process-host-direct"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "79065676415dae11d1330d559b4dc26ff083627a",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "79065676415dae11d1330d559b4dc26ff083627a",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfsub1-20261107T17-17-05Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "rs:grep-on-surface",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "the governed Member's model-visible surface carries the pinned host `grep` (pattern/path/include) and `glob` (pattern/path)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "grep-issued",
+          "ok": true,
+          "detail": "the Member issued a grep call through the surface"
+        },
+        {
+          "id": "glob-issued",
+          "ok": true,
+          "detail": "the Member issued a glob call through the surface"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-inlane-hit",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "grep admits an IN-CEILING workspace search and returns the matching file and line",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "names-file",
+          "ok": true,
+          "detail": "the result names in-lane.txt"
+        },
+        {
+          "id": "carries-line",
+          "ok": true,
+          "detail": "the result carries the matched line text"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-out-of-lane",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "grep does NOT return bytes from a directory outside the Member's compiled read ceiling",
+      "failed": [
+        "typed-refusal: a typed refusal, if refused, must be named"
+      ],
+      "clauses": [
+        {
+          "id": "issued",
+          "ok": true,
+          "detail": "the Member issued the out-of-lane grep"
+        },
+        {
+          "id": "result-present",
+          "ok": true,
+          "detail": "a tool result came back"
+        },
+        {
+          "id": "no-secret-bytes",
+          "ok": true,
+          "detail": "NO out-of-lane needle appeared in the result"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": false,
+          "detail": "a typed refusal, if refused, must be named"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-parent-dir",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "grep does NOT reach the parent of the Member workspace (`path: \"..\"`)",
+      "failed": [
+        "typed-refusal: a typed refusal, if refused, must be named"
+      ],
+      "clauses": [
+        {
+          "id": "issued",
+          "ok": true,
+          "detail": "the Member issued the parent-dir grep"
+        },
+        {
+          "id": "no-secret-bytes",
+          "ok": true,
+          "detail": "NO out-of-lane needle appeared in the result"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": false,
+          "detail": "a typed refusal, if refused, must be named"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-ignore",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "grep honours .gitignore (a gitignored file is not searched)",
+      "failed": [
+        "ignored-absent: ignored.txt is absent from the result",
+        "no-ignored-bytes: the ignored needle is absent from the result"
+      ],
+      "clauses": [
+        {
+          "id": "not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "ignored-absent",
+          "ok": false,
+          "detail": "ignored.txt is absent from the result"
+        },
+        {
+          "id": "no-ignored-bytes",
+          "ok": false,
+          "detail": "the ignored needle is absent from the result"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-hidden-vcs",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "grep skips hidden files and VCS metadata by default (rg defaults)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "hidden-absent",
+          "ok": true,
+          "detail": ".hidden/hidden.txt is absent"
+        },
+        {
+          "id": "git-absent",
+          "ok": true,
+          "detail": ".git/config is absent"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-exit-nomatch",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "a zero-match grep is a SUCCESS (rg exit 1), never an error",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "empty-answer",
+          "ok": true,
+          "detail": "the result states no matches in the success shape"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-exit-error",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "a pattern rg rejects is an ERROR (rg exit 2) distinguishable from a zero-match success, and the model-facing text names its typed code",
+      "failed": [
+        "typed-code: the result names SEARCH_INVALID_PATTERN (measured: the wire carries only rg's stderr words)"
+      ],
+      "clauses": [
+        {
+          "id": "is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "distinct-from-nomatch",
+          "ok": true,
+          "detail": "no-match is success, bad pattern is error"
+        },
+        {
+          "id": "typed-code",
+          "ok": false,
+          "detail": "the result names SEARCH_INVALID_PATTERN (measured: the wire carries only rg's stderr words)"
+        }
+      ]
+    },
+    {
+      "id": "rs:glob-workspace",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "glob lists workspace paths by rg semantics (`--no-ignore --hidden`, VCS metadata still excluded)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "names-inlane",
+          "ok": true,
+          "detail": "in-lane.txt is listed"
+        },
+        {
+          "id": "names-ignored",
+          "ok": true,
+          "detail": "ignored.txt is listed (glob uses --no-ignore)"
+        },
+        {
+          "id": "no-vcs",
+          "ok": true,
+          "detail": ".git is excluded by GLOB_VCS_EXCLUDES"
+        }
+      ]
+    },
+    {
+      "id": "rs:glob-out-of-lane",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "glob does NOT list files outside the Member's compiled read ceiling",
+      "failed": [
+        "typed-refusal: a typed refusal, if refused, must be named"
+      ],
+      "clauses": [
+        {
+          "id": "issued",
+          "ok": true,
+          "detail": "the Member issued the out-of-lane glob"
+        },
+        {
+          "id": "no-secret-file",
+          "ok": true,
+          "detail": "the out-of-lane file name is absent"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": false,
+          "detail": "a typed refusal, if refused, must be named"
+        }
+      ]
+    },
+    {
+      "id": "rs:grep-timeout",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "a grep that exceeds its cooperative budget is ABORTED with an error naming the timeout, and no search answer is composed from the unfinished walk",
+      "failed": [
+        "timeout-named: the error names the timeout"
+      ],
+      "clauses": [
+        {
+          "id": "is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "timeout-named",
+          "ok": false,
+          "detail": "the error names the timeout"
+        },
+        {
+          "id": "no-answer",
+          "ok": true,
+          "detail": "no search answer was composed"
+        }
+      ]
+    },
+    {
+      "id": "rs:guard-facts",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "the product guard sink records a Member/Tool/Call/PolicyRevision fact for the search calls",
+      "failed": [
+        "zero-search-facts: 10 guard fact(s); none for grep/glob"
+      ],
+      "clauses": [
+        {
+          "id": "zero-search-facts",
+          "ok": false,
+          "detail": "10 guard fact(s); none for grep/glob"
+        }
+      ]
+    },
+    {
+      "id": "rs:process-host-direct",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:18:20.246Z",
+      "proposition": "the real `rg` child is a direct child of the HOST process (same mount/pid namespace, no confined launcher) — i.e. the inherited base subprocess service",
+      "failed": [
+        "rg-sighted: 0 rg sighting(s)",
+        "host-child: at least one rg ppid == host pid (99)",
+        "host-template-argv: argv carries the pinned host templates",
+        "no-confined-launcher: 7 confined launcher(s) for the search calls"
+      ],
+      "clauses": [
+        {
+          "id": "rg-sighted",
+          "ok": false,
+          "detail": "0 rg sighting(s)"
+        },
+        {
+          "id": "host-child",
+          "ok": false,
+          "detail": "at least one rg ppid == host pid (99)"
+        },
+        {
+          "id": "host-template-argv",
+          "ok": false,
+          "detail": "argv carries the pinned host templates"
+        },
+        {
+          "id": "no-lane-flags",
+          "ok": true,
+          "detail": "the confined face's lane-safe flags are absent"
+        },
+        {
+          "id": "no-confined-launcher",
+          "ok": false,
+          "detail": "7 confined launcher(s) for the search calls"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/dev/agent-workflow/evidence/a5sf-recon-search/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T17:17:05.046Z",
+        "runId": "a5sf-live-member-2026-11-07T17-17-05-011Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "79065676415dae11d1330d559b4dc26ff083627a",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T17:17:36.060Z",
+        "runId": "a5sf-live-member-2026-11-07T17-17-05-011Z-b1",
+        "suite": "a5sf-live-member",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfsub1-20261107T17-17-05Z",
+        "phase": "a5sf-live-member-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-member-boot1",
+      "world": "u5u5a5sfsub1-20261107T17-17-05Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/dev/agent-workflow/evidence/a5sf-recon-search/driver/logs/u5u5a5sfsub1-20261107T17-17-05Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-member-2026-11-07T17-17-05-011Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-07T17:18:20.248Z"
+}

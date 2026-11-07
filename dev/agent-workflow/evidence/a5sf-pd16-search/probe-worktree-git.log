@@ -1,0 +1,16 @@
+
+### valid-ws-git__parent-git-file
+  plain  {"code":2,"matches":1,"stderr":"rg: /tmp/probe2-valid-ws-git__parent-git-file-hXKG2F/deep/a/b/.git: Permission denied (os error 13)"}
+  flags  {"code":0,"matches":2,"stderr":""}
+
+### valid-ws-git__high-git-dir
+  plain  {"code":0,"matches":1,"stderr":""}
+  flags  {"code":0,"matches":2,"stderr":""}
+
+### valid-ws-git__parent-gitignore
+  plain  {"code":0,"matches":1,"stderr":""}
+  flags  {"code":0,"matches":2,"stderr":""}
+
+### empty-ws-git__high-git-dir
+  plain  {"code":0,"matches":1,"stderr":""}
+  flags  {"code":0,"matches":2,"stderr":""}

@@ -1,0 +1,13 @@
+E1-UNDECLARED-CAPABILITIES mode=legacy teamTools=15
+E1-TEAM-TOOL-SURFACE team_list_members,team_list_templates,team_inspect_config,team_create_member,team_delegate,team_follow_up,team_collect,team_send_message,team_report_progress,team_request_control,team_resolve_control,team_list_pending_control,team_archive_member,team_grant_permission,team_revoke_permission
+✔ (e1-undeclared) a template with no `capabilities` compiles to the FULL team tool catalog (7.977973ms)
+✔ (e1-contrast) declaring `capabilities` is what narrows the surface (5.924406ms)
+✔ (e1-contract) the documented contract states the legacy default the code implements (0.583344ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 185.755677
