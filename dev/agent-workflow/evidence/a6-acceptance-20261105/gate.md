@@ -1,5 +1,20 @@
 # Gate record
 
+## Final closing-round HEAD — `c2592cdf5`
+
+- Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`
+- Pristine host: `639ed015397290b3745d163aafe02ffee4aa3f84`
+- Result: **9/9 PASS**, 0 skip, **312.3 s**
+- Census: **677 files / 8833 legs**, `COUNTS MOVED, SET DID NOT`; identity set
+  IDENTICAL to the published baseline
+- Artifacts: `HEAD carries its own build` (1983 compared, 0 drift)
+- Blueprint fence: kit v5 identities re-recorded at L624/L813/L1825/L2515
+- Log: `.drill/ci-gate-c2592cdf5.log`
+- Delta since the reviewed product `28b61d4b2`: **kit/test only** — body-start
+  probe + wake-turn-start liveness metric + recovery wait; no product source
+  change. The independent review at `28b61d4b2` therefore still covers all
+  product code in this HEAD.
+
 ## Closing-round acceptance HEAD — `28b61d4b2`
 
 - Command: `CI=true node scripts/ci-pr-gate.mjs --full --store-dir "$PWD/.drill/pnpm-store"`

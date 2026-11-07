@@ -172,44 +172,48 @@ Root `session-c1-smoke-a6-2026-11-07T10-24-59`, blueprint `sha256:5c3b52cc…`.
   `control-request-abandoned reason=execution-outcome-unknown`. The spent allow
   is NOT replayed and the decision remains `allow`.
 
-## Body started, result not durable — NOT PROVEN on the real Host
+## Body started, result not durable — `a6-crash-body-r5` (PASS)
 
-The planned `C1_A6_CRASH=body` probe (a start marker before a delaying command)
-is implemented in the kit but the delaying shell command is classified into the
-A5 `parameter-permission` lane before the Plane PA leg exists; no
-`team-tool-execute` row is created, so the probe never reaches a body start.
-The real-Host split is therefore:
+Root `session-c1-smoke-a6-2026-11-07T11-03-42`, blueprint `sha256:bc17d71a…`.
 
-- body-not-started: PROVEN zero execution (`a6-crash-consume-r8`);
-- body-started-result-unknown: covered by the same boot settlement reason
-  (`execution-outcome-unknown`, asserted by the consume run) and by the same
-  no-replay rule, but the start marker itself was not produced in a real Host
-  run. This remains an explicitly disclosed gap, not a claimed PASS.
+The delaying command is classified into the A5 `parameter-permission` lane in
+this fixture, so `C1_A6_CRASH=body` approves that lane through the same remote
+human entry (a crash-window probe, not an approval-path claim). That allows the
+Plane PA `team-tool-execute` leg to exist. The probe kills the Host only after
+(a) the PA allow is consumed and (b) the durable body-start marker exists:
 
-## Claimed Inbox wake crash — `a6-inbox-r14` (A6-25) — LIVENESS PARTIAL
+- `bodyStart=true`, `consBefore=consAfter=1`, final workspace output absent;
+- after restart the decision is still `allow` and settlement adds
+  `control-request-abandoned reason=execution-outcome-unknown`;
+- the body is not replayed and no second consumption appears.
 
-Root `session-c1-smoke-a6-2026-11-07T10-29-21`, blueprint `sha256:0afa8433…`,
+`A6-16b` PASS. Together with `a6-crash-consume-r8` (body not started, zero
+execution) this closes the after-consume split.
+
+## Claimed Inbox wake crash## Claimed Inbox wake crash — `a6-inbox-r17` (A6-25) — PASS
+
+Root `session-c1-smoke-a6-2026-11-07T11-14-15`, blueprint `sha256:5f5f073e…`,
 `C1_A6_INBOX=1`.
 
 The wake turn was held open after the native Inbox CLAIMED the wake, then the
-Host was SIGKILLed. On restart the stale intent row was `accepted`, its native
-message was gone, recovery cleared the row and rebuilt a queued intent from the
-durable pending work, and the durable request was ultimately decided
-(`pendingBefore=1`, `pending=0` at drain). No duplicate pending row or second
-execution was observed.
+Host was SIGKILLed. The trace distinguishes a fresh delivery from a resumed
+turn by the request's message count:
 
-**Evidence defect (review finding P2):** the kit mixed metrics. `wakesBefore`
-and `wakesAfterDrain` counted distinct wakeIds while `wakesAfterRestart` counted
-raw requests; the recorded value is `wakes 1->2->1`. The replacement reuses the
-deterministic wakeId, so "distinct wakeIds 1 -> 2" is NOT supported, and the
-run cannot distinguish a fresh delivery of a same-id wake from the native turn
-itself resuming. `A6-25` is therefore recorded as **PARTIAL**: no duplicate, no
-replay of a consumed message, and the request was decided, but the exact
-liveness mechanism (original turn recovery vs exactly one replacement
-delivery) is not independently isolated. A fixed probe must count delivery
-transitions, not raw requests, and run at the final code.
+- before crash: one wake turn start at request index 11, `messageCount=1`
+  (the wake text is the only message);
+- after restart: a SECOND fresh start at index 12, `messageCount=1`, followed
+  by continuations at index 13 (`messageCount=3`) and index 14
+  (`messageCount=5`) — i.e. exactly one NEW wake turn, not a native resume of
+  the crashed turn (a resume would have appeared as `messageCount > 1` at its
+  first post-restart request);
+- the old request is not redelivered; stale intent rows go `1 -> 1 -> 0`;
+- the replacement wake decides the durable pending request (`pendingBefore=1`,
+  `pending=0` at drain).
 
-## Sticky Stop marker owner readback## Sticky Stop marker owner readback — unit proof
+`A6-25` PASS, with `wakes=1 -> 2 -> 2` counting wake TURN STARTS (wake text +
+`messageCount === 1`), not raw requests or distinct wakeIds.
+
+## Sticky Stop marker owner readback## Sticky Stop marker owner readback## Sticky Stop marker owner readback — unit proof
 
 `readStopped` / `listStopped` now surface `ownerRootSessionId`, and
 `a6-wake-intent-store.test.ts` adds a cross-root isolation test: a marker owned

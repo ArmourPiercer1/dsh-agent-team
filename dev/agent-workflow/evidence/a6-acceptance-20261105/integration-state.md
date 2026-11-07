@@ -5,7 +5,7 @@
 | Integration branch | `alpha6/int-20261103` (local worktree `.worktrees/alpha6-int`) |
 | PR #585 final merge | `23b5061a6` — "merge: Alpha.6 PR #585 root wiring into the isolated integration line" |
 | Rollback tag | `a6-int-pre-585-20261105`, peeled `ccc9294f4e37c230841924713a9624e1553c545a` |
-| Gated HEAD | `28b61d4b2` (9/9 local, 298.7 s, census 677/8833; `gate.md`) |
+| Gated HEAD | `c2592cdf5` (9/9 local, 312.3 s, census 677/8833; product unchanged from reviewed `28b61d4b2`, delta = kit/tests; `gate.md`) |
 | Evidence HEAD at this record | `28b61d4b2` for gate; closing-round real-Host runs carry `run-manifest.json` at `28b61d4b2`. Earlier full-arc runs were collected at `fb6ccb4f4`. |
 | Exact-HEAD real Host loops | `a6-normal-r9` (Officer allow), `a6-timeout-r9` (abandoned invocation, no decision rewrite), `a6-crash-allow-r4`, `a6-crash-consume-r8` (execution-outcome-unknown), `a6-inbox-r14` (exactly one replacement wake) — all at `28b61d4b2`. Earlier: `a6-handoff-r9`, `a6-human-r15`, `a6-sticky-stop-r14` at `fb6ccb4f4`. |
 | Working tree | tracked tree clean at `28b61d4b2`; `.drill/`, test homes and run evidence are untracked |

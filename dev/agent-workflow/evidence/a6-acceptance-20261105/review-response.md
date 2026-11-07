@@ -236,11 +236,11 @@ commit and a new full gate, so they are disclosed rather than claimed closed):
   `execution-outcome-unknown` at the next boot and historical successful cases
   flip to `abandoned` in case-state reads. Conservative, not unsafe; needs a
   body-start/run-epoch fact or explicit retention as a limitation.
-- **Inbox liveness metric defect (P2).** A6-25 mixed distinct-wakeId and raw
-  request counts (`1 -> 2 -> 1`); the replacement reuses the deterministic
-  wakeId. No duplicate/replay and a completed decision are shown, but exactly
-  one replacement delivery vs original-turn resume is NOT isolated. Recorded as
-  PARTIAL in the matrix and trial conclusion.
+- **Inbox liveness metric defect (RESOLVED in kit).** A6-25 now counts wake TURN
+  STARTS (wake text + `messageCount === 1`). `a6-inbox-r17` shows the pre-crash
+  start at index 11 and exactly one fresh post-restart start at index 12,
+  followed by 3/5-message continuations; a native resume would have started at
+  `messageCount > 1`. `wakes=1 -> 2 -> 2`; the durable request is decided.
 - **Cross-root marker test is unit-level only (P2).** It reads the marker back
   and filters by owner in the test; it does not exercise the boot filter at
   `root.ts` line ~2888.
@@ -249,9 +249,11 @@ commit and a new full gate, so they are disclosed rather than claimed closed):
   `d37ed8a3f`); `repos.teamSessions.list()` is a new uncaught throw point in
   recovery; `as unknown as` cast; A6-19 label asserts no abandon fact.
 
-Disclosed scope: the body-started-result-unknown real-Host probe is NOT proven
-(the delaying command routes to the A5 parameter-permission lane, so no Plane
-PA row is created); the consume case proves zero execution and the shared
-`execution-outcome-unknown` settlement, not a real body start.
+Body-started-result-unknown is now real-Host PROVEN in `a6-crash-body-r5`
+(A6-16b): the body-start marker exists, the PA allow is consumed, the final
+result is absent, restart records `execution-outcome-unknown`, and no replay
+occurs. The probe approves the A5 parameter-permission lane through the remote
+human entry so the Plane PA leg exists; this is a crash-window probe, not an
+approval-path claim.
 
 The gate at `28b61d4b2` is 9/9 independently of this review.

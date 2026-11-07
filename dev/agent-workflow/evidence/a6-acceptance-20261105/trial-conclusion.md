@@ -1,10 +1,11 @@
 # Isolated Alpha.6 trial conclusion
 
-Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `28b61d4b2`
-(9/9 local, 298.7 s, census 677 files / 8833 legs, identity set identical;
-`gate.md`); docs after this file are docs-only. Product evidence for the closing
-round is bound by per-run `run-manifest.json` at the same commit
-`28b61d4b296c0648f365a24751f390524361fc0e`. Earlier full-arc runs were taken at
+Date: 2026-11-06 (closing round 2026-11-07). Gate HEAD: `c2592cdf5`
+(9/9 local, 312.3 s, census 677 files / 8833 legs, identity set identical;
+`gate.md`). Product code is unchanged from the reviewed `28b61d4b2`; the delta
+to `c2592cdf5` is kit/test + evidence only. Closing-round runs carry
+`run-manifest.json`; the body/Inbox proof runs were taken while the product tree
+was `28b61d4b2` (recorded repo HEAD `b04974c4f`, docs-only above that product). Earlier full-arc runs were taken at
 `fb6ccb4f4` and are retained as the prior evidence head. Branch
 `alpha6/int-20261103`, rollback tag `a6-int-pre-585-20261105` (peeled
 `ccc9294f4e37c230841924713a9624e1553c545a`). No master merge, no un-draft, no
@@ -23,13 +24,13 @@ production switch.
 | Stop after human allow, before consumption: no execution, second allow rejected | PASS | `a6-stop-r3`, `CONTROL_REQUEST_DECIDED` |
 | Crash after PA allow, before consumption: Allow stays immutable, invocation abandoned, zero execution | PASS | `a6-crash-allow-r4` (28b61d4b2), A6-15 |
 | Crash after consumption, body not started: execution-outcome-unknown, no replay | PASS | `a6-crash-consume-r8` (28b61d4b2), A6-16 |
-| Body started, result not durable: outcome-unknown, no replay | **NOT PROVEN (real Host)** | kit mode exists, but the delaying command routes to the A5 parameter-permission lane; disclosed in `crash-and-inbox.md` |
+| Body started, result not durable: outcome-unknown, no replay | PASS | `a6-crash-body-r5`, A6-16b |
 | Crash before the PA request write: no phantom request/consumption/execution | PASS | `a6-crash-before-r1`, A6-17 |
 | Bounded A6 wait expires: invocation abandoned (no decision rewrite), late allow refused | PASS | `a6-timeout-r9` (28b61d4b2), A6-19/20 |
 | Human leg discovered from the remote ledger page only, then resolved | PASS | `a6-human-r15`, A6-21 |
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r14`, A6-22/23 |
 | Explicit human message after restart clears the durable Stop and re-plans the ACTUAL pending leg; historical call not revived | PASS | `a6-sticky-stop-r14`, A6-24 |
-| A wake claimed by a crashed turn is reconciled without duplicate and the durable request is decided; exact replacement-delivery vs original-turn recovery is NOT isolated | **PARTIAL** | `a6-inbox-r14` (28b61d4b2), A6-25; metric defect disclosed |
+| A wake claimed by a crashed turn is replaced by exactly ONE new wake turn (fresh `messageCount=1`, then 3/5-message continuations), the old wake is not redelivered, and the durable request is decided | PASS | `a6-inbox-r17`, A6-25 |
 | Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r9` (28b61d4b2), A6-2..6 |
 | Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r8`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
@@ -53,19 +54,17 @@ is closed by the clean 9/9 at `1e50d55fc`.
   window leaves an unconsumed allow and the after-consume window leaves a spent
   allow with no execution. Neither is replayed or resumed, by design (Scheme A),
   so the approved call is lost rather than duplicated.
-- **Durable invalidation settlement**: now implemented (additive
+- **Durable invalidation settlement**: implemented (additive
   `control-request-abandoned`; Allow never rewritten). Proven for timeout,
-  after-allow and after-consume-before-body. The body-started-result-unknown
-  probe could not be produced on the real Host (see above); the settlement
-  reason is shared with the proven consume case.
+  after-allow, after-consume-before-body and body-started-result-unknown
+  (`a6-crash-body-r5`).
 - **Explicit resume delivering a new wake**: proven with a real leg set
   (`a6-sticky-stop-r14`, A6-24). What is not chained in one run is a *new*
   call's allow→execute after resume; the ordinary path is proven separately by
   `a6-normal-r8`.
-- **Inbox replacement wake**: `a6-inbox-r14` proves no duplicate and a
-  completed decision after the crashed claim, but the kit's mixed metric
-  (`1 -> 2 -> 1`) cannot show exactly one new delivery vs the original turn
-  resuming. Liveness mechanism remains PARTIAL. An ACCEPTED-but-never-CLAIMED
+- **Inbox replacement wake**: `a6-inbox-r17` proves exactly one new wake turn
+  start after restart (`messageCount=1` then continuations) with the old turn
+  not resumed and the durable request decided. An ACCEPTED-but-never-CLAIMED
   crash is still not injected.
 - **Native Inbox cold-start replay**: a claimed-wake crash is covered
   (`a6-inbox-r9`); an *accepted but still queued* wake crash is not injected.
