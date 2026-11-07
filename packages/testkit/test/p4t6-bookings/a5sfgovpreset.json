@@ -1,0 +1,18 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFGOVPRESET",
+  "paths": [
+    "packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+    "packages/runtime/src/plugin/live/a5sf-governed-realm.d.mts"
+  ],
+  "expectedDelta": {
+    "from": 1437,
+    "to": 1439
+  },
+  "reason": "a5sf-governed-preset (owner ruling 2026-11-11, opt-in governed Member preset): the shipped module that\ncompiles a governed realm from a real bound blueprint and the type surface beside it. Two new scannable files under\npackages/runtime/src/plugin/live, no denylist vocabulary.",
+  "tieNote": "MEASURED on this tree, not copied: the scanner reports 1439 while the ledger derived 983 + 454 = 1437 with\nthese paths unbooked - exactly these two files. Booking them by name ends the chain at the measured total.",
+  "pathNotes": {
+    "packages/runtime/src/plugin/live/a5sf-governed-realm.mjs": "realm compiled from the Team's bound blueprint + Alpha.4 authority; one compiler, no second policy source",
+    "packages/runtime/src/plugin/live/a5sf-governed-realm.d.mts": "type surface of the above"
+  }
+}

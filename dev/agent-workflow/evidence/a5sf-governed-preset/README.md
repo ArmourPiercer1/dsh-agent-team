@@ -248,3 +248,12 @@ register as an agent-scoped shadow).
    re-run in a complete install before merge.
 4. **The governed preset is shipped but unselected.** Enabling it is an operator act on a
    Team row (both keys); no Team in this repository selects it.
+
+## 2026-11-12 — census 记账（两个新文件进入被扫描总体）
+
+本 lane 新增两个**被 census 扫描的**文件（`a5sf-governed-realm.mjs` + 其 `.d.mts`），因此 `p4t6` 总体必须记账。
+实测：scanner 报 **1439**，未 booking 时台账推导 **1437**，差值恰为这两个文件；已在
+`packages/testkit/test/p4t6-bookings/a5sfgovpreset.json` 记 `1437 → 1439`（数字是**在本树实测**的，不是抄链上值）。
+
+上一轮 PD-12/PD-13 lane 也各记过一笔；这次是本 lane 自己漏记后由 CI 抓出，属修正而非新增放宽——定律仍精确：
+`scanner total === 983 + Σ(unbased bookings)`。
