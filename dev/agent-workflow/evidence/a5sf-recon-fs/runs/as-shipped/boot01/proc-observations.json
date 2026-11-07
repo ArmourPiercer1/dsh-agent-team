@@ -1,0 +1,1072 @@
+{
+  "schema": "a5sf-recon-fs/proc-observations/1",
+  "at": "2026-11-07T16:20:33.237Z",
+  "note": "independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not a product counter",
+  "sightings": [
+    {
+      "at": "2026-11-07T16:20:28.025Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 -c import os,sys; sys.exit(0 if os.path.isfile(\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py\") else 1)",
+          "pid": 191,
+          "ppid": 101,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.105Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg denyall --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/denyall",
+          "pid": 196,
+          "ppid": 101,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.145Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg badhandled --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/badhandled",
+          "pid": 197,
+          "ppid": 101,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.185Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 199,
+          "ppid": 198,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.225Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.265Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.306Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.347Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.387Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.428Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.468Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.509Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.549Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.589Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.630Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.670Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.710Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.750Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.790Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.830Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.870Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.910Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.950Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:28.990Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.031Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.071Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.111Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.151Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.191Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.232Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.272Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.312Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.352Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.392Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.432Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.472Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.513Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.553Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.593Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.633Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.673Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.713Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.753Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.793Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.833Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.873Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.913Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.953Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:29.993Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.034Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.074Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.115Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.155Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.195Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.235Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.275Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.315Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.355Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.395Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.436Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.476Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.516Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.556Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.597Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.637Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.677Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.717Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.757Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.797Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.837Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.877Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.917Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.957Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:30.997Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.037Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.077Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.117Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.157Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.197Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/probe-mw6m0qo2-gzt0lz/net",
+          "pid": 198,
+          "ppid": 101,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.238Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        },
+        {
+          "marker": "payload-bash-allow",
+          "cmdline": "/bin/bash -c cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/lane/bash-allow.txt'; sleep 0.3",
+          "pid": 202,
+          "ppid": 201,
+          "state": "S"
+        },
+        {
+          "marker": "payload-bash-allow",
+          "cmdline": "cat /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/workspace/lane/bash-allow.txt",
+          "pid": 203,
+          "ppid": 202,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.278Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.318Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.358Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.398Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.438Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.478Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T16:20:31.518Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-19-29Z/governed-scratch/plans/plan-mw6m0t44-j3icws.json --out-dir /home/armourpiercer/projects/dsh-a",
+          "pid": 201,
+          "ppid": 101,
+          "state": "S"
+        }
+      ]
+    }
+  ]
+}

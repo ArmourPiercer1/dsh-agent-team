@@ -1,0 +1,21 @@
+{
+  "call": {
+    "id": "call-a5srf-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5srf-team",
+      "requestToken": "a5srf-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5srf-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace",
+      "prompt": "a5srf-turn: run the thirteen filesystem probes in the FIXED order you were given, exactly once each, one tool call at a time, then report. Probe A (control) reads and probes B..M follow. Do not skip a probe and do not repeat one.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5srf-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1kdc3xx12yhw\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-04cfa33fab776112327d75ba70f8423b\",\"operationId\":\"op-1ap001j0of9dma1vek1lx0tc\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5srf-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_SRF_MEMBER_DONE <path>/etc/hostname</path>\\n<type>file</type>\\n<content>\\n1: DESKTOP-D\\n\\n(End of file - total 1 lines)\\n</content>\"}},\"requestToken\":\"a5srf-turn-delegate\"}",
+    "images": []
+  }
+}

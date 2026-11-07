@@ -1,0 +1,38 @@
+AGREEMENT (the same command, every boot; every REQUIRED row must be identical)
+fact                                bootimage-a                         bootimage-b
+read.surface                        PASS                                PASS
+read.dispatch                       PASS                                PASS
+read.provider                       FAIL                                FAIL
+read.allow                          PASS                                PASS
+read.deny                           FAIL                                FAIL
+read.evidence                       FAIL                                FAIL
+read.lifecycle                      PASS                                PASS
+write.surface                       PASS                                PASS
+write.dispatch                      PASS                                PASS
+write.provider                      FAIL                                FAIL
+write.allow                         PASS                                PASS
+write.deny                          FAIL                                FAIL
+write.evidence                      FAIL                                FAIL
+write.lifecycle                     PASS                                PASS
+edit.surface                        PASS                                PASS
+edit.dispatch                       PASS                                PASS
+edit.provider                       FAIL                                FAIL
+edit.allow                          PASS                                PASS
+edit.deny                           FAIL                                FAIL
+edit.evidence                       FAIL                                FAIL
+edit.lifecycle                      PASS                                PASS
+read_image.surface                  PASS                                PASS
+read_image.dispatch                 PASS                                PASS
+read_image.provider                 FAIL                                FAIL
+read_image.allow                    PASS                                PASS
+read_image.deny                     FAIL                                FAIL
+read_image.evidence                 FAIL                                FAIL
+read_image.lifecycle                PASS                                PASS
+classes                             bash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACTbash:allow:COMPLETED_WITH_GUARD_FACT|bash:deny:CORRECTLY_REFUSED|read:allow:COMPLETED_NO_GUARD_FACT|read:deny:COMPLETED_NO_GUARD_FACT|write:allow:COMPLETED_NO_GUARD_FACT|write:deny:COMPLETED_NO_GUARD_FACT|write:probe:REFUSED_BY_HOST_SANDBOX|read:prereq:COMPLETED_NO_GUARD_FACT|edit:allow:COMPLETED_NO_GUARD_FACT|read:prereq:COMPLETED_NO_GUARD_FACT|edit:deny:COMPLETED_NO_GUARD_FACT|read_image:allow:COMPLETED_NO_GUARD_FACT|read_image:probe-deny:COMPLETED_NO_GUARD_FACT|read:probe:COMPLETED_NO_GUARD_FACT
+bashControlFacts                    2                                   2
+nativeFsFacts                       0                                   0
+guardFactTotal                      4                                   4
+memberIdentity                      inst-1kdc3xx12yhw                   inst-1kdc3xx12yhw
+lifecycleExecuted                   false                               false
+
+agreeing=true differing=[]

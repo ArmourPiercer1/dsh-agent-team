@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-fs-recon-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-13 A-face FS recon ruling (relayed in this lane's task): self-arranged dev boots at will, no per-start approval, <=2 concurrent bots per subagent (machine-wide cap raised to 6 the same day), :3080 untouchable, ports only from the 3180 family, DSH_HOME inside the worktree",
+  "face": "FS Provider",
+  "world": "a5sffsrecon1",
+  "note": "DEV-LIVE recon of the native FS tool family (read / write / edit / read_image) on a real Host and a governed Member. Development evidence only: this class can never produce V@B=yes, it is not a candidate claim, and it is NOT the merge evidence for any PR (the main agent boots its own measurement before merging)."
+}

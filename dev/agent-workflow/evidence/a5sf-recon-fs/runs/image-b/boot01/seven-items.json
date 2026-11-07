@@ -1,0 +1,411 @@
+{
+  "schema": "a5sf-recon-fs/seven-items/1",
+  "at": "2026-11-07T16:17:19.548Z",
+  "binding": {
+    "productSha": "235e1af8bab954bbca4852d2f5a538de043b66e8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "memberInstanceId": "inst-1kdc3xx12yhw",
+    "memberLifecycle": "SETTLED",
+    "childSessionId": "session-team-child-04cfa33fab776112327d75ba70f8423b",
+    "blueprintRevision": {
+      "blueprintId": "team.a5sf.reconfs.main",
+      "revision": "1",
+      "schemaVersion": 4
+    },
+    "authorityRevision": [
+      "a5sf1:2e7933642913ac441a25c7831fc517ec"
+    ],
+    "providerPolicyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+    "memberIdentitiesInFacts": [
+      "inst-1kdc3xx12yhw"
+    ],
+    "ceiling": {
+      "read": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane"
+      ],
+      "write": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane"
+      ]
+    }
+  },
+  "tools": {
+    "read": {
+      "tool": "read",
+      "surface": {
+        "verdict": "PASS",
+        "present": true,
+        "parameters": [
+          "file_path",
+          "offset",
+          "limit"
+        ],
+        "description": "Read a UTF-8 text file and return line-numbered content.",
+        "detail": "parameters=file_path,offset,limit (required file_path,offset,limit)"
+      },
+      "dispatch": {
+        "verdict": "PASS",
+        "calls": [
+          {
+            "key": "read-allow",
+            "callId": "call-a5srf-read-allow",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "read-deny",
+            "callId": "call-a5srf-read-deny",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "edit-allow-preread",
+            "callId": "call-a5srf-edit-allow-preread",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "edit-deny-preread",
+            "callId": "call-a5srf-edit-deny-preread",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "read-host-reach",
+            "callId": "call-a5srf-read-host-reach",
+            "issued": true,
+            "resultPresent": true
+          }
+        ]
+      },
+      "provider": {
+        "verdict": "FAIL",
+        "face": "host ctx.fs (ZERO a5sf guard facts for this locator)",
+        "factsAtAllowLocator": [],
+        "factsAtDenyLocator": []
+      },
+      "allow": {
+        "verdict": "PASS",
+        "callId": "call-a5srf-read-allow",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 258,
+          "sha256": "3120b9da1f88110c190edbfb1b0b5760ecfff3a109429b1a4af55e571d168f2f",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt</path>\n<type>file</type>\n<content>\n1: A5SF_RECON_FS_READ_ALLOW_BYTES\n\n(End of file - total 1 lines)\n</content>"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/read-allow.txt",
+          "exists": true,
+          "bytes": 31,
+          "sha256": "d7a1c2808a826c33a944801b3ea6ced1e55c33d3d5130473fa12d6d163871c63",
+          "content": "A5SF_RECON_FS_READ_ALLOW_BYTES\n",
+          "markerPresent": true
+        }
+      },
+      "deny": {
+        "verdict": "FAIL",
+        "callId": "call-a5srf-read-deny",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 270,
+          "sha256": "1f47fefaf3274a5572e1fa45ec20b7e9a71be6e9c2e7553c1e1ed59c2ce81da5",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt</path>\n<type>file</type>\n<content>\n1: A5SF_RECON_FS_READ_DENY_SECRET_BYTES\n\n(End of file - total 1 lines)\n</content>"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/read-deny.txt",
+          "exists": true,
+          "bytes": 37,
+          "sha256": "b5dc20701b92e75c7b2bced357af91726849081e70d68d9a08b306d8036bedd6",
+          "content": "A5SF_RECON_FS_READ_DENY_SECRET_BYTES\n",
+          "markerPresent": true
+        },
+        "secretAbsent": false
+      },
+      "evidence": {
+        "verdict": "FAIL",
+        "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+        "facts": []
+      },
+      "lifecycle": {
+        "verdict": "PASS",
+        "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+        "postArchiveReadStatus": 422,
+        "postArchiveWriteStatus": 422,
+        "executedAfterArchive": false
+      }
+    },
+    "write": {
+      "tool": "write",
+      "surface": {
+        "verdict": "PASS",
+        "present": true,
+        "parameters": [
+          "file_path",
+          "content",
+          "sandbox_permissions",
+          "justification"
+        ],
+        "description": "Create or fully replace a UTF-8 text file.",
+        "detail": "parameters=file_path,content,sandbox_permissions,justification (required file_path,content)"
+      },
+      "dispatch": {
+        "verdict": "PASS",
+        "calls": [
+          {
+            "key": "write-allow",
+            "callId": "call-a5srf-write-allow",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "write-deny",
+            "callId": "call-a5srf-write-deny",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "write-host-fence",
+            "callId": "call-a5srf-write-host-fence",
+            "issued": true,
+            "resultPresent": true
+          }
+        ]
+      },
+      "provider": {
+        "verdict": "FAIL",
+        "face": "host ctx.fs (ZERO a5sf guard facts for this locator)",
+        "factsAtAllowLocator": [],
+        "factsAtDenyLocator": []
+      },
+      "allow": {
+        "verdict": "PASS",
+        "callId": "call-a5srf-write-allow",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 207,
+          "sha256": "4384e50fe71e80d6b1feb9f7e134265bcf5115ea45d40a3ed445f6a802ee0aa3",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/write-allow.txt",
+          "exists": true,
+          "bytes": 32,
+          "sha256": "2de3a2fedc1d2dbfb2b04b3be04cba0a0e01c66d0198510120a583b19eeea0e4",
+          "content": "A5SF_RECON_FS_WRITE_ALLOW_BYTES\n",
+          "markerPresent": true
+        }
+      },
+      "deny": {
+        "verdict": "FAIL",
+        "callId": "call-a5srf-write-deny",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 213,
+          "sha256": "a2b4601d59c6423a1fdafa6ccab88cf5c259718510783218328c7c350094136d",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/write-deny.txt",
+          "exists": true,
+          "bytes": 31,
+          "sha256": "fd03ffe428408edf97ce65bd20841e5e3609eebc7a23fbc3a2926a4d6bf82921",
+          "content": "A5SF_RECON_FS_WRITE_DENY_BYTES\n",
+          "markerPresent": true
+        },
+        "secretAbsent": true
+      },
+      "evidence": {
+        "verdict": "FAIL",
+        "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+        "facts": []
+      },
+      "lifecycle": {
+        "verdict": "PASS",
+        "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+        "postArchiveReadStatus": 422,
+        "postArchiveWriteStatus": 422,
+        "executedAfterArchive": false
+      }
+    },
+    "edit": {
+      "tool": "edit",
+      "surface": {
+        "verdict": "PASS",
+        "present": true,
+        "parameters": [
+          "file_path",
+          "old_string",
+          "new_string",
+          "replace_all",
+          "sandbox_permissions",
+          "justification"
+        ],
+        "description": "Edit an existing UTF-8 text file by replacing literal text.",
+        "detail": "parameters=file_path,old_string,new_string,replace_all,sandbox_permissions,justification (required file_path,old_string,new_string)"
+      },
+      "dispatch": {
+        "verdict": "PASS",
+        "calls": [
+          {
+            "key": "edit-allow",
+            "callId": "call-a5srf-edit-allow",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "edit-deny",
+            "callId": "call-a5srf-edit-deny",
+            "issued": true,
+            "resultPresent": true
+          }
+        ]
+      },
+      "provider": {
+        "verdict": "FAIL",
+        "face": "host ctx.fs (ZERO a5sf guard facts for this locator)",
+        "factsAtAllowLocator": [],
+        "factsAtDenyLocator": []
+      },
+      "allow": {
+        "verdict": "PASS",
+        "callId": "call-a5srf-edit-allow",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 181,
+          "sha256": "eada1701a3b1810e60eef4edf54841eb03ff0dbd92d1fc42329a33091b1ae337",
+          "excerpt": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt has been updated successfully."
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/edit-allow.txt",
+          "exists": true,
+          "bytes": 32,
+          "sha256": "5dcc6379a89827e0a27393b0fe48d6c88078faf254596d7e8b49998161d7159b",
+          "content": "A5SF_RECON_FS_EDIT_ALLOW_EDITED\n",
+          "markerPresent": true
+        }
+      },
+      "deny": {
+        "verdict": "FAIL",
+        "callId": "call-a5srf-edit-deny",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 187,
+          "sha256": "71761df8b51f190a88dccca8e7590b9595c8fd3edb94098f6329fda40c7009b8",
+          "excerpt": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt has been updated successfully."
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/edit-deny.txt",
+          "exists": true,
+          "bytes": 31,
+          "sha256": "feffcd31072368a4d8d8528b1dec01f9a4d2b84fe35306bcb9b49d79e53592a8",
+          "content": "A5SF_RECON_FS_EDIT_DENY_EDITED\n",
+          "markerPresent": true
+        },
+        "secretAbsent": true
+      },
+      "evidence": {
+        "verdict": "FAIL",
+        "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+        "facts": []
+      },
+      "lifecycle": {
+        "verdict": "PASS",
+        "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+        "postArchiveReadStatus": 422,
+        "postArchiveWriteStatus": 422,
+        "executedAfterArchive": false
+      }
+    },
+    "read_image": {
+      "tool": "read_image",
+      "surface": {
+        "verdict": "PASS",
+        "present": true,
+        "parameters": [
+          "file_path"
+        ],
+        "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+        "detail": "parameters=file_path (required file_path)"
+      },
+      "dispatch": {
+        "verdict": "PASS",
+        "calls": [
+          {
+            "key": "read-image-allow",
+            "callId": "call-a5srf-read-image-allow",
+            "issued": true,
+            "resultPresent": true
+          },
+          {
+            "key": "read-image-deny",
+            "callId": "call-a5srf-read-image-deny",
+            "issued": true,
+            "resultPresent": true
+          }
+        ]
+      },
+      "provider": {
+        "verdict": "FAIL",
+        "face": "host ctx.fs (ZERO a5sf guard facts for this locator)",
+        "factsAtAllowLocator": [],
+        "factsAtDenyLocator": []
+      },
+      "allow": {
+        "verdict": "PASS",
+        "callId": "call-a5srf-read-image-allow",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 238,
+          "sha256": "ca958b8d0ded5cd6fb0ec69f78da7e9f9dfabe594fc68e39c826faade9ac1925",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png</path>\n<type>image</type>\n<content>\nimage/png image, 1x1 px, 70 bytes\n</content>[image ?]"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/lane/probe-allow.png",
+          "exists": true,
+          "bytes": 70,
+          "sha256": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+          "content": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\b\u0006\u0000\u0000\u0000\u001f\u0015ĉ\u0000\u0000\u0000\rIDATx�c���P\u000f\u0000\u0004�\u0001����!\u0000\u0000\u0000\u0000IEND�B`�",
+          "markerPresent": false
+        }
+      },
+      "deny": {
+        "verdict": "FAIL",
+        "callId": "call-a5srf-read-image-deny",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png",
+        "outcomeClass": "COMPLETED_NO_GUARD_FACT",
+        "resultBytes": {
+          "bytes": 244,
+          "sha256": "7f60d72c69ce26e92b77a22b93a5a398b08ad51fd116991c374e825f34cec600",
+          "excerpt": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png</path>\n<type>image</type>\n<content>\nimage/png image, 1x1 px, 70 bytes\n</content>[image ?]"
+        },
+        "effect": {
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-a-fs/tests/homes/u5a5sffsrecon1-20261107T16-16-32Z/workspace/not-in-lane/probe-deny.png",
+          "exists": true,
+          "bytes": 70,
+          "sha256": "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+          "content": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\b\u0006\u0000\u0000\u0000\u001f\u0015ĉ\u0000\u0000\u0000\rIDATx�c���P\u000f\u0000\u0004�\u0001����!\u0000\u0000\u0000\u0000IEND�B`�",
+          "markerPresent": false
+        },
+        "secretAbsent": true
+      },
+      "evidence": {
+        "verdict": "FAIL",
+        "policyRevision": "a5sf1:2e7933642913ac441a25c7831fc517ec",
+        "facts": []
+      },
+      "lifecycle": {
+        "verdict": "PASS",
+        "detail": "no post-archive execution: the refusal is the SESSION ROUTE (422), not the Member fs face — and because the native fs path produced no guard facts at all, revocation has nothing to revoke there",
+        "postArchiveReadStatus": 422,
+        "postArchiveWriteStatus": 422,
+        "executedAfterArchive": false
+      }
+    }
+  }
+}
