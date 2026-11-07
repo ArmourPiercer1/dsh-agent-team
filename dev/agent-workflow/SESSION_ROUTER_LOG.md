@@ -8180,3 +8180,158 @@ Alpha.4 耐久 overlay generation + MemberInstance 生命周期准入 → `deriv
 Member Ceiling 拒绝、生命周期吊销、失效后拒绝、native surface == 执行 provider；工具面 delta 实测
 `tool-surface.json`；DEV-LIVE 双启动对 `run-{1,2}-host.log`）。`a5sf-*.test.mjs` 全量 520 项 516 pass / 0 fail。
 未动 grade / `V@B` / Authority 指针；网络仍 `allow`（deny 语义未改，BL-42 证明不跨 face 复用）。
+
+## 2026-11-13 — SESSION HANDOVER：十四笔合并、三行债务关闭、三项新发现、48 次 dev-live 启动与下一步（docs-only，0 boot）
+
+**本记录 = 本会话的交接正本**，供下一个会话只读这一条就接手：按合并顺序列出全部十四笔 PR、三行已关闭
+的产品债与三项新发现、owner 2026-11-11 裁决**授权/拒绝**的边界、dev-live 启动账，以及按优先级的下一步
+与证伪方法。基线 = `origin/master` @ `9f0ba733d`（`#652`）。**只追加**：`#648` 已有自己的条目（上一条
+2026-11-11 GOVERNED-PRESET），本记录不重写、不改号、不重复它的细节。日期分量 = 轮次指定日期 2026-11-13；
+本环境 `date -u` 实测 `2026-11-07T14:37Z`（容器时钟落后），按 2026-11-08 先例记此，以免读者把时钟差
+当成矛盾。本 lane **0 boot**、无 `DEV-LIVE` 行、无 grade / `V@B` / Authority 指针移动、无证据删除。
+
+### 1. 十四笔合并（按合并顺序）
+
+| PR | merge | 事实（一句） |
+|---|---|---|
+| #639 | `db3a7f8b6` | **LOG-RESCUE**：两条 2026-11-06 的只追加条目（用户的第二笔 5 次 P2-04 分配、Q7 对"时点 live 断言"的结构性后果）此前只存在于一个 stale worktree 的未提交文件里，按原字节补回日志。 |
+| #641 | `6083d363c` | **RUN-RECORD**：`finalize()`/`write()` 拒绝写一条没有 gate 能绑定的记录——`teamSha`/`hostSha` 必须完整 40-hex，一次报出全部缺失（`RUN_RECORD_UNBOUND`），且该守卫先于 DEV-LIVE claim 规则；`tests/world-factory/a5sf-run-record-binding.test.mjs` 六个控制。 |
+| #640 | `550815c97` | **PD-12**：Member 的 model-visible `bash` 改由 confined subprocess face 服务；`network: deny` 成员在 admission 层以 `NETWORK_UNCONFINED_REALM` 拒绝（0 provider / 0 进程——这是准入拒绝，不是 OS 网络隔离）。 |
+| #642 | `c91c72bca` | **PD-13**：`RealmServiceFaces.terminals` + 带**读轴**的 confined terminal face；具名 out-of-lane 读 `IO_READ_DENIED`、0 字节；每条命令一个 fresh confined child；双终端 fork 以 `TERMINALS_DOUBLE_TERMINAL_REFUSED` 拒绝。 |
+| #643 | `47316541a` | **PD-14**：夹具层把 World 的 Team-shaped row 绑到该 World 自己的 `workspaceDir`（并拒绝指向 pinned checkout / World home 之外）；`packages/**` 零改动，产品仍把 Team 根在 operator 的 launch 目录（残留 (1)）。 |
+| #644 | `990becb07` | **BL-42**：每个受限子进程一个非特权 netns（`CLONE_NEWUSER\|CLONE_NEWNET`）；`enforced` 只能由**配对 loopback 测量**得出（对照子进程 `accepted=1` 且 nonce 匹配、deny 子进程 `accepted=0`、`connect`/`sendto` 得 `ENETUNREACH`、自身 ns inode 与 host 不同）；§7 严格 **4/5**（宽读 5/5）。 |
+| #645 | `e411363d8` | **NET-CONSOLIDATE**：BL-42 折进矩阵 / STATUS / END-STATE / phase report，保留严格 4/5；Web face 的 `network: deny` 仍是 service-level 准入拒绝，不因 netns 变成 OS 拒绝。 |
+| #646 | `35f3a0d2f` | **PD-15**：网络执行证明绑定到**消费它的 face**（`NetworkEnforcementProof.face`），他面 / 无名 / 无 face 的证明以 `NETWORK_PROOF_FACE_MISMATCH` 拒绝；潜在洞在潜在期关闭，`P0` defect pin 在修复前 PASS、修复后 FAIL。 |
+| #647 | `64f689901` | **FACE-DECL-IMPACT**：量化的决策材料，并**改正了前提**——shipped 默认是宿主 `standard` 的**瞬时** `tool-bash`，没有持久 shell 状态可失去；建议走"新增 opt-in 预设"而不是同一轮移动部署默认。 |
+| #648 | `dc4f26fea` | **GOVERNED-PRESET**：shipped opt-in 预设 `a5sf-governed-member` + 中性键 `a5sfGovernedRealm: true`；realm 由**唯一**产品编译器从团队**绑定**蓝图 + 耐久 overlay generation + MemberInstance 生命周期准入编译；默认 layer 不选任何预设，`false` 拒、两编译源 fork 拒、无 provider 的 governed row 拒。 |
+| #649 | `dd1d323da` | **LIVE-MEMBER**：真实 Host 上经产品自己的 `team_delegate` 走通**第一个**受治 Member turn（in-lane 读有字节、out-of-lane `IO_READ_DENIED` 0 字节，均在 Member 自己的 durable transcript），并修掉一个**真实产品缺陷**：activation 在耐久 `MemberInstance` 行之前创建 child session，realm 在该窗口读到 `lifecycle=undefined` ⇒ 每个 live 受治 Member 都被 `AUTHORITY_REFUSED`；修法 = 只承认 `freshCreate` 窗口（glue 的 `fresh-member` **且**无耐久行），耐久行永远优先，`G5c` 钉负控。 |
+| #651 | `1f2011c73` | **WINDOW-HUNT**：枚举六个"先于其依赖的耐久状态"的 mount/bind/authority 读窗口并复现产品顺序；发现**同类的第二个真实实例**——合法 v4 blueprint 的模板不在 `memberIoCeilings` 里时，governed provider 答 `undefined`、mount 在 governed-row 拒绝之前返回、route-C shadow 被跳过，Member 跑 preset 继承的**不受限 `bash`**（label without mechanism）；以已有 typed `REALM_DECLARATION_INVALID` 在挂载处拒绝，W3b RED→GREEN，base spawn 0；`freshCreateHintAdmits` 收成一条导出规则。 |
+| #650 | `ff04b6f41` | **MEMBER-CONSOLIDATE**：把 #648/#649/#651 落到 dated 文档——矩阵 §1.5 只加 ⑥ 指针（⑧/⑨ 字节未动）、STATUS 顶部 dated 快照（31 → 48 次启动）、END-STATE §1.3、phase report 附录 C（并记下"夹具在行之后挂载、产品在行之前挂载"这一课）。 |
+| #652 | `9f0ba733d` | **FINAL-DOCS**：label-without-mechanism 写进阶段自己的文书——矩阵 §1.6、END-STATE §1.4、phase report 附录 D（§10 的继任句 + 下一步/三件不得做 + 仪器史第 11/12 条）；`release BLOCKED` 与 48 次启动都不变。 |
+
+### 2. 三行债务关闭、三项新发现
+
+- **关闭三行**（`docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md`，at-a-glance 表）：
+  **PD-12** `550815c97`/#640、**PD-13** `c91c72bca`/#642、**PD-14** `47316541a`/#643。三者都用同一条
+  `git merge-base --is-ancestor` 核对为 `origin/master` 的祖先；`#646` 的 docs-only 审计顺带改正了此前
+  "draft PR, no merge" 的过期 status 行与表里 PD-12 漏标的 `(FIXED)`。登记册现 **15 行：8 OPEN / 7 FIXED**
+  （OPEN = PD-2/PD-3/PD-4/PD-5/PD-6/PD-8/PD-10/PD-11，全部仍待 owner 语义裁决）。**状态变化不移动任何
+  矩阵等级或 `V@B`。**
+- **新发现一：PD-15（`FACE-BOUND-PROOF`）**，`35f3a0d2f`/#646，注册为第 15 行并 `FIXED` with residuals
+  (1)–(4)。修复前 confined `web` face 会接受**任何** capability row 说 `enforced` 的后端——BL-42 的证明
+  绑了 realm 与 trust root，却**没绑 face**；把 subprocess 的证明交给 web transport，就会把一条 deny
+  `web_fetch` 放行到普通 host egress，而那个 netns 从来只覆盖 launcher 起的子进程。无 in-tree 组合这样做，
+  所以是**潜在**洞、按潜在洞关闭：typed 拒绝 + defect pin，不是一次 live 轮。证据 =
+  `dev/agent-workflow/evidence/a5sf-pd15-face-bound-proof/README.md`。
+- **新发现二：activation window**，`dd1d323da`/#649 修好、`1f2011c73`/#651 系统化。类 = "依赖的耐久状态
+  还没写，代码已经读它"：产品在 `MemberInstance` 行之前挂载 realm（`adapter.ts` 先创建 child session →
+  `ensureDurable` → 才写行），而进程内夹具此前都在行**已存在之后**挂载，所以仪器永远绿、产品对**每个**
+  live 受治 Member 都拒绝。修法只开一个具名窗口（`freshCreate` = glue `fresh-member` 且无耐久行），
+  durable row 永远优先；W1a 驱动真实 `createActivationChildAdapter`、W2 把 persona/template 投影的同一
+  门槛收成一条导出规则、`G5c` 钉 ARCHIVED/DISPOSED 负控。证据 =
+  `dev/agent-workflow/evidence/a5sf-live-member/README.md` 与 `dev/agent-workflow/evidence/a5sf-window-hunt/README.md`。
+- **新发现三：label without mechanism**，`1f2011c73`/#651 发现并修、`9f0ba733d`/#652 写进阶段文书。
+  一个**合法** v4 blueprint 可以声明一个不在 `memberIoCeilings` 里的 Member 模板（parser 接受），于是
+  `createGovernedRealmProvider().compiledFor()` 答 `undefined`，挂载点在 governed-row 拒绝之前返回，
+  route-C shadow 被跳过——Member 跑 preset 继承的不受限 `bash`，而行上写着 `a5sfGovernedRealm: true`。
+  这是"夹具教训"（第 11 条：夹具顺序比生产更宽松）的**第二个真实实例**，也是必须被**刻意拒绝**的形状，
+  不是一次性 bug。修复 = `packages/runtime/src/plugin/live/a5sf-realm-row.mjs:858-880` 用已有 typed
+  `REALM_DECLARATION_INVALID` 拒绝；`tests/world-factory/a5sf-window-taxonomy.test.mjs` 的 W3b 在修复前
+  RED、修复后 GREEN，且 base 子进程 spawn **0**。默认路径不可达（`packages/runtime/src/plugin/host.ts:2142-2149`
+  才构造 governed provider，`packages/runtime/src/plugin/live/agent-bindings.mjs:2598` 才进入挂载，
+  `cordis.patch.yml:146-156` 的 shipped layer 不写这两个键）。
+- 三项的共同读法：前两项是"证明/读取绑错了对象或时点"，第三项是"标签可以在机制缺席时继续存活"；
+  三者都要求 **typed 拒绝 + RED→GREEN defect pin**，而不是一次修补。
+
+### 3. owner 裁决 2026-11-11：授权了什么、拒绝了什么
+
+授权句的逐字来源 = `dev/agent-workflow/evidence/a5sf-face-decl-impact/README.md` §8.1；落地边界 =
+`dev/agent-workflow/evidence/a5sf-governed-preset/README.md` §1–§3 与 `#648` 的提交说明。
+
+**授权（authorised）**：在现有默认**之外**增加受治 Member 预设 `a5sf-governed-member`，由 operator
+**显式**选择；该预设的 `bash` = confined terminal face（每条命令一个 fresh confined child、具名读按编译
+出的读 lane 准入、无持久 shell 状态、无后台作业）；并用它落地 face-decl-impact §9 的产品编辑、在真实
+Host 上验证。
+
+**拒绝 / 未授权（refused）**：
+
+1. **不移动部署默认**——`standard` 仍是默认，shipped layer 不选预设、不写 `rootPresetId`/`memberPresetId`；
+   任何既有 Member 在其 Team 显式选择前行为不变。
+2. **不宣称 network deny**——网络收窄是**单独**授权；预设只声明 `network: allow`，BL-42 的 netns 证明
+   不得复用给 Web face（PD-15 就是这条的机器化）。
+3. **不允许第二个编译源**——行同时带 `a5sfMemberPolicies`/`a5sfMemberAuthority` 与中性键 ⇒
+   `REALM_DECLARATION_INVALID`（配置期 + mount 期双重拒）。
+4. **不给隐式 ceiling**——v3 blueprint、或无 `memberIoCeilings` family 的 v4 ⇒
+   `MEMBER_POLICY_WITHOUT_BLUEPRINT`；不静默放宽，也不静默 deny-all。
+5. **不让 Leader 进入 Member Realm；不让 governed row 在没有 provider 时静默 no-op**（`false` 也拒绝，
+   因为半写的 opt-out 不能看起来像默认）。
+6. **不移动 grade / `V@B` / Authority 指针**，不触碰 pinned upstream（`CORE PATCH BUDGET = 0`）；
+   该轮不产生任何 candidate claim。
+
+### 4. dev-live 状态（读 ledger，不读记忆）
+
+- 阶段 dev-live 启动总数 = **48**：**Web 7 / FS 4 / PTY 9 / Sub 28**。Sub 的 28 = 此前四面 11 +
+  `a5sf-live-member` 的 **17**（15 次修复前树 `dc4f26fea` + 2 次修复后树 `11991c2d4`）。逐条账 =
+  `dev/agent-workflow/evidence/a5sf-live-member/run-ledger.jsonl` 与
+  `docs/plans/active/alpha5-sandbox-first/LIVE-EVIDENCE-LEDGER.md` §5。
+- **五次 P2-04 正式候选 start 池已关闭**（5 allocated / 5 spent / 0 remain）；它只作为候选分配的**历史**，
+  不再是未来开发的预算约束。
+- **开发启动自授权（DEV-LIVE）**：按 2026-11-09 owner 裁决，持面级 `scope: "dev-live"` authorisation 的
+  Capability Implementer 在**自己的隔离 test World** 内可**反复自行授权**启动真实 Host（每机并发上限 2），
+  不扣候选池、不逐次审批。`DEV-LIVE` 是**工程记录标签**，不是矩阵等级词，**永不**能在 master 上产出
+  `V@B=yes`；正式候选 `CANDIDATE-C2` 仍需冻结、独立复核与独立裁决。
+- 本 lane 0 boot，所以以上数字**未变**；没有任何 `DEV-LIVE` 行被本条制造。
+
+### 5. 下一步（优先级顺序；不得重排成"先做容易的"）
+
+1. **G2 读/写的 Q7 重基线**：真实结论存在，但被 `#606` 的产品漂移撤回（矩阵 §1.1 / phase report 附录 A）。
+   它是唯一"已有真实结论、只缺在正确树上重跑"的发布义务；不做，G3–G5 的任何结论都会建立在比将要合并的
+   树更旧的证据上。
+2. **在 opt-in 路径上做 G3–G5**：G3（逐工具正向等价与最小权限负控）、G4（全工具 × I/O 维度矩阵）、
+   G5（对抗 / 故障 / 发布双验收）。受治面已存在、已被一个真实 Member turn 走通，所以现在有可寻址对象。
+3. **跑独立的 `CANDIDATE-C2`**：冻结候选 + 不可变 SHA + Authority + Host + Oracle + 独立裁决；必须在
+   一棵**已验收**的树上跑，否则只是把旧问题再测一遍。`DEV-LIVE` 结构上不是这条路径
+   （run record 自述 `candidateClaimEligibility.eligible=false`、`DEV_LIVE_EVIDENCE_NOT_CANDIDATE`）。
+
+**三件不得做**：(a) 不得声称默认路径受治——默认 `standard` 未变、大多数 Member 仍在它上面；
+(b) 不得把 `DEV-LIVE` 当候选证据——它不能关闭任何门；(c) 不得把一个面的证明挪用到另一个面——subprocess
+的 netns 证明不覆盖进程内 web transport，BL-42 宽读 item 5 只是同一个 process face。
+
+### 6. 什么会证伪本会话的结论（先做这些）
+
+STATUS 已经写下的两个 falsifier（逐字保留）：
+
+> 在一个显式 opt-in 的 Team 上，让受治 Member 的 `bash` 读到 lane 之外的字节，或在该行的 ceiling 未覆盖
+> 其模板时仍观察到 Member 启动并执行 `bash`。
+
+把它翻成可执行复现，按建议顺序：
+
+1. **标签压过机制**：造一个合法 v4 blueprint，Member 模板不在 `memberIoCeilings` 里，行写
+   `a5sfGovernedRealm: true` ⇒ 期望 `REALM_DECLARATION_INVALID` 且 base bwrap spawn = 0（W3b）。若 Member
+   启动并跑 preset 继承的 `bash`，本会话"标签必须被拒绝"的结论被证伪。
+2. **证明跨面挪用**：把 subprocess 面的 `NetworkEnforcementProof` 交给 web face，发一次 `network: deny`
+   的 `web_fetch` ⇒ 期望 `NETWORK_PROOF_FACE_MISMATCH`、0 fetch/DNS/connect（可用 `A5SF_PD15_PIN=1` 复跑
+   defect pin 的翻转）。若它到达 host egress，PD-15 的修复无效。
+3. **激活窗口越权**：在 durable `MemberInstance` 行已 ARCHIVED/DISPOSED 时走一遍 fresh-create 路径 ⇒
+   期望拒绝（`G5c`）。若 `freshCreate` 窗口放行，"durable row always wins" 被证伪。
+4. **默认路径**：在 shipped layer 不选预设的 Team 上尝试 deny lane 的读或网络 ⇒ 若被某个 realm 拒绝，
+   说明默认路径其实受治，"默认路径一个字节未变"为假。
+5. **记录类别**：拿任一 `DEV-LIVE` run record 去申请候选资格 ⇒ `eligible` 必须为 `false`；若它可当
+   `V@B` 证据，两轨边界破了。
+
+（1、3 有 host-free 进程内臂可先跑；2 有 defect pin；4、5 需要真实 Host 或只读记录。）
+
+### 7. 边界（不得从本记录读出更多）
+
+- **`release BLOCKED` 不变**。缺的仍是 **G2 读/写的 Q7 重基线**、**G3–G5 验收（在 opt-in 路径上）**、
+  **独立的 `CANDIDATE-C2`**；不是机制、也不是路径。`CANDIDATE-C2` **未运行**。
+- **无完成声明、无 grade、无 `V@B`、无 release 移动**。默认 preset 路径**按设计**未变；本阶段并未完成。
+- **仍未证（不得升级）**：network deny 在 OS 层、dynamic shell reads（`$(…)`/反引号）、per-Team scratch
+  isolation（`NOT_WIRED`）、PD-5、BL-39。
+- 本记录自身：docs-only，**0 boot**，无 `.github/**`、无 `packages/**`、无 Authority 指针、无证据删除。
+
+- **门（本地）**：`node scripts/doc-checks.mjs` rc 0；`node scripts/ci-pr-gate.mjs --only state-freshness`
+  pass（round 58 = newest record = last log heading——本记录按现行 dated 格式书写、不引入新 round 号，
+  故 `state_pointers` / `s7_round*_records` 无需移动）；`node --test tests/world-factory/a5sf-debt-register.test.mjs`
+  10/10；`git diff --check` rc 0。
+- **交付**：分支 `task/a5sf-handover-20261113`，draft PR 首行 `HANDOVER`；不 merge、不 settle。
