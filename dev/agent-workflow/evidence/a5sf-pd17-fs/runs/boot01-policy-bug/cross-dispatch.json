@@ -1,0 +1,20 @@
+{
+  "readB": {
+    "status": 200,
+    "body": {
+      "ok": false,
+      "error": {
+        "message": "authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+      }
+    }
+  },
+  "bashB": {
+    "status": 200,
+    "body": {
+      "ok": false,
+      "error": {
+        "message": "IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+      }
+    }
+  }
+}
