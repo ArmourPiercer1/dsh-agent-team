@@ -208,14 +208,50 @@ non-ENOENT branch is code-read, not unit-tested.
 
 ## Closing round — `d37ed8a3f..28b61d4b2`
 
-A separate independent review was requested for exactly this increment:
-non-authorizing invocation settlement, A6-only timeout abandon, boot settlement
-of dead PA invocations, accepted/claimed Inbox replacement wake, and marker
-owner readback. Its verdict is recorded below when returned. No product change
-may be claimed as reviewed before that verdict; the gate at `28b61d4b2` is
-9/9 independently of it.
+A separate independent review was requested for exactly this increment
+(`git diff d37ed8a3f..28b61d4b2`). Verdict: **PASS WITH NOTES — no P0, no P1.**
+Verified safe: abandon is an additive fact that cannot rewrite a decision; a
+late allow on an abandoned row is refused with zero writes; abandoned rows are
+excluded from actionable pending; accepted/claimed rebuild clears only on a
+matching wakeId inside the lock and dispatches once; marker owner readback
+repairs the pre-existing owner guard; dist mirrors TS; both protected-center
+drifts carry named ARC-A overrides; no upstream/test-use change.
+
+Accepted P2/P3 findings (NOT fixed before this record; each needs a new product
+commit and a new full gate, so they are disclosed rather than claimed closed):
+
+- **HOME-wide settlement lacks an owner/liveness proof (P2).** Boot settlement
+  enumerates every TeamSession root and every intent root in the HOME. In a
+  multi-mount HOME a sibling mount's live, granted, not-yet-consumed Allow can
+  be abandoned on this row's boot. Fail-closed (no deny rewrite, no execution),
+  but "never abandons a live decision" is not proven. Fix: scope to teams this
+  mount actually serves, or add a boot/run owner token mirroring the intent
+  owner guard.
+- **Undecided dead PA rows remain actionable (P2).** Only allow-decided rows are
+  settled; a crash after request-write/before-decision leaves a `pending` row
+  that is still listed and may still be woken. Constraint 2 holds only for the
+  allow-decided window.
+- **Settlement cannot distinguish "consumed then completed" from "consumed then
+  crashed" (P2).** There is no result fact, so a successful PA execution gets
+  `execution-outcome-unknown` at the next boot and historical successful cases
+  flip to `abandoned` in case-state reads. Conservative, not unsafe; needs a
+  body-start/run-epoch fact or explicit retention as a limitation.
+- **Inbox liveness metric defect (P2).** A6-25 mixed distinct-wakeId and raw
+  request counts (`1 -> 2 -> 1`); the replacement reuses the deterministic
+  wakeId. No duplicate/replay and a completed decision are shown, but exactly
+  one replacement delivery vs original-turn resume is NOT isolated. Recorded as
+  PARTIAL in the matrix and trial conclusion.
+- **Cross-root marker test is unit-level only (P2).** It reads the marker back
+  and filters by owner in the test; it does not exercise the boot filter at
+  `root.ts` line ~2888.
+- **P3:** manifest uses `git rev-parse HEAD` from cwd (a dirty tree can bind a
+  commit that does not contain the tested code; `a6-crash-body-r1..r3` did bind
+  `d37ed8a3f`); `repos.teamSessions.list()` is a new uncaught throw point in
+  recovery; `as unknown as` cast; A6-19 label asserts no abandon fact.
 
 Disclosed scope: the body-started-result-unknown real-Host probe is NOT proven
 (the delaying command routes to the A5 parameter-permission lane, so no Plane
 PA row is created); the consume case proves zero execution and the shared
 `execution-outcome-unknown` settlement, not a real body start.
+
+The gate at `28b61d4b2` is 9/9 independently of this review.

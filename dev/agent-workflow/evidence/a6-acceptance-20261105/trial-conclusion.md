@@ -29,7 +29,7 @@ production switch.
 | Human leg discovered from the remote ledger page only, then resolved | PASS | `a6-human-r15`, A6-21 |
 | User Stop leaves a durable marker that survives restart and re-delivery | PASS | `a6-sticky-stop-r14`, A6-22/23 |
 | Explicit human message after restart clears the durable Stop and re-plans the ACTUAL pending leg; historical call not revived | PASS | `a6-sticky-stop-r14`, A6-24 |
-| A wake claimed by a crashed turn is replaced by exactly one NEW wake; the old wakeId is never redelivered and the durable request is decided | PASS | `a6-inbox-r14` (28b61d4b2), A6-25 |
+| A wake claimed by a crashed turn is reconciled without duplicate and the durable request is decided; exact replacement-delivery vs original-turn recovery is NOT isolated | **PARTIAL** | `a6-inbox-r14` (28b61d4b2), A6-25; metric defect disclosed |
 | Normal Officer allow closes the loop once on the current line | PASS | `a6-normal-r9` (28b61d4b2), A6-2..6 |
 | Handoff wakes the successor and closes the loop once (queued wake) | PASS | `a6-handoff-r8`, A6-8 |
 | Reconcile the consumed but unexecuted allow | **FAIL** | same run: `consBefore=1`, `consAfter=1`, file 0; the spent allow's command is lost |
@@ -62,10 +62,11 @@ is closed by the clean 9/9 at `1e50d55fc`.
   (`a6-sticky-stop-r14`, A6-24). What is not chained in one run is a *new*
   call's allow→execute after resume; the ordinary path is proven separately by
   `a6-normal-r8`.
-- **Inbox replacement wake**: `a6-inbox-r14` proves one new wake at recovery
-  (distinct wakeId 1 -> 2), no old-wake redelivery, and a completed decision for
-  the durable request. A crash where the Inbox ACCEPTED but never CLAIMED is
-  still not injected.
+- **Inbox replacement wake**: `a6-inbox-r14` proves no duplicate and a
+  completed decision after the crashed claim, but the kit's mixed metric
+  (`1 -> 2 -> 1`) cannot show exactly one new delivery vs the original turn
+  resuming. Liveness mechanism remains PARTIAL. An ACCEPTED-but-never-CLAIMED
+  crash is still not injected.
 - **Native Inbox cold-start replay**: a claimed-wake crash is covered
   (`a6-inbox-r9`); an *accepted but still queued* wake crash is not injected.
 - **Sink unit test**: not added; the marker surface now has unit tests

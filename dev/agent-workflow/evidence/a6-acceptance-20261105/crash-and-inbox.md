@@ -186,25 +186,30 @@ The real-Host split is therefore:
   no-replay rule, but the start marker itself was not produced in a real Host
   run. This remains an explicitly disclosed gap, not a claimed PASS.
 
-## Claimed Inbox wake crash — `a6-inbox-r14` (A6-25)
+## Claimed Inbox wake crash — `a6-inbox-r14` (A6-25) — LIVENESS PARTIAL
 
 Root `session-c1-smoke-a6-2026-11-07T10-29-21`, blueprint `sha256:0afa8433…`,
 `C1_A6_INBOX=1`.
 
 The wake turn was held open after the native Inbox CLAIMED the wake, then the
-Host was SIGKILLed. On restart:
+Host was SIGKILLed. On restart the stale intent row was `accepted`, its native
+message was gone, recovery cleared the row and rebuilt a queued intent from the
+durable pending work, and the durable request was ultimately decided
+(`pendingBefore=1`, `pending=0` at drain). No duplicate pending row or second
+execution was observed.
 
-- the stale intent row was `accepted` and its native message was gone;
-- recovery cleared that row and rebuilt **exactly one NEW wake** from the
-  durable pending Control work: distinct wakeIds `1 -> 2` (the old wakeId was
-  never redelivered), intent rows `1 -> 1 -> 0`;
-- the replacement wake was claimed and resolved the pending request
-  (`pendingBefore=1`, `pending=0` at drain), so liveness is proven by a new
-  Wake and a completed decision, not merely by deleting the old intent.
+**Evidence defect (review finding P2):** the kit mixed metrics. `wakesBefore`
+and `wakesAfterDrain` counted distinct wakeIds while `wakesAfterRestart` counted
+raw requests; the recorded value is `wakes 1->2->1`. The replacement reuses the
+deterministic wakeId, so "distinct wakeIds 1 -> 2" is NOT supported, and the
+run cannot distinguish a fresh delivery of a same-id wake from the native turn
+itself resuming. `A6-25` is therefore recorded as **PARTIAL**: no duplicate, no
+replay of a consumed message, and the request was decided, but the exact
+liveness mechanism (original turn recovery vs exactly one replacement
+delivery) is not independently isolated. A fixed probe must count delivery
+transitions, not raw requests, and run at the final code.
 
-`A6-25` PASS.
-
-## Sticky Stop marker owner readback — unit proof
+## Sticky Stop marker owner readback## Sticky Stop marker owner readback — unit proof
 
 `readStopped` / `listStopped` now surface `ownerRootSessionId`, and
 `a6-wake-intent-store.test.ts` adds a cross-root isolation test: a marker owned
