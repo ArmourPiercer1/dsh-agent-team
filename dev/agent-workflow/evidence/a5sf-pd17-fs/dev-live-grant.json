@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-pd17-fs-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (relayed): dev-live scope authorisation for the Subprocess face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+  "face": "Subprocess",
+  "world": "u5a5sfpd17",
+  "note": "PD-17 FIX boot (2026-11-13): ONE real Host, TWO governed Members on two compiled ceilings. The declared face is exercised as the positive control (Member B reads its own lane through the governed bash face, and Member A's cross-lane bash probe); the filesystem measurements (`read`/`write`/`edit`/`read_image` on the Member's native tools) are the face this task FIXES and are measured inside the same governed Member, not new development of another face."
+}

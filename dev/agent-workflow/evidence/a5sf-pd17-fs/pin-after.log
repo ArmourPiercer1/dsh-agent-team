@@ -1,0 +1,42 @@
+✖ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them (55.119888ms)
+✔ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads (11.276678ms)
+✔ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact (8.188161ms)
+✔ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes (9.548907ms)
+✔ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact (7.315819ms)
+✔ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact (6.975965ms)
+✔ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts (7.906438ms)
+✔ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact (9.024184ms)
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes (8.218198ms)
+✔ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged (7.793834ms)
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store (7.070835ms)
+✔ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced (6.561532ms)
+✔ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds (7.756745ms)
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged (5.568582ms)
+✔ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place) (7.54897ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 468.613697
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:414:1
+✖ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them (55.119888ms)
+  AssertionError [ERR_ASSERTION]: PRE-FIX: read of the sibling lane executed
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:423:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

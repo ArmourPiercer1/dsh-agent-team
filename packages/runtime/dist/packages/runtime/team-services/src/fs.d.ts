@@ -29,7 +29,10 @@
  * WHAT IT DOES NOT DO: it does not resolve or read anything itself (every
  * operation is `super.<method>`), does not REQUEST or CONSUME approvals, and
  * does not weaken the host Provider — a refusal is raised BEFORE the operation,
- * a permitted call behaves byte-for-byte like the base Provider.
+ * a permitted call behaves byte-for-byte like the base Provider, and the
+ * per-call HOST policy it forwards is narrowed to at most this deployment's own
+ * default mode (PD-17: the session's workspace root must survive, its
+ * escalation must not).
  *
  * @module @dsh-agent-team/runtime/team-services/fs
  */

@@ -1,0 +1,421 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-review-2026-11-07T18-42-35-237Z-b1",
+  "suite": "a5sf-pd17-fs",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T18:42:35.238Z",
+  "selectedCases": [
+    "pd17:two-members-admitted",
+    "pd17:a-read-own-allow",
+    "pd17:a-write-own-allow",
+    "pd17:a-edit-own-allow",
+    "pd17:a-read-cross-typed-deny",
+    "pd17:a-read-host-typed-deny",
+    "pd17:a-write-cross-typed-deny",
+    "pd17:a-edit-cross-typed-deny",
+    "pd17:a-read-image-cross-stated",
+    "pd17:b-read-a-typed-deny",
+    "pd17:facts-name-their-own-member",
+    "pd17:surface-unchanged"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "bd952e7d09b293ee99e0c96ec228f8af2380ed90",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-pd17-fs-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfpd17"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "bd952e7d09b293ee99e0c96ec228f8af2380ed90",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "pd17:two-members-admitted",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "two Members, two templates, two instanceIds, two compiled ceilings in one boot",
+      "members": [
+        {
+          "instanceId": "inst-02d04nx1cb8c",
+          "templateId": "lane-b",
+          "lifecycle": "SETTLED",
+          "policyRevision": null
+        },
+        {
+          "instanceId": "inst-1y3th5a0xs71",
+          "templateId": "lane-a",
+          "lifecycle": "SETTLED",
+          "policyRevision": null
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "lifecycle": "undefined",
+          "policyRevision": null
+        }
+      ]
+    },
+    {
+      "id": "pd17:a-read-own-allow",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A reads its OWN lane with the native read tool: bytes returned AND an allow fact on the confined fs face",
+      "result": {
+        "callId": "call-a5sfpd17-a-read-own",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/a.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD17_LANE_A_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1794077084821
+      },
+      "facts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "stat",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/a.txt",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-07T18:44:44.812Z"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "readText",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/a.txt",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 2,
+          "observedAt": "2026-11-07T18:44:44.816Z"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "writeText",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/written-by-a.txt",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 3,
+          "observedAt": "2026-11-07T18:44:44.865Z"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "writeText",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/cross-write-by-a.txt",
+          "decision": "deny",
+          "decidedBy": "IO_WRITE_DENIED",
+          "sequence": 6,
+          "observedAt": "2026-11-07T18:44:44.996Z"
+        }
+      ]
+    },
+    {
+      "id": "pd17:a-write-own-allow",
+      "verdict": "FAIL",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A writes INSIDE its lane: the file exists with the requested content AND an allow fact was recorded",
+      "result": {
+        "callId": "call-a5sfpd17-a-write-own",
+        "isError": true,
+        "text": "Error: cannot write \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/written-by-a.txt\": file access denied under workspace-write mode",
+        "at": 1794077084870
+      },
+      "content": null
+    },
+    {
+      "id": "pd17:a-edit-own-allow",
+      "verdict": "FAIL",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A edits INSIDE its lane: the file text changed AND an allow fact was recorded",
+      "result": {
+        "callId": "call-a5sfpd17-a-edit-own",
+        "isError": true,
+        "text": "Error: edit requires reading \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/edit.txt\" first",
+        "at": 1794077084900
+      },
+      "content": "A5SF_PD17_EDIT_TARGET\n"
+    },
+    {
+      "id": "pd17:a-read-cross-typed-deny",
+      "verdict": "FAIL",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A read of the SIBLING Member's lane is refused: zero B bytes, one IO_READ_DENIED fact on that locator — THE CROSS-MEMBER ARM",
+      "result": {
+        "callId": "call-a5sfpd17-a-read-cross",
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane",
+        "at": 1794077084933
+      },
+      "denyFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "stat",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/b.txt",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "sequence": 4,
+          "observedAt": "2026-11-07T18:44:44.931Z"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "stat",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/b.txt",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "sequence": 7,
+          "observedAt": "2026-11-07T18:44:49.129Z"
+        }
+      ]
+    },
+    {
+      "id": "pd17:a-read-host-typed-deny",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A read of the HOST file etc/hostname is refused with one IO_READ_DENIED fact and no host bytes",
+      "result": {
+        "callId": "call-a5sfpd17-a-read-host",
+        "isError": true,
+        "text": "Error: authored locator '/etc/hostname' is outside every allow subtree of the lane",
+        "at": 1794077084967
+      },
+      "denyFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1y3th5a0xs71",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:2ff69def859f34286a08fb6d0361ab44",
+          "method": "stat",
+          "locator": "/etc/hostname",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "sequence": 5,
+          "observedAt": "2026-11-07T18:44:44.965Z"
+        }
+      ]
+    },
+    {
+      "id": "pd17:a-write-cross-typed-deny",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A write into the SIBLING lane is refused with IO_WRITE_DENIED and creates NO file",
+      "result": {
+        "callId": "call-a5sfpd17-a-write-cross",
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/cross-write-by-a.txt' is outside every allow subtree of the lane",
+        "at": 1794077084997
+      },
+      "fileExists": false
+    },
+    {
+      "id": "pd17:a-edit-cross-typed-deny",
+      "verdict": "FAIL",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "A edit of a SIBLING-lane file is refused with IO_WRITE_DENIED and the file is unchanged",
+      "result": {
+        "callId": "call-a5sfpd17-a-edit-cross",
+        "isError": true,
+        "text": "Error: edit requires reading \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/edit.txt\" first",
+        "at": 1794077085026
+      },
+      "content": "A5SF_PD17_EDIT_TARGET\n"
+    },
+    {
+      "id": "pd17:a-read-image-cross-stated",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "read_image on the SHIPPED governed composition refuses (route gate or fs face — the evidence states which) and never yields image bytes; the fs-face refusal itself is pinned host-free in a5sf-pd17-fs-read-axis.test.mjs arm D5",
+      "result": {
+        "callId": "call-a5sfpd17-a-image-cross",
+        "isError": true,
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-b/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+        "at": 1794077085054
+      },
+      "allowFacts": []
+    },
+    {
+      "id": "pd17:b-read-a-typed-deny",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "the SYMMETRIC arm: Member B reading A's lane is refused with zero A bytes and one deny fact",
+      "result": {
+        "callId": "call-a5sfpd17-b-read-cross",
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/a.txt' is outside every allow subtree of the lane",
+        "at": 1794077088802
+      },
+      "denyFacts": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-02d04nx1cb8c",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:3cd7d1246509450e1a6fe463f8aea27f",
+          "method": "stat",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-42-35Z/workspace/lane-a/a.txt",
+          "decision": "deny",
+          "decidedBy": "IO_READ_DENIED",
+          "sequence": 1,
+          "observedAt": "2026-11-07T18:44:48.799Z"
+        }
+      ]
+    },
+    {
+      "id": "pd17:facts-name-their-own-member",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "every guard fact names the Member that made the call; A's facts never carry B's identity",
+      "aFacts": 8,
+      "bFacts": 4
+    },
+    {
+      "id": "pd17:surface-unchanged",
+      "verdict": "PASS",
+      "at": "2026-11-07T18:44:49.141Z",
+      "detail": "the Member's model-visible surface still carries the shipped filesystem names with their shipped parameter schema (the shadow REPLACES the definition; it does not add, remove or reshape a tool)",
+      "tools": [
+        "ask_user_question",
+        "bash",
+        "create_goal",
+        "edit",
+        "exit_plan_mode",
+        "get_goal",
+        "glob",
+        "grep",
+        "interrupt_agent",
+        "job_kill",
+        "job_list",
+        "job_output",
+        "list_agents",
+        "present",
+        "read",
+        "read_image",
+        "send_message",
+        "skill",
+        "subagent",
+        "subagent_fork",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "todo_write",
+        "u5_canary",
+        "u6fs_probe",
+        "update_goal",
+        "web_fetch",
+        "web_search",
+        "workflow",
+        "write"
+      ],
+      "readSchema": {
+        "name": "read",
+        "description": "Read a UTF-8 text file and return line-numbered content.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to read, resolved by the filesystem backend."
+            },
+            "offset": {
+              "type": "number",
+              "description": "1-based first line to return. Defaults to 1."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Maximum number of lines to return. Defaults to 2000."
+            }
+          },
+          "required": [
+            "file_path"
+          ]
+        }
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/dev/agent-workflow/evidence/a5sf-pd17-fs/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T18:42:35.274Z",
+        "runId": "a5sf-recon-review-2026-11-07T18-42-35-237Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-pd17-fs-1",
+        "grantId": "devlive-pd17-fs-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): dev-live scope authorisation for the Subprocess face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfpd17",
+        "headCommit": "bd952e7d09b293ee99e0c96ec228f8af2380ed90",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T18:43:06.287Z",
+        "runId": "a5sf-recon-review-2026-11-07T18-42-35-237Z-b1",
+        "suite": "a5sf-pd17-fs",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd17-20261107T18-42-35Z",
+        "phase": "a5sf-pd17-fs-boot1"
+      }
+    ]
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-review-2026-11-07T18-42-35-237Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-07T18:44:49.141Z"
+}
