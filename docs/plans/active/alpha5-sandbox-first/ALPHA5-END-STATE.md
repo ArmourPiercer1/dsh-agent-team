@@ -121,6 +121,23 @@ no `V@B`。** 每一条都只在「operator 显式 `memberPresetId: a5sf-governe
 out-of-lane——`DEV-LIVE`、no `V@B`；这**不是**"Members 已受治"：默认 preset 一个字节未改，大多数
 Member 仍在它上面。
 
+## 1.4 2026-11-13：label-without-mechanism 修复之后，每条受影响面的一行（只追加）
+
+本节只写在 WINDOW-HUNT（#651，`1f2011c73`）之后**变强或不变**的那一句；不覆盖 §1 / §1.1 / §1.2 / §1.3 的任何
+字节，也不新增等级或 `V@B`。记录类别 = 进程内证据（**0 boots**；真实产品模块 + Host 调用的同一 seam），
+不是 `DEV-LIVE`、更不是候选证据。证据 = `dev/agent-workflow/evidence/a5sf-window-hunt/README.md`。
+
+| face | 2026-11-13 的一行 |
+|---|---|
+| **Subprocess**（M-09） | **变强一句，且只在 opt-in 上**：一个声称受治（`a5sfGovernedRealm: true`）却编译不出 realm 的行，不再静默地把 Member 交给 preset 继承的 `bash`——它以已有的 typed `REALM_DECLARATION_INVALID` 在挂载处拒绝（RED→GREEN，W3b）。默认 `standard` 路径不写这个键，因此**不可达**；`bash` 的执行体一个字节未变。`DEV-LIVE` 边界不变、no `V@B`、`NOT_WIRED`。 |
+| **Shell-PTY**（M-08） | **不变强**：该拒绝保护的是"标签 vs 机制"，不是持久 shell——一个 opt-in 受治 Member 拿到的是 confined terminal face 的 **fresh child**，默认 Member 仍既没有 confined face、也没有受管 shell。no `V@B`、`NOT_WIRED`。 |
+| **FS Provider**（M-01/M-02） | **无新增测量**：realm 挂载是 FS 面的载体，但本 lane 没有在 opt-in 路径上驱动原生 `read`/`write`；PD-5（route-C 下 `read_image` 不可用）与写轴未测项原样。no `V@B`。 |
+| **Web**（M-14/M-15） | **明确无变化**：本 lane 没有驱动任何 `web_fetch`/`web_search` 调用；"Web 面被 OS 隔离"仍不可写。 |
+| **Cross-face（发布）** | **本阶段能说的最强句**：**一个声称受治的 Member 不会静默地不受治运行**——精确边界是：**当它通过 shipped opt-in 行作出这个声称时；默认路径不作这个声称**。它不关闭任何门：`release BLOCKED` 不变（G2/Q7 重基线、G3–G5、独立 `CANDIDATE-C2`），`CANDIDATE-C2` 未运行。 |
+
+**一句话**：这次不是"Members 已经受治"，而是"**已经没有人能一边声称受治、一边静默地不受治地跑**"——只在
+opt-in 声称存在的地方成立；默认路径既不作这个声称，也没有获得任何新保证。
+
 ## 2. 十条产品债：当前状态与 owner 决策
 
 状态词只有两个：**`FIXED`（有已合并 PR）** 与 **`OPEN`**。`PRODUCT-DEBT-REGISTER.md` 的正文仍是

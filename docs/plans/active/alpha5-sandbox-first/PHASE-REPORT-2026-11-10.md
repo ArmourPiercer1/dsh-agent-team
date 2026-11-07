@@ -313,3 +313,69 @@ deny 已经可以是 OS 拒绝（严格 4/5 / 宽读 5/5，0 次启动）；但*
 **一句话**：对显式 opt-in 的 Team，“机制不在那条路径上”已被一个真实 Member turn 部分取代
 （`DEV-LIVE`、no `V@B`）；默认路径与 PD-13 对默认 Member 的结论不变；而这次真正学到的，是**产品在行
 存在之前挂载、测试在行存在之后挂载**——夹具顺序比生产顺序更宽松，是一整类需要主动猎捕的缺陷。
+
+---
+
+## 附录 D — 2026-11-13 附录：§10 的“机制正确、路径不完整”今天该怎么说（只追加；§10 原文不改）
+
+### D.1 报告写完之后，变了什么
+
+- **路径不再“不完整”了——对显式 opt-in 的 Team**：`#648`/`#649` 之后，一个 operator 显式写
+  `memberPresetId: a5sf-governed-member` + `a5sfGovernedRealm: true` 的 Team，在**真实 Host** 上让一个真实
+  Member turn 的 `bash` 由 confined terminal face 服务：in-lane 返回 lane 字节、out-of-lane
+  `IO_READ_DENIED` 且 **0** secret 字节，两个结果都在 Member **自己的 durable transcript** 里，两次一致；
+  1 次 confined-provider launch 服务 2 条命令、带夹具的 base bwrap 0。证据 =
+  `dev/agent-workflow/evidence/a5sf-live-member/README.md`（`DEV-LIVE`、no `V@B`）。
+- **路径依然“不完整”——对默认路径**：`standard` 仍是部署默认，shipped layer 不点名任何 preset；默认
+  Member 的 `bash` 仍是继承的 legacy 执行体（PD-13 对默认 Member 仍成立）。§4 的“受管终端面 NOT_WIRED /
+  默认路径未变”一字未改。
+- **报告自己缺的一项被补上了**：本阶段在猎捕**自己的仪器教训**（§5 第 11 条：夹具顺序比生产更宽松）时，
+  找到了同一类的第二个实例——**标签与机制分离**（矩阵 §1.6 / W3b）：一个合法 v4 blueprint 的模板没有
+  `memberIoCeilings` 条目时，`a5sfGovernedRealm: true` 的行会让 Member 跑 preset 继承的**不受限 `bash`**。
+  已用已有的 typed `REALM_DECLARATION_INVALID` 拒绝，RED→GREEN 钉住
+  （`tests/world-factory/a5sf-window-taxonomy.test.mjs` W3b）。这是 §10 结论里**缺的那一项**：机制正确还不够，
+  **一个治理标签在机制缺席时必须被拒绝**。默认路径不可达（governed provider 只在行写该键时构造，
+  `packages/runtime/src/plugin/host.ts:2142-2149`；挂载只在 row config 与 provider 都在时进入，
+  `packages/runtime/src/plugin/live/agent-bindings.mjs:2598`）。
+
+### D.2 §10 结论的继任句（读者可以直接引用的版本）
+
+> **Alpha.5 的机制是正确的，opt-in 路径是完整的、并在真实 Host 上被一个真实 Member turn 走通过；
+> 默认路径一个字节未变；而本阶段最后学到的是——当治理标签背后的机制缺席时，标签本身必须被拒绝。**
+> （`DEV-LIVE`、no `V@B`；默认路径不作出该声称。）
+
+它保留了 §10 为真的部分（机制正确），替换了不再为真的部分（“路径不完整”现在只对默认路径为真），并把
+“标签必须被拒绝”升格为阶段结论的一部分——这是原报告没有、而本轮真实发现的。
+
+### D.3 没变的东西（与 D.2 同读）
+
+`release BLOCKED` 不变；G2 读/写仍需在 Q7 下重基线；G3–G5 未开始；`CANDIDATE-C2` 未运行；无 `V@B`、
+无等级移动、无证据删除。仍未证：network deny 在 OS 层、dynamic shell reads（`$(…)`/反引号）、per-Team
+scratch isolation、PD-5、BL-39。本 appendix 自身 0 次启动：阶段 dev-live 总数仍是 48（Web 7 / FS 4 / PTY 9 /
+Sub 28）。
+
+### D.4 读者接下来该做什么（按优先级；以及三件不得做的事）
+
+1. **先做 G2 读/写的 Q7 重基线**：真实结论存在，但被 `#606` 的产品漂移撤回（矩阵 §1.1 / 附录 A）。为什么
+   先做它：它是唯一“已有真实结论、只缺在正确树上重跑”的发布义务；不做，G3–G5 的任何结论都会建立在比
+   将合并的树更旧的证据上。
+2. **在 opt-in 路径上做 G3–G5 验收**：受治面已经存在、已 live 走通，G3（逐工具正向等价与最小权限负控）、
+   G4（全工具 × I/O 维度矩阵）、G5（对抗/故障/发布双验收）现在有可寻址的对象。为什么第二：先把已存在的
+   路径验收成发布义务，比再造一个新面更接近 release。
+3. **跑独立的 `CANDIDATE-C2`**：只有冻结候选 + 不可变 SHA + Authority + Host + Oracle + 独立裁决才能产生
+   `V@B=yes`；`DEV-LIVE` 结构上不是那条路径。为什么第三：它必须在一棵**已验收**的树上跑，否则只是把旧
+   问题再测一遍。
+
+**不得做**：(a) **不得声称默认路径受治**——默认 `standard` 未变，大多数 Member 在它上面；(b) **不得把
+`DEV-LIVE` 当候选证据**——run record 自述 `eligible=false`，它不能关闭任何门；(c) **不得把一个面的证明
+挪用到另一个面**——subprocess 的 netns 证明不覆盖进程内 web transport；BL-42 的宽读 item 5 只是同一个
+process face，不是“终端面已被 OS 隔离”。
+
+### D.5 仪器史的第 11、12 条（§5 的十行不改，只追加）
+
+- **第 11 条：夹具顺序比生产更宽松。** 进程内测试在 `MemberInstance` 行**已存在之后**挂载；产品在行
+  **之前**挂载。`tests/world-factory/a5sf-governed-preset.test.mjs` 已改成在窗口内挂载并新增 `G5d` 钉住
+  顺序（仍 14/14）。它不让仪器变红；它让被测系统在仪器里永远是绿的。
+- **第 12 条：标签与机制分离。** 一个治理标签可以在它背后的机制缺席时继续存在，于是系统“声明了 confinement
+  却没有挂上”。它同样是一条**必须被刻意拒绝**的形状，而不是一次性 bug；修复 = `REALM_DECLARATION_INVALID`
+  在挂载处拒绝，RED→GREEN（矩阵 §1.6，W3b）。
