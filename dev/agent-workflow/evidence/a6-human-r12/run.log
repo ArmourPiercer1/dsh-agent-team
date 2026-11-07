@@ -1,0 +1,23 @@
+[2026-11-06T06:54:28.074Z] c1 real-host smoke — stamp 2026-11-06T06-54-28
+[2026-11-06T06:54:28.075Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-06T06:54:28.075Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-06T06:54:28.075Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-human-r12
+[2026-11-06T06:54:29.610Z] ports: host=3724 mock=3725
+[2026-11-06T06:54:34.624Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-06T06:54:34.625Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-06T06:54:34.630Z] mock model listening on 3725
+[2026-11-06T06:54:37.314Z] host booted at http://127.0.0.1:3724; row ready — toolCount=15
+[2026-11-06T06:54:37.314Z] ── L0: discovery ──
+[2026-11-06T06:54:37.734Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-06T06:54:37.734Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-06T06:54:37.735Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-06T06:54:37.735Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-06T06:54:40.992Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-40rpq9frmy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-06T06-54-28","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:79c87984bc33a43b88e6a686f0cffdd59e46f637774f42ab47aa0fb188874f03"},"createdAt":"2026-11-06T06:54:37.768Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-06T06:54:45.373Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=3 decisions=3 consumptions=2 pending=0
+[2026-11-06T06:54:45.373Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 notifications=0 requests=16
+[2026-11-06T06:54:45.374Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-06T06:54:45.374Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T06-54-28/workspace/c1-a6-allow-2026-11-06T06-54-28.txt text="c1-a6-allow-2026-11-06T06-54-28\n"
+[2026-11-06T06:54:45.374Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0 notifications=0
+[2026-11-06T06:54:45.374Z] PASS A6-21: the pending human leg is discoverable over the remote-only ledger/projection surface before any resolve — requestFact=true count=1 occurrences=1
+[2026-11-06T06:54:45.374Z] PASS A6-9: Officer escalated to the human leg; human allow executed the call once — escalation={"sequence":12,"factType":"control-escalation-recorded","approvalCaseId":"case-1ybirdf0b3s3qs1dte29t1pp","escalatedBy":{"instanceId":"inst-0ez5k2p1qdld","kind":"instance","role":"member"},"legOrdinal":1,"previousRequestId":"ctrl-1l4uwrm0a8d5xx07h6qas05o"} humanLeg={"sequence":13,"factType":"control-request-recorded","requestId":"ctrl-1kuvb2n09eecv008b5jdp05y","kind":"leader-approval","toolName":"bash","actionName":"team-tool-execute","targetInstanceId":"inst-01gise70ch31","correlation
+[2026-11-06T06:54:45.374Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=3 decisions=3 consumptions=2 pending=

@@ -1,0 +1,17 @@
+[2026-11-06T06:27:35.195Z] c1 real-host smoke — stamp 2026-11-06T06-27-35
+[2026-11-06T06:27:35.196Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-06T06:27:35.196Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-06T06:27:35.196Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-timeout-r4
+[2026-11-06T06:27:36.727Z] ports: host=3718 mock=3719
+[2026-11-06T06:27:41.739Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-06T06:27:41.740Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-06T06:27:41.747Z] mock model listening on 3719
+[2026-11-06T06:27:44.344Z] host booted at http://127.0.0.1:3718; row ready — toolCount=15
+[2026-11-06T06:27:44.344Z] ── L0: discovery ──
+[2026-11-06T06:27:44.767Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-06T06:27:44.767Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-06T06:27:44.768Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-06T06:27:44.769Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-06T06:27:48.062Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-22ddrk5x1g","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-06T06-27-35","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:b8b61f7b9e187b7158e1dbf80c6ad59a4ceb175c1e74828075c2f947b9c16f82"},"createdAt":"2026-11-06T06:27:44.804Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-06T06:28:01.063Z] PASS A6-19: a bounded A6 approval wait expires without deciding, consuming or executing, and leaves the durable request pending — timeoutMs=5000 pa=ctrl-0spa2y11wf5niq0dtyrzz1lv decision=undefined consumed=false executed=false
+[2026-11-06T06:28:03.140Z] PASS A6-20: a late allow after the wait timed out cannot revive the dead call: it is fail-closed or left unspent, never executed or consumed — decision=deny reason=authority-undetermined consumed=false executed=false

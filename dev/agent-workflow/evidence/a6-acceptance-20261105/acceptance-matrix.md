@@ -1,0 +1,92 @@
+# Alpha.6 isolated integration + real-Host E2E — acceptance matrix
+
+- **Integrated code HEAD under test:** `28b61d4b2` (adds non-authorizing
+  invocation settlement, Inbox replacement wake, marker owner readback; full
+  gate 9/9 in `gate.md`). Earlier full-arc evidence was taken at `fb6ccb4f4`;
+  the closing-round runs `a6-normal-r9`, `a6-timeout-r9`,
+  `a6-crash-allow-r4`, `a6-crash-consume-r8`, `a6-inbox-r14` are bound to
+  `28b61d4b2` by their `run-manifest.json`.
+- **Real Host runs:** the core run is `a6-officer-host-r2` (stamp
+  `2026-11-05T13-22-47`); the recipient/refusal rows use the later gated runs
+  `a6-exception-r2`, `a6-human-r9`, `a6-handoff-only-r6` and `a6-stop-r3`, whose
+  raw logs are committed under `dev/agent-workflow/evidence/`.
+- **Scope:** isolated integration and real Host E2E only. No master merge, no un-draft,
+  no production enablement, no release.
+- **Scope:** isolated integration and real Host E2E only. No master merge, no un-draft, no
+  production enablement, no release.
+
+## Core criteria
+
+| # | Criterion | Result | Evidence |
+|---|---|---|---|
+| 1 | v5 `team.create` admits a real Officer + review routing | **PASS** | `run.log` A6-1; created root `session-c1-smoke-a6-2026-11-05T13-22-47`, blueprint hash `sha256:fc0963…` |
+| 2 | Real Member bash ask produces a model-visible Officer review wake | **PASS** | `a6-officer.json` `.wakes`: 3 Officer turns, wake text carries `requestId: - ctrl-1u2v1ph…`; `mock.log` wake seq 13 |
+| 3 | Officer resolves through `team_resolve_control` | **PASS** | `mock.log` seq 14; durable decision sequence 11, `reviewCapability.source = blueprint-officer`, `effectiveReviewAuthority = leader` |
+| 4 | The original Member command executes after the Officer allow | **PASS** | `executed=true`; workspace file `tests/homes/c1-smoke-2026-11-05T13-22-47/workspace/c1-a6-allow-2026-11-05T13-22-47.txt` contains the stamp |
+| 5 | The Leader is not woken for a leg routed to the Officer | **PASS (scoped)** | `leaderWakeCount=0` means no **Officer review wake** went to the Leader. The separate legacy guard ask (row 1) did use the Leader notification path; see the duplicate report. |
+| 6 | No durable request is left pending | **PASS** | 2 requests, 2 decisions, 2 consumptions, `pending=0` |
+| 7 | One-shot consumption / no double execution | **PASS** | exactly one `control-allow-consumed` per request (sequences 9 and 12); one file write; no second execution |
+| 8 | Two approvals for one bash invocation both settle and are consumed | **PASS** | `parameter-permission` allow+consumed seq 8/9; `team-tool-execute` allow+consumed seq 11/12; identities differ (see duplicate report) |
+| 9 | Durable facts, not a unit substitute | **PASS** | `control-ledger.json` carries the full `control-request-recorded` / `control-decision-recorded` / `control-allow-consumed` payloads, including scope, fingerprints and generation |
+
+## Recipient, refusal and extended criteria
+
+| # | Required scenario | Result | Why |
+|---|---|---|---|
+| 10 | Leader exception routing | **PASS** | clean real Host `a6-exception-r2` (`c4a4e5616`): the declared `worker`/`dsh-agent-team:bash` exception discriminates on the **plane PA** leg — 0 Officer review wakes, PA allow decider `role:'leader'`, consumed, executed once. The guard reaches the Leader through the ordinary legacy path in every A6 run, so it is not the discriminator; see `leader-exception.md` |
+| 11 | Officer self-review | **PASS** | real Host `a6-recipients-r6` / `r12`: Officer's own PA leg `ctrl-1lc9fk11mqfnfy168muob00k` decided by Leader seq 19, consumed seq 20, command executed; see `recipients.md` |
+| 12 | Handoff successor notification / production `reviewEvents` consumer | **PASS** | clean real Host `a6-handoff-only-r6`: transfer seq 22 → Leader decision seq 23 → execution once. The missing production `reviewEvents` consumer was the defect; fixed in `fd7a5d6c1`; `recipients.md` |
+| 13 | Human escalation authority / final approval | **PASS (authority); Host human wake NOT_REACHED** | clean real Host `a6-human-r9`: Officer escalate seq 12, human leg seq 13 (`reviewAuthority:'human-user'`), human allow seq 14 (`decider.kind:'human'`), consumed seq 15, command executed once; see `human.md`. The human is resolved through the remote `team.resolveControl` entry; `human-current-leg` routes to `native-human`, a deliberate no-op, so no Host human wake is claimed |
+| 14 | Execution-time revalidation, Stop/cancel/timeout non-revival | **PASS (timeout/Stop); cancel-racing-guard NOT_REACHED** | Stop: allow seq 14, cancel accepted, no consumption/execution, second allow `CONTROL_REQUEST_DECIDED` (`a6-stop-r3`). Bounded A6 wait (`a6-timeout-r9`, code `28b61d4b2`): the invocation is abandoned with reason `invocation-abandoned`; the durable decision stays absent (never a Deny), zero consumption/execution, late allow refused (A6-19/20). A cancel racing the guard is still not injected. |
+| 15 | queued / claim / release under crash, Sticky Stop, crash windows, native Inbox reconciliation | **PARTIAL (one scenario not real-Host)** | Closing round at `28b61d4b2`: after-allow (`a6-crash-allow-r4`, A6-15) keeps `decision=allow`, adds `invocation-abandoned`, zero consumption/execution; after-consume-before-body (`a6-crash-consume-r8`, A6-16) keeps `decision=allow`, one consumption, adds `execution-outcome-unknown`, zero execution/no replay. Body-started-result-unknown is **PASS** (`a6-crash-body-r5`, A6-16b): the body-start marker exists, the PA allow was consumed, the final result is absent, and restart records `execution-outcome-unknown` with no replay. The body probe approves the A5 parameter-permission lane through the remote human entry so the Plane PA leg exists (crash-window probe only). Before-write (`a6-crash-before-r1`, A6-17) has no phantom request. Request-written/no-decision (`a6-crash-request-r6`, A6-13/14): late human allow is refused as `invocation-abandoned` (zero consumption, zero execution) and **never persisted as deny**. Inbox (`a6-inbox-r17`, A6-25): exactly one new wake TURN START after restart (`messageCount=1` at index 12, then 3/5-message continuations), old wake not redelivered, request decided. `wakes=1 -> 2 -> 2` counts turn starts. Sticky Stop marker now reads back `ownerRootSessionId` and has a cross-root isolation unit test; Stop behavior unchanged. |
+| 16 | Duplicate-approval elimination | **NOT_IMPLEMENTED** | evidence collected; recommendation only (see duplicate report) |
+
+## Gate
+
+Full local gate **9/9 PASS, zero skips** on `28b61d4b2` (298.7 s); the evidence
+commits after it change docs/evidence only. `gate.md` records the exact SHA and
+outputs:
+`node scripts/ci-pr-gate.mjs --full`, `CI=true`,
+`DSH_CI_STORE_DIR=$PWD/.drill/pnpm-store`, pristine host symlink present.
+
+Census result on the passing final run: **677 files / 8833 legs**, `COUNTS MOVED, SET DID NOT`,
+0 new reds / 0 collection errors; identity set identical to the published baseline. The earlier E2E HEAD `8ea3a05` had 8/9 legs green; its
+census capture hit two pre-existing 1 ms race tests (`alpha5-glob-backend` X3 and
+`alpha5-search-backend` P11), each passing standalone; the final integrated run passed.
+See `gate.md` for the exact outputs and the flake disclosure.
+
+## Independent review
+
+Latest review of `b4d4d21e..8114db4b7`: **PASS WITH NOTES**; no P0/P1 in the
+product change, P2 evidence/probe fixes tracked in `review-response.md`.
+
+Earlier review at `8ea3a0517`: **BLOCK** (no P0; P1-1 notification-policy bypass,
+P1-2 per-root router policy). Both P1s, P2-1 and the verifier-test gap are fixed
+in `996427e3f`; P2-3 is covered by the rerun gate; P3 root/ledger items are
+addressed. The real Host E2E was rerun at `c26a9a00` after the fixes and passed
+6/6 again. A second independent review of the fix commit returned
+**PASS_WITH_P2** (both P1s closed, no new P0/P1); the one non-discriminating
+regression test was made leg-bearing in `90937099d`. See `review-response.md`.
+
+## Verdict
+
+**Isolated integration: PASS on the reached path; review P1s cleared.** A real Member call routed to the
+assigned Officer, the Officer's durable allow was consumed, and the exact command executed
+once. Rows 14-16 are partial/blocked as stated; they are not silently passed. The
+isolated-trial decision is **NO-GO for enablement/release**; see
+`trial-conclusion.md`. Production enablement and master merge remain blocked.
+
+## Closing round 2026-11-07 (Draft HEAD `54f39e09d`; docs HEAD `4c2d94148`)
+
+| # | Criterion | Result | Anchor |
+|---|---|---|---|
+| C1 | Strict Root ownership: one Root's settlement cannot move another Root's valid Allow / Case / execution state; no proof = fail closed | **PASS (unit + reboot)** | two-mount unit in `a5-m1-auth-bridge.test.ts`; `a6-crash-allow-r5` A6-15 |
+| C2 | Durable `succeeded` / `failed` / `unknown` result; a durable success is never mislabeled abandoned; body-started-without-result stays `unknown` and is never replayed | **PARTIAL** | unknown path PASS (`a6-crash-body-r6` A6-16b, ledger fact `outcome:"unknown"`); success auto-record NOT observed on the normal A6 lane (`a6-normal-r10..r16`) |
+| C3 | Flag-on / flag-off regression; A6 branch never rewrites the approval decision, no Legacy change | **PASS** | flag-off existing test; flag-on new test (`no decision`, `invocation-abandoned`, zero consumption) |
+| C4 | Inbox ACCEPTED-but-never-CLAIMED crash: adopt / re-plan / retain Intent | **NOT RUN** | CLAIMED case only: `a6-inbox-r17` |
+| C5 | Decision / lifecycle / outcome independent; abandoned row non-actionable but audit history retained | **PASS** | abandonment is additive; decision rows untouched |
+| C6 | Local gate at final HEAD | **8/9 PASS, census blocked** | `artifacts-at-head` 1983/0; census blocked by orphan listener on 127.0.0.1:3983 |
+
+Production / master / release remain **NO-GO**. The trial recommendation is
+limited to C1, C3, C5 and the C2 `unknown` path; C2 success coverage and C4
+are open.

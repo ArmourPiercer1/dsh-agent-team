@@ -1,0 +1,15 @@
+diff --git a/packages/runtime/operation-permission/pa-control-bridge.ts b/packages/runtime/operation-permission/pa-control-bridge.ts
+index 8a4ec2e2f..5c21df2c4 100644
+--- a/packages/runtime/operation-permission/pa-control-bridge.ts
++++ b/packages/runtime/operation-permission/pa-control-bridge.ts
+@@ -272,6 +272,10 @@ const deepLossless = (value: unknown): unknown =>
+  *  decider. This is the presenter's ONLY reviewer-authority source: never a
+  *  guess, never the beneficiary's rung, never a plan field. */
+ function deciderAuthority(decider: ControlDecisionRecord['decider']): RuntimeAuthority | undefined {
++  // A6 P-AUTH DELEGATION PROBE (throwaway): the designated member decider is
++  // presented to the PA layer as a delegated leader reviewer. Identity in the
++  // durable decision stays member. NEVER MERGE.
++  if (decider.kind === 'instance' && decider.instanceId === 'inst-p6t4seedw02') return 'leader'
+   if (decider.kind === 'human') return 'human-user'
+   if (decider.kind === 'instance') {
+     return decider.role === 'leader' ? 'leader' : 'member'

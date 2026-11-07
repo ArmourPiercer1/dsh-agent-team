@@ -1,0 +1,16 @@
+[2026-11-07T10:20:53.025Z] c1 real-host smoke — stamp 2026-11-07T10-20-53
+[2026-11-07T10:20:53.026Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-07T10:20:53.026Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-07T10:20:53.026Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-crash-allow-r4
+[2026-11-07T10:20:54.557Z] ports: host=3838 mock=3839
+[2026-11-07T10:20:59.569Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-07T10:20:59.570Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-07T10:20:59.577Z] mock model listening on 3839
+[2026-11-07T10:21:02.162Z] host booted at http://127.0.0.1:3838; row ready — toolCount=15
+[2026-11-07T10:21:02.163Z] ── L0: discovery ──
+[2026-11-07T10:21:02.584Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-07T10:21:02.584Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-07T10:21:02.585Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-07T10:21:02.586Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-07T10:21:05.895Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-3jwoqpx1u3","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-07T10-20-53","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:3306f85b55cd7639e8423b6c6484755c95d4fde3b0bc7bb362689e93db90536a"},"createdAt":"2026-11-07T10:21:02.623Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-07T10:21:10.904Z] PASS A6-15: a Host crash after the PA allow but before consumption leaves the allow intact, abandons the dead invocation and executes nothing — mode=allow restart=ok decision=allow consBefore=0 consAfter=0 fileBefore=0 fileAfter=0 bodyStart=false abandon=invocation-abandoned revived=false

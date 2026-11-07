@@ -1,0 +1,12 @@
+{
+  "stamp": "2026-11-05T13-22-47",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-05T13-22-47",
+  "wakes": 3,
+  "leaderWakeCount": 0,
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-05T13-22-47\n",
+  "requests": 2,
+  "decisions": 2,
+  "consumptions": 2,
+  "pending": 0
+}

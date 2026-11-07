@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 5,
+  "runtime": "real Host 0.2.0-rc.2",
+  "create": {
+    "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "path": "fresh-root",
+          "durable": {
+            "teamSession": {
+              "schemaVersion": 1,
+              "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+              "blueprint": {
+                "blueprintId": "team.c1-a6-officer",
+                "revision": "1",
+                "contentHash": "sha256:1325aa3c324822929d039ac371cfdcd1efd770b0313780ce7f2a445663d950cf"
+              },
+              "createdAt": "2026-11-05T14:18:16.985Z",
+              "generation": 1,
+              "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T14-18-07/workspace"
+            },
+            "binding": {
+              "schemaVersion": 1,
+              "kind": "team-root",
+              "sessionId": "session-c1-smoke-a6-2026-11-05T14-18-07"
+            },
+            "wrote": true,
+            "leaderRow": {
+              "schemaVersion": 2,
+              "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "createdAt": "2026-11-05T14:18:17.002Z",
+              "activityVersion": 1
+            }
+          },
+          "bind": {
+            "requested": "fresh-root",
+            "bound": true,
+            "installed": true,
+            "identity": {
+              "kind": "root",
+              "sessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07"
+            },
+            "admitted": true,
+            "admissionCode": "ADMISSION_OPEN",
+            "emittedEvents": [
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "persona"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "model"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "capability"
+              },
+              {
+                "name": "agent-setup/admission-decided",
+                "detail": "ADMISSION_OPEN"
+              }
+            ]
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "wakes": [
+    {
+      "seq": 13,
+      "userHead": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15fuult1qf2p:1:a6wake%3Av1%3A1%3A1077841a]\nNew review work is ready.\n\nreviewer: inst-15fuult1qf2p\nrootSession: session-c1-smoke-a6-2026-11-05T14-18-07\nrequestId:\n- ctrl-0g8yvcm1wsnp1t05h97xk1tp\nDecide or escalate with ",
+      "replyTools": [
+        "team_list_pending_control"
+      ],
+      "replyCalls": [
+        {
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+            "requestToken": "c1-a6-list-0"
+          }
+        }
+      ],
+      "toolResults": []
+    },
+    {
+      "seq": 14,
+      "userHead": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15fuult1qf2p:1:a6wake%3Av1%3A1%3A1077841a]\nNew review work is ready.\n\nreviewer: inst-15fuult1qf2p\nrootSession: session-c1-smoke-a6-2026-11-05T14-18-07\nrequestId:\n- ctrl-0g8yvcm1wsnp1t05h97xk1tp\nDecide or escalate with ",
+      "replyTools": [
+        "team_resolve_control"
+      ],
+      "replyCalls": [
+        {
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-05T14-18-07",
+            "requestToken": "c1-a6-res-1",
+            "requestId": "ctrl-0g8yvcm1wsnp1t05h97xk1tp",
+            "decision": "allow"
+          }
+        }
+      ],
+      "toolResults": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-05T14-18-07\",\"pending\":[{\"requestId\":\"ctrl-0g8yvcm1wsnp1t05h97xk1tp\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-05T14-18-07\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-15jl9dl0a74l\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-15jl9dl0a74l\"},\"targetInstanceId\":\"inst-15jl9dl0a74l\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1\",\"status\":\"pending\",\"createdAt\":\"2026-11-05T14:18:21.904Z\",\"requestSequence\":10,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:8ec3665ae21005ed217e5b560c164fea7d7a424cad9ff81e12462e2dd07b24af\",\"summary\":\"PA ask case=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffeb"
+      ]
+    },
+    {
+      "seq": 15,
+      "userHead": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15fuult1qf2p:1:a6wake%3Av1%3A1%3A1077841a]\nNew review work is ready.\n\nreviewer: inst-15fuult1qf2p\nrootSession: session-c1-smoke-a6-2026-11-05T14-18-07\nrequestId:\n- ctrl-0g8yvcm1wsnp1t05h97xk1tp\nDecide or escalate with ",
+      "replyTools": [],
+      "replyCalls": [],
+      "toolResults": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-05T14-18-07\",\"pending\":[{\"requestId\":\"ctrl-0g8yvcm1wsnp1t05h97xk1tp\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-05T14-18-07\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-15jl9dl0a74l\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-15jl9dl0a74l\"},\"targetInstanceId\":\"inst-15jl9dl0a74l\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1\",\"status\":\"pending\",\"createdAt\":\"2026-11-05T14:18:21.904Z\",\"requestSequence\":10,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:8ec3665ae21005ed217e5b560c164fea7d7a424cad9ff81e12462e2dd07b24af\",\"summary\":\"PA ask case=tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffeb",
+        "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0g8yvcm1wsnp1t05h97xk1tp\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-15fuult1qf2p\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-05T14-18-07\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-15jl9dl0a74l\"},\"targetInstanceId\":\"inst-15jl9dl0a74l\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:8ec3665ae21005ed217e5b560c164fea7d7a424cad9ff81e12462e2dd07b24af\",\"authorityScope\":{\"operationClass\":\"tool-invoke\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"c1-plane-realm-2026-11-05T14-18-07|tool:bash\"}}},\"requestSequence\":10,\"decisionSequence\":11,\"createdAt\":\"2026-11-05T14:18:23.426Z\",\"reviewCapability\":{\"source\":\"blueprint-officer\",\"entry\":\"allow\",\"effectiveReviewAuthority\":\"leader\",\"approvalCaseId\":\"case-0esdge5031nfma0el2tmr0b6\",\"currentLegRequestId\":\"ctrl-0g8yvcm1wsnp1t05h97xk1tp\",\"legOrdinal\":1,\"scopeFingerprint\":\"session-c1-sm"
+      ]
+    }
+  ],
+  "leaderWakeCount": 0,
+  "memberToolResults": [
+    "bash · exit=0\n> a6-allow-executed\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+  ],
+  "memberDoneSeen": true,
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-05T14-18-07\n",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T14-18-07/workspace/c1-a6-allow-2026-11-05T14-18-07.txt",
+  "ledger": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-04kgw1d15oa61e05gmqmf03p",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-15jl9dl0a74l",
+        "correlation": "call-c1-p4jiw4es",
+        "createdAt": "2026-11-05T14:18:20.281Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0g8yvcm1wsnp1t05h97xk1tp",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-15jl9dl0a74l",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T14-18-07:inst-15jl9dl0a74l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-15jl9dl0a74l-bash:hexec:6526e83f-0997-42f4-a807-ce9c92808057-1",
+        "createdAt": "2026-11-05T14:18:21.904Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-04kgw1d15oa61e05gmqmf03p",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-05T14:18:21.605Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0g8yvcm1wsnp1t05h97xk1tp",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-15fuult1qf2p",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-05T14:18:23.415Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-04kgw1d15oa61e05gmqmf03p",
+        "createdAt": "2026-11-05T14:18:21.859Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0g8yvcm1wsnp1t05h97xk1tp",
+        "createdAt": "2026-11-05T14:18:23.732Z"
+      }
+    ],
+    "error": null
+  },
+  "selfReview": {
+    "ok": true,
+    "promptStatus": 200,
+    "doneSeen": true,
+    "wakes": 0,
+    "leaderWakes": 0,
+    "officerWakes": 0,
+    "leaderNotifications": 7,
+    "selfRequestId": "ctrl-1lc9fk11mqfnfy168muob00k",
+    "selfActionName": "team-tool-execute",
+    "selfDecision": {
+      "sequence": 19,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-1lc9fk11mqfnfy168muob00k",
+      "decision": "allow",
+      "decider": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "createdAt": "2026-11-05T14:18:30.583Z"
+    },
+    "leaderDecided": true,
+    "executed": true,
+    "execText": "c1-a6-self-2026-11-05T14-18-07\n",
+    "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T14-18-07/workspace/c1-a6-self-2026-11-05T14-18-07.txt",
+    "requestId": "ctrl-1lc9fk11mqfnfy168muob00k"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "promptStatus": 200,
+  "doneSeen": false,
+  "requestId": "ctrl-1ww7pw714asytc0ouvpbt1az",
+  "transfer": null,
+  "decision": null,
+  "leaderNotifications": 3,
+  "executed": false,
+  "execText": "",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T14-57-47/workspace/c1-a6-handoff-2026-11-05T14-57-47.txt"
+}

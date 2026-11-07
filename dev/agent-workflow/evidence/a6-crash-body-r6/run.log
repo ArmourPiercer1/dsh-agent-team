@@ -1,0 +1,16 @@
+[2026-11-07T16:01:27.674Z] c1 real-host smoke — stamp 2026-11-07T16-01-27
+[2026-11-07T16:01:27.675Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-07T16:01:27.675Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-07T16:01:27.675Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-crash-body-r6
+[2026-11-07T16:01:29.400Z] ports: host=3866 mock=3867
+[2026-11-07T16:01:34.410Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-07T16:01:34.412Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-07T16:01:34.419Z] mock model listening on 3867
+[2026-11-07T16:01:37.417Z] host booted at http://127.0.0.1:3866; row ready — toolCount=15
+[2026-11-07T16:01:37.417Z] ── L0: discovery ──
+[2026-11-07T16:01:37.836Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-07T16:01:37.836Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-07T16:01:37.837Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-07T16:01:37.838Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-07T16:01:41.429Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-1g4u3l2a38","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-07T16-01-27","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:54b2e04c369dcd73b111265c9f947185cb83524222d399bfc44738cc9de80ad9"},"createdAt":"2026-11-07T16:01:37.876Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-07T16:01:47.547Z] PASS A6-16b: a Host crash with the body STARTED but the result not durable records execution-outcome-unknown and never replays the body — mode=body restart=ok decision=allow consBefore=1 consAfter=1 fileBefore=0 fileAfter=0 bodyStart=true abandon=execution-outcome-unknown revived=false

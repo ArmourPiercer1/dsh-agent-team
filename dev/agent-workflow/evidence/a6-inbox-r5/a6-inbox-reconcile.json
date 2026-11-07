@@ -1,0 +1,20 @@
+{
+  "busySeen": false,
+  "wakesBefore": 1,
+  "wakesAfterRestart": 1,
+  "wakesAfterDrain": 1,
+  "intentBefore": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-06T09-19-05",
+      "reviewerInstanceId": "inst-16wscpl0qtmt",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-06T09-19-05:inst-16wscpl0qtmt:1:a6wake%3Av1%3A1%3Af7910e61",
+    "workFingerprint": "a6wake:v1:1:f7910e61",
+    "status": "accepted"
+  },
+  "rowsAfterRestart": [],
+  "rowsAfterDrain": [],
+  "restartError": null,
+  "mockRequests": 12
+}

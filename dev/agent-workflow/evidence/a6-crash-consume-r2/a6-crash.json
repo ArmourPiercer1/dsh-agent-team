@@ -1,0 +1,187 @@
+{
+  "mode": "consume",
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0r7wdcp00jdk",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T21-10-25:inst-0r7wdcp00jdk:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0r7wdcp00jdk-bash:hexec:56806043-0f83-484b-ac81-3d6a6f1dc50f-1",
+    "approvalCaseId": "case-0w15p3x1icpmki1fiv5nj1t9",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-05T21:10:39.697Z"
+  },
+  "beforeKill": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0r7wdcp00jdk",
+        "correlation": "call-c1-ytwjaqcg",
+        "approvalCaseId": "case-06t0au31ub2maw1v68avh038",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:10:38.078Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0r7wdcp00jdk",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T21-10-25:inst-0r7wdcp00jdk:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0r7wdcp00jdk-bash:hexec:56806043-0f83-484b-ac81-3d6a6f1dc50f-1",
+        "approvalCaseId": "case-0w15p3x1icpmki1fiv5nj1t9",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:10:39.697Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-05T21:10:39.428Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0srhu9d1t8bg",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-05T21:10:41.183Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "createdAt": "2026-11-05T21:10:39.652Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "createdAt": "2026-11-05T21:10:41.273Z"
+      }
+    ],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "durable": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0r7wdcp00jdk",
+        "correlation": "call-c1-ytwjaqcg",
+        "approvalCaseId": "case-06t0au31ub2maw1v68avh038",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:10:38.078Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0r7wdcp00jdk",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-05T21-10-25:inst-0r7wdcp00jdk:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0r7wdcp00jdk-bash:hexec:56806043-0f83-484b-ac81-3d6a6f1dc50f-1",
+        "approvalCaseId": "case-0w15p3x1icpmki1fiv5nj1t9",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:10:39.697Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-05T21:10:39.428Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0srhu9d1t8bg",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-05T21:10:41.183Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-030kb1o0t0az4f0gf0zte1or",
+        "createdAt": "2026-11-05T21:10:39.652Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+        "createdAt": "2026-11-05T21:10:41.273Z"
+      }
+    ],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "restart": {
+    "error": null
+  },
+  "decisionAfter": {
+    "sequence": 11,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-0ufc5ge0769bk108aagcs1wy",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-0srhu9d1t8bg",
+      "kind": "instance",
+      "role": "member"
+    },
+    "createdAt": "2026-11-05T21:10:41.183Z"
+  },
+  "revived": false,
+  "consBefore": 1,
+  "consAfter": 1,
+  "beforeFileCount": 0,
+  "fileCount": 0
+}

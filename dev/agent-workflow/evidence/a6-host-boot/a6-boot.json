@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 5,
+  "runtime": "real Host 0.2.0-rc.2",
+  "config": {
+    "alpha6ReviewRouting": true,
+    "alpha6WakeIntentPath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-rootwiring/tests/homes/c1-smoke-2026-11-04T14-47-31/alpha6-wake-intents"
+  },
+  "toolCount": 15,
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "wakeSeamPresent": true,
+  "note": "The Host booted the opted-in v5 Team: the durable intent path was configured and the live wake seam existed, otherwise the plugin refuses the boot."
+}
