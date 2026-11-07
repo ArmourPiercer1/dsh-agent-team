@@ -230,6 +230,11 @@ a `confined-terminal` result. `preflightLaunchers` varies between boots (3 vs 5)
 it counts the realm's own attach-time probes; it is disclosed and deliberately **not** an
 agreement row.
 
+> **2026-11-13 勘误（CORRECTION）**：上面这一段（原句保留，不重写）的**结论与原因是错的**。
+> 受治命令正文**确实**在 shell 子进程的 `argv` 里，`payloadInLaneSightings=0` 是**采样漏抓**，
+> 不是通道性质。原文保留为历史；完整更正、实测数字与影响见文末 dated 勘误块
+> （`## 2026-11-13 — 勘误`）。
+
 ## 6. Two-run agreement
 
 From [`agreement.txt`](./agreement.txt) (the same command, two boots):
@@ -332,3 +337,90 @@ itself (the old "no production caller" sentence was stale; the refusal is unchan
   itself forbids (`candidateClaimEligibility` is false by construction). A refusal that
   spends **zero** host starts is the correct fail-closed state until the read-driver
   contract exists.
+
+## 2026-11-13 — 并发上限 2 → 6（所有者裁决，按本机测量）
+
+所有者批准解除旧的"每机最多 2 个并发 dev Host"总限制。本机实测：**30 GiB 内存（可用约 25 GiB）、16 vCPU**，
+单个 dev Host（Host + confined 子进程）峰值远低于 1 GiB。取 **6** 并发：内存留约 5 倍余量，核心留给 agent 自身进程；
+**每个 subagent 同时最多 2 个 boot** 的独立约束不变。
+
+`DEV_LIVE_SLOT_LIMIT` 是唯一常量。两条并发法则测试已改为**由常量驱动**（先占满 `DEV_LIVE_SLOT_LIMIT` 个槽，再断言
+第 N+1 个被 `DEV_LIVE_LIMIT_REACHED` 拒绝，然后释放一个并断言重试被接纳），并把数字本身钉在一处——改数字必须是一次
+有意的编辑，而不是顺手调参。
+
+## 2026-11-13 — 勘误（CORRECTION）：`payloadInLaneSightings=0` 不是"argv 里看不到命令"
+
+**性质**：安全语义级别的错误更正。本节**只追加**；§5 的原文与 `agreement.txt` / `runs/bootNN/`
+的捕获数字**一字未改**（它们是当时真实的采样结果）。不改任何矩阵等级、`V@B`、STATUS 数字。
+
+### 旧断言（错）
+
+§5 第 223–226 行原文：
+
+> `payloadInLaneSightings` is **0 and is not used as a witness**: the confined terminal
+> writes the command text to a PTY, so the command never appears in any process's `argv`
+> (a property of the face, measured).
+
+即："confined terminal 把命令写进 PTY，所以命令正文永不出现在任何进程的 `argv`；这是该面的
+（已实测的）性质。"这句话被后续多处文档当作解释引用。
+
+### 实测与代码推翻它
+
+- **代码**：`packages/runtime/team-services/src/terminal.ts:535` 是
+  `argv: [program, '-c', text]`——**命令正文就在 `bash -c` 的 argv 里**；
+  `:538` 是 `stdio.stdin: 'ignore'`，stdout/stderr 是 pipe。**没有 PTY 可写**。
+  `sessionId` 叫 `confined-pty-N` 只是 `terminal.ts:489` 的自增 label，不是 PTY（`ptyHolders=0`）。
+- **实测**：Face C 侦察（PR **#660**，分支 `recon/c-shell-20261113`，记录等级 `DEV-LIVE`、
+  `eligible=false`、候选 SHA `235e1af8b`、宿主 `639ed01539`）在同一受限终端面上两 boot
+  实测 `runs/boot01/counters.json` `payloadInLaneSightings=3`、
+  `runs/boot02/counters.json` `payloadInLaneSightings=2`（该报告 §D-1 的散文写 2 / 1，
+  与自己的 `counters.json` 不一致——**以 JSON 捕获为准**；按 pid 去重可复核：
+  boot01 的 `/bin/bash -c … cat '<world>/workspace/in-lane.txt'` 子进程及其命令替换子 shell
+  共 3 个 pid）。同两 boot `ptyHolders=0`、`baseBwrapWithMarkers=0`，即：**不是 PTY，而是 argv**。
+- **本 lane 的 0 是采样漏抓**：本 driver 的 `/proc` 采样循环要读 mountinfo，有效间隔约 240 ms
+  （`procBatches` 315–317 / ~75 s），而 `bash` 子进程生命周期常常短于该间隔；同一面在
+  更细的采样下就能抓到。**0 从来没有证明"看不见"。**
+
+### 正确结论
+
+**受治 Member 执行的命令正文，对同机其它进程可见**：它出现在 shell 子进程的
+`/proc/<pid>/cmdline` 里（该文件 0444，同 UID 及其它本地用户均可读）。这是一条**进程列表
+泄漏面**，必须在任何"受治 = 不可见"的表述里显式披露。
+
+**它不是什么**：不是 lane 隔离的失败。in-lane/out-of-lane 的判定、`IO_READ_DENIED`、0 字节外泄、
+`baseBwrapWithMarkers=0` 与 launcher 计数全部**不受影响**，本节不移动任何结论、不降任何等级。
+它**是**一条必须知道的泄漏面：命令正文（含其中的路径、参数、可能是秘密的字符串）会被同机
+进程读到；需要正文保密时，正确做法是把秘密从命令行移到文件/fd 里，而不是假定 argv 不可见。
+
+### 影响（谁必须改读法）
+
+- **不得**再把 `payloadInLaneSightings=0` 当作"payload 不可见"的支持证据；引用它时必须说明
+  "0 = 本轮采样未捕到"，且不能推出任何性质。
+- `tests/world-factory/drivers/a5sf-live-member/run-boot.mjs` 的归因注释原写
+  "the command never appears in any process argv" —— 同上，已于 2026-11-13 改为符合实测的
+  描述（**只改注释，不改采样逻辑、不改 judge、不改 agreement 行**）。因此本目录
+  `driver-digest.json` 里记录的 `driverSha256`（`fe9d5d68…`，2026-11-07 那两 boot 的
+  driver 原文哈希）**不再等于当前文件**；差异仅限该注释块，逻辑逐字节未变。
+- 派生文档（矩阵 §1.5、`docs/STATUS.md` 的 dated 快照）各自在本轮追加 dated 勘误块；历史块保持原样。
+
+### 顺带核查：`payloadInLane` 这个计数器测的是什么
+
+读 `tests/world-factory/drivers/a5sf-live-member/run-boot.mjs` 的采样逻辑（`scanProc` +
+`sightingPids('payload-in-lane')`）：它数的是**在本 Member turn 窗口内、`/proc/<pid>/cmdline`
+包含 in-lane 夹具路径字符串的**去重 pid 数**——也就是"命令正文在某进程 argv 里被看见"这件事本身。
+
+- **计数器是对的，结论是错的**：这个指标测的正是"可见性"，不是别的东西；`0` 与"不可能看见"
+  至少有一个错，错的是结论。
+- **但它的用法有两处缺陷**（本轮不改代码，只记录）：
+  1. **0 不可读作缺席**：约 240 ms 的采样间隔抓不到短命子进程，0 只能读作"本轮未捕到"。
+     正证据必须用非零（非零即证明可见）；负结论不能用它（仪器缺陷记录见 `a5sf-recon-shell` §E-1）。
+  2. **它被当成精确相等的 agreement 行**：`buildAgreement` 的 `keys` 含 `payloadInLane`，
+     两次 boot 数字不等就 `agreeing=false`。而一次诚实的 sighting 计数**本来就会随采样抖动**
+     （实测 3 vs 2），于是这项配置在系统性地**奖励 0**——有人会把"抓到 0"当成"跑得干净"。
+- **未来该看哪个指标**：
+  - "命令是否可见" → `payloadInLaneSightings >= 1` 的**布尔**（可见性见证），作为**记录项/断言**，
+    不要求双跑计数相等（要么把它从 agreement `keys` 里移除，要么比较布尔而非计数）；
+  - "命令是否真的跑过" → 仍是 `confinedTurnLaunchers`（provider launcher，按 `--confined-exec-stream`
+    且排除 attach 探针）；这两者测的是**两个不同的轴**，不能互相替代；
+  - 若将来要回答"正文对谁可见"，应主动读**命令运行中**的 `/proc/<pid>/cmdline`（例如让命令
+    `sleep` 一段时间再抓），而不是靠既有的短命窗口采样。

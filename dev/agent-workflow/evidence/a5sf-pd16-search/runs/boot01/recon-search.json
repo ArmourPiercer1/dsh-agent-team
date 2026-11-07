@@ -1,0 +1,520 @@
+{
+  "schema": "a5sf-recon-search/1",
+  "at": "2026-11-07T17:18:20.170Z",
+  "question": "does the governed Member's model-visible grep/glob execute the packaged rg on the CONFINED Member subprocess face, or on the inherited host service?",
+  "transcriptFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd16-search-boot-tests-homes-u5u5a5sfsub1-20261107T17-17-05Z-workspace--/session-team-child-0226b704a7da0775ef20a7e9fd467475/session.v4.jsonl.zstd",
+  "samples": [
+    {
+      "id": "call-rs-01-grep-inlane",
+      "label": "grep-inlane-hit",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_INLANE_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "Found 2 matches\n\nin-lane.txt\nLine 1: A5SF_RS_INLANE_NEEDLE\n\nsub/nested.txt\nLine 1: A5SF_RS_INLANE_NEEDLE"
+    },
+    {
+      "id": "call-rs-02-grep-outlane",
+      "label": "grep-out-of-lane",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_OUTLANE_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/out-of-lane"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)"
+    },
+    {
+      "id": "call-rs-03-grep-ignore",
+      "label": "grep-gitignore",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_IGNORED_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "Found 1 match\n\nignored.txt\nLine 1: A5SF_RS_IGNORED_NEEDLE"
+    },
+    {
+      "id": "call-rs-04-grep-hidden",
+      "label": "grep-hidden-vcs",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_HIDDEN_NEEDLE",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "No matches found"
+    },
+    {
+      "id": "call-rs-05-grep-nomatch",
+      "label": "grep-no-match",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_ABSENT_NEEDLE_9f13",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "No matches found"
+    },
+    {
+      "id": "call-rs-06-grep-badregex",
+      "label": "grep-invalid-regex",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "[",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: grep pattern rejected by ripgrep: rg: regex parse error:\n    (?:[)\n       ^\nerror: unclosed character class"
+    },
+    {
+      "id": "call-rs-07-glob-workspace",
+      "label": "glob-workspace",
+      "tool": "glob",
+      "arguments": {
+        "pattern": "**/*.txt",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": false,
+      "text": "ignored.txt\nsub/nested.txt\nclean.txt\n.hidden/hidden.txt\nin-lane.txt"
+    },
+    {
+      "id": "call-rs-08-glob-outlane",
+      "label": "glob-out-of-lane",
+      "tool": "glob",
+      "arguments": {
+        "pattern": "*",
+        "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/out-of-lane"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: glob subprocess failed before reporting an outcome (ripgrep provider failure)"
+    },
+    {
+      "id": "call-rs-09-grep-parent",
+      "label": "grep-parent-dir",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_OUTLANE_NEEDLE",
+        "path": ".."
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)"
+    },
+    {
+      "id": "call-rs-10-grep-slow",
+      "label": "grep-timeout",
+      "tool": "grep",
+      "arguments": {
+        "pattern": "A5SF_RS_ABSENT_NEEDLE_9f13",
+        "path": "/usr"
+      },
+      "issued": true,
+      "resultPresent": true,
+      "isError": true,
+      "text": "Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)"
+    }
+  ],
+  "process": {
+    "host": {
+      "pid": 99,
+      "cmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+      "ns": {
+        "mnt": "mnt:[4026532395]",
+        "pid": "pid:[4026532396]",
+        "net": "net:[4026531833]",
+        "user": "user:[4026532403]",
+        "cgroup": "cgroup:[4026531835]"
+      },
+      "mountinfo": {
+        "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+        "lines": 51
+      },
+      "status": {
+        "NSpid": "99",
+        "CapEff": "0000000000000000",
+        "NoNewPrivs": "1",
+        "Seccomp": "2"
+      }
+    },
+    "rgSightings": [],
+    "confinedLaunchers": [
+      {
+        "at": "2026-11-07T17:18:14.993Z",
+        "pid": 190,
+        "ppid": 99,
+        "state": "R",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --abi-probe",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "190",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:15.033Z",
+        "pid": 191,
+        "ppid": 99,
+        "state": "S",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg selective --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/selective",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "191",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:15.073Z",
+        "pid": 195,
+        "ppid": 99,
+        "state": "R",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg badhandled --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/badhandled",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "195",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:15.113Z",
+        "pid": 196,
+        "ppid": 99,
+        "state": "R",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/net",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "196",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:18.289Z",
+        "pid": 213,
+        "ppid": 99,
+        "state": "S",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34bb-vp0e9h.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34bb-vp0e9h --exit-passthrough",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "213",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:18.409Z",
+        "pid": 241,
+        "ppid": 99,
+        "state": "R",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34eo-jt7y6l.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34eo-jt7y6l --exit-passthrough",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "241",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      },
+      {
+        "at": "2026-11-07T17:18:18.531Z",
+        "pid": 257,
+        "ppid": 99,
+        "state": "S",
+        "kind": "confined-launcher",
+        "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34hz-gpeqbd.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34hz-gpeqbd --exit-passthrough",
+        "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+        "isHostChild": true,
+        "status": {
+          "NSpid": "257",
+          "CapEff": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "ns": {
+          "mnt": "mnt:[4026532395]",
+          "pid": "pid:[4026532396]",
+          "net": "net:[4026531833]",
+          "user": "user:[4026532403]",
+          "cgroup": "cgroup:[4026531835]"
+        },
+        "mountinfo": {
+          "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+          "lines": 51
+        }
+      }
+    ],
+    "bwrap": 1,
+    "rgArgv": [],
+    "distinctRgPpid": [],
+    "allRgHostChildren": false,
+    "sameMntNsAsHost": true,
+    "samePidNsAsHost": true,
+    "sameMountinfoAsHost": true
+  },
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-07T17:18:14.952Z",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/out-of-lane",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 2,
+      "observedAt": "2026-11-07T17:18:18.236Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 3,
+      "observedAt": "2026-11-07T17:18:18.261Z",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 4,
+      "observedAt": "2026-11-07T17:18:18.323Z",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 5,
+      "observedAt": "2026-11-07T17:18:18.382Z",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 6,
+      "observedAt": "2026-11-07T17:18:18.442Z",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 7,
+      "observedAt": "2026-11-07T17:18:18.501Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/out-of-lane",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 8,
+      "observedAt": "2026-11-07T17:18:18.559Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 9,
+      "observedAt": "2026-11-07T17:18:18.594Z"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-06oi8u902ggh",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:1bce49656b8c3bf7ec61a180dae6b424",
+      "method": "spawn",
+      "locator": "/usr",
+      "decision": "deny",
+      "decidedBy": "IO_READ_DENIED",
+      "sequence": 10,
+      "observedAt": "2026-11-07T17:18:18.618Z"
+    }
+  ],
+  "ownership": {
+    "worldId": "u5u5a5sfsub1-20261107T17-17-05Z",
+    "runnerPid": 3,
+    "runnerStartedAt": "2026-11-07T17:18:11.982Z",
+    "hostPid": 99,
+    "hostPort": 3188,
+    "mockPort": 3497
+  }
+}

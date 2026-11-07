@@ -1,0 +1,25 @@
+# Pre-existing reds on the base commit (NOT caused by this branch)
+
+Base = 743955e4ab81e15736727d6cf4d68b7d3b47843a
+
+## registries.test.mjs — stale expected suite list
+
+$ git show origin/master:tests/world-factory/suites/150-a5sf-read.mjs | head -1
+/**
+
+$ git show origin/master:tests/world-factory/registries.test.mjs | grep -c "a5sf-read"
+0
+
+$ git diff --stat origin/master -- tests/world-factory/registries.test.mjs
+(empty = the branch does not touch the pin)
+
+## doc-consistency-controls.mjs — POS fixtures use the retired current_contract shape
+
+$ git show origin/master:scripts/doc-consistency-controls.mjs | grep -n "current_contract"
+64:current_contract:
+
+$ git diff --stat origin/master -- scripts/docs-sync.mjs scripts/doc-consistency-controls.mjs
+(empty = unmodified by this branch)
+
+## real-tree docs check (this branch):
+docs:sync --check: docs=117 notes=4 plans=79(0 declaring) findings=0 blocking=0 contracts=20 pairs compared

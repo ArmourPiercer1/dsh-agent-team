@@ -1,0 +1,12 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-pd16-confined-search",
+  "summary": "PD-16 FIX: the confined SEARCH native tool module (`src/plugin/live/confined-search-tool.mjs`) is plain JS loaded through the route-C seam by the byte-copied realm row (`a5sf-realm-row.mjs`, placement 120). It registers the model-visible `grep`/`glob` by delegating to the pinned host package's PUBLIC per-tool faces (`applyGrepTool`/`applyGlobTool`), so tsc never emits it and it rides the dist mirror at its repo-relative layout; the realm row resolves it with `new URL('./confined-search-tool.mjs', import.meta.url)`, so without this entry the installed face would fail at member setup with ERR_MODULE_NOT_FOUND — not at build time.",
+  "migratedFrom": "new lane (PD-16 fix) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/confined-search-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-search-tool.mjs"
+    }
+  ]
+}
