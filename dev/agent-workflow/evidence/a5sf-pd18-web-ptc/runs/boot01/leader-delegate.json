@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sfpd18-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-lm-team",
+      "requestToken": "a5sf-pd18-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sfpd18-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd18-web-ptc/tests/homes/u5u5a5sfsub1-20261107T22-11-05Z/workspace",
+      "prompt": "a5sf-pd18-turn: run the two read probes exactly once each, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-lm-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0dvpdt71qrwk\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-0bd5b545621fd7ba1f559c40274110a7\",\"operationId\":\"op-0q3oaxf1yp0v5i0jbxmwl1g5\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-pd18-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_PD18_MEMBER_DONE Error: unknown tool \\\"web_fetch\\\"\"}},\"requestToken\":\"a5sf-pd18-turn-delegate\"}"
+  }
+}

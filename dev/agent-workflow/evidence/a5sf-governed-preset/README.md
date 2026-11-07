@@ -269,3 +269,25 @@ register as an agent-scoped shadow).
 
 这不是为了让门禁变绿而放宽：法则的牙齿（未登记即红、深层导入即红、登记行必须真的调用工厂）一个都没有动。
 `check-artifacts-committed` 随后在 dist 重建后 `verdict=ok compared=1971`。
+
+## 2026-11-13 — PD-18: the surface shrinks (fail-closed, a capability regression)
+
+The `tool-surface.json` in this directory was REGENERATED from the shipped
+`cordis.patch.yml` after PD-18. The governed preset now declares **25** rows
+instead of 28: `tool-web` (→ `web_fetch`/`web_search`) and
+`workflow-ptc` + `tool-workflow` (→ `workflow`) are **removed**.
+
+Why: on this preset those two executors resolved to BASE host services and
+produced `0` `a5sf-guard-consult/1` facts. `web_fetch` ran on the inherited
+`ctx.web` provider (its refusal is that provider's SSRF policy), and `workflow`
+executed model-written JavaScript in a real PTC child under the host sandbox
+policy. Neither could be routed onto a governed face inside the PD-18 budget
+(the web face needs a composition-owned transport the shipped layer does not
+have; the confined subprocess face refuses interpreter argv by design).
+
+This is **not a fix that keeps the capability**: a governed Member can no
+longer use web or PTC at all. The standard preset still declares both rows, so
+the capability exists outside the governed preset. The pin is
+`tests/world-factory/a5sf-pd18-web-ptc.test.mjs` (surface + typed refusal +
+web allow/deny arms) and its live pair in
+`dev/agent-workflow/evidence/a5sf-pd18-web-ptc/`.

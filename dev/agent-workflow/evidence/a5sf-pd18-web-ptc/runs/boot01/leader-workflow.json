@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-07T22:13:15.092Z",
+  "note": "the BOOT_ROOT (standard preset) workflow turn: the executor is NOT broken by the governed-preset removal",
+  "call": {
+    "id": "call-a5sfpd18-workflow-leader",
+    "name": "workflow",
+    "arguments": {
+      "script": "return 42",
+      "meta": {
+        "name": "pd18-return-42",
+        "description": "Return the deterministic value 42."
+      }
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "workflow \"pd18-return-42\" completed (0 agents).\nReturn value:\n42"
+  }
+}
