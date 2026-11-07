@@ -235,13 +235,13 @@
     },
     {
       "path": "packages/runtime/control/service.ts",
-      "sha256": "d2d911fd14bad44050354dbb67cb538b261a4ce7f1bcc327b3ca5e47289224de",
+      "sha256": "dbd686ec55db502b15996444c9561b789c53128bf7c2a70afba7a435268b3a9b",
       "pr": "PR #585 (Alpha.6 closing round, Draft)",
       "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
     },
     {
       "path": "packages/runtime/control/types.ts",
-      "sha256": "95469aad554e77e89d9e448d81f88b7fa6ccf11f0d9841caa0552636b0935ad1",
+      "sha256": "2d3fb252480434d43bac519d72db3ff748dba3f5abcf7f8bba7809f5d6097530",
       "pr": "PR #585 (Alpha.6 closing round, Draft)",
       "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
     }
