@@ -82,6 +82,7 @@ import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'
 import {
+  A5SF_GOVERNED_REALM_KEY,
   A5SF_MEMBER_AUTHORITY_KEY,
   A5SF_MEMBER_POLICIES_KEY,
   createProductRealmProvider,
@@ -112,7 +113,7 @@ export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
  * REQUIRES `config.blueprintSource`; a row that omits the declaration and sets
  * `a5sfMemberAuthority` derives the Member ceilings from that same blueprint.
  */
-export { A5SF_MEMBER_POLICIES_KEY, A5SF_MEMBER_AUTHORITY_KEY }
+export { A5SF_GOVERNED_REALM_KEY, A5SF_MEMBER_POLICIES_KEY, A5SF_MEMBER_AUTHORITY_KEY }
 
 /**
  * The row-config key carrying the NATIVE tool modules to re-mount inside each
@@ -326,11 +327,38 @@ export function a5sfRealmConfigOf(config) {
   const rawPolicies = settings === undefined ? undefined : settings[A5SF_MEMBER_POLICIES_KEY]
   const rawAuthority = settings === undefined ? undefined : settings[A5SF_MEMBER_AUTHORITY_KEY]
   const rawWebFace = settings === undefined ? undefined : settings[A5SF_WEB_FACE_KEY]
+  const rawGoverned = settings === undefined ? undefined : settings[A5SF_GOVERNED_REALM_KEY]
   const hasEvidence = rawEvidence !== undefined && rawEvidence !== null
   const hasPolicies = rawPolicies !== undefined && rawPolicies !== null
   const hasAuthority = rawAuthority !== undefined && rawAuthority !== null
   const hasWebFace = rawWebFace !== undefined && rawWebFace !== null
-  if (!hasEvidence && !hasPolicies && !hasAuthority) {
+  const hasGoverned = rawGoverned !== undefined && rawGoverned !== null
+  // NEUTRAL ENABLEMENT KEY (2026-11-11, owner-ruled governed preset). It is a
+  // boolean marker, never a policy carrier. `false` is REFUSED rather than read
+  // as absent: a half-written opt-out must not look like a clean default.
+  if (hasGoverned && rawGoverned !== true) {
+    throw new TypeError(
+      `agent-bindings: config.${A5SF_GOVERNED_REALM_KEY} must be the boolean true when present (it enables the`
+      + ' composition-provided `teamA5sfRealm` as this row\'s ONLY compiled-realm source; false is refused so a'
+      + ' half-written opt-out can never look like a clean default)',
+    )
+  }
+  // THE FORK GUARD, AT CONFIG TIME (same law as the mount's two-source refusal):
+  // this key says "the service compiles"; a declaration key says "this row
+  // compiles". Both is the exact ambiguity the lane forbids, refused here so a
+  // row misconfiguration cannot reach a Member mount at all.
+  if (hasGoverned && (hasPolicies || hasAuthority)) {
+    const conflicting = [hasPolicies ? A5SF_MEMBER_POLICIES_KEY : null, hasAuthority ? A5SF_MEMBER_AUTHORITY_KEY : null]
+      .filter((key) => key !== null)
+      .join(' + ')
+    throw new TeamServiceInstallError(
+      'REALM_DECLARATION_INVALID',
+      `config.${A5SF_GOVERNED_REALM_KEY} declares the COMPOSITION'S provider as the compiled-realm source, but the row`
+      + ` also carries ${conflicting}; two compiled-realm sources for one Member is ambiguous — keep exactly one`,
+      A5SF_GOVERNED_REALM_KEY,
+    )
+  }
+  if (!hasEvidence && !hasPolicies && !hasAuthority && !hasGoverned) {
     // FAIL CLOSED ON A LONE PROVIDER: a web face configured for a row that is
     // not a5sf-wired would be silently ignored — and "silently ignored
     // confinement" is the exact class this lane refuses. It is a config fault,
@@ -338,8 +366,9 @@ export function a5sfRealmConfigOf(config) {
     if (hasWebFace) {
       throw new TypeError(
         `agent-bindings: config.${A5SF_WEB_FACE_KEY} is present but the row is not a5sf-wired`
-        + ` (needs config.${A5SF_EVIDENCE_PATH_KEY}, config.${A5SF_MEMBER_POLICIES_KEY} or`
-        + ` config.${A5SF_MEMBER_AUTHORITY_KEY}); a configured web face without a realm would never mount`,
+        + ` (needs config.${A5SF_EVIDENCE_PATH_KEY}, config.${A5SF_MEMBER_POLICIES_KEY},`
+        + ` config.${A5SF_MEMBER_AUTHORITY_KEY} or config.${A5SF_GOVERNED_REALM_KEY}); a configured web face without a`
+        + ' realm would never mount',
       )
     }
     return undefined
@@ -411,6 +440,7 @@ export function a5sfRealmConfigOf(config) {
   return Object.freeze({
     ...(evidencePath === undefined ? {} : { evidencePath }),
     ...(memberPolicies === undefined ? {} : { memberPolicies }),
+    ...(hasGoverned ? { governedRealm: true } : {}),
     ...(modules === undefined ? {} : { nativeToolModules: modules }),
     ...(webFace === undefined ? {} : { webFace }),
   })
@@ -749,6 +779,23 @@ export function a5sfAgentToolSurface(root, runtimeAgent) {
  */
 export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member }) {
   if (a5sfConfig === undefined || a5sfConfig === null) return undefined
+  // GOVERNED REALM (2026-11-11): the neutral key promised that the COMPOSITION
+  // provides the compiled realm. A row that carries it and finds no provider
+  // would silently give the Member no realm at all — the exact failure mode a
+  // declared-but-unmounted confinement must never have, so it refuses here. The
+  // provider may answer `undefined` per TEMPLATE (that Member is UNMANAGED);
+  // "no provider at all" is a composition fault, never "no realm".
+  const governedRealm = a5sfConfig.governedRealm === true
+  if (governedRealm) {
+    const provided = typeof provider === 'function' ? provider() : undefined
+    if (provided === undefined || provided === null) {
+      throw new TypeError(
+        `agent-bindings: config.${A5SF_GOVERNED_REALM_KEY} enables the composition-provided \`teamA5sfRealm\` as this`
+        + ' row\'s compiled-realm source, but the composition provides none; a governed row that compiles nothing and'
+        + ' has no provider would leave the Member with NO realm (fail closed rather than silently unmanaged)',
+      )
+    }
+  }
   // PRODUCT ASSEMBLY (2026-11-05): the declaration is a COMPLETE provider —
   // `createProductRealmProvider` wraps the ONE compiler over the declaration
   // the row already parsed. A composition that carries BOTH a declaration and

@@ -93,7 +93,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/product-assembly
  */
-import { type TeamBlueprintV4, type V4MemberIoCeilingAuthoring, type V4ToolBindingAuthoring } from '../../../domain/blueprint/src/index.js';
+import { parseBlueprint, type TeamBlueprintV4, type V4MemberIoCeilingAuthoring, type V4ToolBindingAuthoring } from '../../../domain/blueprint/src/index.js';
 import type { ToolIoRestriction } from '../../member-io-policy/src/types.js';
 import type { A5sfRealmBinding, A5sfRealmMember } from './mount.js';
 /**
@@ -121,6 +121,36 @@ export declare const A5SF_PRODUCT_REALM_SCHEMA: "a5sf-product-member-policies/1"
  * reference must agree with this one).
  */
 export declare const A5SF_MEMBER_AUTHORITY_KEY = "a5sfMemberAuthority";
+/**
+ * The NEUTRAL enablement key of the governed Member realm (2026-11-11,
+ * owner-ruled governed preset).
+ *
+ * WHAT IT IS: a boolean marker that says "the COMPOSITION'S `teamA5sfRealm`
+ * provider is this row's compiled-realm source; the row config compiles
+ * nothing". It carries NO policy, NO blueprint path, NO authority reference and
+ * NO machine path, so the machine-agnostic shipped layer can carry it — and it
+ * cannot fork the compiler: the row has no `memberPolicies` to fork WITH.
+ *
+ * WHY IT EXISTS (measured, `a5sf-face-decl-impact` §6.3): before this key the
+ * only enablement that did not set `config.memberPolicies` was
+ * `a5sfEvidencePath` — an evidence FILE PATH, which the shipped layer's own
+ * header forbids. `a5sfMemberPolicies` and `a5sfMemberAuthority` both set
+ * `memberPolicies`, and a row carrying a declaration AND a provided
+ * `teamA5sfRealm` service is the "two compiled-realm sources" fork the mount
+ * refuses. This key is the third, non-forking option.
+ *
+ * WHAT IT IS NOT: it is not a permission grant and not an authority reference.
+ * The provider behind it is responsible for compiling from the REAL Team facts
+ * (bound blueprint + Alpha.4 authority + the actual Member identity/generation)
+ * through the ONE product compiler; this module never sees those values. A row
+ * that sets this key and combines it with `a5sfMemberPolicies` or
+ * `a5sfMemberAuthority` is refused as the same two-source fork, because the row
+ * would then compile a plan the provider also claims.
+ *
+ * The key is `true` or absent. `false` is refused rather than read as "absent",
+ * so a half-written opt-out can never look like a clean default.
+ */
+export declare const A5SF_GOVERNED_REALM_KEY = "a5sfGovernedRealm";
 /**
  * The residual facts an assembly plan states about what it could NOT bind
  * (policy-source fix, 2026-11-05).
@@ -253,8 +283,28 @@ export interface A5sfProductRealmDeclaration {
  * strictly narrower is accepted and named as a residual.
  */
 export interface A5sfProductRealmParseContext {
-    /** The row's `config.blueprintSource` (a non-blank string; required). */
-    readonly blueprintSource: string;
+    /**
+     * The row's `config.blueprintSource` (a non-blank string; required unless
+     * `boundBlueprint` supplies the ALREADY-RESOLVED blueprint).
+     */
+    readonly blueprintSource?: string;
+    /**
+     * The Team's ALREADY-RESOLVED bound blueprint (2026-11-11, governed preset).
+     *
+     * WHY: a booted Host resolves the Team's bound blueprint through the BP-F
+     * three-case resolver (`resolveBoundBlueprint(teamRootSessionId)`), which is
+     * the ONE authority-bearing read (a bound ref resolves through the live
+     * authority and never the row anchor). Re-parsing `config.blueprintSource`
+     * would be a SECOND resolution of the same fact and could disagree with the
+     * blueprint the Team is actually bound to. Supplying the resolved object here
+     * keeps resolution single-source while the VALIDATION and COMPILATION below
+     * stay the same ONE parser/compiler — this is not a second path, it is the
+     * same path with its input handed in.
+     *
+     * A caller that supplies neither refuses `MEMBER_POLICY_WITHOUT_BLUEPRINT`
+     * exactly as before.
+     */
+    readonly boundBlueprint?: ReturnType<typeof parseBlueprint>;
     /**
      * Provenance marker, INTERNAL to the assembly: `derived` is set only by
      * {@link deriveProductRealmPlan}. It changes no permission fact — the same
@@ -381,6 +431,48 @@ export declare function parseProductRealmDeclaration(raw: unknown, context: A5sf
  * from and changes no permission fact.
  */
 export declare function deriveProductRealmPlan(input: A5sfDerivedRealmInput): A5sfProductRealmPlan;
+/** Input of the governed product path: an ALREADY-RESOLVED bound blueprint. */
+export interface A5sfBoundBlueprintRealmInput {
+    /**
+     * The Team's bound blueprint, resolved by the Host's ONE resolver
+     * (`resolveBoundBlueprint(teamRootSessionId)`) — never re-parsed from a row
+     * source and never re-typed by a config author.
+     */
+    readonly blueprint: ReturnType<typeof parseBlueprint>;
+    /**
+     * The Alpha.4 authority reference the provider read from the LIVE authority
+     * (durable generation + durable admission), consumed verbatim. This module
+     * never evaluates an approval and cannot widen a ceiling from it.
+     */
+    readonly authority: Readonly<{
+        readonly revision: string;
+        readonly admitted: boolean;
+    }>;
+    /**
+     * Member instance generation per templateId, read from the SAME live
+     * authority the reference came from. Absent => `0`, and the plan keeps the
+     * `instance-generation-declared-not-bound` residual (the assembly itself
+     * still reads no TeamDomain row).
+     */
+    readonly instanceGenerations?: Readonly<Record<string, number>>;
+    /** Optional subset of blueprint templates; absent = every ceiling but the leader's. */
+    readonly templateIds?: readonly string[];
+}
+/**
+ * The GOVERNED product path: derive + compile from an ALREADY-RESOLVED bound
+ * blueprint (2026-11-11 owner-ruled governed preset).
+ *
+ * WHY IT EXISTS: the shipped governed provider is built by a booted Host, which
+ * resolves the Team's bound blueprint through its ONE resolver and reads the
+ * live Alpha.4 authority per Member. Re-parsing a config `blueprintSource` in
+ * the provider would either duplicate that fact (a second statement of the
+ * Team's blueprint) or silently replace a bound ref with a row anchor. This
+ * entry point hands the resolved object in and runs the SAME computation
+ * `deriveProductRealmPlan` runs: `declarationFromBoundBlueprint` ->
+ * `parseProductRealmDeclaration` (ONE parser, ONE compiler, ONE reconciliation).
+ * It composes no lane of its own.
+ */
+export declare function deriveProductRealmPlanFromBlueprint(input: A5sfBoundBlueprintRealmInput): A5sfProductRealmPlan;
 /**
  * Build the lazy `{ compiledFor }` provider from a validated plan.
  *

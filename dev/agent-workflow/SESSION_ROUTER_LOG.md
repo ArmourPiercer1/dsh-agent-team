@@ -8165,3 +8165,18 @@ Q7 在起作用，不是缺陷。**唯一的持久窗口是 P5 的发布候选�
 
 规则（写死，后续所有快照）：**发布快照前先验证 `git merge-base --is-ancestor <baseline> master`；
 候选若在独立分支上，必须先把该分支以真合并并入 master，快照才能钉它。**
+
+## 2026-11-11 — GOVERNED-PRESET：可选治理预设的产品装配（lane `task/a5sf-governed-preset-20261111`）
+
+裁决落地：新增**可选** `a5sf-governed-member` 预设（pinned `standard` 逐字复制，仅去掉 `tool-pwsh`），
+Team row 用一个**中性布尔键** `a5sfGovernedRealm: true` 接线；`false` 拒、缺省/null 保持 legacy。
+治理 realm 由**真实产品组合**编译：BP-F `resolveBoundBlueprint`（团队绑定蓝图，非 row anchor）+
+Alpha.4 耐久 overlay generation + MemberInstance 生命周期准入 → `deriveProductRealmPlanFromBlueprint`
+→ 唯一编译器 `compileMemberPolicy`。没有第二套策略编译、没有第二个权限事实源；与
+`a5sfMemberPolicies`/`a5sfMemberAuthority` 同时出现即 `REALM_DECLARATION_INVALID`（配置期 + mount 期双重拒）。
+默认部署零变化：shipped layer 不选任何 preset、不设 `rootPresetId`、Leader 永不进入 Member Realm。
+
+证据：`dev/agent-workflow/evidence/a5sf-governed-preset/README.md`（12/12 G0–G7 产品组合测试，含正向读、
+Member Ceiling 拒绝、生命周期吊销、失效后拒绝、native surface == 执行 provider；工具面 delta 实测
+`tool-surface.json`；DEV-LIVE 双启动对 `run-{1,2}-host.log`）。`a5sf-*.test.mjs` 全量 520 项 516 pass / 0 fail。
+未动 grade / `V@B` / Authority 指针；网络仍 `allow`（deny 语义未改，BL-42 证明不跨 face 复用）。

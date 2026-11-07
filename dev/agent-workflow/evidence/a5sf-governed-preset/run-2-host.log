@@ -1,0 +1,4 @@
+[dsh-agent-team] no bundled skills directory is resolvable from the host entry location — the bundled team skills are NOT registered (install-surface anomaly); the team core proceeds
+dsh web: http://127.0.0.1:3190/?token=g-XWJSUOdGF5wK-cB_mKl8P-Vn2fVs4LEpaKgx8nbz0
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+exit=124

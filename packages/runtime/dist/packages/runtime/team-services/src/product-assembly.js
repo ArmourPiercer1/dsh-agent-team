@@ -122,6 +122,36 @@ export const A5SF_PRODUCT_REALM_SCHEMA = 'a5sf-product-member-policies/1';
  */
 export const A5SF_MEMBER_AUTHORITY_KEY = 'a5sfMemberAuthority';
 /**
+ * The NEUTRAL enablement key of the governed Member realm (2026-11-11,
+ * owner-ruled governed preset).
+ *
+ * WHAT IT IS: a boolean marker that says "the COMPOSITION'S `teamA5sfRealm`
+ * provider is this row's compiled-realm source; the row config compiles
+ * nothing". It carries NO policy, NO blueprint path, NO authority reference and
+ * NO machine path, so the machine-agnostic shipped layer can carry it — and it
+ * cannot fork the compiler: the row has no `memberPolicies` to fork WITH.
+ *
+ * WHY IT EXISTS (measured, `a5sf-face-decl-impact` §6.3): before this key the
+ * only enablement that did not set `config.memberPolicies` was
+ * `a5sfEvidencePath` — an evidence FILE PATH, which the shipped layer's own
+ * header forbids. `a5sfMemberPolicies` and `a5sfMemberAuthority` both set
+ * `memberPolicies`, and a row carrying a declaration AND a provided
+ * `teamA5sfRealm` service is the "two compiled-realm sources" fork the mount
+ * refuses. This key is the third, non-forking option.
+ *
+ * WHAT IT IS NOT: it is not a permission grant and not an authority reference.
+ * The provider behind it is responsible for compiling from the REAL Team facts
+ * (bound blueprint + Alpha.4 authority + the actual Member identity/generation)
+ * through the ONE product compiler; this module never sees those values. A row
+ * that sets this key and combines it with `a5sfMemberPolicies` or
+ * `a5sfMemberAuthority` is refused as the same two-source fork, because the row
+ * would then compile a plan the provider also claims.
+ *
+ * The key is `true` or absent. `false` is refused rather than read as "absent",
+ * so a half-written opt-out can never look like a clean default.
+ */
+export const A5SF_GOVERNED_REALM_KEY = 'a5sfGovernedRealm';
+/**
  * The residual facts an assembly plan states about what it could NOT bind
  * (policy-source fix, 2026-11-05).
  *
@@ -310,7 +340,33 @@ function resolveBoundBlueprint(blueprintSource) {
             + 'so the declared Member permission facts cannot be reconciled with the Team\'s authority-bearing blueprint', 'config.blueprintSource');
     }
 }
-/** Validate the closed authority reference (`{ revision, admitted }`). */
+/**
+ * Resolve the blueprint a declaration is reconciled against.
+ *
+ * ONE resolution rule: an ALREADY-RESOLVED bound blueprint is authoritative
+ * when supplied (the booted Host's BP-F resolver produced it); otherwise the
+ * source string is parsed here. A supplied value that is not a parsed blueprint
+ * object refuses instead of being re-parsed or guessed — a caller that thinks
+ * it handed in an authority and handed in `undefined` must not get "no
+ * constraints".
+ */
+function resolveBoundBlueprintFor(context) {
+    if (context.boundBlueprint !== undefined && context.boundBlueprint !== null) {
+        const bound = context.boundBlueprint;
+        if (typeof bound !== 'object'
+            || typeof bound.blueprintId !== 'string'
+            || typeof bound.revision !== 'string'
+            || typeof bound.schemaVersion !== 'number') {
+            refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', 'the supplied `boundBlueprint` is not a PARSED TeamBlueprint (blueprintId / revision / schemaVersion); '
+                + 'a realm never compiles against an object it cannot identify', 'context.boundBlueprint');
+        }
+        return bound;
+    }
+    return resolveBoundBlueprint(context.blueprintSource);
+}
+/**
+ * Validate the closed authority reference (`{ revision, admitted }`).
+ */
 function authorityRefOf(raw, where) {
     const authority = closedRecord(raw, AUTHORITY_KEYS, where);
     const revision = authority['revision'];
@@ -464,7 +520,7 @@ export function parseProductRealmDeclaration(raw, context) {
     // PRESENCE GATE FIRST: no declaration may be read at all without a blueprint
     // it can be reconciled against. Removing this check would recreate the
     // "two places to write permission facts" hole (see mutation control (a)).
-    const bound = resolveBoundBlueprint(context.blueprintSource);
+    const bound = resolveBoundBlueprintFor(context);
     const declaration = closedRecord(raw, DECLARATION_KEYS, `${A5SF_MEMBER_POLICIES_KEY}`);
     if (declaration['schema'] !== A5SF_PRODUCT_REALM_SCHEMA) {
         refuse('REALM_DECLARATION_INVALID', `${A5SF_MEMBER_POLICIES_KEY}.schema must be ${JSON.stringify(A5SF_PRODUCT_REALM_SCHEMA)}`, `${A5SF_MEMBER_POLICIES_KEY}.schema`);
@@ -616,6 +672,28 @@ export function deriveProductRealmPlan(input) {
     const declaration = deriveProductRealmDeclaration(input);
     return parseProductRealmDeclaration(declaration, {
         blueprintSource: input.blueprintSource,
+        source: 'derived',
+    });
+}
+/**
+ * The GOVERNED product path: derive + compile from an ALREADY-RESOLVED bound
+ * blueprint (2026-11-11 owner-ruled governed preset).
+ *
+ * WHY IT EXISTS: the shipped governed provider is built by a booted Host, which
+ * resolves the Team's bound blueprint through its ONE resolver and reads the
+ * live Alpha.4 authority per Member. Re-parsing a config `blueprintSource` in
+ * the provider would either duplicate that fact (a second statement of the
+ * Team's blueprint) or silently replace a bound ref with a row anchor. This
+ * entry point hands the resolved object in and runs the SAME computation
+ * `deriveProductRealmPlan` runs: `declarationFromBoundBlueprint` ->
+ * `parseProductRealmDeclaration` (ONE parser, ONE compiler, ONE reconciliation).
+ * It composes no lane of its own.
+ */
+export function deriveProductRealmPlanFromBlueprint(input) {
+    const authority = authorityRefOf(input.authority, A5SF_MEMBER_AUTHORITY_KEY);
+    const declaration = declarationFromBoundBlueprint(input.blueprint, authority, input.instanceGenerations, input.templateIds);
+    return parseProductRealmDeclaration(declaration, {
+        boundBlueprint: input.blueprint,
         source: 'derived',
     });
 }
