@@ -263,3 +263,53 @@ deny 已经可以是 OS 拒绝（严格 4/5 / 宽读 5/5，0 次启动）；但*
 `release BLOCKED`。
 
 **一句话**：BL-42 让“OS 拒绝”这半句第一次有证据；它没有让“隔离”或“Member 的 `bash` 不能上网”有证据。
+
+---
+
+## 附录 C — 2026-11-12 附录：§3 的“机制不在那条路径上”对**显式 opt-in 的 Team** 已部分被取代（只追加；§3 原文不改）
+
+**这一条只追加在报告末尾，不编辑 §3 的任何字节。** §3 写于 2026-11-10，它关于 PD-12/PD-13 的结论
+（“机制是对的，但它不在那条路径上”，以及“未装该面的 shipped preset 的 `bash` 不变”）在**默认路径**上
+仍然成立；对**显式 opt-in 的 Team**，它从“全真”变成“部分被取代”。
+
+### C.1 哪半句不再真，哪半句仍然真
+
+- **不再真的半句**：`#648` 之后仓库**ship** 了一个 opt-in 的 governed Member preset 行
+  （`preset-a5sf-governed-member`，operator 在 Team 行上写 `memberPresetId: a5sf-governed-member` 并
+  `a5sfGovernedRealm: true`），`#649` 之后一个真实 Host 上的 **Member turn** 让 confined terminal
+  face 真的成了该 Member `bash` 的执行路径：in-lane 读返回 lane 字节、out-of-lane 读
+  `IO_READ_DENIED`、**0** secret 字节，两个结果都在 Member 自己的 durable transcript 里；**1** 次
+  confined-provider launch 服务 **2** 条命令、带夹具的 base bwrap **0**；两次一致。证据 =
+  `dev/agent-workflow/evidence/a5sf-live-member/README.md`。因此“没有任何 shipped 组合让机制走上
+  Member 的调用路径”这句话，对**显式 opt-in 的 Team** 不再为真。它是 `DEV-LIVE`、no `V@B`。
+- **仍然真的半句**：**默认路径未变**。`standard` 仍是部署默认，shipped layer 不点名任何 preset，没有
+  Team 自动进入 realm；**一个在默认 preset 上的 Member 仍然既没有 confined terminal face、也没有受管
+  shell**——PD-13 的那条 legacy PTY 路径原样存在。所以本附录不能被读成“Members 已受治”。
+
+### C.2 §3 的两个治理洞今天的位置（不改变任何等级 / `V@B` / 发布门）
+
+- **PD-12** 已 `FIXED`（#640）；在 opt-in 受治 preset 上，`bash` 就在 confined face 上，因此该 face 的
+  deny/allow 被求值。
+- **PD-13** 对 **opt-in 受治 Member 的 `bash`** 不再成立（读轴在 face 上）；对 **默认 preset 的 Member**
+  仍然成立（legacy PTY 在 realm 之外）。PD-13 的产品语义裁决**没有**因此自动关闭。
+- 不变：`CANDIDATE-C2` 未运行、`release BLOCKED`、无 `V@B`、无等级；`network: deny`、动态 shell 读、
+  per-Team scratch isolation、PD-5、BL-39 全部维持原状。
+
+### C.3 一般教训：激活窗口（activation window）——比这条证据本身更持久
+
+- **事实**：activation 的顺序是 `createChildSession` → `durability.ensureDurable(childSessionId)` →
+  耐久写 `MemberInstance` 行；而 governed realm 在 `createChildSession` 内挂载，于是它在**行还不存在**
+  的窗口里问 durable authority，读到 `lifecycle=undefined`，把“还没有行”读成“不准入”，每个 live
+  受治 Member 都被 `AUTHORITY_REFUSED` 拒绝。修复 = 只承认 `freshCreate` 窗口，**耐久行永远优先**
+  （`ARCHIVED`/`DISPOSED` 拒绝，`CREATED`/`RUNNING`/`SETTLED` 承认），负控臂 `G5c` 钉住；pinned Host
+  未被触碰，`CORE PATCH BUDGET = 0`。
+- **为什么所有进程内测试都是绿的**：它们把 realm 挂在 `MemberInstance` 行**已经存在**的 roster 上。
+  **进程内测试在行存在之后挂载；产品在行存在之前挂载。夹具的时序比生产更宽松。**
+- **因此这是一类应当被刻意搜寻的缺陷，而不是一次性 bug**：凡是测试装配顺序比产品装配顺序更宽松的
+  地方（先有行再挂载、先有 session 再绑定、先有 durable 状态再解析 authority），都可能藏着一个只在
+  真实 Host 上出现的窗口。§5 的十条仪器缺陷应当增加第 11 条：**夹具顺序比产品顺序更宽松**——它不会
+  让仪器变红；它让被测系统在仪器里永远是绿的。
+
+**一句话**：对显式 opt-in 的 Team，“机制不在那条路径上”已被一个真实 Member turn 部分取代
+（`DEV-LIVE`、no `V@B`）；默认路径与 PD-13 对默认 Member 的结论不变；而这次真正学到的，是**产品在行
+存在之前挂载、测试在行存在之后挂载**——夹具顺序比生产顺序更宽松，是一整类需要主动猎捕的缺陷。
