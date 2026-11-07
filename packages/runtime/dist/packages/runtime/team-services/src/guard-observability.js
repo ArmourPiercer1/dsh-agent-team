@@ -9,7 +9,7 @@
  * call" was an inference from the base Provider having run, not an observation.
  * An in-process callback alone could not fix that for a C2 suite: the suite
  * runs in its own process, the Host in another. This module therefore owns
- * exactly two things, and nothing else:
+ * exactly three things, and nothing else:
  *
  *   1. {@link observeGuard} — an additive wrapper around the ONE guard the
  *      confined Provider already calls. It records the guard's OWN decision
@@ -20,6 +20,11 @@
  *      append-only JSONL transport (and its strict reader). The file is
  *      EVIDENCE TRANSPORT, NOT AUTHORITY: it carries facts the installing
  *      process reported; it grants nothing and is not a ledger.
+ *   3. PD-19 {@link attachGuardToolCallAttribution} — an ATTRIBUTION-ONLY
+ *      carrier that names the `tools/execute` dispatch a consultation happened
+ *      inside, so the fact carries `tool` + `callId` instead of only a
+ *      timestamp and a locator. It is not a policy input and cannot admit,
+ *      refuse, select or reorder anything.
  *
  * FAIL-CLOSED ON THE TRANSPORT: when an observer/sink is supplied and a
  * consultation record cannot be written, the observed call is REFUSED with
@@ -31,6 +36,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/guard-observability
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { appendFile, readFile } from 'node:fs/promises';
 import { TeamIoDenial } from './types.js';
 /** The one record schema. A reader that does not know it must fail loud. */
@@ -44,6 +50,59 @@ export const GUARD_CONSULT_TRANSPORT_CODES = Object.freeze([
     /** the file is not valid JSONL of {@link GUARD_CONSULT_SCHEMA} records */
     'CONSULT_FILE_INVALID',
 ]);
+/**
+ * The ONE ambient carrier of the current tool dispatch. It exists because the
+ * confined Provider's guard is called from INSIDE the tool body, where the
+ * registry's `ToolExecution` is not passed down. The `tools/execute` waterfall
+ * is the public seam that sees the call identity; {@link attachGuardToolCallAttribution}
+ * runs `next()` inside this store so every guard consultation reached from the
+ * body can name its call.
+ *
+ * WHY THIS IS NOT A SECOND POLICY SOURCE: nothing in the admission path reads
+ * it. `observeGuard` copies the store into the FACT it was already writing;
+ * `createMemberFsGuard` / `createMemberSubprocessGuard` / the web and terminal
+ * guards never look at it. An empty store means the fact records `null`, never
+ * a guessed id.
+ */
+const TOOL_CALL_ATTRIBUTION = new AsyncLocalStorage();
+/** The tool call this async context is running under, if any. */
+export function currentGuardToolCallAttribution() {
+    return TOOL_CALL_ATTRIBUTION.getStore();
+}
+/**
+ * Wrap every `tools/execute` dispatch in this context so guard consultations
+ * made by the tool body are attributed to that dispatch.
+ *
+ * The listener is deliberately inert with respect to the waterfall: it calls
+ * `next()` exactly once and returns its value untouched, never mutates `exec`
+ * (not even `exec.signal`), and never throws on its own. A dispatch without a
+ * usable `name`/`callId` runs unattributed — the honest `null`, never a
+ * synthetic id.
+ *
+ * @returns an idempotent detach function.
+ */
+export function attachGuardToolCallAttribution(ctx) {
+    const subscription = ctx.on('tools/execute', (exec, next) => {
+        const tool = nonBlankString(exec?.name);
+        const callId = nonBlankString(exec?.callId);
+        if (tool === undefined || callId === undefined)
+            return next();
+        return TOOL_CALL_ATTRIBUTION.run(Object.freeze({ tool, callId }), () => next());
+    });
+    let detached = false;
+    const detach = () => {
+        if (detached)
+            return;
+        detached = true;
+        if (typeof subscription === 'function')
+            subscription();
+    };
+    return detach;
+}
+/** `value` when it is a non-blank string, else `undefined` (never fabricates). */
+function nonBlankString(value) {
+    return typeof value === 'string' && value.trim() !== '' ? value : undefined;
+}
 /** A consultation that could not be transported. The call is refused. */
 export class GuardObservationError extends Error {
     code = 'GUARD_OBSERVATION_FAILED';
@@ -89,6 +148,11 @@ function laneOfRefusal(code) {
 export function observeGuard(guard, observer, context) {
     let sequence = 0;
     return async function observedGuard(method, hostPath, annotations) {
+        // PD-19: the dispatch this consultation belongs to, read ONCE at entry from
+        // the async context the `tools/execute` waterfall established. Reading it is
+        // the only thing attribution does here — `guard(method, hostPath, …)` below
+        // is the same call, on the same inputs, as before this field existed.
+        const attribution = TOOL_CALL_ATTRIBUTION.getStore();
         let decision;
         let decidedBy;
         let denial = null;
@@ -117,6 +181,11 @@ export function observeGuard(guard, observer, context) {
             decidedBy,
             sequence,
             observedAt: new Date().toISOString(),
+            // PD-19: always present, `null` when there was no tool dispatch in scope.
+            // An explicit null is the honest "this fact cannot be attributed", and it
+            // keeps the absence recordable instead of silently omitting the question.
+            tool: attribution?.tool ?? null,
+            callId: attribution?.callId ?? null,
             // The key is absent (not `undefined`) when there is nothing to say, so an
             // unannotated fact is byte-identical to the previous schema.
             //
@@ -212,6 +281,17 @@ function assertFact(value, path, line) {
     }
     if (!Number.isInteger(record.sequence) || record.sequence < 1) {
         throw invalid(`'sequence' must be a positive integer`);
+    }
+    // PD-19 additive attribution: a pre-PD-19 fact omits both keys, and the
+    // previous schema must stay VALID. When present, each is a non-blank string
+    // or an explicit null (the emitter's "no tool dispatch in scope").
+    for (const key of ['tool', 'callId']) {
+        const value = record[key];
+        if (value === undefined || value === null)
+            continue;
+        if (typeof value !== 'string' || value.trim() === '') {
+            throw invalid(`'${key}' must be a non-blank string or null when present`);
+        }
     }
     // Additive optional field: when present it must be a non-empty array of
     // non-empty strings. Its ABSENCE is the previous schema, so old sinks read
