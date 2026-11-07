@@ -155,23 +155,24 @@ The per-clause detail is the honest reading of that verdict (`run-record.json`):
 
 ## 10. E-1 — dev-live slot liveness across PID namespaces (test infrastructure)
 
-**Defect** (recon E-1, reproduced 2026-11-07): peer dev Hosts run in different PID namespaces, so `pidAlive(pid)` from another namespace can report a LIVE peer as dead; `acquireDevLiveSlot` swept the peer's slot file and the peer's boot was then refused at the spawn chokepoint with `DEV_LIVE_SLOT_REQUIRED` although it had acquired a slot.
+**Defect** (recon E-1, reproduced 2026-11-07): peer dev Hosts run in different PID namespaces, so `pidAlive(pid)` from another namespace can report a LIVE peer as dead; the sweep then unlinked the peer's slot and the peer's boot was refused at the spawn chokepoint with `DEV_LIVE_SLOT_REQUIRED` although it had acquired a slot.
 
-**Fix** (`tests/world-factory/lib/dev-live-slots.mjs`, shared lib — one place, both the counter and the gate read it):
+**Merged with #659 (`0230484b7`, RECON-INFRA), not duplicated.** PR #659 landed the same finding hours earlier while this branch was finishing, and rewrote the same file. The merge (`origin/master` into this branch) keeps **#659's implementation as the base** and adds the one thing this branch's version had that #659's did not — a bounded grace on a *provably dead* owner — so the resulting law is the stricter union:
 
-* a slot now records the writer's PID namespace (`pidNs` = `/proc/self/ns/pid` link);
-* `scanDevLiveSlots` classifies `liveness` as `alive | dead | foreign-namespace | unparsable`: a `pidAlive` FALSE is only **evidence of death in the owner's own namespace** (`pidNamespaceComparable`). A foreign or unknown namespace (including a legacy slot with no `pidNs`) is never swept on liveness alone — it ages out through the existing 4 h TTL;
-* a provably dead pid is swept only once the slot is older than `DEAD_SLOT_GRACE_MS` (5 s), so a writer that has not yet been scheduled cannot lose its own slot;
-* `sweepStaleSlot` re-reads the file and refuses to unlink a slot whose token changed (a new owner), and refuses any entry a scan did not classify stale.
-
-**Regression arms** (`tests/world-factory/a5sf-dev-live.test.mjs`, 15/15 pass):
-
-| arm | pins |
+| question | answer after the merge |
 | --- | --- |
-| `(e1-foreign-namespace)` | a dead pid in a FOREIGN namespace is `liveness: 'foreign-namespace'`, not stale, survives the sweep, is counted as live, its owner passes `assertDevLiveSlotHeld`, and a new boot takes a *different* slot; a legacy slot with no `pidNs` follows the same rule |
-| `(e1-same-namespace)` | a dead pid in OUR namespace is not stale inside the grace window, IS stale and IS swept past it, and a slot re-written with a new token is never unlinked |
+| slot owner is dead in **our own** PID namespace | stale only once the file is older than `DEAD_SLOT_GRACE_MS` (5 s) — the judgement is authoritative, the short wait only protects a writer that has not been scheduled since it created the file |
+| slot owner is in **another** namespace, or the file has no `pidNs` (legacy) | **never** judged dead: counted live until `CROSS_NAMESPACE_GRACE_MS` (5 min), kept fresh meanwhile by the 30 s lease heartbeat (`slot.touch()`) |
+| neither judgement applies | ages out through `DEV_LIVE_SLOT_TTL_MS` (4 h) |
+| unparsable file | swept only past `UNPARSABLE_STALE_MS` (60 s) |
+| every unlink | re-reads the file and refuses when the on-disk token is no longer the scanned one — a peer that released + re-acquired the slot keeps it |
 
-The pre-existing `(c-negative)` crash-recovery arm was updated to the new law (it now records `pidNs` and an age past the grace window — a legacy slot is no longer swept on liveness alone, which is the fix).
+`settleDevLiveLease()` and the driver's fail-loud `finally` release path (`DEV_LIVE_SLOT_API_MISSING` / `DEV_LIVE_SLOT_LEAKED`) are #659's and survive **verbatim**; they are what makes a slot leak loud, and this branch does not touch them.
+
+**Tests after the merge** — both suites kept: `a5sf-dev-live-slots.test.mjs` (theirs, 9/9) and `a5sf-dev-live.test.mjs` (theirs + this branch's two arms, 15/15).
+
+* **Law changed one arm**: the `(c-negative)` crash-recovery fixture used to write a dead-pid slot and expect it reclaimed *immediately* from a just-written file. Under the union law that file is inside `DEAD_SLOT_GRACE_MS`, so the fixture is now aged past the grace before asserting the sweep (the law wins over the arm; the arm's proposition — "a provably dead same-namespace slot is reclaimed" — is unchanged).
+* **Adapted arms**: this branch's two `(e1-*)` arms were ported onto #659's vocabulary (`liveness: 'unknown'` instead of the branch's `foreign-namespace`, `sweepStaleDevLiveSlot` instead of `sweepStaleSlot`, explicit clock injection into the sweep so its re-classification uses the same `now` as the scan).
 
 ## 11. Non-claims
 

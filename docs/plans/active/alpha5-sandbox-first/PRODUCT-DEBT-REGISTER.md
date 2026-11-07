@@ -706,6 +706,25 @@ the arm that must change and the arms that must stay green.
 
 ## 4. Not on this list, deliberately
 
+- **An undeclared Member template gets the full Team tool catalog (legacy mode) — a documented
+  compatibility default, not a defect (E1, 2026-11-13).** The recon finding "a template with no
+  `capabilities` receives all fifteen `team_*` tools, including `team_delegate` and
+  `team_grant_permission`" is the *contract*, not an accident: `staticCapabilitiesOf` returns
+  `{ mode: 'legacy' }` and the runtime then takes `[...catalog]`
+  (`packages/domain/policy/src/static-capability-source.ts`;
+  `packages/runtime/src/plugin/live/agent-bindings.mjs:3024`), while the domain type says
+  `capabilities` absent = "legacy mode, no restrictions"
+  (`packages/domain/blueprint/src/types.ts`) and the authoring contract said "rc.1 behavior,
+  everything inherited". **The gap was documentation, not semantics**, so the fix is disclosure:
+  [team-blueprint-authoring §5](../../../../.agents/skills/team-blueprint-authoring/SKILL.md)
+  now spells out the fifteen-tool surface, the explicit narrowing (`teamTools: {kind: deny}`), and
+  the one sub-field that is *not* inherited (`mcp` = no initial grant). Executable evidence:
+  `tests/world-factory/a5sf-capability-defaults.test.mjs` (host-free; prints
+  `E1-UNDECLARED-CAPABILITIES mode=legacy teamTools=15` and the exact names). Changing the default
+  to fail-closed would break the documented rc.1 compatibility of every legacy blueprint, so it
+  stays an owner decision, not a recon fix. It is **not** a PD row because no product behaviour
+  changes and nothing is blocked on it.
+
 - **The undeclared `chmod` gap — `LIVE-REPRODUCED`, still not a row.** It was disclosed, not
   discovered: Landlock has no "change mode" right, so a same-uid inode that a shell can reach can be
   `chmod`-ed without any declaration; `chmod` targets are therefore a *declaration* on the write

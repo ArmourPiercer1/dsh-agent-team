@@ -1,0 +1,52 @@
+✔ world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7FsUi + U7-F u7Pwsh), in prefix order, deterministic (7.726087ms)
+✔ world kinds RED-first: a REMOVED kind module turns its option into a typed refusal (was: silently a plain World) (10.611047ms)
+✔ world kinds: mutual exclusion, the {rows} shape and the core-option set are enforced once, for every kind (3.403973ms)
+✔ world kinds: the owned-path guard covers every kind path (a kind path pointed outside the home refuses the boot) (3.739996ms)
+✔ world kinds: env — every kind key is cleared on every boot, only the active kind sets its own (2.423559ms)
+✔ world kinds RED-first: malformed / clashing modules refuse at load time (65.745071ms)
+✔ a new World kind is ONE file: dropping it in registers the option, nothing else is edited (10.580408ms)
+✔ world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (9.355762ms)
+✔ suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (24.047215ms)
+✖ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (45.891603ms)
+✔ suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it) (25.593562ms)
+✔ suites RED-first: malformed / clashing suite modules refuse at load time (125.987464ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 11
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 490.935355
+
+✖ failing tests:
+
+test at tests/world-factory/registries.test.mjs:219:1
+✖ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (45.891603ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+
+    [
+      [
+        'u6-fs',
+        80
+      ],
+  ...
+      ],
+  +   [
+  +     'a5sf-read',
+  +     16
+  +   ]
+    ]
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-infra/tests/world-factory/registries.test.mjs:224:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'u6-fs', 80 ], [ 'u6-proc', 130 ], [ 'u6-jobs', 130 ], [ 'u6-arc-a', 110 ], [ 'u6-arc-d', 90 ], [ 'u7-fs-mut', 80 ], [ 'u7-f-web', 90 ], [ 'u7-pwsh', 70 ], [ 'u7-agent-control', 60 ], [ 'u7-f-ui', 60 ], [ 'u7r3-uif4-pos', 90 ], [ 'u7-fagentb', 160 ], [ 'u7-astore', 110 ], [ 'u7r3-b49-lockseam', 60 ], [ 'u7r3-bootwave', 160 ], [ 'a5sf-read', 16 ] ],
+    expected: [ [ 'u6-fs', 80 ], [ 'u6-proc', 130 ], [ 'u6-jobs', 130 ], [ 'u6-arc-a', 110 ], [ 'u6-arc-d', 90 ], [ 'u7-fs-mut', 80 ], [ 'u7-f-web', 90 ], [ 'u7-pwsh', 70 ], [ 'u7-agent-control', 60 ], [ 'u7-f-ui', 60 ], [ 'u7r3-uif4-pos', 90 ], [ 'u7-fagentb', 160 ], [ 'u7-astore', 110 ], [ 'u7r3-b49-lockseam', 60 ], [ 'u7r3-bootwave', 160 ] ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
