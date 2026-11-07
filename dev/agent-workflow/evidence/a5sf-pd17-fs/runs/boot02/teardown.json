@@ -1,0 +1,18 @@
+{
+  "host": {
+    "wasRunning": true,
+    "pid": 76,
+    "killed": true,
+    "portFree": true
+  },
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z",
+  "releasedPorts": [
+    3184,
+    3492,
+    3184
+  ],
+  "killedPids": [
+    76
+  ],
+  "notes": []
+}
