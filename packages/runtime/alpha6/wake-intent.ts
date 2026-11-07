@@ -68,6 +68,12 @@ export interface ReviewWakeQueuedIntent {
   readonly key: ReviewWakeKey
   readonly wakeId: string
   readonly workFingerprint: string
+  /**
+   * The plugin instance (mount root) that wrote this row. Boot recovery runs
+   * in several instances over one HOME; this owner prevents instance A from
+   * adopting/clearing instance B's row. Absent on rows from older builds.
+   */
+  readonly ownerRootSessionId?: string
 }
 
 /**
@@ -146,6 +152,7 @@ export async function recoverReviewWake(
   coordinator: ReviewWakeCoordinator,
   store: ReviewWakeIntentStore,
   inbox: ReviewWakeInboxPort,
+  stopped?: boolean,
 ): Promise<ReviewWakeRecoverResult> {
   const initialStatus = coordinator.state.status
   const initialWakeId = coordinator.state.wakeId
@@ -170,7 +177,7 @@ export async function recoverReviewWake(
       adopted: false,
       wakeId: null,
       reason: 'absent',
-      transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+      transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
     }
   }
 
@@ -185,6 +192,7 @@ export async function recoverReviewWake(
       transition: coordinator.dispatch({
         type: 'recover',
         persistedWake: persistedFact(intent),
+        stopped,
       }),
     }
   }
@@ -213,7 +221,7 @@ export async function recoverReviewWake(
       adopted: false,
       wakeId: null,
       reason: 'absent',
-      transition: coordinator.dispatch({ type: 'recover', persistedWake: null }),
+      transition: coordinator.dispatch({ type: 'recover', persistedWake: null, stopped }),
     }
   }
 
@@ -221,6 +229,7 @@ export async function recoverReviewWake(
   const transition = coordinator.dispatch({
     type: 'recover',
     persistedWake: persistedFact(intent),
+    stopped,
   })
 
   if (coordinator.state.stopped) {

@@ -133,6 +133,7 @@ export type Alpha6LiveRootComposition =
       readonly ports: Alpha6ControlPorts
       readonly officerTemplateId: string
       readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting
+      readonly routingForRoot: (rootSessionId: string) => import('./root-router.js').Alpha6RootRouting | null
     }
 
 export interface Alpha6LiveRootCompositionInput {
@@ -151,6 +152,13 @@ export interface Alpha6LiveRootCompositionInput {
   }
   readonly control: Alpha6RootCompositionInput['control']
   readonly permissionOverlay?: Alpha6PermissionOverlayPort
+  /**
+   * The frozen v5 source of a CREATED team root, read from its registry row.
+   * The live composition is constructed once per boot row, so routing for a
+   * team created later must be resolved per query, never assumed to be the
+   * boot anchor's policy.
+   */
+  readonly blueprintSourceForRoot?: (rootSessionId: string) => string | null
 }
 
 /**
@@ -175,6 +183,8 @@ export type Alpha6RootWiring =
       readonly ports: Alpha6ControlPorts
       readonly officerTemplateId: string
       readonly routing: import('../../domain/blueprint/src/index.js').ReviewRouting
+      /** Per-root frozen v5 policy for the router; null refuses that root. */
+      readonly routingForRoot: (rootSessionId: string) => import('./root-router.js').Alpha6RootRouting | null
     }
 
 /** The live input the caller's thunk supplies; the `enabled` bit is the helper's. */
@@ -218,22 +228,36 @@ export function createAlpha6LiveRootComposition(
   if (decision.mode !== 'alpha6') return decision
 
   const generation = createAlpha6AuthorityGenerationReader(input.permissionOverlay)
+  const parsedForRoot = (rootSessionId: string): ReturnType<typeof parseAlpha6Routing> | null => {
+    if (rootSessionId === input.rootSessionId) return parsed
+    const source = input.blueprintSourceForRoot?.(rootSessionId)
+    return source === undefined || source === null ? null : parseAlpha6Routing(source)
+  }
+  const routingForRoot = (rootSessionId: string): import('./root-router.js').Alpha6RootRouting | null => {
+    const child = parsedForRoot(rootSessionId)
+    return child === null
+      ? null
+      : { routing: child.routing, leaderTemplateId: child.blueprint.leader.templateId }
+  }
   const ports = createAlpha6ControlPorts({
     rootSessionId: input.rootSessionId,
     routing: parsed,
+    ...(input.blueprintSourceForRoot === undefined
+      ? {}
+      : {
+          routingForRoot: parsedForRoot,
+        }),
     control: {
       readControlState: async (rootSessionId) =>
         (await input.control.readControlState(rootSessionId)) as never,
     },
     members: {
-      get: (rootSessionId, instanceId) =>
-        rootSessionId === input.rootSessionId ? input.members.get(rootSessionId, instanceId) : undefined,
-      list: (rootSessionId) =>
-        rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
+      get: (rootSessionId, instanceId) => input.members.get(rootSessionId, instanceId),
+      list: (rootSessionId) => input.members.list(rootSessionId),
     },
     authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) =>
       generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
     fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
   })
-  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing }
+  return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing, routingForRoot }
 }

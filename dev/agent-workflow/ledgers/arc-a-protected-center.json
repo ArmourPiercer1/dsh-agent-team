@@ -240,46 +240,16 @@
       "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
     },
     {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "b258a2dbea91c92b5e7280f7093851e5c780161ec785736a4d5f9046e10e6953",
-      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-      "reason": "assignedOfficerCapability() builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the resolved candidate is persisted as decision evidence (resolve + escalate). Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered with durable evidence assertions."
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "d764ddd9e2baf2872f3e978fa5b3d43465f5fd8504db35ff593768fa9f470ac3",
-      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-      "reason": "Adds the optional trusted reviewCallFactsForAssignedOfficer overlay port (routing + frozen category only); no durable schema change, legacy rows fail closed."
-    },
-    {
       "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
       "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
       "pr": "PR #571 (integration: A6 control chain)",
       "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
     },
     {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "f03a6a87a22e91833b7fb1090b59a032afb6916c278a12cdf24e9cd6254d8b8d",
-      "pr": "PR #571 (integration: A6 non-locking control reader)",
-      "reason": "Alpha.6 PR5 composition wiring: adds the read-only NON-LOCKING readControlState root method and extracts the shared projectControlState() snapshot helper that listControlState also uses, so the locking and non-locking read routes cannot drift. No durable schema change, no mutation/authority path change; the locking route's behavior and projections are byte-identical."
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "b7aa3572a3b1e466ec3d2f7ce2e2156132eb47d45e3b9f4ad0fd31ab89c8ec2f",
-      "pr": "PR #571 (integration: A6 non-locking control reader)",
-      "reason": "Alpha.6 PR5 composition wiring: declares ControlStateSnapshot (the shared projection shape of BOTH read routes) and adds ControlService.readControlState, explicitly documented as a non-locking, read-only snapshot with no authority. listControlState's return type narrows to the same named shape (structurally identical); no durable schema change."
-    },
-    {
       "path": "packages/runtime/control/index.ts",
       "sha256": "01d91fbcf1a4e789d3a6439cd664badc0f7e96b991cc3c1d4e20da76c4358988",
       "pr": "PR #571 (integration: A6 non-locking control reader)",
       "reason": "Alpha.6 PR5 composition wiring: re-exports the ControlStateSnapshot type so external compositions can name the read-only snapshot shape. Public-surface export only; no runtime behavior change."
-    },
-    {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "9f782a07f5f15607b666365e15d74e903207b8d0cdbcbcf9e277f1d3586af328",
-      "pr": "PR #571 (integration: A6 trusted OperationOwner facts)",
-      "reason": "Alpha.6 authorization-facts fix: ReviewCallFacts' operationOwner.instanceId now derives from the durable leg SUBJECT (the executing Member written by pa-control-bridge) or the legacy targetInstanceId projection, never from the Requester. A Leader proxy ask no longer binds the Leader (or a same-template sibling) as OperationOwner. No durable schema change; the evaluator already compares the owner template against the frozen leg, and the composition facts provider independently proves the same owner."
     },
     {
       "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
@@ -292,6 +262,63 @@
       "sha256": "abd425cc74c7d59038cef4ee89dfd8200b0b808c73aa8e6eb094af35a509a840",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
       "reason": "Same PR, review-wake liveness correction: has()/remove() now throw when the target session cannot be materialised, so an unreadable native Inbox is never mistaken for an absent message (which previously released the latch, cleared a live intent row and re-delivered a duplicate wake). No new authority, decision or durable write."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "80311d3e207c9a83f7ea9fd7f8ca50907681e16f16a94a5820d6834f8bc40845",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 isolated integration E2E correction",
+      "reason": "Same correction, two narrow wires: (1) the presented approval/landing edge uses the durable decision's exercised reviewerAuthority when present; (2) an A6 PA leg requests the ALLOW effect (not the pending ask token), so the consumption-point authority recheck can answer it. The allow effect is inside the a6:true bridge branch; the landing presenter is gated by durable decision evidence and falls back to the old decider rung when absent. Legacy PA rows and the resolver table are unchanged. Real-Host evidence: dev/agent-workflow/evidence/a6-officer-host."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "4cffb4f0c2c6bee31ea82a0c17b127fc1ec59a220750c2fab6b6ccb101c63e8c",
+      "pr": "PR #585 (Alpha.6 root wiring, Draft) \u2014 bounded approval wait",
+      "reason": "Named Alpha.6 center-interface addition: the opt-in v5 PA case-leg now supplies the configured bounded wait (alpha6WaitTimeoutMs, default 600000 ms) to the existing bridge deps, so a wait that outlives its client stops waiting instead of pinning the turn. It does not decide, mint, consume or execute; the durable request keeps its original meaning. v4/default and non-A6 rows are byte-identical."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "0c97dab93d94370fbf508278980a443becdd5ed04ea5d8d4d55a7ef1be08ba86",
+      "pr": "PR #585 (isolated Alpha.6 integration; named center-interface change)",
+      "reason": "Alpha.6 bounded wait reaches the production PA assembly (alpha6WaitTimeoutMs), and the Stop/Resume provenance law is enforced at the two seams that can lie: team-internal work/messaging/root deliveries now carry a plugin source instead of the human source, and internal cancels carry the hook cause instead of user. The messaging port keeps the human source only for an attribution with fromHumanId; no authorization, Grant, or execution law changes."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "sha256": "b8bc9dc91f0b6c76cbad6c51e5304a8b9f0c598b6409d5c233a451ac85564dae",
+      "pr": "PR #571 (Alpha.6 integration, Draft)",
+      "reason": "Alpha.6 non-authorizing invocation settlement: a bounded A6 wait abandons the invocation (reason invocation-abandoned) without rewriting the human approval decision; legacy (non-A6) wait semantics are byte-identical. No native execution change."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "dbd686ec55db502b15996444c9561b789c53128bf7c2a70afba7a435268b3a9b",
+      "pr": "PR #585 (Alpha.6 closing round, Draft)",
+      "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "2d3fb252480434d43bac519d72db3ff748dba3f5abcf7f8bba7809f5d6097530",
+      "pr": "PR #585 (Alpha.6 closing round, Draft)",
+      "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "35faa77b6642fb63a0a9c74e26a5106c0948075a5ae7308b1b2a231fa0e46f66",
+      "reason": "A6 closing round (Draft): owner-scoped settlement, execution-result fact, and approved post-backend result observation \u2014 named center-interface change; decision/authority semantics unchanged"
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "a0a3e1e5181c5f6fdef67d27b35e672dcaba13d987aa7b8e672833df70b28615",
+      "reason": "A6 closing round (Draft): owner-scoped settlement, execution-result fact, and approved post-backend result observation \u2014 named center-interface change; decision/authority semantics unchanged"
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "6eb48034b59c55defd00c0462230767eb168ccc8036212f1d03036835de0a33f",
+      "reason": "A6 closing round (Draft): owner-scoped settlement, execution-result fact, and approved post-backend result observation \u2014 named center-interface change; decision/authority semantics unchanged"
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sha256": "164c42491f466c470e000d108ece0e835f556f46fc0bdaff8e7b239d0fb53ad1",
+      "pr": "A5+A6 Preview combined center-interface (preview/alpha5-alpha6-rc1) - NAMED combined-tree booking",
+      "reason": "Alpha.6 closing adds the execution-result callback and the A5 tree adds the a5sf realm seam to the same live binding file; the merged tree is the only truthful byte. Rebuilt dist from this source. Original A6 booking remains in history."
     }
   ]
 }

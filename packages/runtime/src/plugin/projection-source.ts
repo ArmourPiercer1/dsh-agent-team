@@ -230,6 +230,10 @@ const FACT_TEAM_COORDINATION_RECORDED = 'team-coordination-recorded'
 const FACT_CONTROL_REQUEST_RECORDED = 'control-request-recorded'
 const FACT_CONTROL_DECISION_RECORDED = 'control-decision-recorded'
 const FACT_CONTROL_ALLOW_CONSUMED = 'control-allow-consumed'
+// A6 closing round: the minimal execution-result observation fact. It is a
+// `control` fact beside the decision/consumption rows it describes, never an
+// authority: the fold only projects it, no settlement reads it as permission.
+const FACT_CONTROL_EXECUTION_RESULT = 'control-execution-result'
 // A4-PR0a: the inline-abort terminal mark, written by `abandonControlRequest`
 // (`control/service.ts`). It was the ONLY production-written fact type missing from
 // FACT_TYPE_CATEGORY below — and because the fold throws on any unmapped type on
@@ -301,6 +305,7 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_CONTROL_REQUEST_RECORDED, 'control'],
   [FACT_CONTROL_DECISION_RECORDED, 'control'],
   [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
+  [FACT_CONTROL_EXECUTION_RESULT, 'control'],
   [FACT_CONTROL_ESCALATION_RECORDED, 'control'],
   [FACT_CONTROL_CURRENT_LEG_TRANSFERRED, 'control'],
   // A4-PR0a: the abandonment terminal mark — a control fact, paired with the

@@ -48,6 +48,12 @@ export interface ReviewWakeQueuedIntent {
     readonly key: ReviewWakeKey;
     readonly wakeId: string;
     readonly workFingerprint: string;
+    /**
+     * The plugin instance (mount root) that wrote this row. Boot recovery runs
+     * in several instances over one HOME; this owner prevents instance A from
+     * adopting/clearing instance B's row. Absent on rows from older builds.
+     */
+    readonly ownerRootSessionId?: string;
 }
 /**
  * `queued` = intent recorded, delivery not yet acknowledged by the Inbox.
@@ -105,5 +111,5 @@ export interface ReviewWakeRecoverResult {
  * A sticky Stop outranks an unclaimed wake: the intent is cleared and the
  * Inbox row is withdrawn when the port offers `remove`.
  */
-export declare function recoverReviewWake(coordinator: ReviewWakeCoordinator, store: ReviewWakeIntentStore, inbox: ReviewWakeInboxPort): Promise<ReviewWakeRecoverResult>;
+export declare function recoverReviewWake(coordinator: ReviewWakeCoordinator, store: ReviewWakeIntentStore, inbox: ReviewWakeInboxPort, stopped?: boolean): Promise<ReviewWakeRecoverResult>;
 //# sourceMappingURL=wake-intent.d.ts.map

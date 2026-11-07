@@ -320,6 +320,7 @@ const FACT_CONSUMPTION = 'control-allow-consumed'
 /** The durable abandon fact family (pre-alpha3 PR-D, D.4 — the additive
  *  close of an inline-coupling request on abort; the terminal mark). */
 const FACT_ABANDONMENT = 'control-request-abandoned'
+const FACT_EXECUTION_RESULT = 'control-execution-result'
 /** The Alpha.4 approval-case leg fact (ADR A3-12(ii): a LEG fact, not a
  *  decision — `escalate` never enters the decision vocabulary, and the row
  *  says who moved WHICH leg of WHICH case where). */
@@ -360,6 +361,10 @@ const DEFAULT_WAIT_POLL_INTERVAL_MS = 250
  *  `abort → durable abandon/close → zero effect`). */
 const WAIT_ABORT_ABANDON_REASON = 'wait-aborted'
 
+/** A6 closing constraint 1: the lifecycle reason an undetermined late ALLOW
+ *  records instead of a durable DENY (see `a6AbandonUndeterminedAllow`). */
+const A6_UNDETERMINED_ABANDON_REASON = 'invocation-abandoned'
+
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -375,6 +380,7 @@ const platformTimers = globalThis as unknown as {
 /** The `control-request-recorded` payload. */
 interface RequestPayload {
   readonly requestId: string
+  readonly ownerRootSessionId?: string
   readonly kind: ControlRequestKind
   readonly requester: ControlCallerRef
   /** The CANONICAL subject (pre-alpha3 PR-D, D.2): the parser ALWAYS
@@ -470,6 +476,13 @@ interface AbandonmentPayload {
   readonly reason?: string
 }
 
+interface ExecutionResultPayload {
+  readonly requestId: string
+  readonly callId: string
+  readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  readonly recordedAt: string
+}
+
 /** One ledger entry plus its (validated) payload. */
 /**
  * The `control-escalation-recorded` payload: the FROZEN five members of ADR
@@ -552,6 +565,7 @@ interface ControlState {
   readonly abandonments: readonly StoredFact<AbandonmentPayload>[]
   readonly escalations: readonly StoredFact<EscalationPayload>[]
   readonly transfers: readonly StoredFact<CurrentLegTransferPayload>[]
+  readonly executionResults: readonly StoredFact<ExecutionResultPayload>[]
 }
 
 // --- pure helpers ---------------------------------------------------------------------
@@ -759,6 +773,8 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
 function parseRequestPayload(value: unknown): RequestPayload | undefined {
   if (!isPlainObject(value)) return undefined
   const requestId = value['requestId']
+  const ownerRootSessionId = value['ownerRootSessionId']
+  if (ownerRootSessionId !== undefined && (typeof ownerRootSessionId !== 'string' || ownerRootSessionId.length === 0)) return undefined
   const kind = value['kind']
   const targetInstanceId = value['targetInstanceId']
   const actionName = value['actionName']
@@ -941,6 +957,7 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   }
   return {
     requestId,
+    ...(ownerRootSessionId !== undefined ? { ownerRootSessionId } : {}),
     kind: kind as ControlRequestKind,
     requester,
     subject,
@@ -1033,6 +1050,19 @@ function parseAbandonmentPayload(value: unknown): AbandonmentPayload | undefined
     abandonedAt,
     ...(reason !== undefined ? { reason } : {}),
   }
+}
+
+function parseExecutionResultPayload(value: unknown): ExecutionResultPayload | undefined {
+  if (!isPlainObject(value)) return undefined
+  const requestId = value['requestId']
+  const callId = value['callId']
+  const outcome = value['outcome']
+  const recordedAt = value['recordedAt']
+  if (typeof requestId !== 'string' || requestId.length === 0) return undefined
+  if (typeof callId !== 'string' || callId.length === 0) return undefined
+  if (outcome !== 'succeeded' && outcome !== 'failed' && outcome !== 'unknown') return undefined
+  if (typeof recordedAt !== 'string' || recordedAt.length === 0) return undefined
+  return { requestId, callId, outcome, recordedAt }
 }
 
 /** Parse A6 capability evidence; malformed / unknown values are OMITTED. */
@@ -1860,7 +1890,8 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       | 'transferCurrentLeg'
       | 'appendTerminalOutcome'
       | 'closeApprovalCaseWithoutLeg'
-      | 'findApprovalCaseByIdentity',
+      | 'findApprovalCaseByIdentity'
+      | 'executionResult',
     field: string,
     message: string,
   ): ControlError {
@@ -1961,6 +1992,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     const corruptLegs: StoredFact<Record<string, unknown>>[] = []
     const escalations: StoredFact<EscalationPayload>[] = []
     const transfers: StoredFact<CurrentLegTransferPayload>[] = []
+    const executionResults: StoredFact<ExecutionResultPayload>[] = []
     for (const entry of repositories.ledger.list()) {
       if (String(entry.rootSessionId) !== root) continue
       if (entry.factType === FACT_REQUEST) {
@@ -2003,6 +2035,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       } else if (entry.factType === FACT_TRANSFER) {
         const payload = parseCurrentLegTransferPayload(entry.payload)
         if (payload !== undefined) transfers.push({ entry, payload })
+      } else if (entry.factType === FACT_EXECUTION_RESULT) {
+        const payload = parseExecutionResultPayload(entry.payload)
+        if (payload !== undefined) executionResults.push({ entry, payload })
       }
     }
     const bySequence = (a: { entry: LedgerEntry }, b: { entry: LedgerEntry }): number =>
@@ -2014,7 +2049,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     escalations.sort(bySequence)
     transfers.sort(bySequence)
     corruptLegs.sort(bySequence)
-    return { requests, corruptLegs, decisions, consumptions, abandonments, escalations, transfers }
+    return { requests, corruptLegs, decisions, consumptions, abandonments, escalations, transfers, executionResults }
   }
 
   function scopeOf(entry: LedgerEntry, payload: RequestPayload): ControlOperationScope {
@@ -2057,6 +2092,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return {
       requestId: payload.requestId,
       rootSessionId: String(entry.rootSessionId),
+      ...(payload.ownerRootSessionId !== undefined ? { ownerRootSessionId: payload.ownerRootSessionId } : {}),
       kind: payload.kind,
       requester: payload.requester,
       subject: payload.subject,
@@ -2715,6 +2751,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       const requester = callerRefOf(caller)
       const payload: Record<string, unknown> = {
         requestId,
+        ...(options.mountRootSessionId !== undefined ? { ownerRootSessionId: options.mountRootSessionId } : {}),
         kind: args.kind,
         requester,
         subject,
@@ -2758,6 +2795,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         record: {
           requestId,
           rootSessionId: root,
+          ...(options.mountRootSessionId !== undefined ? { ownerRootSessionId: options.mountRootSessionId } : {}),
           kind: args.kind,
           requester,
           subject,
@@ -3341,12 +3379,24 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // the closed reason (the external-policy pattern): never a silent
       // skip, never an allow, never a fourth decision value (A2-1). The
       // f5 fix: a THIS-CLASS corrupt row (see `paManifestClassOf` in
-      // types.ts) lands on the SAME durable-DENY pattern unconditionally —
-      // it is never skipped as an ordinary old row, and no verifier is
+      // types.ts) is never skipped as an ordinary old row, and no verifier is
       // consulted for it (undetermined is already the answer).
+      // A6 closing constraint 1: in the A6 composition ONLY, an undetermined
+      // answer is a lifecycle failure, not an approval decision. It records
+      // `control-request-abandoned` (reason invocation-abandoned) and refuses;
+      // it never persists a DENY, so a requested Allow is not rewritten. Every
+      // other composition keeps the durable-DENY path (flag defaults off).
       if (args.decision === 'allow') {
         const paRead = paManifestClassOf(request.payload)
         if (paRead.state === 'corrupt') {
+          if (options.a6AbandonUndeterminedAllow === true) {
+            await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON)
+            throw new ControlError(
+              CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+              `ControlService: allow impossible — the PA operation manifest is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+              { rootSessionId: root, requestId: request.payload.requestId },
+            )
+          }
           return await commitDecision({
             requestId: request.payload.requestId,
             value: CONTROL_DECISION_VALUES.DENY,
@@ -3363,8 +3413,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             callerRefOf(caller),
+            resolvedCapability?.capability.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
+            if (denyReason === CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED && options.a6AbandonUndeterminedAllow === true) {
+              await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON)
+              throw new ControlError(
+                CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+                `ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+                { rootSessionId: root, requestId: request.payload.requestId },
+              )
+            }
             return await commitDecision({
               requestId: request.payload.requestId,
               value: CONTROL_DECISION_VALUES.DENY,
@@ -3483,6 +3542,58 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * (the frozen contract the recovery dispatch consuming this call
    * relies on, review F2).
    */
+  /**
+   * A6 closing round — ONE minimal execution-result fact per PA request,
+   * matched by durable `callId` (and target instance). The row is found from
+   * the request ledger; an unknown callId records nothing. Idempotent: a
+   * second observation of the same request returns the existing fact without
+   * a second write. This never authorizes, consumes, or replays anything.
+   */
+  async function recordExecutionResult(args: {
+    readonly rootSessionId: string
+    readonly callId: string
+    readonly instanceId?: string
+    readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  }): Promise<{ readonly recorded: boolean; readonly requestId?: string }> {
+    const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'execution-result')
+    if (typeof args.callId !== 'string' || args.callId.length === 0) {
+      throw malformed('executionResult', 'callId', 'callId must be a non-empty string')
+    }
+    if (args.outcome !== 'succeeded' && args.outcome !== 'failed' && args.outcome !== 'unknown') {
+      throw malformed('executionResult', 'outcome', 'outcome must be succeeded|failed|unknown')
+    }
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      let matched: RequestPayload | undefined
+      for (const entry of state.requests) {
+        const payload = entry.payload
+        const review = payload.reviewPayload
+        if (review === null || typeof review !== 'object' || Array.isArray(review)) continue
+        const callId = (review as Record<string, unknown>)['callId']
+        if (callId !== args.callId) continue
+        if (args.instanceId !== undefined && payload.targetInstanceId !== args.instanceId) continue
+        matched = payload
+      }
+      if (matched === undefined) return { recorded: false }
+      const existing = state.executionResults.find((r) => r.payload.requestId === matched.requestId)
+      if (existing !== undefined) return { recorded: false, requestId: matched.requestId }
+      await putEntry({
+        schemaVersion: 2,
+        sequence: await allocateSequence(),
+        rootSessionId: root,
+        factType: FACT_EXECUTION_RESULT,
+        payload: {
+          requestId: matched.requestId,
+          callId: args.callId,
+          outcome: args.outcome,
+          recordedAt: options.now(),
+        },
+        createdAt: options.now(),
+      })
+      return { recorded: true, requestId: matched.requestId }
+    })
+  }
+
   async function abandonControlRequest(args: {
     readonly rootSessionId: string
     readonly caller: ActionCaller
@@ -3597,6 +3708,13 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
       consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
       abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
+      executionResults: state.executionResults.map((r) => ({
+        requestId: r.payload.requestId,
+        callId: r.payload.callId,
+        outcome: r.payload.outcome,
+        recordedAt: r.payload.recordedAt,
+        sequence: r.entry.sequence,
+      })),
       // RULING 5-A: the refused rows are part of what the durable control
       // state IS, so the route that reads that state reports them. Ordered by
       // durable sequence like every other list here; a report, never a gate.
@@ -3788,12 +3906,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requestId: string,
     manifest: PaControlManifest,
     decider: ControlCallerRef,
+    reviewerAuthority?: ProposalAuthorityPosition,
   ): Promise<ControlDecisionReason | undefined> {
     const port = options.paEffectsVerifier
     if (port === undefined) return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     let verdict: PaEffectsVerifierVerdict
     try {
-      verdict = await port({ stage, rootSessionId: root, requestId, manifest, decider })
+      verdict = await port({
+        stage,
+        rootSessionId: root,
+        requestId,
+        manifest,
+        decider,
+        ...(reviewerAuthority === undefined ? {} : { reviewerAuthority }),
+      })
     } catch {
       return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     }
@@ -4246,6 +4372,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             decision.payload.decider,
+            decision.payload.reviewCapability?.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
             return {
@@ -6748,6 +6875,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requestControl,
     resolveControl,
     abandonControlRequest,
+    recordExecutionResult,
     listControlState,
     readControlState,
     transferCurrentLeg,

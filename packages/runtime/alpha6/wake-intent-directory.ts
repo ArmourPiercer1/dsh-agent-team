@@ -11,7 +11,8 @@
  *
  * @module packages/runtime/alpha6/wake-intent-directory
  */
-import { readdir } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
+import { access, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { ReviewWakeKey } from '../review-wake/index.js'
 import type {
@@ -20,6 +21,15 @@ import type {
 } from './wake-intent.js'
 import { createFileWakeIntentStore } from './wake-intent-store.js'
 
+/** One durable Sticky Stop marker. It carries no decision/authority, only the
+ * latch identity and the reviewer Session it stopped. */
+export interface StoppedWakeMarker {
+  readonly key: ReviewWakeKey
+  readonly targetSessionId?: string
+  /** The mount root that wrote the marker (owner guard for boot recovery). */
+  readonly ownerRootSessionId?: string
+}
+
 export interface WakeIntentDirectory {
   /** The narrow store bound to ONE latch identity. */
   forKey(key: ReviewWakeKey): ReviewWakeIntentStore
@@ -27,6 +37,19 @@ export interface WakeIntentDirectory {
   list(): Promise<readonly PersistedReviewWakeIntent[]>
   /** The file path of one latch's row (diagnostics). */
   pathFor(key: ReviewWakeKey): string
+  /**
+   * The durable Sticky Stop marker for one latch. It is a small presence
+   * file BESIDE the intent row (not a second approval ledger): `true` means a
+   * trusted user Stop outranks any persisted wake, and only an explicit
+   * resume interaction clears it. A missing marker is `false`.
+   */
+  /** The marker path (diagnostics / tests). */
+  stoppedPathFor(key: ReviewWakeKey): string
+  isStopped(key: ReviewWakeKey): Promise<boolean>
+  readStopped(key: ReviewWakeKey): Promise<StoppedWakeMarker | null>
+  listStopped(): Promise<readonly StoppedWakeMarker[]>
+  markStopped(key: ReviewWakeKey, targetSessionId?: string, ownerRootSessionId?: string): Promise<void>
+  clearStopped(key: ReviewWakeKey): Promise<void>
 }
 
 /** Stable FNV-1a hash of the latch identity; no clock, no randomness. */
@@ -44,6 +67,73 @@ export function createFileWakeIntentDirectory(directory: string): WakeIntentDire
   return {
     pathFor(key) {
       return join(directory, `wake-${keyHash(key)}.json`)
+    },
+    stoppedPathFor(key: ReviewWakeKey) {
+      return join(directory, `stopped-${keyHash(key)}.json`)
+    },
+    async isStopped(key) {
+      // Existence is the Stop. A marker written by an older build (no key) or
+      // left mid-write must still stop: read-side fail-closed, never open.
+      try {
+        await access(this.stoppedPathFor(key) as string)
+        return true
+      } catch (error) {
+        // Absent is the ONLY non-stop answer. EACCES/EIO/EMFILE/... must keep
+        // the Stop closed rather than re-waking a stopped reviewer.
+        return (error as NodeJS.ErrnoException).code !== 'ENOENT'
+      }
+    },
+    async readStopped(key) {
+      try {
+        const parsed = JSON.parse(await readFile(this.stoppedPathFor(key) as string, 'utf8')) as Partial<StoppedWakeMarker>
+        if (parsed.key === undefined) return null
+        return {
+          key: parsed.key,
+          ...(parsed.targetSessionId === undefined ? {} : { targetSessionId: parsed.targetSessionId }),
+          ...(parsed.ownerRootSessionId === undefined ? {} : { ownerRootSessionId: parsed.ownerRootSessionId }),
+        }
+      } catch {
+        return null
+      }
+    },
+    async listStopped() {
+      let names: string[]
+      try {
+        names = await readdir(directory)
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+        throw error
+      }
+      const markers: StoppedWakeMarker[] = []
+      for (const name of names.filter((entry) => entry.startsWith('stopped-') && entry.endsWith('.json')).sort()) {
+        try {
+          const parsed = JSON.parse(await readFile(join(directory, name), 'utf8')) as Partial<StoppedWakeMarker>
+          if (parsed.key !== undefined) {
+            markers.push({
+              key: parsed.key,
+              ...(parsed.targetSessionId === undefined ? {} : { targetSessionId: parsed.targetSessionId }),
+              ...(parsed.ownerRootSessionId === undefined ? {} : { ownerRootSessionId: parsed.ownerRootSessionId }),
+            })
+          }
+        } catch { /* an unreadable marker never becomes a Stop */ }
+      }
+      return markers
+    },
+    async markStopped(key, targetSessionId, ownerRootSessionId) {
+      const marker: StoppedWakeMarker = {
+        key,
+        ...(targetSessionId === undefined ? {} : { targetSessionId }),
+        ...(ownerRootSessionId === undefined ? {} : { ownerRootSessionId }),
+      }
+      // Atomic replace: a crash must leave either the old marker or the full
+      // new one, never a truncated JSON that reads as "not stopped".
+      const path = this.stoppedPathFor(key) as string
+      const tmp = `${path}.tmp-${randomUUID()}`
+      await writeFile(tmp, `${JSON.stringify({ stopped: true, ...marker })}\n`, 'utf8')
+      await rename(tmp, path)
+    },
+    async clearStopped(key) {
+      await rm(this.stoppedPathFor(key) as string, { force: true })
     },
     forKey(key) {
       return createFileWakeIntentStore({ filePath: this.pathFor(key) })

@@ -89,7 +89,11 @@ export interface AssignedOfficerMemberSnapshot {
    * lifecycle); consumers must not require it for Leader identity.
    */
   readonly childSessionId?: string
-  /** The contracts lifecycle spelling; only `RUNNING` is a live reviewer. */
+  /**
+   * The contracts lifecycle spelling. CREATED / RUNNING / SETTLED are live
+   * (SETTLED is the normal idle state; delivery and cold resume cover it);
+   * ARCHIVED / DISPOSED are not. A missing value is not evidence of liveness.
+   */
   readonly lifecycle?: string
 }
 
@@ -379,7 +383,7 @@ export function createAssignedOfficerFactsPort(
     }
     const officers = members.filter((member) =>
       member.templateId === routing.officerTemplateId &&
-      member.lifecycle === 'RUNNING' &&
+      (member.lifecycle === 'CREATED' || member.lifecycle === 'RUNNING' || member.lifecycle === 'SETTLED') &&
       // The Leader's durable child session IS the team root; it is never the
       // Officer even if a row were forged with the Officer template.
       member.childSessionId !== root &&
@@ -482,6 +486,11 @@ export interface Alpha6ControlStateReader {
 export interface Alpha6ControlPortsInput extends Omit<AssignedOfficerFactsInput, 'leg' | 'transfer'> {
   /** The live control service (or any narrower reader exposing the same). */
   readonly control: Alpha6ControlStateReader
+  /**
+   * A created team has its OWN frozen v5 Blueprint. Resolve that root's parsed
+   * routing instead of reusing the boot-root policy; null refuses this root.
+   */
+  readonly routingForRoot?: (rootSessionId: string) => AssignedOfficerParsedRouting | null
 }
 
 /**
@@ -513,40 +522,59 @@ export interface Alpha6ControlPorts {
  * model flag — only the durable rows `readControlState` reports.
  */
 export function createAlpha6ControlPorts(input: Alpha6ControlPortsInput): Alpha6ControlPorts {
-  const root = input.rootSessionId
+  const portsByRoot = new Map<string, Promise<AssignedOfficerFactsPort | null>>()
 
-  async function snapshot(): Promise<ControlStateSnapshot | null> {
+  async function snapshot(rootSessionId: string): Promise<ControlStateSnapshot | null> {
     try {
-      return await input.control.readControlState(root)
+      return await input.control.readControlState(rootSessionId)
     } catch {
       return null
     }
   }
 
   const leg: AssignedOfficerLegLookup = async (query) => {
-    const state = await snapshot()
+    const state = await snapshot(query.rootSessionId)
     if (state === null) return null
     return state.requests.find((row) => row.requestId === query.currentLegRequestId) ?? null
   }
 
   const transfer: AssignedOfficerTransferLookup = async (query) => {
-    const state = await snapshot()
+    const state = await snapshot(query.rootSessionId)
     if (state === null) return null
     return state.transfers.find((row) => row.currentLegRequestId === query.currentLegRequestId) ?? null
   }
 
-  const facts: AssignedOfficerFactsPort = createAssignedOfficerFactsPort({
-    rootSessionId: root,
-    routing: input.routing,
-    members: input.members,
-    leg,
-    transfer,
-    ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
-    fixedLeaderOrHumanCategory: input.fixedLeaderOrHumanCategory,
-  })
+  // The boot root and every created team have distinct frozen Blueprints. Cache
+  // one port per request root: the port's own root identity checks stay exact,
+  // and a root whose v5 routing cannot be resolved gets no reviewer at all.
+  function factsFor(rootSessionId: string): Promise<AssignedOfficerFactsPort | null> {
+    const existing = portsByRoot.get(rootSessionId)
+    if (existing !== undefined) return existing
+    const created = (async () => {
+      const parsed = input.routingForRoot === undefined ? input.routing : input.routingForRoot(rootSessionId)
+      if (parsed === null) return null
+      return createAssignedOfficerFactsPort({
+        rootSessionId,
+        routing: parsed,
+        members: input.members,
+        leg,
+        transfer,
+        ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
+        fixedLeaderOrHumanCategory: input.fixedLeaderOrHumanCategory,
+      })
+    })()
+    portsByRoot.set(rootSessionId, created)
+    return created
+  }
 
   return {
-    currentReviewerForTransfer: facts.resolveCurrentReviewer,
-    reviewCallFactsForAssignedOfficer: facts,
+    currentReviewerForTransfer: async (query) => {
+      const facts = await factsFor(query.rootSessionId)
+      return facts === null ? null : facts.resolveCurrentReviewer(query)
+    },
+    reviewCallFactsForAssignedOfficer: async (query) => {
+      const facts = await factsFor(query.rootSessionId)
+      return facts === null ? null : facts(query)
+    },
   }
 }

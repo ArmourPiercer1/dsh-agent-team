@@ -102,19 +102,36 @@ export function createAlpha6LiveRootComposition(input) {
     if (decision.mode !== 'alpha6')
         return decision;
     const generation = createAlpha6AuthorityGenerationReader(input.permissionOverlay);
+    const parsedForRoot = (rootSessionId) => {
+        if (rootSessionId === input.rootSessionId)
+            return parsed;
+        const source = input.blueprintSourceForRoot?.(rootSessionId);
+        return source === undefined || source === null ? null : parseAlpha6Routing(source);
+    };
+    const routingForRoot = (rootSessionId) => {
+        const child = parsedForRoot(rootSessionId);
+        return child === null
+            ? null
+            : { routing: child.routing, leaderTemplateId: child.blueprint.leader.templateId };
+    };
     const ports = createAlpha6ControlPorts({
         rootSessionId: input.rootSessionId,
         routing: parsed,
+        ...(input.blueprintSourceForRoot === undefined
+            ? {}
+            : {
+                routingForRoot: parsedForRoot,
+            }),
         control: {
             readControlState: async (rootSessionId) => (await input.control.readControlState(rootSessionId)),
         },
         members: {
-            get: (rootSessionId, instanceId) => rootSessionId === input.rootSessionId ? input.members.get(rootSessionId, instanceId) : undefined,
-            list: (rootSessionId) => rootSessionId === input.rootSessionId ? input.members.list(rootSessionId) : [],
+            get: (rootSessionId, instanceId) => input.members.get(rootSessionId, instanceId),
+            list: (rootSessionId) => input.members.list(rootSessionId),
         },
         authorityGeneration: async ({ rootSessionId, operationOwnerInstanceId }) => generation({ teamSessionId: rootSessionId, memberInstanceId: operationOwnerInstanceId }),
         fixedLeaderOrHumanCategory: createAlpha6CategoryLookup(),
     });
-    return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing };
+    return { mode: 'alpha6', ports, officerTemplateId: parsed.routing.officerTemplateId, routing: parsed.routing, routingForRoot };
 }
 //# sourceMappingURL=root-composition.js.map

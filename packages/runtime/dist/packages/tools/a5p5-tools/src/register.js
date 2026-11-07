@@ -176,6 +176,7 @@ function createRowExecutionState(assembly) {
                     // law), computed here from the CLOSED parsed args — the fact the PA
                     // edge asks, consumes and rechecks against.
                     parametersFingerprint: canonicalJsonFingerprint(parsed.value),
+                    ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
                     // B3: the host's cancel signal rides the call untouched. This face
                     // only CARRIES it — the cancelled fact belongs to the row that can
                     // actually stop a payload (the shell arm), never to the presentation.

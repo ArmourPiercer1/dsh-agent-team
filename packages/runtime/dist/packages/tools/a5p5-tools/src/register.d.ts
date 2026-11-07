@@ -97,6 +97,11 @@ export interface A5P5Assembly {
      *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
      *  byte-identical). Never model-visible: it rides the assembly, not args. */
     readonly effectAnchorRoot?: string;
+    /** Optional A6 post-backend observation (never changes execution). */
+    readonly onExecutionResult?: (input: {
+        readonly callId: string;
+        readonly outcome: 'succeeded' | 'failed';
+    }) => void;
 }
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
 export declare const REFUSAL_PREFIX = "a5p5-refused ";

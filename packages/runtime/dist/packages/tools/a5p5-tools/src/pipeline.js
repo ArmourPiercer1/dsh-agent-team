@@ -100,6 +100,7 @@ export async function runToolCall(deps) {
         parsedArgs: request.parsedArgs,
         ...(request.signal === undefined ? {} : { signal: request.signal }),
     }, { lease, sink });
+    deps.onExecutionResult?.({ callId: request.callId, outcome: result.ok ? 'succeeded' : 'failed' });
     const settlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT;
     const settled = lease.settle(settlement);
     if (!settled.ok)

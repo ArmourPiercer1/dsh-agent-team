@@ -1691,6 +1691,17 @@ export function createTeamProductionRoot(params) {
         // the composition's ONE v5 parser (`parseAlpha6Routing`) — no second
         // parser is introduced here.
         blueprintSource: config.blueprintSource,
+        blueprintSourceForRoot: (rootSessionId) => {
+            if (rootSessionId === rootSid)
+                return config.blueprintSource;
+            const session = repos.teamSessions.get(rootSessionId);
+            if (session === undefined)
+                return null;
+            const row = repos.blueprintRegistry.get(session.blueprint.blueprintId, session.blueprint.revision);
+            if (row === undefined || row.contentHash !== session.blueprint.contentHash)
+                return null;
+            return row.source;
+        },
         rootSessionId: rootSid,
         leaderTemplateId: blueprint.leader.templateId,
         // The SAME durable overlay the Alpha.5 authority plane reads. Dropping it
@@ -1743,6 +1754,12 @@ export function createTeamProductionRoot(params) {
         throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6ReviewRouting is enabled but live.reviewWakeInbox is absent; ' +
             'a Team without native Inbox recovery must not boot as durable', { rootSessionId: rootSid, reason: 'alpha6-review-wake-inbox-missing' });
     }
+    if (alpha6Wiring.mode === 'alpha6' && config.alpha6WaitTimeoutMs !== undefined
+        && (typeof config.alpha6WaitTimeoutMs !== 'number'
+            || !Number.isFinite(config.alpha6WaitTimeoutMs)
+            || config.alpha6WaitTimeoutMs <= 0)) {
+        throw new TeamPluginError('TEAM_PLUGIN_CONFIG_INVALID', 'alpha6WaitTimeoutMs must be a finite positive number when present', { rootSessionId: rootSid, reason: 'alpha6-wait-timeout-invalid' });
+    }
     const alpha6WakeIntents = alpha6Wiring.mode === 'alpha6'
         ? createFileWakeIntentDirectory(config.alpha6WakeIntentPath)
         : undefined;
@@ -1776,6 +1793,7 @@ export function createTeamProductionRoot(params) {
     };
     const alpha6DispatchWake = alpha6Wiring.mode === 'alpha6' && live.deliverReviewWake !== undefined
         ? async (input) => {
+            const requestRoot = input.rootSessionId;
             const wake = {
                 reviewerInstanceId: input.reviewerInstanceId,
                 targetSessionId: input.targetSessionId,
@@ -1783,19 +1801,31 @@ export function createTeamProductionRoot(params) {
                 routeRole: 'officer',
                 currentLegIds: input.currentLegIds,
             };
-            const key = latchKeyFor(wake, rootSid, config.generation);
+            const key = latchKeyFor(wake, requestRoot, config.generation);
             const mapKey = `${key.rootSessionId}\u0000${key.reviewerInstanceId}\u0000${String(key.sessionGeneration)}`;
             return withAlpha6WakeLock(mapKey, async () => {
                 let coordinator = alpha6WakeCoordinators.get(mapKey);
                 if (coordinator === undefined) {
                     coordinator = createLatchCoordinator(key);
+                    // A durable Sticky Stop outranks this plan even when the earlier
+                    // wake row is gone: adopt the marker into the new coordinator so a
+                    // post-restart WorkChanged can never re-queue a stopped reviewer.
+                    if (await alpha6WakeIntents?.isStopped(key) === true) {
+                        coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true });
+                    }
                     alpha6WakeCoordinators.set(mapKey, coordinator);
                 }
                 alpha6WakeBySession.set(input.targetSessionId, coordinator);
-                const intent = alpha6WakeIntents?.forKey(key);
+                const baseIntent = alpha6WakeIntents?.forKey(key);
+                const intent = baseIntent === undefined
+                    ? undefined
+                    : {
+                        ...baseIntent,
+                        persistQueued: (row) => baseIntent.persistQueued({ ...row, ownerRootSessionId: rootSid }),
+                    };
                 const result = await dispatchLatch({
                     plan: { wakes: [wake], humanLegIds: [], held: [] },
-                    rootSessionId: rootSid,
+                    rootSessionId: requestRoot,
                     sessionGeneration: config.generation,
                     coordinators: [coordinator],
                     ...(intent === undefined ? {} : { intent }),
@@ -1807,7 +1837,7 @@ export function createTeamProductionRoot(params) {
                             throw new Error('Alpha.6 wake seam disappeared after boot');
                         }
                         await live.deliverReviewWake({
-                            rootSessionId: rootSid,
+                            rootSessionId: requestRoot,
                             targetSessionId,
                             wakeId: delivery.wakeId,
                             text: delivery.text,
@@ -1831,17 +1861,23 @@ export function createTeamProductionRoot(params) {
     const alpha6ReviewWakeTurnEnd = alpha6Wiring.mode === 'alpha6'
         ? async (targetSessionId) => {
             const coordinator = alpha6WakeBySession.get(targetSessionId);
-            if (coordinator === undefined || coordinator.state.status !== 'running')
+            // A resumed latch is idle and waiting for the explicit user turn to
+            // finish before its post-turn rescan may deliver the still-pending
+            // work. Stop outranks the rescan; a queued wake still owns its row.
+            if (coordinator === undefined || coordinator.state.stopped)
                 return;
-            const releasedWakeId = coordinator.state.wakeId;
+            if (coordinator.state.status === 'queued')
+                return;
+            const releasedWakeId = coordinator.state.status === 'running' ? coordinator.state.wakeId : null;
+            const requestRoot = coordinator.state.key.rootSessionId;
             const readAndRelease = async () => {
                 // The FRESH authoritative read answering the post-turn rescan: the
                 // same facts port and the same reviewer resolution as the notifier.
                 const current = controlRef.current;
-                const requests = current === undefined ? [] : (await current.readControlState(rootSid)).requests;
+                const requests = current === undefined ? [] : (await current.readControlState(requestRoot)).requests;
                 const reviewerInstanceId = coordinator.state.key.reviewerInstanceId;
                 const fresh = await collectAlpha6DelegableLegs({
-                    rootSessionId: rootSid,
+                    rootSessionId: requestRoot,
                     reviewerInstanceId,
                     readRequests: async () => requests,
                     reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
@@ -1862,6 +1898,7 @@ export function createTeamProductionRoot(params) {
                     : { kind: 'ready', fingerprint: latchFingerprint(freshWake) };
                 const intent = alpha6WakeIntents?.forKey(coordinator.state.key);
                 const result = await releaseLatch(coordinator, work, {
+                    requestIds: fresh.map((entry) => entry.requestId),
                     ...(intent === undefined ? {} : { intent }),
                     ...(live.reviewWakeInbox === undefined
                         ? {}
@@ -1871,7 +1908,7 @@ export function createTeamProductionRoot(params) {
                             throw new Error('Alpha.6 wake seam disappeared after boot');
                         }
                         await live.deliverReviewWake({
-                            rootSessionId: rootSid,
+                            rootSessionId: requestRoot,
                             targetSessionId,
                             wakeId: delivery.wakeId,
                             text: renderLatchWake(delivery),
@@ -1893,7 +1930,7 @@ export function createTeamProductionRoot(params) {
                 }
                 catch (error) {
                     lastError = error;
-                    if (coordinator.state.status !== 'running')
+                    if (coordinator.state.stopped)
                         break;
                 }
             }
@@ -1916,22 +1953,233 @@ export function createTeamProductionRoot(params) {
             });
         }
         : undefined;
+    /**
+     * A TRUSTED user Stop, mapped onto the latch's Sticky Stop. Only the Host's
+     * `turn/end` with `reason.kind === 'aborted' && reason.reason.kind ===
+     * 'user'` calls this; ordinary tool aborts, timeouts and internal cancels do
+     * not. The marker is written BEFORE the reducer so a restart between the two
+     * cannot lose the Stop; an unclaimed queued wake is withdrawn and its intent
+     * row cleared, never replayed.
+     */
+    const alpha6WakeUserStop = alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
+        ? async (targetSessionId) => {
+            const coordinator = alpha6WakeBySession.get(targetSessionId);
+            if (coordinator === undefined)
+                return false;
+            const key = coordinator.state.key;
+            await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid);
+            const transition = coordinator.dispatch({ type: 'stop' });
+            if (transition.outcome !== 'applied')
+                return true;
+            for (const effect of transition.effects) {
+                if (effect.kind !== 'withdraw-wake')
+                    continue;
+                const inbox = live.reviewWakeInbox?.(targetSessionId);
+                try {
+                    await inbox?.remove?.(effect.wakeId);
+                    await alpha6WakeIntents.forKey(key).clear(effect.wakeId);
+                }
+                catch {
+                    // An unreadable Inbox keeps the durable row; recovery re-checks
+                    // the marker and refuses to adopt the wake.
+                }
+            }
+            return true;
+        }
+        : undefined;
+    /**
+     * An EXPLICIT new user interaction with the stopped reviewer Session. This
+     * is the only production resume: WorkChanged never calls it. The marker is
+     * cleared FIRST so a crash after the in-memory resume cannot resurrect the
+     * Stop on the next boot.
+     */
+    const alpha6WakeUserResume = alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
+        ? async (targetSessionId) => {
+            let coordinator = alpha6WakeBySession.get(targetSessionId);
+            if (coordinator === undefined) {
+                // The Stop cleared the intent row, so a fresh boot has no
+                // coordinator to find. Rebuild it from the durable marker itself;
+                // this grants nothing and delivers nothing until resume clears it.
+                const stoppedMarkers = await alpha6WakeIntents.listStopped();
+                const marker = stoppedMarkers
+                    .find((entry) => entry.targetSessionId === targetSessionId);
+                if (marker === undefined)
+                    return false;
+                coordinator = createLatchCoordinator(marker.key);
+                coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true });
+                const mapKey = `${marker.key.rootSessionId}\u0000${marker.key.reviewerInstanceId}\u0000${String(marker.key.sessionGeneration)}`;
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+                alpha6WakeBySession.set(targetSessionId, coordinator);
+            }
+            const key = coordinator.state.key;
+            await alpha6WakeIntents.clearStopped(key);
+            const transition = coordinator.dispatch({ type: 'resume' });
+            if (transition.outcome !== 'applied') {
+                // Only a real applied resume re-plans. A coordinator that was not
+                // stopped (an ordinary human chat on a live latch) must NOT
+                // fabricate a "ready" scan or deliver a spurious wake.
+                if (coordinator.state.stopped)
+                    await alpha6WakeIntents.markStopped(key, targetSessionId, rootSid);
+                return !coordinator.state.stopped;
+            }
+            // Re-plan the ACTUAL pending work (never an empty synthetic scan):
+            // read the durable ledger through the same collect + route path the
+            // boot rebuild uses, and deliver only when a real leg exists.
+            if (alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
+                const current = controlRef.current;
+                const requests = (await current.readControlState(key.rootSessionId)).requests;
+                const fresh = await collectAlpha6DelegableLegs({
+                    rootSessionId: key.rootSessionId,
+                    reviewerInstanceId: key.reviewerInstanceId,
+                    readRequests: async () => requests,
+                    reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
+                    resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
+                    route: alpha6Router.route,
+                });
+                if (fresh.length > 0) {
+                    await alpha6DispatchWake({
+                        rootSessionId: key.rootSessionId,
+                        reviewerInstanceId: key.reviewerInstanceId,
+                        targetSessionId,
+                        currentLegIds: fresh.map((entry) => entry.requestId),
+                    });
+                }
+            }
+            return true;
+        }
+        : undefined;
     const alpha6RecoverWakeLatches = alpha6Wiring.mode === 'alpha6' &&
         alpha6WakeIntents !== undefined &&
         live.reviewWakeInbox !== undefined
         ? async () => {
+            // Scheme A settlement: a PA invocation whose process died before the
+            // result became durable is closed by a NON-AUTHORIZING abandon fact.
+            // The durable decision is NEVER rewritten (an allow stays allow);
+            // the abandon only removes it from actionable pending. An unconsumed
+            // allow means the body never started; a consumed allow means the
+            // body may have started — its outcome is unknown and is NOT replayed.
+            const control = controlRef.current;
+            if (control !== undefined && control.abandonControlRequest !== undefined) {
+                const roots = new Set([rootSid]);
+                // The PA rows live under the Team root, which is not necessarily
+                // the mount root and may have no wake-intent row left. Enumerate
+                // this HOME's durable Team roots; only dead PA invocations (allow
+                // with no consumption, or consumed with no result) are settled.
+                for (const team of repos.teamSessions.list())
+                    roots.add(team.rootSessionId);
+                for (const row of await alpha6WakeIntents.list())
+                    roots.add(row.key.rootSessionId);
+                for (const root of roots) {
+                    let state;
+                    try {
+                        state = await control.readControlState(root);
+                    }
+                    catch {
+                        continue;
+                    }
+                    for (const request of state.requests) {
+                        const row = request;
+                        // Strict OWNER: only a row this boot root created may be
+                        // settled. An absent owner (legacy/pre-change row) is
+                        // unowned, never ours to close — fail closed.
+                        if (row.ownerRootSessionId !== rootSid)
+                            continue;
+                        if (!String(row.correlation ?? '').startsWith('pa:') && row.actionName !== 'team-tool-execute')
+                            continue;
+                        const decision = [...state.decisions].reverse().find((entry) => entry.requestId === row.requestId);
+                        if (decision === undefined || decision.decision !== 'allow')
+                            continue;
+                        if (state.abandonments.some((entry) => entry.requestId === row.requestId))
+                            continue;
+                        const consumed = state.consumptions.some((entry) => entry.requestId === row.requestId);
+                        const result = state.executionResults.find((entry) => entry.requestId === row.requestId);
+                        // A durable succeeded/failed result means the invocation
+                        // COMPLETED; it is not a dead call and must never be flipped
+                        // to abandoned by a later boot.
+                        if (result !== undefined && result.outcome !== 'unknown')
+                            continue;
+                        if (consumed && result === undefined) {
+                            const review = row.reviewPayload;
+                            const callId = review !== null && typeof review === 'object' && !Array.isArray(review)
+                                ? review['callId']
+                                : undefined;
+                            if (typeof callId === 'string' && callId.length > 0 && control.recordExecutionResult !== undefined) {
+                                try {
+                                    await control.recordExecutionResult({
+                                        rootSessionId: root,
+                                        callId,
+                                        ...(row.targetInstanceId === undefined ? {} : { instanceId: row.targetInstanceId }),
+                                        outcome: 'unknown',
+                                    });
+                                }
+                                catch (error) {
+                                    console.error(`[a6-settlement] result-unknown failed root=${root} request=${row.requestId} error=${error instanceof Error ? error.message : String(error)}`);
+                                }
+                            }
+                        }
+                        try {
+                            await control.abandonControlRequest({
+                                rootSessionId: root,
+                                caller: { kind: 'instance', instanceId: LEADER_INSTANCE_ID },
+                                requestId: row.requestId,
+                                reason: consumed ? 'execution-outcome-unknown' : 'invocation-abandoned',
+                            });
+                        }
+                        catch (error) {
+                            console.error(`[a6-settlement] failed root=${root} request=${row.requestId} consumed=${String(consumed)} error=${error instanceof Error ? error.message : String(error)}`);
+                            params.onNotificationFailure?.({
+                                requestId: row.requestId,
+                                kind: 'invocation-settlement-failed',
+                                error,
+                            });
+                        }
+                    }
+                }
+            }
+            // A durable Sticky Stop may exist with NO intent row (the wake was
+            // already withdrawn). Register its latch as stopped so an explicit
+            // resume can find it; this grants nothing and delivers nothing.
+            for (const marker of await alpha6WakeIntents.listStopped()) {
+                // Owner guard: a marker from another mount instance is never ours
+                // to register/clear. Legacy markers fall back to strict own-root.
+                const markerOwned = marker.ownerRootSessionId === undefined
+                    ? marker.key.rootSessionId === rootSid
+                    : marker.ownerRootSessionId === rootSid;
+                if (!markerOwned)
+                    continue;
+                if (marker.key.sessionGeneration !== config.generation)
+                    continue;
+                const targetSessionId = marker.targetSessionId;
+                if (targetSessionId === undefined)
+                    continue;
+                const mapKey = `${marker.key.rootSessionId}\u0000${marker.key.reviewerInstanceId}\u0000${String(marker.key.sessionGeneration)}`;
+                if (alpha6WakeCoordinators.has(mapKey))
+                    continue;
+                const coordinator = createLatchCoordinator(marker.key);
+                coordinator.dispatch({ type: 'recover', persistedWake: null, stopped: true });
+                alpha6WakeCoordinators.set(mapKey, coordinator);
+                alpha6WakeBySession.set(targetSessionId, coordinator);
+            }
             // ONE row per latch: adopt each independently; a row whose native
             // Inbox message is gone is discarded by the recovery protocol.
             for (const intent of await alpha6WakeIntents.list()) {
                 // A shared intent path may carry another Team's rows. Never adopt
-                // or clear them from this root.
-                if (intent.key.rootSessionId !== rootSid)
+                // or clear a row whose Team is not live in THIS process; the row's
+                // own root is the Team root, which is not necessarily the boot
+                // root this plugin instance was mounted under.
+                // Owner guard: a row written by another mount instance (or an
+                // older world) is never adopted/cleared here. Legacy rows without
+                // an owner keep the strict own-root fallback.
+                const intentOwned = intent.ownerRootSessionId === undefined
+                    ? intent.key.rootSessionId === rootSid
+                    : intent.ownerRootSessionId === rootSid;
+                if (!intentOwned)
                     continue;
                 if (intent.key.sessionGeneration !== config.generation) {
                     // A generation bump invalidates the old latch identity. Withdraw
                     // its native message (when the member is still bound) and clear
                     // the row; keep it if the Inbox cannot confirm the withdrawal.
-                    const staleMember = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                    const staleMember = await repos.memberInstances.get(intent.key.rootSessionId, intent.key.reviewerInstanceId);
                     const staleSessionId = staleMember?.childSessionId;
                     let removable = true;
                     if (typeof staleSessionId === 'string' && staleSessionId.length > 0) {
@@ -1968,7 +2216,7 @@ export function createTeamProductionRoot(params) {
                     }
                     continue;
                 }
-                const member = await repos.memberInstances.get(rootSid, intent.key.reviewerInstanceId);
+                const member = await repos.memberInstances.get(intent.key.rootSessionId, intent.key.reviewerInstanceId);
                 const targetSessionId = member?.childSessionId;
                 if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
                     // No child session means no native Inbox can ever hold this
@@ -2001,7 +2249,7 @@ export function createTeamProductionRoot(params) {
                     // dispatch already moved.
                     alpha6WakeCoordinators.set(mapKey, coordinator);
                     alpha6WakeBySession.set(targetSessionId, coordinator);
-                    const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false });
+                    const recovered = await recoverLatch(coordinator, alpha6WakeIntents.forKey(intent.key), live.reviewWakeInbox?.(targetSessionId) ?? { has: () => false }, await alpha6WakeIntents.isStopped(intent.key));
                     // Only a row the protocol actually discarded may be rebuilt. An
                     // unreadable Inbox, a concurrent state change, a refusal or a
                     // sticky Stop must keep the registered coordinator and row.
@@ -2011,6 +2259,16 @@ export function createTeamProductionRoot(params) {
                         alpha6WakeCoordinators.delete(mapKey);
                     if (alpha6WakeBySession.get(targetSessionId) === coordinator)
                         alpha6WakeBySession.delete(targetSessionId);
+                    // Native Inbox truth beats availability: row `accepted` but the
+                    // native message is gone means a crashed turn already claimed it.
+                    // Rebuilding would deliver a second wake; discard the stale row
+                    // instead (the durable Control request remains the work).
+                    if (recovered.reason === 'absent' && intent.status === 'accepted') {
+                        // The old native message was claimed by a dead turn. Clear the
+                        // stale intent, then rebuild ONCE from the durable ledger: the
+                        // still-actionable pending work gets exactly one NEW wake.
+                        await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId);
+                    }
                     rebuild = true;
                 });
                 if (!rebuild)
@@ -2023,9 +2281,9 @@ export function createTeamProductionRoot(params) {
                 let rebuiltWork = false;
                 if (!alpha6WakeCoordinators.has(mapKey) && alpha6DispatchWake !== undefined && alpha6Router !== undefined && controlRef.current !== undefined) {
                     const current = controlRef.current;
-                    const requests = (await current.readControlState(rootSid)).requests;
+                    const requests = (await current.readControlState(intent.key.rootSessionId)).requests;
                     const fresh = await collectAlpha6DelegableLegs({
-                        rootSessionId: rootSid,
+                        rootSessionId: intent.key.rootSessionId,
                         reviewerInstanceId: intent.key.reviewerInstanceId,
                         readRequests: async () => requests,
                         reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
@@ -2034,6 +2292,7 @@ export function createTeamProductionRoot(params) {
                     });
                     if (fresh.length > 0) {
                         await alpha6DispatchWake({
+                            rootSessionId: intent.key.rootSessionId,
                             reviewerInstanceId: intent.key.reviewerInstanceId,
                             targetSessionId,
                             currentLegIds: fresh.map((entry) => entry.requestId),
@@ -2068,6 +2327,7 @@ export function createTeamProductionRoot(params) {
             rootSessionId: rootSid,
             routing: alpha6Wiring.routing,
             leaderTemplateId: blueprint.leader.templateId,
+            routingForRoot: alpha6Wiring.routingForRoot,
             control: {
                 readControlState: async (rootSessionId) => {
                     const current = controlRef.current;
@@ -2077,10 +2337,10 @@ export function createTeamProductionRoot(params) {
                 },
             },
             members: { list: (rootSessionId) => repos.memberInstances.list(rootSessionId) },
-            fixedLeaderOrHumanCategory: ({ kind }) => createAlpha6CategoryLookup()({
-                rootSessionId: rootSid,
+            fixedLeaderOrHumanCategory: ({ kind, rootSessionId, routing }) => createAlpha6CategoryLookup()({
+                rootSessionId: rootSessionId ?? rootSid,
                 leg: { kind },
-                routing: alpha6Wiring.routing,
+                routing: routing ?? alpha6Wiring.routing,
             }),
         })
         : undefined;
@@ -2091,17 +2351,17 @@ export function createTeamProductionRoot(params) {
         ? createAlpha6RootControlNotifier({
             rootSessionId: rootSid,
             resolveCurrentReviewer: alpha6Wiring.ports.currentReviewerForTransfer,
-            memberSession: async (instanceId) => repos.memberInstances.get(rootSid, instanceId),
-            deliver: (wake) => live.deliverReviewWake === undefined
+            memberSession: async (requestRoot, instanceId) => repos.memberInstances.get(requestRoot, instanceId),
+            deliver: (requestRoot, wake) => live.deliverReviewWake === undefined
                 ? Promise.reject(new Error('Alpha.6 wake seam disappeared after boot'))
-                : live.deliverReviewWake({ rootSessionId: rootSid, ...wake }),
+                : live.deliverReviewWake({ rootSessionId: requestRoot, ...wake }),
             // Read the durable pending set lazily (the service exists after this
             // closure is built); the SAME trusted facts port filters every leg.
-            readRequests: async () => {
+            readRequests: async (requestRoot) => {
                 const current = controlRef.current;
                 if (current === undefined)
                     return [];
-                return (await current.readControlState(rootSid)).requests;
+                return (await current.readControlState(requestRoot)).requests;
             },
             reviewFacts: alpha6Wiring.ports.reviewCallFactsForAssignedOfficer,
             ...(alpha6Router === undefined ? {} : { route: alpha6Router.route }),
@@ -2111,14 +2371,49 @@ export function createTeamProductionRoot(params) {
             ...(alpha6DispatchWake === undefined ? {} : { dispatchWake: alpha6DispatchWake }),
         })
         : undefined;
+    // A6-PR2c transfer events are the wake plane's only signal that a CASE'S
+    // CURRENT LEG moved. Without this consumer the durable transfer is written
+    // but its successor is never woken — the old reviewer's latch is correctly
+    // retired, so the pending leg is left with no recipient at all. Re-read the
+    // moved leg, then run it through the SAME trusted notifier/route used at
+    // creation; the transfer route picks the Leader, never the former reviewer.
+    // `human-current-leg` is re-read too, but its native-human route is a
+    // deliberate no-op: human delivery is out of band via team.resolveControl,
+    // and this consumer does not claim a Host human wake.
+    const alpha6ReviewEventSink = alpha6Wiring.mode === 'alpha6' && alpha6RequestNotification !== undefined
+        ? (event) => {
+            if (event.kind !== 'current-leg-transferred' && event.kind !== 'human-current-leg')
+                return;
+            void (async () => {
+                const current = controlRef.current;
+                if (current === undefined)
+                    return;
+                const state = await current.readControlState(event.rootSessionId);
+                const record = state.requests.find((row) => row.requestId === event.currentLegRequestId);
+                if (record === undefined)
+                    return;
+                await alpha6RequestNotification.notifyLeaderRequest(record);
+            })().catch((error) => {
+                params.onNotificationFailure?.({
+                    requestId: event.currentLegRequestId,
+                    kind: `review-event-${event.kind}`,
+                    error,
+                });
+            });
+        }
+        : undefined;
     const control = createControlService({
         paEffectsVerifier: paEffectsVerifierPort,
+        ...(alpha6Wiring.mode === 'alpha6'
+            ? { a6AbandonUndeterminedAllow: true, mountRootSessionId: rootSid }
+            : {}),
         teamDomain: domain,
         blueprintCatalog: catalog,
         externalPolicyFacts,
         now,
         // ONLY the alpha6 mode contributes ports; `legacy` contributes nothing.
         ...(alpha6Wiring.mode === 'alpha6' ? alpha6Wiring.ports : {}),
+        ...(alpha6ReviewEventSink === undefined ? {} : { reviewEvents: alpha6ReviewEventSink }),
         ...(params.onNotificationFailure !== undefined
             ? { onNotificationFailure: params.onNotificationFailure }
             : {}),
@@ -3894,6 +4189,8 @@ export function createTeamProductionRoot(params) {
         ...(alpha6RecoverWakeLatches === undefined
             ? {}
             : { alpha6RecoverWakeLatches }),
+        ...(alpha6WakeUserStop === undefined ? {} : { alpha6WakeUserStop }),
+        ...(alpha6WakeUserResume === undefined ? {} : { alpha6WakeUserResume }),
         activity,
         fork,
         handoff,

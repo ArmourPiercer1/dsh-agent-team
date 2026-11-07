@@ -27,10 +27,21 @@ import type {
 } from '../review-router/index.js'
 import type { AssignedOfficerMemberSnapshot } from './assigned-officer-facts.js'
 
+export interface Alpha6RootRouting {
+  readonly routing: ReviewRouting
+  readonly leaderTemplateId: string
+}
+
 export interface Alpha6RootRouterInput {
   readonly rootSessionId: string
   readonly routing: ReviewRouting
   readonly leaderTemplateId: string
+  /**
+   * The frozen v5 policy of a CREATED team root. Null refuses that root: the
+   * boot policy is never reused for a root whose own Blueprint cannot be
+   * resolved. Absent preserves the single-root/test composition.
+   */
+  readonly routingForRoot?: (rootSessionId: string) => Alpha6RootRouting | null
   readonly control: {
     readonly readControlState: (rootSessionId: string) => Promise<ControlStateSnapshot>
   }
@@ -41,12 +52,18 @@ export interface Alpha6RootRouterInput {
   }
   readonly fixedLeaderOrHumanCategory: (input: {
     readonly kind: ControlRequestRecord['kind']
+    readonly rootSessionId?: string
+    readonly routing?: ReviewRouting
   }) => boolean | null | Promise<boolean | null>
 }
 
 export interface Alpha6RootRouter {
-  /** Route ONE durable leg; null when the row is absent/not a case leg. */
-  readonly route: (requestId: string) => Promise<ReviewRoute | null>
+  /**
+   * Route ONE durable leg; null when the row is absent/not a case leg.
+   * `rootSessionId` is the REQUEST's team root (a created team may differ
+   * from the boot root this composition was constructed under).
+   */
+  readonly route: (requestId: string, rootSessionId?: string) => Promise<ReviewRoute | null>
 }
 
 function authorityScopeOf(row: ControlRequestRecord): unknown {
@@ -98,7 +115,15 @@ function officerStateOf(
       member.childSessionId !== undefined &&
       member.templateId !== leaderTemplateId,
   )
-  const active = candidates.filter((member) => member.lifecycle === 'RUNNING')
+  // CREATED / RUNNING / SETTLED are all live member states; SETTLED is the
+  // normal idle state of an Officer between asks. Requiring RUNNING here made
+  // every real idle Officer invisible and held every route.
+  const active = candidates.filter(
+    (member) =>
+      member.lifecycle === 'CREATED' ||
+      member.lifecycle === 'RUNNING' ||
+      member.lifecycle === 'SETTLED',
+  )
   if (active.length === 1) {
     const officer = active[0]!
     return {
@@ -159,12 +184,24 @@ function legFactsOf(
 }
 
 export function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6RootRouter {
-  const policy = blueprintReviewPolicyFrom(input.routing)
   return {
-    async route(requestId: string): Promise<ReviewRoute | null> {
+    async route(requestId: string, rootSessionId?: string): Promise<ReviewRoute | null> {
+      const rootSessionIdForRead = rootSessionId ?? input.rootSessionId
+      const rootRouting = input.routingForRoot === undefined
+        ? { routing: input.routing, leaderTemplateId: input.leaderTemplateId }
+        : input.routingForRoot(rootSessionIdForRead)
+      if (rootRouting === null) {
+        return {
+          kind: 'hold',
+          holdReason: 'config-invalid',
+          reason: `no frozen v5 review routing is resolvable for root '${rootSessionIdForRead}'`,
+          currentLegId: requestId,
+        }
+      }
+      const policy = blueprintReviewPolicyFrom(rootRouting.routing)
       let state: ControlStateSnapshot
       try {
-        state = await input.control.readControlState(input.rootSessionId)
+        state = await input.control.readControlState(rootSessionIdForRead)
       } catch {
         return null
       }
@@ -172,8 +209,12 @@ export function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6Root
       if (row === undefined || row.approvalCaseId === undefined || row.legOrdinal === undefined) {
         return null
       }
-      const members = await input.members.list(input.rootSessionId)
-      const categoryAnswer = await input.fixedLeaderOrHumanCategory({ kind: row.kind })
+      const members = await input.members.list(rootSessionIdForRead)
+      const categoryAnswer = await input.fixedLeaderOrHumanCategory({
+        kind: row.kind,
+        rootSessionId: rootSessionIdForRead,
+        routing: rootRouting.routing,
+      })
       const category = categoryAnswer === true ? true : categoryAnswer === false ? false : null
       const currentLeg = legFactsOf(row, category)
       const transfer = transferOf(
@@ -182,8 +223,8 @@ export function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6Root
       return routeReview({
         policy,
         currentLeg,
-        currentOfficer: officerStateOf(members, input.routing.officerTemplateId, input.leaderTemplateId),
-        leader: leaderTargetOf(members, input.leaderTemplateId),
+        currentOfficer: officerStateOf(members, rootRouting.routing.officerTemplateId, rootRouting.leaderTemplateId),
+        leader: leaderTargetOf(members, rootRouting.leaderTemplateId),
         transfer,
       })
     },

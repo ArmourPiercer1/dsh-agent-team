@@ -79,13 +79,26 @@ export function createAlpha6RootControlNotifier(ports) {
                 throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' carries no approval case identity and no Leader notification seam`);
             }
             if (ports.route !== undefined) {
-                const route = await ports.route(request.requestId);
+                const route = await ports.route(request.requestId, request.rootSessionId);
                 if (route === null) {
                     throw new Error(`Alpha.6 review wake refused: no trusted route for request '${request.requestId}' (no Leader fallback)`);
                 }
                 if (route.kind === 'no-work')
                     return;
                 if (route.kind === 'unroutable' || route.kind === 'hold') {
+                    // A LEGACY row whose OWN durable authority is the Leader (the
+                    // parameter-permission ask carries no Alpha.6 ordinary-tool facts)
+                    // is legally the Leader's to settle. An authored policy `hold` is
+                    // NEVER overridden, and an A6 ordinary ask (tool owner/name
+                    // present) is never handed to the Leader.
+                    const legacyLeaderRow = request.kind === 'leader-approval' &&
+                        request.reviewAuthority === 'leader' &&
+                        request.operationToolOwner === undefined &&
+                        request.operationToolName === undefined;
+                    if (route.kind === 'unroutable' && legacyLeaderRow && ports.notifyLeader !== undefined) {
+                        await ports.notifyLeader(request);
+                        return;
+                    }
                     throw new Error(`Alpha.6 review wake refused: request '${request.requestId}' is ${route.kind} (${route.reason}); no Officer wake and no Leader fallback`);
                 }
                 if (route.target.kind === 'native-human')
@@ -100,7 +113,7 @@ export function createAlpha6RootControlNotifier(ports) {
                 return await deliverOfficerWake(ports, request, route.target.instanceId);
             }
             const reviewer = await ports.resolveCurrentReviewer({
-                rootSessionId: ports.rootSessionId,
+                rootSessionId: request.rootSessionId,
                 approvalCaseId: request.approvalCaseId,
                 currentLegRequestId: request.requestId,
                 legOrdinal: request.legOrdinal,
@@ -114,7 +127,7 @@ export function createAlpha6RootControlNotifier(ports) {
     return notifier;
     async function deliverOfficerWake(ports, request, reviewerInstanceId) {
         const reviewer = { instanceId: reviewerInstanceId };
-        const member = await ports.memberSession(reviewer.instanceId);
+        const member = await ports.memberSession(request.rootSessionId, reviewer.instanceId);
         const targetSessionId = member?.childSessionId;
         if (typeof targetSessionId !== 'string' || targetSessionId.length === 0) {
             throw new Error(`Alpha.6 review wake refused: reviewer '${reviewer.instanceId}' has no live child session (no Leader fallback)`);
@@ -124,7 +137,7 @@ export function createAlpha6RootControlNotifier(ports) {
         // a fixed Leader/Human category or a different reviewer is left out.
         const merged = ports.readRequests !== undefined && ports.reviewFacts !== undefined
             ? await collectAlpha6DelegableLegs({
-                rootSessionId: ports.rootSessionId,
+                rootSessionId: request.rootSessionId,
                 reviewerInstanceId: reviewer.instanceId,
                 seed: request,
                 readRequests: ports.readRequests,
@@ -136,6 +149,7 @@ export function createAlpha6RootControlNotifier(ports) {
         const mergedIds = merged.map((entry) => entry.requestId).sort();
         if (ports.dispatchWake !== undefined) {
             await ports.dispatchWake({
+                rootSessionId: request.rootSessionId,
                 reviewerInstanceId: reviewer.instanceId,
                 targetSessionId,
                 currentLegIds: mergedIds,
@@ -143,14 +157,14 @@ export function createAlpha6RootControlNotifier(ports) {
             return;
         }
         if (merged.length === 1) {
-            await ports.deliver({
+            await ports.deliver(request.rootSessionId, {
                 targetSessionId,
                 wakeId: `review:${request.requestId}`,
                 text: renderOfficerReviewWake(request),
             });
             return;
         }
-        await ports.deliver({
+        await ports.deliver(request.rootSessionId, {
             targetSessionId,
             wakeId: `review:${mergedIds.join(',')}`,
             text: renderMergedOfficerReviewWake(merged),
@@ -179,7 +193,7 @@ export async function collectAlpha6DelegableLegs(input) {
     const merged = input.seed === undefined ? [] : [input.seed];
     let pending;
     try {
-        pending = await input.readRequests();
+        pending = await input.readRequests(input.rootSessionId);
     }
     catch {
         pending = [];
@@ -196,7 +210,7 @@ export async function collectAlpha6DelegableLegs(input) {
         if (candidate.legOrdinal < 1 || candidate.reviewAuthority === undefined)
             continue;
         if (input.route !== undefined) {
-            const route = await input.route(candidate.requestId);
+            const route = await input.route(candidate.requestId, input.rootSessionId);
             if (route === null ||
                 route.kind !== 'recipient' ||
                 route.target.kind !== 'instance' ||

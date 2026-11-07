@@ -213,6 +213,13 @@ export interface PaControlServiceLike {
         readonly approvalCaseId: string;
         readonly signal?: ControlWaitSignal;
     }) => Promise<ControlDecisionRecord>;
+    /** Non-authorizing lifecycle close: the approval DECISION is untouched. */
+    abandonControlRequest?: (input: {
+        readonly rootSessionId: string;
+        readonly caller: PaControlCaller;
+        readonly requestId: string;
+        readonly reason?: string;
+    }) => Promise<unknown>;
     awaitControlDecision(input: {
         readonly rootSessionId: string;
         readonly requestId: string;

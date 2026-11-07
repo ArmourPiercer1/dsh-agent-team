@@ -232,6 +232,14 @@ export interface TeamPluginConfig {
    * cannot reconcile a queued wake.
    */
   readonly alpha6WakeIntentPath?: string
+  /**
+   * Alpha.6 (opt-in only) — the bounded approval wait for an A6 PA leg, in
+   * milliseconds. When unset the production wiring uses 600000 (10 minutes);
+   * the wait is still abortable by the caller's signal and a timeout never
+   * decides, mints or consumes. The durable request keeps its original
+   * meaning and can be resolved later; this invocation simply stops waiting.
+   */
+  readonly alpha6WaitTimeoutMs?: number
   /** The durable TeamSession `generation` (positive integer). */
   readonly generation: number
   /** The effective default workspace (TeamSession record field). */
@@ -1058,6 +1066,13 @@ export interface TeamProductionRoot {
    * row is discarded and a later plan may deliver again.
    */
   readonly alpha6RecoverWakeLatches?: () => Promise<void>
+  /**
+   * Alpha.6 — a trusted user Stop for the reviewer's latch (durable marker +
+   * in-memory Sticky Stop). Ordinal tool aborts and timeouts never call it.
+   */
+  readonly alpha6WakeUserStop?: (targetSessionId: string) => Promise<boolean>
+  /** Alpha.6 — an explicit new user interaction clears the Stop. */
+  readonly alpha6WakeUserResume?: (targetSessionId: string) => Promise<boolean>
   /** A26 — the activity ledger (guarded progress writes + durable reads). */
   readonly activity: ActivityLedger
   /** A27 — the fork reconciliation (sidecar recognition + child team). */

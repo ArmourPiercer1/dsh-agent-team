@@ -545,6 +545,23 @@ describe('A6 assigned-Officer facts provider (composition-owned)', () => {
     }
   })
 
+  it('resolves a SETTLED Officer (the normal idle state is still a live reviewer)', async () => {
+    const world = await makeWorld('a6-facts-settled')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-facts-settled')
+      await mirror.refresh(service)
+
+      await flipLifecycle(world, OFFICER, 'SETTLED')
+      expect(await port.resolveCurrentReviewer(queryOf(leg))).toEqual({ instanceId: OFFICER })
+      expect(await port(queryOf(leg))).not.toBeNull()
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
   it('refuses a stale Officer (no live RUNNING instance of the Officer template)', async () => {
     const world = await makeWorld('a6-facts-stale')
     try {
@@ -700,6 +717,106 @@ describe('A6 control reader (non-locking) and its composed control ports', () =>
     })
     return { service, ports }
   }
+
+  it('resolves a CREATED team root through its own frozen routing, never the boot policy', async () => {
+    const child = parseAlpha6Routing(v5Source('8'))
+    if (child === null) throw new Error('child fixture did not parse')
+    const childRoot = 'root-a6-created'
+    const childLeg = {
+      rootSessionId: childRoot,
+      requestId: 'ctrl-a6-created-leg',
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      status: 'pending',
+      requester: { kind: 'instance', instanceId: WORKER },
+      subject: { kind: 'instance', instanceId: WORKER },
+      approvalCaseId: 'case-a6-created',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+      requestedEffect: 'allow',
+      operationOwnerTemplateId: 'worker',
+      operationToolDefinitionIdentity: 'tool-def-a6',
+      operationToolOwner: 'dsh-agent-team',
+      operationToolName: 'bash',
+      authorityGeneration: 0,
+      blueprintContentHash: child.blueprint.contentHash,
+      blueprintRevision: child.blueprint.revision,
+    } as never
+    const ports = createAlpha6ControlPorts({
+      rootSessionId: P6T4_ROOT,
+      routing: BASE_ROUTING,
+      routingForRoot: (root) => root === childRoot ? child : null,
+      control: {
+        readControlState: async (root) => ({
+          requests: root === childRoot ? [childLeg] : [],
+          transfers: [],
+        } as never),
+      },
+      fixedLeaderOrHumanCategory: () => false,
+      members: {
+        get: (root, instanceId) =>
+          root === childRoot && instanceId === 'inst-a6-created-officer'
+            ? ({ rootSessionId: childRoot, instanceId, templateId: 'officer', childSessionId: 'session-a6-created-officer', lifecycle: 'SETTLED' } as never)
+            : undefined,
+        list: (root) => root === childRoot
+          ? [({ rootSessionId: childRoot, instanceId: 'inst-a6-created-officer', templateId: 'officer', childSessionId: 'session-a6-created-officer', lifecycle: 'SETTLED' } as never)]
+          : [],
+      },
+    })
+    await expect(ports.currentReviewerForTransfer({
+      rootSessionId: childRoot,
+      approvalCaseId: 'case-a6-created',
+      currentLegRequestId: 'ctrl-a6-created-leg',
+      legOrdinal: 1,
+    })).resolves.toEqual({ instanceId: 'inst-a6-created-officer' })
+  })
+
+  it('refuses a root when routingForRoot explicitly answers null (even if the boot policy would resolve)', async () => {
+    // A LEG-BEARING fixture: the leg is valid under BASE_ROUTING and the
+    // boot root's live Officer is present. The pre-fix `?? input.routing`
+    // would therefore resolve that Officer; the explicit null must refuse.
+    const bootLeg = {
+      rootSessionId: P6T4_ROOT,
+      requestId: 'ctrl-a6-null-leg',
+      kind: 'leader-approval',
+      requester: { kind: 'instance', instanceId: WORKER },
+      subject: { kind: 'instance', instanceId: WORKER },
+      approvalCaseId: 'case-a6-null-leg',
+      legOrdinal: 1,
+      reviewAuthority: 'leader',
+      requestedEffect: 'allow',
+      operationOwnerTemplateId: 'worker',
+      operationToolDefinitionIdentity: 'tool-def-a6-null',
+      operationToolOwner: 'dsh-agent-team',
+      operationToolName: 'bash',
+      authorityGeneration: 0,
+      blueprintContentHash: BASE_ROUTING.blueprint.contentHash,
+      blueprintRevision: BASE_ROUTING.blueprint.revision,
+    } as never
+    const bootOfficer = {
+      rootSessionId: P6T4_ROOT,
+      instanceId: OFFICER,
+      templateId: BASE_ROUTING.routing.officerTemplateId,
+      childSessionId: 'session-a6-null-officer',
+      lifecycle: 'SETTLED',
+    } as never
+    const ports = createAlpha6ControlPorts({
+      rootSessionId: P6T4_ROOT,
+      routing: BASE_ROUTING,
+      routingForRoot: () => null,
+      control: { readControlState: async () => ({ requests: [bootLeg], transfers: [] } as never) },
+      members: {
+        get: (root, instanceId) => root === P6T4_ROOT && instanceId === OFFICER ? bootOfficer : undefined,
+        list: (root) => root === P6T4_ROOT ? [bootOfficer] : [],
+      },
+      fixedLeaderOrHumanCategory: () => false,
+    })
+    await expect(ports.currentReviewerForTransfer({
+      rootSessionId: P6T4_ROOT,
+      approvalCaseId: 'case-a6-null-leg',
+      currentLegRequestId: 'ctrl-a6-null-leg',
+      legOrdinal: 1,
+    })).resolves.toBeNull()
+  })
 
   it('live root composition pins no startup Officer and resolves the current unique one at query time', async () => {
     const world = await makeWorld('a6-live-root-composition')
