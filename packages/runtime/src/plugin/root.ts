@@ -2832,6 +2832,53 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     alpha6WakeIntents !== undefined &&
     live.reviewWakeInbox !== undefined
       ? async (): Promise<void> => {
+          // Scheme A settlement: a PA invocation whose process died before the
+          // result became durable is closed by a NON-AUTHORIZING abandon fact.
+          // The durable decision is NEVER rewritten (an allow stays allow);
+          // the abandon only removes it from actionable pending. An unconsumed
+          // allow means the body never started; a consumed allow means the
+          // body may have started — its outcome is unknown and is NOT replayed.
+          const control = controlRef.current
+          if (control !== undefined && control.abandonControlRequest !== undefined) {
+            const roots = new Set<string>([rootSid])
+            // The PA rows live under the Team root, which is not necessarily
+            // the mount root and may have no wake-intent row left. Enumerate
+            // this HOME's durable Team roots; only dead PA invocations (allow
+            // with no consumption, or consumed with no result) are settled.
+            for (const team of repos.teamSessions.list()) roots.add(team.rootSessionId)
+            for (const row of await alpha6WakeIntents.list()) roots.add(row.key.rootSessionId)
+            for (const root of roots) {
+              let state
+              try {
+                state = await control.readControlState(root)
+              } catch {
+                continue
+              }
+              for (const request of state.requests) {
+                const row = request as unknown as { requestId: string; correlation?: string; actionName?: string }
+                if (!String(row.correlation ?? '').startsWith('pa:') && row.actionName !== 'team-tool-execute') continue
+                const decision = [...state.decisions].reverse().find((entry) => entry.requestId === row.requestId)
+                if (decision === undefined || decision.decision !== 'allow') continue
+                if (state.abandonments.some((entry) => entry.requestId === row.requestId)) continue
+                const consumed = state.consumptions.some((entry) => entry.requestId === row.requestId)
+                try {
+                  await control.abandonControlRequest({
+                    rootSessionId: root,
+                    caller: { kind: 'instance', instanceId: LEADER_INSTANCE_ID },
+                    requestId: row.requestId,
+                    reason: consumed ? 'execution-outcome-unknown' : 'invocation-abandoned',
+                  })
+                } catch (error: unknown) {
+                  console.error(`[a6-settlement] failed root=${root} request=${row.requestId} consumed=${String(consumed)} error=${error instanceof Error ? error.message : String(error)}`)
+                  params.onNotificationFailure?.({
+                    requestId: row.requestId,
+                    kind: 'invocation-settlement-failed',
+                    error,
+                  })
+                }
+              }
+            }
+          }
           // A durable Sticky Stop may exist with NO intent row (the wake was
           // already withdrawn). Register its latch as stopped so an explicit
           // resume can find it; this grants nothing and delivers nothing.
@@ -2923,7 +2970,6 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             }
             const mapKey = `${intent.key.rootSessionId}\u0000${intent.key.reviewerInstanceId}\u0000${String(intent.key.sessionGeneration)}`
             let rebuild = false
-            let discarded = false
             await withAlpha6WakeLock(mapKey, async () => {
               // A concurrent readiness-gated dispatch may already own this
               // latch. Its coordinator is authoritative; never recover over it.
@@ -2953,13 +2999,14 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
               // Rebuilding would deliver a second wake; discard the stale row
               // instead (the durable Control request remains the work).
               if (recovered.reason === 'absent' && intent.status === 'accepted') {
+                // The old native message was claimed by a dead turn. Clear the
+                // stale intent, then rebuild ONCE from the durable ledger: the
+                // still-actionable pending work gets exactly one NEW wake.
                 await alpha6WakeIntents.forKey(intent.key).clear(intent.wakeId)
-                discarded = true
-                return
               }
               rebuild = true
             })
-            if (!rebuild || discarded) continue
+            if (!rebuild) continue
             // Windows (b)/(d): the native message is gone (claimed and consumed
             // by a crashed turn, or never delivered). Rebuild the wake from the
             // durable ledger in THIS boot; dispatch re-converges with any

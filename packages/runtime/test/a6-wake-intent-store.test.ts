@@ -286,3 +286,34 @@ describe('A6 durable Sticky Stop marker', () => {
     await expect(directory.readStopped(KEY)).resolves.toBeNull()
   })
 })
+
+describe('A6 Sticky Stop owner isolation', () => {
+  let dir: string
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'a6-sticky-owner-'))
+  })
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true })
+  })
+
+  it('reads back the owner and keeps two mounts isolated', async () => {
+    const directory = createFileWakeIntentDirectory(dir)
+    await directory.markStopped(KEY, 'session-reviewer-child', 'session-root-a')
+    await expect(directory.readStopped(KEY)).resolves.toEqual({
+      key: KEY,
+      targetSessionId: 'session-reviewer-child',
+      ownerRootSessionId: 'session-root-a',
+    })
+    await expect(directory.listStopped()).resolves.toEqual([
+      { key: KEY, targetSessionId: 'session-reviewer-child', ownerRootSessionId: 'session-root-a' },
+    ])
+    // Owner B can see the file only by key; recovery filters on the owner it
+    // read back, so B never treats A's marker as its own.
+    const markers = await directory.listStopped()
+    expect(markers.filter((m) => m.ownerRootSessionId === 'session-root-b')).toEqual([])
+    await directory.clearStopped(KEY)
+    await expect(directory.isStopped(KEY)).resolves.toBe(false)
+  })
+})

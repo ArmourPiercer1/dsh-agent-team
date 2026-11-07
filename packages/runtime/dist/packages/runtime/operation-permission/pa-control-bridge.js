@@ -340,10 +340,11 @@ export function createPaControlLeg(deps) {
         }
         let controller;
         let timer;
+        let timedOut = false;
         try {
             if (deps.waitTimeoutMs !== undefined) {
                 controller = new AbortController();
-                timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs);
+                timer = setTimeout(() => { timedOut = true; controller?.abort(); }, deps.waitTimeoutMs);
                 signals.push(controller.signal);
             }
             const waitSignal = signals.length === 1
@@ -379,8 +380,25 @@ export function createPaControlLeg(deps) {
                 && (error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED || error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)) {
                 // UNSETTLED: the durable row stays exactly as it is (a later resolve
                 // is unaffected); zero mint, zero guard, zero body by construction.
+                // A bounded wait that expires ABANDONS this invocation (a durable,
+                // non-authorizing terminal mark). The approval DECISION is never
+                // rewritten: no allow→deny, no deny→allow. A later human resolve on an
+                // abandoned request is refused as terminal, not recorded as a deny.
+                if (deps.a6 === true && timedOut && deps.controlService.abandonControlRequest !== undefined) {
+                    try {
+                        await deps.controlService.abandonControlRequest({
+                            rootSessionId: deps.rootSessionId,
+                            caller: deps.caller,
+                            requestId: record.requestId,
+                            reason: 'invocation-abandoned',
+                        });
+                    }
+                    catch (abandonError) {
+                        observe({ stage: 'leg-abandon-failed', callId, requestId: record.requestId, detail: abandonError instanceof Error ? abandonError.message : String(abandonError) });
+                    }
+                }
                 observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, code: error.code });
-                return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String(error.code)} (the durable request is untouched)` };
+                return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String(error.code)} (the invocation is abandoned; the durable decision is untouched)` };
             }
             return deny(`the approval wait failed: ${error instanceof Error ? error.message : String(error)}`, record.requestId);
         }

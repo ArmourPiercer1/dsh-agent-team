@@ -142,6 +142,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, 
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
+import { DSH_BASELINE_VERSION } from '../../../tests/paths.mjs'
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
@@ -298,6 +299,7 @@ const FILE_X_ALLOW = join(WORKSPACE, `c1-x-allow-${RUN_STAMP}.txt`)
 const FILE_X_DENY = join(WORKSPACE, `c1-x-deny-${RUN_STAMP}.txt`)
 const SUM_A6_ALLOW = `c1-a6-allow-${RUN_STAMP}`
 const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
+const FILE_A6_BODY_START = join(WORKSPACE, `c1-a6-body-start-${RUN_STAMP}.txt`)
 // Optional recipient probe: the OFFICER itself asks for a governed bash tool.
 // The current-leg OperationOwner is then the Officer template, so the router
 // must route the self-ask to the Leader (never back to the Officer).
@@ -306,7 +308,7 @@ const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
-const A6_CRASH = ['1', 'allow', 'consume', 'before'].includes(String(process.env['C1_A6_CRASH']))
+const A6_CRASH = ['1', 'allow', 'consume', 'body', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
 const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
 const A6_INBOX = process.env['C1_A6_INBOX'] === '1'
@@ -322,6 +324,9 @@ const FILE_Z = join(WORKSPACE, `c1-z-${RUN_STAMP}.txt`)
 const CMD_X_ALLOW = `echo ${SUM_X_ALLOW} > ${FILE_X_ALLOW} && echo x-allow-executed`
 const CMD_X_DENY = `echo ${SUM_X_DENY} > ${FILE_X_DENY} && echo x-deny-executed`
 const CMD_A6_ALLOW = `echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW} && echo a6-allow-executed`
+// body-started-but-result-unknown probe: the start marker is durable BEFORE the
+// result write; a crash between them must never replay the body.
+const CMD_A6_BODY = `echo body-started > ${FILE_A6_BODY_START} && sleep 20 && echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW}`
 const CMD_Y = `echo ${SUM_Y} > ${FILE_Y} && echo y-executed`
 const CMD_Z = `echo ${SUM_Z_FILE} > ${FILE_Z} && echo z-executed`
 
@@ -1154,6 +1159,25 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     writeEvidence('a6-create-fail.json', create.body ?? create)
     return false
   }
+  {
+    const sha = spawnSync('git', ['-C', process.cwd(), 'rev-parse', 'HEAD'], { encoding: 'utf8' })
+    const blueprintHash = create.body?.result?.value?.data?.durable?.teamSession?.blueprint?.contentHash ?? null
+    writeEvidence('run-manifest.json', {
+      runId: RUN_STAMP,
+      productSha: sha.status === 0 ? sha.stdout.trim() : null,
+      hostVersion: DSH_BASELINE_VERSION,
+      hostBaselineSha: HOST_BASELINE_SHA,
+      blueprintHash,
+      rootSessionId: CREATE_ROOT_A6,
+      optIn: {
+        alpha6Officer: ALPHA6_OFFICER,
+        planeTakeover: PLANE_TAKEOVER,
+        stickyStop: A6_STICKY_STOP,
+        inboxReconcile: A6_INBOX,
+        timeoutMs: A6_TIMEOUT_MS,
+      },
+    })
+  }
 
   if (A6_INBOX) {
     // Native-Inbox reconciliation: the wake turn is held open (30 s mock think
@@ -1168,7 +1192,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       wakeRows = existsSync(markerDir)
         ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
         : []
-      wakesBefore = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      wakesBefore = new Set(mock.requests
+        .map((r) => /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1])
+        .filter((id) => id !== undefined)).size
       if (wakeRows.length > 0 && wakesBefore > 0) break
       await new Promise((resolve) => setTimeout(resolve, 250))
     }
@@ -1219,7 +1245,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       // ledger: one replacement wake, never a duplicate of the consumed one.
       const replacementDeadline = Date.now() + 90_000
       while (Date.now() < replacementDeadline) {
-        wakesAfterDrain = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+        wakesAfterDrain = new Set(mock.requests
+          .map((r) => /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1])
+          .filter((id) => id !== undefined)).size
         if (wakesAfterDrain > wakesAfterRestart) break
         await new Promise((resolve) => setTimeout(resolve, 250))
       }
@@ -1234,17 +1262,18 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const pendingAfter = ledgerAfter.requests.filter(
       (r) => !ledgerAfter.decisions.some((d) => d.requestId === r.requestId),
     )
-    // Honest scope: the crashed claim must not be duplicated, the stale intent
-    // row must be reconciled away, and the durable pending request must remain
-    // (the wake is advisory; the row is the work). A boot-time replacement
-    // wake is allowed but not required by this assertion.
+    // LIVENESS: the crashed claim must be replaced by exactly ONE NEW wake
+    // (distinct wakeId) at recovery, never the old one redelivered; the
+    // durable request must be either still pending or durably decided (the
+    // replacement wake may legitimately resolve it). `wakes*` = distinct ids.
+    const decidedAfter = new Set(ledgerAfter.decisions.map((d) => d.requestId))
     const inboxOk = restartError === null && intentBefore !== null
-      && rowsAfterRestart.length === 0
-      && wakesAfterRestart <= wakesBefore + 1
-      && wakesAfterDrain <= wakesBefore + 1
+      && rowsAfterRestart.length <= 1
+      && wakesAfterRestart === wakesBefore + 1
+      && wakesAfterDrain <= wakesAfterRestart
       && pendingBefore.length > 0
-      && pendingBefore.every((id) => pendingAfter.some((r) => r.requestId === id))
-    check('A6-25', 'a wake claimed by a crashed turn is reconciled without duplicate: the stale intent is discarded and the durable pending request survives', inboxOk,
+      && pendingBefore.every((id) => decidedAfter.has(id) || pendingAfter.some((r) => r.requestId === id))
+    check('A6-25', 'a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided', inboxOk,
       `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} pendingBefore=${pendingBefore.length} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
     writeEvidence('a6-inbox-reconcile.json', {
       busySeen,
@@ -1367,7 +1396,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const paDecision = pa === null ? null : ledger.decisions.find((d) => d.requestId === pa.requestId) ?? null
     const paConsumption = pa === null ? null : ledger.consumptions.find((c) => c.requestId === pa.requestId) ?? null
     const executed = existsSync(FILE_A6_ALLOW)
-    check('A6-19', 'a bounded A6 approval wait expires without deciding, consuming or executing, and leaves the durable request pending',
+    check('A6-19', 'a bounded A6 approval wait expires without deciding, consuming or executing; the durable request remains as a non-actionable abandoned invocation',
       pa !== null && paDecision === null && paConsumption === null && !executed,
       `timeoutMs=${String(A6_TIMEOUT_MS)} pa=${String(pa?.requestId)} decision=${String(paDecision?.decision)} consumed=${String(paConsumption !== null)} executed=${String(executed)}`)
     let late = null
@@ -1384,16 +1413,18 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const lateDecision = pa === null ? null : after.decisions.find((d) => d.requestId === pa.requestId) ?? null
     const lateConsumption = pa === null ? null : after.consumptions.find((c) => c.requestId === pa.requestId) ?? null
     const lateFile = existsSync(FILE_A6_ALLOW)
-    check('A6-20', 'a late allow after the wait timed out is recorded fail-closed, never consumed or executed',
-      lateDecision?.decision === 'deny' && lateConsumption === null && !lateFile,
-      `decision=${String(lateDecision?.decision)} reason=${String(lateDecision?.reason)} consumed=${String(lateConsumption !== null)} executed=${String(lateFile)}`)
-    writeEvidence('a6-timeout.json', { timeoutMs: A6_TIMEOUT_MS, pa, paDecision, paConsumption, executed, late: late?.body ?? late, lateDecision, lateConsumption, lateFile })
-    return pa !== null && paDecision === null && paConsumption === null && !executed && lateDecision !== null && lateConsumption === null && !lateFile
+    const lateAbandonment = pa === null ? null : after.abandonments.find((a) => a.requestId === pa.requestId) ?? null
+    check('A6-20', 'a late allow after the wait timed out is refused because the invocation was abandoned: the approval decision is never rewritten, with zero consumption and zero execution',
+      lateDecision === null && lateAbandonment !== null && lateConsumption === null && !lateFile,
+      `decision=${String(lateDecision?.decision)} abandonment=${String(lateAbandonment?.reason)} consumed=${String(lateConsumption !== null)} executed=${String(lateFile)}`)
+    writeEvidence('a6-timeout.json', { timeoutMs: A6_TIMEOUT_MS, pa, paDecision, paConsumption, executed, late: late?.body ?? late, lateDecision, lateAbandonment, lateConsumption, lateFile })
+    return pa !== null && paDecision === null && paConsumption === null && !executed && lateDecision === null && lateAbandonment !== null && lateConsumption === null && !lateFile
   }
   if (A6_CRASH) {
     const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow'
       : process.env['C1_A6_CRASH'] === 'consume' ? 'consume'
-        : process.env['C1_A6_CRASH'] === 'before' ? 'before' : 'request'
+        : process.env['C1_A6_CRASH'] === 'body' ? 'body'
+          : process.env['C1_A6_CRASH'] === 'before' ? 'before' : 'request'
     if (crashMode === 'before') {
       const watchDeadline = Date.now() + 60_000
       let sawAdmission = false
@@ -1446,7 +1477,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     let pa = null
     let decided = null
     let consumed = null
-    const waitDeadline = Date.now() + 60_000
+    const waitDeadline = Date.now() + (crashMode === 'body' ? 180_000 : 60_000)
     while (Date.now() < waitDeadline) {
       const current = readControlLedger(CREATE_ROOT_A6)
       pa = current.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
@@ -1455,6 +1486,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       const ready = crashMode === 'request'
         || (crashMode === 'allow' && decided !== null && decided.decision === 'allow')
         || (crashMode === 'consume' && consumed !== null)
+        || (crashMode === 'body' && consumed !== null && existsSync(FILE_A6_BODY_START))
       if (pa !== null && ready) break
       await new Promise((resolve) => setTimeout(resolve, 25))
     }
@@ -1500,20 +1532,34 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     let revived = false
     let late = null
     let decisionAfter = null
-    if (crashMode === 'allow' || crashMode === 'consume') {
+    if (crashMode === 'allow' || crashMode === 'consume' || crashMode === 'body') {
       const final = readControlLedger(CREATE_ROOT_A6)
       const consBefore = beforeKill?.consumptions.filter((c) => c.requestId === pa?.requestId).length ?? 0
       const consAfter = final.consumptions.filter((c) => c.requestId === pa?.requestId).length
       const fileCount = existsSync(FILE_A6_ALLOW)
         ? (readFileSync(FILE_A6_ALLOW, 'utf8').match(new RegExp(SUM_A6_ALLOW, 'g')) ?? []).length
         : 0
+      const bodyStart = existsSync(FILE_A6_BODY_START)
+      const abandonment = pa === null ? null : final.abandonments.find((a) => a.requestId === pa.requestId) ?? null
       revived = fileCount > 0
-      check(crashMode === 'consume' ? 'A6-16' : 'A6-15', `a Host crash after the PA ${crashMode === 'consume' ? 'allow was consumed' : 'allow but before consumption'} does not add a second consumption or execution after restart`,
-        afterRestart.error === null && decided?.decision === 'allow' && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1,
-        `mode=${crashMode} restart=${afterRestart.error ?? 'ok'} decision=${String(decided?.decision)} consBefore=${String(consBefore)} consAfter=${String(consAfter)} fileBefore=${String(beforeFileCount)} fileAfter=${String(fileCount)} revived=${String(revived)}`)
-      writeEvidence('a6-crash.json', { mode: crashMode, pa, beforeKill, durable, restart: { error: afterRestart.error }, decisionAfter: decided, revived, consBefore, consAfter, beforeFileCount, fileCount })
+      const expectReason = crashMode === 'allow' ? 'invocation-abandoned' : 'execution-outcome-unknown'
+      const noReplay = afterRestart.error === null && decided?.decision === 'allow'
+        && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1
+        && abandonment?.reason === expectReason
+        && (crashMode === 'allow'
+          ? !bodyStart
+          : crashMode === 'consume' ? !bodyStart : bodyStart && fileCount === 0)
+      check(crashMode === 'consume' ? 'A6-16' : crashMode === 'body' ? 'A6-16b' : 'A6-15',
+        crashMode === 'allow'
+          ? 'a Host crash after the PA allow but before consumption leaves the allow intact, abandons the dead invocation and executes nothing'
+          : crashMode === 'consume'
+            ? 'a Host crash after consumption but BEFORE the body starts proves zero execution and records execution-outcome-unknown'
+            : 'a Host crash with the body STARTED but the result not durable records execution-outcome-unknown and never replays the body',
+        noReplay,
+        `mode=${crashMode} restart=${afterRestart.error ?? 'ok'} decision=${String(decided?.decision)} consBefore=${String(consBefore)} consAfter=${String(consAfter)} fileBefore=${String(beforeFileCount)} fileAfter=${String(fileCount)} bodyStart=${String(bodyStart)} abandon=${String(abandonment?.reason)} revived=${String(revived)}`)
+      writeEvidence('a6-crash.json', { mode: crashMode, pa, beforeKill, durable, restart: { error: afterRestart.error }, decisionAfter: decided, abandonment, revived, consBefore, consAfter, beforeFileCount, fileCount, bodyStart })
       if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
-      return afterRestart.error === null && decided?.decision === 'allow' && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1
+      return noReplay
     }
     if (afterRestart.booted !== null && pa !== null) {
       late = await remoteCall(afterRestart.booted.origin, afterRestart.booted.cookie, 'team.resolveControl', {
@@ -1529,9 +1575,15 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       const consumed = final.consumptions.find((c) => c.requestId === pa.requestId) ?? null
       check('A6-13', 'a Host crash after the PA request write leaves the durable request recoverable, with no execution before/after restart', exited && pa !== null && final.requests.some((r) => r.requestId === pa.requestId) && !revived,
         `exited=${String(exited)} pa=${String(pa?.requestId)} restart=${afterRestart.error ?? 'ok'} decision=${JSON.stringify(decisionAfter)} consumed=${String(consumed !== null)} file=${String(revived)}`)
-      const failClosed = decisionAfter?.decision === 'deny' && decisionAfter?.reason === 'authority-undetermined'
-      check('A6-14', 'after a Host crash and restart, a human allow fails closed as authority-undetermined and cannot execute the dead member call', failClosed && !revived,
-        `decision=${String(decisionAfter?.decision)} reason=${String(decisionAfter?.reason)} consumed=${String(consumed !== null)} file=${String(revived)}`)
+      const crashAbandonment = final.abandonments.find((a) => a.requestId === pa.requestId) ?? null
+      // Scheme A: a late human allow may be recorded as an ALLOW (the human's
+      // decision is immutable) but it is never rewritten to deny and never
+      // revives the dead call. A boot settlement may instead close the
+      // invocation; both shapes are acceptable, a deny is not.
+      const settled = (decisionAfter === null && crashAbandonment !== null)
+        || (decisionAfter?.decision === 'allow' && consumed === null)
+      check('A6-14', 'after a Host crash the dead invocation is settled without a deny rewrite and a late human allow cannot execute it', settled && !revived,
+        `decision=${String(decisionAfter?.decision)} abandon=${String(crashAbandonment?.reason)} consumed=${String(consumed !== null)} file=${String(revived)}`)
       writeEvidence('a6-crash.json', { pa, beforeKill, durable, restart: { error: afterRestart.error }, late: late.body ?? late, decisionAfter, revived })
       if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
     } else {
@@ -1881,7 +1933,7 @@ function makeDecide() {
     }
     if (lastUser.includes(MK_A6MEM)) {
       switch (tools) {
-        case 0: return toolCall('bash', bashArgs(CMD_A6_ALLOW))
+        case 0: return toolCall('bash', bashArgs(process.env['C1_A6_CRASH'] === 'body' ? CMD_A6_BODY : CMD_A6_ALLOW))
         case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
         default: return { kind: 'text', content: `C1_A6_MEMBER_FALLTHROUGH tools=${String(tools)}` }
       }
@@ -2172,7 +2224,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
  * {factType, rootSessionId, payload, ...}. Read-only.
  */
 function readControlLedger(root) {
-  const out = { requests: [], decisions: [], consumptions: [], transfers: [], escalations: [], error: null }
+  const out = { requests: [], decisions: [], consumptions: [], abandonments: [], transfers: [], escalations: [], error: null }
   try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const ledger = parsed?.tables?.ledger
@@ -2189,6 +2241,8 @@ function readControlLedger(root) {
         out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, reason: payload.reason, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-allow-consumed') {
         out.consumptions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, createdAt: entry.createdAt })
+      } else if (entry.factType === 'control-request-abandoned') {
+        out.abandonments.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, reason: payload.reason, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-current-leg-transferred') {
         out.transfers.push({ sequence: Number(k), factType: entry.factType, ...payload })
       } else if (entry.factType === 'control-escalation-recorded') {

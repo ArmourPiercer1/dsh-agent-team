@@ -248,6 +248,13 @@ export interface PaControlServiceLike {
     readonly approvalCaseId: string
     readonly signal?: ControlWaitSignal
   }) => Promise<ControlDecisionRecord>
+  /** Non-authorizing lifecycle close: the approval DECISION is untouched. */
+  abandonControlRequest?: (input: {
+    readonly rootSessionId: string
+    readonly caller: PaControlCaller
+    readonly requestId: string
+    readonly reason?: string
+  }) => Promise<unknown>
   awaitControlDecision(input: {
     readonly rootSessionId: string
     readonly requestId: string
@@ -535,10 +542,11 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     }
     let controller: AbortController | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
+    let timedOut = false
     try {
       if (deps.waitTimeoutMs !== undefined) {
         controller = new AbortController()
-        timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs)
+        timer = setTimeout(() => { timedOut = true; controller?.abort() }, deps.waitTimeoutMs)
         signals.push(controller.signal as unknown as ControlWaitSignal)
       }
       const waitSignal = signals.length === 1
@@ -571,8 +579,24 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
         && (error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED || error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)) {
         // UNSETTLED: the durable row stays exactly as it is (a later resolve
         // is unaffected); zero mint, zero guard, zero body by construction.
+        // A bounded wait that expires ABANDONS this invocation (a durable,
+        // non-authorizing terminal mark). The approval DECISION is never
+        // rewritten: no allow→deny, no deny→allow. A later human resolve on an
+        // abandoned request is refused as terminal, not recorded as a deny.
+        if (deps.a6 === true && timedOut && deps.controlService.abandonControlRequest !== undefined) {
+          try {
+            await deps.controlService.abandonControlRequest({
+              rootSessionId: deps.rootSessionId,
+              caller: deps.caller,
+              requestId: record.requestId,
+              reason: 'invocation-abandoned',
+            })
+          } catch (abandonError: unknown) {
+            observe({ stage: 'leg-abandon-failed', callId, requestId: record.requestId, detail: abandonError instanceof Error ? abandonError.message : String(abandonError) })
+          }
+        }
         observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, code: (error as { code: string }).code })
-        return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String((error as { code: string }).code)} (the durable request is untouched)` }
+        return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String((error as { code: string }).code)} (the invocation is abandoned; the durable decision is untouched)` }
       }
       return deny(`the approval wait failed: ${error instanceof Error ? error.message : String(error)}`, record.requestId)
     } finally {

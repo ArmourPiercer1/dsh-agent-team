@@ -51,9 +51,11 @@ export function createFileWakeIntentDirectory(directory) {
                 const parsed = JSON.parse(await readFile(this.stoppedPathFor(key), 'utf8'));
                 if (parsed.key === undefined)
                     return null;
-                return parsed.targetSessionId === undefined
-                    ? { key: parsed.key }
-                    : { key: parsed.key, targetSessionId: parsed.targetSessionId };
+                return {
+                    key: parsed.key,
+                    ...(parsed.targetSessionId === undefined ? {} : { targetSessionId: parsed.targetSessionId }),
+                    ...(parsed.ownerRootSessionId === undefined ? {} : { ownerRootSessionId: parsed.ownerRootSessionId }),
+                };
             }
             catch {
                 return null;
@@ -74,9 +76,11 @@ export function createFileWakeIntentDirectory(directory) {
                 try {
                     const parsed = JSON.parse(await readFile(join(directory, name), 'utf8'));
                     if (parsed.key !== undefined) {
-                        markers.push(parsed.targetSessionId === undefined
-                            ? { key: parsed.key }
-                            : { key: parsed.key, targetSessionId: parsed.targetSessionId });
+                        markers.push({
+                            key: parsed.key,
+                            ...(parsed.targetSessionId === undefined ? {} : { targetSessionId: parsed.targetSessionId }),
+                            ...(parsed.ownerRootSessionId === undefined ? {} : { ownerRootSessionId: parsed.ownerRootSessionId }),
+                        });
                     }
                 }
                 catch { /* an unreadable marker never becomes a Stop */ }
