@@ -1,0 +1,232 @@
+{
+  "schema": "a5sf-pd17-mutation-controls/1",
+  "suite": "tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs",
+  "controls": [
+    {
+      "id": "MA-fs-shadow-removed",
+      "description": "the route-C attach appends no PD-17 filesystem module — the pre-fix composition (the four tools on the inherited base provider)",
+      "edits": [
+        {
+          "file": "packages/runtime/src/plugin/live/a5sf-realm-row.mjs"
+        }
+      ],
+      "expectedRed": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "A1",
+        "A2",
+        "A4",
+        "S1",
+        "D6",
+        "C1"
+      ],
+      "arms": {
+        "D1": "fail",
+        "D2": "fail",
+        "D3": "fail",
+        "D4": "fail",
+        "D5": "fail",
+        "A1": "fail",
+        "A2": "fail",
+        "A3": "pass",
+        "A4": "fail",
+        "A5": "pass",
+        "S1": "fail",
+        "D6": "fail",
+        "S2": "pass",
+        "C1": "fail"
+      },
+      "observedRed": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "A1",
+        "A2",
+        "A4",
+        "S1",
+        "D6",
+        "C1"
+      ],
+      "observedGreen": [
+        "A3",
+        "A5",
+        "S2"
+      ],
+      "missingGreen": [
+        "P0-skipped"
+      ],
+      "expectedRedMissing": [],
+      "unexpectedRed": [],
+      "patternHolds": true,
+      "exitStatus": 1
+    },
+    {
+      "id": "MB-read-axis-decision-removed",
+      "description": "the confined provider still evaluates the locator and records a fact, but the READ branch no longer refuses (the write branch is untouched)",
+      "edits": [
+        {
+          "file": "packages/runtime/team-services/src/fs.ts"
+        }
+      ],
+      "expectedRed": [
+        "D1",
+        "D2",
+        "D5",
+        "D6",
+        "C1"
+      ],
+      "arms": {
+        "D1": "fail",
+        "D2": "fail",
+        "D3": "pass",
+        "D4": "pass",
+        "D5": "fail",
+        "A1": "pass",
+        "A2": "pass",
+        "A3": "pass",
+        "A4": "pass",
+        "A5": "pass",
+        "S1": "pass",
+        "D6": "fail",
+        "S2": "pass",
+        "C1": "fail"
+      },
+      "observedRed": [
+        "D1",
+        "D2",
+        "D5",
+        "D6",
+        "C1"
+      ],
+      "observedGreen": [
+        "D3",
+        "D4",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "S1",
+        "S2"
+      ],
+      "missingGreen": [
+        "P0-skipped"
+      ],
+      "expectedRedMissing": [],
+      "unexpectedRed": [],
+      "patternHolds": true,
+      "exitStatus": 1
+    },
+    {
+      "id": "MD-fs-owner-detection-removed",
+      "description": "the row no longer recognises a configured filesystem-face module (the inject/name/expectedTools ownership check is removed), so it appends a SECOND registration of the same names beside a composition that owns them",
+      "edits": [
+        {
+          "file": "packages/runtime/src/plugin/live/a5sf-realm-row.mjs"
+        }
+      ],
+      "expectedRed": [
+        "S2"
+      ],
+      "arms": {
+        "D1": "pass",
+        "D2": "pass",
+        "D3": "pass",
+        "D4": "pass",
+        "D5": "pass",
+        "A1": "pass",
+        "A2": "pass",
+        "A3": "pass",
+        "A4": "pass",
+        "A5": "pass",
+        "S1": "pass",
+        "D6": "pass",
+        "S2": "fail",
+        "C1": "pass"
+      },
+      "observedRed": [
+        "S2"
+      ],
+      "observedGreen": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "S1",
+        "D6",
+        "C1"
+      ],
+      "missingGreen": [
+        "P0-skipped"
+      ],
+      "expectedRedMissing": [],
+      "unexpectedRed": [],
+      "patternHolds": true,
+      "exitStatus": 1
+    },
+    {
+      "id": "MC-visible-subset-narrowing-removed",
+      "description": "the module places all four shipped names regardless of the visible surface",
+      "edits": [
+        {
+          "file": "packages/runtime/src/plugin/live/confined-fs-tool.mjs"
+        }
+      ],
+      "expectedRed": [
+        "D6"
+      ],
+      "arms": {
+        "D1": "pass",
+        "D2": "pass",
+        "D3": "pass",
+        "D4": "pass",
+        "D5": "pass",
+        "A1": "pass",
+        "A2": "pass",
+        "A3": "pass",
+        "A4": "pass",
+        "A5": "pass",
+        "S1": "pass",
+        "D6": "fail",
+        "S2": "pass",
+        "C1": "pass"
+      },
+      "observedRed": [
+        "D6"
+      ],
+      "observedGreen": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "S1",
+        "S2",
+        "C1"
+      ],
+      "missingGreen": [
+        "P0-skipped"
+      ],
+      "expectedRedMissing": [],
+      "unexpectedRed": [],
+      "patternHolds": true,
+      "exitStatus": 1
+    }
+  ]
+}

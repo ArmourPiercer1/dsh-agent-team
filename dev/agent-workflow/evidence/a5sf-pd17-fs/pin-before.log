@@ -1,0 +1,203 @@
+✔ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them (19.120767ms)
+✖ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads (3.991495ms)
+✖ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact (4.742948ms)
+✖ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes (4.466676ms)
+✖ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact (4.694548ms)
+✖ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact (4.412212ms)
+✖ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts (3.553537ms)
+✖ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact (6.453257ms)
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes (5.048225ms)
+✖ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged (3.489596ms)
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store (2.738895ms)
+✖ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced (2.863001ms)
+✖ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds (4.74955ms)
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged (14.527283ms)
+✖ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place) (3.204566ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 4
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 388.663768
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:448:1
+✖ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads (3.991495ms)
+  AssertionError [ERR_ASSERTION]: the row appended its FS shadow to the attach
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:452:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:470:1
+✖ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact (4.742948ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:476:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:488:1
+✖ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes (4.466676ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:494:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:506:1
+✖ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact (4.694548ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:513:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:524:1
+✖ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact (4.412212ms)
+  AssertionError [ERR_ASSERTION]: the out-of-lane image read failed
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:530:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:545:1
+✖ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts (3.553537ms)
+  AssertionError [ERR_ASSERTION]: the allow decision was recorded
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:555:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:563:1
+✖ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact (6.453257ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(allowFactsOf(await factsOf(world)).length >= 1)
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:573:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:595:1
+✖ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged (3.489596ms)
+  AssertionError [ERR_ASSERTION]: a write without read coverage of an existing file is refused
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:607:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:638:1
+✖ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced (2.863001ms)
+  AssertionError [ERR_ASSERTION]: read is the SHADOW definition, not the preset one
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:649:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Object],
+    expected: [Object],
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:658:1
+✖ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds (4.74955ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:668:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:722:1
+✖ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place) (3.204566ms)
+  AssertionError [ERR_ASSERTION]: the shadow refuses while mounted
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs:727:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

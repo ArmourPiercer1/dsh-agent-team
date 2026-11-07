@@ -1,0 +1,34 @@
+{
+  "delegateA": {
+    "call": {
+      "id": "call-a5sfpd17-delegate-a",
+      "name": "team_delegate",
+      "arguments": {
+        "rootSessionId": "session-a5sf-pd17-team",
+        "requestToken": "a5sf-pd17-member-a-delegate",
+        "delegationTemplateId": "lane-a",
+        "label": "a5sfpd17-a",
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace",
+        "prompt": "a5sf-pd17-member-a: run your eight probes exactly once each, in the order given, one tool call at a time, then report. Do not skip and do not repeat.",
+        "async": false
+      }
+    },
+    "result": null
+  },
+  "delegateB": {
+    "call": {
+      "id": "call-a5sfpd17-delegate-b",
+      "name": "team_delegate",
+      "arguments": {
+        "rootSessionId": "session-a5sf-pd17-team",
+        "requestToken": "a5sf-pd17-member-b-delegate",
+        "delegationTemplateId": "lane-b",
+        "label": "a5sfpd17-b",
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs/tests/homes/u5u5a5sfpd17-20261107T18-50-41Z/workspace",
+        "prompt": "a5sf-pd17-member-b: run your two probes exactly once each, in the order given, one tool call at a time, then report.",
+        "async": false
+      }
+    },
+    "result": null
+  }
+}

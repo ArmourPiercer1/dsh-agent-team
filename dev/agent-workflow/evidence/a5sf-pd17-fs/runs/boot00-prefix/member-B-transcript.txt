@@ -1,0 +1,20 @@
+SESSION session-team-child-6969eaa68780fb1fbafc60b135a52246 (/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd17-fs-pinbase-tests-homes-u5u5a5sfpd17-20261107T18-54-12Z-workspace--/session-team-child-6969eaa68780fb1fbafc60b135a52246/session.v4.jsonl.zstd)
+
+TOOL CALL [bash] call-a5sfpd17-b-read-own
+  {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b/b.txt'","description":"Control: read lane B through the governed shell","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b"}
+TOOL RESULT isError=false
+  {"kind":"confined-terminal","sessionId":"confined-pty-1","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"cancelled":false,"stdout":"A5SF_PD17_SIBLING_LANE_B_BYTES\n","stderr":"","scrollback":"A5SF_PD17_SIBLING_LANE_B_BYTES"}
+
+TOOL CALL [read] call-a5sfpd17-b-read-cross
+  {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-a/a.txt"}
+TOOL RESULT isError=false
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-a/a.txt</path>
+<type>file</type>
+<content>
+1: A5SF_PD17_LANE_A_BYTES
+
+(End of file - total 1 lines)
+</content>
+
+FINAL: A5SF_PD17_B_DONE <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-a/a.txt</path>
+<type>fil

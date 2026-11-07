@@ -1,0 +1,54 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-02d04nx1cb8c",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:bdcd41221fe8c7236f25998c3422661d",
+    "method": "shellRead",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b/b.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-07T18:55:45.275Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-02d04nx1cb8c",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:bdcd41221fe8c7236f25998c3422661d",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-07T18:55:45.280Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-02d04nx1cb8c",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:bdcd41221fe8c7236f25998c3422661d",
+    "method": "spawn:write",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 2,
+    "observedAt": "2026-11-07T18:55:45.283Z"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-1y3th5a0xs71",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:e13962c4b53689e9f55a53ebbd097e72",
+    "method": "shellRead",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b/b.txt",
+    "decision": "deny",
+    "decidedBy": "IO_READ_DENIED",
+    "sequence": 1,
+    "observedAt": "2026-11-07T18:55:48.855Z"
+  }
+]

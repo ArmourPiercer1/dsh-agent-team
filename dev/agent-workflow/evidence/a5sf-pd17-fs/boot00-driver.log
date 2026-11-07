@@ -1,0 +1,27 @@
+[2026-11-07T18:54:11.987Z] HEAD=bd952e7d09b293ee99e0c96ec228f8af2380ed90 pin=639ed015397290b3745d163aafe02ffee4aa3f84 startedAt=2026-11-07T18:54:11.958Z
+[2026-11-07T18:54:12.019Z] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-07T18:54:12.020Z] dev-live lease grant=devlive-pd17-fs-1 world=u5a5sfpd17 head=bd952e7d09b293ee99e0c96ec228f8af2380ed90 holdsSlot=false
+[2026-11-07T18:54:12.024Z] world=u5u5a5sfpd17-20261107T18-54-12Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z
+[2026-11-07T18:54:12.026Z] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-07T18:54:24.276Z] mock on 3493
+[2026-11-07T18:54:43.825Z] p6t6 health=true
+[2026-11-07T18:55:43.955Z] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-07T18:55:48.826Z] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfrv-jg3rloa74j","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd17-team","blueprint":{"blueprintId":"team.a5sf.pd17.main","revision":"1","contentHash":"sha256:3e6bdb866992e94a68f4e16482c5c46d3276588a35a41c04320686887a7992c1"},"createdAt":"2026-11-07T18:55:44.008Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace"},"binding":{"schemaVersion":1,"kind":"team-root","s
+[2026-11-07T18:55:48.826Z] leader chain closed (A5SF_PD17_L1_DONE)=true
+[2026-11-07T18:55:48.835Z] members=[{"instanceId":"inst-02d04nx1cb8c","templateId":"lane-b","lifecycle":"SETTLED"},{"instanceId":"inst-1y3th5a0xs71","templateId":"lane-a","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}]
+[2026-11-07T18:55:48.851Z] cross-dispatch readB: status=200 body={"ok":true,"value":{"path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b/b.txt","offset":1,"lines":[{"number":1,"text":"A5SF_PD17_SIBLING_LANE_B_BYTES"}],"totalLines":1}}
+[2026-11-07T18:55:48.857Z] cross-dispatch bashB: status=200 body={"ok":false,"error":{"message":"IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/tests/homes/u5u5a5sfpd17-20261107T18-54-12Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"}}
+[2026-11-07T18:55:48.859Z] case pd17:two-members-admitted: PASS
+[2026-11-07T18:55:48.859Z] case pd17:a-read-own-allow: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-write-own-allow: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-edit-own-allow: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-read-cross-typed-deny: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-read-host-typed-deny: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-write-cross-typed-deny: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-edit-cross-typed-deny: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:a-read-image-cross-stated: PASS
+[2026-11-07T18:55:48.859Z] case pd17:b-read-a-typed-deny: FAIL
+[2026-11-07T18:55:48.859Z] case pd17:facts-name-their-own-member: PASS
+[2026-11-07T18:55:48.859Z] case pd17:surface-unchanged: PASS
+[2026-11-07T18:55:48.860Z] SUMMARY RUN-SUMMARY run=a5sf-recon-review-2026-11-07T18-54-11-989Z-b1 suite=a5sf-pd17-fs overall=FAIL cases=12 FAIL:8 PASS:4 worlds=none recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-07T18:55:48.984Z] DONE overall=FAIL file=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd17-fs-pinbase/dev/agent-workflow/evidence/a5sf-pd17-fs/runs/boot00/pd17-fs.json
