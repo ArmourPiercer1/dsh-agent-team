@@ -138,6 +138,33 @@ Member 仍在它上面。
 **一句话**：这次不是"Members 已经受治"，而是"**已经没有人能一边声称受治、一边静默地不受治地跑**"——只在
 opt-in 声称存在的地方成立；默认路径既不作这个声称，也没有获得任何新保证。
 
+## 1.5 2026-11-14：两轮修复之后的真实地面状态（只追加；不覆盖 §1 / §1.1 / §1.2 / §1.3 / §1.4 任何字节）
+
+本节只回答“两轮修复（PD-16/PD-17/PD-18/PD-19）合并之后，每条面今天最强的一句真话是什么”。
+记录类别 = 既有 **`DEV-LIVE` + host-free** 证据的重述，**本节 0 boots**；**no `V@B`**、无等级移动、
+`release BLOCKED` 不变。数字口径与逐工具表在 `TOOL-ACCEPTANCE-MATRIX.md` §1.7（受治 7 / 表面存在但
+不受治 33 / 完全不在面 13；面上 40 名）。
+
+| face | 2026-11-14 的一行（有证据） | 仍然不能写（边界） |
+|---|---|---|
+| **FS Provider**（M-01…M-05） | 在 **shipped opt-in 受治 preset** 上，`read` / `write` / `edit` / `read_image` 四个原生工具的名字不变，定义被 route-C 重挂到 confined `fs` face：越界读 0 字节 + typed `IO_READ_DENIED` + 恰 1 条 deny fact，越界写/改不改盘；in-lane 读写编辑保留（`DEV-LIVE` + host-free 双向臂）。`read_image` 的 live 调用仍 `NOT_REACHED`（模型路由不声明图像输入），其 face 行为只有 host-free A5/D5。证据 = `a5sf-pd17-fs/README.md`、`a5sf-pd18-web-ptc/runs/boot02/member-surface.json`。 | 默认 `standard` 路径一个字节未变，**没有** shipped 默认声明 `a5sfMemberPolicies`；`read_image` 的 live 成功/拒绝都未观测；原子替换、只写不读的 Team 语义仍原样；no `V@B`。 |
+| **Search** | 在同一个受治 preset 上，`grep` / `glob` 由 confined `subprocess` face（真 `rg` + launcher）服务：越界根在**任何进程存在之前**被拒（`spawns=0→0`、typed 拒绝、1 条 deny fact、0 字节），in-lane 搜索与 exit 0/1/2 保真。证据 = `a5sf-pd16-search/README.md`（D1–D3 / A1 / A2 / S1）。 | 模型看到的拒绝文本仍是宿主包的 “ripgrep provider failure”，typed code 只在 fact 里（改措辞要动 pinned 包，超出预算）；`toolBindingIdentity` 仍为 `null`（v4 toolBindings 无 Member 关联）；no `V@B`。 |
+| **Shell** | `bash` 在受治 preset 上就是 confined terminal face（每条命令一个 fresh confined child）：in-lane 读返回 lane 字节、out-of-lane 读 `IO_READ_DENIED` 且 0 字节，结果在 Member 自己的 durable transcript 里；两次一致（`DEV-LIVE`）。**命令正文对同机进程可见**（`terminal.ts:535` argv 携带 `bash -c <text>`；ARGV-ERRATA #663 已撤回旧“不可见”断言）。 | **受治 = 读轴准入**：动态 shell 读（`$(…)`/反引号）不可词法归因、准入层不拒；持久 PTY / 受管 Job 在该 preset 上不存在；真实 PTY 的 OS 级行为（session leader、进程组信号、zombie/fd）仍未观测；`timeoutMs`/后台 job/sandbox 升级不在这个面上；no `V@B`。 |
+| **Web** | **没有变强，只有回退**：`web_fetch` / `web_search` 已从受治 preset **fail-closed 移除**（PD-18），Member 调用是 typed `UNKNOWN_TOOL`、0 provider entry、0 字节；`standard` preset 仍声明它们，confined web face 本身仍可用（host-free allow/deny 臂）。证据 = `a5sf-pd18-web-ptc/README.md` §1/§2.1。 | “Web 面已受治”仍不可写；face 的 deny 是 **service-level** 准入拒绝，不是 OS 网络隔离；`network: restricted` 仍 `UNSUPPORTED`；BL-42 的 netns 不覆盖进程内 web transport；no `V@B`。 |
+| **External execution**（M-11/M-12/M-17/M-18） | **仍然没有受治路径**：`workflow`（PTC）随 PD-18 一并 fail-closed 移除（`ptcRuntimeInMemberWindow=0`），`run_code` / `lsp` 不在面，stdio/remote MCP 无产品接线、`mcpServers: []`。`UNSUPPORTED` / `NOT_WIRED` 原样。 | “`UNSUPPORTED` 等于已经限制”仍是禁止读法；远端 MCP/SSH 的“远端效果不承诺”是披露，不是保证。 |
+| **Cross-face**（治理/发布） | **`bash`、`grep`、`glob`、`read`、`write`、`edit` 六条路径在受治 preset 上由 confined face 服务并产 fact；PD-19 之后这些 fact 可带 `tool` + `callId`**（carrier 在 `tools/execute`，不读决策；host-free 只实测 `read`，live 归因未测）。另有 `read_image` 是第 7 条 confined 路径（live `NOT_REACHED`）。**失败层 = 准入层（L1）**：读/搜索在任何 provider 调用或进程之前拒绝。`web` 与 PTC 是 **fail-closed 移除**；External 无受治路径。证据 = `a5sf-pd19-fact-attr/README.md` FA1/FA2/FA6、`guard-observability.ts:109-117`、`install.ts:640-642`。 | **默认 `standard` 路径不变**（大多数 Member 仍在它上面）；**网络 deny 仍是服务级准入/不可达，不是 OS 隔离**；**per-Team scratch 隔离未接线**；**无 `V@B`**；`release BLOCKED` 不变（G2/Q7 重基线、G3–G5、独立 `CANDIDATE-C2`）。 |
+
+**一句话（可引用）**：
+
+> 两轮修复之后，一个**显式 opt-in** 的受治 Team 上，`bash`、`grep`、`glob`、`read`、`write`、`edit`
+> 六条路径由 confined face 服务并在准入层拒绝越界（`DEV-LIVE` + host-free；PD-19 后 fact 可归因到
+> `tool` + `callId`）；`web_fetch` / `web_search` / `workflow` 是 fail-closed **能力回退**，不是受治；
+> 默认 `standard` 路径、网络 OS 隔离、per-Team scratch、`V@B` 都没有变化。
+
+**未证清单（与本句同读，不得省略）**：网络 deny 在 OS 层、动态 shell 读（`$(…)`/反引号）、per-Team
+scratch isolation、`skill` 正文读、MCP/LSP、持久 PTY/受管 Job、`read_image` 的 live 行为、
+`subagent` 子 realm 装配。
+
 ## 2. 十条产品债：当前状态与 owner 决策
 
 状态词只有两个：**`FIXED`（有已合并 PR）** 与 **`OPEN`**。`PRODUCT-DEBT-REGISTER.md` 的正文仍是
