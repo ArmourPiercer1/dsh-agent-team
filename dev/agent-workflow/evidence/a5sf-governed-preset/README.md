@@ -257,3 +257,15 @@ register as an agent-scoped shadow).
 
 上一轮 PD-12/PD-13 lane 也各记过一笔；这次是本 lane 自己漏记后由 CI 抓出，属修正而非新增放宽——定律仍精确：
 `scanner total === 983 + Σ(unbased bookings)`。
+
+## 2026-11-12 — census 第二红：命名挂载点必须登记（并回到公共面）
+
+`census` 第二次红，原因不是记账而是**两条真实的接线法则**：
+
+1. `a5w-integration-wiring` / `a5p4-lane-hygiene` 都要求：**每个引用 confined provider lane 的生产文件必须是一条
+   booked 的命名挂载**，并且只能有一条**公共面**（`sandbox-provider/index.js`）的 import 边。
+   新模块当时用 `sandbox-provider/provider.js`（**深层导入**）——这正是法则要禁的形状，即便它今天能用。
+2. 处理方式：产品代码改回**公共面**导入；两条法则各自登记一条命名行（`file` + 唯一边），两处列表同步移动。
+
+这不是为了让门禁变绿而放宽：法则的牙齿（未登记即红、深层导入即红、登记行必须真的调用工厂）一个都没有动。
+`check-artifacts-committed` 随后在 dist 重建后 `verdict=ok compared=1971`。

@@ -170,6 +170,15 @@ describe('a5p4 lane purity and dormancy', () => {
       lane: 'a5srgp (u6-pr5 moved: search-family lane) — anchored confined-rg search row',
       edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
     },
+    {
+      // GOVERNED-PRESET (owner ruling 2026-11-11): the opt-in governed Member
+      // realm (Team-level explicit memberPresetId) compiles its realm from the
+      // real bound blueprint + Alpha.4 authority and mounts the confined
+      // provider through the public face only.
+      file: 'runtime/src/plugin/live/a5sf-governed-realm.mjs',
+      lane: 'a5sfgovpreset — opt-in governed Member realm (product assembly)',
+      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+    },
     // U7-G6b: `tools/search-family/src/search-mechanics.mjs` is UNBOOKED —
     // its only provider mount was the ARCHIVED CANDIDATE-A glob factory,
     // RETIRED (a second, unrepaired copy of the walker law; the census-load

@@ -70,7 +70,7 @@ import {
   deriveProductRealmPlanFromBlueprint,
 } from '../../../team-services/src/product-assembly.js'
 import { TeamServiceInstallError } from '../../../team-services/src/types.js'
-import { createConfinedProcessProvider } from '../../../sandbox-provider/provider.js'
+import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 
 /** The realm identity this preset pins into its capability/evidence rows. */
 export const GOVERNED_REALM_ID = 'a5sf-governed-member'
