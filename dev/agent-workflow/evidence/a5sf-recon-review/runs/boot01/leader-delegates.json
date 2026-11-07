@@ -1,0 +1,42 @@
+{
+  "delegateA": {
+    "call": {
+      "id": "call-a5sfrv-delegate-a",
+      "name": "team_delegate",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rv-team",
+        "requestToken": "a5sf-rv-member-a-delegate",
+        "delegationTemplateId": "lane-a",
+        "label": "a5sfrv-a",
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-37-03Z/workspace",
+        "prompt": "a5sf-rv-member-a: run your five probes exactly once each, in the order given, one tool call at a time, then report. Do not skip and do not repeat.",
+        "async": false
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rv-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1tbexue1i25w\",\"templateId\":\"lane-a\",\"childSessionId\":\"session-team-child-50e89cbd1019f30403e8a26085053fa9\",\"operationId\":\"op-12qq2lv04sin9m0nqoy1h0tu\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rv-member-a-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RV_A_DONE Error: URL hostname \\\"127.0.0.1\\\" resolves to a non-public IP address\"}},\"requestToken\":\"a5sf-rv-member-a-delegate\"}"
+    }
+  },
+  "delegateB": {
+    "call": {
+      "id": "call-a5sfrv-delegate-b",
+      "name": "team_delegate",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rv-team",
+        "requestToken": "a5sf-rv-member-b-delegate",
+        "delegationTemplateId": "lane-b",
+        "label": "a5sfrv-b",
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-37-03Z/workspace",
+        "prompt": "a5sf-rv-member-b: run your two probes exactly once each, in the order given, one tool call at a time, then report.",
+        "async": false
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rv-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1jxdzet1noi1\",\"templateId\":\"lane-b\",\"childSessionId\":\"session-team-child-d1676ee8a4302e31123e801d78ab6dfe\",\"operationId\":\"op-122jll10i1jqb80ugenaz0x1\",\"replayed\":false,\"ledgerSequence\":7,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":8,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rv-member-b-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RV_B_DONE Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-37-03Z/workspa\"}},\"requestToken\":\"a5sf-rv-member-b-delegate\"}"
+    }
+  }
+}

@@ -1,0 +1,355 @@
+{
+  "at": "2026-11-07T17:42:58.873Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "reason": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE"
+  },
+  "host": {
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "port": 3184,
+    "world": "u5u5a5sfrev1-20261107T17-42-36Z"
+  },
+  "head": "0230484b7a59e3a05820cacd7ae242efc0522e62",
+  "members": [
+    {
+      "instanceId": "inst-1jxdzet1noi1",
+      "templateId": "lane-b",
+      "lifecycle": "SETTLED",
+      "policyRevision": null
+    },
+    {
+      "instanceId": "inst-1tbexue1i25w",
+      "templateId": "lane-a",
+      "lifecycle": "SETTLED",
+      "policyRevision": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined",
+      "policyRevision": null
+    }
+  ],
+  "lanes": {
+    "A": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a",
+    "B": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b"
+  },
+  "surfaces": {
+    "A": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "todo_write",
+      "u5_canary",
+      "u6fs_probe",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "B": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "todo_write",
+      "u5_canary",
+      "u6fs_probe",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "facts": {
+    "total": 9,
+    "byMethod": {
+      "shellRead": 5,
+      "spawn": 2,
+      "spawn:write": 2
+    },
+    "identities": {
+      "A": {
+        "instanceId": "inst-1tbexue1i25w",
+        "count": 5,
+        "facts": [
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a/a.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:b86f2252b308267efc9b85494c2a76e1"
+          },
+          {
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:b86f2252b308267efc9b85494c2a76e1"
+          },
+          {
+            "method": "spawn:write",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "policyRevision": "a5sf1:b86f2252b308267efc9b85494c2a76e1"
+          },
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 2,
+            "policyRevision": "a5sf1:b86f2252b308267efc9b85494c2a76e1"
+          },
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 3,
+            "policyRevision": "a5sf1:b86f2252b308267efc9b85494c2a76e1"
+          }
+        ]
+      },
+      "B": {
+        "instanceId": "inst-1jxdzet1noi1",
+        "count": 4,
+        "facts": [
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:b2d573f416b73562d47336af53ba0a40"
+          },
+          {
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "policyRevision": "a5sf1:b2d573f416b73562d47336af53ba0a40"
+          },
+          {
+            "method": "spawn:write",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "policyRevision": "a5sf1:b2d573f416b73562d47336af53ba0a40"
+          },
+          {
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a/a.txt",
+            "decision": "deny",
+            "decidedBy": "IO_READ_DENIED",
+            "sequence": 2,
+            "policyRevision": "a5sf1:b2d573f416b73562d47336af53ba0a40"
+          }
+        ]
+      }
+    },
+    "crossLaneAllowFacts": [
+      {
+        "method": "shellRead",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt",
+        "memberIdentity": "inst-1jxdzet1noi1"
+      },
+      {
+        "method": "spawn",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b",
+        "memberIdentity": "inst-1jxdzet1noi1"
+      },
+      {
+        "method": "spawn:write",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b",
+        "memberIdentity": "inst-1jxdzet1noi1"
+      }
+    ]
+  },
+  "crossDispatch": {
+    "readB": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "value": {
+          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt",
+          "offset": 1,
+          "lines": [
+            {
+              "number": 1,
+              "text": "A5SF_RV_LANE_B_BYTES"
+            }
+          ],
+          "totalLines": 1
+        }
+      }
+    },
+    "bashB": {
+      "status": 200,
+      "body": {
+        "ok": false,
+        "error": {
+          "message": "IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+        }
+      }
+    }
+  },
+  "transcripts": {
+    "A": {
+      "sessionId": "session-team-child-50e89cbd1019f30403e8a26085053fa9",
+      "lineCount": 46,
+      "calls": [
+        {
+          "callId": "call-a5sfrv-a-bash-allow",
+          "name": "bash",
+          "arguments": {
+            "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a/a.txt'; sleep 1.0",
+            "description": "Control: read lane A",
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a"
+          },
+          "isError": false,
+          "result": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RV_LANE_A_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RV_LANE_A_BYTES\"}"
+        },
+        {
+          "callId": "call-a5sfrv-a-bash-cross",
+          "name": "bash",
+          "arguments": {
+            "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt'; sleep 1.0",
+            "description": "Probe: read lane B through the governed face",
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a"
+          },
+          "isError": true,
+          "result": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "callId": "call-a5sfrv-a-read-cross",
+          "name": "read",
+          "arguments": {
+            "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt"
+          },
+          "isError": false,
+          "result": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt</path>\n<type>file</type>\n<content>\n1: A5SF_RV_LANE_B_BYTES\n\n(End of file - total 1 lines)\n</content>"
+        },
+        {
+          "callId": "call-a5sfrv-a-grep-cross",
+          "name": "grep",
+          "arguments": {
+            "pattern": "A5SF_RV_LANE_B",
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b"
+          },
+          "isError": false,
+          "result": "Found 1 match\n\nlane-b/b.txt\nLine 1: A5SF_RV_LANE_B_BYTES"
+        },
+        {
+          "callId": "call-a5sfrv-a-web-fetch",
+          "name": "web_fetch",
+          "arguments": {
+            "url": "http://127.0.0.1:1/a5sf-review-probe"
+          },
+          "isError": true,
+          "result": "Error: URL hostname \"127.0.0.1\" resolves to a non-public IP address"
+        }
+      ]
+    },
+    "B": {
+      "sessionId": "session-team-child-d1676ee8a4302e31123e801d78ab6dfe",
+      "lineCount": 31,
+      "calls": [
+        {
+          "callId": "call-a5sfrv-b-bash-allow",
+          "name": "bash",
+          "arguments": {
+            "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b/b.txt'; sleep 1.0",
+            "description": "Control: read lane B",
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b"
+          },
+          "isError": false,
+          "result": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RV_LANE_B_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RV_LANE_B_BYTES\"}"
+        },
+        {
+          "callId": "call-a5sfrv-b-bash-cross",
+          "name": "bash",
+          "arguments": {
+            "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a/a.txt'; sleep 1.0",
+            "description": "Probe: read lane A through the governed face",
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-b"
+          },
+          "isError": true,
+          "result": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-42-36Z/workspace/lane-a/a.txt' is outside every allow subtree of the lane"
+        }
+      ]
+    }
+  }
+}

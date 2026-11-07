@@ -1,0 +1,187 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-recon-review-2026-11-07T17-40-24-496Z-b1",
+  "suite": "a5sf-recon-review",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-07T17:40:24.496Z",
+  "selectedCases": [
+    "rv:two-members-admitted",
+    "rv:a-bash-own-lane-allow",
+    "rv:a-bash-cross-lane-deny",
+    "rv:a-native-read-cross-lane-no-fact",
+    "rv:a-grep-cross-lane-no-fact",
+    "rv:a-web-fetch-governed-fact",
+    "rv:b-identity-separation",
+    "rv:cross-dispatch-as-a"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "0230484b7a59e3a05820cacd7ae242efc0522e62",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-recon-review-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfrev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "0230484b7a59e3a05820cacd7ae242efc0522e62",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction"
+  },
+  "cases": [
+    {
+      "id": "rv:two-members-admitted",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.914Z",
+      "detail": "two Members, two templates, two instanceIds in one boot",
+      "members": [
+        {
+          "instanceId": "inst-1jxdzet1noi1",
+          "templateId": "lane-b",
+          "lifecycle": "SETTLED",
+          "policyRevision": null
+        },
+        {
+          "instanceId": "inst-1tbexue1i25w",
+          "templateId": "lane-a",
+          "lifecycle": "SETTLED",
+          "policyRevision": null
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "lifecycle": "undefined",
+          "policyRevision": null
+        }
+      ]
+    },
+    {
+      "id": "rv:a-bash-own-lane-allow",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.914Z",
+      "detail": "A reads its own lane through the governed bash face",
+      "result": {
+        "callId": "call-a5sfrv-a-bash-allow",
+        "isError": false,
+        "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RV_LANE_A_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RV_LANE_A_BYTES\"}",
+        "at": 1794073297864
+      }
+    },
+    {
+      "id": "rv:a-bash-cross-lane-deny",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.914Z",
+      "detail": "A reading B's lane through the governed bash face is refused with a typed code and zero B bytes",
+      "result": {
+        "callId": "call-a5sfrv-a-bash-cross",
+        "isError": true,
+        "text": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-b/b.txt' is outside every allow subtree of the lane",
+        "at": 1794073297920
+      }
+    },
+    {
+      "id": "rv:a-native-read-cross-lane-no-fact",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.914Z",
+      "detail": "A reading B's lane through the NATIVE read tool succeeds with ZERO guard facts (the ungoverned path crosses the lane in one boot)",
+      "result": {
+        "callId": "call-a5sfrv-a-read-cross",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/tests/homes/u5u5a5sfrev1-20261107T17-40-24Z/workspace/lane-b/b.txt</path>\n<type>file</type>\n<content>\n1: A5SF_RV_LANE_B_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1794073297963
+      }
+    },
+    {
+      "id": "rv:a-grep-cross-lane-no-fact",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.914Z",
+      "detail": "A searching B's lane through grep returns B's bytes with ZERO guard facts",
+      "result": {
+        "callId": "call-a5sfrv-a-grep-cross",
+        "isError": false,
+        "text": "Found 1 match\n\nlane-b/b.txt\nLine 1: A5SF_RV_LANE_B_BYTES",
+        "at": 1794073298041
+      }
+    },
+    {
+      "id": "rv:a-web-fetch-governed-fact",
+      "verdict": "FAIL",
+      "at": "2026-11-07T17:41:39.915Z",
+      "detail": "web_fetch on the SHIPPED governed composition produced 0 web:* guard fact(s); the model-visible refusal is \"Error: URL hostname \"127.0.0.1\" resolves to a non-public IP address\" — a base-provider SSRF refusal, not an a5sf lane decision",
+      "webFactCount": 0,
+      "webFacts": [],
+      "result": {
+        "callId": "call-a5sfrv-a-web-fetch",
+        "isError": true,
+        "text": "Error: URL hostname \"127.0.0.1\" resolves to a non-public IP address",
+        "at": 1794073298079
+      }
+    },
+    {
+      "id": "rv:b-identity-separation",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.915Z",
+      "detail": "every guard fact names its own Member; A's facts never carry B's identity",
+      "aFacts": 5,
+      "bFacts": 4
+    },
+    {
+      "id": "rv:cross-dispatch-as-a",
+      "verdict": "PASS",
+      "at": "2026-11-07T17:41:39.915Z",
+      "detail": "independent dispatch with A's session id: native read of B's lane returns B's bytes; governed bash is refused — the difference is the TOOL, not the identity",
+      "crossReadOk": true,
+      "crossBashDenied": true
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/recon-review/dev/agent-workflow/evidence/a5sf-recon-review/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-07T17:40:24.529Z",
+        "runId": "a5sf-recon-review-2026-11-07T17-40-24-496Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-recon-review-1",
+        "grantId": "devlive-recon-review-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): dev-live scope authorisation for the Subprocess face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfrev1",
+        "headCommit": "0230484b7a59e3a05820cacd7ae242efc0522e62",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-07T17:40:55.561Z",
+        "runId": "a5sf-recon-review-2026-11-07T17-40-24-496Z-b1",
+        "suite": "a5sf-recon-review",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfrev1-20261107T17-40-24Z",
+        "phase": "a5sf-recon-review-boot1"
+      }
+    ]
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-recon-review-2026-11-07T17-40-24-496Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-07T17:41:39.915Z"
+}
