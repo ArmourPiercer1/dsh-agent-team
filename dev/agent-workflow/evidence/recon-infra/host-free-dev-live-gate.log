@@ -1,0 +1,21 @@
+✔ (a-negative) a DEV-LIVE record claiming V@B=yes is refused at finalize (2.174597ms)
+✔ (a-negative) assertCandidateClaim refuses a DEV-LIVE record directly (0.266334ms)
+✔ (a-positive-control) the SAME claim is accepted on a CANDIDATE-C2 record — and the class is declared necessary, not sufficient (0.217101ms)
+✔ (a-disclosure) every record carries its class and a machine-readable claim eligibility (0.577153ms)
+✔ (b) a dev-live start registers intent + start + outcome rows and records the version (2.251922ms)
+✔ (b-control) a dev-live record with no slot at the harness chokepoint is refused (0.286022ms)
+✔ (c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-pid) slots are reclaimed (3.82417ms)
+✔ (c-lease) the cap applies through the dev-live gate, not just the counter (5.834887ms)
+✔ (d-negative) a dev-live grant cannot pay for a CANDIDATE-C2 run (0.779446ms)
+✔ (d-negative) a CANDIDATE-C2 grant cannot authorise a dev boot (0.529422ms)
+✔ (d-negative) the record class must match the grant scope (0.498073ms)
+✔ (d-negative) a dev-live authorisation does not widen to another face or world (0.379819ms)
+✔ (d-compat) a pre-2026-11-09 grant (no scope field) still reads as the per-run C2 grant (0.178398ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.065965

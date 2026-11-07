@@ -1028,6 +1028,71 @@ function confinedTerminalSpecOf(realm, nativeSpecs, surface) {
 }
 
 /**
+ * The confined SEARCH native module (PD-16), resolved from THIS file's own
+ * location: the row rides the dist mirror beside it, so source and installed
+ * faces use the same relative specifier. Never a host path, never a guess.
+ */
+const A5SF_CONFINED_SEARCH_TOOL = new URL('./confined-search-tool.mjs', import.meta.url).href
+
+/**
+ * The pinned host package the governed preset mounts as its own `grep`/`glob`
+ * row. A configured entry naming this specifier is a DECLARED search owner:
+ * the composition already routed (or explicitly placed) the host module, so
+ * this seam must not add a second registration beside it.
+ */
+const A5SF_HOST_SEARCH_PACKAGE = '@deepseek-ai/dsh-tool-fs-search'
+
+/** The two model-visible search names this shadow can place (shipped spellings). */
+const A5SF_SEARCH_TOOL_NAMES = Object.freeze(['grep', 'glob'])
+
+/**
+ * PD-16 — decide whether THIS realm's `grep`/`glob` must be shadowed onto the
+ * confined `subprocess` face, and answer the module spec to append.
+ *
+ * THE MEASURED HOLE (`a5sf-recon-search`, PR #655): the preset's host search
+ * row injects `subprocess`, NOT `fs`. The realm shadowed `bash` (PD-12) and the
+ * terminal (PD-13) but never search, so `grep`/`glob` resolved the INHERITED
+ * base service — `rg` as a direct child of the Host, no lane consult, zero
+ * `a5sf-guard-consult/1` facts — and a one-workspace Member read `..` and an
+ * absolute out-of-lane directory.
+ *
+ * The conditions are each a refusal to guess:
+ *   1. at least one of `grep`/`glob` is on the POST-DENY surface. The attach is
+ *      surface-neutral: it may replace the preset definition, never add a name,
+ *      and the tool's own package registers BOTH names from one `apply`, so the
+ *      placed subset is the visible subset (never the host module's full set);
+ *   2. the realm OWNS a confined `subprocess` face (`faces.subprocess` is not
+ *      null). Without it there is no confined face to route the call to, and
+ *      the mount seam would refuse a subprocess-consuming module anyway;
+ *   3. the composition has not already configured a search owner — this module,
+ *      the host search package, or any entry declaring `expectedTools` that
+ *      names `grep`/`glob`. Auto-adding beside a declared owner would register
+ *      the name twice.
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
+ */
+function confinedSearchSpecOf(realm, nativeSpecs, surface) {
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null || faces.subprocess === undefined || faces.subprocess === null) return undefined
+  const tools = A5SF_SEARCH_TOOL_NAMES.filter((name) => surface.has(name))
+  if (tools.length === 0) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_CONFINED_SEARCH_TOOL) return undefined
+    if (spec?.url === A5SF_HOST_SEARCH_PACKAGE) return undefined
+    if (Array.isArray(spec?.expectedTools)
+      && spec.expectedTools.some((name) => A5SF_SEARCH_TOOL_NAMES.includes(name))) return undefined
+  }
+  return Object.freeze({
+    url: A5SF_CONFINED_SEARCH_TOOL,
+    config: Object.freeze({ tools: Object.freeze([...tools]) }),
+    expectedTools: Object.freeze([...tools]),
+  })
+}
+
+/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -1076,8 +1141,17 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // one with a read axis.
   const terminalSpec = confinedTerminalSpecOf(realm, nativeSpecs, before)
   const bashSpec = terminalSpec === undefined ? confinedBashSpecOf(realm, nativeSpecs, before) : undefined
-  const shadowSpec = terminalSpec ?? bashSpec
-  const specs = shadowSpec === undefined ? nativeSpecs : [...nativeSpecs, shadowSpec]
+  // PD-16 (2026-11-13): the model-visible `grep`/`glob` must ride the confined
+  // `subprocess` face too. The 2026-11 `a5sf-recon-search` measurement is the
+  // reason: the host search row injects `subprocess` (not `fs`), the realm
+  // shadowed only the shell, and both search tools executed on the inherited
+  // base service with zero guard facts — a one-workspace Member read `..` and
+  // an absolute out-of-lane directory. Search and shell are independent names,
+  // so BOTH shadows may be appended in one attach.
+  const searchSpec = confinedSearchSpecOf(realm, nativeSpecs, before)
+  const shellSpec = terminalSpec ?? bashSpec
+  const appended = [shellSpec, searchSpec].filter((spec) => spec !== undefined)
+  const specs = appended.length === 0 ? nativeSpecs : [...nativeSpecs, ...appended]
   if (specs.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,
   // not just the name set (a module that registers nothing, or registers late,
