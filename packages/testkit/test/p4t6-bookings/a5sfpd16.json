@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD16",
+  "paths": [
+    "packages/runtime/src/plugin/live/confined-search-tool.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1439,
+    "to": 1440
+  },
+  "reason": "a5sf PD-16 (branch task/pd16-search-20261113): the confined SEARCH native tool module the realm row re-mounts inside the Member's isolated scope, so the model-visible `grep`/`glob` execute on the confined `subprocess` face (recon a5sf-recon-search measured them on the inherited base service, reading outside the compiled read lane with zero guard facts). It registers the two tools by delegating to the pinned host package's PUBLIC per-tool faces, so it carries no policy, no argv copy and no result formatter of its own. The rebuilt dist mirror (confined-search-tool.mjs under packages/runtime/dist) is generated output and is not scannable. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this branch with the module on disk and no booking: `scanner counts 1440, ledger derives 983 + 456 = 1439` (vitest run packages/testkit/test/p4t6-session-event-scan.test.ts, 2026-11-13). Evidence: dev/agent-workflow/evidence/a5sf-pd16-search/README.md §7."
+}

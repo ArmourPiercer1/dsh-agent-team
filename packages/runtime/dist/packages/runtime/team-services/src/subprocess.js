@@ -567,11 +567,26 @@ const unchangedSearchArgv = (argv) => Object.freeze({
  *
  * The walk starts at the search root and only inspects directories the lane
  * ALLOWS, so it never depends on data outside the lane. It stops when:
- *  - it finds a `.git` that the lane allows → rg stops there too; contained;
  *  - it finds a `.git` the lane denies → that read is the fatal one; not
  *    contained (an explicit `deny: [<root>/.git]` is respected);
  *  - the next ancestor is outside the lane → unknown above; not contained;
- *  - it reaches the filesystem root → nothing above to read; contained.
+ *  - it reaches the filesystem root → nothing above to read; contained;
+ *  - it finds a repository root whose ignore discovery is contained (below).
+ *
+ * TWO MEASURED CORRECTIONS (PD-16, 2026-11-13). Routing a governed Member's
+ * `grep`/`glob` onto this same admission made two latent assumptions of the
+ * BL-16 heuristic observable on the first live boot:
+ *  1. A `.git` DIRECTORY with no `HEAD` is not a repository root: rg keeps
+ *     walking above it, so stopping there claimed containment that did not
+ *     exist. Only a `.git` carrying `HEAD` (or a worktree pointer FILE) ends
+ *     the upward walk.
+ *  2. Even at a nested repository root, rg OPENS an ancestor `.git` FILE — the
+ *     `gitdir:` worktree pointer, the normal layout under `.worktrees/` — and
+ *     treats the confined kernel's denial of that open as FATAL (exit 2) even
+ *     though the match is already on stdout. Above a repository root the walk
+ *     therefore continues to the FIRST `.git` FILE and requires it readable. A
+ *     `.git` DIRECTORY above a nested repo is only stat'ed by rg (measured:
+ *     exit 0 under the same denial), so it does not force the flags.
  *
  * A FILE operand is skipped: ripgrep does no parent discovery for a file
  * argument (measured: exit 0 with an unreadable ancestor `.git`), so adding
@@ -588,11 +603,42 @@ async function ancestorsStayInLane(root, readLane, resolver, deps) {
         const git = join(dir, '.git');
         if (deps.exists(git)) {
             const gitDecision = await evaluateLocatorAccess({ lane: readLane, locator: git, access: 'read', resolver });
-            return gitDecision.decision === 'allow';
+            if (gitDecision.decision !== 'allow')
+                return false;
+            if (deps.isDirectory(git) && !deps.exists(join(git, 'HEAD'))) {
+                // Not a repository root (no HEAD): rg keeps walking above it, so this
+                // directory decides nothing about containment.
+            }
+            else {
+                return await worktreePointerAboveStaysInLane(dir, readLane, resolver, deps);
+            }
         }
         const parent = dirname(dir);
         // Reaching `/` through an allowed path means there is no ancestor left to
         // read; `/.git` was just checked.
+        if (parent === dir)
+            return true;
+        dir = parent;
+    }
+}
+/**
+ * Above a repository root, rg opens the FIRST ancestor `.git` FILE it finds (a
+ * worktree `gitdir:` pointer) and treats a kernel denial of that open as a
+ * fatal search error; ancestor `.git` DIRECTORIES are only stat'ed. Returns
+ * whether that first file — when one exists at all — is readable in the lane.
+ *
+ * Only ancestors are stat'ed here, never read: the answer is a policy decision,
+ * and the flags this feeds are what keep the denied open from happening.
+ */
+async function worktreePointerAboveStaysInLane(root, readLane, resolver, deps) {
+    let dir = dirname(root);
+    for (;;) {
+        const git = join(dir, '.git');
+        if (deps.exists(git) && !deps.isDirectory(git)) {
+            const decision = await evaluateLocatorAccess({ lane: readLane, locator: git, access: 'read', resolver });
+            return decision.decision === 'allow';
+        }
+        const parent = dirname(dir);
         if (parent === dir)
             return true;
         dir = parent;

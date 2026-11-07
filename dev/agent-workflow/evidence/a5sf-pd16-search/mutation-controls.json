@@ -1,0 +1,170 @@
+{
+  "schema": "a5sf-pd16-mutation-controls/1",
+  "at": "2026-11-07T17:15:28.550Z",
+  "arms": "tests/world-factory/a5sf-pd16-search-read-axis.test.mjs",
+  "mutantCount": 3,
+  "controls": [
+    {
+      "id": "MA-search-shadow-removed",
+      "description": "the route-C attach appends no PD-16 search module — the pre-fix composition (grep/glob on the inherited subprocess service)",
+      "edits": [
+        {
+          "file": "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+          "old": "  const searchSpec = confinedSearchSpecOf(realm, nativeSpecs, before)\n",
+          "new": "  const searchSpec = undefined // MUTANT MA: the search shadow is removed\n"
+        }
+      ],
+      "expectRed": [
+        "A1",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "D1",
+        "D2",
+        "D3",
+        "S1"
+      ],
+      "red": [
+        "D1",
+        "D2",
+        "D3",
+        "A1",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "S1"
+      ],
+      "green": [
+        "P0",
+        "A2",
+        "C1"
+      ],
+      "expectedRedSetHolds": true,
+      "rc": 1,
+      "arms": {
+        "D1": "fail",
+        "D2": "fail",
+        "D3": "fail",
+        "A1": "fail",
+        "A2": "pass",
+        "A3": "fail",
+        "A4": "fail",
+        "A5": "fail",
+        "A6": "fail",
+        "S1": "fail",
+        "C1": "pass"
+      }
+    },
+    {
+      "id": "MC-bl16-containment-reverted",
+      "description": "the pre-PD-16 containment heuristic: the ancestor walk ends at any in-lane `.git`, so a worktree pointer file above the lane is never seen",
+      "edits": [
+        {
+          "file": "packages/runtime/team-services/src/subprocess.ts",
+          "old": "      if (deps.isDirectory(git) && !deps.exists(join(git, 'HEAD'))) {\n        // Not a repository root (no HEAD): rg keeps walking above it, so this\n        // directory decides nothing about containment.\n      } else {\n        return await worktreePointerAboveStaysInLane(dir, readLane, resolver, deps)\n      }\n",
+          "new": "      return gitDecision.decision === 'allow' // MUTANT MC: pre-PD-16 early return\n"
+        }
+      ],
+      "expectRed": [
+        "A6"
+      ],
+      "red": [
+        "A6"
+      ],
+      "green": [
+        "P0",
+        "D1",
+        "D2",
+        "D3",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "S1",
+        "C1"
+      ],
+      "expectedRedSetHolds": true,
+      "rc": 1,
+      "arms": {
+        "D1": "pass",
+        "D2": "pass",
+        "D3": "pass",
+        "A1": "pass",
+        "A2": "pass",
+        "A3": "pass",
+        "A4": "pass",
+        "A5": "pass",
+        "A6": "fail",
+        "S1": "pass",
+        "C1": "pass"
+      }
+    },
+    {
+      "id": "MB-read-axis-decision-removed",
+      "description": "the confined face still enumerates declared roots and records facts, but the read lane no longer refuses",
+      "edits": [
+        {
+          "file": "packages/runtime/team-services/src/subprocess.ts",
+          "old": "    if (decision.decision !== 'allow') {\n      throw new TeamIoDenial(\n        decision.decision === 'deny'\n          ? 'IO_READ_DENIED'",
+          "new": "    if (decision.decision === 'allow' && false) { // MUTANT MB: the read axis no longer decides\n      throw new TeamIoDenial(\n        decision.decision === 'deny'\n          ? 'IO_READ_DENIED'"
+        }
+      ],
+      "expectRed": [
+        "D1",
+        "D2",
+        "D3"
+      ],
+      "red": [
+        "D1",
+        "D2",
+        "D3"
+      ],
+      "green": [
+        "P0",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "S1",
+        "C1"
+      ],
+      "expectedRedSetHolds": true,
+      "rc": 1,
+      "arms": {
+        "D1": "fail",
+        "D2": "fail",
+        "D3": "fail",
+        "A1": "pass",
+        "A2": "pass",
+        "A3": "pass",
+        "A4": "pass",
+        "A5": "pass",
+        "A6": "pass",
+        "S1": "pass",
+        "C1": "pass"
+      }
+    }
+  ],
+  "baseline": {
+    "rc": 0,
+    "arms": {
+      "D1": "pass",
+      "D2": "pass",
+      "D3": "pass",
+      "A1": "pass",
+      "A2": "pass",
+      "A3": "pass",
+      "A4": "pass",
+      "A5": "pass",
+      "A6": "pass",
+      "S1": "pass",
+      "C1": "pass"
+    }
+  },
+  "overall": "PASS"
+}

@@ -1,0 +1,271 @@
+{
+  "schema": "a5sf-live-member/proc-observations/1",
+  "at": "2026-11-07T17:18:20.169Z",
+  "note": "independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not a product counter",
+  "sightings": [
+    {
+      "at": "2026-11-07T17:18:14.079Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:14.078Z",
+          "pid": 1,
+          "ppid": 0,
+          "state": "S",
+          "kind": "bwrap",
+          "cmdline": "bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent --tmpfs /tmp --bind /home/armourpiercer/projects/dsh-agent-team /home/armourpiercer/projects/dsh-agent-team -- bash -c cd /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot && node tests/world-factory/drivers/a5sf-live-member/run-boot.mjs --recon-search --boots 1 > /dev/null 2>&1; echo \"exit=$?\"",
+          "ppidCmdline": "",
+          "isHostChild": false,
+          "status": {
+            "NSpid": "1",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:14.993Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:14.993Z",
+          "pid": 190,
+          "ppid": 99,
+          "state": "R",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --abi-probe",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "190",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:15.034Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:15.033Z",
+          "pid": 191,
+          "ppid": 99,
+          "state": "S",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg selective --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/selective",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "191",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:15.074Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:15.073Z",
+          "pid": 195,
+          "ppid": 99,
+          "state": "R",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg badhandled --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/badhandled",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "195",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:15.114Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:15.113Z",
+          "pid": 196,
+          "ppid": 99,
+          "state": "R",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/probe-mw6o31rz-956tqr/net",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "196",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:18.289Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:18.289Z",
+          "pid": 213,
+          "ppid": 99,
+          "state": "S",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34bb-vp0e9h.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34bb-vp0e9h --exit-passthrough",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "213",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:18.409Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:18.409Z",
+          "pid": 241,
+          "ppid": 99,
+          "state": "R",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34eo-jt7y6l.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34eo-jt7y6l --exit-passthrough",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "241",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-07T17:18:18.531Z",
+      "hostPid": 99,
+      "hits": [
+        {
+          "at": "2026-11-07T17:18:18.531Z",
+          "pid": 257,
+          "ppid": 99,
+          "state": "S",
+          "kind": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/plans/plan-mw6o34hz-gpeqbd.json --out-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd16-search-boot/tests/homes/u5u5a5sfsub1-20261107T17-17-05Z/governed-scratch/out/plan-mw6o34hz-gpeqbd --exit-passthrough",
+          "ppidCmdline": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node apps/cli/lib/bin.js web --port 3188 --no-open",
+          "isHostChild": true,
+          "status": {
+            "NSpid": "257",
+            "CapEff": "0000000000000000",
+            "NoNewPrivs": "1",
+            "Seccomp": "2"
+          },
+          "ns": {
+            "mnt": "mnt:[4026532395]",
+            "pid": "pid:[4026532396]",
+            "net": "net:[4026531833]",
+            "user": "user:[4026532403]",
+            "cgroup": "cgroup:[4026531835]"
+          },
+          "mountinfo": {
+            "sha256": "30a31e8d3b2e5b1a7ae946d7a33a5b28e2b399e90d425bee7b3b35a5192f7068",
+            "lines": 51
+          }
+        }
+      ]
+    }
+  ]
+}
