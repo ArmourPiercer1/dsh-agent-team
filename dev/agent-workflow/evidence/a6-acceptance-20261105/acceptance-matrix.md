@@ -75,3 +75,18 @@ assigned Officer, the Officer's durable allow was consumed, and the exact comman
 once. Rows 14-16 are partial/blocked as stated; they are not silently passed. The
 isolated-trial decision is **NO-GO for enablement/release**; see
 `trial-conclusion.md`. Production enablement and master merge remain blocked.
+
+## Closing round 2026-11-07 (Draft HEAD `54f39e09d`; docs HEAD `4c2d94148`)
+
+| # | Criterion | Result | Anchor |
+|---|---|---|---|
+| C1 | Strict Root ownership: one Root's settlement cannot move another Root's valid Allow / Case / execution state; no proof = fail closed | **PASS (unit + reboot)** | two-mount unit in `a5-m1-auth-bridge.test.ts`; `a6-crash-allow-r5` A6-15 |
+| C2 | Durable `succeeded` / `failed` / `unknown` result; a durable success is never mislabeled abandoned; body-started-without-result stays `unknown` and is never replayed | **PARTIAL** | unknown path PASS (`a6-crash-body-r6` A6-16b, ledger fact `outcome:"unknown"`); success auto-record NOT observed on the normal A6 lane (`a6-normal-r10..r16`) |
+| C3 | Flag-on / flag-off regression; A6 branch never rewrites the approval decision, no Legacy change | **PASS** | flag-off existing test; flag-on new test (`no decision`, `invocation-abandoned`, zero consumption) |
+| C4 | Inbox ACCEPTED-but-never-CLAIMED crash: adopt / re-plan / retain Intent | **NOT RUN** | CLAIMED case only: `a6-inbox-r17` |
+| C5 | Decision / lifecycle / outcome independent; abandoned row non-actionable but audit history retained | **PASS** | abandonment is additive; decision rows untouched |
+| C6 | Local gate at final HEAD | **8/9 PASS, census blocked** | `artifacts-at-head` 1983/0; census blocked by orphan listener on 127.0.0.1:3983 |
+
+Production / master / release remain **NO-GO**. The trial recommendation is
+limited to C1, C3, C5 and the C2 `unknown` path; C2 success coverage and C4
+are open.

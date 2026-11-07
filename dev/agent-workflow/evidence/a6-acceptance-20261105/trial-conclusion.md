@@ -94,3 +94,17 @@ body-started-result-unknown, and claimed-Inbox replacement wake.
 4. Inject the ACCEPTED-but-never-CLAIMED Inbox crash (current proof covers
    claimed).
 5. Run hosted CI, not only the local 9/9 gate.
+
+## Closing-round revision (2026-11-07)
+
+Final product HEAD `54f39e09d` (Draft). The closing-round constraints 1, 3 and
+5 are proven (strict owner scoping, flag-on/flag-off, independent lifecycle);
+constraint 2 is proven only for the `unknown` outcome on a real crash, and
+constraint 4 (ACCEPTED-not-CLAIMED Inbox) is not run. The local gate is 8/9:
+all code legs pass, census is blocked by an orphan listener on port 3983, and
+hosted CI was not run.
+
+Recommendation: restricted, isolated, opt-in internal trial **only** for the
+covered claims. Do not claim durable success-fact coverage or
+ACCEPTED-not-CLAIMED Inbox coverage. Keep Draft / DO-NOT-MERGE; no push, no
+master merge, no production enable, no release.
