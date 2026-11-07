@@ -189,6 +189,7 @@ export type {
   ControlRequestRecord,
   ControlReviewAction,
   ControlReviewEvent,
+  ReviewTaskSummary,
   CurrentLegTransferActor,
   CurrentLegTransferCause,
   CurrentLegTransferRecord,

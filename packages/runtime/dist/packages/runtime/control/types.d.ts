@@ -1775,6 +1775,8 @@ export interface ControlService {
         readonly decision: 'allow' | 'deny';
         readonly note?: string;
         readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: the caller is a Member acting as the trusted CURRENT reviewer. The service verifies the reviewer port and builds the capability from the durable leg; never a caller-supplied widening. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlDecisionRecord>;
     /**
      * Durably ABANDON one control request (pre-alpha3 PR-D, D.4 — the
@@ -2114,6 +2116,8 @@ export interface ControlService {
         readonly requestId: string;
         readonly reason?: string;
         readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: same trusted-current-reviewer check as resolveControl. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlEscalationOutcome>;
     /**
      * A6-PR2c — transfer the CURRENT leg of a case to the Leader (Officer
@@ -2124,6 +2128,15 @@ export interface ControlService {
      * is refused. Repeating the same transfer is idempotent.
      */
     transferCurrentLeg(input: TransferCurrentLegInput): Promise<CurrentLegTransferRecord>;
+    /**
+     * A6-PR5 — the Officer's restricted view: only the open cases whose CURRENT
+     * leg the trusted reviewer port assigns to this instance. No full-team list,
+     * no legacy rows, no management surface. Read-only.
+     */
+    listMyReviewTasks(input: {
+        readonly rootSessionId: string;
+        readonly caller: ActionCaller;
+    }): Promise<readonly ReviewTaskSummary[]>;
     /**
      * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
      * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
@@ -2312,6 +2325,17 @@ export interface CurrentLegTransferRecord {
     readonly transferredAt: string;
 }
 /** Non-authority projection event for the wake/notification plane. */
+export interface ReviewTaskSummary {
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly reviewAuthority: ProposalAuthorityPosition;
+    readonly kind: ControlRequestKind;
+    readonly subject: ControlSubject;
+    readonly actionName: string;
+    readonly toolName?: string;
+    readonly requestSequence: number;
+}
 export type ControlReviewEvent = {
     readonly kind: 'current-leg-transferred';
     readonly rootSessionId: string;
