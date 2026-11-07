@@ -102,7 +102,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { VERDICT_SEVERITY, hostStartBudgetPosition } from '../lib/run-record.mjs'
-import { acquireDevLiveSlot } from '../lib/dev-live-slots.mjs'
+import { acquireDevLiveSlot, DEV_LIVE_SLOT_HEARTBEAT_MS } from '../lib/dev-live-slots.mjs'
 
 export const SUITE_NAME = 'a5sf-read'
 
@@ -579,8 +579,34 @@ export async function preRegisterDevLiveBudget({ grantPath, headCommit, runRecor
   let booted = 0
   let slot = null
   let finished = false
+  let heartbeat = null
+
+  const stopHeartbeat = () => {
+    if (heartbeat === null) return
+    clearInterval(heartbeat)
+    heartbeat = null
+  }
+  /**
+   * Keep this slot's mtime fresh while the lease is spending it. A peer in a
+   * DIFFERENT PID namespace cannot probe our pid, so `lib/dev-live-slots.mjs`
+   * treats such a slot as `unknown` and only reclaims it after a grace window.
+   * The heartbeat is what keeps a live cross-namespace boot under that window
+   * (a crashed one stops beating and is reclaimed).
+   */
+  const startHeartbeat = () => {
+    if (heartbeat !== null || slot === null) return
+    heartbeat = setInterval(() => {
+      try {
+        slot?.touch()
+      } catch {
+        /* liveness probe failure never fails a boot */
+      }
+    }, DEV_LIVE_SLOT_HEARTBEAT_MS)
+    heartbeat.unref?.()
+  }
 
   const releaseSlot = () => {
+    stopHeartbeat()
     if (slot === null) return false
     const released = slot.release()
     slot = null
@@ -632,6 +658,7 @@ export async function preRegisterDevLiveBudget({ grantPath, headCommit, runRecor
           world: String(world),
           headCommit: String(headCommit),
         })
+        startHeartbeat()
       }
       booted += 1
       try {

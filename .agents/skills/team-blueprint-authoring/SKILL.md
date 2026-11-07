@@ -338,7 +338,22 @@ is a typed refusal — there are NO implicit defaults):
 ## 5. Capabilities (per template)
 
 Absent `capabilities` = legacy mode (rc.1 behavior, everything inherited).
-When present, all four base sub-fields are required:
+When present, all four base sub-fields are required.
+
+**What "everything inherited" means at the Team-tool layer (spelled out
+2026-11-13, E1):** an undeclared template keeps the host preset's tools **and
+the full team tool catalog — today all fifteen `team_*` tools**, including
+`team_delegate`, `team_grant_permission` and `team_revoke_permission`. The
+runtime projects the absent block as `{ mode: 'legacy' }` and then takes the
+whole catalog (`agent-bindings.mjs`), exactly as `staticCapabilitiesOf`
+documents. This is a **deliberate compatibility default, not least privilege**:
+declaring nothing is the most permissive team-tool choice, and it is the form
+almost every pre-alpha.1 blueprint is in. Narrow it by declaring `capabilities`
+(`teamTools: {kind: deny}` for zero, or an explicit `allow` list). The one
+sub-field that does NOT follow "everything inherited" is `mcp`: a legacy
+template grants **no** initial MCP server (see below; fail-closed). Pinned
+host-free by `tests/world-factory/a5sf-capability-defaults.test.mjs`, which
+prints the compiled surface.
 
 - `teamTools` — `{kind: allow, items: [team tool names]}` or `{kind: deny}`
   (deny = zero team tools for that agent).
