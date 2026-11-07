@@ -139,13 +139,19 @@ question and is stated as such below.
 | gate | result | log |
 | --- | --- | --- |
 | a5sf family (`node --test tests/world-factory/a5sf-*.test.mjs`) | **PASS** 579 tests, 573 pass, 0 fail, 6 skipped | `a5sf-family.log` |
-| runtime package tests (`pnpm --filter @dsh-agent-team/runtime test`) | 5993 pass / 3 fail; the same 5 files / 3 tests fail on a clean `origin/master` checkout (pre-existing environment/latency failures: `a4pr0a` source-scan, `u7-f-native-output-schema` pristine-path, `a5-globoff` K7 timeout, `a5rbn` N3 timeout, `a5sf-os-runner` network-deny backend) | `runtime-tests.log`, `baseline-5files.log` |
+| runtime package tests (`pnpm --filter @dsh-agent-team/runtime test`) | 5993 pass / 3 fail; the same 5 files / 3 tests fail on a clean `origin/master` checkout (pre-existing environment/latency failures: `a4pr0a` source-scan, `u7-f-native-output-schema` pristine-path, `a5-globoff` K7 timeout, `a5rbn` N3 timeout, `a5sf-os-runner` network-deny backend) | `runtime-tests-summary.md`, `baseline-5files.log` |
 | `pnpm -r typecheck` | **PASS** | `typecheck.log` |
 | eslint (changed TS) | **PASS** (0 errors; the `.mjs` test is in the repo's eslint-ignore surface) | `eslint.log` |
 | `check-artifacts-committed` | **PASS** (1973 compared, 106 glue; staged tree matches) | `artifacts.log` |
 | `doc-checks` | **PASS** | `doc-checks.log` |
 | register tests | **PASS** (part of the a5sf family; register untouched) | `a5sf-family.log` |
 | `ci-pr-gate --only state-freshness` | **PASS** | `state-freshness.log` |
+
+The runtime-suite raw capture was **1,163,042 B** (1.16 MB) and is deliberately **not committed**:
+it is machine output over the 1 MiB evidence bound (`scripts/eb3-evidence-guard.mjs`). Nothing is
+hidden — `runtime-tests-summary.md` carries the derived counts, the exact 3 failing test ids, the
+reproduction command, and a head/tail excerpt; the raw file is reproducible byte-for-byte by that
+command at the recorded commit. Every other gate log added here is ≤ 72 KB.
 
 The runtime-suite baseline comparison is the honest part: those 3 failures are **not** introduced by
 this change. They reproduce with `origin/master` product sources in the main checkout and are
