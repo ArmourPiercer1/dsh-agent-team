@@ -186,46 +186,16 @@
       "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
     },
     {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "b258a2dbea91c92b5e7280f7093851e5c780161ec785736a4d5f9046e10e6953",
-      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-      "reason": "assignedOfficerCapability() builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the resolved candidate is persisted as decision evidence (resolve + escalate). Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered with durable evidence assertions."
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "d764ddd9e2baf2872f3e978fa5b3d43465f5fd8504db35ff593768fa9f470ac3",
-      "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-      "reason": "Adds the optional trusted reviewCallFactsForAssignedOfficer overlay port (routing + frozen category only); no durable schema change, legacy rows fail closed."
-    },
-    {
       "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
       "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
       "pr": "PR #571 (integration: A6 control chain)",
       "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
     },
     {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "f03a6a87a22e91833b7fb1090b59a032afb6916c278a12cdf24e9cd6254d8b8d",
-      "pr": "PR #571 (integration: A6 non-locking control reader)",
-      "reason": "Alpha.6 PR5 composition wiring: adds the read-only NON-LOCKING readControlState root method and extracts the shared projectControlState() snapshot helper that listControlState also uses, so the locking and non-locking read routes cannot drift. No durable schema change, no mutation/authority path change; the locking route's behavior and projections are byte-identical."
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "b7aa3572a3b1e466ec3d2f7ce2e2156132eb47d45e3b9f4ad0fd31ab89c8ec2f",
-      "pr": "PR #571 (integration: A6 non-locking control reader)",
-      "reason": "Alpha.6 PR5 composition wiring: declares ControlStateSnapshot (the shared projection shape of BOTH read routes) and adds ControlService.readControlState, explicitly documented as a non-locking, read-only snapshot with no authority. listControlState's return type narrows to the same named shape (structurally identical); no durable schema change."
-    },
-    {
       "path": "packages/runtime/control/index.ts",
       "sha256": "01d91fbcf1a4e789d3a6439cd664badc0f7e96b991cc3c1d4e20da76c4358988",
       "pr": "PR #571 (integration: A6 non-locking control reader)",
       "reason": "Alpha.6 PR5 composition wiring: re-exports the ControlStateSnapshot type so external compositions can name the read-only snapshot shape. Public-surface export only; no runtime behavior change."
-    },
-    {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "9f782a07f5f15607b666365e15d74e903207b8d0cdbcbcf9e277f1d3586af328",
-      "pr": "PR #571 (integration: A6 trusted OperationOwner facts)",
-      "reason": "Alpha.6 authorization-facts fix: ReviewCallFacts' operationOwner.instanceId now derives from the durable leg SUBJECT (the executing Member written by pa-control-bridge) or the legacy targetInstanceId projection, never from the Requester. A Leader proxy ask no longer binds the Leader (or a same-template sibling) as OperationOwner. No durable schema change; the evaluator already compares the owner template against the frozen leg, and the composition facts provider independently proves the same owner."
     },
     {
       "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
@@ -238,18 +208,6 @@
       "sha256": "abd425cc74c7d59038cef4ee89dfd8200b0b808c73aa8e6eb094af35a509a840",
       "pr": "PR #585 (Alpha.6 root wiring, Draft)",
       "reason": "Same PR, review-wake liveness correction: has()/remove() now throw when the target session cannot be materialised, so an unreadable native Inbox is never mistaken for an absent message (which previously released the latch, cleared a live intent row and re-delivered a duplicate wake). No new authority, decision or durable write."
-    },
-    {
-      "path": "packages/runtime/control/service.ts",
-      "sha256": "55b20e970d4f64e8682755d96c1216a2ccb4d871dcfdc5d301fee42919925e93",
-      "pr": "PR #585 (Alpha.6 root wiring, Draft) — isolated integration E2E correction",
-      "reason": "A6 real-Host E2E: an assigned Officer resolves at the leg's frozen rung, so the PA resolve/guard verifier receives the durable decision's EXERCISED reviewerAuthority (reviewCapability.effectiveReviewAuthority) instead of deriving the principal's native member rung. Scoped to a decision the service already verified; native/legacy rows carry no evidence and are byte-identical. No new durable write, no decision-value change, no global member widening."
-    },
-    {
-      "path": "packages/runtime/control/types.ts",
-      "sha256": "cae88ea2dc3938cce80bbaf24040f564774a9843d2f7fe82c7d351dbd1498b4a",
-      "pr": "PR #585 (Alpha.6 root wiring, Draft) — isolated integration E2E correction",
-      "reason": "Same correction: PaEffectsVerifierInput carries the optional reviewerAuthority the durable decision exercised, so the PA all-effects verifier can re-check an assigned-Officer allow without inventing a rung or widening the global resolver table."
     },
     {
       "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
@@ -274,6 +232,18 @@
       "sha256": "b8bc9dc91f0b6c76cbad6c51e5304a8b9f0c598b6409d5c233a451ac85564dae",
       "pr": "PR #571 (Alpha.6 integration, Draft)",
       "reason": "Alpha.6 non-authorizing invocation settlement: a bounded A6 wait abandons the invocation (reason invocation-abandoned) without rewriting the human approval decision; legacy (non-A6) wait semantics are byte-identical. No native execution change."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "d2d911fd14bad44050354dbb67cb538b261a4ce7f1bcc327b3ca5e47289224de",
+      "pr": "PR #585 (Alpha.6 closing round, Draft)",
+      "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "95469aad554e77e89d9e448d81f88b7fa6ccf11f0d9841caa0552636b0935ad1",
+      "pr": "PR #585 (Alpha.6 closing round, Draft)",
+      "reason": "A6-closing constraint 1: an ALLOW whose PA authority is undetermined is a lifecycle failure, not an approval decision. In the A6 composition only, the service now writes the durable control-request-abandoned mark (invocation-abandoned) and refuses instead of persisting a DENY with reason authority-undetermined. The flag defaults off, so every non-A6 composition keeps the historical durable-DENY behaviour."
     }
   ]
 }

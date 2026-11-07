@@ -1645,6 +1645,17 @@ export interface ControlServiceOptions {
      */
     readonly paEffectsVerifier?: PaEffectsVerifier;
     /**
+     * A6 closing round: when the PA manifest's authority is UNDETERMINED or the
+     * row is THIS-CLASS corrupt, an ALLOW attempt is a lifecycle failure, not an
+     * approval decision. With this flag the service writes the durable
+     * `control-request-abandoned` terminal mark (reason `invocation-abandoned`)
+     * and refuses, instead of recording a DENY with reason
+     * `authority-undetermined`. The human's requested Allow is therefore never
+     * rewritten into a persisted Deny. ABSENT/false keeps the historical
+     * durable-DENY behaviour for every non-A6 composition.
+     */
+    readonly a6AbandonUndeterminedAllow?: boolean;
+    /**
      * A6-PR2c: the trusted CURRENT reviewer of a leg, used only to authorize an
      * Officer handoff. ABSENT = no transfer authority exists in this composition
      * (fail closed, never "any member may transfer"). The port must be a trusted

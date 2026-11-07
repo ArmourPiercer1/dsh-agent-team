@@ -2366,6 +2366,7 @@ export function createTeamProductionRoot(params) {
         : undefined;
     const control = createControlService({
         paEffectsVerifier: paEffectsVerifierPort,
+        ...(alpha6Wiring.mode === 'alpha6' ? { a6AbandonUndeterminedAllow: true } : {}),
         teamDomain: domain,
         blueprintCatalog: catalog,
         externalPolicyFacts,

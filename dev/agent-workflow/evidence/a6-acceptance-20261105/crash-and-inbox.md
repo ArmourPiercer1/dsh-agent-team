@@ -172,6 +172,23 @@ Root `session-c1-smoke-a6-2026-11-07T10-24-59`, blueprint `sha256:5c3b52cc…`.
   `control-request-abandoned reason=execution-outcome-unknown`. The spent allow
   is NOT replayed and the decision remains `allow`.
 
+## Request written, no decision — `a6-crash-request-r5` (A6-13/A6-14 PASS)
+
+Root `session-c1-smoke-a6-2026-11-07T11-34-22`, blueprint
+`sha256:837cc967…`.
+
+The Host is killed after the PA request fact is durable but before any
+decision. After restart the row is still pending (audit), no execution occurs,
+and a late human ALLOW cannot revive the dead call.
+
+Closing-round fix (constraint 1): in the A6 composition an ALLOW whose PA
+authority is `undetermined` / corrupt is a **lifecycle** failure. The service
+writes `control-request-abandoned reason=invocation-abandoned` and refuses,
+instead of persisting `deny reason=authority-undetermined`. The run records
+`decision=null`, `abandon=invocation-abandoned`, consumption 0, workspace output
+absent. Non-A6 compositions keep the historical durable-DENY path
+(`a6AbandonUndeterminedAllow` defaults to false).
+
 ## Body started, result not durable — `a6-crash-body-r5` (PASS)
 
 Root `session-c1-smoke-a6-2026-11-07T11-03-42`, blueprint `sha256:bc17d71a…`.

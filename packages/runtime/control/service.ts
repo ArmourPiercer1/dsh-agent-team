@@ -3347,6 +3347,14 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       if (args.decision === 'allow') {
         const paRead = paManifestClassOf(request.payload)
         if (paRead.state === 'corrupt') {
+          if (options.a6AbandonUndeterminedAllow === true) {
+            await commitAbandonmentFact(root, request.payload.requestId, 'invocation-abandoned')
+            throw new ControlError(
+              CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+              `ControlService: allow impossible — the PA operation manifest is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+              { rootSessionId: root, requestId: request.payload.requestId },
+            )
+          }
           return await commitDecision({
             requestId: request.payload.requestId,
             value: CONTROL_DECISION_VALUES.DENY,
@@ -3366,6 +3374,14 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             resolvedCapability?.capability.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
+            if (denyReason === CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED && options.a6AbandonUndeterminedAllow === true) {
+              await commitAbandonmentFact(root, request.payload.requestId, 'invocation-abandoned')
+              throw new ControlError(
+                CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+                `ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+                { rootSessionId: root, requestId: request.payload.requestId },
+              )
+            }
             return await commitDecision({
               requestId: request.payload.requestId,
               value: CONTROL_DECISION_VALUES.DENY,
