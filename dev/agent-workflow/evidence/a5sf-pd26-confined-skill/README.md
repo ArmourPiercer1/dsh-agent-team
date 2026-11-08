@@ -213,6 +213,12 @@ modules add their config declarations to `types.ts`). The fix was the repo's own
 `pnpm -C packages/runtime run build` + `node scripts/place-dist-glue.mjs`, never a hand edit, and the
 verdict was then confirmed with `check:artifacts:head`.
 
+Adding a file under `packages/**` also books it in the p4t6 census population
+(`packages/testkit/test/p4t6-bookings/<lane>.json`); the census reds on an unbooked file and says
+nothing about behaviour. This lane booked its two new `packages/runtime/src/plugin/live/*.mjs`
+shadows as `PD26-CONFINED-SKILL` (`1446 → 1448`, measured by the unbooked run in
+`p4t6-unbooked-RED.log`: `scanner counts 1448, ledger derives 983 + 463 = 1446`).
+
 ## 8. Files
 
 ```
