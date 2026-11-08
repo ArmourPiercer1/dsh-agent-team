@@ -265,9 +265,24 @@ half: the entry gets **no fiber**, the audit says `never started`, and the *Memb
 creation* fails, so every tool of the preset disappears at once instead of one name
 being absent.
 
-**What this cost, and why it was not caught at home.** For one merge window (from
-`#676` until the web hotfix) the **shipped** governed preset could not construct a
-Member at all: `createMember` failed with `tool-web … never started`, so a governed
+**Scope of that claim, because it decides what the fix is.** The failure is proven for
+**this repo's DEV-LIVE layout**: the host runs from `tests/deepseek-harness-test-use`
+and the bundle is the repo root, so `dsh-agent-team` exists in no `node_modules` on the
+host's resolution path. The *same spelling resolves* once the bundle sits in a
+`node_modules` beside the resolver — verified directly
+(`node_modules/dsh-agent-team -> repo`, `import('dsh-agent-team/web-tool')` → loads
+`a5sf-confined-web`) — so the row may well be correct for a **packaged** install. What
+is proven here is narrower and still serious: **no DEV-LIVE boot in this repo can
+construct the shipped governed preset**, i.e. the instrument every lane's live evidence
+depends on was blind, and the web lane's host-free arms substituted an absolute
+`file:` URL for the row, so nothing in that lane's suite could observe it. Whether a
+packaged install resolves is **untested by this lane**; that is the first thing the fix
+should establish, because it chooses between "change the row's specifier" and "teach
+the harness to install the bundle it is testing".
+
+**What this cost, and why it was not caught at home.** In this harness, for one merge
+window (from `#676` until the web hotfix) the **shipped** governed preset could not
+construct a Member at all: `createMember` failed with `tool-web … never started`, so a governed
 Member had **zero** tools, not a narrowed set. It was caught by a **cross-lane
 re-bind** — this lane merged master and booted the merged tree — and not by the lane
 that introduced it, because that lane's driver rewrote the row it was testing (its
