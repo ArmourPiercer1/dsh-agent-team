@@ -1,15 +1,21 @@
-# a5sf-instrument-graph — PD-31 (window allocation PD-32): the World factory provisions the module graph
+# a5sf-instrument-graph — PD-32 (window allocation PD-32): the World factory provisions the module graph
 
 **Lane** `pd32-instrument-graph` · **branch** `task/pd32-instrument-graph` ·
 **boot-time HEAD** `da6cc7ba2` (the two boots below ran with the working-tree files, and the
-run records bind `teamSha = da6cc7ba2`) · **rebased onto** `0c2a8f422` (`PD29-GOAL-STOP` #679,
-which also carries #677/#678); the rebase changed only the register row's id and the docs, so
-the measured files are byte-identical and the records' `teamSha` remains an ancestor ·
-**class** DEV-LIVE for the two boots below, host-free for the unit pins.
+run records bind `teamSha = da6cc7ba2`) · **rebased onto** `ece8d5a1c` (`PD31-READ-IMAGE` #680; earlier `0c2a8f422` = #679,
+which also carries #677/#678) · **class** DEV-LIVE for the boots, host-free for the unit pins.
 
-**Row id, both disclosed**: the window allocates **PD-32** to this lane; **#679 merged PD-30**
-before this row, so the register's `PD-1…PD-n` contiguity law makes the id on this base
-**PD-31** (PD-30 → PD-31 is the only renaming; the defect and the evidence are unchanged).
+The rebases changed docs and the register id only, so the measured files are byte-identical; the
+records' `teamSha = da6cc7ba2` is an ancestor of every rebased head (re-verified in a plain
+`--no-local` clone after each renumber). §2/§3 were measured on `da6cc7ba2` (surface **33**); §6
+re-measured BOTH provisioning paths on `0c2a8f422` (surface **36**, because master added three
+tools). The absolute count follows the base — **the equality does not**, and that is the claim.
+
+**Row-id chain, all three disclosed**: window allocation **PD-32** → base id **PD-31** (because
+**#679** merged PD-30 GOAL-STOP) → **PD-32** (because **#680** merged PD-31 READ-IMAGE). Each step
+is the same rule — the register's gate-enforced `PD-1…PD-n` contiguity admits only the next free id
+on the base — so the row keeps the window's number only when nothing merged in between. The
+defect, the pins and the two boots are unchanged by either rename.
 
 ## 0. Why this exists: the instrument substituted the subject — twice
 
