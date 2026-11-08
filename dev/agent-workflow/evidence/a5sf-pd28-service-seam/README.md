@@ -252,6 +252,33 @@ are already on the post-deny surface, so removing the placeholder removes PD-27'
 instead of governing it. The fix therefore has to keep the names on the surface with a
 loadable specifier, not remove them.
 
+**The reusable rule, stated once so nobody has to rediscover it.** *A preset row's
+specifier must resolve in the host's module graph; a bundle-subpath name only resolves
+at the profile layer.* `dsh-agent-team/host` and `dsh-agent-team/spill-local` work
+because profile rows are loaded by the **bundle** loader, which maps our package's
+`exports` from the `package.json` sitting next to `cordis.patch.yml`. A row inside
+`preset-a5sf-governed-member` is loaded by the **preset** registry, anchored in the
+host tree, where no `dsh-agent-team` package exists. That sentence is the difference
+between "the module does not exist" and "the module exists but this layer cannot see
+it" — i.e. between a missing tool and a dead preset. The failure mode is the dangerous
+half: the entry gets **no fiber**, the audit says `never started`, and the *Member
+creation* fails, so every tool of the preset disappears at once instead of one name
+being absent.
+
+**What this cost, and why it was not caught at home.** For one merge window (from
+`#676` until the web hotfix) the **shipped** governed preset could not construct a
+Member at all: `createMember` failed with `tool-web … never started`, so a governed
+Member had **zero** tools, not a narrowed set. It was caught by a **cross-lane
+re-bind** — this lane merged master and booted the merged tree — and not by the lane
+that introduced it, because that lane's driver rewrote the row it was testing (its
+host-free rows mount the module by absolute `file:` URL, which resolves fine), so its
+measurements booted a tree that was **not** the shipped one: green host-free arms,
+green install arms, and a composition nobody had started. The lesson is not "write
+more tests" — the web lane had tests for its module — it is that **a lane must boot
+the composition as shipped, with no override, before claiming the name is back.** A
+re-bind on a merged tree is the cheapest instrument that catches this class of defect,
+because it is the only run whose input is exactly what users get.
+
 **Consequence for this lane's evidence.** The bound live pair for the product claim
 stays the pre-merge one (`archive/pre-merge-6f9a8c1/`, §4.1) — the lane's own claim
 is unchanged by PD-27. The re-bound pair on the merged tree is **not** claimed: `runs/`
