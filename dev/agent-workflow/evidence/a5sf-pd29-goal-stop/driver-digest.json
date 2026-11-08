@@ -1,0 +1,16 @@
+{
+  "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "head": "8ebdc67e717b2113c40b6810213b9b50df1f7867",
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/cordis.patch.yml",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097"
+  },
+  "startedAt": "2026-11-08T15:12:26.885Z",
+  "argv": [
+    "--boots",
+    "2"
+  ]
+}

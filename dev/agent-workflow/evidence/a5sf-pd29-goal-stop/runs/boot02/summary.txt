@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T15-15-17Z recordClass=DEV-LIVE (not candidate evidence)

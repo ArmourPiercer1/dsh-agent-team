@@ -1,0 +1,20 @@
+{
+  "host": {
+    "wasRunning": true,
+    "pid": 36160,
+    "killed": true,
+    "portFree": true
+  },
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-12-26Z",
+  "releasedPorts": [
+    3184,
+    3184,
+    3492,
+    3184
+  ],
+  "killedPids": [
+    103,
+    36160
+  ],
+  "notes": []
+}

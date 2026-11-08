@@ -1,0 +1,363 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2",
+  "suite": "a5sf-pd29-goal-stop",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T15:15:16.985Z",
+  "selectedCases": [
+    "pd29:goal-continuous-rounds",
+    "pd29:stop-during-round",
+    "pd29:stop-at-round-boundary",
+    "pd29:stop-in-idle-window",
+    "pd29:leader-archive-stops-goal",
+    "pd29:user-stops-leader-no-propagation",
+    "pd29:cold-recovery-no-revival",
+    "pd29:explicit-resume-after-recovery",
+    "pd29:terminal-phases-do-not-continue"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "8ebdc67e717b2113c40b6810213b9b50df1f7867",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "8ebdc67e717b2113c40b6810213b9b50df1f7867",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "repo": "dsh-agent-team",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd29-20261108T15-15-17Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd29:goal-continuous-rounds",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.072Z",
+      "proposition": "a governed Member's goal drives consecutive automatic rounds with no Team-imposed total round budget (the upstream Member-editable maxGoalRounds is the only cap)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "rounds-reached",
+          "ok": true,
+          "detail": "rounds=3"
+        },
+        {
+          "id": "more-than-one",
+          "ok": true,
+          "detail": "rounds=3 (needs >= 3 automatic rounds)"
+        }
+      ]
+    },
+    {
+      "id": "pd29:stop-during-round",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.077Z",
+      "proposition": "stopping the Member during a running goal round terminates the current round and starts NO further automatic round, model request or tool call",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "rounds-after-stop-zero",
+          "ok": true,
+          "detail": "rounds after stop=0"
+        },
+        {
+          "id": "tool-calls-after-stop-zero",
+          "ok": true,
+          "detail": "tool calls after stop=0"
+        },
+        {
+          "id": "silent-window",
+          "ok": true,
+          "detail": "no model request in 20000 ms after the stop: after=0"
+        },
+        {
+          "id": "deactivated",
+          "ok": true,
+          "detail": "durable phase after stop=paused"
+        }
+      ]
+    },
+    {
+      "id": "pd29:leader-archive-stops-goal",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "a Leader archive of a running Member reaches the Member itself: the round terminates, the goal activation is withdrawn, no round follows and the durable lifecycle is ARCHIVED",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "archive-accepted",
+          "ok": true,
+          "detail": "status=200 value={\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5sf-pd29-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0mqn50d1qxan\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\""
+        },
+        {
+          "id": "rounds-after-zero",
+          "ok": true,
+          "detail": "rounds after archive=0"
+        },
+        {
+          "id": "tool-calls-after-zero",
+          "ok": true,
+          "detail": "tool calls after archive=0"
+        },
+        {
+          "id": "goal-deactivated",
+          "ok": true,
+          "detail": "durable goal phase=paused"
+        },
+        {
+          "id": "lifecycle-archived",
+          "ok": true,
+          "detail": "member lifecycle=ARCHIVED"
+        }
+      ]
+    },
+    {
+      "id": "pd29:stop-at-round-boundary",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "the supported explicit stop (/goal pause) delivered across a round boundary ends automatic continuation: no round and no model request start in the observed window afterwards",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "pause-observed",
+          "ok": true,
+          "detail": "durable paused phase=true"
+        },
+        {
+          "id": "no-round-after-pause",
+          "ok": true,
+          "detail": "rounds after the pause=0"
+        },
+        {
+          "id": "no-request-after-pause",
+          "ok": true,
+          "detail": "goal-round requests after the pause=0"
+        },
+        {
+          "id": "silent-window",
+          "ok": true,
+          "detail": "20000 ms observed after the pause"
+        }
+      ]
+    },
+    {
+      "id": "pd29:stop-in-idle-window",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "a stop delivered while the Member sits IDLE between two rounds is not lost: the raw stop button either ends the goal or is measured as a dropped no-op, and the supported channel leaves an observable silent window",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "raw-stop-measured",
+          "ok": true,
+          "detail": "raw burst=24 rounds after the last raw stop=0 lost=false"
+        },
+        {
+          "id": "gap-aimed-probe",
+          "ok": true,
+          "detail": "stops aimed at the turn/end boundary: attempts=6 landed=6 dropped=0"
+        },
+        {
+          "id": "supported-stop-no-round",
+          "ok": true,
+          "detail": "rounds after /goal pause=0"
+        },
+        {
+          "id": "deactivated",
+          "ok": true,
+          "detail": "durable goal phase=paused"
+        }
+      ]
+    },
+    {
+      "id": "pd29:user-stops-leader-no-propagation",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "stopping the LEADER's turn is measured separately: whether it propagates to the asynchronous Members is recorded, never assumed",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "leader-turn-really-running",
+          "ok": true,
+          "detail": "the slow Leader turn was observed=true"
+        },
+        {
+          "id": "leader-stop-accepted",
+          "ok": true,
+          "detail": "session/cancel status=200"
+        },
+        {
+          "id": "propagation-measured",
+          "ok": true,
+          "detail": "member goal rounds after the Leader stop={\"s1\":0,\"s2\":14,\"s3\":0,\"s4\":0,\"lead\":13,\"cold\":13,\"pz\":0} (propagated members=3)"
+        }
+      ]
+    },
+    {
+      "id": "pd29:cold-recovery-no-revival",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "a cold recovery on the same DSH_HOME keeps the durable goal readable but does NOT revive automatic continuation: a live, idle Member starts no round by itself",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-round-after-recovery",
+          "ok": true,
+          "detail": "rounds after recovery=0"
+        },
+        {
+          "id": "member-live-and-idle",
+          "ok": true,
+          "detail": "the recovered Member served a real follow-up turn=true (followUp ok=true)"
+        },
+        {
+          "id": "durable-goal-kept",
+          "ok": true,
+          "detail": "durable goal changes after recovery=[{\"at\":1794150960903,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-236a72af-ded6-4e2f-9ac6-237e52888586\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}]"
+        },
+        {
+          "id": "not-revived",
+          "ok": true,
+          "detail": "revived=false"
+        },
+        {
+          "id": "stopped-member-still-stopped",
+          "ok": true,
+          "detail": "the S1 Member after recovery: phase=paused"
+        }
+      ]
+    },
+    {
+      "id": "pd29:explicit-resume-after-recovery",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "an explicit authorized resume after the cold recovery continues the goal through the legal path (a stopped/deactivated goal is not permanently broken)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "resume-accepted",
+          "ok": true,
+          "detail": "status=200 ok=true"
+        },
+        {
+          "id": "rounds-resumed",
+          "ok": true,
+          "detail": "rounds after resume=1"
+        },
+        {
+          "id": "goal-still-active-or-progressed",
+          "ok": true,
+          "detail": "goal changes=[{\"at\":1794150960903,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-236a72af-ded6-4e2f-9ac6-237e52888586\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null},{\"at\":1794151084840,\"operation\":\"resume\",\"phase\":\"active\",\"revision\":2,\"id\":\"goal-236a72af-ded6-4e2f-9ac6-237e52888586\",\"roundsStarted\":208,\"maxGoalRounds\":100000,\"blockedCode\":null}]"
+        }
+      ]
+    },
+    {
+      "id": "pd29:terminal-phases-do-not-continue",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "a blocked goal (product round limit) and a user-paused goal start no further automatic round",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "blocked-reached",
+          "ok": true,
+          "detail": "blocked phase reached=true rounds=1"
+        },
+        {
+          "id": "paused-observed",
+          "ok": true,
+          "detail": "durable paused phase=true"
+        },
+        {
+          "id": "no-round-after-pause",
+          "ok": true,
+          "detail": "rounds after the pause=0"
+        }
+      ]
+    },
+    {
+      "id": "pd29:complete-does-not-continue",
+      "verdict": "PASS",
+      "at": "2026-11-08T15:18:15.078Z",
+      "proposition": "a completed goal starts no further automatic round",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "complete-observed",
+          "ok": true,
+          "detail": "durable phase=complete"
+        },
+        {
+          "id": "no-round-after-complete",
+          "ok": true,
+          "detail": "rounds after complete=0"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/dev/agent-workflow/evidence/a5sf-pd29-goal-stop/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T15:15:25.236Z",
+        "runId": "a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2",
+        "suite": "a5sf-pd29-goal-stop",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd29-20261108T15-15-17Z",
+        "phase": "a5sf-pd29-goal-stop-boot2"
+      },
+      {
+        "at": "2026-11-08T15:17:40.928Z",
+        "runId": "a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2",
+        "suite": "a5sf-pd29-goal-stop",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd29-20261108T15-15-17Z",
+        "phase": "a5sf-pd29-goal-stop-boot2-restart"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd29-goal-stop-boot2",
+      "world": "u5u5a5sfpd29-20261108T15-15-17Z",
+      "port": 3185,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/dev/agent-workflow/evidence/a5sf-pd29-goal-stop/driver/logs/u5u5a5sfpd29-20261108T15-15-17Z/instance-port3185.log"
+    },
+    {
+      "phase": "a5sf-pd29-goal-stop-boot2-restart",
+      "world": "u5u5a5sfpd29-20261108T15-15-17Z",
+      "port": 3185,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/dev/agent-workflow/evidence/a5sf-pd29-goal-stop/driver/logs/u5u5a5sfpd29-20261108T15-15-17Z/instance-port3185.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T15:18:15.078Z"
+}
