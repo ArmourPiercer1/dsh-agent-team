@@ -1,0 +1,17 @@
+{
+  "schema": "a5sf-pd21-subagent/boot-tree-state/1",
+  "capturedAt": "2026-11-08T00:47:00Z",
+  "note": "Captured immediately after both live pairs, before any commit. The boots ran against this working tree: HEAD + this dirty set. Nothing in it changed between the first boot and this capture (only read-only test commands ran in between). The committed cordis.patch.yml is byte-identical, so the numbers reproduce from the PR commit.",
+  "head": "3df546de63edef5f4daf81a46c93e2c7cc33c0cd",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "porcelain": [
+    "M cordis.patch.yml",
+    "?? dev/agent-workflow/evidence/a5sf-pd21-subagent/",
+    "?? tests/world-factory/a5sf-pd21-mutation-controls.mjs",
+    "?? tests/world-factory/a5sf-pd21-subagent.test.mjs",
+    "?? tests/world-factory/drivers/a5sf-pd21-subagent/"
+  ],
+  "cordisPatchSha256": "f9d7db609ec022445d6ef078d9e0a2c6b35b865472f7c311753829e8fcf39bbd",
+  "driverSha256": "08ce8f77fc3616abe9856f85404286fa0ad641f0f92d8679f24437b68472d2c0",
+  "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+}

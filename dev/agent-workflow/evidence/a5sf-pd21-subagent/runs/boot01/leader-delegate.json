@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sfpd21-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-pd21-team",
+      "requestToken": "a5sf-pd21-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sfpd21-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-43-18Z/workspace",
+      "prompt": "a5sf-pd21-turn: run the probes exactly once each, one tool call at a time, then report.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-pd21-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fswwvp0rvg5\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a511040c4723154e08a9981e69e661bc\",\"operationId\":\"op-0eiu3gv1fwpgvq0tq1fi915c\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-pd21-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_PD21_MEMBER_DONE {\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED\\\",\\\"message\\\":\\\"TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')\\\",\\\"details\\\":{\\\"action\\\":\\\"create-member\\\",\\\"role\\\":\\\"member\\\",\\\"allowed\\\":[\\\"human\\\",\\\"leader\\\"]}}\"}},\"requestToken\":\"a5sf-pd21-turn-delegate\"}"
+  }
+}

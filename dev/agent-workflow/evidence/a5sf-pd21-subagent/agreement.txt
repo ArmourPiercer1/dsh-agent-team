@@ -1,0 +1,25 @@
+TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+memberSurfaceVerdict          PROVEN                        PROVEN
+childRealmVerdict             PROVEN                        PROVEN
+escapeVerdict                 PROVEN                        PROVEN
+childFactsVerdict             PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+createVerdict                 PROVEN                        PROVEN
+subagentOnMemberSurface       false                         false
+childPresent                  false                         false
+childModelRequests            0                             0
+childSurfaceCount             0                             0
+confinedTurnLaunchers         1                             1
+baseBwrapWithMarkers          0                             0
+guardAllow                    1                             1
+guardDeny                     0                             0
+requestsCarryingSecret        0                             0
+memberInstancesBefore         2                             2
+memberInstancesAfter          2                             2
+admittedBytes                 true                          true
+transcriptSourceCount         4                             4
+
+agreeing=true differing=[]
