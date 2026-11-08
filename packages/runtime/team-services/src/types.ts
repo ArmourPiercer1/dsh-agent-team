@@ -69,6 +69,37 @@ export const TEAM_IO_DENIAL_CODES = [
    * the audit trail must tell them apart.
    */
   'NETWORK_PROOF_FACE_MISMATCH',
+  /**
+   * PD-30 (2026-11-15) — DESTINATION admission on the web face: the declared URL
+   * names a destination this face does not allow (loopback, an RFC1918 / ULA /
+   * link-local literal, or a well-known cloud metadata endpoint) and it is not
+   * one of the composition's DECLARED test endpoints.
+   *
+   * This is the SSRF leg. It is a code of its own rather than
+   * `NETWORK_UNCONFINED_REALM` because the two facts differ: that one says "the
+   * lane cannot be enforced at all", this one says "the lane allows egress, and
+   * THIS destination is refused before the transport". It lives in the SAME
+   * guard closure as the lane decision (one policy source), so a refusal here
+   * still produces exactly one fact on the same transport.
+   */
+  'WEB_DESTINATION_FORBIDDEN',
+  /**
+   * PD-30 — the declared web request could not be admitted as a request at all:
+   * a non-absolute/unsupported scheme, an empty host, an over-long URL, or a
+   * search with no query. The transport is never entered: a malformed request is
+   * refused at admission rather than handed to a provider that would decide what
+   * it means.
+   */
+  'WEB_REQUEST_MALFORMED',
+  /**
+   * PD-30 — no usable provider for this web call. Two production shapes: the
+   * composition installed a face whose provider exposes no `search` at all, and
+   * the composition's search provider reports itself `available() === false`
+   * (today: no API key, or an unparseable endpoint). The refusal is TYPED, with
+   * one fact and zero provider entries, so "no backend" is never a silent empty
+   * result or a fabricated answer.
+   */
+  'WEB_PROVIDER_UNAVAILABLE',
 ] as const
 
 export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number]

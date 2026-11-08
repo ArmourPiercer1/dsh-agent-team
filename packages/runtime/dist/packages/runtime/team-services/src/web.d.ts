@@ -135,6 +135,20 @@ export declare function isConfinedWebFace(service: unknown): boolean;
 export interface ConfinedWebProvider {
     fetch(request: unknown, signal?: AbortSignal): Promise<unknown>;
     search?(request: unknown, signal?: AbortSignal): Promise<unknown>;
+    /**
+     * PD-30 — the provider's OWN availability answer for search, if it has one.
+     * Absent means "the provider does not say", which is NOT a refusal: the face
+     * then relies on the `search` method's presence. A provider that answers
+     * false (an empty API key, an unparseable endpoint) is refused with
+     * `WEB_PROVIDER_UNAVAILABLE` before any provider entry.
+     */
+    searchAvailable?: () => boolean;
+    /**
+     * PD-30 — the exact origins this TRANSPORT declares as local fixtures (the
+     * SSRF exemption). Composition-owned: written by the transport row's config,
+     * never by a Member, and matched by exact origin only.
+     */
+    readonly testEndpoints?: readonly string[];
     probe?: () => Promise<ProviderResult<readonly ConfinedCapabilityRow[]>>;
     /**
      * PD-15 — the face-bound proof this provider stands behind, or `null`/absent.
@@ -169,18 +183,57 @@ export interface ConfinedWebOptions {
     readonly realm?: 'member' | 'binding';
     /** The binding identity the effective policy was compiled for, if any. */
     readonly toolBindingIdentity?: string | null;
+    /**
+     * PD-30 — the composition's DECLARED test endpoints (exact origins such as
+     * `http://127.0.0.1:3182`). Absent/empty is the production default and the
+     * only shape a shipped deployment should use.
+     *
+     * WHY A LIST IS NEEDED AT ALL, stated so it cannot be read as a hole: the
+     * destination leg refuses loopback/private/link-local/metadata targets
+     * (SSRF). A local test endpoint IS a loopback target, so "refuse every
+     * non-public destination" and "measure a real request over a real socket"
+     * would be contradictory. The distinction is exact and declared: an origin
+     * on THIS list is a fixture the composition itself stood up, matched by
+     * equal origin (scheme + host + port) and nothing else — a different port, a
+     * different hostname spelling, a redirect off it, or a path prefix trick all
+     * fail the match and are then classified like any other target. The list is
+     * composition config (never a Member input), and it is recorded in the
+     * deployment evidence, so a reader can see exactly which fixture was exempt.
+     */
+    readonly testEndpoints?: readonly string[];
+    /** The admission guard; defaults to {@link createWebNetworkGuard}. */
+    readonly admission?: WebAdmission;
+}
+/** PD-30 — the destination/provider admission a web face applies to every call. */
+export interface WebAdmission {
+    /** Exact origins exempt from the SSRF destination leg (see {@link ConfinedWebOptions.testEndpoints}). */
+    readonly testEndpoints?: readonly string[];
 }
 /**
- * Build the lane admission for one web face. It answers exactly one question
- * on the compiled policy — "does this lane claim `network: deny`?" — and, when
- * it does, asks the backend's own probe whether that claim can be kept. It is
- * the same shape as the confined process face's network leg (BL-17) and shares
- * its probe and its typed token.
- *
- * `allow` returns without touching the provider; `deny` NEVER reaches the
- * provider (the refusal is thrown before the delegate line in the class below).
+ * PD-30 — the longest declared URL this face admits. A URL that no provider
+ * could usefully parse is refused at admission (`WEB_REQUEST_MALFORMED`)
+ * instead of being shipped over a socket.
  */
-export declare function createWebNetworkGuard(effective: EffectiveIoPolicy, provider: ConfinedWebProvider): FsGuard;
+export declare const WEB_MAX_DECLARED_URL_LENGTH = 8192;
+/**
+ * Build the lane admission for one web face. It answers, in a FIXED order:
+ *
+ *   1. REQUEST SHAPE — a request that is not an absolute `http(s)` URL with a
+ *      host, or a search with no query, is `WEB_REQUEST_MALFORMED`;
+ *   2. DESTINATION — a loopback/private/link-local/unroutable/metadata target
+ *      that is not a declared test endpoint is `WEB_DESTINATION_FORBIDDEN`
+ *      (the SSRF leg; runs on EVERY lane, allow included);
+ *   3. PROVIDER — a search call whose provider exposes no usable search is
+ *      `WEB_PROVIDER_UNAVAILABLE`;
+ *   4. THE LANE — does this lane claim `network: deny`, and if so, can the
+ *      backend's own probe prove it? (BL-17/PD-15, unchanged).
+ *
+ * ALL FOUR live in this ONE closure, so there is exactly one policy source and
+ * exactly one fact per call whatever refuses it (`observeGuard` maps the code).
+ * `allow` returns without touching the provider; a refusal NEVER reaches the
+ * provider (the throw is before the delegate line in the class below).
+ */
+export declare function createWebNetworkGuard(effective: EffectiveIoPolicy, provider: ConfinedWebProvider, admission?: WebAdmission): FsGuard;
 /**
  * Create the confined `web` Provider class for one Member: the host's OWN class
  * is the service identity, and `fetch`/`search` are REPLACED by the confined

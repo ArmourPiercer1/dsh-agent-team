@@ -130,17 +130,53 @@ export function isConfinedWebFace(service) {
     return service[A5SF_CONFINED_WEB_MARK] === true;
 }
 /**
- * Build the lane admission for one web face. It answers exactly one question
- * on the compiled policy — "does this lane claim `network: deny`?" — and, when
- * it does, asks the backend's own probe whether that claim can be kept. It is
- * the same shape as the confined process face's network leg (BL-17) and shares
- * its probe and its typed token.
- *
- * `allow` returns without touching the provider; `deny` NEVER reaches the
- * provider (the refusal is thrown before the delegate line in the class below).
+ * PD-30 — the longest declared URL this face admits. A URL that no provider
+ * could usefully parse is refused at admission (`WEB_REQUEST_MALFORMED`)
+ * instead of being shipped over a socket.
  */
-export function createWebNetworkGuard(effective, provider) {
+export const WEB_MAX_DECLARED_URL_LENGTH = 8192;
+/** The IPv4 literal ranges that are never a public destination. */
+const FORBIDDEN_IPV4 = Object.freeze([
+    ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8],
+    ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.168.0.0', 16],
+    ['198.18.0.0', 15], ['224.0.0.0', 4], ['240.0.0.0', 4],
+]);
+/** Hostnames that name a local/instance-metadata service rather than a public site. */
+const FORBIDDEN_HOSTNAMES = Object.freeze([
+    'localhost', 'metadata', 'metadata.google.internal', 'instance-data', 'metadata.azure.com',
+]);
+/** IPv6 prefixes that are never a public destination (textual, lower-cased). */
+const FORBIDDEN_IPV6_PREFIXES = Object.freeze(['::1', '::', 'fc', 'fd', 'fe80', 'fec0']);
+/**
+ * Build the lane admission for one web face. It answers, in a FIXED order:
+ *
+ *   1. REQUEST SHAPE — a request that is not an absolute `http(s)` URL with a
+ *      host, or a search with no query, is `WEB_REQUEST_MALFORMED`;
+ *   2. DESTINATION — a loopback/private/link-local/unroutable/metadata target
+ *      that is not a declared test endpoint is `WEB_DESTINATION_FORBIDDEN`
+ *      (the SSRF leg; runs on EVERY lane, allow included);
+ *   3. PROVIDER — a search call whose provider exposes no usable search is
+ *      `WEB_PROVIDER_UNAVAILABLE`;
+ *   4. THE LANE — does this lane claim `network: deny`, and if so, can the
+ *      backend's own probe prove it? (BL-17/PD-15, unchanged).
+ *
+ * ALL FOUR live in this ONE closure, so there is exactly one policy source and
+ * exactly one fact per call whatever refuses it (`observeGuard` maps the code).
+ * `allow` returns without touching the provider; a refusal NEVER reaches the
+ * provider (the throw is before the delegate line in the class below).
+ */
+export function createWebNetworkGuard(effective, provider, admission = {}) {
+    const testOrigins = new Set(normaliseTestEndpoints(admission.testEndpoints));
     return async function webNetworkGuard(method, target) {
+        const fields = { memberIdentity: effective.memberIdentity, method, target };
+        if (method === WEB_SEARCH_GUARD_METHOD) {
+            assertDeclaredQuery(target, fields);
+            assertSearchAvailable(provider, fields);
+        }
+        else {
+            const declared = assertDeclaredUrl(target, fields);
+            assertDestinationAllowed(declared, testOrigins, fields);
+        }
         // The permission: the ONE compiled lane. A non-`deny` axis is not a
         // network refusal (the face does not invent a second class of deny).
         if (effective.network.access !== 'deny')
@@ -175,6 +211,190 @@ export function createWebNetworkGuard(effective, provider) {
             + `but it offered no face-bound proof for the 'web' face (${admission.error.message}); a capability level alone `
             + 'does not prove this face, so the call is refused before any provider call', { memberIdentity: effective.memberIdentity, method, target });
     };
+}
+/**
+ * Normalise the declared test endpoints to exact origins. A value that is not
+ * an absolute `http(s)` URL with an origin is DROPPED rather than widened: a
+ * malformed exemption can only ever be a fixture mistake, and dropping it
+ * means the target is classified like any other (fail closed).
+ */
+function normaliseTestEndpoints(endpoints) {
+    if (!Array.isArray(endpoints))
+        return [];
+    const origins = [];
+    for (const raw of endpoints) {
+        if (typeof raw !== 'string' || raw.trim() === '')
+            continue;
+        try {
+            const url = new URL(raw.trim());
+            if (url.protocol !== 'http:' && url.protocol !== 'https:')
+                continue;
+            if (url.hostname === '')
+                continue;
+            origins.push(url.origin);
+        }
+        catch {
+            continue;
+        }
+    }
+    return origins;
+}
+/**
+ * The request-shape leg (PD-30). A declared value that is not an absolute
+ * `http(s)` URL with a non-empty host, or that is longer than
+ * {@link WEB_MAX_DECLARED_URL_LENGTH}, is `WEB_REQUEST_MALFORMED` — the
+ * transport never sees it. The returned `URL` is the PARSED request, so the
+ * destination leg classifies exactly the string the provider will receive.
+ */
+function assertDeclaredUrl(target, fields) {
+    if (typeof target !== 'string' || target === '') {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', 'the web request carries no declared URL; refusing before any provider call', fields);
+    }
+    if (target.length > WEB_MAX_DECLARED_URL_LENGTH) {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', `the declared URL is ${String(target.length)} characters, beyond the ${String(WEB_MAX_DECLARED_URL_LENGTH)}-character `
+            + 'admission bound; refusing instead of handing an unparseable request to a provider', fields);
+    }
+    let url;
+    try {
+        url = new URL(target);
+    }
+    catch {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', `the declared URL ${JSON.stringify(target.slice(0, 200))} is not an absolute URL`, fields);
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', `the declared URL uses scheme ${JSON.stringify(url.protocol)}; this face admits http/https only`, fields);
+    }
+    if (url.hostname === '') {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', 'the declared URL has no host', fields);
+    }
+    return url;
+}
+/** A search needs a query; a query-less search is a malformed request, not an empty result. */
+function assertDeclaredQuery(target, fields) {
+    if (typeof target !== 'string' || !target.startsWith('query:') || target.slice('query:'.length).trim() === '') {
+        throw new TeamIoDenial('WEB_REQUEST_MALFORMED', 'the web search carries no declared query; refusing instead of returning an empty result', fields);
+    }
+}
+/**
+ * The provider leg (PD-30): a search call whose provider exposes no `search`,
+ * or whose own `searchAvailable()` answers false, is `WEB_PROVIDER_UNAVAILABLE`.
+ * That is the honest shape of "the composition has no search backend": typed,
+ * zero provider entries, never a fabricated or empty result.
+ */
+function assertSearchAvailable(provider, fields) {
+    if (typeof provider.search !== 'function') {
+        throw new TeamIoDenial('WEB_PROVIDER_UNAVAILABLE', 'this web face was installed with a provider that exposes no search; refusing instead of returning a fabricated result', fields);
+    }
+    const available = provider.searchAvailable;
+    if (typeof available !== 'function')
+        return;
+    let ok;
+    try {
+        ok = available.call(provider) === true;
+    }
+    catch {
+        ok = false;
+    }
+    if (!ok) {
+        throw new TeamIoDenial('WEB_PROVIDER_UNAVAILABLE', 'the composition installed a search provider that reports itself unavailable (its own available() answers false); '
+            + 'refusing before any provider entry instead of returning an empty or fabricated result', fields);
+    }
+}
+/**
+ * The SSRF leg (PD-30). Refuses a destination that is loopback, a private /
+ * carrier-grade-NAT / link-local / unroutable literal, or a well-known instance
+ * metadata host — UNLESS the target's origin is one of the composition's
+ * declared test endpoints (exact origin equality).
+ *
+ * WHAT THIS IS AND IS NOT, stated because it is easy to overclaim: this is a
+ * DECLARED-STRING admission check that runs before the transport, in the same
+ * guard as the lane decision. It does not pin DNS: a permitted hostname that
+ * RESOLVES to a private address is refused by the host provider's own resolver
+ * (the pinned `HttpFetchProvider` resolves through `publicHttpNetwork.resolve`,
+ * which refuses non-public destinations) — and a resolver that was replaced
+ * with a permissive one is a different composition, disclosed on the deployment
+ * record. IPv4 literals in decimal/octal/hex spelling are normalised by `URL`
+ * before this runs, so an alternate spelling cannot slip past the ranges.
+ */
+function assertDestinationAllowed(url, testOrigins, fields) {
+    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+    if (testOrigins.has(url.origin))
+        return;
+    if (FORBIDDEN_HOSTNAMES.includes(hostname) || hostname.endsWith('.localhost')) {
+        throw new TeamIoDenial('WEB_DESTINATION_FORBIDDEN', `the declared destination host ${JSON.stringify(hostname)} is a local/instance-metadata name; refusing before the transport `
+            + '(declare it as a composition test endpoint if it is a fixture, never from a Member)', fields);
+    }
+    if (isForbiddenIpv4(hostname) || isForbiddenIpv6(hostname)) {
+        throw new TeamIoDenial('WEB_DESTINATION_FORBIDDEN', `the declared destination ${JSON.stringify(hostname)} is a loopback/private/link-local/unroutable literal; refusing before `
+            + 'the transport (SSRF leg). A public destination is required, or an exact declared test endpoint', fields);
+    }
+}
+/** True for an IPv4 literal inside one of the {@link FORBIDDEN_IPV4} ranges. */
+function isForbiddenIpv4(hostname) {
+    const parts = hostname.split('.');
+    if (parts.length !== 4)
+        return false;
+    const octets = parts.map((part) => (/^\d{1,3}$/.test(part) ? Number(part) : Number.NaN));
+    if (octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255))
+        return false;
+    const value = ((octets[0] << 24) >>> 0) + (octets[1] << 16) + (octets[2] << 8) + octets[3];
+    return FORBIDDEN_IPV4.some(([base, bits]) => {
+        const baseValue = base.split('.').reduce((acc, part) => ((acc << 8) >>> 0) + Number(part), 0) >>> 0;
+        const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
+        return (value & mask) >>> 0 === (baseValue & mask) >>> 0;
+    });
+}
+/** True for an IPv6 literal whose textual form is loopback/unspecified/ULA/link-local. */
+function isForbiddenIpv6(hostname) {
+    if (!hostname.includes(':'))
+        return false;
+    const lower = hostname.toLowerCase();
+    return FORBIDDEN_IPV6_PREFIXES.some((prefix) => lower === prefix || lower.startsWith(`${prefix}:`) || lower.startsWith(prefix));
+}
+/**
+ * The seam's result-shape contract on the SECOND call path (PD-30).
+ *
+ * `WebRuntime.search` documents and enforces `request.maxResults`: a provider
+ * that over-returns is truncated and the result marked `truncated`. This face
+ * REPLACES that method (it is the service identity on the realm scope), so
+ * skipping the cap would let a governed Member receive more results than it
+ * asked for — a widened answer, not a refused one. The rule is restated here
+ * because the seam exports no helper for it; it decides nothing about
+ * PERMISSION (the guard already did) and it never widens a result.
+ */
+function capSearchSources(result, request) {
+    if (result === null || typeof result !== 'object')
+        return result;
+    const payload = result;
+    if (!Array.isArray(payload.sources))
+        return result;
+    const raw = request !== null && typeof request === 'object' ? request.maxResults : undefined;
+    const cap = typeof raw === 'number' && Number.isInteger(raw) && raw > 0 ? raw : undefined;
+    if (cap === undefined || payload.sources.length <= cap)
+        return result;
+    return Object.freeze({
+        ...payload,
+        sources: Object.freeze(payload.sources.slice(0, cap)),
+        truncated: true,
+    });
+}
+/**
+ * Make a guard refusal TYPED IN THE TEXT THE MODEL SEES (PD-30).
+ *
+ * The guard throws `TeamIoDenial`, whose `code` is the typed decision and whose
+ * `message` is the detail (the fact already records `decidedBy`). The tool
+ * framework renders an error to the model as `Error: <message>`, so without
+ * this the code would only exist on an object the Member never inspects — a
+ * refusal the model cannot tell apart from a transport fault. The shadow's own
+ * `NETWORK_UNCONFINED_REALM` refusal already spells `<code>: <detail>`; this
+ * makes the face's refusals agree with it. The error OBJECT is reused (same
+ * code, same fields), so nothing about the decision changes.
+ */
+function modelVisibleDenial(error) {
+    if (error instanceof TeamIoDenial && typeof error.message === 'string' && !error.message.startsWith(`${error.code}:`)) {
+        error.message = `${error.code}: ${error.message}`;
+    }
+    return error;
 }
 /**
  * Read the provider's optional face-bound proof. Absence, a throw or a
@@ -214,7 +434,16 @@ export function createConfinedWebClass(Base, options) {
     if (provider === undefined || provider === null || typeof provider.fetch !== 'function') {
         throw new TypeError('createConfinedWebClass needs the composition-owned web provider');
     }
-    const laneGuard = options.guard ?? createWebNetworkGuard(effective, provider);
+    // PD-30: the fixture exemption is the TRANSPORT's declaration when the mount
+    // does not restate it (`provider.testEndpoints`, written by the composition
+    // row's own config — see `a5sf-web-transport.mjs`). It is composition-owned
+    // either way: a Member can never widen it, and `assertDestinationAllowed`
+    // matches the EXACT origin only.
+    const declaredTestEndpoints = options.testEndpoints
+        ?? provider.testEndpoints;
+    const laneGuard = options.guard ?? createWebNetworkGuard(effective, provider, {
+        ...(declaredTestEndpoints === undefined ? {} : { testEndpoints: declaredTestEndpoints }),
+    });
     const guard = options.onGuardConsult === undefined
         ? laneGuard
         : observeGuard(laneGuard, options.onGuardConsult, {
@@ -231,19 +460,31 @@ export function createConfinedWebClass(Base, options) {
          */
         async fetch(request, signal) {
             const url = declaredUrlOf(request, 'fetch');
-            await guard(WEB_FETCH_GUARD_METHOD, url, WEB_NETWORK_RESIDUALS);
+            try {
+                await guard(WEB_FETCH_GUARD_METHOD, url, WEB_NETWORK_RESIDUALS);
+            }
+            catch (error) {
+                throw modelVisibleDenial(error);
+            }
             return provider.fetch(request, signal);
         }
         /** The sibling network row — the SECOND call path on this face. */
         async search(request, signal) {
-            if (typeof provider.search !== 'function') {
-                // A face that cannot search must not invent a result: the SAME typed
-                // vocabulary, a fact on the same transport, zero provider calls.
-                throw new TeamIoDenial('IO_POLICY_UNSUPPORTED', 'this web face was installed with a provider that exposes no search; refusing instead of returning a fabricated result', { memberIdentity: effective.memberIdentity, method: WEB_SEARCH_GUARD_METHOD, target: declaredUrlOf(request, 'search') });
-            }
+            // PD-30: the missing/unavailable-provider refusal moved INSIDE the guard
+            // so it produces the SAME one-fact-per-consult record as every other
+            // refusal (a pre-guard throw would be a typed error with no fact, i.e.
+            // exactly the silent gap "no backend" must never be).
             const target = declaredUrlOf(request, 'search');
-            await guard(WEB_SEARCH_GUARD_METHOD, target, WEB_NETWORK_RESIDUALS);
-            return provider.search(request, signal);
+            try {
+                await guard(WEB_SEARCH_GUARD_METHOD, target, WEB_NETWORK_RESIDUALS);
+            }
+            catch (error) {
+                throw modelVisibleDenial(error);
+            }
+            // The guard admitted this call, so the provider HAS a usable search.
+            const result = await provider.search
+                .call(provider, request, signal);
+            return capSearchSources(result, request);
         }
     }
     // PD-27: the marker the model-visible shadow (`confined-web-tool.mjs`) asks to

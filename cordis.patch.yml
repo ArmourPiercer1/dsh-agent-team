@@ -50,6 +50,44 @@
   disabled: true
 
 - insert:
+    # ── THE COMPOSITION-OWNED WEB TRANSPORT (PD-30, 2026-11-15) ──────────────
+    # The transport a governed Member's confined `web` face calls AFTER the
+    # compiled network lane admits a request. PD-27 restored the model-visible
+    # `web_fetch`/`web_search` names and the confined face; the FACE had no
+    # transport, so only a test driver row could make the pair real. This row is
+    # that missing half, SHIPPED: it loads the pinned host's own providers by
+    # their public package names (`dsh-web-fetch-http` for fetch,
+    # `dsh-web-search-exa` for search) and provides the optional
+    # `teamA5sfWebTransport` service the product row (`dsh-agent-team/host`)
+    # reads lazily when it builds a governed realm.
+    #
+    # WHY IT IS A SEPARATE ROW RATHER THAN PART OF THE TEAM ROW: the transport is
+    # a COMPOSITION decision (which provider, which endpoint, which declared test
+    # fixtures) and the row config is the composition's only place to state it.
+    # A deployment that does not mount this row gets the pre-PD-30 behaviour
+    # exactly: a governed realm with `subprocess` + `terminal` and NO web face.
+    #
+    # CONFIG, AND WHY THESE `!!js` READS EXIST:
+    #   - `search.baseURL` / `search.apiKey` are the real Exa endpoint/credential.
+    #     Defaults are the public API and `$EXA_API_KEY`; an operator may point
+    #     `baseURL` at an internal gateway. The EVIDENCE suite points it at a
+    #     local endpoint so "a real request was issued and the answer parsed" is
+    #     measured without an external account — a fixture choice on the same
+    #     code path, not a second implementation.
+    #   - `testEndpoints` is the SSRF exemption, and it is DELIBERATELY EMPTY by
+    #     default. The face refuses loopback/private/link-local/metadata
+    #     destinations; a local fixture is loopback, so a test deployment
+    #     declares the exact origins it stood up, and every other destination is
+    #     classified as usual. A shipped deployment leaves this unset.
+    # Nothing here selects a policy: the network decision stays in the ONE guard
+    # (`team-services/src/web.ts`) and this row only transports an admitted call.
+    - id: "a5sf-web-transport"
+      name: "dsh-agent-team/web-transport"
+      config:
+        testEndpoints: !!js (process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')
+        search:
+          baseURL: !!js process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'
+          apiKey: !!js process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''
     - id: "dsh-agent-team"
       name: "dsh-agent-team/host"
       config:

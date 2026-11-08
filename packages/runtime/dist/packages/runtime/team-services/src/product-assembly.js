@@ -270,7 +270,7 @@ function blueprintSourceOf(declaration) {
  * failing (or worse, succeeding) a lane projection and looking like a generic
  * policy problem.
  */
-function projectedRestrictionOf(raw, where) {
+function projectedRestrictionOf(raw, where, faces = undefined) {
     const binding = closedRecord(raw, ['owner', 'name', 'authorization', 'io', 'execution'], where);
     const execution = closedRecord(binding['execution'], ['implementationOrigin', 'executionBoundary'], `${where}.execution`);
     const boundary = execution['executionBoundary'];
@@ -313,7 +313,10 @@ function projectedRestrictionOf(raw, where) {
         refuse('MEMBER_POLICY_UNAVAILABLE', `${where} could not be projected (${projected.code}: ${projected.detail}); a restriction that cannot compile never mounts`, where);
     }
     const restriction = projected.value;
-    if (restriction.network !== 'allow') {
+    // PD-30: the premise of this refusal is "no web face is installed". A
+    // composition that owns a web transport installs one, so the narrowing is
+    // enforceable at the service level and the SAME canonical lane is accepted.
+    if (restriction.network !== 'allow' && faces?.web !== true) {
         refuse('NETWORK_UNCONFINED_REALM', `${where} narrows the network axis (${restriction.network}); the Member realm installs no web face,`
             + ' so a network narrowing would be a claim with no enforcement', `${where}.io.network`);
     }
@@ -567,7 +570,7 @@ export function parseProductRealmDeclaration(raw, context) {
         // Refusing early keeps the answer specific (`NETWORK_UNCONFINED_REALM`)
         // instead of letting the compiler report a generic unsupported projection.
         const networkLane = member['ceiling']['network'];
-        if (isRecord(networkLane) && networkLane['mode'] !== 'allow') {
+        if (isRecord(networkLane) && networkLane['mode'] !== 'allow' && context.availableFaces?.web !== true) {
             refuse('NETWORK_UNCONFINED_REALM', `${where}.ceiling.network narrows the network axis (mode=${JSON.stringify(networkLane['mode'])});`
                 + ' the Member realm installs no web face, so the narrowing could not be enforced', `${where}.ceiling.network`);
         }
@@ -575,7 +578,7 @@ export function parseProductRealmDeclaration(raw, context) {
         if (restrictionsRaw !== undefined && !Array.isArray(restrictionsRaw)) {
             refuse('REALM_DECLARATION_INVALID', `${where}.toolRestrictions must be an array of v4 toolBindings entries when present`, `${where}.toolRestrictions`);
         }
-        const restrictions = (restrictionsRaw ?? []).map((restriction, restrictionIndex) => projectedRestrictionOf(restriction, `${where}.toolRestrictions[${String(restrictionIndex)}]`));
+        const restrictions = (restrictionsRaw ?? []).map((restriction, restrictionIndex) => projectedRestrictionOf(restriction, `${where}.toolRestrictions[${String(restrictionIndex)}]`, context.availableFaces));
         const identities = new Set();
         for (const restriction of restrictions) {
             if (identities.has(restriction.bindingIdentity)) {
@@ -673,6 +676,7 @@ export function deriveProductRealmPlan(input) {
     return parseProductRealmDeclaration(declaration, {
         blueprintSource: input.blueprintSource,
         source: 'derived',
+        ...(input.availableFaces === undefined ? {} : { availableFaces: input.availableFaces }),
     });
 }
 /**
@@ -695,6 +699,7 @@ export function deriveProductRealmPlanFromBlueprint(input) {
     return parseProductRealmDeclaration(declaration, {
         boundBlueprint: input.blueprint,
         source: 'derived',
+        ...(input.availableFaces === undefined ? {} : { availableFaces: input.availableFaces }),
     });
 }
 function descriptorOf(raw) {

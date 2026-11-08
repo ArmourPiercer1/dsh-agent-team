@@ -520,3 +520,41 @@ _（本面无独立条目。）_
 | P4 | BL-27（fs）、BL-28（fs）、BL-29（web）、BL-30（cross）、BL-31（cross）、BL-32（cross）、BL-33（cross）、BL-34（cross） |
 | P5 | BL-35（cross）、BL-36（cross）、BL-37（cross）、BL-38（fs） |
 | BR | BR-01（cross）、BR-02（cross）、BR-03（cross） |
+
+#### PD-30 追加注记（2026-11-15，只追加；不改任何既有行等级 / `V@B` / `FAIL-CLOSED` 名单）
+
+PD-30（WEB-PREVIEW，debt register `PD-30`）把 PD-27 的三处缺口推到 Preview 可裁决的状态，并**先修仪器**：
+
+- **BL-18 的「产品组合自己供给 web face」这一半现在成立，且不改任何行名**：`cordis.patch.yml` 的
+  `a5sf-web-transport` 行（`dsh-agent-team/web-transport`，profile 层）提供可选服务
+  `teamA5sfWebTransport`；host 行用 getter 惰性读取它，`createGovernedRealmProvider` 只在
+  transport 存活时给出 `web` face 与 `availableFaces.web`。没有该行 = 没有 web face = PD-30 之前的
+  行为，按部署而变。
+- **仪器盲区（本 lane 最重要的一条，比任何 web 读数都重要）**：随仓库发货的 preset 在**从未安装本仓库包**
+  的测试 World 里根本无法构造受治 Member（`tool-web (dsh-agent-team/web-tool): never started`，
+  surface 0，整个受治 Member 连同 fs/shell/skill/present 一起不可用）。本地化后的正确读法是：loader 的
+  所有行（profile 行与 preset 内嵌行）都走**同一条**解析基准（`loader.internal.import(name, ctx.baseUrl)`，
+  `baseUrl` = profile），所以差别只在「bundle 是否装进那张图」；**产品行是对的，错的是把未安装的树当
+  发货树来测的 harness**。修法为 test-only：driver 建立 `profiles/web/node_modules/dsh-agent-team -> repo root`
+  安装图并校验 `./host`|`./web-tool`|`./web-transport` 三个 export 可解析，**零行改写**
+  （`preset-effective.json` 的 `rewrites: []`）。绝对 `file:` URL 仍然**不是**产品形态。
+- **硬前置（此前缺失、导致上述盲区可以「通过」）**：`precondition.json`（宿主日志无 `never started`、
+  Team 已建 Member，在**任何 probe 之前**读取，失败即 throw、不产出任何判定）+
+  `precondition-member.json`（`worker` Member 存在、模型可见面非空 = **33** 且含 `web_fetch`/`web_search`，
+  在**任何判定之前**写入）。反证：`A5SF_PD30_NO_INSTALL_GRAPH=1` 下同一 driver 的 Host 端口可答但
+  harness 路由永不就绪。
+- **三对 agreeing boots（DEV-LIVE，2/2 逐项相同）**：allow（fixture **1** 连接/`{"/known":1}`、body
+  byte-for-byte、`web_search` **1** 次真实 POST 且解析出 sources、4 条 fact、host-web 调用 **0**）、
+  deny（**0** 连接、1 条 `NETWORK_UNCONFINED_REALM` fact、host-web **0**）、nosearch（无 key：
+  `web_fetch` 仍 allow 1 连接，`web_search` 为 `WEB_PROVIDER_UNAVAILABLE`、**0** POST、1 条 fact）。
+- **`web_search` 的分类（不许含糊）**：**配置了 endpoint + key 就是真检索**（真实 `POST /search`、真实解析、
+  `maxResults` 截断、`truncated: true`）；**默认安装没有 key，因此是 dispatch/governed only 的 typed 缺口**，
+  不宣告公开检索已可用。最小修法 = 部署侧提供 key，产品代码无需改动。
+- **负路径**：SSRF（15 个 loopback/私网/link-local/ULA/metadata literal + 精确 origin 豁免的正向对照）、
+  坏 URL（`file:`/`gopher:`/`javascript:`、空 host、相对路径、超长、无 query 的 search）、缺 provider，
+  全部 typed、0 传输进入、每条 1 条 deny fact；**BASE web fallback 恒为 0**（tripwire 行计
+  `web.fetch`/`web.search`）。realm 内的 `read`/`write`/`edit`/`grep`/`glob`/`present`/`bash` 仍工作并产 fact
+  （`skill` 按设计无 IO fact）。
+- **部署差异必须照实读，不得写成「等价」**：安装图是 symlink，不是 `npm pack` 的包安装；它复现的是
+  *解析形状*，不是打包产物。因此本 lane 只对「随仓库发货的行字节 + 解析形状」作断言，对 packaged
+  installer 不作断言。

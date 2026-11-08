@@ -1,0 +1,5 @@
+dsh: warning: 3 entries did not activate
+dsh-agent-team (dsh-agent-team/host): failed to import
+a5sf-web-transport (dsh-agent-team/web-transport): failed to import
+p6t6-team-tools (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/packages/tools/harness/plugin.mjs): pending (waiting for service: teamRoot)
+dsh web: http://127.0.0.1:3188/?token=j_PHMb_h7ZVFCDXxlOjJUlEF1Ho4ztSEeJZAqVfucq8

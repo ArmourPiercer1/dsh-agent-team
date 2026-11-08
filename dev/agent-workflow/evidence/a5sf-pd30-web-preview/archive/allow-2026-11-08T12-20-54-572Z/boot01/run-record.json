@@ -1,0 +1,332 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd30-web-preview-allow-2026-11-08T12-17-51-875Z-b1",
+  "suite": "a5sf-pd30-web-preview",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T12:17:51.876Z",
+  "selectedCases": [
+    "pd30:web-allow",
+    "pd30:web-search",
+    "pd30:web-ssrf",
+    "pd30:web-malformed",
+    "pd30:regression-tools",
+    "pd30:web-surface",
+    "pd30:closed-still-typed",
+    "pd30:no-base-transport"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "WebPreview",
+      "world": "u5a5sfpd30",
+      "source": "task PD30-WEB-PREVIEW explicit boot authorisation (2026-11-14), arm=allow"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd30-20261108T12-17-51Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd30:web-allow",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "on the allow lane a governed Member reaches the declared HTTP fixture through the SHIPPED confined `web` face: the served bytes return VERBATIM, exactly ONE allow fact names the declared URL, the fixture counts exactly ONE request on the declared path, and the inherited host `web` service is never consulted",
+      "failed": [
+        "call-succeeded: isError=true text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact",
+        "body-verbatim: result carries the fixture body: false",
+        "one-allow-fact: facts=[]",
+        "fact-names-declared-url: locator=<none>",
+        "fixture-saw-one-request: pathHits={} connections=0"
+      ],
+      "clauses": [
+        {
+          "id": "call-succeeded",
+          "ok": false,
+          "detail": "isError=true text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact"
+        },
+        {
+          "id": "body-verbatim",
+          "ok": false,
+          "detail": "result carries the fixture body: false"
+        },
+        {
+          "id": "one-allow-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "fact-names-declared-url",
+          "ok": false,
+          "detail": "locator=<none>"
+        },
+        {
+          "id": "fixture-saw-one-request",
+          "ok": false,
+          "detail": "pathHits={} connections=0"
+        },
+        {
+          "id": "no-inherited-transport",
+          "ok": true,
+          "detail": "host web calls=0"
+        },
+        {
+          "id": "surface-restored",
+          "ok": true,
+          "detail": "surface=[\"bash\",\"edit\",\"exit_plan_mode\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"web_fetch\",\"web_search\",\"write\"]"
+        }
+      ]
+    },
+    {
+      "id": "pd30:web-search",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "`web_search` has a REAL backend under the shipped composition: the host Exa provider POSTs the declared query to the configured endpoint, the endpoint's OWN request log records exactly one POST, and the parsed answer reaches the Member with the parses' source URLs (not just the query recorded)",
+      "failed": [
+        "call-succeeded: isError=true text=Error: invalid arguments: missing required property \"queries\"",
+        "endpoint-saw-one-post: posts=0 pathHits={}",
+        "post-carried-declared-query: sentQuery=null",
+        "parsed-sources-reach-the-member: text=Error: invalid arguments: missing required property \"queries\"",
+        "one-allow-search-fact: facts=[]",
+        "fact-names-declared-query: locator=<none>"
+      ],
+      "clauses": [
+        {
+          "id": "call-succeeded",
+          "ok": false,
+          "detail": "isError=true text=Error: invalid arguments: missing required property \"queries\""
+        },
+        {
+          "id": "endpoint-saw-one-post",
+          "ok": false,
+          "detail": "posts=0 pathHits={}"
+        },
+        {
+          "id": "post-carried-declared-query",
+          "ok": false,
+          "detail": "sentQuery=null"
+        },
+        {
+          "id": "parsed-sources-reach-the-member",
+          "ok": false,
+          "detail": "text=Error: invalid arguments: missing required property \"queries\""
+        },
+        {
+          "id": "answer-was-capped",
+          "ok": true,
+          "detail": "the seam caps to maxResults=2; the count is recorded in the case detail"
+        },
+        {
+          "id": "one-allow-search-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "fact-names-declared-query",
+          "ok": false,
+          "detail": "locator=<none>"
+        },
+        {
+          "id": "no-inherited-transport",
+          "ok": true,
+          "detail": "host web calls=0"
+        }
+      ]
+    },
+    {
+      "id": "pd30:web-ssrf",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "on the SAME allow lane, a request to a link-local/metadata address is refused TYPED before the transport: one deny fact names WEB_DESTINATION_FORBIDDEN, the fixture counts no additional connection, and no body is returned",
+      "failed": [
+        "typed-refusal: text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact; refusing before any provider call inst",
+        "one-deny-fact: facts=[]"
+      ],
+      "clauses": [
+        {
+          "id": "call-refused",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": false,
+          "detail": "text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact; refusing before any provider call inst"
+        },
+        {
+          "id": "one-deny-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "no-body",
+          "ok": true,
+          "detail": "the fixture body must not be present in a refused result"
+        },
+        {
+          "id": "no-extra-connection",
+          "ok": true,
+          "detail": "connections=0"
+        }
+      ]
+    },
+    {
+      "id": "pd30:web-malformed",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "a malformed request (a non-http(s) scheme) is refused TYPED before the transport: one deny fact names WEB_REQUEST_MALFORMED and the fixture counts no additional connection",
+      "failed": [
+        "typed-refusal: text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact; refusing before any provider call inst",
+        "one-deny-fact: facts=[]"
+      ],
+      "clauses": [
+        {
+          "id": "call-refused",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": false,
+          "detail": "text=Error: NETWORK_UNCONFINED_REALM: this scope's `web` service is not the Member's confined web face, so the call would run on the inherited base provider with no compiled-lane decision and no guard fact; refusing before any provider call inst"
+        },
+        {
+          "id": "one-deny-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "no-extra-connection",
+          "ok": true,
+          "detail": "connections=0"
+        }
+      ]
+    },
+    {
+      "id": "pd30:regression-tools",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "the governed Member's other tools keep working in the SAME boot: bash/read/write/edit/grep/glob/skill/present are all dispatched (none is the router's `unknown tool`), each settles without error, and the six side-effecting tools each leave at least one guard fact",
+      "failed": [
+        "none-errored: errored=[\"bash: Error: invalid arguments: missing required property \\\"description\\\"\",\"skill: Error: skill \\\"pd30-probe\\\" is unknown or no longer available\"]",
+        "facts-per-tool: factless=[\"bash\",\"read\",\"write\",\"edit\",\"grep\",\"glob\"] counts={\"bash\":0,\"read\":0,\"write\":0,\"edit\":0,\"grep\":0,\"glob\":0,\"workflow\":0,\"run_code\":0}"
+      ],
+      "clauses": [
+        {
+          "id": "all-dispatched",
+          "ok": true,
+          "detail": "missing=[]"
+        },
+        {
+          "id": "none-errored",
+          "ok": false,
+          "detail": "errored=[\"bash: Error: invalid arguments: missing required property \\\"description\\\"\",\"skill: Error: skill \\\"pd30-probe\\\" is unknown or no longer available\"]"
+        },
+        {
+          "id": "facts-per-tool",
+          "ok": false,
+          "detail": "factless=[\"bash\",\"read\",\"write\",\"edit\",\"grep\",\"glob\"] counts={\"bash\":0,\"read\":0,\"write\":0,\"edit\":0,\"grep\":0,\"glob\":0,\"workflow\":0,\"run_code\":0}"
+        }
+      ]
+    },
+    {
+      "id": "pd30:closed-still-typed",
+      "verdict": "PASS",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "the names PD-18 closed remain the router's typed `unknown tool` and produce no facts: the shipped web capability did not reopen the workflow surface",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "workflow-unknown",
+          "ok": true,
+          "detail": "text=Error: unknown tool \"workflow\""
+        },
+        {
+          "id": "run-code-unknown",
+          "ok": true,
+          "detail": "text=Error: unknown tool \"run_code\""
+        },
+        {
+          "id": "closed-names-no-facts",
+          "ok": true,
+          "detail": "closed-name facts=0"
+        }
+      ]
+    },
+    {
+      "id": "pd30:web-surface",
+      "verdict": "PASS",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "both web names are on the Member's surface under the SHIPPED composition, so every arm above is dispatched through a real declaration and not a stub",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "both-names-present",
+          "ok": true,
+          "detail": "surface=[\"bash\",\"edit\",\"exit_plan_mode\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"web_fetch\",\"web_search\",\"write\"]"
+        }
+      ]
+    },
+    {
+      "id": "pd30:no-base-transport",
+      "verdict": "PASS",
+      "at": "2026-11-08T12:19:25.332Z",
+      "proposition": "the inherited unconfined host `web` service is never consulted in any arm (its prototype is instrumented read-only and counts zero calls)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-host-web-calls",
+          "ok": true,
+          "detail": "calls=0"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T12:18:40.886Z",
+        "runId": "a5sf-pd30-web-preview-allow-2026-11-08T12-17-51-875Z-b1",
+        "suite": "a5sf-pd30-web-preview",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd30-20261108T12-17-51Z",
+        "phase": "a5sf-pd30-web-preview-allow-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd30-web-preview-allow-boot1",
+      "world": "u5u5a5sfpd30-20261108T12-17-51Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T12-17-51Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd30-web-preview-allow-2026-11-08T12-17-51-875Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-08T12:19:25.333Z"
+}

@@ -11,6 +11,8 @@
 export declare const GOVERNED_REALM_ID: 'a5sf-governed-member'
 /** The tool binding the confined shell executes under. */
 export declare const GOVERNED_SHELL_BINDING: 'dsh.subprocess/exec'
+/** PD-30 — the binding identity the confined `web` face records under. */
+export declare const GOVERNED_WEB_BINDING: 'dsh.web/egress'
 /** The composition's declared shell face (absolute program + shell class). */
 export declare const GOVERNED_FACE: Readonly<{
   program: string
@@ -69,6 +71,36 @@ export interface CreateGovernedRealmProviderOptions {
   readonly pythonPath?: string
   /** Tests only: an already-built confined process provider (a double must be labelled by its caller). */
   readonly processProvider?: object
+  /**
+   * PD-30 — the COMPOSITION-owned web transport (the `teamA5sfWebTransport`
+   * service), or a GETTER for it. Present: the compiled answer carries the
+   * confined `web` face over it. Absent: the answer is exactly the pre-PD-30
+   * one (`subprocess` + `terminal`, no network face).
+   *
+   * A getter is what the Host passes: the transport row and the Team row mount
+   * in one insert layer, so "does this deployment own a transport?" is answered
+   * when a Member's realm is attached, not when the rows are parsed.
+   */
+  readonly webTransport?: GovernedWebTransport | (() => GovernedWebTransport | undefined) | undefined
+}
+
+/** PD-30 — one Member's transport object, as the confined `web` face consumes it. */
+export interface GovernedWebTransportProvider {
+  fetch(request: unknown, signal?: AbortSignal): Promise<unknown>
+  search?(request: unknown, signal?: AbortSignal): Promise<unknown>
+  searchAvailable?(): boolean
+  /** Exact origins the composition declares as local fixtures (the SSRF exemption). */
+  readonly testEndpoints?: readonly string[]
+}
+
+/** PD-30 — the service shape the shipped `a5sf-web-transport` row provides. */
+export interface GovernedWebTransport {
+  createProvider(member: {
+    readonly memberIdentity: string
+    readonly templateId?: string
+    readonly instanceGeneration?: number
+  }): GovernedWebTransportProvider
+  describe?(): object
 }
 
 /** The provider the product row consumes (same shape as `teamA5sfRealm`). */

@@ -91,6 +91,7 @@ import type { TeamDomain } from '../../../storage/repositories/index.js'
 // repository (PR1 ADR §1).
 import { tmpdir } from 'os'
 import { createGovernedRealmProvider, governedAuthorityReference, GOVERNED_REALM_ID } from './live/a5sf-governed-realm.mjs'
+import type { GovernedWebTransport } from './live/a5sf-governed-realm.mjs'
 import { createPermissionOverlayRepositoryPort } from '../../permission-governance/index.js'
 import type { PermissionOverlayRepositoryPort } from '../../permission-governance/port.js'
 import { createAuthorityCeilingReader, createPermissionAuthorityFacts } from './permission-plane.js'
@@ -2145,6 +2146,17 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
           scratchRoot: governedRealmScratch(),
           resolveBoundBlueprint: (teamRootSid: string) => resolveBoundBlueprint(teamRootSid),
           readAuthority: readGovernedAuthority,
+          // PD-30: the COMPOSITION-owned web transport, read lazily from the
+          // optional `teamA5sfWebTransport` service (the shipped
+          // `a5sf-web-transport` row provides it). A GETTER, not a snapshot:
+          // the transport row and this row mount in one insert layer, so the
+          // question "does this deployment own a web transport?" is answered
+          // when a Member's realm is attached, not when the rows are parsed.
+          // Absent service = no `web` face (the pre-PD-30 answer), so a
+          // deployment that never mounts the row keeps its exact behaviour.
+          webTransport: () => ctx.get('teamA5sfWebTransport') as
+            | GovernedWebTransport
+            | undefined,
         })
       : undefined
 

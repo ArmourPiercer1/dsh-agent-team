@@ -2,7 +2,7 @@
   "name": "dsh-agent-team",
   "version": "0.1.1-alpha.2",
   "private": true,
-  "description": "DSH Agent Team vNext plugin set \u2014 public-seam only, CORE PATCH BUDGET = 0.",
+  "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {
@@ -22,7 +22,8 @@
     "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
     "./web-tool": "./packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
     "./client": "./packages/client/composition-shim/client-bundle.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./web-transport": "./packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs"
   },
   "files": [
     ".agents/skills",
@@ -75,6 +76,8 @@
     "@deepseek-ai/dsh-tool-fs": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tool-web": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-web-search-exa": "0.2.0-rc.2",
     "yaml": "2.9.0",
     "zod": "4.4.3"
   }

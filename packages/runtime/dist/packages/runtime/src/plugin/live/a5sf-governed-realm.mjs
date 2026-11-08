@@ -79,6 +79,15 @@ export const GOVERNED_REALM_ID = 'a5sf-governed-member'
 export const GOVERNED_SHELL_BINDING = 'dsh.subprocess/exec'
 
 /**
+ * PD-30 — the binding identity the confined `web` face compiles/records under.
+ * It is a NETWORK binding, not a tool binding: there is no ToolBinding row for
+ * the pair in the v4 authoring, so the face carries the Member ceiling's own
+ * intersection under this stable name (the same role
+ * {@link GOVERNED_SHELL_BINDING} plays for the shell).
+ */
+export const GOVERNED_WEB_BINDING = 'dsh.web/egress'
+
+/**
  * The composition's declared shell face. `program` is ABSOLUTE and the shell
  * class NAMES it: `installMemberIoProviders` refuses a terminal face whose
  * program is a PATH name (`TERMINALS_UNCONFINED_REALM`) or that the subprocess
@@ -175,6 +184,11 @@ function defaultLauncherPath() {
  * @param {string} [options.pythonPath] - interpreter for the launcher.
  * @param {object} [options.processProvider] - an ALREADY-BUILT confined process
  *   provider (tests only: a double must be labelled as one by its caller).
+ * @param {{ createProvider(member: object): object, describe?: () => object }} [options.webTransport]
+ *   PD-30 — the COMPOSITION-owned web transport (the `teamA5sfWebTransport`
+ *   service). When present, the compiled answer carries the confined `web`
+ *   face over it; when absent, the answer is exactly the pre-PD-30 one
+ *   (`subprocess` + `terminal`, no network face).
  * @returns {{ compiledFor(member: unknown): Promise<object | undefined> }}
  */
 export function createGovernedRealmProvider(options = {}) {
@@ -187,6 +201,7 @@ export function createGovernedRealmProvider(options = {}) {
     processProvider: injectedProcessProvider,
     launcherPath: launcherOverride,
     pythonPath,
+    webTransport,
     program = GOVERNED_FACE.program,
     shellClass = GOVERNED_FACE.shellClass,
     maxOutputBytes = GOVERNED_FACE.maxOutputBytes,
@@ -204,6 +219,26 @@ export function createGovernedRealmProvider(options = {}) {
   }
   if (typeof readAuthority !== 'function') {
     fail('REALM_DECLARATION_INVALID', 'a5sf-governed-realm: options.readAuthority is required (the Alpha.4 authority reference is READ from the live authority, never supplied as a literal)', 'readAuthority')
+  }
+  // PD-30: the transport is OPTIONAL, but a half-provided one is refused. A
+  // "web transport" with no `createProvider` is not a transport; mounting it
+  // would give the realm a `web` face whose calls throw at the provider line,
+  // i.e. a face that looks governed and cannot serve — worse than no face.
+  //
+  // It may also be a GETTER, which is what the Host passes: the transport row
+  // mounts on the registry generation and the realm is built later, so the
+  // presence of the face must be decided at ATTACH time from the live service,
+  // not frozen at row-assembly time. An absent service is NO face (the
+  // pre-PD-30 answer), never a face that throws.
+  const isTransportGetter = typeof webTransport === 'function'
+  const resolveWebTransport = isTransportGetter ? webTransport : () => webTransport
+  if (!isTransportGetter && webTransport !== undefined && typeof webTransport?.createProvider !== 'function') {
+    fail(
+      'PROVIDER_INCOMPATIBLE',
+      'a5sf-governed-realm: options.webTransport exposes no createProvider(member); a web face with no transport must be'
+      + ' absent, never half-mounted',
+      'webTransport',
+    )
   }
 
   const launcherPath = launcherOverride ?? defaultLauncherPath()
@@ -300,6 +335,15 @@ export function createGovernedRealmProvider(options = {}) {
       if (typeof authority !== 'object' || authority === null) {
         fail('REALM_DECLARATION_INVALID', `a5sf-governed-realm: the Alpha.4 authority read for Member '${instanceId}' answered no record; a realm never compiles on an unread authority`, 'readAuthority')
       }
+      const liveTransport = resolveWebTransport()
+      if (liveTransport !== undefined && typeof liveTransport?.createProvider !== 'function') {
+        fail(
+          'PROVIDER_INCOMPATIBLE',
+          'a5sf-governed-realm: the composition\'s web transport exposes no createProvider(member); a web face with no'
+          + ' transport must be absent, never half-mounted',
+          'webTransport',
+        )
+      }
       const { revision, admitted, instanceGeneration } = authority
       if (!nonBlank(revision)) {
         fail('REALM_DECLARATION_INVALID', `a5sf-governed-realm: the authority reference for Member '${instanceId}' has no revision; the compiler consumes it verbatim and this module never invents one`, 'authority.revision')
@@ -318,6 +362,12 @@ export function createGovernedRealmProvider(options = {}) {
         blueprint,
         authority: Object.freeze({ revision, admitted }),
         instanceGenerations: Object.freeze({ [templateId]: instanceGeneration }),
+        // PD-30: the assembly refuses a NARROWED network lane only because "the
+        // Member realm installs no web face". With a composition transport this
+        // realm DOES install one, so it says so — the refusal's premise is what
+        // changes, not the refusal's rule. Without a transport the previous
+        // behaviour is byte-identical (a narrowed lane is still refused).
+        ...(liveTransport === undefined ? {} : { availableFaces: Object.freeze({ web: true }) }),
       })
       const compiled = createProductRealmProvider(plan).compiledFor(member)
       if (compiled === undefined) return undefined
@@ -342,8 +392,40 @@ export function createGovernedRealmProvider(options = {}) {
       }
 
       const effective = policy.value
+      // ── PD-30: the confined WEB face ─────────────────────────────────────
+      // Built from the SAME compiled ceiling as the shell face (one compiler,
+      // one `network.access`), over the COMPOSITION's transport. The provider
+      // is never a Member input and never the inherited host `ctx.web`: it is
+      // the object `teamA5sfWebTransport.createProvider` answers, so an
+      // admitted call is ordinary egress through the composition's transport
+      // and a refused one never reaches it. A dead transport (not mounted) is
+      // the `undefined` branch above — no face at all, which keeps a Member
+      // with no web face from silently resolving the base service.
+      const webFace = liveTransport === undefined
+        ? {}
+        : {
+            web: Object.freeze({
+              effective: Object.freeze({
+                memberIdentity: effective.memberIdentity,
+                toolBindingIdentity: GOVERNED_WEB_BINDING,
+                invocationId: `${effective.revision}:web`,
+                policyRevision: effective.revision,
+                read: effective.read,
+                write: effective.write,
+                network: effective.network,
+              }),
+              provider: liveTransport.createProvider({
+                memberIdentity: effective.memberIdentity,
+                templateId,
+                instanceGeneration,
+              }),
+              realmId,
+              bindingId: GOVERNED_WEB_BINDING,
+            }),
+          }
       return Object.freeze({
         ...compiled,
+        ...webFace,
         subprocess: Object.freeze({
           // A shell is not a tool binding, so there is no ToolRestriction term to
           // intersect: the ceiling the ONE compiler produced IS the shell lane.

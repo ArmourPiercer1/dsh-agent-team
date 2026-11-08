@@ -343,6 +343,17 @@ export interface A5sfProductRealmParseContext {
    */
   readonly boundBlueprint?: ReturnType<typeof parseBlueprint>
   /**
+   * PD-30 — which OPTIONAL service faces this composition will install for the
+   * Member. TODAY ONLY `web` exists, and it is the premise of the network-
+   * narrowing refusal below: a narrowed `network` lane is refused because "this
+   * realm installs no web face". A composition that DOES own a web transport
+   * (the shipped `a5sf-web-transport` row) says so here, and the SAME canonical
+   * lane is then accepted — nothing about the lane algebra changes, only the
+   * fact about which face will enforce it. Absent = the pre-PD-30 refusal,
+   * byte-for-byte.
+   */
+  readonly availableFaces?: Readonly<{ readonly web?: boolean }>
+  /**
    * Provenance marker, INTERNAL to the assembly: `derived` is set only by
    * {@link deriveProductRealmPlan}. It changes no permission fact — the same
    * parser, validator and reconciliation run either way.
@@ -404,6 +415,8 @@ export interface A5sfDerivedRealmInput {
    * leader is not a Member and is never given a Member ceiling).
    */
   readonly templateIds?: readonly string[]
+  /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
+  readonly availableFaces?: Readonly<{ readonly web?: boolean }>
 }
 
 /** The lazy provider answer the product row consumes (`compiledFor`). */
@@ -529,6 +542,7 @@ function blueprintSourceOf(declaration: A5sfProductRealmDeclaration): string {
 function projectedRestrictionOf(
   raw: unknown,
   where: string,
+  faces: Readonly<{ readonly web?: boolean }> | undefined = undefined,
 ): ToolIoRestriction {
   const binding = closedRecord(raw, ['owner', 'name', 'authorization', 'io', 'execution'], where)
   const execution = closedRecord(binding['execution'], ['implementationOrigin', 'executionBoundary'], `${where}.execution`)
@@ -596,7 +610,10 @@ function projectedRestrictionOf(
     )
   }
   const restriction = projected.value
-  if (restriction.network !== 'allow') {
+  // PD-30: the premise of this refusal is "no web face is installed". A
+  // composition that owns a web transport installs one, so the narrowing is
+  // enforceable at the service level and the SAME canonical lane is accepted.
+  if (restriction.network !== 'allow' && faces?.web !== true) {
     refuse(
       'NETWORK_UNCONFINED_REALM',
       `${where} narrows the network axis (${restriction.network}); the Member realm installs no web face,`
@@ -949,7 +966,7 @@ export function parseProductRealmDeclaration(
     // Refusing early keeps the answer specific (`NETWORK_UNCONFINED_REALM`)
     // instead of letting the compiler report a generic unsupported projection.
     const networkLane = (member['ceiling'] as Record<string, unknown>)['network']
-    if (isRecord(networkLane) && networkLane['mode'] !== 'allow') {
+    if (isRecord(networkLane) && networkLane['mode'] !== 'allow' && context.availableFaces?.web !== true) {
       refuse(
         'NETWORK_UNCONFINED_REALM',
         `${where}.ceiling.network narrows the network axis (mode=${JSON.stringify(networkLane['mode'])});`
@@ -968,6 +985,7 @@ export function parseProductRealmDeclaration(
     const restrictions = (restrictionsRaw ?? []).map((restriction, restrictionIndex) => projectedRestrictionOf(
       restriction,
       `${where}.toolRestrictions[${String(restrictionIndex)}]`,
+      context.availableFaces,
     ))
     const identities = new Set<string>()
     for (const restriction of restrictions) {
@@ -1083,6 +1101,7 @@ export function deriveProductRealmPlan(input: A5sfDerivedRealmInput): A5sfProduc
   return parseProductRealmDeclaration(declaration, {
     blueprintSource: input.blueprintSource,
     source: 'derived',
+    ...(input.availableFaces === undefined ? {} : { availableFaces: input.availableFaces }),
   })
 }
 
@@ -1109,6 +1128,8 @@ export interface A5sfBoundBlueprintRealmInput {
   readonly instanceGenerations?: Readonly<Record<string, number>>
   /** Optional subset of blueprint templates; absent = every ceiling but the leader's. */
   readonly templateIds?: readonly string[]
+  /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
+  readonly availableFaces?: Readonly<{ readonly web?: boolean }>
 }
 
 /**
@@ -1138,6 +1159,7 @@ export function deriveProductRealmPlanFromBlueprint(
   return parseProductRealmDeclaration(declaration, {
     boundBlueprint: input.blueprint,
     source: 'derived',
+    ...(input.availableFaces === undefined ? {} : { availableFaces: input.availableFaces }),
   })
 }
 

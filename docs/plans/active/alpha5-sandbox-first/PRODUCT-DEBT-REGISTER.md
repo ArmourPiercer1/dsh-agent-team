@@ -92,6 +92,8 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-26 (CONFINED-SKILL) | Mixed (skill / deliverables) | A governed Member could read **neither** skill bodies nor declare deliverables: PD-23 and PD-24 fail-closed both rows rather than let them read the BASE `fs` — the opt-in governed preset offered no skills and no delivery. PD-26 restores both **names** and serves every body read and every present `lstat`/`stat` from the Member's **confined** `fs`: in-lane reads return, out-of-lane reads are a typed `IO_READ_DENIED` with 0 bytes and exactly one deny fact **(FIXED, DEV-LIVE)** | governance hole | semantics |
 | PD-27 (CONFINED-WEB) | Web / External | A governed Member had **neither** network name: PD-18 removed `web_fetch`/`web_search` because the preset row resolved the **inherited** base `web` (real HTTP provider, ZERO a5sf facts). PD-27 restores both **names**, served by the Member's **confined** `web` face: allow-lane egress is real (1 connection, known body, 1 allow fact) and deny-lane egress is refused **pre-wire** (0 connections with the real transport present, 1 typed deny fact). The network axis is **boolean only** and a `network: deny` ceiling is not constructible through the blueprint path — disclosed, not fixed **(PARTIAL: INSTALL + HOST-FREE MEASURED; LIVE MEMBER TURN PENDING)** | governance hole | semantics |
 
+| PD-30 (WEB-PREVIEW) | Web / External | PD-27 left three holes open: the shipped assembly could not construct a governed Member at all (`tool-web (...): never started`, surface 0 — the instrument, not the product: a preset row resolves from the profile's module graph and the test World never installed the bundle), the transport was driver-injected rather than composition-owned, and `web_search` had no backend. PD-30 ships the transport row, reads it lazily into the realm, refuses SSRF / malformed input / missing provider with typed codes BEFORE transport (0 connections, 0 host-web calls), issues a real Exa `POST /search` and parses its answer, and adds a boot precondition that any preset row reporting `never started` aborts every arm **(FIXED, DEV-LIVE; three agreeing pairs; `web_search` = real backend when configured, typed gap on a default install)** | governance hole | semantics |
+
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
 **`decision = correctness`** means the fix only makes the product report what it already does.
@@ -1046,3 +1048,14 @@ Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 > 按本 lane 的处置规则**不删**，作为独立缺陷披露待裁决；goal 族只测「能否启动自续轮」（`roundsStarted`
 > 0 → 1 → 2，全部在 Member 自己的 session，`goalRoundsInOtherSessions = 0`），**goal 语义一字未改**（PD-25 的
 > remit）。`team_*` 15 名属另一授权平面，**未测未改**。面上名册 34 → 33（−`present`），五个桶的恒等式见矩阵 §1.8.2。
+
+> **2026-11-15 状态更新（PD30-WEB-PREVIEW；只追加，不改任何既有行文）**：本册从 **27 行**变为 **28 行**，取
+> **PD-30**（连续法 `PD-1…PD-30`；PD-28/PD-29 已被同窗口的两条兄弟 lane 占用）。依据 =
+> `dev/agent-workflow/evidence/a5sf-pd30-web-preview/README.md`（DEV-LIVE，**三对** agreeing boots：allow /
+> deny / nosearch，各自 2/2 全 PROVEN 且计数逐项相同；外加 host-free 11 项套件与 3 臂 mutation controls）。
+> 口径说明：**PD-27 的「INSTALL + HOST-FREE MEASURED」那句读数不是产品错误，而是仪器的盲区**——该 lane 的
+> driver 把 `tool-web` 行改写成绝对 `file:` URL 后才 boot，所以「随仓库发货的 preset 能否构造 Member」从未被
+> 测过；本 lane 先证明它取决于 profile 安装图而非 preset/profile 解析差异（loader 所有行都走
+> `loader.internal.import(name, ctx.baseUrl)`，`baseUrl` = profile），再用 test-only 的安装图（symlink，等价于
+> packaged install 提供的解析）以**零改写**跑通。`web_search` 的分类是「配置了就真检索、默认安装是 typed 缺口」，
+> 不宣告公开检索已可用。G2–G5、`V@B`、`release BLOCKED` 均不因此改变。

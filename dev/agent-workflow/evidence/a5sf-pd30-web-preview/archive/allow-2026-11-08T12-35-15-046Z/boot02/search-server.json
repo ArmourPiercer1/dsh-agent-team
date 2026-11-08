@@ -1,0 +1,22 @@
+{
+  "connections": 2,
+  "pathHits": {
+    "/search": 2
+  },
+  "requests": [
+    {
+      "at": "2026-11-08T12:31:15.322Z",
+      "method": "POST",
+      "path": "/search",
+      "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
+    },
+    {
+      "at": "2026-11-08T12:32:54.282Z",
+      "method": "POST",
+      "path": "/search",
+      "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
+    }
+  ],
+  "bytesServed": 732,
+  "openSockets": 0
+}
