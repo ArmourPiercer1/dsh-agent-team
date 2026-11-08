@@ -3,10 +3,10 @@
 **Lane**: `task/pd20-lifecycle-20261114` · worktree `.worktrees/pd20-lifecycle` · base `origin/master` = `9a37321fb`
 **Faces**: Subprocess (`bash` → PD-12 confined subprocess shadow / PD-13 confined terminal) + the Team
 lifecycle authority's `close-admission` step.
-**Register rows**: `PD-16 (B1-LIFECYCLE-CLOSE)` and `PD-17 (C3-CLOSED-SCHEMA)` in
-`docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` (the register's own law is
-`PD-1…PD-n` contiguous, so the two rows take the next free numbers; the ids below name *this round's*
-findings and are not a second series).
+**Register rows**: `PD-20 (B1-LIFECYCLE-CLOSE)` and `PD-21 (C3-CLOSED-SCHEMA)` in
+`docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` (the register's own law is `PD-1…PD-n` contiguous: #669 landed PD-16…PD-19 for four other
+defects while this branch was open, so these two rows take the next free pair, **PD-20** and
+**PD-21**; the ids below name *this round's* findings and are not a second series).
 
 **Draft PR**: #670 (first line `PD20-LIFECYCLE` — do not merge, do not settle).
 **Record class**: `DEV-LIVE` (`eligible=false`). Two real boots of the SHIPPED governed Member
@@ -170,7 +170,7 @@ call-rc-a-joblist isError=false (no background jobs)
 this preset, so they cannot mint a job and answer free text. A typed `BACKGROUND_NOT_SUPPORTED` for
 them would need a realm shadow of three host tools — a model-visible surface change plus
 surface-accounting risk, i.e. larger than "minimal" and outside the measured defect (the defect is the
-silently dropped *parameter*). Recorded as the residual in `PD-17`; the C-3 fix at least makes the
+silently dropped *parameter*). Recorded as the residual in `PD-21`; the C-3 fix at least makes the
 absence *loud* where the model actually asks for background work.
 
 ---
@@ -198,7 +198,7 @@ absence *loud* where the model actually asks for background work.
    tool boundary is refused. The doc text and the register row say this explicitly.
 2. **Not candidate evidence.** `recordClass=DEV-LIVE`, `eligible=false`; one host, one preset, two boots.
    The parent re-tests; nothing here is a matrix grade or a `V@B` change.
-3. **`job_*` still answers free text.** Deferred and recorded (§3, `PD-17` residual).
+3. **`job_*` still answers free text.** Deferred and recorded (§3, `PD-21` residual).
 4. **Only the shell faces were driven.** The stamp is consulted by the one lane guard every Member
    execution face uses, and the host-free suite
    `packages/runtime/test/a5sf-pd20-admission-close.test.ts` exercises the guard directly for

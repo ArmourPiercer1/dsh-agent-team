@@ -608,6 +608,87 @@ network deny 在 OS 层、动态 shell 读（`$(…)`/反引号）、per-Team sc
 > **必须连读的一句**：**一个声称受治的 Member 不会静默地不受治运行**——前提是它**通过 shipped opt-in 行**
 > 作出这个声称；默认路径不作这个声称，所以这句话不能被读成"Members 已受治"。
 
+## 1.7 2026-11-14 POSTFIX-DOCS：受治 / 不受治 / 不在面（只追加；不改任何 ⑧ / ⑨ / 历史数字）
+
+**记录类别**：docs-only，**0 boots**、0 产品代码改动。本节只把**已有** `DEV-LIVE` 与 host-free 证据
+按同一口径重数一遍；**不新造测量**、**不升级任何等级**、**不移动任何 `V@B`**、不关闭 G2–G5、
+`release BLOCKED` 不变。对象是 **shipped opt-in 受治 preset** `a5sf-governed-member`
+（`cordis.patch.yml:191`），不是默认 `standard`，也不是 §1 主矩阵的逐工具等级表。
+
+### 1.7.1 口径（与 `a5sf-recon-review` §1 同一口径，先写死再数）
+
+- **受治** = 模型可见工具的执行经过 confined face，**且**产生 `a5sf-guard-consult/1` fact。
+- **表面存在但不受治** = 名字在 Member 的 model-request `tools` 里、可被模型调用，执行时 **0** 条 a5sf fact。
+- **完全不在面** = 名字不在 `tools` 里（模型无法命名）。
+- **面上名册** = `dev/agent-workflow/evidence/a5sf-pd18-web-ptc/runs/boot02/member-surface.json` 的
+  `tools` 数组（PD-18 之后的真实 Host Member 请求，**40 名**；其中 `u5_canary` / `u6fs_probe` 是
+  World 组合的**测试夹具**，不是 shipped 工具名）。同一次 boot 的 standard Leader 面 =
+  `runs/boot02/leader-surface.json`（**43 名**）。
+- **失败层级**（本节新增的列，用来回答“哪一层拒绝的”，不是等级）：`L0 router` = 宿主工具路由
+  （typed `UNKNOWN_TOOL`，零执行）；`L1 admission` = a5sf guard 在 provider / 进程之前；`L2 host-tool
+  gate` = pinned 宿主工具自身的门（`read_image` 的模型路由门、base `ctx.web` 的 SSRF 策略）；
+  `L3 OS/process` = 内核边界（Landlock / netns），**只对 confined 子进程成立**；`none` = 该调用路径上
+  没有任何 a5sf 层。
+
+### 1.7.2 三个数字（本轮自己数，不照抄任务简报）
+
+| 桶 | 数量 | 构成（逐名） | 依据 |
+|---|---|---|---|
+| **受治**（confined face + fact） | **7** | `bash`；`read` / `write` / `edit` / `read_image`；`grep` / `glob` | `confined-terminal-tool.mjs` + `confined-fs-tool.mjs:99` + `confined-search-tool.mjs:91`；名册 = pd18 boot02 `member-surface`，执行 = PD-16/PD-17 的 `DEV-LIVE` + host-free 臂 |
+| **表面存在但不受治**（0 a5sf fact） | **33** | `team_*` **15** + 产品原生 **16** + World 夹具 **2** | 40 − 7；15 个 `team_*` 有自己的 request-token/envelope 平面，不能读成“无授权” |
+| **完全不在面** | **13** | 从未在面 **10**（`run_code`、`lsp`、`str_replace_editor`、`pwsh`、`terminal_open/send/read/signal/close/list`）+ PD-18 fail-closed **3**（`web_fetch`、`web_search`、`workflow`） | `tool-surface.json` 的 removed 行 + `member-surface.json` 的 `closedNames`；MCP 族 **0 名**（shipped `mcpServers: []`） |
+
+**面上合计 = 40 = 7 受治 + 33 不受治**；**总名册 = 53 = 40 面上 + 13 不在面**。若剔除 2 个 World
+夹具，shipped 读数是 **38 面上 / 7 受治 / 31 不受治**，三个桶的差不变。
+**与 2026-11-13 独立复审（`a5sf-recon-review` §1，被测树 `235e1af8b`、pre-PD-16/17/18）比**：
+受治 **1 → 7**、表面存在但不受治 **42 → 33**、完全不在面 **10 → 13**（+3 就是 PD-18 的 fail-closed
+移除），面上名册 **43 → 40**（standard Leader 面仍 43；复审 §1 的 10 名清单在 `master` 上仍成立）。
+这不是等级升级：7 个受治里只有 `read_image` 的 live 调用是 `NOT_REACHED`，其余 6 条有
+`DEV-LIVE` 执行证据；全部 7 条都仍是 **no `V@B`**。
+
+### 1.7.3 现状表（每行一个工具或一个具名族；族行逐一列出名字）
+
+| 工具名 | 在受治 Member 面上？ | 执行走 confined face？ | 产 fact？ | 失败层级 | 依据（PR + 证据路径 + file:line） |
+|---|---|---|---|---|---|
+| **bash** | 是 | 是：confined terminal face，每条命令一个 fresh confined child | 是（`shellRead` / `spawn`；PD-19 后带 `tool` + `callId`） | **L1**：读轴在 `spawn` 前；动态 shell 读（`$(…)`/反引号）不可词法归因 ⇒ 该子路径**不受治**；本 preset 声明 `network: allow`，无 L3 网络层 | #640/#642；`dev/agent-workflow/evidence/a5sf-live-member/README.md`、`.../a5sf-pd18-web-ptc/runs/boot02/member-surface.json`；`cordis.patch.yml:206`、`a5sf-realm-row.mjs:994`、`terminal.ts:535` |
+| **read** | 是 | 是：confined `fs` face | 是（`stat` / `readText`） | **L1**：provider 调用之前（越界 0 字节 + typed `IO_READ_DENIED` + 1 deny fact） | #664；`a5sf-pd17-fs/README.md` D1/D2/A1；`confined-fs-tool.mjs:99`、`a5sf-realm-row.mjs:1100`、`a5sf-realm-row.mjs:1292` |
+| **write** | 是 | 是：confined `fs` face | 是（`writeText`） | **L1**：写轴准入；另保留原生 read-before-write 契约（**L2**，属宿主工具、不是 Team lane） | #664；`a5sf-pd17-fs/README.md` D3/A2/A4 |
+| **edit** | 是 | 是：confined `fs` face | 是（`stat` + `readText` + `editText`） | **L1**：读写两轴分别准入；版本守卫在 provider 内（**L2**） | #664；`a5sf-pd17-fs/README.md` D4/A3 |
+| **read_image** | 是（仅当附件服务挂载） | 是（host-free：confined `fs` face 注册可见子集） | host-free：**D5 deny 有 1 条 `IO_READ_DENIED` fact**；A5 allow 只证 face 行为（未单列 allow fact）；**live：否**（`NOT_REACHED`：模型路由未声明图像输入，0 attachment saves、0 fs allow fact） | **L2** route gate（live 在 face **之前**拒绝）；越界时 **L1**（D5：1 条 deny fact，0 字节） | #664；`a5sf-pd17-fs/README.md` §7 + A5/D5；`confined-fs-tool.mjs:99` |
+| **grep** | 是 | 是：confined `subprocess` face（真 `rg` + launcher） | 是（`spawn` allow / deny） | **L1**：任何进程存在之前（`spawns=0→0`、1 条 deny fact、0 字节）；模型看到的错误文本仍是宿主包的 provider 失败措辞 | #661；`a5sf-pd16-search/README.md` D1/D2/A1；`confined-search-tool.mjs:91`、`:155`、`a5sf-realm-row.mjs:1035` |
+| **glob** | 是 | 是：同一个 confined `subprocess` face | 是（`spawn`） | **L1**：同 grep（`spawns=0→0`、1 条 deny fact） | #661；`a5sf-pd16-search/README.md` D3/A5 |
+| **team_***（15：`team_archive_member`、`team_collect`、`team_create_member`、`team_delegate`、`team_follow_up`、`team_grant_permission`、`team_inspect_config`、`team_list_members`、`team_list_pending_control`、`team_list_templates`、`team_report_progress`、`team_request_control`、`team_resolve_control`、`team_revoke_permission`、`team_send_message`） | 是 | 否 | 否（不产 a5sf fact） | `none`（a5sf 平面）：它们走 Team 自己的 request-token / envelope 授权，不是“无授权” | `a5sf-recon-review/README.md` §1 #2；矩阵 §1.1.1 / M-19 |
+| **state / goal / job / ask / message**（12：`ask_user_question`、`create_goal`、`exit_plan_mode`、`get_goal`、`interrupt_agent`、`job_kill`、`job_list`、`job_output`、`list_agents`、`send_message`、`todo_write`、`update_goal`） | 是 | 否 | 否 | `none`：无数据面 I/O 或走宿主服务，本阶段不另设数据面上限 | 矩阵 §1.1.1 / M-19；`a5sf-pd18-web-ptc/runs/boot02/member-surface.json` |
+| **subagent / subagent_fork** | 是 | 否 | 否 | `none`（a5sf 平面）；**子 realm 装配 UNMEASURED** | `a5sf-pd18-web-ptc/README.md` §2.6（代码读，不是 boot 测量） |
+| **present / skill** | 是 | 否 | 否 | `none` / **L2 host service**：`skill` 正文读取是真实目录读，**无 a5sf 中介**；`present` 走宿主服务 | `a5sf-pd18-web-ptc/README.md` §2.6；矩阵 M-20 |
+| **u5_canary / u6fs_probe**（World 夹具，非 shipped） | 是（仅测试 World） | 否 | 否 | `none`：测试夹具 | `tests/world-factory/lib/world-factory.mjs:65`、`tests/world-factory/lib/u6-fs-assembly.mjs:31`；`member-surface.json` |
+| **web_fetch** | **否**（PD-18 fail-closed 移除） | 否 | 否（0 执行） | **L0 router**：typed `UNKNOWN_TOOL`，0 provider entry、0 字节；**这不是“已受治”，是能力回退** | #668；`a5sf-pd18-web-ptc/README.md` §1/§2.1；`cordis.patch.yml:162` |
+| **web_search** | **否**（同上） | 否 | 否（0 执行） | **L0 router**：同上 | #668；`a5sf-pd18-web-ptc/README.md` §1/§2.1 |
+| **workflow**（PTC） | **否**（PD-18 fail-closed 移除） | 否 | 否（0 执行；`ptcRuntimeInMemberWindow=0`） | **L0 router**：typed `UNKNOWN_TOOL`，无 PTC 子进程；**能力回退** | #668；`a5sf-pd18-web-ptc/README.md` §1/§2.2；`cordis.patch.yml:162` |
+| **run_code** | 否（PTC display name；standard 面也没有） | 否 | 否 | 结构性不在面：无 routed-native 接入面（`NOT_WIRED`） | #668；`a5sf-pd18-web-ptc/README.md` §2.3；矩阵 M-11 |
+| **pwsh** | 否 | 否 | 否 | 结构性不在面：Windows-only 第二 shell，PD-18 前已从受治 preset 移除 | `cordis.patch.yml:160`；`a5sf-governed-preset/tool-surface.json`（removed `tool-pwsh`） |
+| **lsp** | 否 | 否 | 否 | 结构性不在面：模块在 pinned host、产品零接线（`NOT_WIRED`） | `a5sf-pd18-web-ptc/README.md` §2.4；矩阵 M-12 |
+| **str_replace_editor** | 否 | 否 | 否 | 结构性不在面：模块存在但不在产品 preset、未进 `a5sfNativeToolModules`（`NOT_WIRED`） | 矩阵 M-05；`NATIVE-SOURCE-INVENTORY.md` §2/§3 |
+| **terminal_open / terminal_send / terminal_read / terminal_signal / terminal_close / terminal_list**（6） | 否 | 否 | 否 | 结构性不在面：受治 preset **没有** `dsh-terminal` / persistent-shell 行（双终端会以 `TERMINALS_DOUBLE_TERMINAL_REFUSED` 拒绝整个 realm） | #668；`a5sf-pd18-web-ptc/README.md` §1；`cordis.patch.yml:156-190` 的 SURFACE 注释 |
+| **MCP 族**（`mcp__*` / `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource`） | 否（**0 名**） | 否 | 否 | 结构性不在面：shipped `mcpServers: []` | `a5sf-pd18-web-ptc/README.md` §2.5；`cordis.patch.yml` 的 `mcpServers: []` |
+
+### 1.7.4 这张表不说什么（必须与数字同读）
+
+1. **失败层不是隔离层。** 7 条受治路径的拒绝都在 **L1 admission**；L3 只描述 confined 子进程上的
+   OS 边界（BL-42 的 netns / Landlock），**不是** Member 级网络隔离。受治 preset 的 `network: allow`
+   没有收窄，`network: deny` 的 OS 层结论仍不可写（BL-39 / BL-42 的 live Host 半场未做）。
+2. **fail-closed ≠ 已受治。** `web_fetch` / `web_search` / `workflow` 的 `UNKNOWN_TOOL` 是**能力回退**，
+   不是这三个工具被 confined face 管住了；`standard` preset 仍然声明它们（`tool-surface.json` 的
+   `declaration.removed` 只在受治 preset 生效）。
+3. **“产 fact”是机制事实，不是 candidate 事实。** PD-19 把 `tool` + `callId` 加到 fact 上，host-free
+   臂只实测了 `read`（FA1/FA2/FA6）；PD-19 §6 明说 **live 归因半场未测**。因此“6 条路径产可归因事实”
+   是**结构上**成立（carrier 在 `tools/execute` 上、不读决策），不是每条都有 live 归因证据；
+   pre-PD-19 的历史 fact 仍然不可归因。
+4. **两个未测项原样。** `read_image` 的 live 调用 `NOT_REACHED`；`subagent` 子 realm 装配
+   UNMEASURED；动态 shell 读、`skill` 正文读、per-Team scratch isolation 仍不在受治面内。
+5. **没有 `V@B`。** 本节所有数字都是 `DEV-LIVE`（可重复、`eligible=false`）或 host-free 证据，
+   **结构上不可能**产出候选级 `V@B`；矩阵 ⑧/⑨ 一格未动。
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->
