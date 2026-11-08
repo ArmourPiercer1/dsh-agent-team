@@ -181,8 +181,13 @@ const KEPT_ROWS = Object.freeze([
   'command-goal', 'plan-mode', 'compaction-basic', 'command-compact',
   'tool-result-pruner', 'tool-todo',
 ])
-/** PD-25's fail-closed removals on the merged tree; PD-26 must not resurrect them. */
-const PD25_CLOSED_ROWS = Object.freeze(['tool-goal', 'tool-ask-user'])
+/**
+ * PD-25's fail-closed removals on the merged tree; PD-26 must not resurrect
+ * them. PD-29 (2026-11-14 owner ruling) REOPENED `tool-goal` — Preview accepts
+ * the absence of a trustworthy global round budget — so only the ask tool is
+ * still closed here. The goal row is pinned by PD-25's own suite.
+ */
+const PD25_CLOSED_ROWS = Object.freeze(['tool-ask-user'])
 
 test('PD26-SURFACE-RESTORED: the governed preset restores the two NAMES and no base-fs skill provider', () => {
   const plugins = presetPlugins(readFileSync(COMPOSITION, 'utf8'))
