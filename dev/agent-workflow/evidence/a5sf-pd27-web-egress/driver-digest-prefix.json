@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T10:07:49.266Z",
+  "arm": "prefix",
+  "head": "09268e58e9996c27af62112f2471f8fe0ed2e77e",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "a7b5ed561ac5665077b2f38e180267cde2a0d47cba28add26b9624d492489f19",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/dev/agent-workflow/evidence/a5sf-pd27-web-egress/archive/pre-fix/cordis.patch.yml",
+    "sha256": "f8fec5b5a79e178055fe389e1ce4f97f44010dc774d54354d91743ae3cdff691",
+    "arm": "prefix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "WebEgress",
+    "world": "u5a5sfpd27",
+    "source": "task PD27-WEB-EGRESS explicit boot authorisation (2026-11-14), arm=prefix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs --arm prefix"
+}

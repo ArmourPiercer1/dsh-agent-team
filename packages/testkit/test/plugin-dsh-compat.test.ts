@@ -189,6 +189,20 @@ const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
  * scripts/eb3-family-boundaries.mjs + the agent-state-family README). Adding
  * the peer here is the loud re-audit this pin was built to force, done with
  * the evidence on the record — not a silent derivation from the manifest.
+ *
+ * [PD-27 confined-web lane, 2026-11-14 re-audit — an ELEVENTH name was proposed and REJECTED]
+ * This lane briefly carried `@deepseek-ai/dsh-tool-fs` in the root manifest's
+ * `peerDependencies`, to clear `check:install-manifest`'s "undeclared bare import" for
+ * `packages/runtime/dist/.../live/confined-fs-tool.mjs`. The audit rejected it: the plugin's
+ * host-provides contract is still exactly these ten names, and a peer is not the shape for it. The
+ * missing declaration is real, and its correct shape is a regular **dependency** — the one
+ * `@deepseek-ai/dsh-skill`, `@deepseek-ai/dsh-tools` and (from this lane) `@deepseek-ai/dsh-tool-web`
+ * already use, with the module resolving the host's own copy through `packages/runtime`'s
+ * declaration. PD-17 added the import and a `packages/runtime` dependency but never the root
+ * declaration, so the gate had been reporting it since that lane (base `origin/master` measures
+ * **10** install-manifest issues: that import + `@deepseek-ai/dsh-tool-web` + 8 pre-existing
+ * computed-URL sites; this lane now reports 8). Both names ship as root dependencies, this list
+ * stays at ten, and the set/`toEqual` assertions below are unchanged.
  */
 const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh': EXPECTED_PEER_RANGE,

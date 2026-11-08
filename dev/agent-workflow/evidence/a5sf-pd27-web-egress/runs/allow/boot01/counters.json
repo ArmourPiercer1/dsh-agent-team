@@ -1,0 +1,85 @@
+{
+  "guardFacts": {
+    "allow": 1,
+    "deny": 0,
+    "webFetch": {
+      "total": 1,
+      "allow": 1,
+      "deny": 0
+    }
+  },
+  "server": {
+    "connections": 1,
+    "pathHits": {
+      "/known": 1
+    },
+    "requests": [
+      {
+        "at": "2026-11-08T10:20:02.905Z",
+        "method": "GET",
+        "path": "/known"
+      }
+    ],
+    "bytesServed": 26,
+    "openSockets": 0,
+    "servedBody": "A5SF_PD27_KNOWN_BODY_BYTES"
+  },
+  "hostWebCalls": 0,
+  "mockRequests": 12,
+  "aModelRequests": 5,
+  "surfaceACount": 33,
+  "surfaceANames": [
+    "bash",
+    "edit",
+    "exit_plan_mode",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "web_fetch",
+    "web_search",
+    "write"
+  ],
+  "membersAfter": 2,
+  "memberTemplates": [
+    "leader",
+    "worker"
+  ],
+  "memberWindow": {
+    "from": "2026-11-08T10:20:02.162Z",
+    "to": "2026-11-08T10:20:02.968Z"
+  },
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/cordis.patch.yml",
+    "sha256": "a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8",
+    "arm": "allow"
+  },
+  "quiesced": true,
+  "webNamesOnSurface": [
+    "web_fetch",
+    "web_search"
+  ]
+}

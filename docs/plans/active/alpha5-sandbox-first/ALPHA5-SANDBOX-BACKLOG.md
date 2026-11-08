@@ -390,6 +390,26 @@ Subprocess 面**同一个**探针，不复制）；`createConfinedWebClass` 在 
 |---|---|---|---|
 | BL-18 | P2-05 原生 `web_fetch`（本地 mock provider、network=deny 前置拒绝、普通 DSH fetch 不受影响） | IN-PROGRESS（**BACKEND-PARTIAL, V@B=no**；2026-11-05 host-free：confined `web` face 挂到 Member realm 同一隔离链，`network=deny` 在 provider 之前以 typed `NETWORK_UNCONFINED_REALM` 拒绝（0 fetch/0 DNS/0 connect/0 proxy，一条 deny 事实），复用 BL-17 的 `probeNetworkDenial`，allow lane 的 redirect/proxy 未中介性以 typed residual 落在 ALLOW 事实；**未证**：真实 egress/DNS、live redirect chain、proxy env 行为、booted world 中模型可见的工具面、产品行接线——产品组合至今不供 web provider，故 governed Member 的 `web_fetch` 仍是继承宿主工具）；**2026-11-06 接线轮（host-free）**：`a5sf-realm-row.mjs` 现转发 `compiled.web`（镜像 `compiled.subprocess` 的 `{effective, provider.fetch/search}`）并新增行配置键 `a5sfWebFace`（模块工厂，返回同一 shape；双源 ⇒ `REALM_DECLARATION_INVALID`），缺失/不可挂载时以 typed `NETWORK_UNCONFINED_REALM` 在 composition 期 fail-closed；10 arms RED→GREEN + 2 mutation controls；**live half 仍未测量**（§8b：steps 3–7 已 RUNNABLE 但未执行，step 8 仍 BLOCKED；默认产品 preset 未新增 web face，`product-assembly.ts` 的 deny 拒绝未改） | `evidence/a5sf-web/README.md`（§5 拒绝位置、§6 残余、§8 live checklist、§8b 接线 unblock）；**2026-11-08 状态更正（ALPHA5-CONSOLIDATE，只追加）**：live 半场**仍未证、零启动**——allocation #5 在 BL-18 readiness 判 **NO-GO** 时被保留未花（`dev/agent-workflow/evidence/a5sf-bl18-live/README.md` §7）；“接线已存在”只指行侧转发 `compiled.web`，**不等于**有 shipped preset 声明该面、也不等于有 strict Member 能当 caller（唯一可达 caller 是 preset 已 surface `web_fetch`/`web_search` 的 legacy/non-strict Member）。本项**不是 `DONE`**。见 §0.3。 |
 
+#### PD-27 追加注记（2026-11-14，只追加；不改任何既有行等级 / `V@B`）
+
+PD-27（CONFINED-WEB，debt register `PD-27`）把「接线已存在、未在真实 Host 上验过」这句缺口向前推了一步，
+并把它**在哪里停住**写清：
+
+- **live 半场已测**（DEV-LIVE，`evidence/a5sf-pd27-web-egress/`，每臂 `--boots 2` agreeing pair，
+  slot-leased、3180 族、`DSH_HOME` 在 `tests/homes/`、pinned host 只读）：allow 臂 = 真 socket 到
+  driver 自起的本地 HTTP server，body **逐字节**返回 + host `HTTP 200` 呈现、server 自己的连接计数器
+  **1**、**恰 1 条 allow fact**、继承宿主 `web` 被调用 **0** 次；deny 臂 = **同一可达运输**在场，typed
+  `NETWORK_UNCONFINED_REALM` 在 provider 之前拒绝、**0 连接**、恰 1 条 deny fact；pre-fix 臂 = 归档
+  `24d2cf760` 组合在同一 Host 上两个名字都是 typed `unknown tool`、0 fact、0 连接。
+- **BL-18 的状态不因此变成 DONE**：BL-18 的验收对象仍包含“产品组合自己供给 web face”，而 PD-27 的 face
+  与运输仍是**组合提供**的（见下一条）。本注记只把「live 半场未测」这一条从缺口里移除，不改 BL-18 等级。
+- **两处必须与结论一起读的界线**（owner 决策用）：
+  1. `NetworkAccess` **是一个布尔**——今天的 “network confinement” 是**一个 bit**、在运输**之前**裁决、
+     **没有 per-host ACL**，所以被放行的 Member **可以到达其运输能解析的任何 host**；
+  2. **`network: deny` 的 Member 无法通过蓝本路径构造出来**——`product-assembly.ts` 在 realm 出现之前就以
+     `NETWORK_UNCONFINED_REALM` 拒绝——**因此 deny 证据展示的是机制，不是今天用户能走的路径**。
+- 仍未测：OS/内核级 network-deny（BL-42）、per-host 上界、provider 回答里出现的第三方 host 的审计。
+
 #### P4 — 全维度验收（G4）
 
 | ID | 工作包 | 状态 |

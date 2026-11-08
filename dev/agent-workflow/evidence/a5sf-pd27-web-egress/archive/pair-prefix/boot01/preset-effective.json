@@ -1,0 +1,5 @@
+{
+  "note": "the ONE composition adaptation: the shipped row name is a subpath export of the repo root package, which the pinned test tree does not install; the same module is mounted by file URL",
+  "rewrites": [],
+  "shippedRowPresent": false
+}
