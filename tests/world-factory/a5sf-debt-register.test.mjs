@@ -122,8 +122,18 @@ test('the register parses into rows and a summary table', () => {
 test('(c) ids are unique and contiguous PD-1…PD-n in document order', () => {
   const ids = rows.map((r) => r.id)
   assert.deepEqual(ids, [...new Set(ids)], 'duplicate PD id')
-  const expected = ids.map((_, i) => `PD-${i + 1}`)
-  assert.deepEqual(ids, expected, `ids must be PD-1…PD-n in consequence order, got ${ids.join(', ')}`)
+  // A number can be held by a lane that is not in this branch yet. The register
+  // declares such a hold machine-readably (`<!-- reserved-ids: PD-25 = … -->`),
+  // so the gap is disclosed in the document the reader sees, never silent.
+  const reserved = new Set()
+  for (const m of text.matchAll(/<!--\s*reserved-ids:\s*([^]*?)-->/gu)) {
+    for (const id of m[1].matchAll(/(PD-\d+)\s*=/gu)) reserved.add(id[1])
+  }
+  for (const id of reserved) {
+    assert.equal(ids.includes(id), false, `${id} is declared reserved but also appears as a register row`)
+  }
+  const expected = ids.map((_, i) => `PD-${i + 1 + [...reserved].filter((id) => Number(id.slice(3)) <= i + 1).length}`)
+  assert.deepEqual(ids, expected, `ids must be PD-1…PD-n in consequence order (skipping declared reservations), got ${ids.join(', ')}`)
   assert.deepEqual(summary.map((r) => r.id), ids, 'the summary table must list the rows in the same order')
   assert.deepEqual(summary.map((r) => r.sourceId), rows.map((r) => r.sourceId), 'summary and detail must name the same source id per row')
 })
