@@ -1,0 +1,311 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd31-read-image-postfix-route-gate-off-2026-11-08T16-40-10-502Z-b1",
+  "suite": "a5sf-pd31-read-image",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T16:40:10.503Z",
+  "selectedCases": [
+    "pd31:image-route-allow",
+    "pd31:image-bytes-and-attachment",
+    "pd31:lane-deny-no-existence-oracle",
+    "pd31:non-image-native-shape",
+    "pd31:over-limit-refused-whole",
+    "pd31:image-block-not-text",
+    "pd31:surface-and-control"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "055fa822bf4b8ca9428fe6873ff4c1fd033d07bc",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "ReadImage",
+      "world": "u5a5sfpd31",
+      "source": "task PD31-READ-IMAGE explicit boot authorisation (2026-11-14), arm=postfix-route-gate-off"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "055fa822bf4b8ca9428fe6873ff4c1fd033d07bc",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "modelSeam": {
+      "provider": "deepseek-official",
+      "model": "deepseek-v4-flash",
+      "source": "World team-row staticModel (docs/INSTALL.md §3)"
+    },
+    "mutation": "route-gate-off",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd31-20261108T16-40-10Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd31:image-route-allow",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "with the host capability gate removed and a TEXT-ONLY model, the read is SERVED (allow facts) and the product projects the image to the text-only placeholder instead of inlining it — which proves the gate, not the fixture, is what refuses the text-only arm",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "in-lane-not-refused",
+          "ok": true,
+          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px"
+        },
+        {
+          "id": "allow-facts-attributed",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"allow\",\"read_image\",\"call-a5sfpd31-image-in\"],[\"readBytes\",\"allow\",\"read_image\",\"call-a5sfpd31-image-in\"]]"
+        },
+        {
+          "id": "no-image-on-a-text-wire",
+          "ok": true,
+          "detail": "image parts=0 — a text-only route must never receive one"
+        },
+        {
+          "id": "text-placeholder-present",
+          "ok": true,
+          "detail": "placeholder=[image omitted because this model accepts text only; attachment sha256:0bf7e492]"
+        }
+      ]
+    },
+    {
+      "id": "pd31:image-bytes-and-attachment",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "with the gate removed on a text-only route the read is still real — exactly ONE image block with the fixture metadata — while the WIRE carries no image (the product projects it)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "one-image-block",
+          "ok": true,
+          "detail": "image blocks=1"
+        },
+        {
+          "id": "attachment-metadata",
+          "ok": true,
+          "detail": "ref={\"attachmentId\":\"sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\",\"mediaType\":\"image/png\",\"bytes\":68,\"width\":3,\"height\":2,\"name\":\"probe.png\"} want={\"bytes\":68,\"width\":3,\"height\":2,\"sha256\":\"0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\"}"
+        },
+        {
+          "id": "attachment-id-present",
+          "ok": true,
+          "detail": "attachmentId=sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95 want=sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"
+        },
+        {
+          "id": "envelope-names-the-file",
+          "ok": true,
+          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px"
+        },
+        {
+          "id": "request-part-absent",
+          "ok": true,
+          "detail": "parts=0 (text-only wire)"
+        }
+      ]
+    },
+    {
+      "id": "pd31:lane-deny-no-existence-oracle",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "an out-of-lane image path is refused at the lane boundary: typed `IO_READ_DENIED`, exactly ONE deny fact, ZERO bytes, and the SAME answer for an existing and an absent target — the refusal never discloses existence",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "out-of-lane-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+        },
+        {
+          "id": "out-of-lane-one-deny-fact",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"deny\",\"IO_READ_DENIED\"]] — the typed code lives in the FACT (decidedBy), not in the model-facing sentence"
+        },
+        {
+          "id": "out-of-lane-attributed",
+          "ok": true,
+          "detail": "tools=[[\"read_image\",\"call-a5sfpd31-image-out\"]]"
+        },
+        {
+          "id": "out-of-lane-zero-bytes",
+          "ok": true,
+          "detail": "image parts carrying the out-of-lane bytes=0"
+        },
+        {
+          "id": "missing-same-refusal",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"deny\",\"IO_READ_DENIED\"]] text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+        },
+        {
+          "id": "no-existence-oracle",
+          "ok": true,
+          "detail": "existing(normalised)=Error: authored locator '<PATH>' is outside every allow subtree of the lane missing(normalised)=Error: authored locator '<PATH>' is outside every allow subtree of the lane"
+        },
+        {
+          "id": "no-not-found",
+          "ok": true,
+          "detail": "neither refusal says \"not found\""
+        }
+      ]
+    },
+    {
+      "id": "pd31:non-image-native-shape",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "a `.txt` file is refused by the tool's own EXTENSION law before any fs I/O or attachment write — a typed refusal, not a crash, and it does not depend on the model route",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "refused",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "extension-law",
+          "ok": true,
+          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PN"
+        },
+        {
+          "id": "zero-facts",
+          "ok": true,
+          "detail": "facts=0"
+        },
+        {
+          "id": "no-attachment",
+          "ok": true,
+          "detail": "image parts=[] — the only image in flight is the in-lane fixture; the .txt produced none"
+        }
+      ]
+    },
+    {
+      "id": "pd31:over-limit-refused-whole",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "an image over the deployment's own limits is refused WHOLE — the dimension law (>8192 px) and the byte cap (>20 MiB) each answer a typed refusal after the admitted read, and no over-limit byte is stored or sent as an image",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "dimension-refused",
+          "ok": true,
+          "detail": "text=Error: Image exceeds the configured per-side pixel limit. — the store's own refusal, not the tool's mapped 8192px sentence"
+        },
+        {
+          "id": "dimension-not-stored",
+          "ok": true,
+          "detail": "parts carrying the over-dimension bytes=0"
+        },
+        {
+          "id": "dimension-io-facts",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"allow\"],[\"readBytes\",\"allow\"]]"
+        },
+        {
+          "id": "byte-cap-refused",
+          "ok": true,
+          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit"
+        },
+        {
+          "id": "byte-cap-not-stored",
+          "ok": true,
+          "detail": "parts carrying the over-cap bytes=0 — the 20 MiB+1 file never reaches the attachment store or a model request"
+        },
+        {
+          "id": "byte-cap-io-facts",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"allow\"],[\"readBytes\",\"allow\"]]"
+        }
+      ]
+    },
+    {
+      "id": "pd31:image-block-not-text",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "with the gate removed on a TEXT-ONLY route the product does not inline the image: ZERO image parts, and the request carries the text-only placeholder instead of binary",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-image-parts",
+          "ok": true,
+          "detail": "image parts=0"
+        },
+        {
+          "id": "no-text-carries-binary",
+          "ok": true,
+          "detail": "text blocks carrying the image=[]"
+        },
+        {
+          "id": "text-only-placeholder",
+          "ok": true,
+          "detail": "placeholder=[image omitted because this model accepts text only; attachment sha256:0bf7e492]"
+        }
+      ]
+    },
+    {
+      "id": "pd31:surface-and-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T16:42:02.068Z",
+      "proposition": "the confined native faces are UNAFFECTED: `read` on the same lane still returns the text and still writes its allow fact, so a red image arm cannot be explained by a dead realm",
+      "clauses": [
+        {
+          "id": "read-ok",
+          "ok": true,
+          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/in-lane.txt</path>\n<type>file"
+        },
+        {
+          "id": "read-fact",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"allow\"],[\"readText\",\"allow\"]]"
+        },
+        {
+          "id": "read-image-offered",
+          "ok": true,
+          "detail": "read_image on surface=true"
+        },
+        {
+          "id": "native-description",
+          "ok": true,
+          "detail": "description=Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to ins"
+        }
+      ],
+      "failed": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T16:41:13.011Z",
+        "runId": "a5sf-pd31-read-image-postfix-route-gate-off-2026-11-08T16-40-10-502Z-b1",
+        "suite": "a5sf-pd31-read-image",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd31-20261108T16-40-10Z",
+        "phase": "a5sf-pd31-read-image-postfix-route-gate-off-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd31-read-image-postfix-route-gate-off-boot1",
+      "world": "u5u5a5sfpd31-20261108T16-40-10Z",
+      "port": 3190,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-40-10Z/instance-port3190.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd31-read-image-postfix-route-gate-off-2026-11-08T16-40-10-502Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T16:42:02.069Z"
+}

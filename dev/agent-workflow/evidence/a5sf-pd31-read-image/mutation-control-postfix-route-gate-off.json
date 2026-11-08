@@ -1,0 +1,21 @@
+{
+  "schema": "a5sf-pd31-read-image/mutation-control/2",
+  "mutation": "route-gate-off",
+  "model": "deepseek-v4-flash",
+  "expectation": "with the capability check removed from the tool-fs module the Host actually resolves, a TEXT-ONLY route must SERVE the read (successArm=GREEN, 2 allow facts) and must send a text placeholder instead of an image part",
+  "want": "served",
+  "successArm": "GREEN",
+  "propositionVerdict": "PROVEN",
+  "observedProposition": "with the host capability gate removed and a TEXT-ONLY model, the read is SERVED (allow facts) and the product projects the image to the text-only placeholder instead of inlining it — which proves the gate, not the fixture, is what refuses the text-only arm",
+  "observedInLaneAllowFacts": 2,
+  "observedImageParts": 0,
+  "observedOverall": "PASS",
+  "mutationRecord": {
+    "mutation": "route-gate-off",
+    "file": "node_modules/.pnpm/<installed @deepseek-ai/dsh-tool-fs>/lib/index.js",
+    "beforeSha256": "66742231de99695b98400cdbc7bcf47b8ef2bf24600cf86f66bb35591981427f",
+    "mutatedSha256": "12908be1896dc23cc59ff39ad832b9c8c0275df9ed2f7eea0b2ae04de3ef8726"
+  },
+  "hostPorcelainAfter": [],
+  "satisfied": true
+}

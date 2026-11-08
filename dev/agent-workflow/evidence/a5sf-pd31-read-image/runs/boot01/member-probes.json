@@ -1,0 +1,223 @@
+{
+  "schema": "a5sf-pd31-read-image/member-probes/1",
+  "note": "one entry per probe; result is the durable transcript result when found, else the mock-observed result. blocks are the model-facing content blocks (the durable image block survives only in the session log / model request, both kept)",
+  "imageMeta": {
+    "bytes": 68,
+    "width": 3,
+    "height": 2,
+    "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"
+  },
+  "probes": {
+    "read": {
+      "call": {
+        "id": "call-a5sfpd31-read",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-read",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+          }
+        ],
+        "at": 1794155503365
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+        }
+      ]
+    },
+    "imageIn": {
+      "call": {
+        "id": "call-a5sfpd31-image-in",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-in",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+          },
+          {
+            "type": "image",
+            "attachment": {
+              "attachmentId": "sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+              "mediaType": "image/png",
+              "bytes": 68,
+              "width": 3,
+              "height": 2,
+              "name": "probe.png"
+            }
+          }
+        ],
+        "at": 1794155503463
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+        },
+        {
+          "type": "image",
+          "attachment": {
+            "attachmentId": "sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+            "mediaType": "image/png",
+            "bytes": 68,
+            "width": 3,
+            "height": 2,
+            "name": "probe.png"
+          }
+        }
+      ]
+    },
+    "imageOut": {
+      "call": {
+        "id": "call-a5sfpd31-image-out",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-out",
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+          }
+        ],
+        "at": 1794155503498
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+        }
+      ]
+    },
+    "imageMissing": {
+      "call": {
+        "id": "call-a5sfpd31-image-missing",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-missing",
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+          }
+        ],
+        "at": 1794155503528
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+        }
+      ]
+    },
+    "imageTxt": {
+      "call": {
+        "id": "call-a5sfpd31-image-txt",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-txt",
+        "isError": true,
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+          }
+        ],
+        "at": 1794155503559
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+        }
+      ]
+    },
+    "imageBigDim": {
+      "call": {
+        "id": "call-a5sfpd31-image-big-dim",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-dimension.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-big-dim",
+        "isError": true,
+        "text": "Error: Image exceeds the configured per-side pixel limit.",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Error: Image exceeds the configured per-side pixel limit."
+          }
+        ],
+        "at": 1794155503593
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Error: Image exceeds the configured per-side pixel limit."
+        }
+      ]
+    },
+    "imageBigBytes": {
+      "call": {
+        "id": "call-a5sfpd31-image-big-bytes",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd31-image-big-bytes",
+        "isError": true,
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit",
+        "blocks": [
+          {
+            "type": "text",
+            "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit"
+          }
+        ],
+        "at": 1794155503627
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "a5sf-pd31-read-image/model-request-image-parts/1",
+  "at": "2026-11-08T16:31:46.608Z",
+  "note": "every IMAGE content part found in the model requests the leased mock actually received; bytes/sha256 are decoded from the part, so a shell or a text paste cannot pass",
+  "expectedImage": {
+    "bytes": 68,
+    "width": 3,
+    "height": 2,
+    "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"
+  },
+  "parts": [
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 9
+    },
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 11
+    },
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 13
+    },
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 15
+    },
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 17
+    },
+    {
+      "role": "user",
+      "blockType": "image",
+      "sourceType": "base64",
+      "mediaType": "image/png",
+      "base64Chars": 92,
+      "bytes": 68,
+      "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+      "seq": 19
+    }
+  ]
+}

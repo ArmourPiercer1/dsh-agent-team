@@ -1,0 +1,90 @@
+# Member transcript — session-team-child-aacd66b1758e453d3eabdea1195f11d9
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-04-45Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd
+# event types: {"session":1,"permission/preset":1,"sandbox/mode":1,"approval/policy":1,"agent/inbox/spliced":2,"turn/start":1,"step/start":8,"system/message":1,"user/message":4,"request/header":1,"request/context":1,"session/title":2,"session/title-llm-request":1,"assistant/message":8,"tool/call":7,"tool/result":7,"step/end":8,"workspace/changes":1,"turn/end":1}
+
+USER:
+[team-work requestToken=a5sf-pd31-turn-delegate] a5sf-pd31-turn: run the probes exactly once each, one tool call at a time, then report.
+
+USER:
+<system-reminder>
+The following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.
+
+Instructions from: AGENTS.md
+
+# AGENTS.md — dsh-agent-team 仓库代理规则
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-identity: alpha5-sandbox-first -->
+
+
+本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。
+
+## 会话开始必读（提示词注入要求）
+
+在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
+
+1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCK
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+USER:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
+
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace". Some platform temporary areas may also be writable.
+
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
+
+USER:
+<system-reminder>
+A skill is a reusable set of task-specific instructions. The following skills are available in this session:
+
+<available_skills>
+- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints....
+- `team-leader-operations`: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report prog
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+TOOL CALL [read] call-a5sfpd31-read
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"}
+TOOL RESULT isError=false
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>
+  <type>file</type>
+  <content>
+  1: A5SF_PD31_IN_LANE_BYTES
+  
+  (End of file - total 1 lines)
+  </content>
+
+TOOL CALL [read_image] call-a5sfpd31-image-in
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"}
+TOOL RESULT isError=false
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>
+  <type>image</type>
+  <content>
+  image/png image, 3x2 px, 68 bytes
+  </content>
+
+TOOL CALL [read_image] call-a5sfpd31-image-out
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"}
+TOOL RESULT isError=true
+  Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane
+
+TOOL CALL [read_image] call-a5sfpd31-image-missing
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png"}
+TOOL RESULT isError=true
+  Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane
+
+TOOL CALL [read_image] call-a5sfpd31-image-txt
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt"}
+TOOL RESULT isError=true
+  Error: cannot read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats
+
+TOOL CALL [read_image] call-a5sfpd31-image-big-dim
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-dimension.png"}
+TOOL RESULT isError=true
+  Error: Image exceeds the configured per-side pixel limit.
+
+TOOL CALL [read_image] call-a5sfpd31-image-big-bytes
+  arguments: {"file_path":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-byte-cap.png"}
+TOOL RESULT isError=true
+  Error: cannot read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-byte-cap.png": 20971521 bytes exceeds the 20971520-byte limit
+
+ASSISTANT (final):
+A5SF_PD31_MEMBER_A_DONE Error: cannot read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-byte-cap.png": 20971521 bytes exceeds the 20971520-byte limit

@@ -1,0 +1,175 @@
+{
+  "requestsCarryingImageBinaryInText": 0,
+  "requestsCarryingSecretImage": 0,
+  "guardFacts": {
+    "allow": 8,
+    "deny": 2,
+    "byTool": {
+      "read": 2,
+      "read_image": 8
+    },
+    "readImage": {
+      "total": 8,
+      "allow": 6,
+      "deny": 2,
+      "methods": [
+        "stat:allow:call-a5sfpd31-image-in",
+        "readBytes:allow:call-a5sfpd31-image-in",
+        "stat:deny:call-a5sfpd31-image-out",
+        "stat:deny:call-a5sfpd31-image-missing",
+        "stat:allow:call-a5sfpd31-image-big-dim",
+        "readBytes:allow:call-a5sfpd31-image-big-dim",
+        "stat:allow:call-a5sfpd31-image-big-bytes",
+        "readBytes:allow:call-a5sfpd31-image-big-bytes"
+      ]
+    }
+  },
+  "mockRequests": 21,
+  "aModelRequests": 8,
+  "surfaceACount": 33,
+  "surfaceANames": [
+    "bash",
+    "edit",
+    "exit_plan_mode",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "web_fetch",
+    "web_search",
+    "write"
+  ],
+  "requestImageParts": 6,
+  "requestImagePartDigests": [
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95",
+    "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"
+  ],
+  "imageMeta": {
+    "bytes": 68,
+    "width": 3,
+    "height": 2,
+    "sha256": "0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"
+  },
+  "sessionEvents": {
+    "session-a5sf-pd31-boot": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-a5sf-pd31-boot/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 1,
+        "system/message": 1,
+        "user/message": 4,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 1,
+        "step/end": 1,
+        "turn/end": 1
+      }
+    },
+    "session-a5sf-pd31-team": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-a5sf-pd31-team/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 4,
+        "turn/start": 2,
+        "step/start": 3,
+        "system/message": 1,
+        "user/message": 5,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 3,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 3,
+        "turn/end": 2
+      }
+    },
+    "session-team-child-aacd66b1758e453d3eabdea1195f11d9": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 8,
+        "system/message": 1,
+        "user/message": 4,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 8,
+        "tool/call": 7,
+        "tool/result": 7,
+        "step/end": 8,
+        "workspace/changes": 1,
+        "turn/end": 1
+      }
+    }
+  },
+  "membersAfter": 2,
+  "memberTemplates": [
+    "leader",
+    "worker"
+  ],
+  "memberWindow": {
+    "from": "2026-11-08T15:08:10.054Z",
+    "to": "2026-11-08T15:08:10.585Z"
+  },
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml",
+    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+    "arm": "postfix",
+    "mutation": "none"
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "id": "deepseek-flash",
+    "expectAllow": true
+  },
+  "quiesced": true,
+  "readImageOnSurface": true,
+  "allowFactsForInLane": 2,
+  "denyFactsForOutOfLane": 1,
+  "mutation": null
+}

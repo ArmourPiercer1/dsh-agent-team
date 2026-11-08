@@ -1,0 +1,1214 @@
+
+PD31-READ-IMAGE — gate transcript at HEAD 055fa822b (merged tree: 0c2a8f422 + lane commits)
+
+[hostfree-pd31] $ node --test tests/world-factory/a5sf-pd31-read-image.test.mjs
+✔ PD31-MODEL-SEAM: image capability is declarable through the public staticModel key, not an upstream patch (29.964578ms)
+✔ PD31-ROUTE-GATE: the pinned BUILT tool-fs still carries the capability gate, and the mutation needle is anchored (1.057462ms)
+✔ PD31-FIXTURES: the over-limit fixtures cross the store's own pinned laws, and the driver reads those laws rather than restating them (0.823057ms)
+✔ PD31-PRESET: the governed preset mounts the host tool-fs package and no Team fs-family plane, so the live read_image is the native row (8.980282ms)
+✔ PD31-ARMS: the pin selects the text-only arm and the two mutations move the allow verdict in named, opposite directions (0.236477ms)
+✔ PD31-EVIDENCE-BOUND: the driver binds its run to a real commit and declares DEV-LIVE (never a candidate claim) (0.172526ms)
+✔ PD31-INSTALL-GRAPH: the shipped surface is measured through the World graph, and the driver cannot silently outlive the shared provisioning (0.60733ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.43186
+
+[hostfree-pd31] exit=0
+
+[register] $ node --test tests/world-factory/a5sf-debt-register.test.mjs
+✔ the register parses into rows and a summary table (0.90346ms)
+✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.703852ms)
+✔ (d) every row has all required fields exactly once (2.165437ms)
+✔ (d) every row declares one consequence class from the closed set, and the table agrees (0.440324ms)
+✔ (a) every finding id is still present in the evidence file that originated it (12.84514ms)
+✔ §6 declarations map one-to-one onto live register rows (0.197654ms)
+✔ (b) every anchor resolves and still contains the symbol the row claims (13.722949ms)
+✔ the register names the evidence it digests and does not claim a boot (0.277205ms)
+✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (0.597491ms)
+✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (0.239764ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 102.086847
+
+[register] exit=0
+
+[docs-probe] $ node scripts/docs-probe.mjs --base origin/master
+docs:probe base=origin/master head=055fa822b changed=185 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
+
+[docs-probe] exit=0
+
+[docs-sync] $ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=117 notes=4 plans=79(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261105r2.json","snapshot_version":"as20261105r2","content_digest":"sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+
+[docs-sync] exit=0
+
+[state-freshness] $ node scripts/ci-pr-gate.mjs --only state-freshness
+DSH-CI-RUN head=055fa822b mode=default node=v24.21.0 cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image store-dir=default allow-refused=none
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 1206 commits); current contract ok (phase_id alpha5-sandbox-first, baseline 1484fa4ee0ff…, matrix rows 21 claimed 0, drift 146 path(s))
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0
+
+[state-freshness] exit=0
+
+[evidence-guard] $ node scripts/eb3-evidence-guard.mjs
+EB3-EVIDENCE-GUARD pass added=133 bound=1048576 exempted=0 findings=0 base=origin/master
+LIMIT grades files ADDED under the evidence root only; a green here says no raw capture and no unexempted file over the bound was added, not that every added file is worth keeping
+
+[evidence-guard] exit=0
+
+[run-manifest] $ node scripts/eb3-run-manifest.mjs
+  DISCLOSED 11 unfinalised record(s) (no finishedAt/overall) graded as NOT-A-RESULT, not as pass: dev/agent-workflow/evidence/u6-pr5-20261026/c2/run4-evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca5-2026-10-26T06-15-58-353Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca6-2026-10-26T06-27-14-670Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca8-2026-10-26T06-59-02-141Z.evidence.json, dev/agent-workflow/evidence/u6-pr6-20261026/c2/u5-u6-arc-d-arc-d1-2026-10-26T08-30-55-354Z.evidence.json, dev/agent-workflow/evidence/u7-6-glue4-20261026/c2/u5-u6-arc-a-u76r1-2026-10-26T11-57-28-224Z.evidence.json …
+EB3-RUN-MANIFEST pass records=336 strict=0 incomplete=11 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)
+
+[run-manifest] exit=0
+
+[p4t6] $ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  00:43:07
+   Duration  818ms (transform 83ms, setup 0ms, import 677ms, tests 11ms, environment 0ms)
+
+
+[p4t6] exit=0
+
+[artifacts] $ pnpm check:artifacts
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1981 glue=110
+[check-artifacts-committed] OK: 1981 files — working tree equals the git INDEX for both install surfaces (incl. 110 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+
+[artifacts] exit=0
+
+[artifacts-head] $ pnpm check:artifacts:head --store-dir /home/armourpiercer/projects/dsh-agent-team/.pnpm-store
+$ node scripts/check-artifacts-at-head.mjs --store-dir /home/armourpiercer/projects/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] installing the scratch from --store-dir: /home/armourpiercer/projects/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1981 glue=110
+[check-artifacts-committed] OK: 1981 files — working tree equals the git INDEX for both install surfaces (incl. 110 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1981 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1981 compared file(s)).
+
+[artifacts-head] exit=0
+
+[typecheck] $ pnpm -r typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+
+[typecheck] exit=0
+
+
+
+NOTE (family, shared install): the four PD30 tests fail here only because this long-lived
+
+install predates master's @deepseek-ai/dsh-web-search-exa root dependency; the same four fail
+
+identically at origin/master with this install, and the whole family is green in a fresh install.
+
+[family-shared] $ node --test tests/world-factory/a5sf-acceptance-preflight.test.mjs tests/world-factory/a5sf-ask-precedence.test.mjs tests/world-factory/a5sf-assembly.test.mjs tests/world-factory/a5sf-bash.test.mjs tests/world-factory/a5sf-bl42-netdeny.test.mjs tests/world-factory/a5sf-capability-defaults.test.mjs tests/world-factory/a5sf-debt-register.test.mjs tests/world-factory/a5sf-dev-live-slots.test.mjs tests/world-factory/a5sf-dev-live.test.mjs tests/world-factory/a5sf-dual-plane.test.mjs tests/world-factory/a5sf-evidence.test.mjs tests/world-factory/a5sf-f1-ctx.test.mjs tests/world-factory/a5sf-fs-contract.test.mjs tests/world-factory/a5sf-governed-preset.test.mjs tests/world-factory/a5sf-harness.test.mjs tests/world-factory/a5sf-native-route-c.test.mjs tests/world-factory/a5sf-p2-seam.test.mjs tests/world-factory/a5sf-p2-wiring.test.mjs tests/world-factory/a5sf-pd1-revocation-escape.test.mjs tests/world-factory/a5sf-pd12-bash-governance.test.mjs tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs tests/world-factory/a5sf-pd14-sandbox-root.test.mjs tests/world-factory/a5sf-pd15-face-bound-proof.test.mjs tests/world-factory/a5sf-pd16-search-read-axis.test.mjs tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs tests/world-factory/a5sf-pd18-web-ptc.test.mjs tests/world-factory/a5sf-pd19-fact-attribution.test.mjs tests/world-factory/a5sf-pd21-subagent.test.mjs tests/world-factory/a5sf-pd23-control-surface.test.mjs tests/world-factory/a5sf-pd24-surface-ledger.test.mjs tests/world-factory/a5sf-pd25-unbounded-turn.test.mjs tests/world-factory/a5sf-pd26-confined-skill.test.mjs tests/world-factory/a5sf-pd27-confined-web.test.mjs tests/world-factory/a5sf-pd29-goal-stop.test.mjs tests/world-factory/a5sf-pd29-service-seam.test.mjs tests/world-factory/a5sf-pd30-web-preview.test.mjs tests/world-factory/a5sf-pd31-read-image.test.mjs tests/world-factory/a5sf-product-assembly.test.mjs tests/world-factory/a5sf-pty-contract.test.mjs tests/world-factory/a5sf-read-gate.test.mjs tests/world-factory/a5sf-run-record-binding.test.mjs tests/world-factory/a5sf-search-live.test.mjs tests/world-factory/a5sf-sub-contract.test.mjs tests/world-factory/a5sf-tool-axis.test.mjs tests/world-factory/a5sf-web-contract.test.mjs tests/world-factory/a5sf-web-row.test.mjs tests/world-factory/a5sf-web.test.mjs tests/world-factory/a5sf-window-taxonomy.test.mjs
+✔ A1 the driver root constant is ONE value across every observation seam (3.441335ms)
+✔ A2 the #575 split wiring is REFUSED with the typed code, before any boot (1.617845ms)
+✔ A3 acceptanceRootIdentity exposes exactly one team root and rejects blanks (0.953967ms)
+✔ A4 the verdict vocabulary maps 1:1 onto the run record and is total (0.391541ms)
+✔ A5 the production row root is asserted, so anchoring it on the acceptance root is REFUSED (0.292924ms)
+✔ A6 the p6t6 directive root is asserted, so a second directive literal is REFUSED (0.128053ms)
+✔ B1 a non-fault observation containing the managed session NAME is not a fault (0.34341ms)
+✔ B2 identity-bearing faults match by EXACT session id; another session is foreign (0.398725ms)
+✔ B3 the identity-less realm fault is only attributed inside the managed window AND with one realm (0.242038ms)
+✔ B4 an identity-bearing fault is managed regardless of the window; the window only gates the identity-less one (1.667888ms)
+✔ B5 the REAL #575 stream classifies as non-faults (20 observations / the 27-line old filter result) (0.38565ms)
+✔ B6 a prefixed / wrapped REAL fault is still attributed (a fault cannot hide as ignored) (0.208725ms)
+✔ C0 every case has all three samples and every NOT_REACHED sample answers NOT_REACHED (1.310612ms)
+✔ C1 every case PROVES on the passing sample and REFUTES on the contradicted sample (1.872335ms)
+✔ C2 no row can be PROVEN with an absent observable (the #575 hole) (0.159793ms)
+✔ C3 the row-level reason codes distinguish "never asked" from "asked and contradicted" (0.249242ms)
+✔ C4 row 2 refuses a "pass" produced by a missing sink channel (facts are part of the claim) (0.192585ms)
+✔ C5 row 6 does not count a foreign session’s fault nor a name-bearing non-fault line (0.238181ms)
+✔ C6 row 3 cannot PASS without the lane report (no-widening is asserted from it) (0.178458ms)
+✔ C7 the precondition requires a member request AND the one-read surface (never a proxy) (0.135807ms)
+✔ C8 each verdict carries a closed reason code (auditable without prose) (0.416028ms)
+✔ C9 row 2 replay over the REAL live stream: stat-deny + the later writeText allow at B is PROVEN (0.233712ms)
+✔ C10 row 5 laundering arms: erased invalidation / failed trigger / unregistered tool are REFUTED, never NOT_REACHED (0.175853ms)
+✔ C11 row 6 archive-refusal arm: a 200-with-ok:false envelope refusal is REFUTED (0.0795ms)
+✔ C12 row 5 distinguishes the NAME-KEYED invalidation from the blanket realm freeze (0.589547ms)
+✔ C13 row 2 rule for TWO read-path consultations: two denies PROVE, two allows REFUTE, the COUNT is never the failure (0.426928ms)
+✔ C14 rows 4a/4b: the split is two questions, and neither loosens the other (0.583124ms)
+✔ C15 row 6 temporal bound over the REAL boot-2 stream: stop-time facts, probe delta, refuting twin (3.225396ms)
+✔ C16 the read/write method partition is the PRODUCT’s, and an unknown method is counted as a read-path consultation (0.368177ms)
+✔ D1 the clean plan passes every check (5.027286ms)
+✔ D2 NEGATIVE CONTROL: the aliased two-case fixture is RED, for the alias and nothing else (1.313647ms)
+✔ D3 case isolation also refuses a duplicated id and a case with no locator (2.755968ms)
+✔ D4 assembly: a missing dist face, a missing native module and a broken row handoff are each red (2.361701ms)
+✔ D5 identity: the #575 create-root ≠ observe-root defect is refused, and blueprints/member bindings are graded (1.584429ms)
+✔ D6 identity.authority: an observed pointer that is not the named snapshot is red (1.18759ms)
+✔ D7 native.module-config: the two BL-16 attempt defects (empty config, missing key) are red (1.704026ms)
+✔ D8 policy.paths: an allow outside the lane, a deny inside it, and a deny inside the runtime allowance are red (3.268949ms)
+✔ D9 policy.fifo: the BL-16 attempt-6 defect (FIFO outside the lane) is red (0.50735ms)
+✔ D10 collector.shape: empty corpus, missing return-shape key, no terminate, no archive are red (2.140663ms)
+✔ D11 wiring: candidate/grant/run-record/ledger disagreement is red before a start (3.488483ms)
+✔ D12 the run record may name the baseline instead of the candidate head only when every product path is proven equal (1.257461ms)
+✔ D13 a bundle with the wrong schema is refused instead of graded (0.227631ms)
+✔ D14 the CLI prints ONE machine-readable verdict and exits non-zero on the aliased fixture (118.998448ms)
+✔ D15 a run directory without a preflight bundle is REFUSED, never reconstructed from the run output (103.118146ms)
+✔ D16 --host-root redirects the pristine-checkout prefix and grades the same modules there (116.952745ms)
+✔ D17 an empty --host-root still fails assembly.usable: the flag redirects the lookup, it does not waive it (93.435174ms)
+✔ D18 NEGATIVE CONTROL driver.gate-order: a state gate before team.create is RED, and only that check (1.580873ms)
+✔ D19 NEGATIVE CONTROL driver.log-capture: a fail-capable step with no body capture is RED, and only that check (0.987458ms)
+✔ D20 NEGATIVE CONTROL bundle.case-coverage: a planned case absent from the table and a case with no fixture row are RED, and only that check (1.133686ms)
+✔ D21 an undeclared driver plan is UNKNOWN, never PASS, and is visibly distinct from a defect (0.633799ms)
+✔ D22 the plan is schema-tolerant (driverPlan alias) and an unproduced precondition is RED (1.106224ms)
+✔ D23 cases.isolation already refuses a shared GUARD KEY with different locators (no duplicate check added) (0.776449ms)
+✔ D24 the CLI exits 3 for UNKNOWN (never 0) and still prints one line (210.322057ms)
+✔ D25 the committed negative-control bundles are load-bearing: each reds exactly its own check (9.935317ms)
+✔ E1 driver.leader-surface is part of the closed check set and the clean plan passes it (0.431167ms)
+✔ E2 NEGATIVE CONTROL driver.leader-surface: the SPENT boot-4 declaration is RED, names exactly u5_canary and u6fs_probe, and reds only this check (0.811546ms)
+✔ E3 an undeclared leader surface or deny list is UNKNOWN, never PASS (1.729647ms)
+✔ E4 the CORRECTED discovery-first declaration PASSes, and it denies a tool the World did not have yet (16.898943ms)
+✔ E5 the six classes: managed/team/MCP/safe pass; known-sensitive and unknown are fatal (7.671585ms)
+✔ E6 NEGATIVE CONTROL: a declared World row whose tool is missing from the surface list is RED (under-declaration) (4.071948ms)
+✔ E7 NEGATIVE CONTROL driver.log-capture: a declared 400-char body is RED; an undeclared retention is UNKNOWN (2.098864ms)
+✔ E8 the CLI reproduces boot #4: one FAIL line, exit 1, POLICY_SURFACE_UNMANAGED naming both tools (78.297805ms)
+✔ E9 the committed surface bundles are load-bearing: boot-#4 FAIL, corrected PASS, one red each (2.412386ms)
+✔ E10 DRIFT GUARD: the mirrored registries and precedence are the product gate's own (2.239841ms)
+✔ E11 the driver-side fix computes the same deny list and renders the canonical YAML block (0.588645ms)
+✔ F1 admission-refusal: the truthful BL-18 bundle PASSes, and its wording says ADMISSION REFUSAL (never isolated) (1.382277ms)
+✔ F2 NEGATIVE CONTROL admission-refusal-incomplete: an absent observable is FAIL (not UNKNOWN), exactly policy.paths (2.092272ms)
+✔ F3 NEGATIVE CONTROL admission-refusal-confinement-claim: claimsConfinement true (or absent) is RED, and the class cannot buy confinement (2.517175ms)
+✔ F4 the connection-denial rule is byte-identical for existing/unspecified cases (3.341154ms)
+✔ F5 bundle.case-coverage: BL-17 is now RED — its driver declares 4 cases, its cases table 3 (3.52388ms)
+✔ F6 NEGATIVE CONTROL bundle-case-undeclared: a driver manifest case absent from cases is exactly one red (1.308348ms)
+✔ F7 driver.caller-surface: strict Member RED, leader RED, missing pair RED, legacy caller PASS (3.156298ms)
+✔ F8 the committed before/after payloads prove the change: BL-18 FAIL -> PASS, BL-17 PASS -> FAIL (1.540605ms)
+✔ ASK-P1 an explicit deny subtree wins over an ask rule covering the same locator (1.031443ms)
+✔ ASK-P2 ask is never promoted to allow by a covering allow (0.182997ms)
+✔ ASK-P3 allow serves and an uncovered locator is denied (no implicit permission) (0.276333ms)
+✔ ASK-P4 the order is total: every locator gets exactly one of deny/ask/allow (0.484077ms)
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (98.493637ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (23.413188ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (22.905706ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (1.864369ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (49.149809ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (22.178904ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (42.276425ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (44.926124ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (20.746205ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (12.703542ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (64.473172ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (6.953624ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["write"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback (26.970134ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ C3 (review 2026-11-03) a registration by an ALREADY-ACTIVE fiber AFTER the settle window is FOLDED IN and INVALIDATES — never an unrecorded live shadow (45.910565ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3 (event-driven 2026-11-03) a preset-plane registration inside the SAME emission must not abort the managed one; the late name is folded and DENIED (14.42ms)
+✔ EXPECT-1 a declared module that FORWARDS its declared tool is ACCEPTED and the deny covers it like any observed name (12.449109ms)
+✔ EXPECT-2 a declared module that forwards NOTHING is REFUSED, typed, naming the missing name — the divergent composition (7.194991ms)
+✔ EXPECT-3 ABSENT expectedTools keeps today's behaviour: a zero-registration attach is still ACCEPTED (merged C3/A7 contract untouched) (12.90145ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool registered after the mount settled: the attach accepts no post-settle shadow it did not verify; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E3-fold (event-driven 2026-11-03) the OTHER order: the MANAGED listener registers first — the fold path names the late registration (13.106158ms)
+✔ C2-a (review 2026-11-03) a CONFIGURED module with an EMPTY routed frontier is REFUSED — the natural composition cannot silently leave a preset definition serving (13.059134ms)
+✔ C2-b (review 2026-11-03) `allowEmpty: true` is the EXPLICIT opt-out: the same composition attaches and records nothing (17.604168ms)
+✔ C2-c (review 2026-11-03) the top-level `a5sfExpectedTools` map declares on a STRING entry — accepted when forwarded, deny covers the name (16.53845ms)
+✔ C2-d (review 2026-11-03) the map declaration on a STRING entry that forwards NOTHING is REFUSED, typed (12.782549ms)
+✔ C2-e (review 2026-11-03) an `a5sfExpectedTools` specifier that no entry names is a configuration fault (a typo cannot declare nothing) (0.605476ms)
+✔ C3-a (review 2026-11-03) `expectedTools` VALIDATION: a non-array is a configuration fault (0.159923ms)
+✔ C3-b `expectedTools` VALIDATION: an EMPTY array is a contradiction, not an opt-out (0.088678ms)
+✔ C3-c `expectedTools` VALIDATION: a BLANK name is a fault (0.123013ms)
+✔ C3-d `expectedTools` VALIDATION: a NON-STRING name is a fault (0.133724ms)
+✔ C3-e `expectedTools` VALIDATION: a DUPLICATE name is a fault (0.097335ms)
+✔ C3-f `expectedTools` VALIDATION: the top-level map refuses the same faults (empty map, non-array entry) (0.103837ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8 (freeze 2026-11-03) a dispatch issued inside the boundary emission is REFUSED by the frozen realm; neither body serves (34.265529ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ E8-lift (freeze 2026-11-03) the freeze lifts ONLY on a full verified re-assembly — a fresh mount + attach admits calls again (25.578642ms)
+✔ ACK-1 (allowEmpty 2026-11-03) an acknowledged-empty attach carries the flag explicitly; a non-empty attach does not (19.868743ms)
+✔ ACK-2 (allowEmpty 2026-11-03) `allowEmpty` may acknowledge an EMPTY frontier that DECLARED names: accepted, and the names are carried as acknowledged, never as verified (20.492279ms)
+✔ ACK-2b (allowEmpty 2026-11-03) `allowEmpty` acknowledges only an EMPTY frontier: a PARTIAL frontier that also declares names is still REFUSED, typed (8.172522ms)
+✔ ADMIT: a declared `bash -c` runs through the confined provider with one allow fact per declared root (20.791833ms)
+✔ NOT-DECLARED: a realm with no declared shell class refuses `bash` with a typed code, one deny fact and NO process (1.329487ms)
+✔ PROGRAM-NOT-ADMITTED: a shell program outside the declared class is refused (0.787231ms)
+✔ INVOCATION-UNDECLARED: an admitted program with no declared invocation is refused (no unattributable root set) (0.399166ms)
+✔ ARGV-SHAPE: only `<program> -c <body>` is admitted (`-lc` and extra operands are refused) (0.498023ms)
+✔ RG-UNCHANGED: declaring a shell class does not weaken rg's admission (no --no-config is still refused; unknown programs too) (1.231141ms)
+✔ WRITABLE-PROGRAM: an admitted shell program the Member can WRITE is refused (name is not identity) (9.413762ms)
+✔ WRITE-ONLY-READ: a declared read of a write-only root is DENIED (fact + zero spawns + bytes unchanged) (2.547845ms)
+✔ WRITE-ONLY-WRITE: the SAME root is writable while unreadable — and the read witness is not vacuous (3.519394ms)
+✔ WRITE-ONLY-WRITE-OUTSIDE: a declared write outside the write lane is IO_WRITE_DENIED (0 spawns) (1.023959ms)
+✔ CREATE-OUTSIDE: a shell declaring a create outside the write lane is refused and the file never appears (0.36976ms)
+✔ CHMOD-OUTSIDE: a shell declaring a mode change outside the write lane is refused; mode and bytes unchanged (0.583134ms)
+✔ CREATE/CHMOD-INSIDE (control): the same declarations inside the write lane are admitted — the refusal is the lane, not the command (6.905632ms)
+✔ NETWORK-DENY-UNENFORCED: `network: deny` is refused with NETWORK_UNCONFINED_REALM and the probe recorded in the detail (1.011164ms)
+✔ NETWORK-DENY-ENFORCED (hypothetical backend): only a PROVEN `enforced` row admits the spawn and the request carries the deny profile (3.411781ms)
+✔ NETWORK-ALLOW: with the network axis allowed the request carries NO network profile (the face claims nothing it did not probe) (1.925104ms)
+✔ CAPABILITY-PROBE (real shipped gate): this host's provider set reports network-destination `unsupported` and refuses `deny` before any process (0.436416ms)
+✔ PTY-LEGACY-MOUNT: a `terminals`-consuming module is refused on a governed realm (typed, before any fiber, legacy PTY never consulted) (10.763117ms)
+✔ PTY-LEGACY-DEFERRED: a module that DEFERS `ctx.inject(['terminals'])` is refused by the same law (7.630938ms)
+✔ PTY-FACE: the confined subprocess face itself owns no terminal (spawnTerminal is a typed refusal) (0.621136ms)
+✔ COMPOSITION: `shellClass` is supplied by the install spec (the composition), never by the Member policy (0.174279ms)
+✔ A1-NETLEG-CONFIRMED: a real control child reaches a loopback listener; a real deny child lands in a distinct netns and its connect/send fail with a KERNEL errno while the listener counters do not move (3119.210182ms)
+✔ A2-PROBE-HONESTY: the REAL provider probe reports network-destination=enforced with a non-empty mechanism and a realm-bound evidence row, and its note carries the leg's own numbers (3445.070677ms)
+✔ A2b-SHARED-PROBE-REFUSES-A-BARE-LEVEL: `enforced` without a mechanism, or with a mechanism but no evidence, is still `unsupported` in the ONE probe both faces share (4.152001ms)
+✔ A3-FACE-KERNEL-REFUSAL: the deny lane's child is refused by the kernel with the listener counter unchanged, while the allow lane's identical child CONNECTS and is counted (6460.194552ms)
+✔ P0-NEGATIVE-CONTROL: with the mechanism removed from the trusted launcher, the probe reports `unsupported` (mechanism null) and the deny lane refuses at ADMISSION with zero provider calls (3181.387881ms)
+✔ A5-TERMINAL-SECOND-CONSUMER: the confined terminal face (`terminals.startSend`) rides the same process face — deny lane kernel-refused with the listener counter unchanged, allow lane counted (6481.692778ms)
+✔ A6-GATE-NEEDS-A-PROOF: `evaluateNetworkRequirement` refuses deny without a measured proof and admits it with one; the historical unsupported row is unchanged (4.416371ms)
+E1-UNDECLARED-CAPABILITIES mode=legacy teamTools=15
+E1-TEAM-TOOL-SURFACE team_list_members,team_list_templates,team_inspect_config,team_create_member,team_delegate,team_follow_up,team_collect,team_send_message,team_report_progress,team_request_control,team_resolve_control,team_list_pending_control,team_archive_member,team_grant_permission,team_revoke_permission
+✔ (e1-undeclared) a template with no `capabilities` compiles to the FULL team tool catalog (17.078964ms)
+✔ (e1-contrast) declaring `capabilities` is what narrows the surface (13.835644ms)
+✔ (e1-contract) the documented contract states the legacy default the code implements (0.57061ms)
+✔ the register parses into rows and a summary table (0.844769ms)
+✔ (c) ids are unique and contiguous PD-1…PD-n in document order (0.964275ms)
+✔ (d) every row has all required fields exactly once (3.852546ms)
+✔ (d) every row declares one consequence class from the closed set, and the table agrees (1.944272ms)
+✔ (a) every finding id is still present in the evidence file that originated it (17.915169ms)
+✔ §6 declarations map one-to-one onto live register rows (0.255785ms)
+✔ (b) every anchor resolves and still contains the symbol the row claims (22.777729ms)
+✔ the register names the evidence it digests and does not claim a boot (0.331949ms)
+✔ PD-9: the PTY layer-B arms never claim a byte channel for the product registry (1.846876ms)
+✔ PD-1: the revocation row is FIXED with the 2026-11-09 generation-scoped ruling (1.661027ms)
+✔ (d1-pin) the historical `lease.release?.()` is a silent no-op that keeps the slot (8.431774ms)
+✔ (d1-regression) a released boot admits the next boot instead of DEV_LIVE_LIMIT_REACHED (4.737731ms)
+✔ (d1-old-path-control) the old no-op cleanup still refuses the next boot — the failure D1 recorded (5.218848ms)
+✔ (d1-fail-loud) a missing or ineffective release API is a typed ERROR, never "nothing to do" (0.969698ms)
+✔ (d1-wiring) the live-member driver releases through the real API in its finally (0.780077ms)
+✔ (ns-unknown) a slot from another PID namespace is NOT immediately reclaimed (0.878513ms)
+✔ (ns-legacy) a legacy slot with no pidNs is unjudgeable, then reclaimed after the grace window (1.058243ms)
+✔ (ns-token) a peer re-acquiring the same slot is never unlinked by a stale scan (0.662164ms)
+✔ (ns-heartbeat) touch() keeps a live cross-namespace slot out of the grace window (1.098099ms)
+✔ (a-negative) a DEV-LIVE record claiming V@B=yes is refused at finalize (5.337407ms)
+✔ (a-negative) assertCandidateClaim refuses a DEV-LIVE record directly (0.531804ms)
+✔ (a-positive-control) the SAME claim is accepted on a CANDIDATE-C2 record — and the class is declared necessary, not sufficient (0.382615ms)
+✔ (a-disclosure) every record carries its class and a machine-readable claim eligibility (0.8084ms)
+✔ (b) a dev-live start registers intent + start + outcome rows and records the version (3.292825ms)
+✔ (b-control) a dev-live record with no slot at the harness chokepoint is refused (0.459159ms)
+✔ (c-negative) the (limit+1)th concurrent dev Host is refused; stale (dead-pid) slots are reclaimed (5.999671ms)
+✔ (e1-foreign-namespace) a slot written in ANOTHER pid namespace is never swept on liveness, and its owner is not locked out (1.314818ms)
+✔ (e1-same-namespace) a provably dead pid is swept only after the write grace, and never after a token change (1.065668ms)
+✔ (c-lease) the cap applies through the dev-live gate, not just the counter (22.414073ms)
+✔ (d-negative) a dev-live grant cannot pay for a CANDIDATE-C2 run (0.749478ms)
+✔ (d-negative) a CANDIDATE-C2 grant cannot authorise a dev boot (0.461174ms)
+✔ (d-negative) the record class must match the grant scope (0.659168ms)
+✔ (d-negative) a dev-live authorisation does not widen to another face or world (0.569368ms)
+✔ (d-compat) a pre-2026-11-09 grant (no scope field) still reads as the per-run C2 grant (0.182285ms)
+▶ DP1 the same-call three-way comparison over the whole declared case space
+  ✔ read-binding-subtree-allow-in-lane — inside ceiling and restriction; read through the binding realm (65.689272ms)
+  ✔ read-binding-subtree-deny-outside-restriction — inside the ceiling, outside the tool restriction — the restriction binds (31.480179ms)
+  ✔ read-binding-subtree-deny-outside-ceiling — restriction wider than ceiling locally: the legacy tool rule allows, the ceiling refuses (14.909167ms)
+  ✔ read-binding-mode-all-deny-outside-ceiling — `any` (mode-all) tool restriction wider than the ceiling; the ceiling refuses (19.887935ms)
+  ✔ read-binding-subtree-deny-explicit — explicit deny subtree wins in both planes (16.607278ms)
+  ✔ read-binding-subtree-ask-under-allow — authored ask INSIDE an allow subtree: refused at admission (IO_ASK_REQUIRES_APPROVAL) because no approval consumer exists (14.865344ms)
+  ✔ read-binding-subtree-allow-symlink-into-ask — the ask locator is reached through an in-lane SYMLINK: the resolved identity is ask-covered, so admission refuses the alias (10.177407ms)
+  ✔ read-binding-subtree-ask-narrower-subtree — ask declared on a NARROWER subtree: a descendant target is ask-covered in all three planes and refused at admission (7.694131ms)
+  ✔ read-binding-subtree-ask-unrelated-locator — an ask rule that covers NO part of the call: the lane keeps it, the call is still an ordinary allow (13.372231ms)
+  ✔ read-binding-subtree-ask-only — ask-only locator outside the allow: the intersection drops the ask (fail-closed deny) while the legacy tool rule asks (11.846629ms)
+  ✔ read-binding-subtree-allow-symlink-inside — leaf symlink that resolves INSIDE the lane is allowed (realpath in-lane) (14.750927ms)
+  ✔ read-binding-subtree-deny-symlink-parent — symlinked PARENT directory: authored in-lane, resolves outside — denied (9.833585ms)
+  ✔ read-binding-subtree-deny-symlink-leaf — leaf symlink resolving outside: denied by resolved identity (8.461088ms)
+  ✔ read-binding-subtree-deny-dangling-symlink — dangling leaf symlink: plane 1 fails closed on canonicalization, the guard refuses the link (13.441309ms)
+  ✔ read-binding-subtree-allow-hardlink — in-lane NAME of an out-of-lane inode: path-based law allows it (ADR D5, disclosed) (15.537557ms)
+  ✔ read-binding-subtree-deny-hardlink-alias — the OUT-OF-LANE name of the same inode is denied: the decision is on the path (18.718317ms)
+  ✔ read-binding-subtree-deny-dotdot — `..` escape: authored containment passes, resolved identity leaves the lane (11.293349ms)
+  ✔ read-binding-subtree-allow-dotdot-inside — `..` that still resolves inside: allowed (not a blanket `..` refusal) (16.861393ms)
+  ✔ read-member-subtree-allow-in-lane — no restriction declared: the Member realm enforces the ceiling only (27.557251ms)
+  ✔ read-member-subtree-deny-outside — outside the ceiling (8.035603ms)
+  ✔ read-member-subtree-deny-explicit — explicit deny subtree (7.711591ms)
+  ✔ read-member-subtree-ask-under-allow — ask inside an allow subtree in the MEMBER realm (no tool restriction mounted): refused, same code as the binding realm (14.928322ms)
+  ✔ read-member-exact-allow — `exact` legacy rule on the file itself; the Alpha.5 lane names the same file (10.867846ms)
+  ✔ read-member-exact-deny-sibling — exact addresses ONE file identity; a sibling is not covered by either plane (7.839491ms)
+  ✔ read-member-any-allow — `any` whole-tool allow (mode all) (11.882817ms)
+  ✔ read-member-any-deny — `any` whole-tool allow with an explicit deny subtree: deny wins (11.138798ms)
+  ✔ write-binding-subtree-allow-existing — existing target: write lane allows and the read prerequisite passes (10.031771ms)
+  ✔ write-binding-subtree-deny-outside-restriction — outside the write restriction, inside the ceiling (9.0591ms)
+  ✔ write-binding-subtree-allow-new-leaf — new leaf: no read-before-write prerequisite (nothing to read) (13.545965ms)
+  ✔ write-binding-mode-all-deny-outside-ceiling — `any` write restriction wider than the ceiling; the ceiling refuses (17.187591ms)
+  ✔ write-binding-subtree-ask-under-allow — authored ask inside an allow subtree on the write axis: refused at admission, zero writes, disk unchanged (6.862511ms)
+  ✔ write-binding-subtree-allow-symlink-into-ask — ask via an in-lane SYMLINK on the write axis: resolved identity is ask-covered, refusal before the write (18.419503ms)
+  ✔ write-member-subtree-allow-existing — ceiling-only write with the read prerequisite satisfied by the ceiling read lane (20.022677ms)
+  ✔ write-member-subtree-ask-under-allow — ask inside an allow subtree on the write axis in the MEMBER realm: refused, zero writes, disk unchanged (19.625373ms)
+  ✔ write-member-subtree-deny-outside — outside the ceiling write lane (21.737957ms)
+  ✔ write-member-subtree-deny-read-prerequisite — inside the write lane, outside the SAME realm read lane: IO_WRITE_REQUIRES_READ (9.812838ms)
+  ✔ write-member-subtree-allow-while-binding-read-restricted — THE 2026-11-04 SHAPE: a read-only binding does not constrain a member-realm write (write bounded by the ceiling) (12.272167ms)
+  ✔ write-member-subtree-deny-symlink-parent — new leaf under a symlinked parent that resolves outside: refused before create (20.242052ms)
+  ✔ write-member-subtree-allow-hardlink — in-lane hardlink name: the write lands on the shared inode through the allowed name (disclosed) (8.193396ms)
+  ✔ write-member-exact-allow — exact write rule on the file itself (9.73156ms)
+  ✔ write-member-any-allow — `any` whole-tool write allow (mode all) (17.253609ms)
+
+# BL-33 / P4-05A three-way table (42 cases)
+
+| verdict | count |
+| --- | --- |
+| AGREE | 37 |
+| EXCEPTION | 5 |
+| DISAGREE | 0 |
+| **total** | **42** |
+
+| admitted outcome (plane 2) | count |
+| --- | --- |
+| allow | 15 |
+| ask | 7 |
+| deny | 20 |
+
+| exception | count |
+| --- | --- |
+| EX-1-CEILING-OUTRANKS-TOOL-ADMISSION | 3 |
+| EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION | 1 |
+| EX-2-ADMISSION-READ-BEFORE-WRITE | 1 |
+
+overall = ALIGNED_WITH_CITED_EXCEPTIONS
+EXCEPTION read-binding-subtree-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION read-binding-mode-all-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION read-binding-subtree-ask-only -> EX-3-TOOL-ASK-DROPPED-BY-INTERSECTION
+EXCEPTION write-binding-mode-all-deny-outside-ceiling -> EX-1-CEILING-OUTRANKS-TOOL-ADMISSION
+EXCEPTION write-member-subtree-deny-read-prerequisite -> EX-2-ADMISSION-READ-BEFORE-WRITE
+  ✔ write-member-any-deny — `any` whole-tool write allow with an explicit deny subtree: deny wins (14.388062ms)
+✔ DP1 the same-call three-way comparison over the whole declared case space (659.289455ms)
+✔ DP-SUM the three-way table, case-space coverage and the overall P4-05A answer (1.023677ms)
+✔ DP-REFUSE every ask-covered call is a typed refusal: ONE ask fact, zero bytes, zero writes, zero tool runs (0.248961ms)
+✔ DP-PROJ the REAL product projection RETAINS the ask lane at admission (read, not assumed) (33.469835ms)
+✔ MUT-1 a ceiling WIDENED in the fixture flips only plane 2 -> DISAGREE, plane 2 is the outlier, the bytes leak (17.405962ms)
+✔ MUT-2 a ceiling NARROWED in the fixture flips only plane 2 -> DISAGREE, the effect is refused (7.231852ms)
+✔ MUT-3 the EX-1 triple WITHOUT the case declaring EX-1 is a DISAGREE (the registry is not amnesty) (15.005798ms)
+✔ MUT-4 deleting the oracle write⇒read step flips the oracle alone -> the exception triple no longer matches (9.795315ms)
+✔ MUT-5 treating the read-only binding as binding a member-realm write flips the oracle alone (2026-11-04 ruling is load-bearing) (20.804497ms)
+✔ B2 the double-authority guard: a declaration wider than the bound blueprint refuses before any realm exists (12.901716ms)
+✔ FENCE the independent oracle imports only node: modules and names neither plane (0.409315ms)
+✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate (380.487341ms)
+✔ A2 approval link broken: a durable row for another member is CHAIN_BROKEN(link=approval) (28.320799ms)
+✔ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (39.855294ms)
+✔ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (35.032154ms)
+✔ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (35.597392ms)
+✔ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (301.446642ms)
+✔ A7 an unexplained allow stays BROKEN when the approval row is missing (24.520237ms)
+✔ A8 recorder refuses to mint or poison evidence (fail closed, typed codes) (24.915547ms)
+✔ A9 passivity fence (literal-token scan): the recorder source never spells a compiler/algebra/guard/approval call (4.00484ms)
+✔ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (924.484657ms)
+✔ A11 every identity branch is load-bearing: one row mutation each, one named verdict each (20.09254ms)
+✔ A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated (296.526547ms)
+✔ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (16.120611ms)
+✔ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (50.784544ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (10.566928ms)
+✔ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (17.729104ms)
+✔ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (4.282608ms)
+✔ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (6.957126ms)
+✔ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.851816ms)
+✔ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (2.805201ms)
+✔ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (6.96475ms)
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (786.174454ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (46.030757ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (147.043975ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (31.364841ms)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts (30.188362ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (41.969849ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (45.063344ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (44.267686ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (46.495497ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (30.89426ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (45.269815ms)
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (45.910749ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (43.458641ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (88.499001ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (29.064758ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (33.533465ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (43.795834ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (44.265485ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (25.762454ms)
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures) (34.213461ms)
+✔ G0 the shipped preset is declared, opt-in, shell-free, PD-18 closed and resolvable (66.165895ms)
+✔ G1 the neutral key enables WITHOUT compiling, and the fork still fires (1.032725ms)
+✔ G1b a governed row with NO provider REFUSES at mount (never silently unmanaged) (23.852608ms)
+✔ G2 a v3 bound blueprint (the shipped default) CANNOT get a governed Member (7.981862ms)
+✔ G2b a v4 blueprint WITHOUT memberIoCeilings also refuses (no implicit ceiling) (9.60905ms)
+✔ G2c a NON-opt-in v3 row keeps the legacy path (mounts nothing) (14.902911ms)
+✔ G3 an in-lane read RUNS on the confined terminal face; a lane-denied read is refused with zero bytes and zero confined calls (55.698278ms)
+✔ G4 the model-visible `bash` schema AND the executed provider are the confined terminal face (26.467996ms)
+✔ G5 ARCHIVED / DISPOSED / vanished Member rows are NOT admitted, and the provider refuses AUTHORITY_REFUSED (37.756601ms)
+✔ G5b a live Member (RUNNING) IS admitted — the negative arm above is not vacuous (0.237068ms)
+✔ G5c the fresh-create window admits ONLY a not-yet-written row, and a durable row always wins (0.129735ms)
+✔ G5d the suite mounts BEFORE the row exists, and the row written after the mount wins on a cold re-attach (14.857109ms)
+✔ G6 the authority generation is read PER ATTACH: the policy revision follows it, and a stale pairing is refused (12.894973ms)
+✔ G7 a world that also mounts a persistent shell is REFUSED (TERMINALS_DOUBLE_TERMINAL_REFUSED), zero legacy allocations (5.5424ms)
+✔ budget lease: no run record ⇒ typed BUDGET_LEASE_REQUIRED, nothing constructed (2.244323ms)
+✔ budget lease: a record with NO shared ledger path is refused — no ledger, no boot (1.217815ms)
+✔ budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched (2.057155ms)
+✔ budget lease: a permitted boot appends to the SAME shared ledger BEFORE startHost, then boots (0.966611ms)
+✔ fixed candidate: the pin is READ from tests/paths.mjs, never copied into the harness (0.88705ms)
+✔ policy identity: the installed ceiling IS the P1 MemberPolicy, and its guard is the shipped P1 guard (586.759283ms)
+✔ policy identity: the Alpha.4 authority is required, never synthesised by the harness (0.890896ms)
+✔ unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow (0.837616ms)
+✔ oracle adapter: a planted effect is detected and an unplanted tag is absent (sensitivity, both arms) (1.463801ms)
+✔ diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary (11.237785ms)
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (2.512698ms)
+✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (50.73658ms)
+✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (11.824793ms)
+✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (11.768329ms)
+✔ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (27.839396ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (5.055982ms)
+✔ N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose() (10.935132ms)
+✔ N8 duplicate scope namespaces: the attach takes the canonical runtime Agent when scopeOf is blind; both paths empty still refuses (8.145411ms)
+✔ A1 default path: no observer ⇒ identical shape and identical allow/deny behaviour (26.622766ms)
+✔ A2 observer: exactly one fact per consultation, in call order, carrying the guard’s own decision (3.934178ms)
+✔ A2b Member-ceiling realm reports realm=member with no tool binding (4.549895ms)
+✔ A2c observer records the ask lane for IO_POLICY_UNSUPPORTED (2.73084ms)
+✔ A2d a non-TeamIoDenial fault is rethrown unchanged and NOT recorded (0.505447ms)
+✔ A3 file sink: append-only valid JSONL, and the reader returns exactly those facts (6.84518ms)
+✔ A4 negative control: a mount with zero consultations writes nothing (3.371816ms)
+✔ A5 sink failure (allow): the call is refused and the Provider is never asked (4.488715ms)
+✔ A5b sink failure (deny): the refusal is preserved on the error, never converted to an allow (4.273359ms)
+✔ A6 mountA5sfRealm: mounts ceiling + bindings over the real installers and disposes idempotently (4.472193ms)
+✔ A6b mountA5sfRealm rolls the whole realm back when a later binding refuses (5.916792ms)
+✔ A6c mountA5sfRealm releases a PREVIOUSLY mounted binding when a later binding refuses (8.427659ms)
+✔ A7 harness mountRealm() is a caller of the ONE entry point and carries the observer (8.242426ms)
+✔ A8 cross-process: a CHILD process mounts the realm and THIS process reads its consultations (719.867211ms)
+✔ W1 call-site helper mounts the realm, writes one fact per consultation, and dispose unmounts (38.30484ms)
+✔ W2 default path does nothing: no config ⇒ no provider call, no mount, no file (1.265516ms)
+✔ W2b config without a provider does nothing; a provider answering undefined mounts nothing (5.911639ms)
+✔ W3 sink write failure fails closed: the consulted call is refused and the Provider is never asked (7.834864ms)
+✔ W4 config reader: absent ⇒ undefined; blank/non-string ⇒ loud; valid ⇒ frozen block (0.683303ms)
+✔ W5 malformed provider answers throw: non-object, missing compiledFor, empty members, non-array bindings (7.106074ms)
+✔ W6 the glue call site is guarded, keeps a SAFE row disposer, and imports the helper (1.597124ms)
+✔ W7 no unexpected file: the unconfigured helper writes nothing under a scanned evidence tree, and carries no path literal (1.977905ms)
+✔ W8 row disposer: synchronous entry, settlement awaitable, rejection reported (never unhandled) (1.655712ms)
+PD1-REFUSAL-ZERO-ALLOC
+PD1-CONTRAST-WITH-DOMAIN
+PD1-INFLIGHT-REAPED
+PD1-CONTRAST-NEW-GENERATION-ACQUIRES
+✔ PD-1 REFUSAL: revocation binds a member that owns no live shell (DOMAIN_REVOKED, 0 allocations) (242.806369ms)
+✔ PD-1 CONTRAST (live domain): revocation kills the shell and refuses that generation (1.544656ms)
+✔ PD-1 IN-FLIGHT: a revocation during an awaited spawn reaps the late creation (0 usable domains) (0.818309ms)
+✔ PD-1 CONTRAST (new generation): a re-created generation may acquire after revocation (0.630293ms)
+✔ PD-1 REGISTER: the row is FIXED, carries the ruling semantics, and names these arms (1.328114ms)
+﹣ P0 PD-12 defect pin (PRE-FIX): deny bash executes on the preset executor; confined provider 0 calls (0.550162ms) # SKIP
+✔ D1 fix: deny Member's bash reaches the confined face; NETWORK_UNCONFINED_REALM names the capability; 0 provider calls, 0 base spawns (30.334784ms)
+✔ A1 allow lane: the shadowed bash executes through the confined face end to end (34.417501ms)
+✔ A2 no network axis: the same world allows (the refusal is the network term) (13.239255ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (13.900216ms)
+✔ C1 control (shadow removed): deny bash executes on the preset executor again (12.181019ms)
+✔ C2 control (no confined face): bash is NOT shadowed and runs on the preset executor (5.925931ms)
+✔ C4 control (no shell class): the deny refusal is SUBPROCESS_SHELL_NOT_DECLARED, not the capability code (20.526821ms)
+﹣ P0 PD-13 defect pin (PRE-FIX): the Member shell reads the lane-denied secret and returns its bytes, with no guard fact naming it (0.902238ms) # SKIP
+✔ D1 fix: the Member's bash read of a lane-denied path is IO_READ_DENIED, 0 bytes, 1 guard fact, 0 provider calls (64.415652ms)
+✔ D2 locus: the realm reports faces.terminals and the model-visible bash definition is the confined terminal module's (27.124092ms)
+✔ A1 allow lane: an in-lane read runs through the confined terminal face exactly once, with an ALLOW read fact (26.212517ms)
+✔ A2 write lane untouched: a redirection target is not a read, so an in-lane write still runs (17.887895ms)
+✔ A3 no path token: a command with no path-shaped operand produces no shellRead fact (18.189065ms)
+✔ S1 surface neutral: exactly one `bash`, same name set before and after the shadow (6.92446ms)
+✔ C1 control (shadow removed): the body read returns the secret bytes again (9.308122ms)
+✔ C2 control (no terminal face): bash keeps the PD-12 shape and the body read is not attributed (18.649719ms)
+✔ C3 control (terminal face without a subprocess face): refused at install with TERMINALS_UNCONFINED_REALM (6.733106ms)
+✔ C4 control (double terminal): a legacy preset terminal beside the confined face is refused, 0 legacy allocations (5.800853ms)
+✔ C5 control (no shell class): the terminal face refuses at install, because its commands could never be admitted (4.032493ms)
+✔ C6 declared weakness: a dynamic read (`$(...)`) is not attributed and is not refused at admission (32.818494ms)
+﹣ P0 PD-14 defect pin (PRE-FIX): a World with no Team workspace roots a Member at the pinned host checkout (1.220344ms) # defect pin (set A5SF_PD14_PIN=1)
+✔ D1 fix: the Team's effective workspace and the resolved sandbox root are the World workspace, not the host checkout (2.895153ms)
+✔ D2 observation: the Member's child is READ-WRITE bound at the World workspace and at no point of the host checkout (46.821669ms)
+✔ D3 observation: inside the same child a write in the World workspace succeeds and a write outside it is refused by the OS (32.059264ms)
+✔ F1 disclosure: the host checkout stays READABLE from the child — the boundary this row moves is the WRITE boundary (26.165012ms)
+✔ C1 negative control (product): a sandbox-policy row that DOES configure a root still wins where it should (16.478338ms)
+✔ C2 negative control (fixture): a World that DECLARES its own Team workspace keeps it (2.377489ms)
+✔ C3 control: a World declaring the pinned host checkout as its Team workspace is REFUSED (2.107489ms)
+✔ C4 control: a declared workspace outside the World's owned home is REFUSED (2.649737ms)
+✔ S1 surface neutral: non-Team rows pass through untouched, the input is not mutated, and the patch layer keeps them (2.028992ms)
+✔ S2 locus: the World factory binds the Team workspace at its ONE row-composition point (0.386433ms)
+✔ Z1 the pinned host checkout is pristine after every arm (81.869106ms)
+﹣ P0 PD-15 defect pin (PRE-FIX): a web provider handed the SUBPROCESS face's proof is admitted (0.606959ms) # SKIP
+✔ D1 FACE-MISMATCH: the subprocess face's proof does NOT admit a deny web fetch; typed NETWORK_PROOF_FACE_MISMATCH before any provider call (1.861033ms)
+✔ D2 LEVEL-ALONE: an `enforced` row with no face-bound proof is refused as NETWORK_UNCONFINED_REALM (a level is not a proof) (0.336196ms)
+✔ A1 WEB-FACE-PROOF-ADMITS: a proof minted for the web face admits the call on that face (service-level statement) (0.455742ms)
+✔ A2 SUBPROCESS-FACE-PROOF-STILL-ADMITS: the same evaluator admits a correctly bound subprocess proof on the subprocess face (0.245325ms)
+✔ A3 SUBPROCESS-PROOF-NEEDS-NAMESPACE: a subprocess proof with no measured namespace identity is refused (0.125328ms)
+✔ T1 TAMPER: changing or removing the face field reds the admission; no face is NOT defaulted to the consumer (0.392372ms)
+﹣ P0 PD-16 defect pin (PRE-FIX): the Member grep reads the lane-denied secret by parent path AND by absolute path, with no guard fact naming it (0.617048ms) # SKIP
+✔ D1 fix (parent path): grep {path:".."} is a typed refusal, 0 confined calls, 0 secret bytes, 1 deny fact (35.72314ms)
+✔ D2 fix (absolute path): grep {path:<out-of-lane dir>} is refused the same way (9.571832ms)
+✔ D3 fix (glob): glob {path:<out-of-lane dir>} is refused by the same confined face (8.411344ms)
+✔ A1 allow: an in-lane grep finds the needle through the confined face and never reaches the inherited service (3227.716275ms)
+✔ A2 exit-code fidelity: no-match (exit 1) is not an error, an invalid pattern (exit 2) is (3263.55517ms)
+✔ A3 lane-safe ignore discovery: an out-of-lane ancestor turns .gitignore discovery off, with the disclosure on the allow fact (3229.252119ms)
+✔ A4 ignore semantics kept where they can be: a valid in-lane repository root keeps .gitignore, no disclosure (3226.269768ms)
+✔ A5 glob allow: an in-lane glob lists the workspace through the same confined face (3219.507704ms)
+✔ A6 lane-safe discovery under a worktree `.git` FILE above the lane: the in-lane search succeeds and the flags are disclosed (3260.615855ms)
+✔ S1 surface neutral: same tool names, byte-identical grep/glob parameter schemas, after the shadow (4.779047ms)
+✔ C1 control (shadow removed): the ungoverned path returns the lane-denied bytes again (12.078777ms)
+﹣ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them (0.874666ms) # SKIP
+✔ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads (124.066427ms)
+✔ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact (32.836475ms)
+✔ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes (32.509553ms)
+✔ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact (18.138387ms)
+✔ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact (16.582632ms)
+✔ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts (20.346243ms)
+✔ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact (44.559681ms)
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes (22.634072ms)
+✔ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged (19.716239ms)
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store (19.649869ms)
+✔ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced (13.980699ms)
+✔ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds (22.760331ms)
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged (14.413628ms)
+✔ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place) (21.030525ms)
+﹣ P0 PD-18 defect pin (PRE-FIX): the base preset carried tool-web and workflow-ptc/tool-workflow (0.742747ms) # SKIP
+✔ PD18-SURFACE-CLOSED: the governed preset declares NO web/workflow row, and it is not a blanket strip (63.115187ms)
+✔ PD18-SURFACE-POSITIVE-CONTROL: the pinned standard preset still declares the workflow/web capability (15.458136ms)
+✔ PD18-TYPED-REFUSAL: workflow/web_fetch are UNKNOWN_TOOL and execute nothing (39.537835ms)
+✔ PD18-WEB-ALLOW: the confined web face admits one allow-lane call to a controlled local endpoint (602.278846ms)
+✔ PD18-WEB-DENY: the same face refuses network=deny BEFORE the provider: typed code, zero requests, zero bytes (17.123274ms)
+✔ FA1 allow fact names the real tool and callId (76.652481ms)
+✔ FA2 deny fact is attributed to the same call, and the decision is unchanged (41.167ms)
+✔ FA3 overlapping dispatches keep their own call ids (51.067176ms)
+✔ FA4 a direct Provider read records null tool/callId (45.939034ms)
+✔ FA5 old-format facts parse; malformed attribution is refused (2.530661ms)
+✔ FA6 binding-realm facts also carry tool + callId (117.01813ms)
+✔ FA7 no guard module reads the attribution carrier (1.231682ms)
+﹣ P0 PD-21 defect pin (PRE-FIX): the base governed preset carried the subagent family (2.065069ms) # SKIP
+✔ PD21-SURFACE-CLOSED: no subagent row survives anywhere in the governed preset's plugin tree (56.92699ms)
+✔ PD21-SURFACE-POSITIVE-CONTROL: the pinned standard preset still declares the subagent capability (10.358585ms)
+✔ PD21-TYPED-REFUSAL: subagent/subagent_fork are UNKNOWN_TOOL and start zero children (45.692458ms)
+﹣ PD23-PIN: the BASE commit carries the control rows and the skill loader (PRE-FIX, pinned) (0.630344ms) # SKIP
+✔ PD23-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO control row and NO skill loader/provider (70.449557ms)
+✔ PD23-SURFACE-POSITIVE-CONTROL: the retained rows (jobs, todo, goal, confined faces) are untouched (8.541395ms)
+✔ PD23-SURFACE-SURGICAL: the pinned standard preset still declares the control tools and the skill loader (3.404385ms)
+✔ PD23-TYPED-REFUSAL: send_message/interrupt_agent/list_agents/skill are UNKNOWN_TOOL and execute nothing (35.118586ms)
+﹣ PD24-PIN: the BASE commit carries the `present` row, and the archived pre-fix composition is byte-identical to it (0.769747ms) # SKIP
+✔ PD24-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO `present` row (by id or by package name) (59.415967ms)
+✔ PD24-SURFACE-POSITIVE-CONTROL: the retained rows are untouched (6.917756ms)
+✔ PD24-SURFACE-SURGICAL: the pinned standard preset still declares `present` (capability outside the governed preset) (3.730543ms)
+✔ PD24-TYPED-REFUSAL: present and the ten earlier fail-closed names are UNKNOWN_TOOL and execute nothing (41.596989ms)
+✔ PD24-LEDGER-IDENTITY: the committed ledger covers every measured name once and its bucket identity holds (1.249025ms)
+﹣ PD25-PIN: the BASE commit carries the goal row and the ask-user row (PRE-FIX, pinned) (1.278991ms) # SKIP
+✔ PD25-SURFACE-CLOSED (ask-user only; goal REOPENED by PD-29): the governed preset declares NO ask-user row and the goal row again (86.047174ms)
+✔ PD25-SURFACE-POSITIVE-CONTROL: the retained rows are untouched (7.649153ms)
+✔ PD25-SURFACE-SURGICAL: the pinned standard preset still ships both capabilities (10.469209ms)
+✔ PD25-TYPED-REFUSAL: ask_user_question is UNKNOWN_TOOL and executes nothing (the goal trio is dispatchable again, PD-29) (44.233876ms)
+﹣ PD26-PIN: the pre-fix composition offers neither name and the host router answers typed `unknown tool` (0.705306ms) # SKIP
+✔ PD26-SURFACE-RESTORED: the governed preset restores the two NAMES and no base-fs skill provider (70.674838ms)
+﹣ PD26-CONTRACT-SKILL: an in-lane body is returned, an out-of-lane body is a typed denial with 0 bytes and 1 read (0.131419ms) # superseded by PD-29: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd29-service-seam.test.mjs
+﹣ PD26-CONTRACT-PRESENT: an in-lane file is presented and recorded; an out-of-lane path is a typed denial with no event (0.07945ms) # superseded by PD-29: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd29-service-seam.test.mjs
+﹣ PD26-PARITY: both shadows are the pinned host packages' own definitions (0.079661ms) # superseded by PD-29: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd29-service-seam.test.mjs
+✔ PD26-CATALOG-VALIDATION: malformed catalog entries refuse, valid ones normalize (86.275264ms)
+﹣ PD27-PIN: the branch point offers neither name and the host router answers typed `unknown tool` (0.625925ms) # SKIP
+✔ PD27-SURFACE: the name is restored through the Team module, never through the host package row (60.12283ms)
+✔ PD27-PARITY: the shadow registers the host package's own definitions, field for field (130.907962ms)
+✔ PD27-MARKER: the marker the shadow trusts is the symbol the confined class sets (23.047192ms)
+✔ PD27-REFUSE: on a non-confined scope both names refuse typed and enter no provider (2.77384ms)
+✔ PD27-E2E-ALLOW: a real fetch through the confined face reaches a local server and returns its body (673.076757ms)
+✔ PD27-DISPATCH: the REAL tool router dispatches `web_fetch` by NAME onto the shadow and reaches the face (23.736781ms)
+✔ PD27-E2E-DENY: with a REAL transport present the deny lane refuses typed and never connects (6.881838ms)
+✔ PD27-E2E-REDIRECT: an allow-lane cross-origin redirect is NOT followed (no second-host egress) (46.088003ms)
+✔ PD27-E2E-SEARCH: the audit locator names the singular query the host tool sends (2.156484ms)
+✔ PD29-GOAL-ROW: the governed preset declares tool-goal and not tool-ask-user (2.257172ms)
+✔ PD29-STOP-SEQUENCE: cancel, then disarm, then the durable CAS pause (5.896273ms)
+✔ PD29-PIN: the base commit had no disarm seam (a revert reddens this suite) (12.030657ms)
+✔ PD29-MUTATION: deleting the disarm call reddens the stop sequence (6.319473ms)
+✔ PD29-HOST-DEFINITIONS: `skill` is the preset row itself and `present` is the host package's own definition (40.165673ms)
+✔ PD29-SKILL: the NATIVE `skill` tool returns the in-lane body and refuses the out-of-lane one (0 bytes, 1 deny fact) (64.654767ms)
+✔ PD29-PRESENT: the native `present` records EXACTLY ONE delivery in-lane and refuses out-of-lane with no event (37.583724ms)
+✔ PD29-CATALOG: malformed declarations refuse, valid ones normalize, the row parser shares the validator (0.947283ms)
+﹣ PD29-PIN: without a provider the host `skill` is unknown, without route C the host `present` reads the BASE fs (0.111521ms) # SKIP
+✔ PD30-COMPOSITION: the SHIPPED layer declares the transport row and the preset names our module (no file URL) (44.62267ms)
+✖ PD30-TRANSPORT: the shipped row loads the host providers by name and reports the backend it owns (41.768216ms)
+✔ PD30-E2E-ALLOW: a governed fetch reaches the declared fixture over a real socket and returns its body verbatim (746.276148ms)
+✖ PD30-E2E-SEARCH: the host Exa provider issues a real POST and PARSES the answer into sources (43.70279ms)
+✔ PD30-DENY: a `network: deny` lane refuses typed with the transport present and reachable (8.452652ms)
+✔ PD30-SSRF: loopback/private/link-local/ULA/metadata targets are refused on an ALLOW lane with 0 provider entries (21.74086ms)
+✔ PD30-MALFORMED: illegal scheme, empty host, over-long URL and a query-less search are refused typed (2.062445ms)
+✖ PD30-NO-PROVIDER: a face with no search and an unavailable provider are BOTH typed gaps, not empty results (2.256512ms)
+✔ PD30-BASE-FALLBACK-ZERO: every refusal leaves a transport that WOULD answer completely untouched (1.255485ms)
+✖ PD30-SHIPPED-SERVICE: the row's own service object serves the allow lane over a real socket and refuses SSRF (12.963775ms)
+✔ PD30-NO-BASE-FALLBACK: the shipped transport never consults the inherited base web service (29.059514ms)
+✔ PD31-MODEL-SEAM: image capability is declarable through the public staticModel key, not an upstream patch (65.92876ms)
+✔ PD31-ROUTE-GATE: the pinned BUILT tool-fs still carries the capability gate, and the mutation needle is anchored (1.749051ms)
+✔ PD31-FIXTURES: the over-limit fixtures cross the store's own pinned laws, and the driver reads those laws rather than restating them (0.952333ms)
+✔ PD31-PRESET: the governed preset mounts the host tool-fs package and no Team fs-family plane, so the live read_image is the native row (35.103894ms)
+✔ PD31-ARMS: the pin selects the text-only arm and the two mutations move the allow verdict in named, opposite directions (0.286392ms)
+✔ PD31-EVIDENCE-BOUND: the driver binds its run to a real commit and declares DEV-LIVE (never a candidate claim) (0.302823ms)
+✔ PD31-INSTALL-GRAPH: the shipped surface is measured through the World graph, and the driver cannot silently outlive the shared provisioning (1.033707ms)
+✔ PA1 a5sfMemberPolicies mounts a declared Member through the same seam (no evidence path, no teamA5sfRealm service) (54.860382ms)
+✔ PA2 discriminating pair: the declared Member is confined, the undeclared Member keeps the base provider (no mount, no facts) (26.247464ms)
+✔ PA3 ceiling and restriction differ: the INTERSECTION binds, neither factor can widen the other (12.51858ms)
+✔ PA4 refusals are typed at ROW ASSEMBLY: subprocess face, network narrowing, malformed declaration — zero calls (24.356201ms)
+✔ PA5 evidence-era config unchanged: a5sfEvidencePath + a teamA5sfRealm provider mounts and writes the same facts (5.96379ms)
+✔ PA6 a row carrying BOTH the declaration and a teamA5sfRealm service refuses instead of picking one (6.6397ms)
+✔ PA7 the declaration compiles with the ONE compiler and the unmanaged template answers undefined (10.198656ms)
+✔ PA8 a mode-all restriction that carries a deny is refused at the realm — IO_READ_DENIED, zero provider reads (10.458823ms)
+✔ PA9 the declaration is reconciled with config.blueprintSource: narrowing mounts (and is named), widening/other-team/absent all refuse typed (30.269952ms)
+✔ PA10 the shipped v4 grammar validates the restriction family; `authorization: deny` is refused, not mounted (21.953378ms)
+✔ PA11 the policy revision (contentHash) covers the declared bindings, not only the ceilings (15.546022ms)
+✔ PA12 a5sfMemberPolicies with NO config.blueprintSource refuses MEMBER_POLICY_WITHOUT_BLUEPRINT (never assembles) (0.246657ms)
+✔ PA13 the derived path produces the SAME effective lanes as the equivalent declaration (one computation, not two) (14.79063ms)
+✔ PA14 a5sfMemberAuthority + blueprintSource governs Members with NO declaration in the product config (21.96733ms)
+✔ PA15 a bound blueprint with a Team-scoped toolBindings family yields the typed residual (no per-Member binding invention) (14.578059ms)
+✔ P1-ONE-ALLOCATE-PER-SESSION: a repeated acquire reuses the live domain (1 port allocation), a second binding allocates its own (575.765489ms)
+✔ P1-COMMAND-REQUEST-GATE-REFUSES-AFTER-KILL: assertCurrent after revoke is DOMAIN_REVOKED, the second revoke is an idempotent no-op, re-acquire allocates nothing (1.210652ms)
+✔ P1-REVOKE-WITHOUT-DOMAIN-IS-STICKY: revoking a member that owns no live shell records the generation, so a later acquire is refused (PD-1 FIXED) (0.274981ms)
+✔ P1-HOST-SESSION-LIFECYCLE: spawn→send→read→kill→NO_SESSION, one backend spawn and one close, overlapping double-kill closes once (11.069778ms)
+✔ P2-REGISTRY-COLLAPSES-EXIT-OUTCOMES: a non-zero exit, a kill and a dead process group produce the SAME receipt (killed:true, no exit/signal field) (0.793552ms)
+✔ P2-HOST-DISTINGUISHES-OUTCOMES: the pinned service reports exitCode 7 vs signal SIGTERM vs a thrown transport error — three different downstreams (4.831126ms)
+✔ P3-REGISTRY-REAP: every killed port is signalled once, reports no descendants after kill, and the registry retains no domain (0.709172ms)
+✔ P3-HOST-REAP: killing one session closes exactly that backend once; service disposal closes the rest once and then refuses new spawns (4.624956ms)
+✔ P4-REFUSED-BEFORE-ALLOCATION: the DECLARED terminals consumer is refused with zero backend allocations and its apply never runs (9.414714ms)
+✔ P4-DEFERRED-REFUSAL-IS-POST-ALLOCATION: a module that DEFERS the injection allocates a live legacy PTY before the same refusal fires (FINDING) (15.350532ms)
+✔ P4-CONTROL-INERT-MODULE-MOUNTS: a module that consumes no PTY service mounts normally with zero allocations (the refusal is targeted) (6.340384ms)
+✔ P5-TWO-BINDINGS-IDENTITY: two bindings of one member pair domainId↔binding↔pid↔backend correctly in list() and in the shutdown receipt (0.509464ms)
+✔ P5-KILL-ONE-NOT-THE-OTHER: tightening the revision replaces ONE binding, the sibling PTY survives with commands refused; there is no per-domain kill (0.455592ms)
+✔ P5-STALE-DOMAIN-REPORTS-STALE: after the revision moves, list() reports the same refusal the command gate gives (stale), and the PTY stays live (0.693042ms)
+✔ P5-HOST-TWO-SESSIONS-FENCED: writes land on the addressed session only, kill of one leaves the other operable, identity errors are typed (2.918075ms)
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (4.618575ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (1.76433ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.354311ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.588538ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.829991ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.712108ms)
+✔ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (1.489379ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.57041ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.882254ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.837345ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (1043.04856ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (6.293576ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.34333ms)
+✔ BOUND: a record with a full tree and host sha finalizes and writes (1.931918ms)
+✔ UNBOUND: a record with no bindings at all refuses to finalize (code RUN_RECORD_UNBOUND) (0.768275ms)
+✔ UNBOUND: a short or non-hex teamSha refuses (a branch name is not a tree) (0.273919ms)
+✔ UNBOUND: a missing hostSha refuses even when the tree is bound (0.157498ms)
+✔ UNBOUND: write() refuses too, so no unbound record reaches disk even without an explicit finalize() (0.436396ms)
+✔ the DEV-LIVE claim rule still refuses a candidate claim (unchanged by this guard) (0.397673ms)
+✔ row 1: an in-lane grep with exactly one ALLOW fact on the declared root is PROVEN (7.300261ms)
+✔ row 1: no call at all is NOT_REACHED, never a pass (0.240005ms)
+✔ row 1: a call whose result never arrived is NOT_REACHED (NOT_REACHED ≠ fail) (0.19522ms)
+✔ row 1: a result without the match REFUTES (0.268699ms)
+✔ row 1: TWO allow facts REFUTE (the row asserts exactly one) (0.662524ms)
+✔ row 1: an ALLOW recorded on the inherited base service REFUTES (no shadow) (0.165403ms)
+✔ row 1: an allow fact whose locator is a DIFFERENT root REFUTES (0.23737ms)
+✔ row 2: an out-of-lane refusal with one typed deny fact and zero processes is PROVEN (0.773294ms)
+✔ row 2: no call is NOT_REACHED (1.312234ms)
+✔ row 2: a refused call that still STARTED a confined process REFUTES ("before any process") (0.304416ms)
+✔ row 2: a leaked outside token REFUTES (0.740572ms)
+✔ row 2: an ALLOW fact on a denial REFUTES (0.14238ms)
+✔ row 2: two deny facts REFUTE (exactly one) (0.093658ms)
+✔ row 3: ceiling-allow / restriction-deny / effective-deny with one deny fact is PROVEN (0.259742ms)
+✔ row 3: a missing lane report is NOT_REACHED (the no-widening claim has no channel) (0.08454ms)
+✔ row 3: a premise where the CEILING denies is REFUTED (the experiment did not measure the restriction) (0.610285ms)
+✔ row 3: an effective lane that ALLOWS the restricted path REFUTES (widening) (0.143382ms)
+✔ row 3: a process created despite the restriction REFUTES (0.097284ms)
+✔ row 4: a delivered abort result plus a signal-killed child is PROVEN (0.573396ms)
+✔ row 4: no call is NOT_REACHED (0.085612ms)
+✔ row 4: a call that never reached a process is NOT_REACHED (nothing could be cancelled) (0.321573ms)
+✔ row 4: a SUCCESS result REFUTES (a cancelled search must not report success) (0.55129ms)
+✔ row 4: an error that does NOT name the abort REFUTES (a delivered settlement must be the cancellation) (0.129435ms)
+✔ row 4: a fabricated "No matches found" REFUTES (0.090031ms)
+✔ row 4: an undelivered result is accepted ONLY when the child was signal-killed (0.110299ms)
+✔ row 5: rg exit 2 surfaced as a tool error is PROVEN (0.495578ms)
+✔ row 5: no call is NOT_REACHED (0.138583ms)
+✔ row 5: an invalid pattern presented as "No matches found" REFUTES (0.267937ms)
+✔ row 5: an error without the process exit-2 record REFUTES (prose is not the process answer) (0.447271ms)
+✔ row 6: a clean teardown with a refused post-stop dispatch and no fact after the stop is PROVEN (1.375173ms)
+✔ row 6: no archive dispatch is NOT_REACHED (0.12697ms)
+✔ row 6: an ARCHIVE REFUSAL is REFUTED, not NOT_REACHED (0.13174ms)
+✔ row 6: a post-stop dispatch that SUCCEEDED REFUTES (a callable shadow remained) (0.26897ms)
+✔ row 6: a fact with observedAt AFTER the stop REFUTES (the temporal bound, not a count) (0.165193ms)
+✔ row 6: an undated fact REFUTES (cannot be proven to precede the stop) (5.037807ms)
+✔ row 6: an ALLOW probe fact after the stop REFUTES (the stopped Member was served) (0.395208ms)
+✔ row 6: a surviving process REFUTES (orphan / post-stop spawn) (0.201933ms)
+✔ row 6: a live port or surviving home REFUTES (0.15879ms)
+✔ row 6: a managed dispose fault attributed to the stop REFUTES (0.172737ms)
+✔ negative control: the same out-of-lane search UNCONFINED leaks with zero guard facts (0.215759ms)
+✔ negative control: a control that did NOT leak REFUTES (row 2 would be vacuous) (0.093737ms)
+✔ negative control: no control call is NOT_REACHED (0.069021ms)
+✔ the case list is closed and every id has a judge (0.484136ms)
+✔ SEARCH_CASE_IDS is the named contract the driver imports (0.483625ms)
+✔ guardFacts ignores non-fact rows (the sink may carry other schemas) (0.586019ms)
+✔ partial run: a COMPLETE sample after a later abort is judged by its normal judge — PASS at CASE level (0.347428ms)
+✔ partial run: an INCOMPLETE sample after an abort is NOT_REACHED + driver-aborted, never PASS (0.170382ms)
+✔ partial run: a COMPLETE sample with the WRONG bytes is FAIL, never PASS (0.167366ms)
+✔ partial run: on a COMPLETED run the same incomplete sample is not-reached, not driver-aborted (0.171304ms)
+✔ partial run: the RUN is FAIL + partial even when every judged case PASSED (0.474378ms)
+✔ partial run: CASE_STATUS is exactly the three machine-checkable reasons (0.090882ms)
+✔ partial run: sampleCompleteness names the channel a judge is missing, per row (0.48057ms)
+✔ P1-ARGV-ACCEPTED-BOUNDARY: the declared shape admits quoting, NUL and a 200 kB body; none is ARGV_UNSUPPORTED (4133.419207ms)
+✔ P1-ARGV-SHAPE-REJECTED: a whitespace/empty/non-string body or a non-<-c> shape is ARGV_UNSUPPORTED with zero processes (5.86223ms)
+✔ P1-PRECEDENCE: absolute-program, class/program and declaration checks each refuse BEFORE the argv shape (7.800126ms)
+✔ P2-CLASS-UNDECLARED: the SAME canonical invocation with no declared class is SHELL_NOT_DECLARED, zero processes (3.924089ms)
+✔ P2-CLASS-DECLARED: the SAME canonical invocation with a declared class is admitted and really runs (3238.135173ms)
+(node:1570) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ P2-SHELL-PROGRAM-NOT-IN-CLASS: a shell program outside the class is PROGRAM_NOT_ADMITTED; adding it to the class admits it (3220.820043ms)
+✔ P2-NON-SHELL-PROGRAM-UNAFFECTED: a declared class never admits /bin/cat; the program allow-list still owns it (3.543877ms)
+✔ P3-PROBE-SHAPE (BL-42 flip): the real probe says network-destination=enforced WITH a mechanism and a realm-bound evidence row; absence is still a capability gap (3191.301338ms)
+✔ P3-DENY-KERNEL-REFUSED (BL-42 flip): a network=deny lane now reaches the provider once and its child runs in a DISTINCT netns — the refusal moved from our admission to the kernel (3222.847232ms)
+✔ P4-WRITE-AXIS-ATTRIBUTION: a write outside the write lane is spawn:write/IO_WRITE_DENIED while the READ axis allows the same path (7.765232ms)
+✔ P4-WRITE-CONTROL: widening ONLY the write lane admits the same invocation and really creates the file (3244.733634ms)
+✔ P4-CHMOD-WRITE-AXIS: a declared chmod outside the write lane is spawn:write and leaves mode+bytes unchanged (4.33115ms)
+✔ P5-ENV-SCRUB: the confined child drops credential-shaped and DSH_* names, keeps ordinary ones, and applies spec overrides (3281.490252ms)
+✔ P5-PROXY-DIVERGENCE: with a real proxy policy the unconfined child gets NODE_USE_ENV_PROXY=1 and the confined child does NOT (3266.773991ms)
+✔ GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs (19.511888ms)
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (19.922405ms)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (107.025061ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (89.770597ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (7.514767ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (8.859724ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (6.08961ms)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (2.478042ms)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (92.189985ms)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (83.507035ms)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (38.37877ms)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (79.228457ms)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (31.129382ms)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (77.493053ms)
+✔ TA11 DEFERRED ACCEPT: a module registering read_image from ctx.inject([attachments]) mounts, and BOTH the synchronous and the deferred definitions are the routed ones (11.956867ms)
+✔ TA12 DEFERRED FAILED: a deferred child that throws is REFUSED, typed, and the surface is restored (5.041043ms)
+✔ TA13 DEFERRED UNSETTLED: a deferred child that never resolves is REFUSED within the bound (no hang, no accept) (48.075848ms)
+✔ TA14 DEFERRED UNCOVERED: a deferred name no fiber of the mount forwards is REFUSED and the reason NAMES it (#561 protection kept) (5.341924ms)
+✔ P1-GUARD-BEFORE-PROVIDER: one guard evaluation, completed BEFORE the provider is entered, and the provider sees the declared URL (27.01344ms)
+✔ P1-DECLARED-URL-UNMUTATED: no normalization or rewrite happens between the model argument and the provider request (7.959582ms)
+✔ P2-DENY-CAPABILITY-REFUSAL: deny refuses with NETWORK_UNCONFINED_REALM, zero provider calls, and a refusal that names the capability — never an observation (9.338289ms)
+✔ P2-DENY-SEARCH-ALSO-CAPABILITY: the sibling web_search path refuses with the same code, zero provider calls, and the same wording discipline (6.846842ms)
+✔ P3-REDIRECT-POSITION: a redirect followed INSIDE the provider returns its final location to the caller with the guard never re-evaluating the new location (4.253323ms)
+✔ P3-PROXY-POSITION: the provider inherits the ambient proxy environment unmodified and the face resolves no proxy of its own (2.459507ms)
+✔ P4-NO-PER-METHOD-LANE: the compiled network axis is a single closed binary, so "allow fetch / deny search" is NOT expressible (3.098916ms)
+✔ P4-SHARED-GUARD-BOTH-PATHS: fetch and search consult the SAME guard instance (one sequence counter) and record their own method (10.293837ms)
+✔ P5-AMBIGUOUS-FAIL-CLOSED: the compiled `web` AND `a5sfWebFace` refuse at AUTHORING time with REALM_DECLARATION_INVALID naming both sources, before any request (17.81537ms)
+✔ P5-EXACTLY-ONE-SOURCE: each source ALONE mounts a working confined face (compiled-only and config-only), and the denial still holds (18.770792ms)
+✔ ROW-FACE-FORWARDED: the product row forwards compiled.web, so the realm answers faces.web !== null (17.151021ms)
+✔ ROW-DENY: network deny, driven through the product row, refuses BEFORE the provider: 0 fetch/DNS/connect/proxy, one typed fact (27.780103ms)
+✔ ROW-ALLOW: network allow reaches the provider EXACTLY once with the declared URL and one ALLOW fact (16.177348ms)
+✔ ROW-ABSENCE-TYPED: a declared compiled.web with no provider refuses typed at composition time (never a silent host fallback) (3.769537ms)
+✔ ROW-CONFIG-FACE: the row config key a5sfWebFace carries a factory, and the config half of the row mounts the confined face (15.717014ms)
+✔ ROW-CONFIG-ABSENCE: a config factory that supplies no provider refuses typed; a blank specifier is a config fault (10.531749ms)
+✔ ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two web-face sources is a fork) (3.404253ms)
+✔ ROW-NO-FACE: a realm that declares no web face is unchanged — web: null and the real tool-web module is refused typed (6.244003ms)
+✔ ROW-PRODUCT-DECLARATION: the shipped product declaration path + a5sfWebFace mounts the confined face with NO teamA5sfRealm service (32.561755ms)
+✔ ROW-NO-SECOND-COMPILER: the row never compiles a lane, never intersects one and never evaluates a network decision (0.94584ms)
+✔ ADMIT-ALLOW: a governed Member with network allow reaches EXACTLY ONE provider fetch with the declared URL (24.891322ms)
+✔ SHADOW: the allow path resolves the CONFINED face, never the inherited host ctx.web (tripwire) (7.208849ms)
+✔ DENY-PRE-REFUSAL: network deny refuses web_fetch before the provider: 0 fetch, 0 DNS, 0 connect, 0 proxy, one typed fact (8.40953ms)
+✔ DENY-TYPED-CODE: the confined face throws the typed NETWORK_UNCONFINED_REALM (not a message convention) (0.426568ms)
+✔ DENY-SEARCH-SECOND-PATH: the sibling web_search on the same face is refused too (no second call path) (6.423092ms)
+✔ DENY-PROBE-ABSENT: a backend with NO probe answers unsupported (closed), never a default allow (6.339843ms)
+✔ PROBE-LOAD-BEARING: the refusal is the probe's ANSWER plus THIS face's proof — an `enforced` row with a web-face proof is admitted (7.82962ms)
+✔ UNCONFINED-REALM-MOUNT: the REAL tool-web module is refused on a realm that owns no confined web face (6.637236ms)
+✔ PROBE-REUSE: the web face calls BL-17's probeNetworkDenial — it does not own a second probe (0.53315ms)
+✔ ORDINARY-DSH-FETCH: with NO Alpha.5 realm the host web_fetch fetches exactly as today (4.592074ms)
+✔ UNCHANGED-SHAPE: a network-allow realm returns BYTE-IDENTICAL model text to the ordinary host path (8.532224ms)
+✔ COMPOSITION: the web provider is a composition input, never a Member field (0.55994ms)
+✔ W1a the REAL activation adapter mounts the realm before the row: the row lands after, and it wins (34.404034ms)
+✔ W1b the window is CLOSED outside fresh-member: a cold attach with no row refuses (12.601217ms)
+✔ W1c a durable row ALWAYS wins inside the window (ARCHIVED/DISPOSED beat freshCreate) (32.759662ms)
+✔ W2 the hint gate is ONE rule, and it admits ONLY fresh-member (1.290797ms)
+✔ W3a the product orders provider BEFORE surface (realm mount, then preset mount, then the route-C shadow) (0.913078ms)
+✔ W3b NEW FINDING PIN: a governed row whose provider compiles NO realm refuses — never a silent ungoverned bash (7.553127ms)
+✔ W4 no capability claim at mount; the provider probe is the ONLY source and absence/refusal is unsupported (6.728828ms)
+✔ W5 the guard cannot exist before its compiled revision, and the sink records THAT revision (42.505682ms)
+✔ W6 an unidentifiable Member refuses BEFORE the authority row is read (no read on undefined identity) (2.663401ms)
+ℹ tests 648
+ℹ suites 0
+ℹ pass 627
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 17
+ℹ todo 0
+ℹ duration_ms 28816.577919
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-pd30-web-preview.test.mjs:240:1
+✖ PD30-TRANSPORT: the shipped row loads the host providers by name and reports the backend it owns (41.768216ms)
+  AssertionError [ERR_ASSERTION]: the search provider must load (the search provider module @deepseek-ai/dsh-web-search-exa did not load: Cannot find package '@deepseek-ai/dsh-web-search-exa' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/world-factory/a5sf-pd30-web-preview.test.mjs:250:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-pd30-web-preview.test.mjs:307:1
+✖ PD30-E2E-SEARCH: the host Exa provider issues a real POST and PARSES the answer into sources (43.70279ms)
+  TeamIoDenial: WEB_PROVIDER_UNAVAILABLE: the composition installed a search provider that reports itself unavailable (its own available() answers false); refusing before any provider entry instead of returning an empty or fabricated result
+      at assertSearchAvailable (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/dist/packages/runtime/team-services/src/web.js:311:15)
+      at webNetworkGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/dist/packages/runtime/team-services/src/web.js:191:17)
+      at observedGuard (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/dist/packages/runtime/team-services/src/guard-observability.js:160:19)
+      at ConfinedWeb.search (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/dist/packages/runtime/team-services/src/web.js:491:23)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/world-factory/a5sf-pd30-web-preview.test.mjs:328:31)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'WEB_PROVIDER_UNAVAILABLE',
+    memberIdentity: 'member-bl18-web',
+    method: 'web:search',
+    target: 'query:pd30 governed search'
+  }
+
+test at tests/world-factory/a5sf-pd30-web-preview.test.mjs:508:1
+✖ PD30-NO-PROVIDER: a face with no search and an unavailable provider are BOTH typed gaps, not empty results (2.256512ms)
+  TypeError: Cannot read properties of null (reading 'available')
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/world-factory/a5sf-pd30-web-preview.test.mjs:520:43)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-pd30-web-preview.test.mjs:565:1
+✖ PD30-SHIPPED-SERVICE: the row's own service object serves the allow lane over a real socket and refuses SSRF (12.963775ms)
+  AssertionError [ERR_ASSERTION]: the service reports the backend it really loaded
+  
+  null !== 'exa'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/world-factory/a5sf-pd30-web-preview.test.mjs:573:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'exa',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+[family-shared] exit=1
+
+
+
+NOTE (pre-existing): pnpm lint is 161 problems / 129 errors under packages/** only, with the
+
+same count in the untouched main checkout; doc-consistency-controls keeps the same 8 failures.
+
+[lint] $ pnpm lint
+$ eslint .
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/client/test/d2-open-team-mode.test.ts
+  34:15  error  'TeamSessionId' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/client/test/team-refresh-coordinator.test.ts
+   45:8   error  'TeamRefreshRoundResult' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  182:7   error  'DUPLICATE' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  183:7   error  'LOSS' is assigned a value but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  500:27  error  'x' is defined but never used. Allowed unused args must match /^_/u                       @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/domain/blueprint/src/model-preference.ts
+  48:23  error  Unexpected control character(s) in regular expression: \x00, \x1f  no-control-regex
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/domain/test/t1-capability-schema.test.ts
+  57:15  error  'TeamBlueprint' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/legacy/session-reader/e2e/run.mjs
+  533:23  error  'findRepoRoot' is not defined  no-undef
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/remote/test/c6-remote-v6.test.ts
+  68:3  error  'makeFakePorts' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/remote/test/f9-remote-v4.test.ts
+  79:8  error  'RemoteSafeRecord' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/action-router/effects.ts
+  119:3  error  'WorkChainPhaseA' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/admission/requirement-gate.ts
+  62:3  error  'classifyScope' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/control/service.ts
+  174:3  error  'parseTemplateId' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/governance/service.ts
+  118:8  error  'PermissionStaticLayerFacts' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/src/plugin/durable-mutation-store.ts
+  174:3  error  'now' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/src/plugin/host.ts
+   115:15  error  'TemplatePermissionPolicy' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  3416:15  error  Empty block statement                                                                       no-empty
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/src/plugin/team-session-activation.ts
+  488:11  error  'timer' is never reassigned. Use 'const' instead  prefer-const
+  527:11  error  'timer' is never reassigned. Use 'const' instead  prefer-const
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a2-canonical-operation-realfs.mjs
+  43:20  error  'process' is not defined  no-undef
+  45:36  error  'URL' is not defined      no-undef
+  91:69  error  'process' is not defined  no-undef
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a2c2-permission-coverage.test.ts
+   296:20  error  'key' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   782:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   803:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   824:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   860:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   877:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   889:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   903:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   912:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   938:44  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   946:33  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   952:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   978:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   989:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+   996:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1014:36  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1020:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1072:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1095:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1120:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1134:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1141:42  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  1168:52  error  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a2c7-subtree-matcher.test.ts
+  390:11  error  'Env' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  553:11  error  'RealSection' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts
+  145:10  error    'fileOperation' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+  261:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  264:11  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  274:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  276:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+    50:19   error    'join' is defined but never used. Allowed unused vars must match /^_/u                                 @typescript-eslint/no-unused-vars
+   258:5    warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+   261:11   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+   541:9    error    'leaderPerms' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  1003:31   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  1099:7    warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  1102:13   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  1141:81   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  1773:11   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  1857:36   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  1899:107  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  2066:36   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  2071:11   error    'facts' is assigned a value but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  2212:67   error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts
+  37:19  error  'join' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+  64:10  error  'PERMISSION_MUTATION_ERROR_CODES' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/a3p4-production-permission-plane.test.ts
+  228:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  231:11  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  240:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/alpha2-explicit-agent-setup.test.ts
+  164:18  error  'correlation' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/artifact-read-authority.test.ts
+  107:19  error  'path' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  304:9   error  'observingAuthority' is never reassigned. Use 'const' instead                    prefer-const
+  803:9   error  'faults' is never reassigned. Use 'const' instead                                prefer-const
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/control-abandon-without-resolve-envelope.test.ts
+  80:3  error  'ControlGuardVerdict' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/control-inline-review.test.ts
+  45:3  error  'leaderCaller' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/d2-s6-ensure-root-live.test.ts
+  518:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  523:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/f1-webserver-shim-isolation.test.ts
+  90:9  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/f3a-lock-scope.test.ts
+  58:3  error  'LifecycleCommitPort' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/f3b-root-initial-work-lock-scope.test.ts
+  282:10  error  'ledgerCount' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  394:7   error  'worldRef' is never reassigned. Use 'const' instead                            prefer-const
+  453:7   error  'worldRef' is never reassigned. Use 'const' instead                            prefer-const
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/f3c-messaging-sibling.test.ts
+  63:15  error  'P6T1World' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/f9-control-exactly-once.test.ts
+  48:3   error  'ControlConsumptionRecord' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  50:3   error  'ControlRequestRecord' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  83:15  error  'FakeToolExecution' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/governance-concurrency.test.ts
+  208:7  error  'c4seed' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  232:7  error  'c5seed' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/governance-mutation-authority.test.ts
+   30:3   error  'selectSlotWinner' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   31:3   error  'slotIdentityOf' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  171:20  error  'root' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/governance-restart.test.ts
+  52:3  error  'isMutationError' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  55:8  error  'GovernanceMutationService' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  56:8  error  'GovernanceMutationServiceDeps' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/governance-stale-ui-generation.test.ts
+  144:16  error  'outcome' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  179:7   error  's2g1' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  180:7   error  's2g2' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  181:7   error  's2g3' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/h1a-pre-execute-endcap.test.ts
+  904:11  error  'goneNextCalls' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/h4-rule-identity.test.ts
+  140:7  error  'LEADER_ID' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/multi-mcp-wiring.test.ts
+  479:7  error  'w5E2LiveBefore' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  532:7  error  'w6FiberB' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/p8s3b-result-effects.test.ts
+  89:3  error  'P6T2_ROOT' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/p8s6-remote-commands.test.ts
+  393:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts
+  85:31  error  'RemoteSafeRecord' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/rc2a1-fs-containment.test.ts
+  71:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-this-alias')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/requirement-applicability.test.ts
+  23:3  error  'ACTION_IMPACT_CLASSES' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/requirement-authority-negatives.test.ts
+  38:10  error  'afterEach' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  58:15  error  'P6T1World' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/requirement-facts.test.ts
+  20:3  error  'RECOVERY_INCIDENT_CLOSED_FACT_TYPE' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  22:3  error  'RECOVERY_INCIDENT_OPENED_FACT_TYPE' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  27:3  error  'REQUIREMENT_FACT_TYPES' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  31:3  error  'TEMPLATE_AVAILABILITY_SET_FACT_TYPE' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/restart-readiness-unknown.test.ts
+  52:7  error  'SKILL_BASE' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  53:7  error  'TOOL_WEB' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/runtime-requirement-facts-provider.test.ts
+  44:15  error  'EnvironmentFact' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  44:32  error  'RequirementInput' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/runtime-substrate-root-member-persona.test.ts
+  34:7  error  'ABSENT' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  35:7  error  'UNRESOLVED' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/s6t-live-token.test.ts
+  140:11  error  'instanceId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  145:11  error  'instanceId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/s6t-remote-v6.test.ts
+  236:7  error  'readStateCalls' is never reassigned. Use 'const' instead       prefer-const
+  243:7  error  'readStateTokenCalls' is never reassigned. Use 'const' instead  prefer-const
+  372:7  error  'liveTokenCalls' is never reassigned. Use 'const' instead       prefer-const
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/startup-all-templates-real-authority.test.ts
+  227:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  229:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  253:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/startup-consent-production.test.ts
+  257:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  259:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  283:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  353:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  355:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  359:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/startup-preflight-production-create.test.ts
+  263:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  265:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  296:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/startup-template-disable-production.test.ts
+  234:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  236:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  260:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/t12a-live-bridge.mjs
+  404:13  error  Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/team-compatibility-scope.test.ts
+  297:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  301:19  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  437:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  439:11  error    'registrationResult' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  443:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  599:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  603:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  605:24  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  612:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  845:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  850:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  894:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  899:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  916:11  error    'deletedStale' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/team-session-durability.test.ts
+  47:16  error  'captureReject' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/runtime/test/team-session-startup-fence.test.ts
+  420:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  472:7  error    'apply3' is assigned a value but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/tools/harness/g5-member-e2e.mjs
+  640:16  error  'apiPage' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/packages/tools/harness/plugin.mjs
+  140:7  error  'now' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 161 problems (129 errors, 32 warnings)
+  4 errors and 32 warnings potentially fixable with the `--fix` option.
+
+[ELIFECYCLE] Command failed with exit code 1.
+
+[lint] exit=1
+
+FRESH-INSTALL VERIFICATION (detached worktree at this evidence commit, `pnpm install
+--frozen-lockfile` from the repo store, plus the pinned host tree):
+
+[pass] node --test tests/world-factory/a5sf-*.test.mjs
+       648 tests, 631 pass, 17 skipped, 0 fail — including the four PD30 tests the
+       shared install cannot run (missing master's @deepseek-ai/dsh-web-search-exa)
+       and the seven PD31 tests
