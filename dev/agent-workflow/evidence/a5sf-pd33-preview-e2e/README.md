@@ -9,10 +9,16 @@
 One World per boot, two boots (`--boots 2`) that must agree item by item, one
 composition, no row renames (see `runs/boot01/preset-effective.json`).
 
+**Verdict pair**: the numbers under `runs/` are the `PREVIEW-GO` re-measurement on
+`origin/master` @ `a2e0df3c9` (the commit that carries #683): 19/19 cases on both boots,
+`agreeing=true`. The earlier pair that produced `PREVIEW-NO-GO` lives in the merged #682
+commit `edca478bd`.
+
 | Arm | What it measures |
 | --- | --- |
 | E2E | the Leader creates two Members in one turn, delegates to both, and recollects both in a second turn; Member A runs the governed I/O chain (read/grep/glob/write/edit/bash/skill/present) and hits three authorization refusals; Member B does a real `web_fetch`, one `web_search` in whichever shipped state the install graph provides, and a goal that converges after >= 3 automatic rounds; both Members are probed for the seven deferred tool names |
 | S1 | stop during a round (user `session/cancel`) — 20 000 ms silent window on the Member's own durable log |
+| S1c | stop through PD-34's first-class control: the same four public RPCs in the same order (`goals/get -> goals/pause -> session/cancel -> goals/get`), with the durable re-read as the only oracle; the clause is `no-call-started-after-durable-pause`, because a stop is not instantaneous (report section 4.4) |
 | S2 | stop at a round boundary (24-cancel burst) |
 | gap | stop in the idle window between two rounds (6 probes) |
 | S6 | cold recovery: SIGTERM, restart the same `DSH_HOME`, real `team_follow_up`, no automatic round |
