@@ -218,6 +218,9 @@ node --test tests/world-factory/a5sf-debt-register.test.mjs
 | `check:artifacts:committed` | **PASS**: `verdict=ok compared=1981 glue=110` — the working tree equals the git index on both install surfaces |
 | p4t6 session-event scan | **20/20** with the booking (`scanner counts 1449`, ledger `983 + 465 + 1`) |
 | debt register | PASS once the evidence file exists (this file) |
+| `eb3-evidence-guard` | **PASS** (`findings=0`; 157 added evidence files, none over the 1 MiB bound) |
+| `eb3-run-manifest` | **PASS** (`records=281`, 8 of them this lane's `DEV-LIVE` records) |
+| `plugin-dsh-compat` (peer census) | **13 passed** — the frozen ten unchanged, see §9a |
 
 Without `--store-dir`, `check:artifacts:head` refuses to run here — a sandbox limitation, **not** a
 green verdict:
