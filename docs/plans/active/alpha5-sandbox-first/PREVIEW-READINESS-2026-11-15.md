@@ -131,7 +131,7 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 
 | 臂 | 动作 | 结果 |
 | --- | --- | --- |
-| **S1c 控制面 Stop（PD-34）** | 一等公民控件发出的**同一序列** `goals/get → goals/pause → session/cancel → goals/get`（控件本身不可 headless 点击，见 §4.3） | 首读 `active`、pause 200、cancel 200、**重读 `paused`**；Stop 前 **6** 轮 / **7** 调用 → **0 轮 / 0 调用 / 0 请求**；lifecycle 仍 `SETTLED`（停的是 continuation，不是 Member） |
+| **S1c 控制面 Stop（PD-34）** | 一等公民控件发出的**同一序列** `goals/get → goals/pause → session/cancel → goals/get`（控件本身不可 headless 点击，见 §4.3） | 首读 `active`、pause 200、cancel 200、**重读 `paused`**；Stop 前 **6** 轮 / **7** 调用 → **0 轮 / 0 请求**，且**durable pause 落地之后新开始的调用 = 0**、行数增量为 0；lifecycle 仍 `SETTLED`（停的是 continuation，不是 Member） |
 | S1 轮内 Stop | 目标 Member 自己的 `session/cancel` | Stop 前 **7** 轮 / **8** 调用 → 窗口内 **0 轮 / 0 调用 / 0 模型请求**，durable `paused`，`turn/end aborted` |
 | S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **89** 轮 / **89** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
 | S2 边界竞态 | 24 次 cancel burst 覆盖 queued/claimed 窗口 | burst 后 **0** 轮，`lost=false` |
@@ -152,7 +152,24 @@ PD-34 的控件是**客户端模型** `packages/client/src/model/member-stop.ts`
 点击 → 模型这一段由 PD-34 自己的 client 规格覆盖。**本报告不声称"我点了那个按钮"**，只声称
 "控件所发序列，在我这里实测到 0/0/0 + durable `paused`，且不摧毁 Member"。
 
-### 4.4 从 #679 继承的「仍然不成立」（逐条复核，不重写）
+### 4.4 一次被自己判红的子句：Stop 不是瞬时的
+
+第一次在 PD-34 的树上跑 S1c，judge 以 `calls-after-zero: tool calls after the stop=1` **判红**。
+没有把它当噪声改掉，而是查了为什么：
+
+- 那个 `1` 是**行数增量**。一个**在 stop 之前就被准入**、还在飞的调用，会在 stop 之后补上它的
+  `tool/call` 行——它没有"被放过去"，它只是"记完了"。
+- 更关键的窗口：从用户动作到 `goals/pause` 落地之间有几个毫秒到几十毫秒，**这段时间里开始的调用，
+  一个还没落地的 stop 本来就管不着**。
+
+所以子句被**重述成它真正该断言的事**：`no-call-started-after-durable-pause`（以 pause 被确认的那一刻为界），
+并且把三个数都印在 detail 里（从动作起算 / 从 pause 起算 / 原始行数增量），**一个都不藏**。
+重测：`0 started / 0 rows / 0 rounds / 0 requests`。
+
+**这是产品事实，不是措辞**：Preview 的"每一次停止都可测量"必须允许"停止不是瞬时的"这个中间态存在，
+并且能把它测出来；把子句写成 `== 0` 只是把中间态判成失败，而不是描述它。
+
+### 4.5 从 #679 继承的「仍然不成立」（逐条复核，不重写）
 
 1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 215 轮就是证据。
 2. **仍不成立**：Leader 停止会传播到 Member 的 goal——**本报告按设计陈述**（§4.1），但事实不变。
@@ -270,7 +287,9 @@ boot02 在 `runs/boot02/`。
 **M1 已关闭**：#681 合并（`3101ca08f`）后，本 lane 丢弃叠加 base、在 master 上重跑两 boot，19/19 一致。
 剩下的唯一阻断是**产品事实**，不是"证据还不够"：
 
-- **M2 —— Stop 的一等公民入口尚未落到 master**：机制三条通道都实测到 0/0/0 + durable `paused`
+- **M2 —— Stop 的一等公民入口尚未落到 master**（PD-34 = PR **#683**，本 lane 已在它的 head `f7cbf62d9` 上
+  预跑过 `--boots 2`：**19/19 两 boot 一致**，S1c `0 started / 0 rows / 0 rounds / 0 requests`。
+  这次预跑**不作为判定依据**——测量树必须是 master，等它合并后重跑一次才算数）：机制三条通道都实测到 0/0/0 + durable `paused`
   （S1 原生 cancel / S4 Leader 归档 / S1c 控件序列），PD-34 正在把"停止这个 Member"做成 Member 行控件；
   在它合并前，本报告的判定不能是 GO——那是**产品缺件**，不是证据不足。
 
