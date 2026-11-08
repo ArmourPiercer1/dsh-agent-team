@@ -8,6 +8,7 @@ lifecycle authority's `close-admission` step.
 `PD-1…PD-n` contiguous, so the two rows take the next free numbers; the ids below name *this round's*
 findings and are not a second series).
 
+**Draft PR**: #670 (first line `PD20-LIFECYCLE` — do not merge, do not settle).
 **Record class**: `DEV-LIVE` (`eligible=false`). Two real boots of the SHIPPED governed Member
 preset, agreeing on every judged row. This is **not** merge/candidate evidence: the parent re-tests.
 
