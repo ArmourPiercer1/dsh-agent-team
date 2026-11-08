@@ -38,6 +38,7 @@
  */
 import { isAbsolute, join } from 'node:path'
 import { clearTimeout, setTimeout } from 'node:timers'
+import { assertClosedArguments } from './closed-tool-arguments.mjs'
 
 export const name = 'a5sf-confined-bash'
 
@@ -118,6 +119,10 @@ export function apply(ctx, config) {
       render: (_args, value) => [{ type: 'text', text: String(value) }],
     },
     async execute(args, exec) {
+      // PD20-C3: enforce the DECLARED closed schema at the call boundary (see
+      // closed-tool-arguments.mjs). Without it an undeclared `run_in_background`
+      // was silently dropped and the command ran in the foreground.
+      assertClosedArguments('bash', args, ['command', 'description', 'timeoutMs', 'workdir'])
       const command = typeof args?.command === 'string' ? args.command : ''
       if (command.trim() === '') throw new Error('invalid command: expected a non-empty string')
       if (typeof args?.description !== 'string' || args.description.trim() === '') {
@@ -191,7 +196,7 @@ export function apply(ctx, config) {
 function refusalError(error) {
   const code = typeof error?.code === 'string' && error.code !== '' ? error.code : 'SUBPROCESS_REFUSED'
   const message = String(error?.message ?? error)
-  const wrapped = new Error(`${code}: ${message}`)
+  const wrapped = new Error(message.startsWith(`${code}:`) ? message : `${code}: ${message}`)
   wrapped.code = code
   wrapped.cause = error
   return wrapped

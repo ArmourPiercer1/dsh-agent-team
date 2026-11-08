@@ -1,0 +1,127 @@
+{
+  "archiveA": {
+    "call": {
+      "id": "call-rc-archive-a",
+      "name": "team_archive_member",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rc-team",
+        "requestToken": "a5sf-rc-a-archive",
+        "targetInstanceId": "inst-088uk8104uxo"
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-088uk8104uxo\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-088uk8104uxo\",\"from\":\"SETTLED\",\"to\":\"ARCHIVED\",\"sequence\":7},\"requestToken\":\"a5sf-rc-a-archive\"}"
+    }
+  },
+  "followupA": {
+    "call": {
+      "id": "call-rc-followup-a",
+      "name": "team_follow_up",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rc-team",
+        "requestToken": "a5sf-rc-a-followup",
+        "targetInstanceId": "inst-088uk8104uxo",
+        "prompt": "a5sf-rc-a: this follow-up must be refused after revocation.",
+        "async": false
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"blocked\",\"toolName\":\"team_follow_up\",\"correlation\":\"a5sf-rc-a-followup\",\"reason\":\"target-stale\"}"
+    }
+  },
+  "archiveB": {
+    "call": {
+      "id": "call-rc-archive-b",
+      "name": "team_archive_member",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rc-team",
+        "requestToken": "a5sf-rc-b-archive",
+        "targetInstanceId": "inst-0lui9he0atse"
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0lui9he0atse\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-0lui9he0atse\",\"from\":\"RUNNING\",\"to\":\"ARCHIVED\",\"sequence\":11},\"requestToken\":\"a5sf-rc-b-archive\"}"
+    }
+  },
+  "bLong": {
+    "call": {
+      "id": "call-rc-b-long",
+      "name": "bash",
+      "arguments": {
+        "command": "printf 'A5SF_RC_B_START=%s\\n' \"$(date +%s)\"; sleep 8; printf 'A5SF_RC_B_TTY=%s\\n' \"$(tty 2>&1)\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'",
+        "description": "Long admitted command (the mid-flight archive window)",
+        "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace"
+      }
+    },
+    "result": {
+      "callId": "call-rc-b-long",
+      "isError": false,
+      "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RC_B_START=1794098217\\nA5SF_RC_B_TTY=not a tty\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RC_B_START=1794098217\\nA5SF_RC_B_TTY=not a tty\\nA5SF_RECON_SHELL_IN_LANE_BYTES\"}",
+      "at": 1794098225335
+    },
+    "secretPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/out-of-lane/secret-out-of-lane.txt"
+  },
+  "bSecond": {
+    "call": {
+      "id": "call-rc-b-second",
+      "name": "bash",
+      "arguments": {
+        "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'",
+        "description": "Second command after a possible mid-flight archive",
+        "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace"
+      }
+    },
+    "result": {
+      "callId": "call-rc-b-second",
+      "isError": true,
+      "text": "Error: LIFECYCLE_ADMISSION_CLOSED: instance 'inst-0lui9he0atse' of team 'session-a5sf-rc-team' has an archive/dispose in flight in this process (close-admission → interrupt → drain → quiesce → release residency → commit; Architecture §30.1), so the NEXT tool boundary refuses new execution (refused: method 'shellRead', target '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'). The in-flight turn is not cancelled by this refusal; it simply cannot start new work, and the durable transition commits as soon as the procedure finishes. Retry only after the Member is explicitly restored.",
+      "at": 1794098225366
+    },
+    "secretPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/out-of-lane/secret-out-of-lane.txt"
+  },
+  "cOne": {
+    "call": {
+      "id": "call-rc-c-one",
+      "name": "bash",
+      "arguments": {
+        "command": "printf 'A5SF_RC_C_TTY=%s\\n' \"$(tty 2>&1)\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'",
+        "description": "New-generation admitted read",
+        "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace"
+      }
+    },
+    "result": {
+      "callId": "call-rc-c-one",
+      "isError": false,
+      "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RC_C_TTY=not a tty\\nA5SF_RECON_SHELL_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_RC_C_TTY=not a tty\\nA5SF_RECON_SHELL_IN_LANE_BYTES\"}",
+      "at": 1794098225905
+    },
+    "secretPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/out-of-lane/secret-out-of-lane.txt"
+  },
+  "delegateC": {
+    "call": {
+      "id": "call-rc-delegate-c",
+      "name": "team_delegate",
+      "arguments": {
+        "rootSessionId": "session-a5sf-rc-team",
+        "requestToken": "a5sf-rc-c-delegate",
+        "delegationTemplateId": "worker",
+        "label": "rc-worker-c",
+        "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace",
+        "prompt": "a5sf-rc-c: run the short probe once, then report.",
+        "async": false
+      }
+    },
+    "result": {
+      "source": "model",
+      "isError": false,
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-rc-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-14284nz189hs\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-bceb06ca58176ac4621e45b23edda5fc\",\"operationId\":\"op-1io9b1q17uroln1tovxf804h\",\"replayed\":false,\"ledgerSequence\":13,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":14,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-rc-c-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_RC_MEMBER_C_DONE {\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_RC_C_TTY=not a tty\\\\nA5SF_RECON_SHELL_IN_LANE_BYTES\"}},\"requestToken\":\"a5sf-rc-c-delegate\"}"
+    }
+  },
+  "bGuardFacts": null
+}

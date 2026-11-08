@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd20-lifecycle-2026-11-08T00-34-37-964Z-b2 suite=a5sf-pd20-lifecycle overall=PASS cases=8 PASS:8 worlds=u5u5a5sfsub1-20261108T00-34-37Z recordClass=DEV-LIVE (not candidate evidence)

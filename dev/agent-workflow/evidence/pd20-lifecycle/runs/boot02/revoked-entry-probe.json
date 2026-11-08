@@ -1,0 +1,10 @@
+{
+  "attempted": true,
+  "childSessionId": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+  "prompt": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5sfrcx-777ss8ieci\",\"result\":{\"ok\":false,\"error\":{\"code\":\"gateway/internal\",\"message\":\"resume failed for session \\\"session-team-child-3628753bbaead6c4976ca7641f20acf3\\\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \\\"session-team-child-3628753bbaead6c4976ca7641f20acf3\\\"\",\"details\":{}}}}"
+  },
+  "answered": false,
+  "xRequest": null
+}

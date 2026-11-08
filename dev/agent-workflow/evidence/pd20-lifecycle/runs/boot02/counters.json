@@ -1,0 +1,38 @@
+{
+  "confinedTurnLaunchers": 5,
+  "preflightLaunchers": 3,
+  "shellChildPids": 1,
+  "ptyHolders": 0,
+  "shellChildFd0": {
+    "socket": 1
+  },
+  "shellChildCommandSightings": [
+    {
+      "pid": 613,
+      "ppid": 612,
+      "fd0": "socket:[77223861]",
+      "state": "S",
+      "namesInLane": true,
+      "namesSecret": false,
+      "cmdline": "/bin/bash -c printf 'A5SF_RC_B_START=%s\\n' \"$(date +%s)\"; sleep 8; printf 'A5SF_RC_B_TTY=%s\\n' \"$(tty 2>&1)\"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T0"
+    }
+  ],
+  "payloadInLaneSightings": 1,
+  "procSecretCommandSightings": 0,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "allow": 15,
+    "deny": 1,
+    "shellReadAllow": 3,
+    "shellReadDeny": 1,
+    "spawnWriteDeny": 0
+  },
+  "mockRequests": 116,
+  "memberModelRequests": 13,
+  "procBatches": 312,
+  "otherBwrapPids": 1,
+  "memberWindow": {
+    "from": "2026-11-08T00:35:51.089Z",
+    "to": "2026-11-08T00:37:06.193Z"
+  }
+}

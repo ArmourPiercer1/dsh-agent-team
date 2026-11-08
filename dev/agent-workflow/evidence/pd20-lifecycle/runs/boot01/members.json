@@ -1,0 +1,122 @@
+{
+  "stateMembers": [
+    {
+      "instanceId": "inst-088uk8104uxo",
+      "templateId": "worker",
+      "label": "rc-worker-a",
+      "childSessionId": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+      "lifecycle": "ARCHIVED",
+      "activityVersion": 4
+    },
+    {
+      "instanceId": "inst-0lui9he0atse",
+      "templateId": "worker",
+      "label": "rc-worker-b",
+      "childSessionId": "session-team-child-fd811a7489c72d880d4eecdd03b01548",
+      "lifecycle": "ARCHIVED",
+      "activityVersion": 4
+    },
+    {
+      "instanceId": "inst-14284nz189hs",
+      "templateId": "worker",
+      "label": "rc-worker-c",
+      "childSessionId": "session-team-child-bceb06ca58176ac4621e45b23edda5fc",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "A": {
+    "key": "A",
+    "instanceId": "inst-088uk8104uxo",
+    "childSessionId": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+    "effect": {
+      "kind": "member-activated",
+      "instanceId": "inst-088uk8104uxo",
+      "templateId": "worker",
+      "childSessionId": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+      "operationId": "op-12ub6jj0v2b5hi19ta9dp1ce",
+      "replayed": false,
+      "ledgerSequence": 2,
+      "admissionCode": "ADMISSION_OPEN",
+      "workSequence": 3,
+      "workSettled": true,
+      "memberResult": {
+        "requestToken": "a5sf-rc-a-delegate",
+        "status": "succeeded",
+        "body": "A5SF_RC_MEMBER_A_DONE (no background jobs)"
+      }
+    },
+    "stateRow": {
+      "instanceId": "inst-088uk8104uxo",
+      "templateId": "worker",
+      "label": "rc-worker-a",
+      "childSessionId": "session-team-child-3628753bbaead6c4976ca7641f20acf3",
+      "lifecycle": "ARCHIVED",
+      "activityVersion": 4
+    }
+  },
+  "B": {
+    "key": "B",
+    "instanceId": "inst-0lui9he0atse",
+    "childSessionId": "session-team-child-fd811a7489c72d880d4eecdd03b01548",
+    "effect": {
+      "kind": "member-activated",
+      "instanceId": "inst-0lui9he0atse",
+      "templateId": "worker",
+      "childSessionId": "session-team-child-fd811a7489c72d880d4eecdd03b01548",
+      "operationId": "op-1v7ooxb1y7dgp21mhkpi91pf",
+      "replayed": false,
+      "ledgerSequence": 8,
+      "admissionCode": "ADMISSION_OPEN",
+      "workSequence": 9,
+      "workSettled": false,
+      "workStatus": "admitted"
+    },
+    "stateRow": {
+      "instanceId": "inst-0lui9he0atse",
+      "templateId": "worker",
+      "label": "rc-worker-b",
+      "childSessionId": "session-team-child-fd811a7489c72d880d4eecdd03b01548",
+      "lifecycle": "ARCHIVED",
+      "activityVersion": 4
+    }
+  },
+  "C": {
+    "key": "C",
+    "instanceId": "inst-14284nz189hs",
+    "childSessionId": "session-team-child-bceb06ca58176ac4621e45b23edda5fc",
+    "effect": {
+      "kind": "member-activated",
+      "instanceId": "inst-14284nz189hs",
+      "templateId": "worker",
+      "childSessionId": "session-team-child-bceb06ca58176ac4621e45b23edda5fc",
+      "operationId": "op-1io9b1q17uroln1tovxf804h",
+      "replayed": false,
+      "ledgerSequence": 13,
+      "admissionCode": "ADMISSION_OPEN",
+      "workSequence": 14,
+      "workSettled": true,
+      "memberResult": {
+        "requestToken": "a5sf-rc-c-delegate",
+        "status": "succeeded",
+        "body": "A5SF_RC_MEMBER_C_DONE {\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_RC_C_TTY=not a tty\\nA5SF_RECON_SHELL_IN_LANE_BYTES"
+      }
+    },
+    "stateRow": {
+      "instanceId": "inst-14284nz189hs",
+      "templateId": "worker",
+      "label": "rc-worker-c",
+      "childSessionId": "session-team-child-bceb06ca58176ac4621e45b23edda5fc",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    }
+  }
+}

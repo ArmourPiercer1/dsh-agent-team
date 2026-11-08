@@ -1,0 +1,56 @@
+# Member transcript — session-team-child-fd811a7489c72d880d4eecdd03b01548
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd20-lifecycle-tests-homes-u5u5a5sfsub1-20261108T00-34-37Z-workspace--/session-team-child-fd811a7489c72d880d4eecdd03b01548/session.v4.jsonl.zstd
+
+USER:
+[team-work requestToken=a5sf-rc-b-delegate] a5sf-rc-b: run the long probe once, then the short probe, one tool call at a time.
+
+USER:
+<system-reminder>
+The following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.
+
+Instructions from: AGENTS.md
+
+# AGENTS.md — dsh-agent-team 仓库代理规则
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-identity: alpha5-sandbox-first -->
+
+
+本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。
+
+## 会话开始必读（提示词注入要求）
+
+在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
+
+1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCK
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+USER:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
+
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace". Some platform temporary areas may also be writable.
+
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
+
+USER:
+<system-reminder>
+A skill is a reusable set of task-specific instructions. The following skills are available in this session:
+
+<available_skills>
+- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, and live checks over the /team-remote catalog.list / catalog.get endpoints....
+- `team-leader-operations`: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report prog
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+TOOL CALL [bash] call-rc-b-long
+  command: printf 'A5SF_RC_B_START=%s\n' "$(date +%s)"; sleep 8; printf 'A5SF_RC_B_TTY=%s\n' "$(tty 2>&1)"; cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'
+  workdir: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace
+TOOL RESULT isError=false
+  {"kind":"confined-terminal","sessionId":"confined-pty-1","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"cancelled":false,"stdout":"A5SF_RC_B_START=1794098217\nA5SF_RC_B_TTY=not a tty\nA5SF_RECON_SHELL_IN_LANE_BYTES\n","stderr":"","scrollback":"A5SF_RC_B_START=1794098217\nA5SF_RC_B_TTY=not a tty\nA5SF_RECON_SHELL_IN_LANE_BYTES"}
+
+TOOL CALL [bash] call-rc-b-second
+  command: cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'
+  workdir: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace
+TOOL RESULT isError=true
+  Error: LIFECYCLE_ADMISSION_CLOSED: instance 'inst-0lui9he0atse' of team 'session-a5sf-rc-team' has an archive/dispose in flight in this process (close-admission → interrupt → drain → quiesce → release residency → commit; Architecture §30.1), so the NEXT tool boundary refuses new execution (refused: method 'shellRead', target '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt'). The in-flight turn is not cancelled by this refusal; it simply cannot start new work, and the durable transition commits as soon as the procedure finishes. Retry only after the Member is explicitly restored.
+
+ASSISTANT (final):
+A5SF_RC_MEMBER_B_DONE Error: LIFECYCLE_ADMISSION_CLOSED: instance 'inst-0lui9he0atse' of team 'session-a5sf-rc-team' has an archive/dispose in flight in this process (close-admission → interrupt → drain → quiesce → release
