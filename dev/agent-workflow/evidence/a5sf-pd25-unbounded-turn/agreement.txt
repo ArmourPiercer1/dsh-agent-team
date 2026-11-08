@@ -1,0 +1,28 @@
+TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+selfContinuation              PROVEN                        PROVEN
+roundLimit                    PROVEN                        PROVEN
+callerChosenCap               PROVEN                        PROVEN
+burstVerdict                  PROVEN                        PROVEN
+ask                           PROVEN                        PROVEN
+plan                          PROVEN                        PROVEN
+todo                          PROVEN                        PROVEN
+goalToolsAbsent               PROVEN                        PROVEN
+surfaceCount                  30                            30
+createGoalOnSurface           false                         false
+loopRounds                    0                             0
+loopDefaultCap                null                          null
+cap2Rounds                    0                             0
+cap2Blocked                   null                          null
+raisedCap                     null                          null
+burst                         30                            30
+askBlockedSeconds             null                          null
+askError                      true                          true
+planError                     true                          true
+memberModelRequests           {"loop":33,"cap2":2,"raise":4,"plan":2,"ask":2}{"loop":33,"cap2":2,"raise":4,"plan":2,"ask":2}
+delegationsReturned           {"call-pd25-delegate-cap2":true,"call-pd25-delegate-raise":true,"call-pd25-delegate-plan":true,"call-pd25-delegate-loop":true,"call-pd25-delegate-ask":true}{"call-pd25-delegate-cap2":true,"call-pd25-delegate-raise":true,"call-pd25-delegate-plan":true,"call-pd25-delegate-loop":true,"call-pd25-delegate-ask":true}
+askDelegationBlocked          false                         false
+
+agreeing=true differing=[]

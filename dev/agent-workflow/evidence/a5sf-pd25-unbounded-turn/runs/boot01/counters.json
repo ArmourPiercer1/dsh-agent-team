@@ -1,0 +1,291 @@
+{
+  "goalEventsBySession": {
+    "session-a5sf-pd25-boot": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-a5sf-pd25-boot/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 1,
+        "system/message": 1,
+        "user/message": 4,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 1,
+        "step/end": 1,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-a5sf-pd25-team": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-a5sf-pd25-team/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 4,
+        "turn/start": 2,
+        "step/start": 7,
+        "system/message": 1,
+        "user/message": 5,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 7,
+        "tool/call": 5,
+        "tool/result": 5,
+        "step/end": 7,
+        "turn/end": 2
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-team-child-272fd02beddf67439eb6da676fea4d98": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-272fd02beddf67439eb6da676fea4d98/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 4,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 4,
+        "tool/call": 3,
+        "tool/result": 3,
+        "step/end": 4,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-team-child-2817ac0de98bf876ed7353aca32bc2ba": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-2817ac0de98bf876ed7353aca32bc2ba/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 2,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 2,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 2,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-team-child-9446f38eb3ab5d14a1a5d32755dcb5b8": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-9446f38eb3ab5d14a1a5d32755dcb5b8/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 33,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 33,
+        "tool/call": 32,
+        "tool/result": 32,
+        "step/end": 33,
+        "todo/write": 1,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-team-child-9730d64a845da5bf2d673a473c44e1f1": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-9730d64a845da5bf2d673a473c44e1f1/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 2,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 2,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 2,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    },
+    "session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 2,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 2,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 2,
+        "turn/end": 1
+      },
+      "goalEvents": 0,
+      "goalBlocked": []
+    }
+  },
+  "loopGoalBlocked": [],
+  "cap2GoalBlocked": [],
+  "loopDurableRounds": [],
+  "cap2DurableRounds": [],
+  "loopRounds": [],
+  "cap2Rounds": [],
+  "burst": 30,
+  "burstElapsedMs": 1774,
+  "askElapsedMs": 80,
+  "askBlockedSeconds": null,
+  "askResult": {
+    "source": "model",
+    "isError": true,
+    "text": "Error: unknown tool \"ask_user_question\""
+  },
+  "planResult": {
+    "source": "model",
+    "isError": true,
+    "text": "Error: exit_plan_mode is only available in plan mode"
+  },
+  "surfaces": {
+    "loop": {
+      "count": 30,
+      "goalTools": {
+        "get_goal": false,
+        "create_goal": false,
+        "update_goal": false
+      },
+      "ask": false,
+      "plan": true,
+      "todo": true
+    },
+    "cap2": {
+      "count": 30,
+      "goalTools": {
+        "get_goal": false,
+        "create_goal": false,
+        "update_goal": false
+      },
+      "ask": false,
+      "plan": true,
+      "todo": true
+    },
+    "raise": {
+      "count": 30,
+      "goalTools": {
+        "get_goal": false,
+        "create_goal": false,
+        "update_goal": false
+      },
+      "ask": false,
+      "plan": true,
+      "todo": true
+    },
+    "plan": {
+      "count": 30,
+      "goalTools": {
+        "get_goal": false,
+        "create_goal": false,
+        "update_goal": false
+      },
+      "ask": false,
+      "plan": true,
+      "todo": true
+    },
+    "ask": {
+      "count": 30,
+      "goalTools": {
+        "get_goal": false,
+        "create_goal": false,
+        "update_goal": false
+      },
+      "ask": false,
+      "plan": true,
+      "todo": true
+    }
+  },
+  "mockRequests": 58,
+  "memberModelRequests": {
+    "loop": 33,
+    "cap2": 2,
+    "raise": 4,
+    "plan": 2,
+    "ask": 2
+  },
+  "delegationsReturned": {
+    "call-pd25-delegate-cap2": true,
+    "call-pd25-delegate-raise": true,
+    "call-pd25-delegate-plan": true,
+    "call-pd25-delegate-loop": true,
+    "call-pd25-delegate-ask": true
+  },
+  "askDelegationBlocked": false,
+  "membersAfter": 6,
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/cordis.patch.yml",
+    "sha256": "d88b24a3a71b1c0e0f0af5cd69fec309b69ac54dd82345e52a681d1505fb7c4e",
+    "arm": "postfix"
+  },
+  "raiseEditedCap": null,
+  "raiseCreatedCap": null,
+  "loopGoalCreateResult": {
+    "source": "model",
+    "isError": true,
+    "text": "Error: unknown tool \"create_goal\""
+  },
+  "cap2GoalCreateResult": {
+    "source": "model",
+    "isError": true,
+    "text": "Error: unknown tool \"create_goal\""
+  },
+  "maxRoundsObserved": 0,
+  "hardObservationCap": 5
+}

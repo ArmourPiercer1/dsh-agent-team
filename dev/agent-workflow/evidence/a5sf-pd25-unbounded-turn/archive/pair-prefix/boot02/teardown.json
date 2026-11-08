@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-08T04:47:21.785Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 872,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-45-07Z",
+    "releasedPorts": [
+      3188,
+      3500,
+      3188
+    ],
+    "killedPids": [
+      872
+    ],
+    "notes": []
+  },
+  "hostTreePorcelain": []
+}

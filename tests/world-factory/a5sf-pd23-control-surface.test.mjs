@@ -22,8 +22,15 @@
  *   - `skill` loaded a body that lives OUTSIDE the Member's compiled read lane
  *     and returned its bytes with ZERO `a5sf-guard-consult` facts — the body
  *     read resolves the BASE `fs`, not the confined one;
- *   - `todo_write` writes to the Member's own session, and the goal tools are
- *     typed refusals (a Member turn holds no direct-human goal authority).
+ *   - `todo_write` writes to the Member's own session.
+ * CORRECTION (PD-24/UNBOUNDED-TURN, 2026-11-14): this suite's docstring used to
+ * claim the goal tools were "typed refusals (a Member turn holds no
+ * direct-human goal authority)". The durable probe JSON from THIS lane's own
+ * live boots shows `create_goal` ACCEPTED (`maxGoalRounds: 256`,
+ * `activation: armed`), and PD-25 re-measured it: the Team runtime creates a
+ * Member as a runtime ROOT and delivers the delegated prompt as a `user`-kind
+ * message, so `requireDirectHuman` passes. The goal tools are removed by PD-25
+ * (fail-closed, see evidence/a5sf-pd25-unbounded-turn/README.md).
  * The disposition follows PD-18/PD-21: the unreachable control rows and the
  * unconfined skill loader are REMOVED from the governed preset (fail-closed,
  * typed `unknown tool`), the session-scoped tools are RETAINED.
@@ -77,7 +84,12 @@ const CLOSED_ROWS = Object.freeze([
   'skill-filesystem',
 ])
 const CLOSED_TOOLS = Object.freeze(['send_message', 'interrupt_agent', 'list_agents', 'skill'])
-const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo', 'tool-goal', 'persona', 'compaction-basic', 'tool-result-pruner'])
+// `tool-goal` left this list on 2026-11-14 with PD-24/UNBOUNDED-TURN: PD-23's
+// live lane read `create_goal` as a typed refusal, and PD-25 re-measured the
+// same preset and found it ACCEPTED (the Member is a runtime root and the work
+// prompt is a `user`-kind message, so `requireDirectHuman` passes). The goal
+// tools are removed by PD-25, so this POSITIVE CONTROL must not claim them.
+const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo', 'persona', 'compaction-basic', 'tool-result-pruner'])
 const PRESET_ID = 'a5sf-governed-member'
 
 const runtimeRequire = createRequire(join(REPO, 'packages', 'runtime', 'package.json'))
@@ -162,8 +174,9 @@ test('PD23-SURFACE-POSITIVE-CONTROL: the retained rows (jobs, todo, goal, confin
   for (const id of KEPT_ROWS) {
     assert.equal(ids.includes(id), true, `the governed preset unexpectedly lost '${id}'`)
   }
-  // The removal is NOT a blanket strip of the preset.
-  assert.equal(ids.length > 15, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
+  // The removal is NOT a blanket strip of the preset. The floor drops by the
+  // two rows PD-25 removed (`tool-goal`, `tool-ask-user`): 16 -> 14 rows.
+  assert.equal(ids.length > 13, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
 })
 
 test('PD23-SURFACE-SURGICAL: the pinned standard preset still declares the control tools and the skill loader', () => {

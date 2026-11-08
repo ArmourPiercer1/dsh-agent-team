@@ -1,0 +1,3 @@
+DSH-CI-RUN head=6cfc67b76 mode=default node=v24.21.0 cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn store-dir=default allow-refused=none
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 1194 commits); current contract ok (phase_id alpha5-sandbox-first, baseline 1484fa4ee0ff…, matrix rows 21 claimed 0, drift 131 path(s))
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0

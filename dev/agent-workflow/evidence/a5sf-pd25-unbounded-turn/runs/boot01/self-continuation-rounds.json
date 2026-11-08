@@ -1,0 +1,16 @@
+{
+  "schema": "a5sf-pd25-unbounded-turn/rounds/1",
+  "at": "2026-11-08T04:49:52.144Z",
+  "hardObservationCap": 5,
+  "note": "each row is ONE model request whose last user message is the goal-round prompt; timestamps are the mock provider's receipt time",
+  "loop": {
+    "token": "a5sf-pd25-loop",
+    "rounds": [],
+    "secondsFromFirstToLast": null
+  },
+  "cap2": {
+    "token": "a5sf-pd25-cap2",
+    "rounds": [],
+    "secondsFromFirstToLast": null
+  }
+}
