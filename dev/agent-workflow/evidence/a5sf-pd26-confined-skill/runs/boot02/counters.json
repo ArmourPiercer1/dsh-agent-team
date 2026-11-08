@@ -1,0 +1,161 @@
+{
+  "guardFacts": {
+    "allow": 9,
+    "deny": 3,
+    "byTool": {
+      "bash": 3,
+      "read": 2,
+      "grep": 1,
+      "skill": 2,
+      "present": 4
+    },
+    "skill": {
+      "total": 2,
+      "allow": 1,
+      "deny": 1,
+      "denyCodes": [
+        "IO_READ_DENIED"
+      ]
+    },
+    "present": {
+      "total": 4,
+      "allow": 2,
+      "deny": 2,
+      "denyCodes": [
+        "IO_READ_DENIED",
+        "IO_READ_DENIED"
+      ]
+    }
+  },
+  "mockRequests": 26,
+  "aModelRequests": 19,
+  "surfaceACount": 31,
+  "surfaceANames": [
+    "bash",
+    "edit",
+    "exit_plan_mode",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "skillOutBodyInRequests": 0,
+  "secretTextInRequests": 0,
+  "requestsCarryingSecret": 0,
+  "sessionEvents": {
+    "session-a5sf-pd26-boot": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-a5sf-pd26-boot/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 1,
+        "system/message": 1,
+        "user/message": 4,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 1,
+        "step/end": 1,
+        "turn/end": 1
+      },
+      "goalEvents": 0
+    },
+    "session-a5sf-pd26-team": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-a5sf-pd26-team/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 4,
+        "turn/start": 2,
+        "step/start": 3,
+        "system/message": 1,
+        "user/message": 5,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 3,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 3,
+        "turn/end": 2
+      },
+      "goalEvents": 0
+    },
+    "session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 19,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 19,
+        "tool/call": 18,
+        "tool/result": 18,
+        "step/end": 19,
+        "deliverables/presented": 1,
+        "workspace/changes": 1,
+        "turn/end": 1
+      },
+      "goalEvents": 0
+    }
+  },
+  "deliverablesEvents": 1,
+  "membersAfter": 2,
+  "memberTemplates": [
+    "leader",
+    "worker"
+  ],
+  "memberWindow": {
+    "from": "2026-11-08T07:15:19.964Z",
+    "to": "2026-11-08T07:15:23.922Z"
+  },
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/cordis.patch.yml",
+    "sha256": "f8fec5b5a79e178055fe389e1ce4f97f44010dc774d54354d91743ae3cdff691",
+    "arm": "postfix"
+  },
+  "quiesced": true,
+  "skillOnSurface": true,
+  "presentOnSurface": true
+}

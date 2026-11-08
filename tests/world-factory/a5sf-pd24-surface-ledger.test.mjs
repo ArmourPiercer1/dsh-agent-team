@@ -164,10 +164,17 @@ test('PD24-PIN: the BASE commit carries the `present` row, and the archived pre-
 // ===========================================================================
 // SURFACE — the shipped governed preset is closed, and the removal is surgical
 // ===========================================================================
-test('PD24-SURFACE-CLOSED: the governed preset declares NO `present` row (by id or by package name)', () => {
-  const text = readFileSync(COMPOSITION, 'utf8')
+test('PD24-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO `present` row (by id or by package name)', () => {
+  // PD-26 restored the `present` NAME on the governed preset as a route-C shadow
+  // over the Member's confined `fs` (PD26-SURFACE-RESTORED pins today's file, and
+  // the live pair measures the refusal). This arm pins the ARCHIVED pre-fix
+  // composition PD-24 measured (`git show 06adbf850:cordis.patch.yml`, kept in the
+  // PD-26 evidence tree) rather than a file PD-24 never saw.
+  const archived = join(REPO, 'dev/agent-workflow/evidence/a5sf-pd26-confined-skill/archive/pre-fix/cordis.patch.yml')
+  assert.equal(existsSync(archived), true, 'the pre-fix composition this arm measured must be archived in the tree')
+  const text = readFileSync(archived, 'utf8')
   const ids = presetPluginIds(text)
-  assert.equal(ids.includes('present'), false, "the governed preset must not declare a 'present' row")
+  assert.equal(ids.includes('present'), false, "the pre-fix governed preset must not declare a 'present' row")
   for (const row of presetPlugins(text)) {
     assert.equal(
       String(row.name).includes('dsh-tool-present'),

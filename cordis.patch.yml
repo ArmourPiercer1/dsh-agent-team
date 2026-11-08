@@ -209,6 +209,14 @@
     #     honest disposition inside this budget is FAIL-CLOSED REMOVAL, a
     #     CAPABILITY REGRESSION (a governed Member can no longer declare
     #     deliverables). `evidence/a5sf-pd24-surface-ledger/`.
+    #     PD-26 (2026-11-14) RESTORES the NAME and routes the READ: the host
+    #     `tool-present` row is back, and the realm's route-C attach re-mounts
+    #     `confined-present-tool.mjs` inside the Member's isolated scope, where
+    #     its `lstat`/`stat` run on the confined `fs` (`IO_READ_DENIED` + one
+    #     deny fact for an out-of-lane path, zero bytes, no deliverables event)
+    #     while an in-lane file is presented and recorded exactly as before.
+    #     As with the PD-17 filesystem rows, the preset row is replaced by the
+    #     shadow; the attach refuses the Member setup when it cannot shadow it.
     #   - `tool-jobs`, fs, search, goal/plan/todo and compaction are
     #     RETAINED. `tool-jobs` is retained but has no producer on this preset
     #     (the confined face cannot hand a command to the job registry); it
@@ -224,6 +232,16 @@
     #     CAPABILITY REGRESSION, not an enforcement: a confined provider needs a
     #     `CORE_SEAM_BLOCKER`-class seam (see the PD-23 evidence README §5.1 for
     #     what would restore skills). `tool-skill` goes with it.
+    #     PD-26 (2026-11-14) RESTORES the NAME and routes the READ: `tool-skill`
+    #     is back, but with NO skill provider on this scope it can only answer
+    #     "unknown" — it is a fail-closed PLACEHOLDER whose purpose is to keep
+    #     the name on the model-visible surface. The realm's route-C attach
+    #     re-mounts `confined-skill-tool.mjs` INSIDE the Member's isolated scope,
+    #     where `ctx.fs` IS the confined provider: the declared catalog
+    #     (`a5sfSkillCatalog`) is data, and every `SKILL.md` body is read through
+    #     the compiled lane, so an out-of-lane body is a typed `IO_READ_DENIED`
+    #     with one deny fact and zero bytes instead of a silent body. The attach
+    #     REFUSES the Member setup if it cannot shadow this name.
     #   - `send_message`/`interrupt_agent`/`list_agents` were ALSO measured by
     #     PD-23 on the pre-merge base and could only refuse or lie there: the
     #     sibling and the Leader both failed the subagent lineage rule for
@@ -261,6 +279,15 @@
               sampleOverCapGlobResults: false
           - id: tool-jobs
             name: '@deepseek-ai/dsh-tool-jobs'
+          # PD-26: the NAME-ONLY placeholders. Both rows are replaced inside the
+          # Member's isolated scope by the route-C shadows (confined-skill-tool /
+          # confined-present-tool); on this scope they are fail-closed, because
+          # neither has a visible provider (skill) / a promise it can keep
+          # (present is never reached once the attach refuses or shadows).
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: tool-present
+            name: '@deepseek-ai/dsh-tool-present'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
           - id: planning

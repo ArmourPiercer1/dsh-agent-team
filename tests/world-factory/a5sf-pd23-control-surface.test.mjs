@@ -64,7 +64,7 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -155,14 +155,25 @@ test('PD23-PIN: the BASE commit carries the control rows and the skill loader (P
 // ===========================================================================
 // SURFACE — the shipped governed preset is closed, and the removal is surgical
 // ===========================================================================
-test('PD23-SURFACE-CLOSED: the governed preset declares NO control row and NO skill loader/provider', () => {
-  const ids = presetPluginIds(readFileSync(COMPOSITION, 'utf8'))
+test('PD23-SURFACE-CLOSED (SUPERSEDED BY PD-26): the composition this lane measured declares NO control row and NO skill loader/provider', () => {
+  // PD-23 measured the composition at its own base. PD-26 restored the `skill`
+  // NAME on the governed preset as a route-C shadow over the Member's confined
+  // `fs` (PD26-SURFACE-RESTORED pins today's file, and the live evidence proves
+  // the body read is confined). This arm therefore pins the ARCHIVED pre-fix
+  // composition it actually measured — `git show 06adbf850:cordis.patch.yml`,
+  // kept byte-identical in the PD-26 evidence tree — instead of asserting
+  // today's file, which would be a claim about a composition this lane never saw.
+  const preFix = join(REPO, 'dev/agent-workflow/evidence/a5sf-pd26-confined-skill/archive/pre-fix/cordis.patch.yml')
+  assert.equal(existsSync(preFix), true, 'the pre-fix composition this arm measured must be archived in the tree')
+  const text = readFileSync(preFix, 'utf8')
+  assert.equal(text.includes('`a5sfSkillCatalog`') || text.includes('preset-a5sf-governed-member'), true, 'the archived file must still be the shipped composition')
+  const ids = presetPluginIds(text)
   for (const id of CLOSED_ROWS) {
-    assert.equal(ids.includes(id), false, `the governed preset must not declare '${id}'`)
+    assert.equal(ids.includes(id), false, `the pre-fix governed preset must not declare '${id}'`)
   }
   // A control row by ANY id would still expose the tool: assert by the plugin
   // package name too, so a rename cannot smuggle the surface back.
-  for (const row of presetPlugins(readFileSync(COMPOSITION, 'utf8'))) {
+  for (const row of presetPlugins(text)) {
     assert.equal(String(row.name).includes('dsh-tool-subagent-control'), false, `'${String(row.id)}' still mounts the subagent-control package`)
     assert.equal(String(row.name).includes('dsh-tool-skill'), false, `'${String(row.id)}' still mounts the skill loader`)
     assert.equal(String(row.name).includes('dsh-skill-filesystem'), false, `'${String(row.id)}' still mounts the filesystem skill provider`)

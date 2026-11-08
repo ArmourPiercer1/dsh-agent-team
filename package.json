@@ -2,7 +2,7 @@
   "name": "dsh-agent-team",
   "version": "0.1.1-alpha.2",
   "private": true,
-  "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
+  "description": "DSH Agent Team vNext plugin set \u2014 public-seam only, CORE PATCH BUDGET = 0.",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {
@@ -70,6 +70,8 @@
     "vitest": "^4.1.8"
   },
   "dependencies": {
+    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
     "yaml": "2.9.0",
     "zod": "4.4.3"
   }
