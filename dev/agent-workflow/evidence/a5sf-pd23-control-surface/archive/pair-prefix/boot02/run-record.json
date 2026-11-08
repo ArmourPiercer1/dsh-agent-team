@@ -1,0 +1,470 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd23-control-surface-prefix-2026-11-08T02-17-55-433Z-b2",
+  "suite": "a5sf-pd23-control-surface",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T02:17:55.433Z",
+  "selectedCases": [
+    "pd23:member-confined-baseline",
+    "pd23:no-cross-member-enumeration",
+    "pd23:send-message-refused",
+    "pd23:interrupt-without-effect",
+    "pd23:jobs-owner-scoped",
+    "pd23:skill-confined",
+    "pd23:skill-arg-refused",
+    "pd23:no-out-of-lane-bytes",
+    "pd23:session-state-tools",
+    "pd23:goal-session-local",
+    "pd23:no-new-members"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "c5d619e5370c196692b02735e41086933119ed0f",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "ControlSurface",
+      "world": "u5a5sfpd23",
+      "source": "task PD23-CONTROL-SURFACE explicit boot authorisation (2026-11-14), arm=prefix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "c5d619e5370c196692b02735e41086933119ed0f",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd23-20261108T02-17-55Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd23:member-confined-baseline",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.721Z",
+      "proposition": "the Member's model-visible `bash` admits an in-ceiling read through the confined terminal face and records a guard fact (the positive control)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the admitted `bash` call"
+        },
+        {
+          "id": "call-is-bash",
+          "ok": true,
+          "detail": "name=bash"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "confined-terminal-kind",
+          "ok": true,
+          "detail": "kind=confined-terminal"
+        },
+        {
+          "id": "in-lane-bytes",
+          "ok": true,
+          "detail": "the admitted read returned the in-lane bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd23:no-cross-member-enumeration",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "a governed Member cannot enumerate another Member: `list_agents` reports only its OWN subagent children (none), never a Team sibling",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `list_agents`"
+        },
+        {
+          "id": "call-scope-descendants",
+          "ok": true,
+          "detail": "scope=descendants (the WIDEST scope is asked for)"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "empty-child-list",
+          "ok": true,
+          "detail": "text=(no subagents)"
+        },
+        {
+          "id": "does-not-name-sibling",
+          "ok": true,
+          "detail": "sibling id session-team-child-65e8721e52f17932d0f986ca50101d07 appears=false"
+        }
+      ]
+    },
+    {
+      "id": "pd23:send-message-refused",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "a governed Member cannot influence another Member through `send_message`: the delivery is refused by the subagent lineage rule, the sibling is NOT woken, and no byte crosses the lane",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "b-call-issued",
+          "ok": true,
+          "detail": "the Member issued `send_message` addressed at the sibling"
+        },
+        {
+          "id": "b-target-is-sibling",
+          "ok": true,
+          "detail": "target=session-team-child-65e8721e52f17932d0f986ca50101d07 sibling=session-team-child-65e8721e52f17932d0f986ca50101d07"
+        },
+        {
+          "id": "b-delivery-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: subagent \"session-team-child-65e8721e52f17932d0f986ca50101d07\" belongs to another parent session"
+        },
+        {
+          "id": "b-not-woken",
+          "ok": true,
+          "detail": "the sibling's durable turn carries no delivered follow-up prompt"
+        },
+        {
+          "id": "b-turn-intact",
+          "ok": true,
+          "detail": "sibling final=A5SF_PD23_MEMBER_B_DONE {\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":f"
+        },
+        {
+          "id": "leader-call-issued",
+          "ok": true,
+          "detail": "the Member also addressed its direct parent (the Leader)"
+        },
+        {
+          "id": "leader-delivery-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: subagent \"session-a5sf-pd23-team\" belongs to another parent session"
+        },
+        {
+          "id": "no-lane-bytes",
+          "ok": true,
+          "detail": "the refused result carries no out-of-lane bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd23:interrupt-without-effect",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "a governed Member cannot stop another Member: `interrupt_agent` on a sibling is either a typed refusal or an accepted NO-OP, and the sibling's turn settles normally",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `interrupt_agent` at the sibling"
+        },
+        {
+          "id": "refused-or-accepted-noop",
+          "ok": true,
+          "detail": "isError=false accepted=true text=interrupt requested for agent session-team-child-65e8721e52f17932d0f986ca50101d07"
+        },
+        {
+          "id": "sibling-turn-settled",
+          "ok": true,
+          "detail": "the sibling produced its own final answer (it was not cancelled)"
+        },
+        {
+          "id": "sibling-bash-settled",
+          "ok": true,
+          "detail": "the sibling's own confined read completed"
+        }
+      ]
+    },
+    {
+      "id": "pd23:jobs-owner-scoped",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "the job registry is OWNER-scoped and has no producer on this preset: `job_list` is empty, and a FOREIGN Leader job id (and a SESSION id) are typed refusals, never another agent's output",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "leader-job-real",
+          "ok": true,
+          "detail": "the Leader's real job id=bash-1"
+        },
+        {
+          "id": "list-issued",
+          "ok": true,
+          "detail": "the Member issued `job_list`"
+        },
+        {
+          "id": "list-empty",
+          "ok": true,
+          "detail": "text=(no background jobs) (no producer on the confined face)"
+        },
+        {
+          "id": "foreign-job-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: job bash-1 belongs to another session"
+        },
+        {
+          "id": "session-id-not-a-job-lookup",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown job session-team-child-65e8721e52f17932d0f986ca50101d07 — the parameter is a JOB id, never a session id"
+        },
+        {
+          "id": "foreign-kill-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: job bash-1 belongs to another session"
+        },
+        {
+          "id": "no-job-bytes",
+          "ok": true,
+          "detail": "no job result carries out-of-lane bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd23:skill-confined",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "PRE-FIX (defect): the `skill` body read is UNCONFINED — an out-of-lane skill body reaches the Member with ZERO guard facts and no error",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "skill-present",
+          "ok": true,
+          "detail": "`skill` is on the measured Member surface"
+        },
+        {
+          "id": "in-lane-body-loads",
+          "ok": true,
+          "detail": "text=<skill_content name=\"pd23-in-lane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-ag"
+        },
+        {
+          "id": "out-of-lane-body-loads",
+          "ok": true,
+          "detail": "isError=false text=<skill_content name=\"pd23-out-of-lane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-sur"
+        },
+        {
+          "id": "zero-skill-facts",
+          "ok": true,
+          "detail": "skill-attributed guard facts=0 (a confined read would have recorded one)"
+        },
+        {
+          "id": "body-reaches-requests",
+          "ok": true,
+          "detail": "mock requests carrying the out-of-lane body=7"
+        },
+        {
+          "id": "traversal-refused",
+          "ok": true,
+          "detail": "Error: invalid skill name \"../pd23-out-of-lane\""
+        },
+        {
+          "id": "absolute-refused",
+          "ok": true,
+          "detail": "Error: invalid skill name \"/etc/passwd\""
+        }
+      ]
+    },
+    {
+      "id": "pd23:skill-arg-refused",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "the `skill` NAME argument cannot be used to cross the lane: a traversal name and an absolute path are both refused before any read",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "traversal-issued",
+          "ok": true,
+          "detail": "name=../pd23-out-of-lane"
+        },
+        {
+          "id": "traversal-refused",
+          "ok": true,
+          "detail": "Error: invalid skill name \"../pd23-out-of-lane\""
+        },
+        {
+          "id": "absolute-issued",
+          "ok": true,
+          "detail": "name=/etc/passwd"
+        },
+        {
+          "id": "absolute-refused",
+          "ok": true,
+          "detail": "Error: invalid skill name \"/etc/passwd\""
+        }
+      ]
+    },
+    {
+      "id": "pd23:no-out-of-lane-bytes",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "PRE-FIX (defect): out-of-lane bytes reach the Member and its model requests (the skill body), while the FILE fixture itself stays confined",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "requests-with-skill-body",
+          "ok": true,
+          "detail": "mock requests carrying the SKILL body=7"
+        },
+        {
+          "id": "a-transcript-carries-body",
+          "ok": true,
+          "detail": "Member A's own durable turn carries the out-of-lane skill body"
+        },
+        {
+          "id": "zero-requests-with-file-secret",
+          "ok": true,
+          "detail": "mock requests carrying the FILE secret=0 (the direct read stayed confined)"
+        },
+        {
+          "id": "zero-skill-facts",
+          "ok": true,
+          "detail": "skill-attributed guard facts=0"
+        }
+      ]
+    },
+    {
+      "id": "pd23:session-state-tools",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "the todo tool touches only the calling session: A's todo is written to A's OWN durable session, B's session stays clean, and `get_goal` reads only the caller's own goal (null before any create)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "todo-issued",
+          "ok": true,
+          "detail": "todos=[{\"content\":\"PD-23 control-surface probe (member-local)\",\"status\":\"in_progress\"},{\"content\":\"PD-23 report\",\"status\":\"pending\"}]"
+        },
+        {
+          "id": "todo-accepted",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "todo-in-a-session",
+          "ok": true,
+          "detail": "A session todo/write events=1"
+        },
+        {
+          "id": "no-todo-in-b-session",
+          "ok": true,
+          "detail": "B session todo/write events=0"
+        },
+        {
+          "id": "get-goal-readable",
+          "ok": true,
+          "detail": "text={\"goal\":null}"
+        }
+      ]
+    },
+    {
+      "id": "pd23:goal-session-local",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "the goal tools are SESSION-LOCAL: `create_goal` opens a goal in the CALLING Member's own session and `update_goal` changes that same goal, while NO other session — sibling or Leader — holds any goal state and no goal round reaches the Team",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-issued",
+          "ok": true,
+          "detail": "the Member issued `create_goal`"
+        },
+        {
+          "id": "create-accepted-session-local",
+          "ok": true,
+          "detail": "goal id=goal-d999d1eb-950c-4b89-be17-5fed64046935 text={\"goal\":{\"id\":\"goal-d999d1eb-950c-4b89-be17-5fed64046935\",\"revision\":1,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"active\",\"roundsStarted\":0"
+        },
+        {
+          "id": "update-changes-the-same-goal",
+          "ok": true,
+          "detail": "isError=false text={\"goal\":{\"id\":\"goal-d999d1eb-950c-4b89-be17-5fed64046935\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disa"
+        },
+        {
+          "id": "goal-state-in-a-session",
+          "ok": true,
+          "detail": "A goal events=2"
+        },
+        {
+          "id": "no-goal-state-in-b-session",
+          "ok": true,
+          "detail": "B goal events=0"
+        },
+        {
+          "id": "no-goal-state-elsewhere",
+          "ok": true,
+          "detail": "sessions with goal state other than A: []"
+        },
+        {
+          "id": "goal-rounds-stayed-local",
+          "ok": true,
+          "detail": "goal-round continuations observed=0 (they are A's own session rounds; a pause stops them)"
+        }
+      ]
+    },
+    {
+      "id": "pd23:no-new-members",
+      "verdict": "PASS",
+      "at": "2026-11-08T02:19:20.722Z",
+      "proposition": "the Member turn establishes no Team-level state and mints no member: the roster is exactly the Leader plus the two templates the Leader created",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "roster-size-three",
+          "ok": true,
+          "detail": "members after=3 (leader + worker + wide; no member minted by a Member)"
+        },
+        {
+          "id": "templates-are-the-three",
+          "ok": true,
+          "detail": "templates=leader,wide,worker"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T02:18:31.906Z",
+        "runId": "a5sf-pd23-control-surface-prefix-2026-11-08T02-17-55-433Z-b2",
+        "suite": "a5sf-pd23-control-surface",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd23-20261108T02-17-55Z",
+        "phase": "a5sf-pd23-control-surface-prefix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd23-control-surface-prefix-boot2",
+      "world": "u5u5a5sfpd23-20261108T02-17-55Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-17-55Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd23-control-surface-prefix-2026-11-08T02-17-55-433Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T02:19:20.723Z"
+}

@@ -1,0 +1,9 @@
+PASS CLEAN: every arm is green — exit=0 tests=5 failed=[]
+PASS M1-control: PD23-TYPED-REFUSAL reddens — refusal=false
+PASS M1-control: the SURFACE arms stay green (the mutation is not a global break) — closed=true surgical=true
+PASS M2-skill: PD23-TYPED-REFUSAL reddens — refusal=false
+PASS M3-row: PD23-SURFACE-CLOSED reddens — closed=false
+PASS M3-row: PD23-TYPED-REFUSAL stays green (the row arm measures the composition, not the router) — refusal=true
+PASS PIN: the BASE commit carries every row this lane removes — rows=["tool-subagent-control","tool-subagent-list-agents","tool-skill","skill-filesystem"]
+
+MUTATION CONTROLS PASS (7/7)

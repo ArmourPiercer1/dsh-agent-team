@@ -125,7 +125,11 @@ test('PD18-SURFACE-CLOSED: the governed preset declares NO web/workflow row, and
     assert.equal(ids.includes(closed), false, `the governed preset must not carry '${closed}' (PD-18 fail-closed)`)
     assert.equal(rows.some((row) => String(row.name ?? '').includes(closed)), false, `no row may re-introduce '${closed}'`)
   }
-  for (const kept of ['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-skill']) {
+  // The retained-row witness moved from `tool-skill` to `tool-todo` on
+  // 2026-11-14: PD-23 removed `tool-skill` + `skill-filesystem` for the same
+  // fail-closed reason this arm exists (its body read resolved the BASE `fs`),
+  // so naming it here would now assert the opposite of the shipped preset.
+  for (const kept of ['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo']) {
     assert.equal(ids.includes(kept), true, `the governed preset keeps '${kept}' — this is a surgical removal, not a blanket strip`)
   }
 })

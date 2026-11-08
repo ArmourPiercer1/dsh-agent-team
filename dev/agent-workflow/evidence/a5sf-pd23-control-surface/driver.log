@@ -1,0 +1,657 @@
+[2026-11-08T01:48:48.173Z] DRIVER FAILED (outside the run): ReferenceError: COMPOSITION_PATH is not defined
+    at shippedLayer (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:219:28)
+    at planOnly (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:978:17)
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1531:20)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1584:1
+[2026-11-08T01:49:01.377Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T01:49:01.378Z] composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273
+[2026-11-08T01:49:01.378Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-08T01:49:01.418Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-08T01:49:01.419Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surfa"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surfa"}]
+[2026-11-08T01:49:01.419Z] governed preset plugins (25): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,skill-filesystem,tool-skill,command-goal,tool-goal,plan-mode,compaction-basic,command-compact,tool-result-pruner,tool-subagent-control,tool-subagent-list-agents,tool-subagent,tool-subagent-fork,tool-subagent-codex,tool-subagent-claude-code,tool-ralph,tool-ask-user,tool-todo,present,tool-plugin-manager
+[2026-11-08T01:49:01.419Z] governed preset control rows: ["tool-subagent-control","tool-subagent-list-agents"]
+[2026-11-08T01:49:01.419Z] governed preset skill rows: ["skill-filesystem","tool-skill"]
+[2026-11-08T01:49:01.419Z] PLAN OK
+[2026-11-08T01:49:15.021Z] ARCHIVE: (nothing to archive)
+[2026-11-08T01:49:15.025Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-08T01:49:15.444Z] host porcelain before: []
+[2026-11-08T01:49:15.520Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T01:49:15.522Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T01:49:15.527Z] [boot1] world=u5u5a5sfpd23-20261108T01-49-15Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-49-15Z
+[2026-11-08T01:49:15.531Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T01:49:51.892Z] [boot1] mock on 3498
+[2026-11-08T01:50:30.470Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T01-49-15Z/instance-port3188.log
+[2026-11-08T01:50:31.023Z] [boot1] p6t6 health=true
+[2026-11-08T01:50:31.295Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T01:50:36.801Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-5jnffsej5m","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:e17f48b1cfe3a901880aeac3765797e609a66fdeafe018de232008a77aa988eb"},"createdAt":"2026-11-08T01:50:31.352Z","generatio
+[2026-11-08T01:50:36.801Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T01:50:39.504Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T01:50:39.505Z] [boot1] leader background job=bash-1
+[2026-11-08T01:50:39.513Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T01:50:39.586Z] [boot1] diagnostics(abort): mockRequests=105
+[2026-11-08T01:50:39.587Z] [boot1] FAILED at evidence-collection: ReferenceError: transcriptText is not defined
+    at judgeNoLaneBytes (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:938:17)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1385:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1561:15)
+[2026-11-08T01:50:39.713Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-49-15Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T01:50:39.713Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T01:50:39.744Z] boot 1 failed at evidence-collection; continuing is pointless (no agreeing pair)
+[2026-11-08T01:50:39.745Z] DRIVER FAILED (outside the run): ReferenceError: buildAgreement is not defined
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1569:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-11-08T01:53:36.276Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/prefix-2026-11-08T01-53-36-276Z
+[2026-11-08T01:53:36.280Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-08T01:53:36.311Z] host porcelain before: []
+[2026-11-08T01:53:36.372Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T01:53:36.373Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T01:53:36.377Z] [boot1] world=u5u5a5sfpd23-20261108T01-53-36Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-53-36Z
+[2026-11-08T01:53:36.380Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T01:54:12.702Z] [boot1] mock on 3498
+[2026-11-08T01:54:50.739Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T01-53-36Z/instance-port3188.log
+[2026-11-08T01:54:51.059Z] [boot1] p6t6 health=true
+[2026-11-08T01:54:51.329Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T01:54:56.785Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-s7d5s547n0","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:295dd9400bfa785d7c145efdab187acf28b104a1e9c58d9cc6452897d31abcf1"},"createdAt":"2026-11-08T01:54:51.379Z","generatio
+[2026-11-08T01:54:56.785Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T01:54:59.489Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T01:55:09.491Z] [boot1] mock quiesced=true
+[2026-11-08T01:55:09.492Z] [boot1] leader background job=bash-1
+[2026-11-08T01:55:09.503Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T01:55:09.857Z] [boot1] diagnostics(abort): mockRequests=286
+[2026-11-08T01:55:09.858Z] [boot1] FAILED at evidence-collection: ReferenceError: judgeGoals is not defined
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1470:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs:1707:15)
+[2026-11-08T01:55:09.983Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-53-36Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T01:55:09.984Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T01:55:10.017Z] boot 1 failed at evidence-collection; continuing is pointless (no agreeing pair)
+[2026-11-08T01:55:10.018Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact
+arm
+overall
+baselineVerdict
+enumerationVerdict
+sendVerdict
+interruptVerdict
+jobsVerdict
+skillVerdict
+skillArgsVerdict
+bytesVerdict
+sessionStateVerdict
+goalsVerdict
+membersVerdict
+skillOnMemberSurface
+sendMessageOnMemberSurface
+surfaceACount
+surfaceBCount
+siblingPresent
+goalRounds
+siblingSettled
+aModelRequests
+bModelRequests
+confinedTurnLaunchers
+baseBwrapWithMarkers
+guardAllow
+guardDeny
+guardSkillFacts
+requestsCarryingSecret
+requestsCarryingSkillOut
+memberInstancesAfter
+memberTemplates
+admittedBytes
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-08T01:55:10.051Z] host porcelain after: []
+[2026-11-08T01:55:10.052Z] RESULT FAIL arm=prefix (1/1 boots; agreeing pair=false)
+[2026-11-08T01:57:10.727Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/prefix-2026-11-08T01-57-10-727Z
+[2026-11-08T01:57:10.734Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-08T01:57:10.763Z] host porcelain before: []
+[2026-11-08T01:57:10.823Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T01:57:10.824Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T01:57:10.827Z] [boot1] world=u5u5a5sfpd23-20261108T01-57-10Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-57-10Z
+[2026-11-08T01:57:10.830Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T01:57:47.168Z] [boot1] mock on 3498
+[2026-11-08T01:58:24.976Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T01-57-10Z/instance-port3188.log
+[2026-11-08T01:58:25.500Z] [boot1] p6t6 health=true
+[2026-11-08T01:58:25.771Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T01:58:31.185Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-mourbufois","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:3a171e5b3e7f99ce12a2b24695b54faf97f9402b6491c9817ca15fe0b87e77da"},"createdAt":"2026-11-08T01:58:25.822Z","generatio
+[2026-11-08T01:58:31.185Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T01:58:33.887Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T01:58:43.890Z] [boot1] mock quiesced=true
+[2026-11-08T01:58:43.891Z] [boot1] leader background job=bash-1
+[2026-11-08T01:58:43.902Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T01:58:44.269Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:interrupt-without-effect: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:skill-confined: FAIL failed=["out-of-lane-refused: isError=false text=<skill_content name=\"pd23-out-of-lane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T0","out-of-lane-zero-bytes: the out-of-lane body did not reach the model","out-of-lane-fact: skill-attributed guard facts=0","requests-carry-no-body: mock requests carrying the out-of-lane body=263"]
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:no-out-of-lane-bytes: FAIL failed=["zero-requests-with-skill-body: mock requests carrying the SKILL body=263","zero-a-transcript-bytes: Member A's own durable turn carries no out-of-lane bytes"]
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:goal-session-local: FAIL failed=["pause-typed-refusal: isError=true text=Error: stale goal ref \"goal-unresolved\" revision 1; current is \"goal-0fdadaf9-e675-49ff-a5a1-2716e585ab33\" revision 1"]
+[2026-11-08T01:58:44.270Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T01:58:44.276Z] [boot1] diagnostics(final): mockRequests=286
+[2026-11-08T01:58:44.277Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T01-57-10-793Z-b1 suite=a5sf-pd23-control-surface overall=FAIL cases=11 FAIL:3 PASS:8 worlds=u5u5a5sfpd23-20261108T01-57-10Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T01:58:44.397Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T01-57-10Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T01:58:44.397Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T01:58:44.431Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1
+arm                           prefix
+overall                       FAIL
+baselineVerdict               PROVEN
+enumerationVerdict            PROVEN
+sendVerdict                   PROVEN
+interruptVerdict              PROVEN
+jobsVerdict                   PROVEN
+skillVerdict                  REFUTED
+skillArgsVerdict              PROVEN
+bytesVerdict                  REFUTED
+sessionStateVerdict           PROVEN
+goalsVerdict                  REFUTED
+membersVerdict                PROVEN
+skillOnMemberSurface          true
+sendMessageOnMemberSurface    true
+surfaceACount                 40
+surfaceBCount                 40
+siblingPresent                true
+goalRounds                    256
+siblingSettled                true
+aModelRequests                274
+bModelRequests                2
+confinedTurnLaunchers         2
+baseBwrapWithMarkers          0
+guardAllow                    6
+guardDeny                     0
+guardSkillFacts               0
+requestsCarryingSecret        0
+requestsCarryingSkillOut      263
+memberInstancesAfter          3
+memberTemplates               leader+wide+worker
+admittedBytes                 true
+transcriptSourceCount         17
+
+agreeing=false differing=[]
+[2026-11-08T01:58:44.464Z] host porcelain after: []
+[2026-11-08T01:58:44.464Z] RESULT FAIL arm=prefix (1/1 boots; agreeing pair=false)
+[2026-11-08T02:00:22.411Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/prefix-2026-11-08T02-00-22-410Z
+[2026-11-08T02:00:22.414Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-08T02:00:22.442Z] host porcelain before: []
+[2026-11-08T02:00:22.503Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:00:22.504Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:00:22.507Z] [boot1] world=u5u5a5sfpd23-20261108T02-00-22Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-00-22Z
+[2026-11-08T02:00:22.510Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:00:58.867Z] [boot1] mock on 3498
+[2026-11-08T02:01:36.967Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-00-22Z/instance-port3188.log
+[2026-11-08T02:01:37.361Z] [boot1] p6t6 health=true
+[2026-11-08T02:01:37.632Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:01:42.955Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-arc7up1wwi","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:ebc9fb23b772efe51f7a7f0e6cdd647d5654ca97de44c8a5df339a87c8ae6cf5"},"createdAt":"2026-11-08T02:01:37.681Z","generatio
+[2026-11-08T02:01:42.955Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:01:45.659Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:01:47.660Z] [boot1] mock quiesced=true
+[2026-11-08T02:01:47.661Z] [boot1] leader background job=bash-1
+[2026-11-08T02:01:47.671Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:01:47.690Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:01:47.690Z] [boot1] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:01:47.690Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T02:01:47.690Z] [boot1] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:skill-confined: FAIL failed=["out-of-lane-refused: isError=false text=<skill_content name=\"pd23-out-of-lane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T0","out-of-lane-zero-bytes: the out-of-lane body did not reach the model","out-of-lane-fact: skill-attributed guard facts=0","requests-carry-no-body: mock requests carrying the out-of-lane body=7"]
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:no-out-of-lane-bytes: FAIL failed=["zero-requests-with-skill-body: mock requests carrying the SKILL body=7","zero-a-transcript-bytes: Member A's own durable turn carries no out-of-lane bytes"]
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:goal-session-local: FAIL failed=["pause-typed-refusal: isError=false text={\"goal\":{\"id\":\"goal-c8cda404-4380-435f-bdcf-7332ce845a53\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disa","goal-rounds-observed: goal-round continuations in the Member session=0"]
+[2026-11-08T02:01:47.691Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T02:01:47.692Z] [boot1] diagnostics(final): mockRequests=30
+[2026-11-08T02:01:47.692Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T02-00-22-472Z-b1 suite=a5sf-pd23-control-surface overall=FAIL cases=11 FAIL:3 PASS:8 worlds=u5u5a5sfpd23-20261108T02-00-22Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:01:47.817Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-00-22Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T02:01:47.818Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:01:47.848Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1
+arm                           prefix
+overall                       FAIL
+baselineVerdict               PROVEN
+enumerationVerdict            PROVEN
+sendVerdict                   PROVEN
+interruptVerdict              PROVEN
+jobsVerdict                   PROVEN
+skillVerdict                  REFUTED
+skillArgsVerdict              PROVEN
+bytesVerdict                  REFUTED
+sessionStateVerdict           PROVEN
+goalsVerdict                  REFUTED
+membersVerdict                PROVEN
+skillOnMemberSurface          true
+sendMessageOnMemberSurface    true
+surfaceACount                 40
+surfaceBCount                 40
+siblingPresent                true
+goalRounds                    0
+siblingSettled                true
+aModelRequests                18
+bModelRequests                2
+confinedTurnLaunchers         2
+baseBwrapWithMarkers          0
+guardAllow                    6
+guardDeny                     0
+guardSkillFacts               0
+requestsCarryingSecret        0
+requestsCarryingSkillOut      7
+memberInstancesAfter          3
+memberTemplates               leader+wide+worker
+admittedBytes                 true
+transcriptSourceCount         17
+
+agreeing=false differing=[]
+[2026-11-08T02:01:47.879Z] host porcelain after: []
+[2026-11-08T02:01:47.880Z] RESULT FAIL arm=prefix (1/1 boots; agreeing pair=false)
+[2026-11-08T02:02:00.515Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T02:02:00.516Z] composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml sha256=e5ccad429f98508f0bd2154aa8780337ff956d7110d0b719eb9280dd387f4b2e
+[2026-11-08T02:02:00.516Z] shipped !!js substitutions: [{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-08T02:02:00.542Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-08T02:02:00.542Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surfa"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surfa"}]
+[2026-11-08T02:02:00.543Z] governed preset plugins (21): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,command-goal,tool-goal,plan-mode,compaction-basic,command-compact,tool-result-pruner,tool-subagent,tool-subagent-fork,tool-subagent-codex,tool-subagent-claude-code,tool-ralph,tool-ask-user,tool-todo,present,tool-plugin-manager
+[2026-11-08T02:02:00.543Z] governed preset control rows: []
+[2026-11-08T02:02:00.543Z] governed preset skill rows: []
+[2026-11-08T02:02:00.543Z] PLAN OK
+[2026-11-08T02:03:06.173Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/prefix-2026-11-08T02-03-06-173Z
+[2026-11-08T02:03:06.176Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T02:03:06.205Z] host porcelain before: []
+[2026-11-08T02:03:06.265Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:03:06.266Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:03:06.268Z] [boot1] world=u5u5a5sfpd23-20261108T02-03-06Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-03-06Z
+[2026-11-08T02:03:06.272Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:03:42.481Z] [boot1] mock on 3498
+[2026-11-08T02:04:20.134Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-03-06Z/instance-port3188.log
+[2026-11-08T02:04:20.668Z] [boot1] p6t6 health=true
+[2026-11-08T02:04:20.940Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:04:26.299Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-owsetr9bkp","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:df768fba46fbcc33f5684b552e0fce3a562a923b70ef40b13e717013deda9e1b"},"createdAt":"2026-11-08T02:04:20.995Z","generatio
+[2026-11-08T02:04:26.300Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:04:29.000Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:04:31.001Z] [boot1] mock quiesced=true
+[2026-11-08T02:04:31.001Z] [boot1] leader background job=bash-1
+[2026-11-08T02:04:31.009Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:04:31.025Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:04:31.025Z] [boot1] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:04:31.025Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T02:04:31.025Z] [boot1] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:skill-confined: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:goal-session-local: PASS
+[2026-11-08T02:04:31.026Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T02:04:31.027Z] [boot1] diagnostics(final): mockRequests=30
+[2026-11-08T02:04:31.027Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T02-03-06-233Z-b1 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-03-06Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:04:31.154Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-03-06Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T02:04:31.155Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:04:31.226Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:04:31.226Z] [boot2] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:04:31.229Z] [boot2] world=u5u5a5sfpd23-20261108T02-04-31Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-04-31Z
+[2026-11-08T02:04:31.232Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:05:07.508Z] [boot2] mock on 3498
+[2026-11-08T02:05:45.540Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-04-31Z/instance-port3188.log
+[2026-11-08T02:05:45.899Z] [boot2] p6t6 health=true
+[2026-11-08T02:05:46.166Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:05:51.544Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-707ux97izt","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:f14e8935651896707377178fce184ed402895f37d8c614a736083327aea52506"},"createdAt":"2026-11-08T02:05:46.196Z","generatio
+[2026-11-08T02:05:51.545Z] [boot2] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:05:54.247Z] [boot2] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:05:56.248Z] [boot2] mock quiesced=true
+[2026-11-08T02:05:56.249Z] [boot2] leader background job=bash-1
+[2026-11-08T02:05:56.257Z] [boot2] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:05:56.272Z] [boot2] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:05:56.272Z] [boot2] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:05:56.272Z] [boot2] case pd23:send-message-refused: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:skill-confined: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:session-state-tools: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:goal-session-local: PASS
+[2026-11-08T02:05:56.273Z] [boot2] case pd23:no-new-members: PASS
+[2026-11-08T02:05:56.274Z] [boot2] diagnostics(final): mockRequests=30
+[2026-11-08T02:05:56.274Z] [boot2] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T02-04-31-191Z-b2 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-04-31Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:05:56.416Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-04-31Z","releasedPorts":[3188,3498,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T02:05:56.416Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:05:56.453Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+enumerationVerdict            PROVEN                        PROVEN
+sendVerdict                   PROVEN                        PROVEN
+interruptVerdict              PROVEN                        PROVEN
+jobsVerdict                   PROVEN                        PROVEN
+skillVerdict                  PROVEN                        PROVEN
+skillArgsVerdict              PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+sessionStateVerdict           PROVEN                        PROVEN
+goalsVerdict                  PROVEN                        PROVEN
+membersVerdict                PROVEN                        PROVEN
+skillOnMemberSurface          true                          true
+sendMessageOnMemberSurface    true                          true
+surfaceACount                 40                            40
+surfaceBCount                 40                            40
+siblingPresent                true                          true
+goalRounds                    0                             0
+siblingSettled                true                          true
+aModelRequests                18                            18
+bModelRequests                2                             2
+confinedTurnLaunchers         2                             2
+baseBwrapWithMarkers          0                             0
+guardAllow                    6                             6
+guardDeny                     0                             0
+guardSkillFacts               0                             0
+requestsCarryingSecret        0                             0
+requestsCarryingSkillOut      7                             7
+memberInstancesAfter          3                             3
+memberTemplates               leader+wide+worker            leader+wide+worker
+admittedBytes                 true                          true
+transcriptSourceCount         17                            17
+
+agreeing=true differing=[]
+[2026-11-08T02:05:56.489Z] host porcelain after: []
+[2026-11-08T02:05:56.490Z] RESULT PASS arm=prefix (2/2 boots; agreeing pair=true)
+[2026-11-08T02:07:13.576Z] ARCHIVE: (nothing to archive)
+[2026-11-08T02:07:13.579Z] START arm=postfix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml sha256=e5ccad429f98508f0bd2154aa8780337ff956d7110d0b719eb9280dd387f4b2e hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T02:07:13.607Z] host porcelain before: []
+[2026-11-08T02:07:13.664Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:07:13.665Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:07:13.668Z] [boot1] world=u5u5a5sfpd23-20261108T02-07-13Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-07-13Z
+[2026-11-08T02:07:13.671Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:07:50.034Z] [boot1] mock on 3498
+[2026-11-08T02:08:27.870Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-07-13Z/instance-port3188.log
+[2026-11-08T02:08:28.406Z] [boot1] p6t6 health=true
+[2026-11-08T02:08:28.676Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:08:33.977Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-idz0uv9otu","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:ecf85c692aabb5bb747d10ca274082dd90c7f5153d5855826ff3f7206e9eaf8d"},"createdAt":"2026-11-08T02:08:28.723Z","generatio
+[2026-11-08T02:08:33.977Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:08:36.680Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:08:38.681Z] [boot1] mock quiesced=true
+[2026-11-08T02:08:38.682Z] [boot1] leader background job=bash-1
+[2026-11-08T02:08:38.694Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:08:38.712Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:08:38.712Z] [boot1] case pd23:no-cross-member-enumeration: FAIL failed=["result-not-error: isError=true","empty-child-list: text=Error: unknown tool \"list_agents\""]
+[2026-11-08T02:08:38.712Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:interrupt-without-effect: FAIL failed=["refused-or-accepted-noop: isError=true accepted=false text=Error: unknown tool \"interrupt_agent\""]
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:skill-confined: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:goal-session-local: PASS
+[2026-11-08T02:08:38.713Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T02:08:38.714Z] [boot1] diagnostics(final): mockRequests=30
+[2026-11-08T02:08:38.714Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-postfix-2026-11-08T02-07-13-635Z-b1 suite=a5sf-pd23-control-surface overall=FAIL cases=11 FAIL:2 PASS:9 worlds=u5u5a5sfpd23-20261108T02-07-13Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:08:38.846Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-07-13Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T02:08:38.846Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:08:38.922Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:08:38.922Z] [boot2] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:08:38.926Z] [boot2] world=u5u5a5sfpd23-20261108T02-08-38Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-08-38Z
+[2026-11-08T02:08:38.930Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:09:15.295Z] [boot2] mock on 3498
+[2026-11-08T02:09:53.380Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-08-38Z/instance-port3188.log
+[2026-11-08T02:09:53.698Z] [boot2] p6t6 health=true
+[2026-11-08T02:09:53.965Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:09:59.304Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-b1se6tsslh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:fa4bbff9b5a6e2426a75033ea96b49f93d1edd7d728e3d311bdfe40259b1bb6c"},"createdAt":"2026-11-08T02:09:53.994Z","generatio
+[2026-11-08T02:09:59.305Z] [boot2] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:10:02.008Z] [boot2] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:10:04.008Z] [boot2] mock quiesced=true
+[2026-11-08T02:10:04.009Z] [boot2] leader background job=bash-1
+[2026-11-08T02:10:04.019Z] [boot2] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:no-cross-member-enumeration: FAIL failed=["result-not-error: isError=true","empty-child-list: text=Error: unknown tool \"list_agents\""]
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:send-message-refused: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:interrupt-without-effect: FAIL failed=["refused-or-accepted-noop: isError=true accepted=false text=Error: unknown tool \"interrupt_agent\""]
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:skill-confined: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:session-state-tools: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:goal-session-local: PASS
+[2026-11-08T02:10:04.034Z] [boot2] case pd23:no-new-members: PASS
+[2026-11-08T02:10:04.035Z] [boot2] diagnostics(final): mockRequests=30
+[2026-11-08T02:10:04.036Z] [boot2] RUN-SUMMARY run=a5sf-pd23-control-surface-postfix-2026-11-08T02-08-38-882Z-b2 suite=a5sf-pd23-control-surface overall=FAIL cases=11 FAIL:2 PASS:9 worlds=u5u5a5sfpd23-20261108T02-08-38Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:10:04.171Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-08-38Z","releasedPorts":[3188,3498,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T02:10:04.171Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:10:04.208Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       FAIL                          FAIL
+baselineVerdict               PROVEN                        PROVEN
+enumerationVerdict            REFUTED                       REFUTED
+sendVerdict                   PROVEN                        PROVEN
+interruptVerdict              REFUTED                       REFUTED
+jobsVerdict                   PROVEN                        PROVEN
+skillVerdict                  PROVEN                        PROVEN
+skillArgsVerdict              PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+sessionStateVerdict           PROVEN                        PROVEN
+goalsVerdict                  PROVEN                        PROVEN
+membersVerdict                PROVEN                        PROVEN
+skillOnMemberSurface          false                         false
+sendMessageOnMemberSurface    false                         false
+surfaceACount                 36                            36
+surfaceBCount                 36                            36
+siblingPresent                true                          true
+goalRounds                    0                             0
+siblingSettled                true                          true
+aModelRequests                18                            18
+bModelRequests                2                             2
+confinedTurnLaunchers         2                             2
+baseBwrapWithMarkers          0                             0
+guardAllow                    6                             6
+guardDeny                     0                             0
+guardSkillFacts               0                             0
+requestsCarryingSecret        0                             0
+requestsCarryingSkillOut      0                             0
+memberInstancesAfter          3                             3
+memberTemplates               leader+wide+worker            leader+wide+worker
+admittedBytes                 true                          true
+transcriptSourceCount         17                            17
+
+agreeing=true differing=[]
+[2026-11-08T02:10:04.244Z] host porcelain after: []
+[2026-11-08T02:10:04.244Z] RESULT FAIL arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T02:12:07.765Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/postfix-2026-11-08T02-12-07-764Z
+[2026-11-08T02:12:07.768Z] START arm=postfix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml sha256=e5ccad429f98508f0bd2154aa8780337ff956d7110d0b719eb9280dd387f4b2e hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T02:12:07.795Z] host porcelain before: []
+[2026-11-08T02:12:07.856Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:12:07.856Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:12:07.859Z] [boot1] world=u5u5a5sfpd23-20261108T02-12-07Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-12-07Z
+[2026-11-08T02:12:07.862Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:12:44.231Z] [boot1] mock on 3498
+[2026-11-08T02:13:22.363Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-12-07Z/instance-port3188.log
+[2026-11-08T02:13:22.669Z] [boot1] p6t6 health=true
+[2026-11-08T02:13:22.938Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:13:28.271Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-2zsrbdhsho","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:78da6e590bd871cb1308315a9adbb3d9fcdc2123ce66a186421702c1a9b028ee"},"createdAt":"2026-11-08T02:13:22.991Z","generatio
+[2026-11-08T02:13:28.271Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:13:30.973Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:13:32.974Z] [boot1] mock quiesced=true
+[2026-11-08T02:13:32.975Z] [boot1] leader background job=bash-1
+[2026-11-08T02:13:32.986Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:skill-confined: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T02:13:33.008Z] [boot1] case pd23:goal-session-local: PASS
+[2026-11-08T02:13:33.009Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T02:13:33.009Z] [boot1] diagnostics(final): mockRequests=30
+[2026-11-08T02:13:33.010Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-postfix-2026-11-08T02-12-07-825Z-b1 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-12-07Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:13:33.145Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-12-07Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T02:13:33.145Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:13:33.220Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:13:33.221Z] [boot2] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:13:33.224Z] [boot2] world=u5u5a5sfpd23-20261108T02-13-33Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-13-33Z
+[2026-11-08T02:13:33.228Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:14:09.624Z] [boot2] mock on 3498
+[2026-11-08T02:14:47.714Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-13-33Z/instance-port3188.log
+[2026-11-08T02:14:48.064Z] [boot2] p6t6 health=true
+[2026-11-08T02:14:48.331Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:14:53.635Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-fzvzw1pvdn","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:c61b3c86c5e1951cf2eddebe9a81512e376b6414b939e0debff7c67d45b5cf66"},"createdAt":"2026-11-08T02:14:48.361Z","generatio
+[2026-11-08T02:14:53.635Z] [boot2] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:14:56.336Z] [boot2] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:14:58.337Z] [boot2] mock quiesced=true
+[2026-11-08T02:14:58.338Z] [boot2] leader background job=bash-1
+[2026-11-08T02:14:58.346Z] [boot2] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:14:58.361Z] [boot2] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:14:58.361Z] [boot2] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:14:58.361Z] [boot2] case pd23:send-message-refused: PASS
+[2026-11-08T02:14:58.361Z] [boot2] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:skill-confined: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:session-state-tools: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:goal-session-local: PASS
+[2026-11-08T02:14:58.362Z] [boot2] case pd23:no-new-members: PASS
+[2026-11-08T02:14:58.363Z] [boot2] diagnostics(final): mockRequests=30
+[2026-11-08T02:14:58.363Z] [boot2] RUN-SUMMARY run=a5sf-pd23-control-surface-postfix-2026-11-08T02-13-33-181Z-b2 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-13-33Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:14:58.495Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-13-33Z","releasedPorts":[3188,3498,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T02:14:58.495Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:14:58.525Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+enumerationVerdict            PROVEN                        PROVEN
+sendVerdict                   PROVEN                        PROVEN
+interruptVerdict              PROVEN                        PROVEN
+jobsVerdict                   PROVEN                        PROVEN
+skillVerdict                  PROVEN                        PROVEN
+skillArgsVerdict              PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+sessionStateVerdict           PROVEN                        PROVEN
+goalsVerdict                  PROVEN                        PROVEN
+membersVerdict                PROVEN                        PROVEN
+skillOnMemberSurface          false                         false
+sendMessageOnMemberSurface    false                         false
+surfaceACount                 36                            36
+surfaceBCount                 36                            36
+siblingPresent                true                          true
+goalRounds                    0                             0
+siblingSettled                true                          true
+aModelRequests                18                            18
+bModelRequests                2                             2
+confinedTurnLaunchers         2                             2
+baseBwrapWithMarkers          0                             0
+guardAllow                    6                             6
+guardDeny                     0                             0
+guardSkillFacts               0                             0
+requestsCarryingSecret        0                             0
+requestsCarryingSkillOut      0                             0
+memberInstancesAfter          3                             3
+memberTemplates               leader+wide+worker            leader+wide+worker
+admittedBytes                 true                          true
+transcriptSourceCount         17                            17
+
+agreeing=true differing=[]
+[2026-11-08T02:14:58.557Z] host porcelain after: []
+[2026-11-08T02:14:58.557Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T02:16:28.697Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/prefix-2026-11-08T02-16-28-697Z
+[2026-11-08T02:16:28.701Z] START arm=prefix head=c5d619e5370c196692b02735e41086933119ed0f composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml sha256=aa62a6b83f7cc9d1a7aa5c118baf323538e3993e11703dcf89044ccabed76273 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T02:16:29.122Z] host porcelain before: []
+[2026-11-08T02:16:29.197Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:16:29.198Z] [boot1] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:16:29.202Z] [boot1] world=u5u5a5sfpd23-20261108T02-16-29Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z
+[2026-11-08T02:16:29.207Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:17:05.583Z] [boot1] mock on 3498
+[2026-11-08T02:17:44.524Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-16-29Z/instance-port3188.log
+[2026-11-08T02:17:44.925Z] [boot1] p6t6 health=true
+[2026-11-08T02:17:45.195Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:17:50.509Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-ejwn87yzcv","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:3f558f0e86fd4382532a6358ae1c075045214e8ea89f46732e1adafa71775061"},"createdAt":"2026-11-08T02:17:45.247Z","generatio
+[2026-11-08T02:17:50.509Z] [boot1] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:17:53.211Z] [boot1] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:17:55.212Z] [boot1] mock quiesced=true
+[2026-11-08T02:17:55.213Z] [boot1] leader background job=bash-1
+[2026-11-08T02:17:55.224Z] [boot1] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:17:55.248Z] [boot1] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:send-message-refused: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:skill-confined: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:session-state-tools: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:goal-session-local: PASS
+[2026-11-08T02:17:55.249Z] [boot1] case pd23:no-new-members: PASS
+[2026-11-08T02:17:55.251Z] [boot1] diagnostics(final): mockRequests=30
+[2026-11-08T02:17:55.251Z] [boot1] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T02-16-29-158Z-b1 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-16-29Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:17:55.394Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T02:17:55.394Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:17:55.474Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T02:17:55.474Z] [boot2] dev-live slot #0 face=ControlSurface world=u5a5sfpd23 head=c5d619e5370c196692b02735e41086933119ed0f
+[2026-11-08T02:17:55.477Z] [boot2] world=u5u5a5sfpd23-20261108T02-17-55Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-17-55Z
+[2026-11-08T02:17:55.481Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T02:18:31.905Z] [boot2] mock on 3498
+[2026-11-08T02:19:10.065Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-17-55Z/instance-port3188.log
+[2026-11-08T02:19:10.375Z] [boot2] p6t6 health=true
+[2026-11-08T02:19:10.643Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T02:19:15.995Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd23-nfqvtixwoy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd23-team","blueprint":{"blueprintId":"team.a5sf.pd23.main","revision":"1","contentHash":"sha256:12b632d7bfaca66323167ff35d2ad12a41bef26427237759a46b38a6e39f06de"},"createdAt":"2026-11-08T02:19:10.676Z","generatio
+[2026-11-08T02:19:15.995Z] [boot2] leader chain closed (A5SF_PD23_L1_DONE)=true
+[2026-11-08T02:19:18.697Z] [boot2] sibling turn settled (A5SF_PD23_MEMBER_B_DONE)=true
+[2026-11-08T02:19:20.698Z] [boot2] mock quiesced=true
+[2026-11-08T02:19:20.698Z] [boot2] leader background job=bash-1
+[2026-11-08T02:19:20.706Z] [boot2] members=[{"instanceId":"inst-0w2vuul0zc5l","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-1jd8dq5136kg","templateId":"wide","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-280c347ee589a6b43c164cb77ab05828 B=session-team-child-65e8721e52f17932d0f986ca50101d07
+[2026-11-08T02:19:20.721Z] [boot2] case pd23:member-confined-baseline: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:no-cross-member-enumeration: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:send-message-refused: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:interrupt-without-effect: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:jobs-owner-scoped: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:skill-confined: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:skill-arg-refused: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:no-out-of-lane-bytes: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:session-state-tools: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:goal-session-local: PASS
+[2026-11-08T02:19:20.722Z] [boot2] case pd23:no-new-members: PASS
+[2026-11-08T02:19:20.723Z] [boot2] diagnostics(final): mockRequests=30
+[2026-11-08T02:19:20.723Z] [boot2] RUN-SUMMARY run=a5sf-pd23-control-surface-prefix-2026-11-08T02-17-55-433Z-b2 suite=a5sf-pd23-control-surface overall=PASS cases=11 PASS:11 worlds=u5u5a5sfpd23-20261108T02-17-55Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T02:19:20.862Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-17-55Z","releasedPorts":[3188,3498,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T02:19:20.862Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T02:19:20.898Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+enumerationVerdict            PROVEN                        PROVEN
+sendVerdict                   PROVEN                        PROVEN
+interruptVerdict              PROVEN                        PROVEN
+jobsVerdict                   PROVEN                        PROVEN
+skillVerdict                  PROVEN                        PROVEN
+skillArgsVerdict              PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+sessionStateVerdict           PROVEN                        PROVEN
+goalsVerdict                  PROVEN                        PROVEN
+membersVerdict                PROVEN                        PROVEN
+skillOnMemberSurface          true                          true
+sendMessageOnMemberSurface    true                          true
+surfaceACount                 40                            40
+surfaceBCount                 40                            40
+siblingPresent                true                          true
+goalRounds                    0                             0
+siblingSettled                true                          true
+aModelRequests                18                            18
+bModelRequests                2                             2
+confinedTurnLaunchers         2                             2
+baseBwrapWithMarkers          0                             0
+guardAllow                    6                             6
+guardDeny                     0                             0
+guardSkillFacts               0                             0
+requestsCarryingSecret        0                             0
+requestsCarryingSkillOut      7                             7
+memberInstancesAfter          3                             3
+memberTemplates               leader+wide+worker            leader+wide+worker
+admittedBytes                 true                          true
+transcriptSourceCount         17                            17
+
+agreeing=true differing=[]
+[2026-11-08T02:19:20.932Z] host porcelain after: []
+[2026-11-08T02:19:20.933Z] RESULT PASS arm=prefix (2/2 boots; agreeing pair=true)

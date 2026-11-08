@@ -178,12 +178,28 @@
     #     the realm mounts, so it loses `run_in_background`, per-call
     #     `timeoutMs`, `sandbox_permissions`/`justification` and the structured
     #     result object (the face's answer is bounded text).
-    #   - `tool-jobs`, skills (`skill-filesystem`/`tool-skill`), fs, search,
-    #     goal/plan/todo/present, subagent and compaction are RETAINED.
-    #     `tool-jobs` is retained but has no producer on this preset (the
-    #     confined face cannot hand a command to the job registry). `subagent`
-    #     is retained; its child-session assembly on a governed row is
-    #     UNMEASURED (PD-18 adjacent finding — see the evidence README).
+    #   - `tool-jobs`, fs, search, goal/plan/todo/present, `subagent` and
+    #     compaction are RETAINED. `tool-jobs` is retained but has no producer
+    #     on this preset (the confined face cannot hand a command to the job
+    #     registry); it answers from an OWNER-scoped registry, so a Member can
+    #     only ever see its own (empty) job list — PD-23 measured this live.
+    #     `subagent` is retained here; its child-session assembly on a governed
+    #     row is the PD-22 finding (fail-closed removal of the rest of this
+    #     group on the sibling lane — see the evidence README).
+    #   - `send_message`/`interrupt_agent` (`tool-subagent-control`) and
+    #     `list_agents` (`tool-subagent-list-agents`) are REMOVED by PD-23: on
+    #     this preset a Member has no legal lineage target (its sibling and its
+    #     Leader both fail the subagent lineage rule), `list_agents` reports only
+    #     the caller's OWN children (none), and `interrupt_agent` answers a
+    #     success-shaped `interrupt requested for agent …` for a target it never
+    #     touched. All four calls are the router's typed `unknown tool` now.
+    #   - the skills loader is REMOVED by PD-23 too. `skill-filesystem` serves
+    #     bodies from the BASE `fs` (preset rows are mounted on the registry
+    #     generation scope, so no ctx handed to the preset changes a body's
+    #     `fs`), and a live Member load of a `$DSH_HOME/skills` body returned its
+    #     bytes with ZERO guard facts. Absence is a CAPABILITY REGRESSION, not an
+    #     enforcement; a confined provider needs a `CORE_SEAM_BLOCKER`-class seam
+    #     (see the PD-23 evidence README §5.1).
     #   - NO `persistent-shell`/`dsh-terminal` row appears anywhere on this
     #     preset's scope: a persistent PTY would turn the realm install into
     #     `TERMINALS_DOUBLE_TERMINAL_REFUSED` (no Member at all), and the
@@ -214,10 +230,6 @@
               sampleOverCapGlobResults: false
           - id: tool-jobs
             name: '@deepseek-ai/dsh-tool-jobs'
-          - id: skill-filesystem
-            name: '@deepseek-ai/dsh-skill-filesystem'
-          - id: tool-skill
-            name: '@deepseek-ai/dsh-tool-skill'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
           - id: tool-goal
@@ -266,10 +278,6 @@
             isolate:
               workflowEngine: true
             config:
-              - id: tool-subagent-control
-                name: '@deepseek-ai/dsh-tool-subagent-control'
-              - id: tool-subagent-list-agents
-                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
               - id: tool-subagent
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
