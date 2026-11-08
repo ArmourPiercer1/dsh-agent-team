@@ -941,6 +941,33 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
    `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` + `a5sf-pd26-mutation-controls.mjs`。
 
 
+### 1.8.10 CORRECTION（PD-28 追加；只追加，不改 §1.8.0–§1.8.9 的任何等级、`V@B` 或数字）
+
+> 2026-11-14，lane `PD28-SERVICE-SEAM`（base `24d2cf760`，PD-26 已并入）。本节只**追加**；§1.8.2 的桶、
+> 等级与 §1.8.9 的差值一字未改——PD-28 不改变任何工具的验收等级，它改的是**安全论证的归属**。
+
+1. **§1.8.9（PD-26）的读数全部成立，且由 PD-28 逐项复现。** 同一 World 布局、同一 driver 的
+   一对 agreeing `DEV-LIVE` boot 读数：名册 **31**；`skill` 范围内 1 allow fact（`readText`）、
+   越界 `IO_READ_DENIED` + 0 字节 + 1 deny fact；`present` 范围内 2 allow fact（`lstat`+`stat`）+
+   恰好 1 条 `deliverables/presented`，越界（存在/缺失）各 1 deny fact、0 event、无存在性 oracle；
+   `factTools {bash:3,read:2,grep:1,skill:2,present:4}`、guard allow/deny `9/3` 与 PD-26 的
+   `runs/boot01|02` **逐字段相同**。
+2. **这两条能力不再由 Team 侧重写的工具服务，改由「服务」提供**：`skill` 由 Member realm 挂载的
+   Team `skills` **provider** 提供（`list()` 不碰 fs；`get()` 走 confined `fs` 的 `resolve` +
+   `readText`），`present` 由**钉死的宿主** `@deepseek-ai/dsh-tool-present` 包以 `direct` 方式挂到
+   同一 realm scope（不经注册路由器，故其自身的 `ctx.on('tools/result')` 能收到派发）。
+   两个 `confined-*-tool.mjs` 已删除，`packages/**` 下这两个名字**不再有任何 Team 工具模块**。
+3. **一条被纠正的归因（记录，不覆盖）**：§1.8.9 沿用 PD-26 的解释「realm ctx 带的是 Member 的 isolate
+   scope，收不到 agent scope 的 `tools/result` 派发」。实测 `scopeOf(realmCtx)` 在 **direct 与 routed
+   两种挂载下都是 agent**；真正过滤掉监听的是路由器给模块重新分配的 `tools` **服务** isolate 标签
+   （`Service.prototype[filter]` 的标签比较）。同一宿主模块 direct 挂载 → 1 条 event，routed → 0 条。
+   这条不改任何等级，只是让下一次遇到「事件到了却没触发」的人不必再猜 scope。
+4. **证据**：`dev/agent-workflow/evidence/a5sf-pd28-service-seam/`（`runs/boot01|02` 一对 agreeing
+   boots、`agreement-postfix.txt`、`mutation-controls.log`、README §1–§8）；host-free
+   `tests/world-factory/a5sf-pd28-service-seam.test.mjs`（4 通过 + 1 个 `A5SF_PD28_PIN=1` 的 pre-fix
+   PIN）与 `a5sf-pd28-mutation-controls.mjs`（`VERDICT PASS 8/8`）。
+
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->

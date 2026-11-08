@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T09:52:03.973Z",
+  "arm": "postfix",
+  "head": "24d2cf760e12f311c9d944152c8ee1b0bbc9ff59",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "2420e2fbc8fc2624e3d76b7b5c0eab5a332cba9234c28b91768d4df915359d84",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",
+    "sha256": "f8fec5b5a79e178055fe389e1ce4f97f44010dc774d54354d91743ae3cdff691",
+    "arm": "postfix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "ConfinedSkill",
+    "world": "u5a5sfpd28",
+    "source": "task PD28-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=postfix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd28-service-seam/run-boot.mjs --arm postfix"
+}

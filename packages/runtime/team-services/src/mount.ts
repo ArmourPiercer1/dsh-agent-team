@@ -127,6 +127,21 @@ export interface NativeToolModuleMount {
    */
   readonly toolBindingIdentity?: string
   /**
+   * PD-28 (2026-11-14) — mount the module DIRECTLY on the Member's isolated
+   * scope, with NO registration router.
+   *
+   * Needed by a module that registers a `tools/result` listener: Cordis filters
+   * service-scoped events by the `tools` isolation label, and the router
+   * isolates `tools`, so a routed module never receives the dispatch (measured).
+   * A direct mount keeps the realm's real `tools` label and its confined `fs`
+   * label, registers into the AGENT's tool layer, and is verified by DEFINITION
+   * IDENTITY instead of the router's forwarding receipt (see
+   * `mountDirectNativeModule`). Refused with a binding identity, without
+   * non-empty `expectedTools`, on a deferred registration, or for a name a
+   * mounted ToolBinding owns.
+   */
+  readonly direct?: boolean
+  /**
    * ASSEMBLY GAP 1 (2026-11-03) — OBSERVATION-ONLY mount.
    *
    * A binding may only be assigned to the native module that actually OWNS the
@@ -1527,7 +1542,164 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         attachRecord = null
       }
       const routedPartitions = managedPartitions
+      /**
+       * PD-28 (2026-11-14) — mount ONE module DIRECTLY on the Member's isolated
+       * scope, without the registration router.
+       *
+       * WHY A DIRECT MOUNT EXISTS. The router partitions a module's suite by
+       * `isolate('tools', <fresh label>)`. Cordis filters every service-scoped
+       * event by the PROVIDER's isolation label, and `tools/result` is dispatched
+       * through the `tools` service — so a listener a module registers on a
+       * routed context never receives it (measured host-free: the SAME pinned
+       * `@deepseek-ai/dsh-tool-present` module appends 1 delivery event mounted
+       * directly and 0 behind the router). A module that ships a `tools/result`
+       * listener therefore cannot ride the router. Mounting it directly on the
+       * member scope keeps the realm's REAL `tools` label (events arrive) and its
+       * confined `fs` label (every read is guarded), and its registration lands
+       * in the AGENT's tool layer, which shadows the preset row for this agent.
+       *
+       * WHAT REPLACES THE ROUTER'S PROOF. A routed mount is verified by the
+       * router's forwarding receipt; a direct mount is verified by DEFINITION
+       * IDENTITY — before/after `tools.get(name, scope)` for every declared
+       * `expectedTools` name must differ, or the mount is refused. That receipt
+       * is then recorded exactly like a router partition's, so the admission
+       * deny, the continuous verification and the coverage gate cover the names
+       * the same way.
+       *
+       * LIMITS (fail closed, each a refusal): no binding identity (a direct mount
+       * cannot partition, so it must not claim a ToolBinding's name), non-empty
+       * `expectedTools` (its only proof), no deferred registration of any kind (a
+       * deferred child would resolve services without the router and bypass the
+       * deferred-inject face checks), and no name a mounted binding owns.
+       */
+      const mountDirectNativeModule = async (mount: NativeToolModuleMount, index: number): Promise<void> => {
+        const expected = Array.isArray(mount.expectedTools) ? [...mount.expectedTools] : []
+        const moduleLabel = moduleLabelOf(mount)
+        function fail(detail: string): never {
+          throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', detail)
+        }
+        if (mount.observeOnly === true) {
+          fail(
+            `native tool module '${moduleLabel}' declares a DIRECT observe-only mount:`
+            + ' an observe-only probe registers nothing, so it cannot prove a shadow by definition identity;'
+            + ' observation must ride the registration router',
+          )
+        }
+        if (mount.toolBindingIdentity !== undefined) {
+          fail(
+            `native tool module '${moduleLabel}' declares a DIRECT mount for binding ${JSON.stringify(mount.toolBindingIdentity)}:`
+            + ' a direct mount installs no registration router, so it cannot partition a binding\'s tool; mount it routed',
+          )
+        }
+        if (expected.length === 0 || expected.some((name) => typeof name !== 'string' || name.trim() === '')) {
+          fail(
+            `native tool module '${moduleLabel}' declares a DIRECT mount without expectedTools:`
+            + ' the only shadow proof a direct mount has is definition identity, so it must name the tools it shadows',
+          )
+        }
+        for (const name of expected) {
+          if (bindingToolNames.has(name)) {
+            fail(
+              `native tool module '${moduleLabel}' declares a DIRECT mount of '${name}', which a mounted ToolBinding owns:`
+              + ' S-1 routing requires the registration router, so a direct mount would bypass the binding partition',
+            )
+          }
+        }
+        const realTools = memberTarget.get('tools') as { get?: (name: string, scope: unknown) => unknown } | undefined
+        if (realTools === undefined || realTools === null || typeof realTools.get !== 'function') {
+          fail(
+            'native tool re-mount needs a tools service that can answer definition identity'
+            + ' (the direct mount\'s only shadow proof); refusing instead of mounting an unverifiable shadow',
+          )
+        }
+        const scope = options?.scope
+        const before = new Map<string, unknown>(expected.map((name) => [name, realTools.get?.(name, scope)]))
+        const windowFibers: Fiber[] = []
+        const detachWindow = memberTarget.root.on('internal/plugin', (created: Fiber) => {
+          windowFibers.push(created)
+        })
+        let fiber: Fiber | undefined
+        try {
+          fiber = await memberTarget.plugin(mount.module, mount.config as never)
+          const directFiber: Fiber = fiber
+          const descendants = windowFibers
+            .filter((created) => created !== directFiber && isDescendantOf(created, directFiber) && created.uid !== null)
+          if (descendants.length > 0) {
+            fail(
+              `native tool module '${moduleLabel}' started ${String(descendants.length)} deferred registration(s) during a DIRECT mount:`
+              + ' a deferred child resolves services without the registration router and would bypass the binding partition'
+              + ' and the deferred-inject face checks; a direct mount is limited to single-fiber modules',
+            )
+          }
+          const after = new Map<string, unknown>()
+          for (const name of expected) {
+            const definition = realTools.get?.(name, scope)
+            if (definition === undefined || definition === null || definition === before.get(name)) {
+              fail(
+                `native tool module '${moduleLabel}' was mounted DIRECTLY but did not replace the definition of '${name}'`
+                + ' for the agent scope: a direct mount is verified by definition identity, so an unchanged definition would'
+                + ' keep executing the preset row\'s (base-fs) implementation',
+              )
+            }
+            after.set(name, definition)
+          }
+          const partition: RegistrationPartition = {
+            forwarded: new Set(expected),
+            observed: new Set(expected),
+            dropped: new Set(),
+            forwardedSections: new Set(),
+            forwardedDefinitions: after,
+          }
+          routedPartitions.push({ realm: 'ceiling', label: null, partition })
+          // The SAME routing receipt a routed fiber publishes, so every reader
+          // (`unshadowedExpectedTools`, the ownership probe, the attach record)
+          // sees a direct mount exactly like a router-verified one. The receipt
+          // is HONEST because it was produced by the identity gate above: these
+          // names are the ones whose definition this fiber replaced.
+          Object.defineProperty(directFiber, NATIVE_REGISTRATION_ROUTING, {
+            value: Object.freeze({
+              realm: 'ceiling',
+              toolBindingIdentity: null,
+              forwarded: Object.freeze([...expected]),
+              observed: Object.freeze([...expected]),
+              dropped: Object.freeze([]),
+              forwardedSections: Object.freeze([]),
+            }),
+            enumerable: false,
+            configurable: true,
+          })
+          for (const [name, definition] of after) {
+            expectedDefinitions.set(name, definition)
+            managedRealmOf.set(name, { realm: 'ceiling', toolBindingIdentity: null })
+          }
+          // The per-call fiber list the caller (and the rollback) owns: the
+          // routed branch's `created` contract, kept for a direct mount.
+          created.push(directFiber)
+          nativeFibers.push(directFiber)
+          attachEntries.push({
+            moduleName: String((mount.module as { name?: unknown } | null)?.name ?? `#${String(index)}`),
+            specifier: typeof mount.specifier === 'string' ? mount.specifier : null,
+            allowEmpty: mount.allowEmpty === true,
+            expectedTools: [...expected],
+            forwarded: expected.length,
+          })
+        } catch (error) {
+          if (fiber !== undefined) await disposeFiberBounded(fiber)
+          await rollbackCreated()
+          if (error instanceof TeamServiceInstallError) throw error
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            `native tool module '${moduleLabel}' direct re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
+          )
+        } finally {
+          detachWindow()
+        }
+      }
       for (const [index, mount] of modules.entries()) {
+        if (mount.direct === true) {
+          await mountDirectNativeModule(mount, index)
+          continue
+        }
         const binding = observeOnly || mount.toolBindingIdentity === undefined
           ? undefined
           : bindingRealmOf(mount.toolBindingIdentity)
