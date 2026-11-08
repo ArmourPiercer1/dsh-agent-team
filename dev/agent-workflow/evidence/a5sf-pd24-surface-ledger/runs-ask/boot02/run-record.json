@@ -1,0 +1,110 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd24-surface-ledger-ask-2026-11-08T04-25-27-563Z-b2",
+  "suite": "a5sf-pd24-surface-ledger",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T04:25:27.563Z",
+  "selectedCases": [
+    "pd24:ask-blocks-delegated-turn"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "SurfaceLedger",
+      "world": "u5a5sfpd24",
+      "source": "task PD24-SURFACE-LEDGER explicit boot authorisation (2026-11-14), arm=ask"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd24-20261108T04-25-27Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd24:ask-blocks-delegated-turn",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:27:36.087Z",
+      "proposition": "`ask_user_question` BLOCKS a delegated governed Member turn: the call is issued, NO result arrives inside a 60 s window, no `turn/end` is recorded, and the Member's own session is still open (its Leader/Team state is untouched)",
+      "clauses": [
+        {
+          "id": "control-ran",
+          "ok": true,
+          "detail": "the in-lane bash control settled first (isError=false)"
+        },
+        {
+          "id": "ask-call-issued",
+          "ok": true,
+          "detail": "the Member issued `ask_user_question`"
+        },
+        {
+          "id": "no-tool-result",
+          "ok": true,
+          "detail": "no tool result was recorded for the ask call"
+        },
+        {
+          "id": "turn-still-open",
+          "ok": true,
+          "detail": "turn/end events=undefined"
+        },
+        {
+          "id": "team-state-untouched",
+          "ok": true,
+          "detail": "members=2 (leader + worker; the ask wrote no Team state)"
+        },
+        {
+          "id": "no-question-event",
+          "ok": true,
+          "detail": "user/questions events=0"
+        }
+      ],
+      "failed": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T04:25:59.021Z",
+        "runId": "a5sf-pd24-surface-ledger-ask-2026-11-08T04-25-27-563Z-b2",
+        "suite": "a5sf-pd24-surface-ledger",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd24-20261108T04-25-27Z",
+        "phase": "a5sf-pd24-surface-ledger-ask-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd24-surface-ledger-ask-boot2",
+      "world": "u5u5a5sfpd24-20261108T04-25-27Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/driver/logs/u5u5a5sfpd24-20261108T04-25-27Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd24-surface-ledger-ask-2026-11-08T04-25-27-563Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T04:27:36.088Z"
+}

@@ -689,6 +689,231 @@ network deny 在 OS 层、动态 shell 读（`$(…)`/反引号）、per-Team sc
 5. **没有 `V@B`。** 本节所有数字都是 `DEV-LIVE`（可重复、`eligible=false`）或 host-free 证据，
    **结构上不可能**产出候选级 `V@B`；矩阵 ⑧/⑨ 一格未动。
 
+> **2026-11-14 CORRECTION（PD-24 SURFACE-LEDGER，只追加；§1.7 原文一字未改）**：§1.7.3 把 `present`
+> 写成「走宿主服务、不另设数据面上限」、把 `ask_user_question` 记作「无数据面 I/O」，两处都只是**未测量**
+> 的措辞，已被实测推翻（`present` 是 BASE `fs` 上的越界静默成功 + 存在性 oracle，0 条 a5sf fact；
+> `ask_user_question` 不拒绝而是**阻塞**一个 delegated 回合）。**逐行账本、五个桶的恒等式、以及 34 名
+> 名册的完整归属见 §1.8**；本节的历史数字（7 / 33 / 13、40 名）保留不动，只作时点读数。
+
+## 1.8 2026-11-14 PD-24 SURFACE-LEDGER：受治 Member 面账本（dated）
+
+**记录类别**：`DEV-LIVE`（真实 Host + shipped opt-in preset `a5sf-governed-member` + 真实 delegated
+Member 回合，pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`；lane base `6cfc67b76`，pre-fix 与
+ask 两对 boot 跑在 base 上、post-fix 一对跑在后继 lane head `4d4e68abc` 上（同一组合，records 绑定可 checkout 的 commit））＋ host-free
+（0 boots 的 5 臂套件 + 4 臂 mutation controls）＋ **派生账本**（`build-ledger.mjs` 从 boot 产物重算，
+自检恒等式与名册覆盖，不合格就拒绝写出）。**不改任何 ⑧ 等级、不改任何 `V@B`、不关闭 G2–G5、不改
+`release BLOCKED`、不删 §1.7 的任何历史数字与行文**——§1.7 原文一字未删，本节只在 §1.8.0 追加一条
+dated CORRECTION 指针。
+
+**为什么需要这一节**：§1.7 用「受治 / 表面存在但不受治 / 不在面」三分，把 33 个非受治名整体写成
+「无数据面 I/O 或走宿主服务，本阶段不另设数据面上限」。那是**未测量**的措辞，不是测量结论——其中
+**10 个名字从来没有被单独判过**。owner 的问题不是再讲一遍三分，而是「**到底有多少真正可用的受治
+原生工具**」。答案必须能逐行核，所以本节的主产物是**账本**：`ledger.json`（机器可读，每行内联它
+的实测证据）、`ledger.txt`（同一批行的表）、`roster.json`（每次 boot 的实测名册）。数字由脚本从
+boot 产物重算，不是手打；脚本在名册移动、桶计数与行数不符、或出现未分类名字时**拒绝写出**。
+
+### 1.8.0 CORRECTION（对 §1.7 的 dated 修正；只追加，不改原文）
+
+1. **§1.7.3 的 `present / skill` 行把 `present` 写成「走宿主服务、本阶段不另设数据面上限」——错。**
+   实测：`present` 的 preset 行挂在**注册代 scope**，它取到的是 **BASE `fs`**；`ctx.fs.stat` **接受**了
+   真实越界路径（`Presented …/out-of-lane/secret-out-of-lane.txt`），缺失路径回 `file not found`（存在性
+   oracle），**0 条** `a5sf-guard-consult` fact，同时 **2 条** `deliverables/presented` 落在 Member 自己的
+   session。已 fail-closed 移除（§1.8.5）。
+2. **§1.7.3 的 `state / goal / job / ask / message` 行把 `ask_user_question` 记作「无数据面 I/O」——不完整。**
+   它不越界（不写 Team 状态、不产 `user/questions`），但**阻塞**：调用发出后 60 s 观察窗内无 tool result、
+   无 `turn/end`；开发首 boot 上同步委派把 `team.create` 挂了 **300 s**（§1.8.4）。
+3. **§1.7.2 的「33 = team_* 15 + 产品原生 16 + World 夹具 2」是 40 名名册上的读数。** 名册在此之后缩过：
+   **40 →（PD-21/22 delegation 组 −5）→ 35 →（PD-23 `skill` −1）→ 34 →（PD-24 `present` −1）→ 33**。
+   本节用 **34 名**（pre-fix）口径，与 §1.7 不矛盾，只是时点不同；每个差值都在 §1.8.2 的恒等式里。
+
+### 1.8.1 口径与名册来源（先写死再数）
+
+- **本节被审计的名册 = pre-fix 的 34 名**，取自 `dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/archive/pair-prefix/boot01|02/member-surface.json`
+  （两次 boot 逐字相同）。post-fix 名册 **33 名**取自 `runs/boot01|02/member-surface.json`（两次逐字相同）；
+  差值恰为 `present` 一项。
+- **面上名册**仍然是**模型请求里的 `tools` 数组**，不是 preset 声明——`present` 的移除必须有模型请求
+  侧的读数才算数。
+- **World 夹具** `u5_canary` / `u6fs_probe` 如实披露，但**不计入** shipped 行（与 §1.7 同口径）。
+- 每行判定列固定为：**桶 / 在面 / 调用会做什么 / 作用域 / 产 fact / 越界时是 typed 拒绝还是静默成功 /
+  依据**。
+- **失败层级**沿用 §1.7.1 的闭集（`L0 router` / `L1 admission` / `L2 host-tool gate` / `L3 OS` / `none`）。
+- **`DEV-LIVE` 边界不变**：boot 不是合并证据，`CANDIDATE-C2` 未跑，结构上不可能产出 `V@B=yes`。
+  本节所有数字 `eligible = false`。
+
+### 1.8.2 五个桶、恒等式、以及两个读数
+
+| 桶 | 数量 | 名单（逐名） | 判定依据 |
+|---|---|---|---|
+| **GOVERNED**（confined face + fact） | **7** | `bash`、`read`、`write`、`edit`、`read_image`、`grep`、`glob` | 一次 Member 回合产 **9 条** allow fact：`bash` 3、`read` 2、`write`/`edit`/`grep`/`glob` 各 1；`read_image` 的 live 分支在 **route gate** 被拒（`model "deepseek-v4-flash" does not declare image input`），face 行为只有 host-free 证据 |
+| **SESSION-LOCAL**（只写自己 session） | **9** | `todo_write`、`job_list`、`job_output`、`job_kill`、`get_goal`、`create_goal`、`update_goal`、`exit_plan_mode`、`ask_user_question` | 逐条实测见 §1.8.3 / §1.8.4；无一条写 Team 状态 |
+| **OTHER-AUTHZ**（`team_*`，另一授权平面） | **15** | `team_archive_member`、`team_collect`、`team_create_member`、`team_delegate`、`team_follow_up`、`team_grant_permission`、`team_inspect_config`、`team_list_members`、`team_list_pending_control`、`team_list_templates`、`team_report_progress`、`team_request_control`、`team_resolve_control`、`team_revoke_permission`、`team_send_message` | 不产 a5sf fact；自己的 request-token/envelope 授权（`TEAM_RUNTIME_CALLER_AUTHORITY_DENIED` 等）。**本 lane 未测未改** |
+| **FAIL-CLOSED**（typed `unknown tool`，零执行） | **11** | 册上 1：`present`（PD-24）；册外 10：`send_message`、`interrupt_agent`、`list_agents`、`skill`、`subagent`、`subagent_fork`、`web_fetch`、`web_search`、`workflow`、`pwsh`（PD-18/21/22/23） | 一次 Member 回合内逐名调用，全部 `isError=true` + `unknown tool "<name>"`，零副作用 |
+| **UNMEASURED**（名字级） | **0** | —（无） | 3 个**分支**未测（§1.8.6），但没有一个名字未分类 |
+
+**恒等式（两个读数必须同时成立）**：
+
+```
+7 (GOVERNED) + 9 (SESSION-LOCAL) + 15 (OTHER-AUTHZ) + 11 (FAIL-CLOSED) + 0 (UNMEASURED) = 42
+42 = 32（shipped 在册名） + 10（更早已移除、不在册的 10 名）
+名册：34（pre-fix 实测） = 32（shipped 在册） + 2（World 夹具）
+post-fix：33 = 31 shipped + 2 夹具     （差 = `present`）
+FAIL-CLOSED 的 11 = 册上 1（`present`） + 册外 10
+```
+
+一句话：**42 个名字全部有归属，零遗漏、零重复**；这 42 个 = 32 个曾经在面上的 shipped 名 + 10 个更早
+被移除的名字。任务里说的「剩下 27 条还没判过」= 32 shipped − 7 受治 + 2 夹具 = **27**（其中 15 条是
+`team_*`，本次按指令不判、只归类）。
+
+### 1.8.3 逐行账本（脚本生成，`ledger.txt` 同内容）
+
+| 工具名 | 桶 | 在面 | 调用会做什么 | 作用域 | 产 fact | 越界行为 | 依据（证据） |
+|---|---|---|---|---|---|---|---|
+| ask_user_question | SESSION-LOCAL | 是 | asks the human answerer; BLOCKS until an answer arrives (legacy mode has no timeout) | 本 session (its own turn) | 否 | measured in its own arm: NO result inside the observation window (60 s here, 300 s on the first development boot), no `turn/end`, the Member's turn stays open; no Team state is written and no `user/questions` event appears | live: member-probes.json |
+| bash | GOVERNED | 是 | one fresh confined child per command (confined terminal face) | Member lane (compiled read/write ceiling) + OS sandbox for the child | 是（3） | typed refusal at admission (no child) | live: member-probes.json |
+| create_goal | SESSION-LOCAL | 是 | opens a goal in the calling session and ARMS its self-continuation round driver | 本 session | 否 | n/a — measured: accepted, then round 1 of `<goal_round>` arrives in A's own session | live: member-probes.json |
+| edit | GOVERNED | 是 | confined `fs` face: stat + readText + editText through the realm provider | Member lane (read+write ceilings) | 是（1） | typed IO_*_DENIED | live: member-probes.json |
+| exit_plan_mode | SESSION-LOCAL | 是 | presents a plan and leaves plan mode — only when plan mode is ACTIVE for the calling session | 本 session | 否 | measured (inactive branch): `exit_plan_mode is only available in plan mode`, no `plan/mode` event | live: member-probes.json |
+| get_goal | SESSION-LOCAL | 是 | reads the CALLING session's goal projection | 本 session | 否 | n/a — `{"goal":null}` before create; the goal it later reads is A's own | live: member-probes.json |
+| glob | GOVERNED | 是 | confined search face: ripgrep `--files` inside the confined child | Member lane (read ceiling) | 是（1） | typed refusal | live: member-probes.json |
+| grep | GOVERNED | 是 | confined search face: ripgrep runs inside the confined child | Member lane (read ceiling) | 是（1） | typed refusal | live: member-probes.json |
+| job_kill | SESSION-LOCAL | 是 | cancels a job the CALLING session owns (none can exist here) | 本 session (owner-scoped registry) | 否 | measured: same typed refusal; the Leader's job kept running | live: member-probes.json |
+| job_list | SESSION-LOCAL | 是 | reads the OWNER-scoped job registry; no producer exists on this preset | 本 session (owner-scoped registry) | 否 | `belongs to another session` / `unknown job <id>` | live: member-probes.json |
+| job_output | SESSION-LOCAL | 是 | reads a job the CALLING session owns (none can exist here) | 本 session (owner-scoped registry) | 否 | measured: `belongs to another session` for the Leader's real job id | live: member-probes.json |
+| present | FAIL-CLOSED | 否（pre-fix 是） | PRE-FIX: resolved paths with the BASE `fs` and appended a `deliverables/presented` event to the CALLING session — above the compiled read lane | host filesystem (base `fs`), no ceiling of its own | 否 | PRE-FIX: silent success (no typed refusal, no fact). POST-FIX: typed `unknown tool "present"` — zero execution | live: member-probes.json |
+| read | GOVERNED | 是 | confined `fs` face: stat + readText through the realm provider | Member lane (read ceiling) | 是（2） | typed IO_READ_DENIED | live: member-probes.json |
+| read_image | GOVERNED | 是 | confined `fs` face (same provider as `read`) — but ONLY if the model route declares image input | Member lane (read ceiling) | 是（0） | route gate: `model "…" does not declare image input`; below it, typed IO_READ_DENIED | NOT_REACHED live: the measured model route (deepseek-v4-flash) declares no image input, so the tool never reaches the face. The confined-face behaviour is host-free evidence only. |
+| team_archive_member | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_collect | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_create_member | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_delegate | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_follow_up | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_grant_permission | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_inspect_config | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_list_members | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_list_pending_control | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_list_templates | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_report_progress | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_request_control | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_resolve_control | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_revoke_permission | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| team_send_message | OTHER-AUTHZ | 是 | Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face) | Team | 否 | typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial) |  |
+| todo_write | SESSION-LOCAL | 是 | appends a `todo/write` event to the CALLING session only | 本 session | 否 | n/a — measured: only A's session carries `todo/write`; the Leader and every other session carry none | live: member-probes.json |
+| update_goal | SESSION-LOCAL | 是 | mutates the calling session's own goal (pause/complete/edit) | 本 session | 否 | n/a — measured: `complete` accepted on the goal round (`roundsStarted` 1 → 2) | live: member-probes.json |
+| write | GOVERNED | 是 | confined `fs` face: writeText through the realm provider | Member lane (write ceiling) | 是（1） | typed IO_WRITE_DENIED | live: member-probes.json |
+| interrupt_agent | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| list_agents | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| pwsh | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| send_message | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| skill | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| subagent | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| subagent_fork | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| web_fetch | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| web_search | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+| workflow | FAIL-CLOSED | 否 | nothing: the row is absent from the governed preset (removed by PD-18/21/22/23) | n/a (not nameable by the model) | 否 | typed `unknown tool "<name>"` — zero execution | live: member-probes.json |
+
+### 1.8.4 三个焦点问题（逐条给实测答案）
+
+**(a) blocking？** 只有 `ask_user_question` 会**阻塞**，而且它不是「拒绝」：
+
+| 观察 | 读数 |
+|---|---|
+| 调用是否发出 | 是（`call-a5sfpd24-ask`，在 Member 自己的 durable session 里） |
+| 60 s 观察窗内有无 tool result | **无**（`ask-blocked.json#result = null`） |
+| `turn/end` | **0**（回合仍然开着） |
+| `user/questions` 事件 | **0**（问题没有进入任何队列） |
+| Team 状态 | 成员数仍为 2（Leader + worker），无写入 |
+| 先行的 in-lane `bash` 控制 | `isError=false`（证明不是整个面卡住） |
+
+`exit_plan_mode` **不阻塞**：plan mode 未激活时返回 `Error: exit_plan_mode is only available in plan mode`，
+不产 `plan/mode` 事件，回合继续。`todo_write` / `get_goal` / `create_goal` / `update_goal` / `job_*`
+都不阻塞。
+
+**(b) Team-level state？** 三个焦点工具**都不写 Team 级状态**：`todo_write` 只落 `todo/write` 到调用者
+自己的 session（Leader 的 session 里没有）；`get_goal`/`create_goal`/`update_goal` 只碰调用者自己的
+goal；`exit_plan_mode` 不写任何 Team 对象；`ask_user_question` 连问题事件都不写。成员数在整轮前后都是 2。
+
+**(c) `job_*` 无 producer？** 是，且实测为**正确行为**：`job_list` 回 `(no background jobs)`（本 preset 上
+confined face 无法把命令交给 job registry，所以 Member 永远没有自己的 job）；`job_output`/`job_kill` 拿
+**Leader 真实存在的 job id**（`bash-1`）去调，两个都回 `Error: job bash-1 belongs to another session`，
+Leader 的 job 继续运行。owner-scoped + typed 拒绝 ⇒ 保留，不构成漏洞。
+
+**(d) goal 族：能不能建立并启动自续轮？** 能，而且**只在 Member 自己的 session 里**（本轮只测这个，
+不改 goal 语义，那是 PD-25 的 remit）：
+
+```
+create_goal          -> {"phase":"active","roundsStarted":0,"maxGoalRounds":2},"activation":"armed"
+<goal_round> 到达    -> mock 在 A 自己的 session 里被再次请求
+get_goal（轮内）     -> {"phase":"active","roundsStarted":1,...}
+update_goal complete -> {"phase":"complete","roundsStarted":2},"activation":"disarmed"
+```
+
+`counters.goalRounds = 2`（两次 `<goal_round>` 请求），`goalRoundsInOtherSessions = 0`，Leader 与另一个
+session 的事件类型里没有任何 goal 事件。**结论**：自续循环真实存在、可启动、可停止，作用域是
+「本 session」。
+
+**(e) 清单之外的名字**：`u5_canary`/`u6fs_probe` 是 World 夹具（`{"ran":true}` / `{"spoofCount":0}`）；
+`read_image` 的 live 分支卡在模型路由门（见 §1.8.6）；`bash` 的**动态读**子路径（`$(…)`/反引号）仍是
+L1 的已知边界（不可词法归因），本节没有把它算成受治——探针 `cat` 的是字面 in-lane 路径。
+
+### 1.8.5 动了什么、没动什么
+
+**只动了一条**：`cordis.patch.yml` 的受治 preset 删掉 `present` 一行（`- id: present` /
+`'@deepseek-ai/dsh-tool-present'`）。
+
+- **为什么是删除而不是接进 confined face**：`present` 的 `fs` 来自 preset 行所在的注册代 scope，而 Member
+  的 confined provider 是 Member isolate 里的 **fork**——没有任何组合层行能拿到那个 fork 的 `fs`。要接进去
+  需要新的 route-C 产品行 + realm-bound provider face（`confined-present-tool` 挂在 `a5sf-realm-row` 上）
+  + 自己的 allow/deny 契约测试，属于新能力面，本阶段无预算且 `CORE PATCH BUDGET = 0`。这是一个
+  **`CORE_SEAM_BLOCKER`**（与 PD-23 的 `skill` loader 同一 seam）。
+- **能力回退（披露）**：受治 Member **不能再申报 deliverable**。这不是 enforce，是回退；恢复需要上面那个
+  seam。已登记为 PD-24，并在 §1.8.7 复述。
+- **没动 `team_*`**：另一授权平面，按指令不测不改。
+- **没动 goal 语义**：只测「能否启动自续轮」，`maxGoalRounds`、pause/edit/complete、轮驱动一字未改。
+- **没动 `ask_user_question`**：它阻塞但不越界，本 lane 的处置规则只对「静默成功且越界」的行动手；阻塞
+  作为独立缺陷披露（§1.8.4a），待裁决。
+
+**post-fix 的同一个 Member 回合读数**：名册 33、`present` 不在面上（`presentOnSurface=false`）、调用回
+typed `Error: unknown tool "present"`、任何 session 都 **0** 条 `deliverables/presented`、`present` 的
+fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact 与 pre-fix 完全一致。
+
+### 1.8.6 UNMEASURED：0 行 / 3 个分支（缺什么，写清楚）
+
+| 行 | 未测分支 | 缺什么才能测 |
+|---|---|---|
+| `read_image` | live 执行（route gate → confined face） | 一个**声明支持图像输入**的模型路由。实测路由 `deepseek-v4-flash` 在 face 之前就拒绝；face 行为目前只有 host-free 证据（PD-17 D5：1 条 `IO_READ_DENIED`、0 字节） |
+| `exit_plan_mode` | plan-mode-**active** 分支 | 一个能在 **delegated** Member session 上把 `plan/mode` 置为 active 的 seam。`/plan` 是 session 级用户命令，Team 工具面没有 command 路由 |
+| `ask_user_question` | **被回答**的分支 | 一个绑定到 Member session 的（真人或脚本）answerer。对 delegated 回合可达的只有「无 answerer」分支——也正是这里要紧的那一支 |
+
+`team_*` 不是「未测」而是**不在 remit**：另一授权平面、已有表征、本 lane 不得测也不得改。
+
+### 1.8.7 这张账本不说什么（必须与数字同读）
+
+1. **boot 不是合并证据。** `DEV-LIVE`，`candidateClaimEligibility=false`，本节不产出任何 `V@B`。
+2. **受治 ≠ 已隔离。** 7 条受治路径的拒绝都在 **L1 admission**；L3 只描述 confined 子进程上的 OS 边界。
+3. **`read_image` 的 live 分支仍未测**（§1.8.6），不要把它读成「7 条都有 live 执行证据」——是 **6 条**。
+4. **`present` 的移除是能力回退**，不是「已受治」；`standard` preset 仍然声明 `present`（受治行删除，不是
+   产品删除）。
+5. **`ask_user_question` 的阻塞是真的**：一个受治 Member（或同步等它的 Leader）可以把自己的回合永久挂住。
+   本节只披露，不修。
+6. **`bash` 的动态读子路径不受治**（L1 已知边界），本节未把它算进受治。
+7. **一个 Host、一个模型路由、一种 workspace 形状**：换路由只影响 `read_image` 的 live 分支。
+
+### 1.8.8 证据与复现
+
+- 账本：`dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/ledger.json` / `ledger.txt` / `roster.json`
+  （由 `build-ledger.mjs` 从 boot 产物生成，含 pre-fix 与 post-fix 组成、`presentDefect`、`askHazard`、
+  `unmeasuredResiduals`、driver/composition 摘要）。
+- 三对 agreeing boots：`runs/`（post-fix，12/12 PASS）、`archive/pair-prefix/`（pre-fix，12/12 PASS）、
+  `runs-ask/`（阻塞臂，各 1 例 PROVEN）；每对都有 `agreement.json`（逐字段比对；**进程观测计数**
+  `confinedTurnLaunchers`/`baseBwrapWithMarkers` 只作观察，不参与一致性判定——第一对 pre-fix 因它们
+  被判不一致，已重跑并把旧目录留在 `archive/prefix-*` 而不隐藏）。
+- 方法、逐行解释、mutation controls、residuals：`evidence/a5sf-pd24-surface-ledger/README.md`。
+- host-free：`tests/world-factory/a5sf-pd24-surface-ledger.test.mjs`（PIN / SURFACE-CLOSED /
+  SURFACE-POSITIVE-CONTROL / SURFACE-SURGICAL / TYPED-REFUSAL / LEDGER-IDENTITY）+
+  `tests/world-factory/a5sf-pd24-mutation-controls.mjs`（CLEAN、M1 注册可分派的 `present`、M2 读回
+  pre-fix 组合、PIN 各验证自己的颜色）。
+- 复现命令见 evidence README §8；pre-fix 组合由 `git show 6cfc67b76:cordis.patch.yml` 取出，不是手改。
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->

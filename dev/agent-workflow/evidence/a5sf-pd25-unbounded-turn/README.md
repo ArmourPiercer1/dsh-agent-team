@@ -1,4 +1,4 @@
-# PD-24 (UNBOUNDED-TURN) — the ceiling bounds one call; the Member can still execute a series, and the one number that would bound it is written by the party being bounded
+# PD-25 (UNBOUNDED-TURN) — the ceiling bounds one call; the Member can still execute a series, and the one number that would bound it is written by the party being bounded
 
 > **Loudest fact first: `update_goal edit max_goal_rounds=9007199254740991` is ACCEPTED on a delegated governed
 > Member turn.** The Alpha.5 ceiling is `EffectiveIo(member, tool, call) ⊆ ceiling ∩ restriction` — a bound on
@@ -10,12 +10,13 @@
 > `tool-goal` (the `get_goal`/`create_goal`/`update_goal` trio) and `tool-ask-user` — which is a **capability
 > regression**, disclosed as such, not an enforcement.
 
-> **Lane identity and the renumber.** The lane, branch, worktree, commit subject and draft-PR first line are
-> `pd25` / `task/pd25-unbounded-turn-20261114` / `.worktrees/pd25-unbounded-turn` / `PD25-UNBOUNDED-TURN`. The
-> register row is **PD-24 (UNBOUNDED-TURN)**: `origin/master` (`6cfc67b76`, #672) carried 23 rows, so the next
-> contiguous id was PD-24. A sibling lane may claim PD-24 first; per the PD-21/PD-22/PD-23 precedent the row
-> then **renumbers to PD-25** and keeps the `pd25` lane name (renaming a booted lane would desync its logs and
-> driver digest). The register's status note carries the same rule.
+> **Lane identity and the renumber (decided, not hypothetical).** The lane, branch, worktree, commit subject
+> and draft-PR first line are `pd25` / `task/pd25-unbounded-turn-20261114` / `.worktrees/pd25-unbounded-turn` /
+> `PD25-UNBOUNDED-TURN`. The register row is **PD-25 (UNBOUNDED-TURN)**. It was written as PD-24 because
+> `origin/master` (`6cfc67b76`, #672) carried 23 rows and PD-24 was then free; while this lane was in review,
+> **#673 (`PD24-SURFACE-LEDGER`, merged `1e650c3e3`) claimed PD-24**, so this row **renumbered to PD-25** on
+> 2026-11-14 and keeps the `pd25` lane name (renaming a booted lane would desync its logs and driver digest).
+> The register row's `source` field states the same thing, dated.
 
 > **Evidence class.** `DEV-LIVE`: four boots in two agreeing pairs (pre-fix composition and post-fix tree),
 > slot-leased via `tests/world-factory/lib/dev-live-slots.mjs`, ports from the 3180 family, `DSH_HOME` under

@@ -89,7 +89,7 @@ const CLOSED_TOOLS = Object.freeze(['send_message', 'interrupt_agent', 'list_age
 // same preset and found it ACCEPTED (the Member is a runtime root and the work
 // prompt is a `user`-kind message, so `requireDirectHuman` passes). The goal
 // tools are removed by PD-25, so this POSITIVE CONTROL must not claim them.
-const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo', 'persona', 'compaction-basic', 'tool-result-pruner'])
+const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo', 'plan-mode', 'command-goal', 'persona', 'agent-instructions', 'compaction-basic', 'tool-result-pruner'])
 const PRESET_ID = 'a5sf-governed-member'
 
 const runtimeRequire = createRequire(join(REPO, 'packages', 'runtime', 'package.json'))
@@ -174,9 +174,12 @@ test('PD23-SURFACE-POSITIVE-CONTROL: the retained rows (jobs, todo, goal, confin
   for (const id of KEPT_ROWS) {
     assert.equal(ids.includes(id), true, `the governed preset unexpectedly lost '${id}'`)
   }
-  // The removal is NOT a blanket strip of the preset. The floor drops by the
-  // two rows PD-25 removed (`tool-goal`, `tool-ask-user`): 16 -> 14 rows.
-  assert.equal(ids.length > 13, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
+  // The removal is NOT a blanket strip of the preset. The floor moved twice on
+  // 2026-11-14: PD-24 removed `present` (16 -> 15) and PD-25 removed `tool-goal`
+  // and `tool-ask-user` (15 -> 13), so the shipped governed preset now declares
+  // 13 rows. The floor is a "not a blanket strip" guard, not a roster pin: each
+  // lane's own POSITIVE-CONTROL arm pins its exact retained set.
+  assert.equal(ids.length >= 13, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
 })
 
 test('PD23-SURFACE-SURGICAL: the pinned standard preset still declares the control tools and the skill loader', () => {
