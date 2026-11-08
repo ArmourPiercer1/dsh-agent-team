@@ -1,0 +1,125 @@
+{
+  "guardFacts": {
+    "allow": 12,
+    "deny": 2,
+    "web": {
+      "total": 4,
+      "fetch": 3,
+      "search": 1,
+      "allow": 2,
+      "deny": 2,
+      "perCall": {
+        "fetch": 1,
+        "search": 1,
+        "ssrf": 1,
+        "malformed": 1
+      }
+    },
+    "perTool": {
+      "bash": 2,
+      "read": 2,
+      "write": 1,
+      "edit": 1,
+      "grep": 1,
+      "glob": 1,
+      "workflow": 0,
+      "run_code": 0
+    }
+  },
+  "server": {
+    "connections": 1,
+    "pathHits": {
+      "/known": 1
+    },
+    "requests": [
+      {
+        "at": "2026-11-08T12:32:54.180Z",
+        "method": "GET",
+        "path": "/known",
+        "body": null
+      }
+    ],
+    "bytesServed": 26,
+    "openSockets": 0
+  },
+  "searchServer": {
+    "connections": 2,
+    "pathHits": {
+      "/search": 2
+    },
+    "requests": [
+      {
+        "at": "2026-11-08T12:31:15.322Z",
+        "method": "POST",
+        "path": "/search",
+        "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
+      },
+      {
+        "at": "2026-11-08T12:32:54.282Z",
+        "method": "POST",
+        "path": "/search",
+        "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
+      }
+    ],
+    "bytesServed": 732,
+    "openSockets": 0
+  },
+  "hostWebCalls": 0,
+  "mockRequests": 22,
+  "aModelRequests": 15,
+  "surfaceACount": 33,
+  "surfaceANames": [
+    "bash",
+    "edit",
+    "exit_plan_mode",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "web_fetch",
+    "web_search",
+    "write"
+  ],
+  "membersAfter": 2,
+  "memberTemplates": [
+    "leader",
+    "worker"
+  ],
+  "memberWindow": {
+    "from": "2026-11-08T12:32:53.255Z",
+    "to": "2026-11-08T12:32:54.211Z"
+  },
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",
+    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+    "arm": "allow"
+  },
+  "quiesced": true,
+  "webNamesOnSurface": [
+    "web_fetch",
+    "web_search"
+  ]
+}

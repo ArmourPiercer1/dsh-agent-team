@@ -1,0 +1,4 @@
+AGREEMENT arm=allow: BOOTS DISAGREE (or fewer than two)
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | PASS | allow | PROVEN | REFUTED | PROVEN | PROVEN | PROVEN | PROVEN | REFUTED | PROVEN | 1 | {"/known":1} | 1 | {"total":4,"fetch":3,"search":1,"allow":2,"deny":2,"perCall":{"fetch":1,"search":1,"ssrf":1,"malformed":1}} | 0 | 33
+boot2 | FAIL | allow | PROVEN | REFUTED | REFUTED | PROVEN | PROVEN | PROVEN | REFUTED | PROVEN | 1 | {"/known":1} | 2 | {"total":4,"fetch":3,"search":1,"allow":2,"deny":2,"perCall":{"fetch":1,"search":1,"ssrf":1,"malformed":1}} | 0 | 33

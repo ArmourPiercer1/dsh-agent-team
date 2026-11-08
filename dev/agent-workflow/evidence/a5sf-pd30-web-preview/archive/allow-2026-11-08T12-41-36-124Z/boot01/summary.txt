@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd30-web-preview-allow-2026-11-08T12-39-43-667Z-b1 suite=a5sf-pd30-web-preview overall=FAIL cases=8 FAIL:8 worlds=u5u5a5sfpd30-20261108T12-39-43Z partial=true abortedAt=composition recordClass=DEV-LIVE (not candidate evidence)

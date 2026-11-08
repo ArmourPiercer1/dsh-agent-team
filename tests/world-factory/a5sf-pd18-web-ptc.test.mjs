@@ -272,7 +272,9 @@ test('PD18-WEB-ALLOW: the confined web face admits one allow-lane call to a cont
   const endpoint = await startEndpoint()
   try {
     const boundary = loopbackBoundary(endpoint)
-    const { face, facts } = makeFace(seams, { effective: effectiveOf(seams, { network: 'allow' }), boundary })
+    // PD-30: the fixture is served from loopback, so the suite declares that
+    // EXACT origin; every other loopback/private literal stays refused.
+    const { face, facts } = makeFace(seams, { effective: effectiveOf(seams, { network: 'allow' }), boundary, testEndpoints: [endpoint.url] })
     const value = await face.fetch({ url: endpoint.url })
     assert.equal(endpoint.hits.length, 1, 'the controlled endpoint saw exactly ONE request')
     assert.equal(endpoint.hits[0].url, '/pd18', 'the request carried the declared path')

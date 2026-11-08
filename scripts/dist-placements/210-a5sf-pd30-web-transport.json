@@ -1,0 +1,10 @@
+{
+  "schema": "dist-placements/1",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/a5sf-web-transport.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs",
+      "note": "PD-30 (2026-11-15): the COMPOSITION-owned web transport row. Loads the pinned host's own fetch/search providers by public package name and provides `teamA5sfWebTransport`, the service the product row reads lazily when it builds a governed realm's confined `web` face — so the governed preset no longer needs a driver row (or a row rewrite) to have a real transport."
+    }
+  ]
+}

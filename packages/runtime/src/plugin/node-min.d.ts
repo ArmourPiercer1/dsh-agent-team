@@ -187,8 +187,21 @@ declare function setTimeout(callback: () => void, delay: number): NodeMinTimer
 declare function clearTimeout(handle: NodeMinTimer): void
 
 declare interface URL {
-  /** The serialized URL (the only member host.ts consumes). */
+  /** The serialized URL (host.ts consumes it directly). */
   readonly href: string
+  /**
+   * PD-30: the destination-admission legs of the confined `web` face read the
+   * PARSED request (scheme, host, exact origin). These are the standard WHATWG
+   * `URL` members Node's implementation exposes; they are declared here because
+   * this file is a deliberately MINIMAL ambient surface, not because the
+   * runtime differs.
+   */
+  readonly protocol: string
+  readonly hostname: string
+  readonly port: string
+  readonly origin: string
+  readonly pathname: string
+  readonly search: string
   toString(): string
   toJSON(): string
 }

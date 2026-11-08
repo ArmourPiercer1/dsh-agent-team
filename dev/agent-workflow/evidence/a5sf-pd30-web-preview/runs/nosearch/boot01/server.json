@@ -1,0 +1,16 @@
+{
+  "connections": 1,
+  "pathHits": {
+    "/known": 1
+  },
+  "requests": [
+    {
+      "at": "2026-11-08T13:25:17.440Z",
+      "method": "GET",
+      "path": "/known",
+      "body": null
+    }
+  ],
+  "bytesServed": 26,
+  "openSockets": 0
+}

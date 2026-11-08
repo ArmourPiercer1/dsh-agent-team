@@ -1093,3 +1093,35 @@ read-before-write 契约**拒掉，该拒绝属于原生工具、**不属于** T
 失效面同样已 live 验证：被 invalidated 的 managed shadow 按名拒绝
 （`A5SF_NATIVE_SHADOW_INVALIDATED`），无字节、无 fact、无 provider 调用，in-lane 亦拒；停止后
 的派发可被咨询但绝不被服务（`probeFactsAreRefusals`）。
+
+### 1.8.11 CORRECTION（PD-30 追加；只追加，不改 §1.8.0–§1.8.10 的任何等级、`V@B` 或数字）
+
+> 2026-11-15，lane `PD30-WEB-PREVIEW`。本节只**追加**读数，**不折算成任何矩阵格**、不改 `FAIL-CLOSED`
+> 名单、不改 `release BLOCKED`。
+
+1. **`web_fetch` / `web_search` 的读数现在来自「随仓库发货的装配」，不是 driver 改写过的树。**
+   `preset-effective.json` 记录 `rewrites: []`、行名 `dsh-agent-team/web-tool`、
+   `dsh-agent-team/web-transport`，以及 World 的安装图（`profiles/web/node_modules/dsh-agent-team` symlink +
+   三个 export 的解析结果）。**此前 PD-27 的 driver 把 `tool-web` 行改写成绝对 `file:` URL**，于是
+   「发货 preset 能否构造 Member」从未被测到；本 lane 先证明那是**仪器盲区**（preset 行与 profile 行共用
+   `loader.internal.import(name, ctx.baseUrl)`，差别只在 bundle 是否装进那张图），再用 test-only 安装图
+   以零改写跑通。**绝对 `file:` URL 不是产品形态。**
+2. **新增硬前置（本 lane 的仪器修复）**：`precondition.json`（宿主日志无 `never started`、Team 已建 Member；
+   在**任何 probe 之前**读取，失败即 throw、不产出判定）与 `precondition-member.json`（`worker` Member
+   存在、模型可见面 **33**、含 `web_fetch`+`web_search`；在**任何判定之前**写入）。没有这两条，一个
+   `never started` 的 preset 行会让整套 live 证据在「surface 0」上「通过」。
+3. **DEV-LIVE，三对 agreeing boots（各 2/2 逐项相同）**：
+   - allow：fixture **1** 连接 / `{"/known":1}`、body **byte-for-byte**、`web_search` **1** 次真实 POST
+     且解析出 sources（`maxResults` 截断、`truncated: true`）、4 条 web fact、host-web 调用 **0**、
+     Member 面 **33**；
+   - deny（blueprint `memberIoCeilings.io.network.mode='deny'`）：**0** 连接、**1** 条
+     `NETWORK_UNCONFINED_REALM` deny fact、host-web **0**；
+   - nosearch（无 key）：`web_fetch` allow 1 连接，`web_search` = `WEB_PROVIDER_UNAVAILABLE`、**0** POST、
+     1 条 fact。
+4. **分类（照实）**：`web_fetch` = **delivered**（allow/deny/负路径三面都有 DEV-LIVE 证据）；
+   `web_search` = **配置了后端就是 delivered（真实请求 + 真实解析，已证）**，**默认安装 = dispatch/governed
+   only 的 typed 缺口**（无 key → `WEB_PROVIDER_UNAVAILABLE`），**不宣告公开检索已可用**；最小修法 = 部署侧
+   提供 key/endpoint，产品代码无需改动。SSRF / 坏 URL / 缺 provider 均在**进入传输之前** typed 拒绝
+   （0 连接、0 host-web 调用、每条 1 条 fact）。BASE web fallback **恒为 0**。
+5. **部署差异**：安装图是 symlink，不是打包安装；本 lane 只断言「发货行字节 + 解析形状」，对 packaged
+   installer 不作断言（README §6 已写明，不得读成「等价」）。

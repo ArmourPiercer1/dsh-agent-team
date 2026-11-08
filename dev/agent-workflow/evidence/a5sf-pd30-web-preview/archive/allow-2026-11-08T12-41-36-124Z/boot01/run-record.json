@@ -1,0 +1,150 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd30-web-preview-allow-2026-11-08T12-39-43-667Z-b1",
+  "suite": "a5sf-pd30-web-preview",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T12:39:43.667Z",
+  "selectedCases": [
+    "pd30:web-allow",
+    "pd30:web-search",
+    "pd30:web-ssrf",
+    "pd30:web-malformed",
+    "pd30:regression-tools",
+    "pd30:web-surface",
+    "pd30:closed-still-typed",
+    "pd30:no-base-transport"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "WebPreview",
+      "world": "u5a5sfpd30",
+      "source": "task PD30-WEB-PREVIEW explicit boot authorisation (2026-11-14), arm=allow"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd30-20261108T12-39-43Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd30:web-allow",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:web-search",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:web-ssrf",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:web-malformed",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:regression-tools",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:web-surface",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:closed-still-typed",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "pd30:no-base-transport",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:41:15.419Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T12:40:35.793Z",
+        "runId": "a5sf-pd30-web-preview-allow-2026-11-08T12-39-43-667Z-b1",
+        "suite": "a5sf-pd30-web-preview",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd30-20261108T12-39-43Z",
+        "phase": "a5sf-pd30-web-preview-allow-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd30-web-preview-allow-boot1",
+      "world": "u5u5a5sfpd30-20261108T12-39-43Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T12-39-43Z/instance-port3188.log"
+    }
+  ],
+  "partial": true,
+  "abortedAt": "composition",
+  "abort": {
+    "stage": "composition",
+    "detail": "boot 1 aborted at composition",
+    "error": "Error: PRECONDITION FAILED: the Team constructed no Member (surface would be empty)\n    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs:1134:38)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs:1642:15)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd30-web-preview-allow-2026-11-08T12-39-43-667Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-08T12:41:15.419Z"
+}

@@ -306,6 +306,19 @@ export interface A5sfProductRealmParseContext {
      */
     readonly boundBlueprint?: ReturnType<typeof parseBlueprint>;
     /**
+     * PD-30 — which OPTIONAL service faces this composition will install for the
+     * Member. TODAY ONLY `web` exists, and it is the premise of the network-
+     * narrowing refusal below: a narrowed `network` lane is refused because "this
+     * realm installs no web face". A composition that DOES own a web transport
+     * (the shipped `a5sf-web-transport` row) says so here, and the SAME canonical
+     * lane is then accepted — nothing about the lane algebra changes, only the
+     * fact about which face will enforce it. Absent = the pre-PD-30 refusal,
+     * byte-for-byte.
+     */
+    readonly availableFaces?: Readonly<{
+        readonly web?: boolean;
+    }>;
+    /**
      * Provenance marker, INTERNAL to the assembly: `derived` is set only by
      * {@link deriveProductRealmPlan}. It changes no permission fact — the same
      * parser, validator and reconciliation run either way.
@@ -370,6 +383,10 @@ export interface A5sfDerivedRealmInput {
      * leader is not a Member and is never given a Member ceiling).
      */
     readonly templateIds?: readonly string[];
+    /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
+    readonly availableFaces?: Readonly<{
+        readonly web?: boolean;
+    }>;
 }
 /** The lazy provider answer the product row consumes (`compiledFor`). */
 export interface A5sfProductRealmProvider {
@@ -457,6 +474,10 @@ export interface A5sfBoundBlueprintRealmInput {
     readonly instanceGenerations?: Readonly<Record<string, number>>;
     /** Optional subset of blueprint templates; absent = every ceiling but the leader's. */
     readonly templateIds?: readonly string[];
+    /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
+    readonly availableFaces?: Readonly<{
+        readonly web?: boolean;
+    }>;
 }
 /**
  * The GOVERNED product path: derive + compile from an ALREADY-RESOLVED bound
