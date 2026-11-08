@@ -100,11 +100,18 @@ Two host behaviours were found the hard way, and both are generalisable beyond t
 
 One delegated Member turn, real Host, shipped opt-in preset `a5sf-governed-member`, shipped route-C
 attach, pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, booted **twice** per arm
-(`--boots 2`), both records bound to the pushed commit `427d226be` — the **code** commit; the two
-follow-up commits after it touch no module (root dependency declaration, superseded absence arms,
-register/matrix/README), so the records describe exactly the code this PR ships. The scripted model is the shared
-mock; the skill files, the deliverable and the secret are World files. Every Member surface call and the
-result the Member actually received are in `runs/boot0*/member-probes.json`.
+(`--boots 2`). Record bindings, per record (all of them ancestors of the final head; verified in a
+plain clone of the pushed branch, see §7):
+
+| records | `teamSha` | note |
+| --- | --- | --- |
+| `runs/boot01|02/` | `26cc838d6` | the head as reviewed; re-measured after the review round |
+| `archive/postfix-2026-11-08T07-12-09-576Z/` | `1e0c81312` | the merged-tree pair it replaced (kept, not rewritten) |
+| `archive/pair-prefix/boot01|02/` | `1e0c81312` | pre-fix arm |
+
+The scripted model is the shared mock; the skill files, the deliverable and the secret are World
+files. Every Member surface call and the result the Member actually received are in
+`runs/boot0*/member-probes.json`.
 
 | reading | **pre-fix** (`archive/pair-prefix/`, surface **29**) | **post-fix** (`runs/`, surface **31**) |
 | --- | --- | --- |
@@ -190,6 +197,22 @@ The driver uses the shared dev-live slot lease (`tests/world-factory/lib/dev-liv
 3180-family ports, `DSH_HOME` under `tests/homes/`, and refuses to boot unless the pinned host tree is
 clean.
 
+### 7.1 A local artifacts pass is not a build verdict
+
+`pnpm check:artifacts` (`scripts/check-artifacts-committed.mjs`) compares the **working tree against
+the git index**: it answers "you just built, did you `git add` it?" and nothing else. It prints OK over
+a `dist` that no build has produced in days, because working == index there too. What CI grades is the
+other question — **does the commit carry its own build?** — asked by
+`pnpm check:artifacts:head` (`scripts/check-artifacts-at-head.mjs`), which materialises the commit in a
+throwaway worktree and rebuilds it there.
+
+A local artifacts pass means *working tree == index*, **not** *index == a fresh build*; the second is
+what CI grades. This lane paid for that distinction once: `check:artifacts` said `OK: 1980 files` while
+CI's rebuild flagged `types.d.ts` and its two `.map` files as `content-drift` (the two new shadow
+modules add their config declarations to `types.ts`). The fix was the repo's own
+`pnpm -C packages/runtime run build` + `node scripts/place-dist-glue.mjs`, never a hand edit, and the
+verdict was then confirmed with `check:artifacts:head`.
+
 ## 8. Files
 
 ```
@@ -198,6 +221,7 @@ runs/boot01|02/            post-fix evidence (counters, member-probes, member-su
 archive/pair-prefix/       pre-fix arm, same commit, archived composition
 archive/pre-fix/cordis.patch.yml   git show 06adbf850:cordis.patch.yml  (merged tree WITHOUT PD-26)
 archive/mutations/         the M1 mutant (kept for audit)
+archive/postfix-*/         a superseded post-fix pair (kept; records are never rewritten in place)
 agreement-postfix.{json,txt} / agreement-prefix.{json,txt}
 driver.log                 the full run log (both arms, both boots)
 driver-digest-*.json       commit/host pin, composition sha256, driver sha256, host digest

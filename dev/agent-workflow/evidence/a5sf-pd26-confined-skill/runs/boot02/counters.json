@@ -68,7 +68,7 @@
   "requestsCarryingSecret": 0,
   "sessionEvents": {
     "session-a5sf-pd26-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-56-30Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T06-56-30Z-workspace--/session-a5sf-pd26-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-a5sf-pd26-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -90,7 +90,7 @@
       "goalEvents": 0
     },
     "session-a5sf-pd26-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-56-30Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T06-56-30Z-workspace--/session-a5sf-pd26-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-a5sf-pd26-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -114,7 +114,7 @@
       "goalEvents": 0
     },
     "session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-56-30Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T06-56-30Z-workspace--/session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-13-48Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd26-confined-skill-tests-homes-u5u5a5sfpd26-20261108T07-13-48Z-workspace--/session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -147,8 +147,8 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T06:57:55.735Z",
-    "to": "2026-11-08T06:57:59.735Z"
+    "from": "2026-11-08T07:15:19.964Z",
+    "to": "2026-11-08T07:15:23.922Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/cordis.patch.yml",
