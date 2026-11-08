@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-pd24-surface-ledger/agreement/1",
   "arm": "postfix",
-  "at": "2026-11-08T04:40:00.116Z",
+  "at": "2026-11-08T05:11:33.517Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
@@ -34,7 +34,7 @@
       "factTools": "{\"bash\":3,\"read\":2,\"write\":1,\"edit\":1,\"grep\":1,\"glob\":1}",
       "requestsCarryingSecret": 0,
       "aModelRequests": 35,
-      "confinedTurnLaunchers": 5,
+      "confinedTurnLaunchers": 3,
       "baseBwrapWithMarkers": 0
     },
     {
@@ -65,7 +65,7 @@
       "factTools": "{\"bash\":3,\"read\":2,\"write\":1,\"edit\":1,\"grep\":1,\"glob\":1}",
       "requestsCarryingSecret": 0,
       "aModelRequests": 35,
-      "confinedTurnLaunchers": 1,
+      "confinedTurnLaunchers": 3,
       "baseBwrapWithMarkers": 0
     }
   ],

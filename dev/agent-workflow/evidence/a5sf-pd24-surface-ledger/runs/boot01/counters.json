@@ -1,5 +1,5 @@
 {
-  "confinedTurnLaunchers": 5,
+  "confinedTurnLaunchers": 3,
   "baseBwrapWithMarkers": 0,
   "guardFacts": {
     "allow": 9,
@@ -55,7 +55,7 @@
   "requestsCarryingSecret": 0,
   "sessionEvents": {
     "session-a5sf-pd24-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -77,7 +77,7 @@
       "goalEvents": 0
     },
     "session-a5sf-pd24-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -101,7 +101,7 @@
       "goalEvents": 0
     },
     "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -130,7 +130,7 @@
   },
   "goalEventsBySession": {
     "session-a5sf-pd24-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -152,7 +152,7 @@
       "goalEvents": 0
     },
     "session-a5sf-pd24-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -176,7 +176,7 @@
       "goalEvents": 0
     },
     "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T05-08-33Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -211,11 +211,11 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T04:38:28.102Z",
-    "to": "2026-11-08T04:38:33.564Z"
+    "from": "2026-11-08T05:09:54.829Z",
+    "to": "2026-11-08T05:10:00.241Z"
   },
-  "procBatches": 81,
-  "otherBwrapPids": 4,
+  "procBatches": 80,
+  "otherBwrapPids": 3,
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/cordis.patch.yml",
     "sha256": "317fb22a559dde9e62782aa35644daa8ac885dc772a6eaadac72d8c162e08a2f",

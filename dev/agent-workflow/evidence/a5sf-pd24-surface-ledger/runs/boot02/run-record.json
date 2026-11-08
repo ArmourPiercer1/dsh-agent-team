@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T04-38-36-938Z-b2",
+  "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2",
   "suite": "a5sf-pd24-surface-ledger",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T04:38:36.939Z",
+  "startedAt": "2026-11-08T05:10:03.681Z",
   "selectedCases": [
     "pd24:surface-roster",
     "pd24:confined-baseline",
@@ -29,7 +29,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "13c0c33f3e4890da87240ceecb2ee7e3e6a738cd",
+      "head": "4d4e68abc7b5b1605d34d0abb88fb89f7e51213a",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -40,18 +40,18 @@
       "source": "task PD24-SURFACE-LEDGER explicit boot authorisation (2026-11-14), arm=postfix"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "13c0c33f3e4890da87240ceecb2ee7e3e6a738cd",
+    "teamSha": "4d4e68abc7b5b1605d34d0abb88fb89f7e51213a",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd24-20261108T04-38-36Z"
+      "u5u5a5sfpd24-20261108T05-10-03Z"
     ]
   },
   "cases": [
     {
       "id": "pd24:surface-roster",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.950Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the measured Member surface is the FULL roster this ledger classifies: every shipped name it claims is present, and none of the fail-closed names (including `present`) is",
       "failed": [],
       "clauses": [
@@ -85,7 +85,7 @@
     {
       "id": "pd24:confined-baseline",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the Member's model-visible `bash` admits an in-ceiling read through the confined terminal face and records a guard fact (the positive control)",
       "failed": [],
       "clauses": [
@@ -119,7 +119,7 @@
     {
       "id": "pd24:fs-family-live",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the six confined-face file/search names execute in THIS Member turn through their faces and each records a guard fact carrying `tool`/`callId` (PD-19); `read_image` is refused at the model ROUTE gate before the face",
       "failed": [],
       "clauses": [
@@ -131,7 +131,7 @@
         {
           "id": "read-bytes",
           "ok": true,
-          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38"
+          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10"
         },
         {
           "id": "read-fact",
@@ -146,7 +146,7 @@
         {
           "id": "write-accepted",
           "ok": true,
-          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/written-by-member.txt</pa"
+          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/written-by-member.txt</pa"
         },
         {
           "id": "write-fact",
@@ -161,7 +161,7 @@
         {
           "id": "edit-accepted",
           "ok": true,
-          "detail": "isError=false text=The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt has been u"
+          "detail": "isError=false text=The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt has been u"
         },
         {
           "id": "edit-fact",
@@ -206,7 +206,7 @@
         {
           "id": "read-image-refused-before-face",
           "ok": true,
-          "detail": "isError=true text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\""
+          "detail": "isError=true text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\""
         },
         {
           "id": "read-image-zero-bytes",
@@ -218,7 +218,7 @@
     {
       "id": "pd24:jobs-owner-scoped",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the job registry is OWNER-scoped and has no producer on this preset: `job_list` is empty and a FOREIGN Leader job id is a typed refusal for BOTH `job_output` and `job_kill`, with zero job facts",
       "failed": [],
       "clauses": [
@@ -252,7 +252,7 @@
     {
       "id": "pd24:todo-session-local",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "`todo_write` writes a `todo/write` event to the CALLING Member session only; no other session in the World receives one",
       "failed": [],
       "clauses": [
@@ -281,7 +281,7 @@
     {
       "id": "pd24:exit-plan-refused",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "`exit_plan_mode` while plan mode is INACTIVE is a typed refusal: it presents nothing, appends no `plan/mode` event, and the turn keeps going",
       "failed": [],
       "clauses": [
@@ -310,7 +310,7 @@
     {
       "id": "pd24:present-confined",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "a governed Member can no longer stat a path above its lane: `present` is ABSENT, all three calls are the router's typed `unknown tool \"present\"`, no `deliverables/presented` event is appended and no guard fact exists",
       "failed": [],
       "clauses": [
@@ -349,7 +349,7 @@
     {
       "id": "pd24:fixtures-not-shipped",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the two World-composition FIXTURES (`u5_canary`, `u6fs_probe`) are callable and execute OUTSIDE any a5sf face (zero facts). They are NOT shipped tool names: they are test instrumentation the World mounts beside the preset, disclosed and excluded from the shipped roster",
       "failed": [],
       "clauses": [
@@ -383,7 +383,7 @@
     {
       "id": "pd24:fail-closed-typed",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "every fail-closed name answers the host router's typed `unknown tool \"<name>\"` and executes nothing — the whole removed set in ONE Member turn",
       "failed": [],
       "clauses": [
@@ -447,7 +447,7 @@
     {
       "id": "pd24:goal-self-continuation-session-local",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the goal tools are SESSION-LOCAL and the self-continuation loop REALLY STARTS: `create_goal` is accepted in the Member's own session, a `<goal_round>` request arrives in that same session with `roundsStarted` grown to 1, `update_goal complete` closes it, and no other session holds any goal state or goal round",
       "failed": [],
       "clauses": [
@@ -459,7 +459,7 @@
         {
           "id": "create-accepted",
           "ok": true,
-          "detail": "goal id=goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d text={\"goal\":{\"id\":\"goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":"
+          "detail": "goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793 text={\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":"
         },
         {
           "id": "goal-state-in-a-session",
@@ -484,12 +484,12 @@
         {
           "id": "same-goal-in-round",
           "ok": true,
-          "detail": "round goal id=goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d create goal id=goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d"
+          "detail": "round goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793 create goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793"
         },
         {
           "id": "complete-accepted",
           "ok": true,
-          "detail": "isError=false text={\"goal\":{\"id\":\"goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation"
+          "detail": "isError=false text={\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation"
         },
         {
           "id": "no-goal-round-in-other-sessions",
@@ -501,7 +501,7 @@
     {
       "id": "pd24:no-new-members",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "the Member turn establishes no Team-level state and mints no member: the roster is exactly the Leader plus the one template the Leader created",
       "failed": [],
       "clauses": [
@@ -520,7 +520,7 @@
     {
       "id": "pd24:no-out-of-lane-bytes",
       "verdict": "PASS",
-      "at": "2026-11-08T04:39:59.951Z",
+      "at": "2026-11-08T05:11:33.347Z",
       "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
       "failed": [],
       "clauses": [
@@ -542,11 +542,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T04:39:10.671Z",
-        "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T04-38-36-938Z-b2",
+        "at": "2026-11-08T05:10:43.055Z",
+        "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2",
         "suite": "a5sf-pd24-surface-ledger",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd24-20261108T04-38-36Z",
+        "world": "u5u5a5sfpd24-20261108T05-10-03Z",
         "phase": "a5sf-pd24-surface-ledger-postfix-boot2"
       }
     ]
@@ -554,17 +554,17 @@
   "boots": [
     {
       "phase": "a5sf-pd24-surface-ledger-postfix-boot2",
-      "world": "u5u5a5sfpd24-20261108T04-38-36Z",
+      "world": "u5u5a5sfpd24-20261108T05-10-03Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/driver/logs/u5u5a5sfpd24-20261108T04-38-36Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/driver/logs/u5u5a5sfpd24-20261108T05-10-03Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd24-surface-ledger-postfix-2026-11-08T04-38-36-938Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T04:39:59.953Z"
+  "finishedAt": "2026-11-08T05:11:33.348Z"
 }

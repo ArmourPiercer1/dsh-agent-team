@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-pd24-surface-ledger/member-probes/1",
-  "at": "2026-11-08T04:39:59.935Z",
+  "at": "2026-11-08T05:11:33.334Z",
   "note": "every Member-A surface call and the result the Member actually received (durable session first, mock transcript fallback)",
   "probes": {
     "bash": {
@@ -8,16 +8,16 @@
         "id": "call-a5sfpd24-bash",
         "name": "bash",
         "arguments": {
-          "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt'",
+          "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt'",
           "description": "Read the in-lane fixture",
-          "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace"
+          "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace"
         }
       },
       "result": {
         "callId": "call-a5sfpd24-bash",
         "isError": false,
         "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
-        "at": 1794112795425
+        "at": 1794114688733
       }
     },
     "read": {
@@ -25,14 +25,14 @@
         "id": "call-a5sfpd24-read",
         "name": "read",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt"
         }
       },
       "result": {
         "callId": "call-a5sfpd24-read",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD24_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1794112795468
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD24_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1794114688778
       }
     },
     "write": {
@@ -40,15 +40,15 @@
         "id": "call-a5sfpd24-write",
         "name": "write",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/written-by-member.txt",
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/written-by-member.txt",
           "content": "A5SF_PD24_IN_LANE_BYTES written\n"
         }
       },
       "result": {
         "callId": "call-a5sfpd24-write",
         "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/written-by-member.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
-        "at": 1794112795523
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/written-by-member.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+        "at": 1794114688839
       }
     },
     "edit": {
@@ -56,7 +56,7 @@
         "id": "call-a5sfpd24-edit",
         "name": "edit",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt",
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt",
           "old_string": "A5SF_PD24_IN_LANE_BYTES",
           "new_string": "A5SF_PD24_IN_LANE_BYTES\nA5SF_PD24_IN_LANE_BYTES edited"
         }
@@ -64,8 +64,8 @@
       "result": {
         "callId": "call-a5sfpd24-edit",
         "isError": false,
-        "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt has been updated successfully.",
-        "at": 1794112795567
+        "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt has been updated successfully.",
+        "at": 1794114688888
       }
     },
     "grep": {
@@ -74,7 +74,7 @@
         "name": "grep",
         "arguments": {
           "pattern": "A5SF_PD24_IN_LANE_BYTES",
-          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace",
+          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace",
           "include": "*.txt"
         }
       },
@@ -82,7 +82,7 @@
         "callId": "call-a5sfpd24-grep",
         "isError": false,
         "text": "Found 4 matches\n\nin-lane.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES\nLine 2: A5SF_PD24_IN_LANE_BYTES edited\n\nedited-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES seed\n\nwritten-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES written",
-        "at": 1794112795644
+        "at": 1794114688970
       }
     },
     "glob": {
@@ -91,14 +91,14 @@
         "name": "glob",
         "arguments": {
           "pattern": "*.txt",
-          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace"
+          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace"
         }
       },
       "result": {
         "callId": "call-a5sfpd24-glob",
         "isError": false,
         "text": "edited-by-member.txt\nwritten-by-member.txt\nin-lane.txt",
-        "at": 1794112795708
+        "at": 1794114689041
       }
     },
     "readImage": {
@@ -106,14 +106,14 @@
         "id": "call-a5sfpd24-read-image",
         "name": "read_image",
         "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.png"
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.png"
         }
       },
       "result": {
         "callId": "call-a5sfpd24-read-image",
         "isError": true,
-        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
-        "at": 1794112795737
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+        "at": 1794114689072
       }
     },
     "jobList": {
@@ -126,7 +126,7 @@
         "callId": "call-a5sfpd24-job-list",
         "isError": false,
         "text": "(no background jobs)",
-        "at": 1794112795764
+        "at": 1794114689101
       }
     },
     "jobForeign": {
@@ -141,7 +141,7 @@
         "callId": "call-a5sfpd24-job-foreign",
         "isError": true,
         "text": "Error: job bash-1 belongs to another session",
-        "at": 1794112795792
+        "at": 1794114689129
       }
     },
     "jobKill": {
@@ -157,7 +157,7 @@
         "callId": "call-a5sfpd24-job-kill",
         "isError": true,
         "text": "Error: job bash-1 belongs to another session",
-        "at": 1794112795818
+        "at": 1794114689158
       }
     },
     "todo": {
@@ -181,7 +181,7 @@
         "callId": "call-a5sfpd24-todo",
         "isError": false,
         "text": "Updated todo list: 1 pending, 1 in progress, 0 completed.",
-        "at": 1794112795847
+        "at": 1794114689189
       }
     },
     "goalGet": {
@@ -194,7 +194,7 @@
         "callId": "call-a5sfpd24-goal-get",
         "isError": false,
         "text": "{\"goal\":null}",
-        "at": 1794112795875
+        "at": 1794114689219
       }
     },
     "exitPlan": {
@@ -209,7 +209,7 @@
         "callId": "call-a5sfpd24-exit-plan",
         "isError": true,
         "text": "Error: exit_plan_mode is only available in plan mode",
-        "at": 1794112795903
+        "at": 1794114689249
       }
     },
     "presentIn": {
@@ -219,7 +219,7 @@
         "arguments": {
           "files": [
             {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/workspace/in-lane.txt",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt",
               "description": "in-lane fixture"
             }
           ]
@@ -229,7 +229,7 @@
         "callId": "call-a5sfpd24-present-in",
         "isError": true,
         "text": "Error: unknown tool \"present\"",
-        "at": 1794112795930
+        "at": 1794114689279
       }
     },
     "presentOut": {
@@ -239,7 +239,7 @@
         "arguments": {
           "files": [
             {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/out-of-lane/secret-out-of-lane.txt",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/out-of-lane/secret-out-of-lane.txt",
               "description": "out-of-lane fixture"
             }
           ]
@@ -249,7 +249,7 @@
         "callId": "call-a5sfpd24-present-out",
         "isError": true,
         "text": "Error: unknown tool \"present\"",
-        "at": 1794112795958
+        "at": 1794114689310
       }
     },
     "presentMissing": {
@@ -259,7 +259,7 @@
         "arguments": {
           "files": [
             {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z/out-of-lane/does-not-exist-out-of-lane.txt",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/out-of-lane/does-not-exist-out-of-lane.txt",
               "description": "absent out-of-lane fixture"
             }
           ]
@@ -269,7 +269,7 @@
         "callId": "call-a5sfpd24-present-missing",
         "isError": true,
         "text": "Error: unknown tool \"present\"",
-        "at": 1794112795984
+        "at": 1794114689338
       }
     },
     "canary": {
@@ -285,7 +285,7 @@
         "callId": "call-a5sfpd24-canary",
         "isError": false,
         "text": "{\"ran\":true,\"tag\":\"pd24-canary\",\"mode\":\"ok\"}",
-        "at": 1794112796012
+        "at": 1794114689368
       }
     },
     "u6fs": {
@@ -301,7 +301,7 @@
         "callId": "call-a5sfpd24-u6fs",
         "isError": false,
         "text": "{\"action\":\"report\",\"tag\":\"pd24-probe\",\"spoofCount\":0}",
-        "at": 1794112796042
+        "at": 1794114689400
       }
     },
     "goalCreate": {
@@ -316,8 +316,8 @@
       "result": {
         "callId": "call-a5sfpd24-goal-create",
         "isError": false,
-        "text": "{\"goal\":{\"id\":\"goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
-        "at": 1794112796371
+        "text": "{\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+        "at": 1794114689736
       }
     },
     "goalRoundGet": {
@@ -329,8 +329,8 @@
       "result": {
         "callId": "call-a5sfpd24-goal-round-get",
         "isError": false,
-        "text": "{\"goal\":{\"id\":\"goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":1,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
-        "at": 1794112796582
+        "text": "{\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":1,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+        "at": 1794114689964
       }
     },
     "goalComplete": {
@@ -338,7 +338,7 @@
         "id": "call-a5sfpd24-goal-complete",
         "name": "update_goal",
         "arguments": {
-          "goal_id": "goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d",
+          "goal_id": "goal-7058863c-88c1-4533-8bdd-b5bcd90b1793",
           "revision": 1,
           "action": "complete"
         }
@@ -346,8 +346,8 @@
       "result": {
         "callId": "call-a5sfpd24-goal-complete",
         "isError": false,
-        "text": "{\"goal\":{\"id\":\"goal-7f102c08-e329-4c8b-8c2d-67a5fc0ee16d\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation\":\"disarmed\"}",
-        "at": 1794112796777
+        "text": "{\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation\":\"disarmed\"}",
+        "at": 1794114690128
       }
     },
     "closed": {
@@ -361,7 +361,7 @@
           "callId": "call-a5sfpd24-closed-interrupt_agent",
           "isError": true,
           "text": "Error: unknown tool \"interrupt_agent\"",
-          "at": 1794112796072
+          "at": 1794114689432
         }
       },
       "list_agents": {
@@ -374,7 +374,7 @@
           "callId": "call-a5sfpd24-closed-list_agents",
           "isError": true,
           "text": "Error: unknown tool \"list_agents\"",
-          "at": 1794112796098
+          "at": 1794114689459
         }
       },
       "pwsh": {
@@ -387,7 +387,7 @@
           "callId": "call-a5sfpd24-closed-pwsh",
           "isError": true,
           "text": "Error: unknown tool \"pwsh\"",
-          "at": 1794112796124
+          "at": 1794114689489
         }
       },
       "send_message": {
@@ -400,7 +400,7 @@
           "callId": "call-a5sfpd24-closed-send_message",
           "isError": true,
           "text": "Error: unknown tool \"send_message\"",
-          "at": 1794112796150
+          "at": 1794114689516
         }
       },
       "skill": {
@@ -413,7 +413,7 @@
           "callId": "call-a5sfpd24-closed-skill",
           "isError": true,
           "text": "Error: unknown tool \"skill\"",
-          "at": 1794112796176
+          "at": 1794114689543
         }
       },
       "subagent": {
@@ -426,7 +426,7 @@
           "callId": "call-a5sfpd24-closed-subagent",
           "isError": true,
           "text": "Error: unknown tool \"subagent\"",
-          "at": 1794112796202
+          "at": 1794114689569
         }
       },
       "subagent_fork": {
@@ -439,7 +439,7 @@
           "callId": "call-a5sfpd24-closed-subagent_fork",
           "isError": true,
           "text": "Error: unknown tool \"subagent_fork\"",
-          "at": 1794112796233
+          "at": 1794114689596
         }
       },
       "web_fetch": {
@@ -452,7 +452,7 @@
           "callId": "call-a5sfpd24-closed-web_fetch",
           "isError": true,
           "text": "Error: unknown tool \"web_fetch\"",
-          "at": 1794112796260
+          "at": 1794114689623
         }
       },
       "web_search": {
@@ -465,7 +465,7 @@
           "callId": "call-a5sfpd24-closed-web_search",
           "isError": true,
           "text": "Error: unknown tool \"web_search\"",
-          "at": 1794112796287
+          "at": 1794114689652
         }
       },
       "workflow": {
@@ -478,7 +478,7 @@
           "callId": "call-a5sfpd24-closed-workflow",
           "isError": true,
           "text": "Error: unknown tool \"workflow\"",
-          "at": 1794112796315
+          "at": 1794114689679
         }
       },
       "present": {
@@ -491,7 +491,7 @@
           "callId": "call-a5sfpd24-closed-present",
           "isError": true,
           "text": "Error: unknown tool \"present\"",
-          "at": 1794112796342
+          "at": 1794114689706
         }
       }
     }

@@ -699,7 +699,7 @@ network deny 在 OS 层、动态 shell 读（`$(…)`/反引号）、per-Team sc
 
 **记录类别**：`DEV-LIVE`（真实 Host + shipped opt-in preset `a5sf-governed-member` + 真实 delegated
 Member 回合，pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`；lane base `6cfc67b76`，pre-fix 与
-ask 两对 boot 跑在 base 上、post-fix 一对跑在 lane head `13c0c33f3` 上，组合内容相同）＋ host-free
+ask 两对 boot 跑在 base 上、post-fix 一对跑在后继 lane head `4d4e68abc` 上（同一组合，records 绑定可 checkout 的 commit））＋ host-free
 （0 boots 的 5 臂套件 + 4 臂 mutation controls）＋ **派生账本**（`build-ledger.mjs` 从 boot 产物重算，
 自检恒等式与名册覆盖，不合格就拒绝写出）。**不改任何 ⑧ 等级、不改任何 `V@B`、不关闭 G2–G5、不改
 `release BLOCKED`、不删 §1.7 的任何历史数字与行文**——§1.7 原文一字未删，本节只在 §1.8.0 追加一条

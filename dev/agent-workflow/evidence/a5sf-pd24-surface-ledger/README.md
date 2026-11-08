@@ -1,7 +1,7 @@
 # PD-24 — the governed Member surface ledger (DEV-LIVE)
 
 **Task**: PD24-SURFACE-LEDGER · **lane base**: `6cfc67b76` (= `origin/master` at lane start) ·
-**booted heads**: pre-fix + ask pairs on `6cfc67b76`, post-fix pair on `13c0c33f3` (same composition) ·
+**booted heads**: pre-fix + ask pairs on `6cfc67b76`, post-fix pair on `4d4e68abc` (same composition) ·
 **pinned Host**: `639ed015397290b3745d163aafe02ffee4aa3f84` (0.2.0-rc.2, read-only
 `tests/deepseek-harness-test-use`) · **composition**: the shipped
 `cordis.patch.yml`, opt-in preset `a5sf-governed-member` ·
@@ -331,6 +331,27 @@ gone: the pre-fix composition is read out of git, not out of the working tree.
    the two canonical pairs' first boots were pruned during that tidying (the
    Member-side artefacts — transcript, probes, facts, counters, run-record — are
    complete; no run record binds a log path).
+9. **What could make THIS evidence wrong (two classes, both observed here).**
+   *An artefact can look authoritative while describing an ARM that no longer
+   exists.* The first pass wrote every arm's `agreement.json` to the evidence
+   root, so the post-fix pair's file was silently replaced by the ask arm's; the
+   file was well-formed, stamped, and about the wrong pair. That is why each arm
+   now writes `<runs>/agreement.json` next to the boots it compares (and only a
+   per-arm copy at the root).
+   *A record can bind a COMMIT nobody can check out.* This lane amended its
+   commit after the post-fix pair had booted, which rewrote the commit the two
+   `runs/boot0*/run-record.json` files named: locally the object still existed,
+   on the remote it did not, and `eb3-run-manifest` refused it
+   (`RUN_SOURCE_UNRESOLVED … is not a commit in this repository`). The records
+   were **re-bound by re-running the pair at `4d4e68abc`** and committing them
+   WITHOUT amending (an amend would have rewritten that commit too); every
+   committed record now names a commit that exists on the remote:
+   `runs/*` → `4d4e68abc`, `runs-ask/*` + `archive/pair-prefix/*` +
+   the two dev iterations → `6cfc67b76`. **Never hand-edit `teamSha`**: a
+   rewritten binding is worth less than no binding.
+   The same rule is why this README quotes numbers that a reader can re-derive:
+   if a cited digest, roster or fact count cannot be recomputed from the
+   committed artefacts, the artefacts are wrong, not the prose.
 
 ---
 

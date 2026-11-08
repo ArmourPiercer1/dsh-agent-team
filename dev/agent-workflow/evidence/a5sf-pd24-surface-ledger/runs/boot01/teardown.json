@@ -1,20 +1,20 @@
 {
-  "at": "2026-11-08T04:38:36.938Z",
+  "at": "2026-11-08T05:10:03.680Z",
   "teardown": {
     "host": {
       "wasRunning": true,
-      "pid": 105,
+      "pid": 100,
       "killed": true,
       "portFree": true
     },
-    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z",
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z",
     "releasedPorts": [
       3188,
-      3499,
+      3498,
       3188
     ],
     "killedPids": [
-      105
+      100
     ],
     "notes": []
   },
