@@ -1,0 +1,27 @@
+{
+  "confinedTurnLaunchers": 1,
+  "preflightLaunchers": 4,
+  "payloadInLaneSightings": 2,
+  "procSecretCommandSightings": 0,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "allow": 1,
+    "deny": 0
+  },
+  "mockRequests": 11,
+  "memberModelRequests": 5,
+  "childModelRequests": 0,
+  "childSurfaceCount": 0,
+  "subagentOnMemberSurface": false,
+  "childSessionFound": false,
+  "childFacts": 0,
+  "procBatches": 117,
+  "otherBwrapPids": 1,
+  "memberWindow": {
+    "from": "2026-11-08T00:45:55.105Z",
+    "to": "2026-11-08T00:46:00.921Z"
+  },
+  "requestsCarryingSecret": 0,
+  "memberInstancesBefore": 2,
+  "memberInstancesAfter": 2
+}

@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd21-subagent-2026-11-08T00-40-04-057Z-b1 suite=a5sf-pd21-subagent overall=FAIL cases=7 FAIL:3 PASS:4 worlds=u5u5a5sfpd21-20261108T00-40-04Z recordClass=DEV-LIVE (not candidate evidence)

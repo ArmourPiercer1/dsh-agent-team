@@ -1,0 +1,221 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD21_DISC\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd21 session\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD21_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD21_DISC_DONE\"}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3aa08db55e1b0c12d24cd4ec38e8ade383f5c5b0e6e4a1658c5b67c480274ed6] A5SF_PD21_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd21-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd21-team\",\"requestToken\":\"a5sf-pd21-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd21-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace\",\"prompt\":\"a5sf-pd"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:3aa08db55e1b0c12d24cd4ec38e8ade383f5c5b0e6e4a1658c5b67c480274ed6] A5SF_PD21_L1_DRIVE\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd21 session\"}"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd21-turn-delegate] a5sf-pd21-turn: run the probes exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 ba",
+      "isMemberRequest": true,
+      "tools": 35,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd21-in\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace/in-lane.txt'; sleep 1.5\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5"
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-pd21-turn-delegate] a5sf-pd21-turn: run the probes exactly once each, one tool call at a time, then report.\\\"}]\"}]",
+      "isMemberRequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd21 session\"}"
+    },
+    {
+      "seq": 6,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd21-in\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_PD21_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_PD21_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 35,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd21-subagent\",\"name\":\"subagent\",\"arguments\":{\"description\":\"PD-21 escape probe child\",\"prompt\":\"a5sf-pd21-child: read the probe fixture and report exactly what you see.\",\"run_in_background\":false}}]}"
+    },
+    {
+      "seq": 7,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd21-subagent\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"subagent\\\"\"}],\"is_error\":true}]",
+      "isMemberRequest": true,
+      "tools": 35,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd21-create-worker\",\"name\":\"team_create_member\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd21-team\",\"requestToken\":\"pd21-create-worker\",\"delegationTemplateId\":\"worker\",\"label\":\"pd21-self-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace\"}}]}"
+    },
+    {
+      "seq": 8,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd21-create-worker\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED\\\",\\\"message\\\":\\\"TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')\\\",\\\"details\\\":{\\\"action\\\":\\\"create-member\\\",\\\"role\\\":\\\"member\\\",\\\"allowed\\\":[\\\"human\\\",\\\"leader\\\"]}}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 35,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd21-create-wide\",\"name\":\"team_create_member\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd21-team\",\"requestToken\":\"pd21-create-wide\",\"delegationTemplateId\":\"wide\",\"label\":\"pd21-self-wide\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/out-of-lane\"}}]}"
+    },
+    {
+      "seq": 9,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd21-create-wide\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED\\\",\\\"message\\\":\\\"TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')\\\",\\\"details\\\":{\\\"action\\\":\\\"create-member\\\",\\\"role\\\":\\\"member\\\",\\\"allowed\\\":[\\\"human\\\",\\\"leader\\\"]}}\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 35,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD21_MEMBER_DONE {\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED\\\",\\\"message\\\":\\\"TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')\\\",\\\"details\\\":{\\\"action\\\":\\\"create-member\\\",\\\"role\\\":\\\"member\\\",\\\"allowed\\\":[\\\"human\\\",\\\"leader\\\"]}}\"}"
+    },
+    {
+      "seq": 10,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd21-delegate\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-pd21-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0fswwvp0rvg5\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-a511040c4723154e08a9981e69e661bc\\\",\\\"operationId\\\":\\\"op-0eiu3gv1fwpgvq0tq1fi915c\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5",
+      "isMemberRequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD21_L1_DONE\"}"
+    }
+  ],
+  "delegateCall": {
+    "id": "call-a5sfpd21-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-a5sf-pd21-team",
+      "requestToken": "a5sf-pd21-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sfpd21-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace",
+      "prompt": "a5sf-pd21-turn: run the probes exactly once each, one tool call at a time, then report.",
+      "async": false
+    }
+  },
+  "delegateResult": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5sf-pd21-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fswwvp0rvg5\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-a511040c4723154e08a9981e69e661bc\",\"operationId\":\"op-0eiu3gv1fwpgvq0tq1fi915c\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"a5sf-pd21-turn-delegate\",\"status\":\"succeeded\",\"body\":\"A5SF_PD21_MEMBER_DONE {\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED\\\",\\\"message\\\":\\\"TeamRuntime: action 'create-member' is restricted to roles [human, leader] (got role 'member')\\\",\\\"details\\\":{\\\"action\\\":\\\"create-member\\\",\\\"role\\\":\\\"member\\\",\\\"allowed\\\":[\\\"human\\\",\\\"leader\\\"]}}\"}},\"requestToken\":\"a5sf-pd21-turn-delegate\"}"
+  },
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3188/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n",
+  "sessions": [
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-boot/session.v4.jsonl.zstd",
+      "bytes": 25957,
+      "id": "session-a5sf-pd21-boot",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-team/session.v4.jsonl.zstd",
+      "bytes": 27805,
+      "id": "session-a5sf-pd21-team",
+      "kind": null
+    },
+    {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-team-child-a511040c4723154e08a9981e69e661bc/session.v4.jsonl.zstd",
+      "bytes": 27953,
+      "id": "session-team-child-a511040c4723154e08a9981e69e661bc",
+      "kind": null
+    }
+  ],
+  "sessionFiles": [
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-boot/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-boot/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-team/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-a5sf-pd21-team/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-team-child-a511040c4723154e08a9981e69e661bc/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd21-subagent-realm-tests-homes-u5u5a5sfpd21-20261108T00-44-40Z-workspace--/session-team-child-a511040c4723154e08a9981e69e661bc/session.v4.jsonl.zstd"
+  ],
+  "homeListing": [
+    ".anonymous-user-id",
+    ".credentials.yaml",
+    ".u5-created.json",
+    ".u5-ownership.json",
+    "a5sf-consult.jsonl",
+    "blueprints",
+    "canary-ledger.jsonl",
+    "governed-scratch",
+    "out-of-lane",
+    "p6t6-directive.json",
+    "profiles",
+    "sessions",
+    "storages",
+    "u6fs-probe-ledger.jsonl",
+    "workspace"
+  ],
+  "sessionsExists": true,
+  "sessionCopy": false,
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0fswwvp0rvg5",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:f5b6a8bc8b71b09c88f90d1c6a85dc87",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-08T00:45:55.861Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd21-in"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0fswwvp0rvg5",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:f5b6a8bc8b71b09c88f90d1c6a85dc87",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-08T00:45:55.866Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd21-in"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0fswwvp0rvg5",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:f5b6a8bc8b71b09c88f90d1c6a85dc87",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-08T00:45:55.868Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd21-in"
+    }
+  ],
+  "counters": {
+    "confinedTurnLaunchers": 1,
+    "preflightLaunchers": 4,
+    "payloadInLaneSightings": 2,
+    "procSecretCommandSightings": 0,
+    "baseBwrapWithMarkers": 0,
+    "guardFacts": {
+      "allow": 1,
+      "deny": 0
+    },
+    "mockRequests": 11,
+    "memberModelRequests": 5,
+    "childModelRequests": 0,
+    "childSurfaceCount": 0,
+    "subagentOnMemberSurface": false,
+    "childSessionFound": false,
+    "childFacts": 0,
+    "procBatches": 117,
+    "otherBwrapPids": 1,
+    "memberWindow": {
+      "from": "2026-11-08T00:45:55.105Z",
+      "to": "2026-11-08T00:46:00.921Z"
+    },
+    "requestsCarryingSecret": 0,
+    "memberInstancesBefore": 2,
+    "memberInstancesAfter": 2
+  }
+}

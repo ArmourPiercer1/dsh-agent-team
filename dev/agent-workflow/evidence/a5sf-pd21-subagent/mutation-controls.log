@@ -1,0 +1,15 @@
+
+── CLEAN control: exit=0 failed=[]
+
+── M1 dispatchable subagent: exit=1 failed=[PD21-TYPED-REFUSAL: subagent/subagent_fork are UNKNOWN_TOOL and start zero children | PD21-TYPED-REFUSAL: subagent/subagent_fork are UNKNOWN_TOOL and start zero children]
+mutated composition: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/pd21-mutation-controls/cordis.patch.yml
+
+── M2 re-added tool-subagent: exit=1 failed=[PD21-SURFACE-CLOSED: no subagent row survives anywhere in the governed preset's plugin tree | PD21-SURFACE-CLOSED: no subagent row survives anywhere in the governed preset's plugin tree]
+
+MUTATION CONTROLS
+  PASS  CLEAN: the unmutated suite is GREEN
+  PASS  M1-REFUSAL: a dispatchable `subagent` REDDENS pd21 TYPED-REFUSAL
+  PASS  M2-SURFACE: a re-inserted tool-subagent row REDDENS PD21-SURFACE-CLOSED
+
+MUTATION CONTROLS PASS (3/3)
+EXIT=0

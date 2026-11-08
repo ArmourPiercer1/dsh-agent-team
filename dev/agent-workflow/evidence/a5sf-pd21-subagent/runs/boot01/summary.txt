@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd21-subagent-2026-11-08T00-43-18-098Z-b1 suite=a5sf-pd21-subagent overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd21-20261108T00-43-18Z recordClass=DEV-LIVE (not candidate evidence)

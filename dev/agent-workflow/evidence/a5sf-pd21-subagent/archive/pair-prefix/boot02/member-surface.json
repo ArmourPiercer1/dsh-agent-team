@@ -1,0 +1,181 @@
+{
+  "tools": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "interrupt_agent",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "list_agents",
+    "present",
+    "read",
+    "read_image",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "write"
+  ],
+  "bash": {
+    "name": "bash",
+    "description": "Execute a bash command through this Member's confined terminal face and return its stdout/stderr. Each call runs in a fresh confined shell; pass `workdir` instead of using `cd`. Every path the command names is admitted against the compiled read lane before the shell starts; a refused read returns no bytes and names the typed refusal code in its error.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The bash command line to run (`bash -c`)."
+        },
+        "description": {
+          "type": "string",
+          "description": "One short sentence describing what the command does."
+        },
+        "workdir": {
+          "type": "string",
+          "description": "Optional working directory; absolute, or relative to the session cwd."
+        }
+      },
+      "required": [
+        "command",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "subagent": {
+    "name": "subagent",
+    "description": "Delegate a self-contained task to a subagent (a separate agent that works in its own context) to offload focused, independent work — research, a scoped implementation, an analysis — so it does not consume this conversation's context. The subagent returns its result, not its intermediate steps. It runs in the background by default and returns a subagent id you can continue with `send_message`; you are notified when the run settles.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "A short (3-5 word) description of the delegated task, for display."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The complete, self-contained task for the subagent. It does not share this conversation's context, so include everything it needs."
+        },
+        "run_in_background": {
+          "type": "boolean",
+          "description": "Defaults to true. Set false only when your next action depends on the result."
+        }
+      },
+      "required": [
+        "description",
+        "prompt"
+      ]
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "subagentFork": {
+    "name": "subagent_fork",
+    "description": "Delegate a task to a subagent that inherits this conversation: a child agent seeded with all completed turns so far (it does not see the current in-flight turn). Use this when the subtask builds on this conversation's context — a follow-up analysis, a review, a continuation — without consuming this conversation's context for the work itself. You receive its result, not its intermediate steps. It runs in the background by default and returns a subagent id you can continue with `send_message`; you are notified when the run settles.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "A short (3-5 word) description of the delegated task, for display."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The task for the subagent. It already sees this conversation's completed turns, so build on them freely and state only what is new."
+        },
+        "run_in_background": {
+          "type": "boolean",
+          "description": "Defaults to true. Set false only when your next action depends on the result."
+        }
+      },
+      "required": [
+        "description",
+        "prompt"
+      ]
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "teamCreateMember": {
+    "name": "team_create_member",
+    "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+          "type": "string",
+          "description": "The blueprint template id the new member is created from."
+        },
+        "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+          "type": "string",
+          "description": "Optional group id for the new member."
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for the new member."
+        }
+      },
+      "required": [
+        "rootSessionId",
+        "requestToken",
+        "delegationTemplateId",
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "requestSeq": 12
+}
