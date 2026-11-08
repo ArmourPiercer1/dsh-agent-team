@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-pd25-unbounded-turn/agreement/1",
   "arm": "postfix",
-  "at": "2026-11-08T04:51:26.125Z",
+  "at": "2026-11-08T05:50:36.430Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
@@ -18,7 +18,7 @@
       "plan": "PROVEN",
       "todo": "PROVEN",
       "goalToolsAbsent": "PROVEN",
-      "surfaceCount": 30,
+      "surfaceCount": 29,
       "createGoalOnSurface": false,
       "loopRounds": 0,
       "loopDefaultCap": null,
@@ -45,7 +45,7 @@
       "plan": "PROVEN",
       "todo": "PROVEN",
       "goalToolsAbsent": "PROVEN",
-      "surfaceCount": 30,
+      "surfaceCount": 29,
       "createGoalOnSurface": false,
       "loopRounds": 0,
       "loopDefaultCap": null,
@@ -61,5 +61,5 @@
       "askDelegationBlocked": false
     }
   ],
-  "table": "TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\narm                           postfix                       postfix\noverall                       PASS                          PASS\nselfContinuation              PROVEN                        PROVEN\nroundLimit                    PROVEN                        PROVEN\ncallerChosenCap               PROVEN                        PROVEN\nburstVerdict                  PROVEN                        PROVEN\nask                           PROVEN                        PROVEN\nplan                          PROVEN                        PROVEN\ntodo                          PROVEN                        PROVEN\ngoalToolsAbsent               PROVEN                        PROVEN\nsurfaceCount                  30                            30\ncreateGoalOnSurface           false                         false\nloopRounds                    0                             0\nloopDefaultCap                null                          null\ncap2Rounds                    0                             0\ncap2Blocked                   null                          null\nraisedCap                     null                          null\nburst                         30                            30\naskBlockedSeconds             null                          null\naskError                      true                          true\nplanError                     true                          true\nmemberModelRequests           {\"loop\":33,\"cap2\":2,\"raise\":4,\"plan\":2,\"ask\":2}{\"loop\":33,\"cap2\":2,\"raise\":4,\"plan\":2,\"ask\":2}\ndelegationsReturned           {\"call-pd25-delegate-cap2\":true,\"call-pd25-delegate-raise\":true,\"call-pd25-delegate-plan\":true,\"call-pd25-delegate-loop\":true,\"call-pd25-delegate-ask\":true}{\"call-pd25-delegate-cap2\":true,\"call-pd25-delegate-raise\":true,\"call-pd25-delegate-plan\":true,\"call-pd25-delegate-loop\":true,\"call-pd25-delegate-ask\":true}\naskDelegationBlocked          false                         false\n\nagreeing=true differing=[]"
+  "table": "TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\narm                           postfix                       postfix\noverall                       PASS                          PASS\nselfContinuation              PROVEN                        PROVEN\nroundLimit                    PROVEN                        PROVEN\ncallerChosenCap               PROVEN                        PROVEN\nburstVerdict                  PROVEN                        PROVEN\nask                           PROVEN                        PROVEN\nplan                          PROVEN                        PROVEN\ntodo                          PROVEN                        PROVEN\ngoalToolsAbsent               PROVEN                        PROVEN\nsurfaceCount                  29                            29\ncreateGoalOnSurface           false                         false\nloopRounds                    0                             0\nloopDefaultCap                null                          null\ncap2Rounds                    0                             0\ncap2Blocked                   null                          null\nraisedCap                     null                          null\nburst                         30                            30\naskBlockedSeconds             null                          null\naskError                      true                          true\nplanError                     true                          true\nmemberModelRequests           {\"loop\":33,\"cap2\":2,\"raise\":4,\"plan\":2,\"ask\":2}{\"loop\":33,\"cap2\":2,\"raise\":4,\"plan\":2,\"ask\":2}\ndelegationsReturned           {\"call-pd25-delegate-cap2\":true,\"call-pd25-delegate-raise\":true,\"call-pd25-delegate-plan\":true,\"call-pd25-delegate-loop\":true,\"call-pd25-delegate-ask\":true}{\"call-pd25-delegate-cap2\":true,\"call-pd25-delegate-raise\":true,\"call-pd25-delegate-plan\":true,\"call-pd25-delegate-loop\":true,\"call-pd25-delegate-ask\":true}\naskDelegationBlocked          false                         false\n\nagreeing=true differing=[]"
 }

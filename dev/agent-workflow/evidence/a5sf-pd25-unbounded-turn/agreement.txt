@@ -10,7 +10,7 @@ ask                           PROVEN                        PROVEN
 plan                          PROVEN                        PROVEN
 todo                          PROVEN                        PROVEN
 goalToolsAbsent               PROVEN                        PROVEN
-surfaceCount                  30                            30
+surfaceCount                  29                            29
 createGoalOnSurface           false                         false
 loopRounds                    0                             0
 loopDefaultCap                null                          null

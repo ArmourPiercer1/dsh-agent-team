@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T04-49-52-495Z-b2",
+  "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2",
   "suite": "a5sf-pd25-unbounded-turn",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T04:49:52.495Z",
+  "startedAt": "2026-11-08T05:48:59.666Z",
   "selectedCases": [
     "pd25:goal-self-continuation",
     "pd25:goal-round-limit",
@@ -25,7 +25,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+      "head": "3527b3f454cdbeb16107e25f256ed709feff8af1",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -36,18 +36,18 @@
       "source": "task PD25-UNBOUNDED-TURN explicit boot authorisation (2026-11-14), arm=postfix"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+    "teamSha": "3527b3f454cdbeb16107e25f256ed709feff8af1",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd25-20261108T04-49-52Z"
+      "u5u5a5sfpd25-20261108T05-48-59Z"
     ]
   },
   "cases": [
     {
       "id": "pd25:goal-self-continuation",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "a governed Member cannot open a self-continuation loop: the goal tools are ABSENT (typed unknown tool), no goal is created, and ZERO goal rounds are driven",
       "failed": [],
       "clauses": [
@@ -86,7 +86,7 @@
     {
       "id": "pd25:goal-round-limit",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "with the goal tools removed there is no round budget to exercise: `create_goal {max_goal_rounds: 2}` is a typed unknown-tool refusal and zero goal rounds are driven",
       "failed": [],
       "clauses": [
@@ -110,7 +110,7 @@
     {
       "id": "pd25:goal-cap-caller-chosen",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "with the goal tools removed the Member can neither create a goal nor raise a cap: both are typed unknown-tool refusals and no goal state is written",
       "failed": [],
       "clauses": [
@@ -134,7 +134,7 @@
     {
       "id": "pd25:no-tool-call-cap",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "a delegated Member turn has NO tool-call cap: 30 sequential confined `bash` calls in ONE turn all executed (no typed refusal, no truncation, no counter)",
       "failed": [],
       "clauses": [
@@ -163,7 +163,7 @@
     {
       "id": "pd25:ask-user-unattended",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "with `tool-ask-user` removed the unattended Member cannot ask at all: the call is a typed `unknown tool` refusal, the delegation RETURNS, and no question is queued for a non-existent client",
       "failed": [],
       "clauses": [
@@ -187,7 +187,7 @@
     {
       "id": "pd25:exit-plan-non-plan",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "`exit_plan_mode` outside plan mode is a TYPED REFUSAL and does not switch the session mode",
       "failed": [],
       "clauses": [
@@ -211,7 +211,7 @@
     {
       "id": "pd25:todo-session-local",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "`todo_write` is SESSION-LOCAL: the `todo/write` event lands in the CALLING Member's own durable session and in no other Member's",
       "failed": [],
       "clauses": [
@@ -240,7 +240,7 @@
     {
       "id": "pd25:goal-tools-absent",
       "verdict": "PASS",
-      "at": "2026-11-08T04:51:25.802Z",
+      "at": "2026-11-08T05:50:36.219Z",
       "proposition": "the goal tools are GONE from the governed Member surface: every goal call is a typed `unknown tool` and nothing executes",
       "failed": [],
       "clauses": [
@@ -272,11 +272,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T04:50:32.361Z",
-        "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T04-49-52-495Z-b2",
+        "at": "2026-11-08T05:49:46.337Z",
+        "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2",
         "suite": "a5sf-pd25-unbounded-turn",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd25-20261108T04-49-52Z",
+        "world": "u5u5a5sfpd25-20261108T05-48-59Z",
         "phase": "a5sf-pd25-unbounded-turn-postfix-boot2"
       }
     ]
@@ -284,17 +284,17 @@
   "boots": [
     {
       "phase": "a5sf-pd25-unbounded-turn-postfix-boot2",
-      "world": "u5u5a5sfpd25-20261108T04-49-52Z",
+      "world": "u5u5a5sfpd25-20261108T05-48-59Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T04-49-52Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T05-48-59Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd25-unbounded-turn-postfix-2026-11-08T04-49-52-495Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T04:51:25.803Z"
+  "finishedAt": "2026-11-08T05:50:36.220Z"
 }

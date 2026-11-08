@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-pd25-unbounded-turn/member-probes/1",
-  "at": "2026-11-08T04:49:52.145Z",
+  "at": "2026-11-08T05:48:59.485Z",
   "note": "every probe call and the result the Member actually received (durable session first, mock transcript fallback)",
   "probes": {
     "loopGoalCreate": {
@@ -15,7 +15,7 @@
         "callId": "call-pd25-loop-goal-create",
         "isError": true,
         "text": "Error: unknown tool \"create_goal\"",
-        "at": 1794113388360
+        "at": 1794116935721
       }
     },
     "loopGoalGet": {
@@ -39,7 +39,7 @@
         "callId": "call-pd25-cap2-goal-create",
         "isError": true,
         "text": "Error: unknown tool \"create_goal\"",
-        "at": 1794113382038
+        "at": 1794116929512
       }
     },
     "raiseGoalCreate": {
@@ -54,7 +54,7 @@
         "callId": "call-pd25-raise-goal-create",
         "isError": true,
         "text": "Error: unknown tool \"create_goal\"",
-        "at": 1794113382433
+        "at": 1794116929869
       }
     },
     "raiseGoalEdit": {
@@ -72,7 +72,7 @@
         "callId": "call-pd25-raise-goal-edit",
         "isError": true,
         "text": "Error: unknown tool \"update_goal\"",
-        "at": 1794113382460
+        "at": 1794116929894
       }
     },
     "raiseGoalPause": {
@@ -89,7 +89,7 @@
         "callId": "call-pd25-raise-goal-pause",
         "isError": true,
         "text": "Error: unknown tool \"update_goal\"",
-        "at": 1794113382484
+        "at": 1794116929917
       }
     },
     "ask": {
@@ -118,7 +118,7 @@
         "callId": "call-pd25-ask",
         "isError": true,
         "text": "Error: unknown tool \"ask_user_question\"",
-        "at": 1794113388945
+        "at": 1794116936262
       }
     },
     "plan": {
@@ -133,7 +133,7 @@
         "callId": "call-pd25-plan",
         "isError": true,
         "text": "Error: exit_plan_mode is only available in plan mode",
-        "at": 1794113382884
+        "at": 1794116930296
       }
     },
     "todo": {
@@ -157,7 +157,7 @@
         "callId": "call-pd25-todo",
         "isError": false,
         "text": "Updated todo list: 1 pending, 1 in progress, 0 completed.",
-        "at": 1794113388337
+        "at": 1794116935699
       }
     },
     "bash": [
@@ -168,14 +168,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_1",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-1",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_1\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_1\"}",
-          "at": 1794113386537
+          "at": 1794116933900
         }
       },
       {
@@ -185,14 +185,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_2",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-2",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-2\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_2\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_2\"}",
-          "at": 1794113386618
+          "at": 1794116933976
         }
       },
       {
@@ -202,14 +202,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_3",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-3",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-3\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_3\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_3\"}",
-          "at": 1794113386694
+          "at": 1794116934049
         }
       },
       {
@@ -219,14 +219,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_4",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-4",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-4\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_4\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_4\"}",
-          "at": 1794113386766
+          "at": 1794116934119
         }
       },
       {
@@ -236,14 +236,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_5",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-5",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-5\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_5\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_5\"}",
-          "at": 1794113386826
+          "at": 1794116934191
         }
       },
       {
@@ -253,14 +253,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_6",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-6",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-6\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_6\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_6\"}",
-          "at": 1794113386886
+          "at": 1794116934262
         }
       },
       {
@@ -270,14 +270,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_7",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-7",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-7\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_7\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_7\"}",
-          "at": 1794113386954
+          "at": 1794116934341
         }
       },
       {
@@ -287,14 +287,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_8",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-8",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-8\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_8\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_8\"}",
-          "at": 1794113387016
+          "at": 1794116934412
         }
       },
       {
@@ -304,14 +304,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_9",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-9",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-9\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_9\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_9\"}",
-          "at": 1794113387078
+          "at": 1794116934474
         }
       },
       {
@@ -321,14 +321,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_10",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-10",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-10\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_10\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_10\"}",
-          "at": 1794113387139
+          "at": 1794116934534
         }
       },
       {
@@ -338,14 +338,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_11",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-11",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-11\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_11\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_11\"}",
-          "at": 1794113387200
+          "at": 1794116934593
         }
       },
       {
@@ -355,14 +355,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_12",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-12",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-12\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_12\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_12\"}",
-          "at": 1794113387262
+          "at": 1794116934651
         }
       },
       {
@@ -372,14 +372,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_13",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-13",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-13\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_13\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_13\"}",
-          "at": 1794113387322
+          "at": 1794116934706
         }
       },
       {
@@ -389,14 +389,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_14",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-14",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-14\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_14\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_14\"}",
-          "at": 1794113387381
+          "at": 1794116934763
         }
       },
       {
@@ -406,14 +406,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_15",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-15",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-15\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_15\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_15\"}",
-          "at": 1794113387441
+          "at": 1794116934820
         }
       },
       {
@@ -423,14 +423,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_16",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-16",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-16\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_16\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_16\"}",
-          "at": 1794113387499
+          "at": 1794116934877
         }
       },
       {
@@ -440,14 +440,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_17",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-17",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-17\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_17\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_17\"}",
-          "at": 1794113387556
+          "at": 1794116934932
         }
       },
       {
@@ -457,14 +457,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_18",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-18",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-18\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_18\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_18\"}",
-          "at": 1794113387617
+          "at": 1794116934990
         }
       },
       {
@@ -474,14 +474,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_19",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-19",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-19\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_19\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_19\"}",
-          "at": 1794113387674
+          "at": 1794116935045
         }
       },
       {
@@ -491,14 +491,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_20",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-20",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-20\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_20\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_20\"}",
-          "at": 1794113387731
+          "at": 1794116935102
         }
       },
       {
@@ -508,14 +508,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_21",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-21",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-21\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_21\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_21\"}",
-          "at": 1794113387790
+          "at": 1794116935159
         }
       },
       {
@@ -525,14 +525,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_22",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-22",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-22\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_22\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_22\"}",
-          "at": 1794113387848
+          "at": 1794116935216
         }
       },
       {
@@ -542,14 +542,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_23",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-23",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-23\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_23\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_23\"}",
-          "at": 1794113387906
+          "at": 1794116935273
         }
       },
       {
@@ -559,14 +559,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_24",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-24",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-24\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_24\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_24\"}",
-          "at": 1794113387962
+          "at": 1794116935329
         }
       },
       {
@@ -576,14 +576,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_25",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-25",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-25\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_25\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_25\"}",
-          "at": 1794113388019
+          "at": 1794116935387
         }
       },
       {
@@ -593,14 +593,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_26",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-26",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-26\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_26\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_26\"}",
-          "at": 1794113388077
+          "at": 1794116935443
         }
       },
       {
@@ -610,14 +610,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_27",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-27",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-27\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_27\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_27\"}",
-          "at": 1794113388135
+          "at": 1794116935501
         }
       },
       {
@@ -627,14 +627,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_28",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-28",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-28\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_28\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_28\"}",
-          "at": 1794113388196
+          "at": 1794116935561
         }
       },
       {
@@ -644,14 +644,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_29",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-29",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-29\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_29\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_29\"}",
-          "at": 1794113388253
+          "at": 1794116935618
         }
       },
       {
@@ -661,14 +661,14 @@
           "arguments": {
             "command": "echo A5SF_PD25_BASH_30",
             "description": "PD-25 probe",
-            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace"
+            "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace"
           }
         },
         "result": {
           "callId": "call-pd25-bash-30",
           "isError": false,
           "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-30\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD25_BASH_30\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD25_BASH_30\"}",
-          "at": 1794113388311
+          "at": 1794116935674
         }
       }
     ]

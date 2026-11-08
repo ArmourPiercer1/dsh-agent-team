@@ -1,5 +1,5 @@
 # Member transcript — session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T04-48-20Z-workspace--/session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd25-unbounded-turn-tests-homes-u5u5a5sfpd25-20261108T05-47-22Z-workspace--/session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e/session.v4.jsonl.zstd
 
 USER:
 [team-work requestToken=a5sf-pd25-plan-delegate] a5sf-pd25-plan: call exit_plan_mode once, then report what happened. Reply with the marker only when done.
@@ -27,7 +27,7 @@ Instructions from: AGENTS.md
 USER:
 Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T04-48-20Z/workspace". Some platform temporary areas may also be writable.
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z/workspace". Some platform temporary areas may also be writable.
 
 Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 

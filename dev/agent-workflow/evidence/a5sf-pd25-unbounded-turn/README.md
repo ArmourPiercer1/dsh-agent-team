@@ -81,7 +81,7 @@ dist is tracked, so no build is part of this evidence.
 
 | # | fact | boot 1 | boot 2 |
 | --- | --- | --- | --- |
-| 1 | Member tool surface | **34** names (incl. `get_goal`, `create_goal`, `update_goal`, `ask_user_question`) | 34 |
+| 1 | Member tool surface | **34** names (incl. `get_goal`, `create_goal`, `update_goal`, `ask_user_question`) | 34 → **30** (this lane alone) → **29** on the merged tree (PD-24 also removed `present`) |
 | 2 | `create_goal` on the delegated turn | **ACCEPTED** `phase=active roundsStarted=0 maxGoalRounds=256 activation=armed` | same |
 | 3 | automatic goal rounds observed (our cap 5) | **5** (`1,2,3,4,5`), first→last **0.899 s** | 5, **0.842 s** |
 | 4 | product's default round budget | **256** (`defaultMaxGoalRounds`) | 256 |
@@ -157,7 +157,7 @@ be a regression with no measured defect), and everything else (`bash`, `fs`, `fs
 `tool-plugin-manager`, compaction, persona/instructions, the `team_*` rows — another authorization surface this
 lane did not touch).
 
-**Disclosed capability regression.** The opt-in governed preset's Member surface drops **34 → 30** names: a
+**Disclosed capability regression.** The opt-in governed preset's Member surface drops **34 → 30** names in this lane's own pair — and **29** on the merged tree, because #673's PD-24 removed `present` as well: a
 governed Member can no longer create, read, or update a goal, and can no longer ask a human a question. That is a
 regression, not an enforcement win; §5.1 says what would restore each capability and who could do it.
 
@@ -181,18 +181,19 @@ authority model and an unattended answerer policy — is likewise new product ca
 
 ## 6. Post-fix measurement (the same five arms, the tree's composition)
 
-Post-fix agreeing pair (`runs/`, both boots identical — `agreement.txt`, `differing=[]`): Member surface **30**
-names (`createGoalOnSurface=false`, `goalToolsAbsent=PROVEN`); `get_goal`/`create_goal`/`update_goal`/
+Post-fix agreeing pair (`runs/`, both boots identical — `agreement.txt`, `differing=[]`): Member surface **29**
+names on the merged tree (`#673`'s `present` is also gone; this lane alone yields 30), (`createGoalOnSurface=false`,
+`goalToolsAbsent=PROVEN`); `get_goal`/`create_goal`/`update_goal`/
 `ask_user_question` are **absent from the tool catalog**, so every probe is the host router's typed
 `Error: unknown tool "<name>"`; **zero** goal rounds (`loopRounds=0`, `cap2Rounds=0`, `raisedCap=null` — nothing
-can be created, so nothing can be driven); the 30-call burst still executes **30/30** in **1774 / 1785 ms** (the
+can be created, so nothing can be driven); the 30-call burst still executes **30/30** in **1774 / 1812 ms** (the
 burst is `bash`, which is kept — the no-cap finding of §7.3 is unchanged and **deliberate**); `exit_plan_mode`
 and `todo_write` behave exactly as in the prefix arm (`planError=true` in both arms). The `ask` delegation now
 **returns**: `askBlockedSeconds=null`, `delegationsReturned` is `true` for all five, the Member's typed
 `unknown tool` answer arrives after its two model requests (`memberModelRequests.ask=2`), and the whole pair
 issues 58 mock requests versus the prefix arm's 68.
 
-The surface roster change, name by name: `-get_goal -create_goal -update_goal -ask_user_question` (34 → 30).
+The surface roster change, name by name: `-get_goal -create_goal -update_goal -ask_user_question` (34 → 30; 29 on the merged tree, where PD-24 also removed `present`).
 `surfaceCount` and the full roster are in `runs/bootNN/member-surface.json` and `counters.json`.
 
 ## 7. Three residuals that are NOT this row
@@ -229,7 +230,7 @@ for the Host/product owner, with the number and the anchor, as such.
 
 ## 8. Surface roster change record
 
-| | prefix (`archive/pre-fix/`, 34) | postfix (tree, 30) |
+| | prefix (`archive/pre-fix/`, 34) | postfix (merged tree, 29) |
 | --- | --- | --- |
 | goal trio | `get_goal`, `create_goal`, `update_goal` present and **dispatchable** | absent; typed `unknown tool` |
 | ask | `ask_user_question` present and **blocking** | absent; typed `unknown tool` |
@@ -267,7 +268,7 @@ composition → `PD25-SURFACE-CLOSED` RED, `PD25-TYPED-REFUSAL` stays GREEN) · 
 
 | gate | result | log |
 | --- | --- | --- |
-| a5sf family (`node --test tests/world-factory/a5sf-*.test.mjs`) | **PASS** 599 tests, 589 pass, 0 fail, 10 skipped | `a5sf-family.log` |
+| a5sf family (`node --test tests/world-factory/a5sf-*.test.mjs`) | **PASS** 605 tests, 594 pass, 0 fail, 11 skipped | `a5sf-family.log` |
 | `pnpm -r typecheck` | **PASS** (all 9 projects) | `typecheck.log` |
 | `pnpm run lint` | **129 errors / 32 warnings, all PRE-EXISTING** — byte-identical counts to PD-23's `eslint.log` on its own green branch; this lane's four files add **0** errors (the driver matches the repo's ignore pattern, 4 ignore warnings) | `eslint.log` |
 | `node scripts/check-artifacts-committed.mjs` | **PASS** | `check-artifacts.log` |
@@ -315,3 +316,27 @@ merged. Here the row and its evidence land together on `task/pd25-unbounded-turn
 line `PD25-UNBOUNDED-TURN`), and the register gate reds if §6 declares a path that exists on the tree — so no
 declaration is correct, and this note records that the omission is deliberate rather than forgotten. If a later
 lane lands this row while the evidence path is missing, §6 gains the row then.
+
+## 14. Re-binding after the #673 merge (records name a commit a reader can check out)
+
+`#673` (`PD24-SURFACE-LEDGER`) landed `1e650c3e3` while this lane was in review. Two consequences, both handled by
+**re-running, never by editing a field**:
+
+- **The composition changed**, so the old postfix pair could not describe it: `cordis.patch.yml` is
+  `a593472a9d82fdc97646cd51226b3374c8a190a8cdf56b753f79d3964593c6f9`… (the previous pair booted `d88b24a3…`), the
+  governed preset declares **13** rows and the Member surface is **29** names, not 30. The pair in `runs/` was
+  re-booted on the merged tree, `agreement.txt` is `agreeing=true differing=[]`, and the burst is 30/30 in
+  1774 / 1812 ms.
+- **The records were re-bound**: every `runs/bootNN/run-record.json` now carries
+  `bindings.teamSha = <the merge commit>` and `archive/pair-prefix/bootNN/run-record.json` keeps
+  `bindings.teamSha = 6cfc67b7695672ac817c64d3aec47a48b1dc48b4` (the base the pre-fix pair booted, unchanged and
+  still reachable). The check the reviewer runs — `git clone` the pushed branch and `git merge-base --is-ancestor`
+  each `teamSha` against the branch head — is the check this lane ran; `teamSha` is a **plain commit sha on the
+  branch's own first-parent history**, never a reflog-only id.
+- **History note:** this lane re-cut its own two commits twice before the merge (adding the final gate log and the
+  PR number) and **amended the merge commit once** to carry the cross-lane test fixes. Every record committed
+  after those rewrites was produced **by a boot at the commit that is still on the branch**, and no
+  `bindings.teamSha` was ever hand-edited.
+- **Cross-lane fixes folded into the merge commit** (each disclosed in the test file): `PD24-SURFACE-POSITIVE-
+  CONTROL` drops `tool-goal`/`tool-ask-user` from *its* retained list (PD-25 removed them), and PD-24's register
+  anchor line moved with that edit. PD-23's suite floor now records the whole history 16 → 15 → 13.
