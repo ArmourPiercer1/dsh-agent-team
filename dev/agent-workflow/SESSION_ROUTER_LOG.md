@@ -8392,3 +8392,86 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   **重跑 PASS**（`drift=0`）· eb3 guard/manifest pass · 三臂 driver 各 2/2 PASS。
 - **纪律**：无 grade、无 `V@B`、无 Q7/Authority/CI 变更、`CORE PATCH BUDGET = 0`、release 仍 BLOCKED；
   未 merge、未 settle。
+## 2026-11-14 — PD29-GOAL-STOP：goal 工具恢复 + Stop 语义真实测量（draft PR，不 merge）
+
+- **裁决来源**：owner 对 PD-25「无全局轮预算」的结论作出裁决——**恢复** `get_goal`/`create_goal`/`update_goal`，
+  **复用** upstream goal service / tools / round driver（不 fork goal 包），Preview 接受「无可信全局轮预算」，
+  且**不得**以 PD-25 的发现为理由删工具。同时要求 Stop 语义必须真实：用户或 Leader 显式停止某 Member 后，
+  该 Member 的 goal **不得**再自动起新轮、**不得**自行复活（含 cancel 竞态与冷会话恢复），且必须是运行时证据。
+- **lane**：`PD29-GOAL-STOP`，分支 `task/pd29-goal-stop-20261114`，worktree `.worktrees/pd29-goal-stop`。
+  初版基于 `24d2cf760`，两条 web lane 落地后 **rebase 到 `1879e3ebc`（#678）**，本记录的所有数字均为
+  **合并树重测**（`--boots 2`，10/10 双方一致，`bindings.candidate.head` = 生产提交）。`CORE PATCH BUDGET = 0`，
+  pin 0.2.0-rc.2 @ `639ed01539`（只读，两次 boot porcelain 均空）。
+- **行号**：窗口给本 lane 分配 **PD-29**，而本 base 上下一个可用号也是 **PD-29**（连续法 gate 强制），
+  故未顺延；若兄弟 lane 先合，则本行顺延为 **PD-30**（PD-25-from-PD-24 / PD-28-from-PD-30 先例）。
+- **改动（3 处生产代码 + 1 处驱动部署步骤）**：`cordis.patch.yml` 在 `preset-a5sf-governed-member` 恢复 upstream 行
+  `- id: tool-goal / name: '@deepseek-ai/dsh-tool-goal'`（合并后 **21 行**，与 web lane 的 `tool-web` 并存，
+  `tool-ask-user` 仍关闭）；`packages/runtime/src/plugin/live/agent-bindings.mjs` 的 lifecycle `interrupt(target)`
+  现在先用**派生** child session id 找 handle（`row.childSessionId` 常为空列，原先据此查找会**静默落空**）、
+  `agent.cancel`，再 `disarmStoppedGoal`：经公开 `goals` service 先做**耐久 CAS `pause`**（与 goal bar 同一转移）
+  再 `goals.disarm` 撤进程内 activation；`packages/runtime/src/plugin/host.ts` 增加惰性依赖
+  `goals: () => ctx.get('goals')`。`dist/` 已重建并提交。**该缺陷对「只断言 interrupt 返回 ok」的测试不可见**
+  ——函数正常返回、archive 报 `executed`、lifecycle 报 `ARCHIVED`、goal 仍在跑；因此本 lane 每个 arm 都以
+  Member 自己的耐久日志为准，返回值从不作为 oracle。
+- **真实测量（合并树，两次一致 boot，DEV-LIVE，10/10 双方一致）**：S8-continue 证明恢复后的连续自动轮真实发生
+  （Leader Member 165/156 轮；s2 208/195、s3 103/96、s4 43/42、cold 214/202；`max_goal_rounds: 1` 的 Member
+  恰好 1 轮后 `blocked/round-limit`）；S1 轮中用户 cancel → 20 000 ms 静默窗内 **0 轮 0 工具调用 0 模型请求**，
+  耐久 `pause` rev 1→2；S2 轮间 `goals/pause`（103/96 轮处）→ 0 轮；24 次边界 cancel 突发 `lost=false`；
+  S3 空窗探针 6/6 命中 0 落空；S4 Leader `team_archive_member` → 43/42 轮 → **0/0**，`SETTLED→ARCHIVED`，
+  耐久 goal `paused`；S5 停 Leader **不**传播（s2/cold/lead 各 +14 / +12 轮继续，如实披露）；S6 `SIGTERM`
+  后（213/201 轮）同 `DSH_HOME` 冷启动（`create-or-open`）+ 真实 `team_follow_up` 再物化 → 20 000 ms 内
+  **0 轮**、`revived=false`（s1 的 goal 仍 `paused`）；S7 `goals/resume` 恢复恰好 1 轮；S8 `complete`/`pause`/
+  `blocked` 之后均 0 轮。
+- **合并树新发现（部署层）**：第一次合并树 pair **一个 Member 都没建起来**——preset 行由 **profile 模块图**解析，
+  而测试 World 未提供生产安装图，宿主审计报 `tool-web (dsh-agent-team/web-tool): never started`，7 个
+  `team_delegate` 全部 `TEAM_RUNTIME_DURABLE_WRITE_FAILED`。驱动现在按 #678 的做法链接
+  `profiles/web/node_modules/dsh-agent-team -> <repo root>`，并在任何 arm 之前断言 `./host`、`./web-tool`、
+  `./web-transport`、`./client` 均可解析；零 Member 时直接以「members created=N of 7」失败。这是测试 World 的
+  部署属性，不重写任何行名。
+- **仍未真**（原样保留，不软化）：无可信全局轮预算（`maxGoalRounds` 由 Member 自设/可改，owner 已接受）；
+  停 Leader 不传播到 Member goal（可调用通道 = `team_archive_member` 与 per-member `/api/session/cancel`）；
+  空窗 cancel 是 upstream 无事件 no-op，Team 只能在**自己**执行停止时撤权（6/6 探针 + S1/S2/S4 证明会撤）；
+  goal bar 的 RPC 面是 `/api/goals/*`（`/team-remote` 是封闭契约，对 `goals/get` 回 `unknown-method`）。
+- **门（本地）**：`pnpm -r typecheck` ok；`pnpm eslint`（仓库既有基线，触碰的 runtime 文件两处 error 为既有）；
+  `pnpm check:artifacts:head` ok（1980→1982 文件，drift 0）；`check-artifacts-committed` ok；`doc-checks` rc 0；
+  `ci-pr-gate --only state-freshness` pass；`eb3-evidence-guard` pass；`eb3-run-manifest` pass；
+  `a5sf-pd29-goal-stop.test.mjs` 4/4；`a5sf-pd25`/`a5sf-pd26` 9 pass / 2 skipped；pd25+pd26 mutation controls
+  绿；`p4t6-session-event-scan` 20/20；register 连续法/锚点 gate 10/10（**锚点因本 lane 在 host.ts +
+  cordis.patch.yml 的插入整体位移，已按 PD-28 先例重解并披露**）。
+- **交付**：draft PR 首行 `PD29-GOAL-STOP`；**不 merge、不 settle**；`release BLOCKED` 不变，无 grade、无 `V@B`、
+  无 Q7/Authority/CI 改动。
+
+## 2026-11-14（追加）— PD29-GOAL-STOP：再 rebase 到 `da6cc7ba2`，行号按连续法定为 **PD-30**
+
+- **base 再变**：`1879e3ebc`（#678 web preview）之后 `da6cc7ba2`（#677 `PD28-SERVICE-SEAM`，把 `skill`/`present`
+  从两个 Team 工具 fork 改为 **service provider + 直接挂载 pinned 包**）合入，本 lane 再次 rebase；**所有数字
+  在该树上重测**（上一轮 `1879e3ebc` 的数字作废，只作历史）。`CORE PATCH BUDGET = 0`、pin `639ed01539` 只读、
+  两次 boot porcelain 均空、`check-artifacts-committed` ok（1981 文件 / 110 glue）。
+- **行号（两个号，均注明理由，dated）**：窗口原分配给本 lane **PD-31**（`1879e3ebc` 占 PD-28、`da6cc7ba2` 占
+  PD-29、read_image 原定 PD-30），但 register 连续法 gate（`PD-1…PD-n`，顺序强制）只接受本 base 上的**下一个
+  可用号**，即 **PD-30**；owner 裁决**改另一条 lane**，read_image 顺延 **PD-31**，故本行为 **PD-30**。
+  lane 标签仍为 `pd29`（分支/证据目录/驱动/测试臂），与 PD-25-from-PD-24、PD-28-from-PD-30 同一惯例。
+  理由记在行 `source`、证据 banner 与 PR body；这是本阶段第五次改号，纪律是**每次移动都注明日期与原因**，
+  而不是从不移动。
+- **重测（`da6cc7ba2`，10/10 双方一致）**：S8-continue Leader **159/161** 轮，s2 198/204、s3 100/100、
+  s4 43/42、cold 205/209、s1 2、pz 1；S1 轮中 cancel → 20 000 ms 内 **0/0/0**、耐久 pause rev 2；S2 轮间
+  pause（99/100 轮）→ 0；24 次边界 cancel `lost=false`；S3 6/6 命中；**S4**（正是 #677 重写的 lifecycle 模块）
+  `team_archive_member` 43/42 轮 → 0/0、`SETTLED→ARCHIVED`、goal `paused`；S5 停 Leader 不传播（+14/+13/+13）；
+  S6 SIGTERM（204/208 轮）后同 `DSH_HOME` 冷启动 + 真实 `team_follow_up` → **0 轮**、`revived=false`；
+  S7 resume 恰好 1 轮；S8 complete/pause/blocked 均 0 轮。组合 = **21 行**，`tool-goal` 与 `tool-web` 并存，
+  `tool-skill`/`tool-present` 现由 service seam 提供，`tool-ask-user` 仍关闭。
+- **仪表规则（本轮教训，已写进行与 README）**：**先断言组合已加载，再断言行为**。两条合并树的首个 pair 都因
+  World 未提供生产安装图（`profiles/web/node_modules/dsh-agent-team -> <repo root>`）而 **零 Member**（preset 死，
+  `tool-web …: never started`，`team_delegate` 全部 `TEAM_RUNTIME_DURABLE_WRITE_FAILED`），若不检查会被报成
+  「没有 goal / 没有轮」——把死 preset 说成行为失败。驱动现在链接安装图、在任何 arm 之前断言
+  `./host|./web-tool|./web-transport|./client` 可解析，失败时输出 **`members created=N of 7`**。同一私有修复也
+  存在于 `da6cc7ba2` lane 的驱动（`provisionInstallGraph()` + `TT_INSTRUMENT_PRESET_DEAD`）；owner 正把它收进
+  shared world-factory，落地后本 lane 删除私有副本并**再跑一次**（若数字不同，那本身就是发现）。
+- **仍未真**（原样保留）：无可信全局轮预算；停 Leader 不传播；空窗 cancel 是 upstream 无事件 no-op，Team 只能
+  在自己执行停止时撤权；`/api/goals/*` 才是 goal bar 的 RPC 面（`/team-remote` 为封闭契约）；World 无安装图则
+  shipped preset 根本起不来，且失败以「下游无意义」形态出现。
+- **门（本地）**：register 连续法/锚点/字段 **10/10 绿**（PD-30 为本 base 下一个可用号，`read_image` 让至 PD-31）；
+  `doc-checks` rc 0；`check-artifacts-committed` ok；typecheck/eslint 基线；a5sf 套件 4/4 + 9 pass/2 skipped + 变异控制；
+  `p4t6-session-event-scan` 20/20；`eb3-evidence-guard`/`eb3-run-manifest` pass；`ci-pr-gate --only state-freshness` pass。
+- **交付**：draft PR #679 首行 `PD29-GOAL-STOP`；不 merge、不 settle；`release BLOCKED`，无 grade、无 `V@B`、
+  无 Q7/Authority/CI 改动。

@@ -1652,6 +1652,14 @@ export async function apply(ctx, config) {
             // array: worlds without the jobs service stay byte-identical and the
             // bridge answers a typed refusal per call, never a setup failure.
             jobs: () => ctx.get('jobs'),
+            // PD-29 (2026-11-14, goal-stop): the LAZY host goal service accessor.
+            // The lifecycle `interrupt` port (archive/dispose step 2) must withdraw a
+            // stopped Member's goal-continuation authority through the UPSTREAM
+            // service (`GoalService.disarm` — the documented lifecycle seam), never
+            // through a Team-owned second state machine. Additive optional dep, same
+            // lazy-accessor pattern as `jobs`: a host without `@deepseek-ai/dsh-goal`
+            // keeps the pre-PD-29 behaviour and the bindings record the absence.
+            goals: () => ctx.get('goals'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject
