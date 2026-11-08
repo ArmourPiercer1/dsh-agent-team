@@ -1,0 +1,18 @@
+[2026-11-08T18:08:27.144Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T18:08:27.206Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T18:08:27.207Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd33 head=9f2a16d8778e9271aa2bddb19e0fbeefe646c0f7
+[2026-11-08T18:08:27.222Z] [boot1] fixture origins: fetch=http://127.0.0.1:45149 search=http://127.0.0.1:45009
+[2026-11-08T18:08:27.227Z] [boot1] world=u5u5a5sfpd33-20261108T18-08-27Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-08-27Z
+[2026-11-08T18:08:27.227Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e (7 exports resolved, incl. ./web-tool)
+[2026-11-08T18:09:34.163Z] [boot1] mock on 13053
+[2026-11-08T18:10:22.678Z] [boot1] BOOTED port=3190 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-08-27Z
+[2026-11-08T18:13:22.758Z] [boot1] p6t6 health=false
+[2026-11-08T18:13:22.758Z] [boot1] FAILED at Error: the p6t6 harness route never answered: the World did not reach a usable Host
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs:1177:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs:2065:18)
+[2026-11-08T18:13:22.863Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T18:13:22.863Z] single boot (no pair agreement required)
+[2026-11-08T18:13:22.900Z] host porcelain after: []
+[2026-11-08T18:13:22.900Z] RESULT FAIL (1/1 boots; agreeing pair=null)
+EXIT=1
