@@ -1,0 +1,18 @@
+{
+  "call": {
+    "id": "call-a5sfpd24-leader-job",
+    "name": "bash",
+    "arguments": {
+      "command": "sleep 20",
+      "description": "Hold a background job the Member will try to read",
+      "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+      "run_in_background": true
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "started background job bash-1"
+  },
+  "jobId": "bash-1"
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-08T04:40:00.115Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 451,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-38-36Z",
+    "releasedPorts": [
+      3188,
+      3498,
+      3188
+    ],
+    "killedPids": [
+      451
+    ],
+    "notes": []
+  },
+  "hostTreePorcelain": []
+}

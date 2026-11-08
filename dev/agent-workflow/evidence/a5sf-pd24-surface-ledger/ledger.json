@@ -1,0 +1,1790 @@
+{
+  "schema": "a5sf-pd24-surface-ledger/ledger/1",
+  "at": "2026-11-08T04:40:30.341Z",
+  "recordClass": "DEV-LIVE",
+  "candidateClaimEligibility": false,
+  "subject": "shipped opt-in governed preset `a5sf-governed-member` (cordis.patch.yml), real Member turn on a real Host",
+  "measured": {
+    "baseHead": "6cfc67b76",
+    "head": "13c0c33f3e4890da87240ceecb2ee7e3e6a738cd",
+    "preFixHead": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+    "askHead": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+    "host": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "postFixPair": [
+      {
+        "boot": "boot01",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-postfix-2026-11-08T04-37-15-457Z-b1 suite=a5sf-pd24-surface-ledger overall=PASS cases=12 PASS:12 worlds=u5u5a5sfpd24-20261108T04-37-15Z recordClass=DEV-LIVE (not candidate evidence)",
+        "roster": 33
+      },
+      {
+        "boot": "boot02",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-postfix-2026-11-08T04-38-36-938Z-b2 suite=a5sf-pd24-surface-ledger overall=PASS cases=12 PASS:12 worlds=u5u5a5sfpd24-20261108T04-38-36Z recordClass=DEV-LIVE (not candidate evidence)",
+        "roster": 33
+      }
+    ],
+    "preFixPair": [
+      {
+        "boot": "boot01",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-prefix-2026-11-08T04-14-01-686Z-b1 suite=a5sf-pd24-surface-ledger overall=PASS cases=12 PASS:12 worlds=u5u5a5sfpd24-20261108T04-14-01Z recordClass=DEV-LIVE (not candidate evidence)",
+        "roster": 34
+      },
+      {
+        "boot": "boot02",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-prefix-2026-11-08T04-15-20-804Z-b2 suite=a5sf-pd24-surface-ledger overall=PASS cases=12 PASS:12 worlds=u5u5a5sfpd24-20261108T04-15-20Z recordClass=DEV-LIVE (not candidate evidence)",
+        "roster": 34
+      }
+    ],
+    "askArmPair": [
+      {
+        "boot": "boot01",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-ask-2026-11-08T04-23-11-895Z-b1 suite=a5sf-pd24-surface-ledger overall=PASS cases=1 PASS:1 worlds=u5u5a5sfpd24-20261108T04-23-11Z recordClass=DEV-LIVE (not candidate evidence)"
+      },
+      {
+        "boot": "boot02",
+        "summary": "RUN-SUMMARY run=a5sf-pd24-surface-ledger-ask-2026-11-08T04-25-27-563Z-b2 suite=a5sf-pd24-surface-ledger overall=PASS cases=1 PASS:1 worlds=u5u5a5sfpd24-20261108T04-25-27Z recordClass=DEV-LIVE (not candidate evidence)"
+      }
+    ]
+  },
+  "roster": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "write"
+  ],
+  "postFixSurface": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "write"
+  ],
+  "shipments": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "update_goal",
+    "write"
+  ],
+  "fixtures": [
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "removedNames": [
+    "interrupt_agent",
+    "list_agents",
+    "pwsh",
+    "send_message",
+    "skill",
+    "subagent",
+    "subagent_fork",
+    "web_fetch",
+    "web_search",
+    "workflow",
+    "present"
+  ],
+  "counts": {
+    "GOVERNED": 7,
+    "SESSION-LOCAL": 9,
+    "OTHER-AUTHZ": 15,
+    "FAIL-CLOSED": 11,
+    "UNMEASURED": 0,
+    "shippedRoster": 32,
+    "measuredRoster": 34,
+    "postFixRoster": 33,
+    "fixtures": 2,
+    "onRosterClosed": 1,
+    "offRosterRemoved": 10,
+    "totalRemoved": 11,
+    "FAIL_CLOSED": 11
+  },
+  "identity": "GOVERNED(7) + SESSION-LOCAL(9) + OTHER-AUTHZ(15) + FAIL-CLOSED(11) + UNMEASURED(0) = 42 = shippedRoster(32) + offRosterRemoved(10); the measured roster is 34 = 32 shipped + 2 World fixtures, and the ONE on-roster closed row (`present`) is inside the 32",
+  "rows": [
+    {
+      "name": "ask_user_question",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "asks the human answerer; BLOCKS until an answer arrives (legacy mode has no timeout)",
+      "scope": "本 session (its own turn)",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a — but see the measured hazard",
+      "onViolation": "measured in its own arm: NO result inside the observation window (60 s here, 300 s on the first development boot), no `turn/end`, the Member's turn stays open; no Team state is written and no `user/questions` event appears",
+      "liveEvidence": true,
+      "hazard": "BLOCKS a delegated turn. Not a boundary crossing (it writes nothing) and therefore NOT removed by this lane: the task's rule is to act only on silent-success-out-of-bounds rows. Recorded as a separate, measured defect for a decision.",
+      "evidence": {
+        "askArm": {
+          "schema": "a5sf-pd24-surface-ledger/ask-blocked/1",
+          "at": "2026-11-08T04:25:27.338Z",
+          "memberSession": "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc",
+          "windowMs": 60000,
+          "call": {
+            "callId": "call-a5sfpd24-ask",
+            "name": "ask_user_question",
+            "arguments": {
+              "questions": [
+                {
+                  "id": "pd24-ask",
+                  "header": "PD-24 probe",
+                  "question": "Must a governed Member block its own turn on a human answer?",
+                  "options": [
+                    {
+                      "label": "Yes"
+                    },
+                    {
+                      "label": "No"
+                    }
+                  ],
+                  "multi_select": false
+                }
+              ]
+            },
+            "result": null
+          },
+          "result": null,
+          "turnEnded": false,
+          "eventTypes": {
+            "session": 1,
+            "permission/preset": 1,
+            "sandbox/mode": 1,
+            "approval/policy": 1,
+            "agent/inbox/spliced": 2,
+            "turn/start": 1,
+            "step/start": 2,
+            "system/message": 1,
+            "user/message": 3,
+            "request/header": 1,
+            "request/context": 1,
+            "session/title": 2,
+            "session/title-llm-request": 1,
+            "assistant/message": 2,
+            "tool/call": 2,
+            "tool/result": 1,
+            "step/end": 1
+          },
+          "bashControl": {
+            "callId": "call-a5sfpd24-bash",
+            "isError": false,
+            "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
+            "at": 1794111866324
+          },
+          "note": "the ask call never settles: legacy mode has no timeout, and a delegated turn has no human answerer; the 60 s hold is the observation window, not a product timeout"
+        }
+      }
+    },
+    {
+      "name": "bash",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "one fresh confined child per command (confined terminal face)",
+      "scope": "Member lane (compiled read/write ceiling) + OS sandbox for the child",
+      "fact": true,
+      "facts": 3,
+      "outOfBounds": "L1 admission: the read axis is decided before spawn; dynamic shell reads (`$(…)`/backticks) are not lexically attributable and stay ungoverned on that sub-path",
+      "onViolation": "typed refusal at admission (no child)",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-bash",
+            "name": "bash",
+            "arguments": {
+              "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt'",
+              "description": "Read the in-lane fixture",
+              "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-bash",
+            "isError": false,
+            "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
+            "at": 1794112712093
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "shellRead",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "observedAt": "2026-11-08T04:38:28.871Z",
+            "tool": "bash",
+            "callId": "call-a5sfpd24-bash"
+          },
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "observedAt": "2026-11-08T04:38:28.875Z",
+            "tool": "bash",
+            "callId": "call-a5sfpd24-bash"
+          },
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "spawn:write",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "observedAt": "2026-11-08T04:38:28.877Z",
+            "tool": "bash",
+            "callId": "call-a5sfpd24-bash"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create_goal",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "opens a goal in the calling session and ARMS its self-continuation round driver",
+      "scope": "本 session",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "no Team write; the loop is driven in the SAME session",
+      "onViolation": "n/a — measured: accepted, then round 1 of `<goal_round>` arrives in A's own session",
+      "liveEvidence": true,
+      "goalLoop": {
+        "createRoundsStarted": "0",
+        "roundRoundsStarted": "1",
+        "completeRoundsStarted": "2",
+        "goalRoundRequestsInA": 2,
+        "goalRoundRequestsElsewhere": 0,
+        "goalEventsBySession": {
+          "session-a5sf-pd24-boot": {
+            "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
+            "types": {
+              "session": 1,
+              "permission/preset": 1,
+              "sandbox/mode": 1,
+              "approval/policy": 1,
+              "agent/inbox/spliced": 2,
+              "turn/start": 1,
+              "step/start": 1,
+              "system/message": 1,
+              "user/message": 4,
+              "request/header": 1,
+              "request/context": 1,
+              "session/title": 2,
+              "session/title-llm-request": 1,
+              "assistant/message": 1,
+              "step/end": 1,
+              "turn/end": 1
+            },
+            "goalEvents": 0
+          },
+          "session-a5sf-pd24-team": {
+            "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
+            "types": {
+              "session": 1,
+              "permission/preset": 1,
+              "sandbox/mode": 1,
+              "approval/policy": 1,
+              "agent/inbox/spliced": 2,
+              "turn/start": 1,
+              "step/start": 3,
+              "system/message": 1,
+              "user/message": 4,
+              "request/header": 1,
+              "request/context": 1,
+              "session/title": 2,
+              "session/title-llm-request": 1,
+              "assistant/message": 3,
+              "tool/call": 2,
+              "tool/result": 2,
+              "step/end": 3,
+              "turn/end": 1
+            },
+            "goalEvents": 0
+          },
+          "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": {
+            "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-37-15Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
+            "types": {
+              "session": 1,
+              "permission/preset": 1,
+              "sandbox/mode": 1,
+              "approval/policy": 1,
+              "agent/inbox/spliced": 8,
+              "turn/start": 3,
+              "step/start": 35,
+              "system/message": 1,
+              "user/message": 6,
+              "request/header": 3,
+              "request/context": 1,
+              "session/title": 2,
+              "session/title-llm-request": 1,
+              "assistant/message": 35,
+              "tool/call": 32,
+              "tool/result": 32,
+              "step/end": 35,
+              "todo/write": 1,
+              "goal/change": 2,
+              "workspace/changes": 2,
+              "turn/end": 3
+            },
+            "goalEvents": 2
+          }
+        }
+      },
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-goal-create",
+            "name": "create_goal",
+            "arguments": {
+              "objective": "A Member goal must stay inside its own session.",
+              "max_goal_rounds": 2
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-goal-create",
+            "isError": false,
+            "text": "{\"goal\":{\"id\":\"goal-bc24bff8-ab31-4614-8646-b77596cef352\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+            "at": 1794112713172
+          }
+        },
+        "roundGet": {
+          "call": {
+            "id": "call-a5sfpd24-goal-round-get",
+            "name": "get_goal",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-goal-round-get",
+            "isError": false,
+            "text": "{\"goal\":{\"id\":\"goal-bc24bff8-ab31-4614-8646-b77596cef352\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":1,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+            "at": 1794112713388
+          }
+        },
+        "complete": {
+          "call": {
+            "id": "call-a5sfpd24-goal-complete",
+            "name": "update_goal",
+            "arguments": {
+              "goal_id": "goal-bc24bff8-ab31-4614-8646-b77596cef352",
+              "revision": 1,
+              "action": "complete"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-goal-complete",
+            "isError": false,
+            "text": "{\"goal\":{\"id\":\"goal-bc24bff8-ab31-4614-8646-b77596cef352\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation\":\"disarmed\"}",
+            "at": 1794112713569
+          }
+        }
+      }
+    },
+    {
+      "name": "edit",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined `fs` face: stat + readText + editText through the realm provider",
+      "scope": "Member lane (read+write ceilings)",
+      "fact": true,
+      "facts": 1,
+      "outOfBounds": "L1 admission on both axes; the version guard is the host tool's own (L2)",
+      "onViolation": "typed IO_*_DENIED",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-edit",
+            "name": "edit",
+            "arguments": {
+              "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt",
+              "old_string": "A5SF_PD24_IN_LANE_BYTES",
+              "new_string": "A5SF_PD24_IN_LANE_BYTES\nA5SF_PD24_IN_LANE_BYTES edited"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-edit",
+            "isError": false,
+            "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt has been updated successfully.",
+            "at": 1794112712254
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "editText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 4,
+            "observedAt": "2026-11-08T04:38:32.244Z",
+            "tool": "edit",
+            "callId": "call-a5sfpd24-edit"
+          }
+        ]
+      }
+    },
+    {
+      "name": "exit_plan_mode",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "presents a plan and leaves plan mode — only when plan mode is ACTIVE for the calling session",
+      "scope": "本 session",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a (no Team write)",
+      "onViolation": "measured (inactive branch): `exit_plan_mode is only available in plan mode`, no `plan/mode` event",
+      "liveEvidence": true,
+      "unmeasuredBranch": "plan-mode-ACTIVE branch: no seam exists to set `plan/mode` active on a DELEGATED Member session (the `/plan` command is a session-level user command; the Team tool plane exposes no command route). Measuring it needs either that command route or a Member session started plan-active.",
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-exit-plan",
+            "name": "exit_plan_mode",
+            "arguments": {
+              "plan": "# PD-24 probe plan\n\nThis must not leave plan mode."
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-exit-plan",
+            "isError": true,
+            "text": "Error: exit_plan_mode is only available in plan mode",
+            "at": 1794112712632
+          }
+        }
+      }
+    },
+    {
+      "name": "get_goal",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "reads the CALLING session's goal projection",
+      "scope": "本 session",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a",
+      "onViolation": "n/a — `{\"goal\":null}` before create; the goal it later reads is A's own",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-goal-get",
+            "name": "get_goal",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-goal-get",
+            "isError": false,
+            "text": "{\"goal\":null}",
+            "at": 1794112712601
+          }
+        }
+      }
+    },
+    {
+      "name": "glob",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined search face: ripgrep `--files` inside the confined child",
+      "scope": "Member lane (read ceiling)",
+      "fact": true,
+      "facts": 1,
+      "outOfBounds": "L1 admission before the child",
+      "onViolation": "typed refusal",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-glob",
+            "name": "glob",
+            "arguments": {
+              "pattern": "*.txt",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-glob",
+            "isError": false,
+            "text": "edited-by-member.txt\nwritten-by-member.txt\nin-lane.txt",
+            "at": 1794112712412
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 4,
+            "observedAt": "2026-11-08T04:38:32.370Z",
+            "tool": "glob",
+            "callId": "call-a5sfpd24-glob"
+          }
+        ]
+      }
+    },
+    {
+      "name": "grep",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined search face: ripgrep runs inside the confined child",
+      "scope": "Member lane (read ceiling)",
+      "fact": true,
+      "facts": 1,
+      "outOfBounds": "L1 admission before the child",
+      "onViolation": "typed refusal",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-grep",
+            "name": "grep",
+            "arguments": {
+              "pattern": "A5SF_PD24_IN_LANE_BYTES",
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+              "include": "*.txt"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-grep",
+            "isError": false,
+            "text": "Found 4 matches\n\nin-lane.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES\nLine 2: A5SF_PD24_IN_LANE_BYTES edited\n\nwritten-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES written\n\nedited-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES seed",
+            "at": 1794112712339
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "spawn",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 3,
+            "observedAt": "2026-11-08T04:38:32.294Z",
+            "tool": "grep",
+            "callId": "call-a5sfpd24-grep",
+            "annotations": [
+              "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+              "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "job_kill",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "cancels a job the CALLING session owns (none can exist here)",
+      "scope": "本 session (owner-scoped registry)",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a",
+      "onViolation": "measured: same typed refusal; the Leader's job kept running",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-job-kill",
+            "name": "job_kill",
+            "arguments": {
+              "job_id": "bash-1",
+              "reason": "pd24 foreign-job probe"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-job-kill",
+            "isError": true,
+            "text": "Error: job bash-1 belongs to another session",
+            "at": 1794112712538
+          }
+        }
+      }
+    },
+    {
+      "name": "job_list",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "reads the OWNER-scoped job registry; no producer exists on this preset",
+      "scope": "本 session (owner-scoped registry)",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a — a job id owned by another session is refused",
+      "onViolation": "`belongs to another session` / `unknown job <id>`",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-job-list",
+            "name": "job_list",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-job-list",
+            "isError": false,
+            "text": "(no background jobs)",
+            "at": 1794112712477
+          }
+        }
+      }
+    },
+    {
+      "name": "job_output",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "reads a job the CALLING session owns (none can exist here)",
+      "scope": "本 session (owner-scoped registry)",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a",
+      "onViolation": "measured: `belongs to another session` for the Leader's real job id",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-job-foreign",
+            "name": "job_output",
+            "arguments": {
+              "job_id": "bash-1"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-job-foreign",
+            "isError": true,
+            "text": "Error: job bash-1 belongs to another session",
+            "at": 1794112712507
+          }
+        }
+      }
+    },
+    {
+      "name": "present",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": true,
+      "preFixOnSurface": true,
+      "postFixOnSurface": false,
+      "executes": "PRE-FIX: resolved paths with the BASE `fs` and appended a `deliverables/presented` event to the CALLING session — above the compiled read lane",
+      "scope": "host filesystem (base `fs`), no ceiling of its own",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "YES — MEASURED: a real out-of-lane file was ACCEPTED (`Presented …/secret-out-of-lane.txt`), a missing one refused `file not found` (existence oracle), with ZERO `a5sf-guard-consult` facts",
+      "onViolation": "PRE-FIX: silent success (no typed refusal, no fact). POST-FIX: typed `unknown tool \"present\"` — zero execution",
+      "liveEvidence": true,
+      "removedBy": "PD-24",
+      "capabilityRegression": "YES — a governed Member can no longer declare deliverables; restoring it needs a new realm-bound confined `present` face (CORE_SEAM_BLOCKER)",
+      "evidence": {
+        "preFix": {
+          "call": {
+            "id": "call-a5sfpd24-present-out",
+            "name": "present",
+            "arguments": {
+              "files": [
+                {
+                  "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/secret-out-of-lane.txt",
+                  "description": "out-of-lane fixture"
+                }
+              ]
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-present-out",
+            "isError": false,
+            "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/secret-out-of-lane.txt",
+            "at": 1794111316541
+          }
+        },
+        "preFixMissing": {
+          "call": {
+            "id": "call-a5sfpd24-present-missing",
+            "name": "present",
+            "arguments": {
+              "files": [
+                {
+                  "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/does-not-exist-out-of-lane.txt",
+                  "description": "absent out-of-lane fixture"
+                }
+              ]
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-present-missing",
+            "isError": true,
+            "text": "Error: Cannot present /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/does-not-exist-out-of-lane.txt: file not found. Check the path, create the file if needed, and retry.",
+            "at": 1794111316570
+          }
+        },
+        "postFix": {
+          "call": {
+            "id": "call-a5sfpd24-present-out",
+            "name": "present",
+            "arguments": {
+              "files": [
+                {
+                  "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/out-of-lane/secret-out-of-lane.txt",
+                  "description": "out-of-lane fixture"
+                }
+              ]
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-present-out",
+            "isError": true,
+            "text": "Error: unknown tool \"present\"",
+            "at": 1794112712696
+          }
+        },
+        "facts": []
+      }
+    },
+    {
+      "name": "read",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined `fs` face: stat + readText through the realm provider",
+      "scope": "Member lane (read ceiling)",
+      "fact": true,
+      "facts": 2,
+      "outOfBounds": "L1 admission, before the provider: 0 bytes + typed IO_READ_DENIED + 1 deny fact",
+      "onViolation": "typed IO_READ_DENIED",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-read",
+            "name": "read",
+            "arguments": {
+              "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-read",
+            "isError": false,
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD24_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+            "at": 1794112712137
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "stat",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 1,
+            "observedAt": "2026-11-08T04:38:32.130Z",
+            "tool": "read",
+            "callId": "call-a5sfpd24-read"
+          },
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "readText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 2,
+            "observedAt": "2026-11-08T04:38:32.133Z",
+            "tool": "read",
+            "callId": "call-a5sfpd24-read"
+          }
+        ]
+      }
+    },
+    {
+      "name": "read_image",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined `fs` face (same provider as `read`) — but ONLY if the model route declares image input",
+      "scope": "Member lane (read ceiling)",
+      "fact": true,
+      "facts": 0,
+      "outOfBounds": "L1 admission (host-free arm: 1 deny fact). LIVE: the call is refused at the MODEL ROUTE gate before the face",
+      "onViolation": "route gate: `model \"…\" does not declare image input`; below it, typed IO_READ_DENIED",
+      "liveEvidence": false,
+      "liveNote": "NOT_REACHED live: the measured model route (deepseek-v4-flash) declares no image input, so the tool never reaches the face. The confined-face behaviour is host-free evidence only.",
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-read-image",
+            "name": "read_image",
+            "arguments": {
+              "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.png"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-read-image",
+            "isError": true,
+            "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+            "at": 1794112712446
+          }
+        },
+        "facts": []
+      }
+    },
+    {
+      "name": "team_archive_member",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_collect",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_create_member",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_delegate",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_follow_up",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_grant_permission",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_inspect_config",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_list_members",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_list_pending_control",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_list_templates",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_report_progress",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_request_control",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_resolve_control",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_revoke_permission",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "team_send_message",
+      "bucket": "OTHER-AUTHZ",
+      "onSurface": true,
+      "executes": "Team tool plane: its own request-token + envelope authorization (NOT the a5sf confined face)",
+      "scope": "Team",
+      "fact": false,
+      "outOfBounds": "no (a different authorization plane; out of this lane's remit)",
+      "onViolation": "typed Team refusal (e.g. TEAM_RUNTIME_CALLER_AUTHORITY_DENIED / envelope denial)",
+      "evidence": {
+        "measuredHere": false,
+        "note": "not called by this lane by instruction; plane characterized by PD-21 evidence"
+      }
+    },
+    {
+      "name": "todo_write",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "appends a `todo/write` event to the CALLING session only",
+      "scope": "本 session",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a (no cross-session surface)",
+      "onViolation": "n/a — measured: only A's session carries `todo/write`; the Leader and every other session carry none",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-todo",
+            "name": "todo_write",
+            "arguments": {
+              "todos": [
+                {
+                  "content": "PD-24 surface-ledger probe (member-local)",
+                  "status": "in_progress"
+                },
+                {
+                  "content": "PD-24 report",
+                  "status": "pending"
+                }
+              ]
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-todo",
+            "isError": false,
+            "text": "Updated todo list: 1 pending, 1 in progress, 0 completed.",
+            "at": 1794112712569
+          }
+        }
+      }
+    },
+    {
+      "name": "update_goal",
+      "bucket": "SESSION-LOCAL",
+      "onSurface": true,
+      "executes": "mutates the calling session's own goal (pause/complete/edit)",
+      "scope": "本 session",
+      "fact": false,
+      "facts": 0,
+      "outOfBounds": "n/a",
+      "onViolation": "n/a — measured: `complete` accepted on the goal round (`roundsStarted` 1 → 2)",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-goal-complete",
+            "name": "update_goal",
+            "arguments": {
+              "goal_id": "goal-bc24bff8-ab31-4614-8646-b77596cef352",
+              "revision": 1,
+              "action": "complete"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-goal-complete",
+            "isError": false,
+            "text": "{\"goal\":{\"id\":\"goal-bc24bff8-ab31-4614-8646-b77596cef352\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation\":\"disarmed\"}",
+            "at": 1794112713569
+          }
+        }
+      }
+    },
+    {
+      "name": "write",
+      "bucket": "GOVERNED",
+      "onSurface": true,
+      "executes": "confined `fs` face: writeText through the realm provider",
+      "scope": "Member lane (write ceiling)",
+      "fact": true,
+      "facts": 1,
+      "outOfBounds": "L1 admission on the write axis (+ the host tool's read-before-write contract, L2)",
+      "onViolation": "typed IO_WRITE_DENIED",
+      "liveEvidence": true,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-write",
+            "name": "write",
+            "arguments": {
+              "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/written-by-member.txt",
+              "content": "A5SF_PD24_IN_LANE_BYTES written\n"
+            }
+          },
+          "result": {
+            "callId": "call-a5sfpd24-write",
+            "isError": false,
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/written-by-member.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+            "at": 1794112712203
+          }
+        },
+        "facts": [
+          {
+            "schema": "a5sf-guard-consult/1",
+            "realm": "member",
+            "memberIdentity": "inst-0yj9q4v1fyf2",
+            "toolBindingIdentity": null,
+            "policyRevision": "a5sf1:86c04cd0d3b355f4c7df10b7a24851d4",
+            "method": "writeText",
+            "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-37-15Z/workspace/written-by-member.txt",
+            "decision": "allow",
+            "decidedBy": "ALLOW",
+            "sequence": 3,
+            "observedAt": "2026-11-08T04:38:32.193Z",
+            "tool": "write",
+            "callId": "call-a5sfpd24-write"
+          }
+        ]
+      }
+    },
+    {
+      "name": "interrupt_agent",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-interrupt_agent",
+        "isError": true,
+        "text": "Error: unknown tool \"interrupt_agent\"",
+        "at": 1794112712828
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-interrupt_agent",
+        "isError": true,
+        "text": "Error: unknown tool \"interrupt_agent\"",
+        "at": 1794111316660
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-interrupt_agent",
+            "name": "interrupt_agent",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-interrupt_agent",
+            "isError": true,
+            "text": "Error: unknown tool \"interrupt_agent\"",
+            "at": 1794112712828
+          }
+        }
+      }
+    },
+    {
+      "name": "list_agents",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-list_agents",
+        "isError": true,
+        "text": "Error: unknown tool \"list_agents\"",
+        "at": 1794112712860
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-list_agents",
+        "isError": true,
+        "text": "Error: unknown tool \"list_agents\"",
+        "at": 1794111316688
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-list_agents",
+            "name": "list_agents",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-list_agents",
+            "isError": true,
+            "text": "Error: unknown tool \"list_agents\"",
+            "at": 1794112712860
+          }
+        }
+      }
+    },
+    {
+      "name": "pwsh",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-pwsh",
+        "isError": true,
+        "text": "Error: unknown tool \"pwsh\"",
+        "at": 1794112712893
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-pwsh",
+        "isError": true,
+        "text": "Error: unknown tool \"pwsh\"",
+        "at": 1794111316716
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-pwsh",
+            "name": "pwsh",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-pwsh",
+            "isError": true,
+            "text": "Error: unknown tool \"pwsh\"",
+            "at": 1794112712893
+          }
+        }
+      }
+    },
+    {
+      "name": "send_message",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-send_message",
+        "isError": true,
+        "text": "Error: unknown tool \"send_message\"",
+        "at": 1794112712923
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-send_message",
+        "isError": true,
+        "text": "Error: unknown tool \"send_message\"",
+        "at": 1794111316744
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-send_message",
+            "name": "send_message",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-send_message",
+            "isError": true,
+            "text": "Error: unknown tool \"send_message\"",
+            "at": 1794112712923
+          }
+        }
+      }
+    },
+    {
+      "name": "skill",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-skill",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794112712954
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-skill",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794111316771
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-skill",
+            "name": "skill",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-skill",
+            "isError": true,
+            "text": "Error: unknown tool \"skill\"",
+            "at": 1794112712954
+          }
+        }
+      }
+    },
+    {
+      "name": "subagent",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-subagent",
+        "isError": true,
+        "text": "Error: unknown tool \"subagent\"",
+        "at": 1794112712984
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-subagent",
+        "isError": true,
+        "text": "Error: unknown tool \"subagent\"",
+        "at": 1794111316797
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-subagent",
+            "name": "subagent",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-subagent",
+            "isError": true,
+            "text": "Error: unknown tool \"subagent\"",
+            "at": 1794112712984
+          }
+        }
+      }
+    },
+    {
+      "name": "subagent_fork",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-subagent_fork",
+        "isError": true,
+        "text": "Error: unknown tool \"subagent_fork\"",
+        "at": 1794112713014
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-subagent_fork",
+        "isError": true,
+        "text": "Error: unknown tool \"subagent_fork\"",
+        "at": 1794111316824
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-subagent_fork",
+            "name": "subagent_fork",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-subagent_fork",
+            "isError": true,
+            "text": "Error: unknown tool \"subagent_fork\"",
+            "at": 1794112713014
+          }
+        }
+      }
+    },
+    {
+      "name": "web_fetch",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-web_fetch",
+        "isError": true,
+        "text": "Error: unknown tool \"web_fetch\"",
+        "at": 1794112713043
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-web_fetch",
+        "isError": true,
+        "text": "Error: unknown tool \"web_fetch\"",
+        "at": 1794111316853
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-web_fetch",
+            "name": "web_fetch",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-web_fetch",
+            "isError": true,
+            "text": "Error: unknown tool \"web_fetch\"",
+            "at": 1794112713043
+          }
+        }
+      }
+    },
+    {
+      "name": "web_search",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-web_search",
+        "isError": true,
+        "text": "Error: unknown tool \"web_search\"",
+        "at": 1794112713077
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-web_search",
+        "isError": true,
+        "text": "Error: unknown tool \"web_search\"",
+        "at": 1794111316880
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-web_search",
+            "name": "web_search",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-web_search",
+            "isError": true,
+            "text": "Error: unknown tool \"web_search\"",
+            "at": 1794112713077
+          }
+        }
+      }
+    },
+    {
+      "name": "workflow",
+      "bucket": "FAIL-CLOSED",
+      "onSurface": false,
+      "executes": "nothing: the row is absent from the governed preset (removed by PD-18/21/22/23)",
+      "scope": "n/a (not nameable by the model)",
+      "fact": false,
+      "outOfBounds": "n/a (unreachable)",
+      "onViolation": "typed `unknown tool \"<name>\"` — zero execution",
+      "liveEvidence": true,
+      "postFixResult": {
+        "callId": "call-a5sfpd24-closed-workflow",
+        "isError": true,
+        "text": "Error: unknown tool \"workflow\"",
+        "at": 1794112713107
+      },
+      "preFixResult": {
+        "callId": "call-a5sfpd24-closed-workflow",
+        "isError": true,
+        "text": "Error: unknown tool \"workflow\"",
+        "at": 1794111316908
+      },
+      "removedBy": "PD-18/21/22/23",
+      "capabilityRegression": null,
+      "evidence": {
+        "probe": {
+          "call": {
+            "id": "call-a5sfpd24-closed-workflow",
+            "name": "workflow",
+            "arguments": {}
+          },
+          "result": {
+            "callId": "call-a5sfpd24-closed-workflow",
+            "isError": true,
+            "text": "Error: unknown tool \"workflow\"",
+            "at": 1794112713107
+          }
+        }
+      }
+    }
+  ],
+  "unmeasuredResiduals": [
+    {
+      "name": "read_image",
+      "what": "the LIVE execution branch (route gate -> confined face)",
+      "missing": "a model route that DECLARES image input. On this Host the route (deepseek-v4-flash) refuses before the face, so only host-free evidence covers the face.",
+      "howToClose": "one DEV-LIVE boot with an image-capable route + an in-lane PNG; the confined-face deny arm is already host-free evidence (PD-17 D5)."
+    },
+    {
+      "name": "exit_plan_mode",
+      "what": "the plan-mode-ACTIVE branch",
+      "missing": "a route that can set `plan/mode` active on a DELEGATED Member session (the `/plan` command is a session-level user command; the Team tool plane exposes no command route).",
+      "howToClose": "either a command route on the Team tool plane, or a Member session seeded plan-active at create time."
+    },
+    {
+      "name": "ask_user_question",
+      "what": "the ANSWERED branch (a human answer reaching a delegated turn)",
+      "missing": "a human answerer attached to a Member session. The measured branch is the one that matters for a Member (no answerer -> block); the answered branch would need a test UI provider bound to the Member session.",
+      "howToClose": "mount a scripted `userQuestions` answerer in the World and re-run the ask arm; the block itself is already measured twice."
+    }
+  ],
+  "presentDefect": {
+    "preFix": {
+      "inLane": {
+        "callId": "call-a5sfpd24-present-in",
+        "isError": false,
+        "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/workspace/in-lane.txt",
+        "at": 1794111316508
+      },
+      "outOfLaneExisting": {
+        "callId": "call-a5sfpd24-present-out",
+        "isError": false,
+        "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/secret-out-of-lane.txt",
+        "at": 1794111316541
+      },
+      "outOfLaneMissing": {
+        "callId": "call-a5sfpd24-present-missing",
+        "isError": true,
+        "text": "Error: Cannot present /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-14-01Z/out-of-lane/does-not-exist-out-of-lane.txt: file not found. Check the path, create the file if needed, and retry.",
+        "at": 1794111316570
+      },
+      "guardFactsAttributedToPresent": 0,
+      "deliverablesEventsBySession": {
+        "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": 2
+      }
+    },
+    "postFix": {
+      "outOfLaneExisting": {
+        "callId": "call-a5sfpd24-present-out",
+        "isError": true,
+        "text": "Error: unknown tool \"present\"",
+        "at": 1794112712696
+      },
+      "guardFactsAttributedToPresent": 0,
+      "deliverablesEventsBySession": {},
+      "presentOnSurface": false
+    }
+  },
+  "askHazard": {
+    "preFix": null,
+    "postFix": {
+      "schema": "a5sf-pd24-surface-ledger/ask-blocked/1",
+      "at": "2026-11-08T04:25:27.338Z",
+      "memberSession": "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc",
+      "windowMs": 60000,
+      "call": {
+        "callId": "call-a5sfpd24-ask",
+        "name": "ask_user_question",
+        "arguments": {
+          "questions": [
+            {
+              "id": "pd24-ask",
+              "header": "PD-24 probe",
+              "question": "Must a governed Member block its own turn on a human answer?",
+              "options": [
+                {
+                  "label": "Yes"
+                },
+                {
+                  "label": "No"
+                }
+              ],
+              "multi_select": false
+            }
+          ]
+        },
+        "result": null
+      },
+      "result": null,
+      "turnEnded": false,
+      "eventTypes": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 2,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 2,
+        "tool/call": 2,
+        "tool/result": 1,
+        "step/end": 1
+      },
+      "bashControl": {
+        "callId": "call-a5sfpd24-bash",
+        "isError": false,
+        "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
+        "at": 1794111866324
+      },
+      "note": "the ask call never settles: legacy mode has no timeout, and a delegated turn has no human answerer; the 60 s hold is the observation window, not a product timeout"
+    },
+    "note": "measured in its own arm; the call never settles inside the window"
+  },
+  "digests": {
+    "compositionPreFix": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
+    "compositionPostFix": "317fb22a559dde9e62782aa35644daa8ac885dc772a6eaadac72d8c162e08a2f",
+    "driver": "e0b121845a924b4cb19e6a9ed8c86b8c1809da0070a95e890d4b3ffc129ee6a4"
+  }
+}
