@@ -1,0 +1,2001 @@
+{
+  "schema": "a5sf-pd23-control-surface/proc-observations/1",
+  "at": "2026-11-08T02:17:55.247Z",
+  "note": "independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not a product counter",
+  "sightings": [
+    {
+      "at": "2026-11-08T02:17:45.782Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --enforce-leg denyall --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/denyall",
+          "pid": 136,
+          "ppid": 100,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:45.862Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:45.903Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:45.942Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:45.982Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.022Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.062Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.102Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.143Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.183Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.224Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.264Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.304Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.344Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.385Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.425Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.465Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.505Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.546Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.586Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.626Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.666Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.706Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.746Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.787Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.827Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.867Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.906Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.947Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:46.988Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.028Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.068Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.108Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.148Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.188Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.228Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.269Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.309Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.349Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.389Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.430Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.469Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.509Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.549Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.589Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.629Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.669Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.708Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.749Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.789Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.829Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.869Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.909Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.949Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:47.989Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.030Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.070Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.110Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.150Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.190Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.230Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.270Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.311Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.351Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.392Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.432Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.472Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.512Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.552Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.592Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.632Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.672Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.711Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.752Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.792Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.832Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --net-leg --scratch /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/probe-mw77cv74-zcuwm7/net",
+          "pid": 138,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.913Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.953Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:48.993Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.033Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.073Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.113Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.153Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.194Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.233Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.273Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.313Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.353Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.393Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.434Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.474Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.514Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.554Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.594Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.634Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.673Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.713Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.753Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.793Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.833Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.874Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.915Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.955Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:49.994Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.034Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.074Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        },
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxre-qx7wvc.json --out-dir /home/armourpier",
+          "pid": 146,
+          "ppid": 100,
+          "state": "R"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.114Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.154Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.194Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.234Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.274Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.313Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.354Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.395Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.435Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.475Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.515Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.556Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.596Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.636Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.676Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.717Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.757Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.797Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.838Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.878Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.918Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.958Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:50.998Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.038Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.078Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.118Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.158Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.198Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.238Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.278Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.318Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.359Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.398Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.438Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.478Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.519Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.559Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.599Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.639Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.679Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.720Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.761Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.801Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.841Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-08T02:17:51.881Z",
+      "hits": [
+        {
+          "marker": "confined-launcher",
+          "cmdline": "python3 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py --confined-exec-stream --policy /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-16-29Z/governed-scratch/plans/plan-mw77cxmy-wqqejd.json --out-dir /home/armourpier",
+          "pid": 141,
+          "ppid": 100,
+          "state": "S"
+        }
+      ]
+    }
+  ]
+}

@@ -61,7 +61,11 @@ const CLOSED_ROWS = Object.freeze([
   'tool-ralph',
 ])
 const CLOSED_TOOLS = Object.freeze(['subagent', 'subagent_fork', 'send_message', 'list_agents'])
-const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-skill', 'persona', 'compaction-basic', 'tool-result-pruner'])
+// The retained-row witness moved from `tool-skill` to `tool-todo` on
+// 2026-11-14: PD-23 removed `tool-skill` + `skill-filesystem` for the same
+// fail-closed reason this arm exists (the body read resolved the BASE `fs`), so
+// keeping the name here would assert the opposite of the shipped preset.
+const KEPT_ROWS = Object.freeze(['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs', 'tool-todo', 'persona', 'compaction-basic', 'tool-result-pruner'])
 
 const runtimeRequire = createRequire(join(REPO, 'packages', 'runtime', 'package.json'))
 

@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/packages/runtime
+
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-red-realm templateId=a5glb-red-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-red-instance-glob:mount:1f80e5d9-9f4a-46d9-bd00-24c947333253-1 approvalCaseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0 requiredAuthority=leader
+
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-red-instance-glob:mount:1f80e5d9-9f4a-46d9-bd00-24c947333253-1 grantId=grant:f6f11e2c2f760717e444dab2a4838a2c effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-red-instance-glob:mount:1f80e5d9-9f4a-46d9-bd00-24c947333253-1 grantId=grant:f6f11e2c2f760717e444dab2a4838a2c caseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0
+
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=enforced,inherit-cancel=author-trusted
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-realm templateId=a5glb-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-instance-glob:mount:8dc47112-88e4-4acb-95e3-8a94a23445df-1 approvalCaseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0 requiredAuthority=leader
+
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-instance-glob:mount:8dc47112-88e4-4acb-95e3-8a94a23445df-1 grantId=grant:2086c6ae0ae49892c4163c70200a4e9a effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-instance-glob:mount:8dc47112-88e4-4acb-95e3-8a94a23445df-1 grantId=grant:2086c6ae0ae49892c4163c70200a4e9a caseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0
+
+ ✓ test/alpha5-glob-backend.test.ts (53 tests) 76376ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  740ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  3237ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  3302ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  6625ms
+     ✓ L1 the capability probe is ENFORCED (kernel), not advisory  3192ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  9770ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  6492ms
+     ✓ L5 MEASURED interface boundary: a caller-side directory fd CANNOT cross into the confined child  3258ms
+     ✓ L4 the backend mounts through the plane's OWN backends seam (no plane edit)  3288ms
+     ✓ X3 the timeout arm settles cancelled and spills nothing  3282ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  3304ms
+     ✓ X6 the overflow arm refuses, parses nothing, and writes nothing (buffer narrowed by the assembly)  3231ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  3341ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  3322ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  14402ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  854ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  3296ms
+
+ Test Files  1 passed (1)
+      Tests  53 passed (53)
+   Start at  11:08:15
+   Duration  76.62s (transform 737ms, setup 0ms, import 156ms, tests 76.38s, environment 0ms)
+

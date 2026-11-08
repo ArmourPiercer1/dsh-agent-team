@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T02:48:47.155Z",
+  "arm": "postfix",
+  "head": "9060761356379277f3329c638d3eff379350d7f2",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "8e3ff578a07c3e7410272af3e817386c9dd8b340ade0371aaf3867ad1c57d2dd",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml",
+    "sha256": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
+    "arm": "postfix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "ControlSurface",
+    "world": "u5a5sfpd23",
+    "source": "task PD23-CONTROL-SURFACE explicit boot authorisation (2026-11-14), arm=postfix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs --arm postfix"
+}

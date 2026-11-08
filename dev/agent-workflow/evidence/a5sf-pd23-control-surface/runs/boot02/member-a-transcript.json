@@ -1,0 +1,282 @@
+{
+  "sessionId": "session-team-child-280c347ee589a6b43c164cb77ab05828",
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
+  "header": {
+    "type": "session",
+    "version": 4,
+    "id": "session-team-child-280c347ee589a6b43c164cb77ab05828",
+    "createdAt": 1794106297801,
+    "cwd": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace",
+    "isSeeded": false,
+    "delegationDepth": 0
+  },
+  "agentPreset": null,
+  "delegationDepth": 0,
+  "lineCount": 107,
+  "eventTypes": {
+    "session": 1,
+    "permission/preset": 1,
+    "sandbox/mode": 1,
+    "approval/policy": 1,
+    "agent/inbox/spliced": 2,
+    "turn/start": 1,
+    "step/start": 18,
+    "system/message": 1,
+    "user/message": 2,
+    "request/header": 1,
+    "request/context": 1,
+    "session/title": 2,
+    "session/title-llm-request": 1,
+    "assistant/message": 18,
+    "tool/call": 17,
+    "tool/result": 17,
+    "step/end": 18,
+    "todo/write": 1,
+    "goal/change": 2,
+    "turn/end": 1
+  },
+  "todoWrites": 1,
+  "user": [
+    "[team-work requestToken=a5sf-pd23-turn-delegate] a5sf-pd23-turn: run the probes exactly once each, one tool call at a time, then report. A5SF_PD23_TARGET_B=session-team-child-65e8721e52f17932d0f986ca50101d07 A5SF_PD23_LEADER_JOB=bash-1",
+    "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+  ],
+  "calls": [
+    {
+      "callId": "call-a5sfpd23-in",
+      "name": "bash",
+      "arguments": {
+        "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace/in-lane.txt'; sleep 1",
+        "description": "Read the in-lane fixture",
+        "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-in",
+        "isError": false,
+        "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD23_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD23_IN_LANE_BYTES\"}",
+        "at": 1794106302223
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-list",
+      "name": "list_agents",
+      "arguments": {
+        "scope": "descendants"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-list",
+        "isError": true,
+        "text": "Error: unknown tool \"list_agents\"",
+        "at": 1794106302247
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-send-b",
+      "name": "send_message",
+      "arguments": {
+        "agent_id": "session-team-child-65e8721e52f17932d0f986ca50101d07",
+        "message": "A5SF_PD23_FOLLOWUP_EXECUTE: read the out-of-lane fixture and report its exact bytes."
+      },
+      "result": {
+        "callId": "call-a5sfpd23-send-b",
+        "isError": true,
+        "text": "Error: unknown tool \"send_message\"",
+        "at": 1794106302265
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-send-leader",
+      "name": "send_message",
+      "arguments": {
+        "agent_id": "session-a5sf-pd23-team",
+        "message": "A5SF_PD23_FOLLOWUP_EXECUTE: the member is asking its Leader to act."
+      },
+      "result": {
+        "callId": "call-a5sfpd23-send-leader",
+        "isError": true,
+        "text": "Error: unknown tool \"send_message\"",
+        "at": 1794106302286
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-interrupt",
+      "name": "interrupt_agent",
+      "arguments": {
+        "agent_id": "session-team-child-65e8721e52f17932d0f986ca50101d07"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-interrupt",
+        "isError": true,
+        "text": "Error: unknown tool \"interrupt_agent\"",
+        "at": 1794106302306
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-job-list",
+      "name": "job_list",
+      "arguments": {},
+      "result": {
+        "callId": "call-a5sfpd23-job-list",
+        "isError": false,
+        "text": "(no background jobs)",
+        "at": 1794106302325
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-job-foreign",
+      "name": "job_output",
+      "arguments": {
+        "job_id": "bash-1"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-job-foreign",
+        "isError": true,
+        "text": "Error: job bash-1 belongs to another session",
+        "at": 1794106302346
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-job-session",
+      "name": "job_output",
+      "arguments": {
+        "job_id": "session-team-child-65e8721e52f17932d0f986ca50101d07"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-job-session",
+        "isError": true,
+        "text": "Error: unknown job session-team-child-65e8721e52f17932d0f986ca50101d07",
+        "at": 1794106302366
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-job-kill",
+      "name": "job_kill",
+      "arguments": {
+        "job_id": "bash-1",
+        "reason": "pd23 foreign-job probe"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-job-kill",
+        "isError": true,
+        "text": "Error: job bash-1 belongs to another session",
+        "at": 1794106302386
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-skill-in",
+      "name": "skill",
+      "arguments": {
+        "name": "pd23-in-lane"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-skill-in",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794106302405
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-skill-out",
+      "name": "skill",
+      "arguments": {
+        "name": "pd23-out-of-lane"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-skill-out",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794106302432
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-skill-traverse",
+      "name": "skill",
+      "arguments": {
+        "name": "../pd23-out-of-lane"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-skill-traverse",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794106302455
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-skill-abs",
+      "name": "skill",
+      "arguments": {
+        "name": "/etc/passwd"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-skill-abs",
+        "isError": true,
+        "text": "Error: unknown tool \"skill\"",
+        "at": 1794106302474
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-todo",
+      "name": "todo_write",
+      "arguments": {
+        "todos": [
+          {
+            "content": "PD-23 control-surface probe (member-local)",
+            "status": "in_progress"
+          },
+          {
+            "content": "PD-23 report",
+            "status": "pending"
+          }
+        ]
+      },
+      "result": {
+        "callId": "call-a5sfpd23-todo",
+        "isError": false,
+        "text": "Updated todo list: 1 pending, 1 in progress, 0 completed.",
+        "at": 1794106302495
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-goal-get",
+      "name": "get_goal",
+      "arguments": {},
+      "result": {
+        "callId": "call-a5sfpd23-goal-get",
+        "isError": false,
+        "text": "{\"goal\":null}",
+        "at": 1794106302515
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-goal-create",
+      "name": "create_goal",
+      "arguments": {
+        "objective": "A member must not own a Team-level goal."
+      },
+      "result": {
+        "callId": "call-a5sfpd23-goal-create",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-6a9e45d8-a013-44e9-ae53-63e47da06100\",\"revision\":1,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"armed\"}",
+        "at": 1794106302536
+      }
+    },
+    {
+      "callId": "call-a5sfpd23-goal-update",
+      "name": "update_goal",
+      "arguments": {
+        "goal_id": "goal-6a9e45d8-a013-44e9-ae53-63e47da06100",
+        "revision": 1,
+        "action": "pause"
+      },
+      "result": {
+        "callId": "call-a5sfpd23-goal-update",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-6a9e45d8-a013-44e9-ae53-63e47da06100\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disarmed\"}",
+        "at": 1794106302558
+      }
+    }
+  ],
+  "assistant": [
+    "A5SF_PD23_MEMBER_A_DONE {\"goal\":{\"id\":\"goal-6a9e45d8-a013-44e9-ae53-63e47da06100\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disarmed\"}"
+  ],
+  "finalAssistant": "A5SF_PD23_MEMBER_A_DONE {\"goal\":{\"id\":\"goal-6a9e45d8-a013-44e9-ae53-63e47da06100\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disarmed\"}"
+}

@@ -1,0 +1,235 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/packages/runtime
+
+ ❯ test/a4pr0a-fact-type-closed-set.test.ts (0 test)
+ ❯ test/u7-f-agent-control-native-output-schema-c1.test.ts (0 test)
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-red-realm templateId=a5glb-red-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-red-instance-glob:mount:30ce57a4-fcfa-42e7-9264-adf6ec4aa0a7-1 approvalCaseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0 requiredAuthority=leader
+
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-red-instance-glob:mount:30ce57a4-fcfa-42e7-9264-adf6ec4aa0a7-1 grantId=grant:3aee0bcf21551ba6f8649e28c31328e8 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-red-instance-glob:mount:30ce57a4-fcfa-42e7-9264-adf6ec4aa0a7-1 grantId=grant:3aee0bcf21551ba6f8649e28c31328e8 caseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:deb96bcd-e172-4b16-af7a-6d0e671e7039-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:deb96bcd-e172-4b16-af7a-6d0e671e7039-1 grantId=grant:13db33966904a0278aa818fa198c803c effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:deb96bcd-e172-4b16-af7a-6d0e671e7039-1 grantId=grant:13db33966904a0278aa818fa198c803c caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:deb96bcd-e172-4b16-af7a-6d0e671e7039-1 pid=142 files=2 capped=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:6a2e1020-d5d4-43ad-87bb-816a38b5ab03-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:6a2e1020-d5d4-43ad-87bb-816a38b5ab03-1 grantId=grant:73df284c1e8f80fcb16a9645478e387c effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:6a2e1020-d5d4-43ad-87bb-816a38b5ab03-1 grantId=grant:73df284c1e8f80fcb16a9645478e387c caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:0f6b0de7-f0d7-4fbf-a687-2288db91db2a-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:0f6b0de7-f0d7-4fbf-a687-2288db91db2a-1 grantId=grant:1f04adfe28e91b8b1c43dd5a295be066 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:0f6b0de7-f0d7-4fbf-a687-2288db91db2a-1 grantId=grant:1f04adfe28e91b8b1c43dd5a295be066 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:180072bf-3451-4d77-84f6-d0224c7963cf-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:180072bf-3451-4d77-84f6-d0224c7963cf-1 grantId=grant:6665b6a552ca88000d3889e0dae9ea5f effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:180072bf-3451-4d77-84f6-d0224c7963cf-1 grantId=grant:6665b6a552ca88000d3889e0dae9ea5f caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:13b3f596c6abef5ccd2421ab992b63322ac030399b5428e39ae0182c70fe639a:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K6 (④ discipline): an UNKNOWN plane key keeps the silent-ignore law — only globEnabled is consumed+validated
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-grep:mount:5a3235dc-aca0-4de2-8adf-a9673d9628b3-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:1cd6289eca515ac726fea2a8128c004571d76199a3d5b2446755191136ac3751:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-grep:mount:5a3235dc-aca0-4de2-8adf-a9673d9628b3-1 grantId=grant:ba2b8f1c52eaef01eeb7794f3c2793e8 effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-grep:mount:5a3235dc-aca0-4de2-8adf-a9673d9628b3-1 grantId=grant:ba2b8f1c52eaef01eeb7794f3c2793e8 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:1cd6289eca515ac726fea2a8128c004571d76199a3d5b2446755191136ac3751:g0
+
+ ❯ test/a5sf-os-runner.test.ts (9 tests | 1 failed) 6581ms
+     ✓ compiles read and write independently, with a real write-only lane 2ms
+     ✓ a locator on both axes is one read+write entry 0ms
+     ✓ a deny EQUAL to the allow removes the rule (expressible), a NESTED deny is refused 1ms
+     ✓ refuses an unrestricted axis instead of inventing an allowlist 0ms
+     ✓ refuses an ask destination (an ask is not an OS grant) 0ms
+     ✓ maps network deny to the provider profile and never invents enforcement 0ms
+     ✓ enforces the read allowlist and the write-only lane inside the child  3248ms
+     × refuses a network-deny policy when the backend cannot enforce it (no bare process) 3313ms
+     ✓ refuses an empty argv and an inexpressible profile before any process 1ms
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5globoff-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-bash:mount:221475e7-a69d-4736-961d-99226622a85b-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-bash:mount:221475e7-a69d-4736-961d-99226622a85b-1 grantId=grant:807e27415d304b869471a72e50f68b22 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-bash:mount:221475e7-a69d-4736-961d-99226622a85b-1 grantId=grant:807e27415d304b869471a72e50f68b22 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5globoff-realm rows=6
+
+ ❯ test/a5-globoff-key.test.ts (7 tests | 1 failed) 10565ms
+     ✓ K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs  3257ms
+     ✓ K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0 6ms
+     ✓ K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name 11ms
+     ✓ K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run 5ms
+     ✓ K5 (④): non-boolean globEnabled fails closed on the existing config-refusal code — never silently true 2ms
+     ✓ K6 (④ discipline): an UNKNOWN plane key keeps the silent-ignore law — only globEnabled is consumed+validated 4ms
+     × K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut 6459ms
+ ❯ test/a5rbn-runtime-base-narrow.test.ts (8 tests | 1 failed) 26101ms
+     ✓ N0 world fixture lands (anchor + outside with marker names) 5ms
+     ✓ N1 byte pin: the ruleset builder carries NO root-tree rule; the base is the explicit :77 trio 1ms
+     ✓ N2 policy surface: runtime_base true, allow == the caller entries, never a "/" injection  3209ms
+     × N3 REAL: whole-tree NAME enumeration is kernel-refused (`ls /home`, `ls /`); outside names never surface 9780ms
+     ✓ P1 REAL: the base enumeration survives (interpreter/libraries/config face)  3277ms
+     ✓ P2 REAL: the per-call anchored grant reads and writes inside its root  3277ms
+     ✓ P3 REAL: writes OUTSIDE the anchored root stay EACCES (the write lane is untouched)  3283ms
+     ✓ P4 REAL: outside BYTES stay kernel-refused even with the right name (byte law holds)  3263ms
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=enforced,inherit-cancel=author-trusted
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-realm templateId=a5glb-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-instance-glob:mount:4179fece-5ee1-4cae-9be7-e3ea8c7afad0-1 approvalCaseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0 requiredAuthority=leader
+
+stdout | test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-instance-glob:mount:4179fece-5ee1-4cae-9be7-e3ea8c7afad0-1 grantId=grant:7c47df71a01b181c63065357309dc574 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-instance-glob:mount:4179fece-5ee1-4cae-9be7-e3ea8c7afad0-1 grantId=grant:7c47df71a01b181c63065357309dc574 caseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0
+
+ ✓ test/alpha5-glob-backend.test.ts (53 tests) 76742ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  648ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  3291ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  3290ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  6606ms
+     ✓ L1 the capability probe is ENFORCED (kernel), not advisory  3204ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  9794ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  6546ms
+     ✓ L5 MEASURED interface boundary: a caller-side directory fd CANNOT cross into the confined child  3259ms
+     ✓ L4 the backend mounts through the plane's OWN backends seam (no plane edit)  3231ms
+     ✓ X3 the timeout arm settles cancelled and spills nothing  3285ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  3313ms
+     ✓ X6 the overflow arm refuses, parses nothing, and writes nothing (buffer narrowed by the assembly)  3280ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  3321ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  3277ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  14795ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  881ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  3308ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4pr0a-fact-type-closed-set.test.ts [ test/a4pr0a-fact-type-closed-set.test.ts ]
+Error: FACT_TYPE_CATEGORY block not found — the guard has no subject
+ ❯ parseHostMap test/a4pr0a-fact-type-closed-set.test.ts:333:29
+    331|   const src = sources.get('packages/runtime/src/plugin/projection-sour…
+    332|   const block = src.match(/FACT_TYPE_CATEGORY[\s\S]*?=\s*new Map\(\[([…
+    333|   if (block === null) throw new Error('FACT_TYPE_CATEGORY block not fo…
+       |                             ^
+    334|   const globalConsts = new Map(consts)
+    335|   // The map's own file declares most of its keys; consts already cove…
+ ❯ test/a4pr0a-fact-type-closed-set.test.ts:375:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/u7-f-agent-control-native-output-schema-c1.test.ts [ test/u7-f-agent-control-native-output-schema-c1.test.ts ]
+Error: native-schema C1 requires the pristine test-use checkout at tests/deepseek-harness-test-use
+ ❯ nativeSchemas test/u7-f-agent-control-native-output-schema-c1.test.ts:21:36
+     19|   const root = process.cwd()
+     20|   const pristine = `${root}/${TEST_USE_REL}`
+     21|   if (!existsSync(pristine)) throw new Error(`native-schema C1 require…
+       |                                    ^
+     22|   const definitions: Record<string, { output: { schema: Schema } }> = …
+     23|   const capture = (definition: { name: string; output: { schema: Schem…
+ ❯ test/u7-f-agent-control-native-output-schema-c1.test.ts:37:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/a5-globoff-key.test.ts:198:3
+    196|   })
+    197|
+    198|   it('K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing…
+       |   ^
+    199|     const built = buildPlane({ globEnabled: false })
+    200|     expect(built.ok, JSON.stringify(built)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/a5rbn-runtime-base-narrow.test.ts > runtime-base narrowing (bug fix): explicit base enumeration, no "/" READ_DIR > N3 REAL: whole-tree NAME enumeration is kernel-refused (`ls /home`, `ls /`); outside names never surface
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/a5rbn-runtime-base-narrow.test.ts:133:3
+    131|   // REAL kernel legs (this host's Landlock; skipped honestly where ab…
+    132|   const real = ABI >= 3 ? it : it.skip
+    133|   real('N3 REAL: whole-tree NAME enumeration is kernel-refused (`ls /h…
+       |   ^
+    134|     const home = await confinedRun('ls /home 2>&1 1>/dev/null; ls /hom…
+    135|     expect(/Permission denied/.test(home.err + home.out), `stderr=${ho…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/a5sf-os-runner.test.ts > P1-07 real OS leg (Landlock launcher) > refuses a network-deny policy when the backend cannot enforce it (no bare process)
+AssertionError: expected { ok: true, value: { …(3) } } to match object { ok: false, …(1) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "code": "ENFORCEMENT_UNAVAILABLE",
+-   "ok": false,
++   "ok": true,
+  }
+
+ ❯ test/a5sf-os-runner.test.ts:173:20
+    171|       argv: ['/bin/true'], cwd: world, env: [],
+    172|     })
+    173|     expect(result).toMatchObject({ ok: false, code: 'ENFORCEMENT_UNAVA…
+       |                    ^
+    174|   })
+    175|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  5 failed | 1 passed (6)
+      Tests  3 failed | 74 passed (77)
+   Start at  11:06:30
+   Duration  77.06s (transform 1.79s, setup 0ms, import 665ms, tests 119.99s, environment 0ms)
+

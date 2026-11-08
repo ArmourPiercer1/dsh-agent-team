@@ -1,0 +1,159 @@
+{
+  "confinedTurnLaunchers": 2,
+  "baseBwrapWithMarkers": 0,
+  "guardFacts": {
+    "allow": 6,
+    "deny": 0,
+    "byTool": {
+      "bash": 6
+    },
+    "skill": 0
+  },
+  "mockRequests": 30,
+  "aModelRequests": 18,
+  "bModelRequests": 2,
+  "surfaceACount": 34,
+  "surfaceBCount": 34,
+  "controlNamesOnA": {
+    "send_message": false,
+    "interrupt_agent": false,
+    "list_agents": false,
+    "job_list": true,
+    "job_output": true,
+    "job_kill": true,
+    "skill": false,
+    "todo_write": true,
+    "create_goal": true,
+    "update_goal": true,
+    "get_goal": true
+  },
+  "skillOnMemberSurface": false,
+  "sendMessageOnMemberSurface": false,
+  "siblingPresent": true,
+  "siblingFinal": "A5SF_PD23_MEMBER_B_DONE {\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD23_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD23_IN_LANE_BYTES\"}",
+  "siblingUserMessages": [
+    "[team-work requestToken=a5sf-pd23-wide-delegate] a5sf-pd23-wide: read the in-lane fixture once, then report.",
+    "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+  ],
+  "requestsCarryingSecret": 0,
+  "requestsCarryingSkillOut": 0,
+  "goalEventsBySession": {
+    "session-a5sf-pd23-boot": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-a5sf-pd23-boot/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 1,
+        "system/message": 1,
+        "user/message": 3,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 1,
+        "step/end": 1,
+        "turn/end": 1
+      },
+      "goalEvents": 0
+    },
+    "session-a5sf-pd23-team": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-a5sf-pd23-team/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 4,
+        "turn/start": 2,
+        "step/start": 5,
+        "system/message": 1,
+        "user/message": 4,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 5,
+        "tool/call": 3,
+        "tool/result": 3,
+        "step/end": 5,
+        "turn/end": 2
+      },
+      "goalEvents": 0
+    },
+    "session-team-child-280c347ee589a6b43c164cb77ab05828": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 18,
+        "system/message": 1,
+        "user/message": 2,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 18,
+        "tool/call": 17,
+        "tool/result": 17,
+        "step/end": 18,
+        "todo/write": 1,
+        "goal/change": 2,
+        "turn/end": 1
+      },
+      "goalEvents": 2
+    },
+    "session-team-child-65e8721e52f17932d0f986ca50101d07": {
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-team-child-65e8721e52f17932d0f986ca50101d07/session.v4.jsonl.zstd",
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 2,
+        "turn/start": 1,
+        "step/start": 2,
+        "system/message": 1,
+        "user/message": 2,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 2,
+        "tool/call": 1,
+        "tool/result": 1,
+        "step/end": 2,
+        "turn/end": 1
+      },
+      "goalEvents": 0
+    }
+  },
+  "goalRounds": 0,
+  "membersAfter": 3,
+  "memberTemplates": [
+    "leader",
+    "wide",
+    "worker"
+  ],
+  "memberWindow": {
+    "from": "2026-11-08T02:51:37.085Z",
+    "to": "2026-11-08T02:51:44.159Z"
+  },
+  "procBatches": 152,
+  "otherBwrapPids": 3,
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml",
+    "sha256": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
+    "arm": "postfix"
+  },
+  "leaderJob": "bash-1",
+  "bSettled": true,
+  "quiesced": true
+}

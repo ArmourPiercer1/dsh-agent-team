@@ -1,0 +1,37 @@
+TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+enumerationVerdict            PROVEN                        PROVEN
+sendVerdict                   PROVEN                        PROVEN
+interruptVerdict              PROVEN                        PROVEN
+jobsVerdict                   PROVEN                        PROVEN
+skillVerdict                  PROVEN                        PROVEN
+skillArgsVerdict              PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+sessionStateVerdict           PROVEN                        PROVEN
+goalsVerdict                  PROVEN                        PROVEN
+membersVerdict                PROVEN                        PROVEN
+skillOnMemberSurface          true                          true
+sendMessageOnMemberSurface    true                          true
+surfaceACount                 40                            40
+surfaceBCount                 40                            40
+siblingPresent                true                          true
+goalRounds                    0                             0
+siblingSettled                true                          true
+aModelRequests                18                            18
+bModelRequests                2                             2
+confinedTurnLaunchers         2                             2
+baseBwrapWithMarkers          0                             0
+guardAllow                    6                             6
+guardDeny                     0                             0
+guardSkillFacts               0                             0
+requestsCarryingSecret        0                             0
+requestsCarryingSkillOut      7                             7
+memberInstancesAfter          3                             3
+memberTemplates               leader+wide+worker            leader+wide+worker
+admittedBytes                 true                          true
+transcriptSourceCount         17                            17
+
+agreeing=true differing=[]

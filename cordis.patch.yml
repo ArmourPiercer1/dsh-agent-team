@@ -195,10 +195,28 @@
     #     removed with it: a disabled row is not a governance boundary, and a
     #     later enable would silently restore a spawn-capable face.
     #     `evidence/a5sf-pd21-subagent/`.
-    #   - `tool-jobs`, skills (`skill-filesystem`/`tool-skill`), fs, search,
-    #     goal/plan/todo/present and compaction are RETAINED.
-    #     `tool-jobs` is retained but has no producer on this preset (the
-    #     confined face cannot hand a command to the job registry).
+    #   - `tool-jobs`, fs, search, goal/plan/todo/present and compaction are
+    #     RETAINED. `tool-jobs` is retained but has no producer on this preset
+    #     (the confined face cannot hand a command to the job registry); it
+    #     answers from an OWNER-scoped registry, so a Member can only ever see
+    #     its own (empty) list and a foreign job id is refused — PD-23 measured
+    #     both live (`belongs to another session`, `unknown job <session-id>`).
+    #   - the SKILLS LOADER is REMOVED by PD-23 (2026-11-14): `skill-filesystem`
+    #     serves bodies from the BASE `fs` — preset rows mount on the registry
+    #     generation scope, so no ctx handed to the preset changes a body's
+    #     `fs` — and a live Member load of a `$DSH_HOME/skills` body returned its
+    #     bytes with ZERO guard facts (that body then sat in 7 model requests).
+    #     THE OPT-IN GOVERNED PRESET NOW OFFERS NO SKILLS AT ALL. That is a
+    #     CAPABILITY REGRESSION, not an enforcement: a confined provider needs a
+    #     `CORE_SEAM_BLOCKER`-class seam (see the PD-23 evidence README §5.1 for
+    #     what would restore skills). `tool-skill` goes with it.
+    #   - `send_message`/`interrupt_agent`/`list_agents` were ALSO measured by
+    #     PD-23 on the pre-merge base and could only refuse or lie there: the
+    #     sibling and the Leader both failed the subagent lineage rule for
+    #     `send_message`, `list_agents` reported only the caller's OWN (empty)
+    #     children, and `interrupt_agent` answered a success-shaped `interrupt
+    #     requested for agent …` for a target it never touched. They are absent
+    #     on this head because the PD-21 group removal already took them.
     #   - NO `persistent-shell`/`dsh-terminal` row appears anywhere on this
     #     preset's scope: a persistent PTY would turn the realm install into
     #     `TERMINALS_DOUBLE_TERMINAL_REFUSED` (no Member at all), and the
@@ -229,10 +247,6 @@
               sampleOverCapGlobResults: false
           - id: tool-jobs
             name: '@deepseek-ai/dsh-tool-jobs'
-          - id: skill-filesystem
-            name: '@deepseek-ai/dsh-skill-filesystem'
-          - id: tool-skill
-            name: '@deepseek-ai/dsh-tool-skill'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
           - id: tool-goal
