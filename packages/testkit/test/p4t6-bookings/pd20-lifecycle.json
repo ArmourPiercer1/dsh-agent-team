@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "PD20-LIFECYCLE",
+  "paths": [
+    "packages/runtime/lifecycle/admission-state.ts",
+    "packages/runtime/src/plugin/live/closed-tool-arguments.mjs",
+    "packages/runtime/test/a5sf-pd20-admission-close.test.ts",
+    "packages/runtime/test/a5sf-pd20-closed-arguments.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1442,
+    "to": 1446
+  },
+  "reason": "PD20-LIFECYCLE (C-face recon B-1 + C-3/B-2): the lifecycle admission close is published to the state the Member's lane guard reads, and a closed route-C schema is enforced at the tool-call boundary. New scannable files are exactly four — the published close state (packages/runtime/lifecycle/admission-state.ts, written by the live AdmissionClosePort binding and read by createMemberFsGuard), the shared closed-argument refusal of the two confined shell shadows (packages/runtime/src/plugin/live/closed-tool-arguments.mjs), and their two host-free suites. Every edited path — team-services/src/fs.ts, agent-bindings.mjs, the two confined shell rows, tools.ts's archive description, lifecycle/quiesce.ts's step doc — is an ALREADY-COUNTED file (the task's .mjs edit rides an existing entry, so it books nothing); dist mirrors, docs and dev/agent-workflow evidence are outside the scan. Zero new denylist vocabulary.",
+  "tieNote": "MEASURED on this tree before booking: the coverage leg read `scanner counts 1446, ledger derives 983 + 459 = 1442` (dev/agent-workflow/evidence/pd20-lifecycle/p4t6-unbooked-RED.log); the four paths are exactly the delta, no chain value copied."
+}

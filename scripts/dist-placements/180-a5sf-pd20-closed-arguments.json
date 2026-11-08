@@ -1,0 +1,12 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-pd20-closed-arguments",
+  "summary": "PD20-C3 FIX: `src/plugin/live/closed-tool-arguments.mjs` is a plain-JS helper the two byte-copied confined shell modules (`confined-terminal-tool.mjs`, placement 140; `confined-bash-tool.mjs`, placement 130) import with a relative specifier to enforce their CLOSED parameter schema at the tool-call boundary (an undeclared `run_in_background` is refused as BACKGROUND_NOT_SUPPORTED instead of being silently dropped). tsc never emits `.mjs`, so the helper must ride the dist mirror at its repo-relative layout: without this entry the installed face would fail when a Member's shell module is loaded (ERR_MODULE_NOT_FOUND) — at member setup, not at build time.",
+  "migratedFrom": "new lane (PD20-LIFECYCLE fix) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/closed-tool-arguments.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/closed-tool-arguments.mjs"
+    }
+  ]
+}

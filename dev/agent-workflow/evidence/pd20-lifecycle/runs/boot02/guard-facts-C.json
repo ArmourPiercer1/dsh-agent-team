@@ -1,0 +1,47 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14284nz189hs",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:cc58588512c9a9d3be9a3625031a892b",
+    "method": "shellRead",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace/in-lane.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-08T00:37:05.866Z",
+    "tool": "bash",
+    "callId": "call-rc-c-one"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14284nz189hs",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:cc58588512c9a9d3be9a3625031a892b",
+    "method": "spawn",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-08T00:37:05.869Z",
+    "tool": "bash",
+    "callId": "call-rc-c-one"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-14284nz189hs",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:cc58588512c9a9d3be9a3625031a892b",
+    "method": "spawn:write",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/tests/homes/u5u5a5sfsub1-20261108T00-34-37Z/workspace",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 2,
+    "observedAt": "2026-11-08T00:37:05.870Z",
+    "tool": "bash",
+    "callId": "call-rc-c-one"
+  }
+]
