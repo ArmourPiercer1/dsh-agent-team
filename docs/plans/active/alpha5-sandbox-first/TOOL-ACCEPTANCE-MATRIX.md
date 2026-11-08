@@ -923,10 +923,10 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
    册上的 `skill` 与 `present` **两个名字接回受治面**：两者都改由 Member 的 **confined `fs`** 供体
    （`createMemberFsGuard`）服务，越界读取是 typed `IO_READ_DENIED` + 恰好 1 条 deny fact、0 字节；
    范围内读取成功（`skill` 回 body，`present` 追加 1 条 `deliverables/presented`）。因此
-   **`FAIL-CLOSED` 降为 9（全部册外）**，GOVERNED 增 2。**本 lane 不改任何既有行的等级，不改 `V@B`，
+   **`FAIL-CLOSED` 降为 9（全部册外）**，GOVERNED 增 2（PD-25 另删 `tool-goal`/`tool-ask-user`，那是 PD-25 的数，不在本条的差值里）。**本 lane 不改任何既有行的等级，不改 `V@B`，
    不关闭 G2–G5，不改 `release BLOCKED`**；上面这两句只是对时点的追加说明，权威读数见 §1.8.2 原文 +
    本条的差值。
-2. **名册差值**：pre-fix 实测 **33**（PD-24 post-fix 口径）→ post-fix 实测 **35**（+`skill` +`present`）。
+2. **名册差值**：pre-fix 实测 **29**（merge base `06adbf850` = master 含 PD-25 之后、不含 PD-26 的组合）→ post-fix 实测 **31**（+`skill` +`present`；两次都是本 lane 在 merged head 上重跑的一对 agreeing `DEV-LIVE` boot 读数）。PD-25 在同一次 merge 里从同一 preset 删掉了 `tool-goal`/`tool-ask-user`，所以**旧 pair 的 35 不是本树的证据**：本 lane 在 merged head 上重跑了 pre-fix 与 post-fix 两对，并重新绑定。
    两次都是一对 agreeing `DEV-LIVE` boot 的模型请求 `tools` 数组读数，不是 preset 声明。
 3. **越界读数（before → after，同一 driver 同一 World 布局）**：
    - `skill` 越界 body 字节：**0 → 0**（pre-fix 是 typed `unknown tool`，什么都没有读；PD-23 的

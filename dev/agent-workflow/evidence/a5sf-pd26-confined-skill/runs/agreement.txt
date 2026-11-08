@@ -1,0 +1,24 @@
+TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 31                            31
+skillOnSurface                true                          true
+presentOnSurface              true                          true
+skillFacts                    {"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}{"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}
+presentFacts                  {"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}{"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}
+guardAllow                    9                             9
+guardDeny                     3                             3
+factTools                     {"bash":3,"read":2,"grep":1,"skill":2,"present":4}{"bash":3,"read":2,"grep":1,"skill":2,"present":4}
+deliverablesEvents            1                             1
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                19                            19
+
+agreeing=true differing=[]

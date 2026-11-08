@@ -3,6 +3,14 @@
 **Lane** `PD26-CONFINED-SKILL` · branch `task/pd26-confined-skill-20261114` · base `origin/master`
 `06adbf850` (`PD25-UNBOUNDED-TURN`, merged in) · evidence class **DEV-LIVE** (`eligible = false`) · 2026-11-14.
 
+> **Re-bound after the PD-25 merge.** The first pair measured the pre-merge tree (surface 35).
+> `PD25-UNBOUNDED-TURN` (`06adbf850`) removed `tool-goal` and `tool-ask-user` from the same governed
+> preset, so the composition sha changed and that pair is **not** this tree's evidence any more: both
+> arms were re-run at the merged head, and the pre-fix archive was regenerated as
+> `git show 06adbf850:cordis.patch.yml` (the merged tree *without* PD-26). The measured numbers below
+> are the merged-tree ones — **pre-fix 29 → post-fix 31**, a delta of exactly the two rows this lane
+> restores.
+
 > **Answer in one sentence.** Today a governed Member **can** read a declared `SKILL.md` body and
 > **can** declare an in-lane deliverable, and the line is at the Member's **confined `fs` face**
 > (`createMemberFsGuard`) — not at the tool name and not at the composition: the same two calls that
@@ -68,6 +76,26 @@ Two seams were **measured**, not assumed, and both are part of the design:
 **data** (`{name,description,path}`) and authorizes nothing — the out-of-lane catalog entry's file
 **exists on disk and is declared**, and is still refused at the read.
 
+### 2.1 Why the typed-code prefix is a security property, not cosmetics
+
+Two host behaviours were found the hard way, and both are generalisable beyond this lane:
+
+1. **A `tools/result` listener belongs to the scope of the ctx it registers on.** The host `present`
+   package delivers in two steps — `execute` resolves and parks the files, then a
+   `ctx.on('tools/result')` listener appends `deliverables/presented` when the settled result is not an
+   error. A realm-mounted `ctx` does **not** receive an agent-scoped `tools/result` dispatch, so
+   delegating the host `apply` produced a presentation that *worked* and left **zero** delivery records
+   (measured in the first dev boot). The shadow therefore keeps the host definition verbatim but
+   registers that listener on `exec.agent.ctx` — the agent's own scope, which does receive it.
+2. **The host re-raises the provider error verbatim.** `present`'s host execute path does not annotate a
+   refusal, so a confined-lane denial reached the model as
+   `authored locator '…' is outside every allow subtree` with **no code**. That is indistinguishable
+   from the host's own absence answer (`Cannot present …: file not found`), and a caller that treats
+   "no code" as "maybe missing" recovers exactly the defect PD-24 found: **an existence oracle above
+   the compiled lane**. Both shadows therefore prefix the typed code (`IO_READ_DENIED: …`) so a refusal
+   can never be mistaken for an absence — the guard fact was already typed, and the model-visible
+   string must agree with it. This is a security property of the restoration, not cosmetics.
+
 ## 3. The measurement
 
 One delegated Member turn, real Host, shipped opt-in preset `a5sf-governed-member`, shipped route-C
@@ -78,7 +106,7 @@ register/matrix/README), so the records describe exactly the code this PR ships.
 mock; the skill files, the deliverable and the secret are World files. Every Member surface call and the
 result the Member actually received are in `runs/boot0*/member-probes.json`.
 
-| reading | **pre-fix** (`archive/pair-prefix/`, surface **33**) | **post-fix** (`runs/`, surface **35**) |
+| reading | **pre-fix** (`archive/pair-prefix/`, surface **29**) | **post-fix** (`runs/`, surface **31**) |
 | --- | --- | --- |
 | `skill` in-lane | typed `unknown tool "skill"` | **body returned** (`<skill_content name="pd26-in-lane-skill">…`), **1 allow fact** (`readText`, `tool=skill`, the call's `callId`) |
 | `skill` out-of-lane | typed `unknown tool` | **`IO_READ_DENIED`**, **0 body bytes**, **exactly 1 deny fact** |
@@ -108,7 +136,7 @@ before/after is therefore **capability 0 → 2, facts 0 → 6 (1+1 deny, 2+2 all
 | --- | --- | --- |
 | CLEAN | none | **green** (6/6 pass, PIN skipped) |
 | **M1** | `confined-skill-tool.mjs`'s read block replaced by `readFileSync(entry.path,'utf8')` (the BASE-fs read PD-23 measured) | **reddens `PD26-CONTRACT-SKILL` only** — `CONTRACT-PRESENT`, `SURFACE-RESTORED`, `PARITY`, `CATALOG` stay green |
-| **M2** | the test reads the **archived pre-fix composition** (`archive/pre-fix/cordis.patch.yml`, extracted by `git show 1e650c3e3:cordis.patch.yml`) | **reddens `PD26-SURFACE-RESTORED` only** — the confined-read contracts stay green |
+| **M2** | the test reads the **archived pre-fix composition** (`archive/pre-fix/cordis.patch.yml`, extracted by `git show 06adbf850:cordis.patch.yml`) | **reddens `PD26-SURFACE-RESTORED` only** — the confined-read contracts stay green |
 | **PIN** | `A5SF_PD26_PIN=1`: reads the pre-fix composition by path and drives the real Cordis `ToolRuntime` | **green** — both calls are the router's typed `unknown tool`, so "absent" is measured, not asserted |
 
 The host-free suite `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` has five arms
@@ -126,6 +154,11 @@ The host-free suite `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` has 
 - **The lane is not tightened.** `a5sfSkillCatalog` is an allowlist *of declarations*, not of reads; the
   read admission is the same compiled read lane `bash`/`read`/`grep` use. A skill path inside the lane
   is readable exactly like any other in-lane file.
+- **The catalog is data, not an authorization plane.** This lane restores the two **read** paths and
+  says nothing about **who may install a skill**: `a5sfSkillCatalog` is a list of
+  `{name,description,path}` entries enumerated by the Team's own composition config, and every body is
+  still admitted by the Member's compiled read lane. Where a skill comes from, who writes it, and
+  whether a Member should be allowed to install one are **out of scope here** and are not claimed.
 - **PD-25 is not this lane** (numbering disclosure), and PD-24's other residuals (`read_image` branch,
   `exit_plan_mode` active branch, `ask_user_question` blocking) are untouched.
 
@@ -134,8 +167,8 @@ The host-free suite `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` has 
 - `PRODUCT-DEBT-REGISTER.md`: new row **PD-26 (CONFINED-SKILL)**, status **DRAFT — not merged**; the
   register's `FAIL-CLOSED` count for the two names moves to "restored", with the before/after above.
 - `TOOL-ACCEPTANCE-MATRIX.md`: **append-only** §1.8.9 CORRECTION (dated) — the PD-24 buckets, grades,
-  `V@B` and the 33-name roster are **unchanged**, and the correction states only the delta: the two
-  in-register names leave `FAIL-CLOSED`, roster 33 → 35, and the out-of-lane readings above.
+  `V@B` and the 29-name roster are **unchanged**, and the correction states only the delta: the two
+  in-register names leave `FAIL-CLOSED`, roster 29 → 31, and the out-of-lane readings above.
 
 ## 7. Reproduction
 
@@ -163,7 +196,7 @@ clean.
 runs/boot01|02/            post-fix evidence (counters, member-probes, member-surface, guard-facts,
                            member-transcript.{json,txt}, run-record.json, summary.txt, teardown.json)
 archive/pair-prefix/       pre-fix arm, same commit, archived composition
-archive/pre-fix/cordis.patch.yml   git show 06adbf850:cordis.patch.yml
+archive/pre-fix/cordis.patch.yml   git show 06adbf850:cordis.patch.yml  (merged tree WITHOUT PD-26)
 archive/mutations/         the M1 mutant (kept for audit)
 agreement-postfix.{json,txt} / agreement-prefix.{json,txt}
 driver.log                 the full run log (both arms, both boots)

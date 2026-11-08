@@ -1,0 +1,146 @@
+[2026-11-08T06:54:56.302Z] ARCHIVE: (nothing to archive)
+[2026-11-08T06:54:56.305Z] START arm=postfix head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/cordis.patch.yml sha256=f8fec5b5a79e178055fe389e1ce4f97f44010dc774d54354d91743ae3cdff691 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T06:54:56.332Z] host porcelain before: []
+[2026-11-08T06:54:56.390Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T06:54:56.392Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd26 head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9
+[2026-11-08T06:54:56.395Z] [boot1] world=u5u5a5sfpd26-20261108T06-54-56Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-54-56Z
+[2026-11-08T06:54:56.398Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T06:55:43.071Z] [boot1] mock on 3500
+[2026-11-08T06:56:22.236Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/driver/logs/u5u5a5sfpd26-20261108T06-54-56Z/instance-port3188.log
+[2026-11-08T06:56:22.668Z] [boot1] p6t6 health=true
+[2026-11-08T06:56:22.940Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T06:56:26.657Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd26-p7a3rl0o9b","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd26-team","blueprint":{"blueprintId":"team.a5sf.pd26.main","revision":"1","contentHash":"sha256:e5284fcc7caf4c49a572e725a41d24fd6bb8a660f0e37b7912cec1ddb616bbb4"},"createdAt":"2026-11-08T06:56:22.981Z","generatio
+[2026-11-08T06:56:26.657Z] [boot1] leader chain closed (A5SF_PD26_L1_DONE)=true
+[2026-11-08T06:56:29.859Z] [boot1] mock quiesced=true
+[2026-11-08T06:56:29.867Z] [boot1] members=[{"instanceId":"inst-021pk5f0aulg","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01
+[2026-11-08T06:56:29.882Z] [boot1] case pd26:skill-confined: PASS
+[2026-11-08T06:56:29.882Z] [boot1] case pd26:present-confined: PASS
+[2026-11-08T06:56:29.882Z] [boot1] case pd26:fs-controls: PASS
+[2026-11-08T06:56:29.883Z] [boot1] case pd26:fail-closed-typed: PASS
+[2026-11-08T06:56:29.883Z] [boot1] case pd26:surface-restored: PASS
+[2026-11-08T06:56:29.883Z] [boot1] case pd26:no-out-of-lane-bytes: PASS
+[2026-11-08T06:56:29.884Z] [boot1] diagnostics(final): mockRequests=26 guardFacts=12
+[2026-11-08T06:56:29.884Z] [boot1] RUN-SUMMARY run=a5sf-pd26-confined-skill-postfix-2026-11-08T06-54-56-360Z-b1 suite=a5sf-pd26-confined-skill overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd26-20261108T06-54-56Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T06:56:30.019Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":79,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-54-56Z","releasedPorts":[3188,3500,3188],"killedPids":[79],"notes":[]}
+[2026-11-08T06:56:30.019Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T06:56:30.097Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T06:56:30.097Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd26 head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9
+[2026-11-08T06:56:30.100Z] [boot2] world=u5u5a5sfpd26-20261108T06-56-30Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-56-30Z
+[2026-11-08T06:56:30.104Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T06:57:16.739Z] [boot2] mock on 3500
+[2026-11-08T06:57:55.412Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/driver/logs/u5u5a5sfpd26-20261108T06-56-30Z/instance-port3188.log
+[2026-11-08T06:57:55.735Z] [boot2] p6t6 health=true
+[2026-11-08T06:57:56.003Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T06:57:59.735Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd26-gukrls5y4u","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd26-team","blueprint":{"blueprintId":"team.a5sf.pd26.main","revision":"1","contentHash":"sha256:1df1b9036db5e1bba2e799cdc5e310ecd71761acf5e7c8e034c73b1fa5698243"},"createdAt":"2026-11-08T06:57:56.029Z","generatio
+[2026-11-08T06:57:59.735Z] [boot2] leader chain closed (A5SF_PD26_L1_DONE)=true
+[2026-11-08T06:58:02.936Z] [boot2] mock quiesced=true
+[2026-11-08T06:58:02.943Z] [boot2] members=[{"instanceId":"inst-021pk5f0aulg","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:skill-confined: PASS
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:present-confined: PASS
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:fs-controls: PASS
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:fail-closed-typed: PASS
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:surface-restored: PASS
+[2026-11-08T06:58:02.956Z] [boot2] case pd26:no-out-of-lane-bytes: PASS
+[2026-11-08T06:58:02.957Z] [boot2] diagnostics(final): mockRequests=26 guardFacts=12
+[2026-11-08T06:58:02.957Z] [boot2] RUN-SUMMARY run=a5sf-pd26-confined-skill-postfix-2026-11-08T06-56-30-057Z-b2 suite=a5sf-pd26-confined-skill overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd26-20261108T06-56-30Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T06:58:03.086Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":318,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-56-30Z","releasedPorts":[3188,3500,3188],"killedPids":[318],"notes":[]}
+[2026-11-08T06:58:03.086Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T06:58:03.115Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 31                            31
+skillOnSurface                true                          true
+presentOnSurface              true                          true
+skillFacts                    {"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}{"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}
+presentFacts                  {"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}{"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}
+guardAllow                    9                             9
+guardDeny                     3                             3
+factTools                     {"bash":3,"read":2,"grep":1,"skill":2,"present":4}{"bash":3,"read":2,"grep":1,"skill":2,"present":4}
+deliverablesEvents            1                             1
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                19                            19
+
+agreeing=true differing=[]
+[2026-11-08T06:58:03.144Z] host porcelain after: []
+[2026-11-08T06:58:03.144Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T06:58:32.577Z] ARCHIVE: (nothing to archive)
+[2026-11-08T06:58:32.580Z] START arm=prefix head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/archive/pre-fix/cordis.patch.yml sha256=a593472a9d82fdc97646cd51226b3374c8a190a8cdf56b753f79d3964593c6f9 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T06:58:32.608Z] host porcelain before: []
+[2026-11-08T06:58:32.665Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T06:58:32.665Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd26 head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9
+[2026-11-08T06:58:32.668Z] [boot1] world=u5u5a5sfpd26-20261108T06-58-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-58-32Z
+[2026-11-08T06:58:32.671Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T06:59:19.308Z] [boot1] mock on 3500
+[2026-11-08T06:59:57.949Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/driver/logs/u5u5a5sfpd26-20261108T06-58-32Z/instance-port3188.log
+[2026-11-08T06:59:58.276Z] [boot1] p6t6 health=true
+[2026-11-08T06:59:58.548Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T07:00:02.295Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd26-0i2k0napud","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd26-team","blueprint":{"blueprintId":"team.a5sf.pd26.main","revision":"1","contentHash":"sha256:759de12786c0c928926a5a034d3f3f5bf360b51815f4b18524658e522aa49381"},"createdAt":"2026-11-08T06:59:58.593Z","generatio
+[2026-11-08T07:00:02.295Z] [boot1] leader chain closed (A5SF_PD26_L1_DONE)=true
+[2026-11-08T07:00:05.496Z] [boot1] mock quiesced=true
+[2026-11-08T07:00:05.504Z] [boot1] members=[{"instanceId":"inst-021pk5f0aulg","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:skill-confined: PASS
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:present-confined: PASS
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:fs-controls: PASS
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:fail-closed-typed: PASS
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:surface-restored: PASS
+[2026-11-08T07:00:05.521Z] [boot1] case pd26:no-out-of-lane-bytes: PASS
+[2026-11-08T07:00:05.522Z] [boot1] diagnostics(final): mockRequests=26 guardFacts=6
+[2026-11-08T07:00:05.523Z] [boot1] RUN-SUMMARY run=a5sf-pd26-confined-skill-prefix-2026-11-08T06-58-32-636Z-b1 suite=a5sf-pd26-confined-skill overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd26-20261108T06-58-32Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T07:00:05.680Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":79,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-58-32Z","releasedPorts":[3188,3500,3188],"killedPids":[79],"notes":[]}
+[2026-11-08T07:00:05.681Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T07:00:05.756Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T07:00:05.757Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd26 head=1e0c813125fb6ec2b97705f18e3fe3564a4a6ad9
+[2026-11-08T07:00:05.760Z] [boot2] world=u5u5a5sfpd26-20261108T07-00-05Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-00-05Z
+[2026-11-08T07:00:05.764Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T07:00:52.438Z] [boot2] mock on 3500
+[2026-11-08T07:01:31.100Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/driver/logs/u5u5a5sfpd26-20261108T07-00-05Z/instance-port3188.log
+[2026-11-08T07:01:31.413Z] [boot2] p6t6 health=true
+[2026-11-08T07:01:31.681Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T07:01:35.388Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd26-aru780unnx","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd26-team","blueprint":{"blueprintId":"team.a5sf.pd26.main","revision":"1","contentHash":"sha256:65322dab79bc4b8bd29c46e62cd46edcf25bcdc5621f93faf4ea68733d4a33b3"},"createdAt":"2026-11-08T07:01:31.706Z","generatio
+[2026-11-08T07:01:35.388Z] [boot2] leader chain closed (A5SF_PD26_L1_DONE)=true
+[2026-11-08T07:01:38.588Z] [boot2] mock quiesced=true
+[2026-11-08T07:01:38.595Z] [boot2] members=[{"instanceId":"inst-021pk5f0aulg","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-c1d4a62c9b63a7fb503ccd8254c47d01
+[2026-11-08T07:01:38.607Z] [boot2] case pd26:skill-confined: PASS
+[2026-11-08T07:01:38.607Z] [boot2] case pd26:present-confined: PASS
+[2026-11-08T07:01:38.607Z] [boot2] case pd26:fs-controls: PASS
+[2026-11-08T07:01:38.607Z] [boot2] case pd26:fail-closed-typed: PASS
+[2026-11-08T07:01:38.607Z] [boot2] case pd26:surface-restored: PASS
+[2026-11-08T07:01:38.608Z] [boot2] case pd26:no-out-of-lane-bytes: PASS
+[2026-11-08T07:01:38.608Z] [boot2] diagnostics(final): mockRequests=26 guardFacts=6
+[2026-11-08T07:01:38.609Z] [boot2] RUN-SUMMARY run=a5sf-pd26-confined-skill-prefix-2026-11-08T07-00-05-718Z-b2 suite=a5sf-pd26-confined-skill overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd26-20261108T07-00-05Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T07:01:38.748Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":318,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T07-00-05Z","releasedPorts":[3188,3500,3188],"killedPids":[318],"notes":[]}
+[2026-11-08T07:01:38.748Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T07:01:38.780Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+overall                       PASS                          PASS
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 29                            29
+skillOnSurface                false                         false
+presentOnSurface              false                         false
+skillFacts                    {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+presentFacts                  {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+guardAllow                    6                             6
+guardDeny                     0                             0
+factTools                     {"bash":3,"read":2,"grep":1}  {"bash":3,"read":2,"grep":1}
+deliverablesEvents            0                             0
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                19                            19
+
+agreeing=true differing=[]
+[2026-11-08T07:01:38.809Z] host porcelain after: []
+[2026-11-08T07:01:38.810Z] RESULT PASS arm=prefix (2/2 boots; agreeing pair=true)
