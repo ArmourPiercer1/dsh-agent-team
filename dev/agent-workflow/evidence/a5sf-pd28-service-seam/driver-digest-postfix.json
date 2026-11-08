@@ -1,7 +1,7 @@
 {
-  "at": "2026-11-08T12:16:56.454Z",
+  "at": "2026-11-08T12:25:25.281Z",
   "arm": "postfix",
-  "head": "f54ecddea2cf50e189943dbf7d843445800c54c2",
+  "head": "8d069bb239a400687cb1afff2c407a21e06d0df8",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
@@ -14,7 +14,7 @@
   ],
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",
-    "sha256": "a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8",
+    "sha256": "12f944da0917b57cce9b7431b9dd1909c42b43459efbe348f4339303139e8faf",
     "arm": "postfix"
   },
   "authorization": {

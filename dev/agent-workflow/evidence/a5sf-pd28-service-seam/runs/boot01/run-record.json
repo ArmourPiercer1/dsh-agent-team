@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T12-16-56-554Z-b1",
+  "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T11-53-11-585Z-b1",
   "suite": "a5sf-pd28-service-seam",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T12:16:56.554Z",
+  "startedAt": "2026-11-08T11:53:11.586Z",
   "selectedCases": [
     "pd28:skill-confined",
     "pd28:present-confined",
@@ -38,14 +38,14 @@
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd28-20261108T12-16-56Z"
+      "u5u5a5sfpd28-20261108T11-53-11Z"
     ]
   },
   "cases": [
     {
       "id": "pd28:skill-confined",
       "verdict": "FAIL",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "a governed Member CAN load a declared skill body through its CONFINED `fs` face: the in-lane body returns with exactly ONE allow fact; the out-of-lane body is a typed `IO_READ_DENIED` with ZERO body bytes and exactly ONE deny fact; an undeclared name is a typed name refusal that reads nothing",
       "failed": [
         "in-lane-body-returned: isError=false text=",
@@ -106,7 +106,7 @@
     {
       "id": "pd28:present-confined",
       "verdict": "FAIL",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "a governed Member CAN declare an in-lane deliverable through its CONFINED `fs` face (file presented, ONE `deliverables/presented` event, guard facts), while an out-of-lane path — existing or absent — is refused at the FIRST `lstat` with the guard fact carrying `IO_READ_DENIED`, NO event and no `file not found` existence oracle (the code lives in the FACT and in the tool result's `error.info.code`; the model text is the shipped host module rendering the lane's own decision, which is why this clause reads the code from the fact)",
       "failed": [
         "in-lane-presented: isError=false text=",
@@ -168,7 +168,7 @@
     {
       "id": "pd28:fs-controls",
       "verdict": "FAIL",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "the confined native faces are UNAFFECTED by the restoration: `bash`, `read` and `grep` still execute on the lane and each writes its own allow fact (so the facts above are not a global shutdown)",
       "failed": [
         "bash-ok: text=",
@@ -214,23 +214,23 @@
     {
       "id": "pd28:fail-closed-typed",
       "verdict": "FAIL",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "every name an earlier lane fail-closed is STILL the host router's typed `unknown tool`, and none executed — the restoration is additive, not a reopening",
       "failed": [
-        "all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,workflow"
+        "all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"
       ],
       "clauses": [
         {
           "id": "all-typed-unknown",
           "ok": false,
-          "detail": "not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,workflow"
+          "detail": "not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"
         }
       ]
     },
     {
       "id": "pd28:surface-restored",
       "verdict": "FAIL",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "the Member surface offers `skill` and `present` (both restored) and still offers no base-fs skill provider row",
       "failed": [
         "skill-present: skill on the surface",
@@ -257,7 +257,7 @@
     {
       "id": "pd28:no-out-of-lane-bytes",
       "verdict": "PASS",
-      "at": "2026-11-08T12:18:26.272Z",
+      "at": "2026-11-08T11:54:39.760Z",
       "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
       "failed": [],
       "clauses": [
@@ -284,11 +284,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T12:17:43.491Z",
-        "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T12-16-56-554Z-b1",
+        "at": "2026-11-08T11:53:58.255Z",
+        "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T11-53-11-585Z-b1",
         "suite": "a5sf-pd28-service-seam",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd28-20261108T12-16-56Z",
+        "world": "u5u5a5sfpd28-20261108T11-53-11Z",
         "phase": "a5sf-pd28-service-seam-postfix-boot1"
       }
     ]
@@ -296,17 +296,17 @@
   "boots": [
     {
       "phase": "a5sf-pd28-service-seam-postfix-boot1",
-      "world": "u5u5a5sfpd28-20261108T12-16-56Z",
+      "world": "u5u5a5sfpd28-20261108T11-53-11Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-16-56Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T11-53-11Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd28-service-seam-postfix-2026-11-08T12-16-56-554Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd28-service-seam-postfix-2026-11-08T11-53-11-585Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "FAIL",
   "partial": false,
-  "finishedAt": "2026-11-08T12:18:26.273Z"
+  "finishedAt": "2026-11-08T11:54:39.761Z"
 }

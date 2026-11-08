@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-pd28-service-seam/member-probes/1",
-  "at": "2026-11-08T12:19:54.628Z",
+  "at": "2026-11-08T11:56:09.771Z",
   "note": "every Member surface call and the result the Member actually received (durable session first, mock transcript fallback)",
   "probes": {
     "bash": {
@@ -61,6 +61,14 @@
         "result": null
       },
       "subagent_fork": {
+        "call": null,
+        "result": null
+      },
+      "web_fetch": {
+        "call": null,
+        "result": null
+      },
+      "web_search": {
         "call": null,
         "result": null
       },

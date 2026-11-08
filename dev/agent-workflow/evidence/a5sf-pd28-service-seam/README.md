@@ -233,6 +233,7 @@ touched (`archive/experiment-*/`, `ROW-DIFF.txt`):
 | `dsh-agent-team/web-tool` (shipped) | member never created — `never started` |
 | `./packages/runtime/dist/…/confined-web-tool.mjs` | member never created — `never started` |
 | `file:///…/confined-web-tool.mjs` (absolute) | **PASS 2/2 boots, 6/6 cases, `surfaceACount 33`** |
+| the same row with `disabled: true` | **PASS 2/2 boots, 6/6 cases, `surfaceACount 31`** — the Member works, but the pair is **gone**: with the placeholder disabled the post-deny surface no longer carries the names, so `confinedWebSpecOf` declines and PD-27's feature silently disappears (`archive/experiment-row-disabled-surface31/`) |
 
 The absolute-URL run reproduces the Owner's predicted surface exactly (31 + the web
 pair) and every PD-28 row stays item-by-item equal to PD-26: `skillFacts
@@ -241,9 +242,15 @@ pair) and every PD-28 row stays item-by-item equal to PD-26: `skillFacts
 `guardAllow 9 / guardDeny 3`, `requestsCarryingSecret 0`, `aModelRequests 19`. So the
 merged tree is correct, this lane's seam still holds at 33, and the **only** defect is
 the row's specifier form. The absolute path is worktree-local and is not a proposed
-product form; making the row loadable for real (a `file:` URL anchored at the
-composition, or letting the route-C attach own the names) is the web lane's call, not
-this lane's, and this lane will not edit that row to fix it.
+product form; making the row loadable for real is the web lane's call, not this lane's,
+and this lane will not edit that row to fix it.
+
+The fourth row of that table is the important negative result for whoever fixes it:
+**deleting or disabling the row is not an equivalent fix**. It yields a bootable tree
+and a green suite, but at surface **31** — `confinedWebSpecOf` only places names that
+are already on the post-deny surface, so removing the placeholder removes PD-27's pair
+instead of governing it. The fix therefore has to keep the names on the surface with a
+loadable specifier, not remove them.
 
 **Consequence for this lane's evidence.** The bound live pair for the product claim
 stays the pre-merge one (`archive/pre-merge-6f9a8c1/`, §4.1) — the lane's own claim
