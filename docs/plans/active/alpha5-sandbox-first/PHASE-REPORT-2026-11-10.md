@@ -379,3 +379,51 @@ process face，不是“终端面已被 OS 隔离”。
 - **第 12 条：标签与机制分离。** 一个治理标签可以在它背后的机制缺席时继续存在，于是系统“声明了 confinement
   却没有挂上”。它同样是一条**必须被刻意拒绝**的形状，而不是一次性 bug；修复 = `REALM_DECLARATION_INVALID`
   在挂载处拒绝，RED→GREEN（矩阵 §1.6，W3b）。
+
+---
+
+## 附录 E — 2026-11-14 附录：侦察 → 归因 → 修复 → 复测的节奏（只追加；§5 / 附录 D 原文不改）
+
+**这一条只追加在报告末尾。** 它不复述 §5 的十条仪器缺陷，也不改写附录 D 的结论；它记录附录 D 之后
+**这一轮**是怎么走的：五个面并行侦察、一次独立复审裁决、四笔修复、以及每笔修复自己的复测与代价。
+记录类别 = 既有 `DEV-LIVE` + host-free 证据的编排说明；**本附录 0 boots**、no `V@B`、无等级移动、
+`release BLOCKED` 不变。
+
+### E.1 四拍（每一拍都能打开一个文件）
+
+| 拍 | 发生了什么 | 事实/证据 |
+|---|---|---|
+| **1. 侦察（五面并行）** | 五个能力面各自在**冻结 SHA**（`235e1af8b`，host `639ed01539`）上做 `DEV-LIVE` 侦察：FS（#657）、Search（#655）、Shell/PTY（#660）、Web（#658）、External（#656）。六份 evidence-only PR 同时就绪，为避免六轮 “update branch → CI → merge”，以一次 **RECON-CONSOLIDATE #666**（`d590d58a0`）按原字节落地，原 PR 关闭并指向该 drop。 | `dev/agent-workflow/evidence/a5sf-recon-consolidate.md`；五个 `a5sf-recon-*/` 目录 |
+| **2. 归因（独立复审裁决）** | 一个**没有参与任何 lane** 的 review（#662，3 次真实 Host boot，boot02/03 为 13/13 agreeing pair）逐条对照五份报告 + host-free 源码 + 自己的双 Member 串权 boot。裁决：**只有 C 的 `bash` 在 shipped 产品装配上真正受治**；A/B 在其上完全不受治；D 的“受治”只对**测试组合**成立、对 shipped preset **REFUTED**（`web_fetch` 0 条 web fact，拒绝来自 base provider 的 SSRF 策略）；E 的执行体全部不受治。三个数字 = **受治 1 / 表面存在但不受治 42 / 完全不在面 10 + MCP 族**。 | `dev/agent-workflow/evidence/a5sf-recon-review/README.md` §0/§1；`a5sf-recon-consolidate.md` |
+| **3. 修复（四笔，按面/归因分）** | **#661 PD-16**：`grep`/`glob` 进 confined `subprocess` face；**#664 PD-17**：`read`/`write`/`edit`/`read_image` 进 confined `fs` face；**#668 PD-18**：`web_fetch`/`web_search`/`workflow` **fail-closed 移除**（能力回退，不是受治）；**#667 PD-19**：guard fact 增加 optional `tool` + `callId`（归因，不改决策；默认路径 byte-identical）。四笔都走既有 route-C 原生模块 seam，`CORE PATCH BUDGET = 0`。 | `a5sf-pd16-search/`、`a5sf-pd17-fs/`、`a5sf-pd18-web-ptc/`、`a5sf-pd19-fact-attr/` 四份 README |
+| **4. 复测（每笔自己的证据）** | PD-16：1 次 committed `DEV-LIVE` boot（另有 1 次在 `.git` FILE 上失败的 in-lane 搜索，被保留并归因为 BL-16 祖先判定缺陷，见其 §4）；PD-17：3 次 boot（boot00 前缀 / boot01 policy-bug / boot02 12/12 PASS），boot01 是**故意保留的失败测量**；PD-18：2 次 boot，8/8 case、agreeing pair，另在 **standard** BOOT_ROOT 上证明 `workflow` 仍可执行；PD-19：**0 boots**，7/7 host-free 臂。 | 各 README 的 `runs/`、`agreement.json`、`pin-before.log` / `pin-after.log`、`mutations.log` |
+
+### E.2 代价披露（不藏失败，也不把失败说成通过）
+
+- **修复逼出的真实缺陷**：PD-17 的 live boot01 测出 confined provider 丢掉 per-call `sandboxPolicy`
+  （in-lane `write` 被宿主 fence 以 `FS_SANDBOX_DENIED` 拒绝）；修法 = 转发 policy 但**收窄** workspace root
+  与 mode，ceiling 仍先判定。PD-16 测出 BL-16 的祖先 `.git` FILE 判定会误判 worktree；修法留在既有准入内。
+  PD-18 的结论是**主动放弃能力**：`web` 需要 composition-owned transport、PTC 需要 interpreter lane，
+  两者都超出 `CORE PATCH BUDGET = 0`，所以选择 fail-closed 而不是留一个 host 执行、0 fact 的面。
+- **基础设施代价（同轮，均已合并）**：**#654** 把 dev-Host 并发上限 2 → 6，依据本机实测
+  **30 GiB RAM（~25 GiB available）/ 16 vCPU**、每 dev Host 峰值远低于 1 GiB；**#659** 修掉两件
+  “看上去像产品失败、实际是仪器”的事：`lease.release?.()` 是 silent no-op（每次成功 boot 泄漏一个
+  machine-wide slot），以及跨 PID namespace 的 `pidAlive()` 会把活 peer 判死（`a5sf-recon-external`
+  的 3 次 pre-boot refusal = 1 次泄漏 + 2 次跨 namespace 清扫）；**#665** 把 integration-order 记录上限
+  200 → 400，依据是审计树在 `c8af5fc6f` 已达 **records=199**——不改，下一笔 recon boot 就会让每个 PR 的
+  integration-order 审计被拒。三条都是**容量/仪器**修复，不改产品语义、不改任何等级或 `V@B`。
+- **没有做的事**：没有为 `read_image` 造 lane 行为（live `NOT_REACHED`）；没有把 `subagent` 子 realm
+  装配测掉（UNMEASURED）；没有把 `skill` 正文读接到任何面；没有把 web/PTC 的移除包装成“已受治”。
+
+### E.3 这一轮之后的当前结论（可引用）
+
+> **在显式 opt-in 的受治 preset 上，受治工具从 1 条（`bash`）变成 7 条 confined 路径
+> （`bash` + `read`/`write`/`edit`/`read_image` + `grep`/`glob`），其中 6 条有 `DEV-LIVE` 执行证据、
+> `read_image` 的 live 调用仍 `NOT_REACHED`；`web_fetch`/`web_search`/`workflow` 被 fail-closed 移除，
+> 是能力回退而不是受治；默认 `standard` 路径未变。**（`DEV-LIVE` + host-free，**no `V@B`**，
+> `release BLOCKED`。）
+
+它的数字依据 = 矩阵 §1.7（面上 40 名 = 受治 7 + 表面存在但不受治 33；完全不在面 13 = 从未在面 10 +
+PD-18 移除 3）。与复审裁决的 pre-fix 三个数字相比：**1 → 7**、**42 → 33**、**10 → 13**。
+**仍然不 entitled 的句子**：Members are governed；A Member's `bash` cannot reach the network；
+Web 面已受治；per-Team scratch 已隔离；任何 `V@B` / 等级 / candidate claim。
