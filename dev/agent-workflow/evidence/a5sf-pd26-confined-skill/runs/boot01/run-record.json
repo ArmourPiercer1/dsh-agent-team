@@ -1,0 +1,285 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd26-confined-skill-postfix-2026-11-08T06-26-24-377Z-b1",
+  "suite": "a5sf-pd26-confined-skill",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T06:26:24.377Z",
+  "selectedCases": [
+    "pd26:skill-confined",
+    "pd26:present-confined",
+    "pd26:fs-controls",
+    "pd26:fail-closed-typed",
+    "pd26:surface-restored",
+    "pd26:no-out-of-lane-bytes"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "427d226be48c6b8d5f8f3aca1ae4ed62f79bcb1e",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "ConfinedSkill",
+      "world": "u5a5sfpd26",
+      "source": "task PD26-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=postfix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "427d226be48c6b8d5f8f3aca1ae4ed62f79bcb1e",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd26-20261108T06-26-24Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd26:skill-confined",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "a governed Member CAN load a declared skill body through its CONFINED `fs` face: the in-lane body returns with exactly ONE allow fact; the out-of-lane body is a typed `IO_READ_DENIED` with ZERO body bytes and exactly ONE deny fact; an undeclared name is a typed name refusal that reads nothing",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "in-lane-body-returned",
+          "ok": true,
+          "detail": "isError=false text=<skill_content name=\"pd26-in-lane-skill\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T"
+        },
+        {
+          "id": "in-lane-one-allow-fact",
+          "ok": true,
+          "detail": "facts=[[\"readText\",\"allow\",\"ALLOW\"]]"
+        },
+        {
+          "id": "in-lane-attributed-to-skill",
+          "ok": true,
+          "detail": "tools=[[\"skill\",\"call-a5sfpd26-skill-in\"]]"
+        },
+        {
+          "id": "out-of-lane-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-26-24Z/skills-out-of-lane/pd26-out-of-lane-skil"
+        },
+        {
+          "id": "out-of-lane-zero-bytes",
+          "ok": true,
+          "detail": "the refusal carries no body bytes"
+        },
+        {
+          "id": "out-of-lane-one-deny-fact",
+          "ok": true,
+          "detail": "facts=[[\"readText\",\"deny\",\"IO_READ_DENIED\"]]"
+        },
+        {
+          "id": "out-of-lane-attributed-to-skill",
+          "ok": true,
+          "detail": "tools=[[\"skill\",\"call-a5sfpd26-skill-out\"]]"
+        },
+        {
+          "id": "unknown-name-is-not-a-read",
+          "ok": true,
+          "detail": "isError=true facts=0 text=Error: skill \"pd26-no-such-skill\" is unknown or no longer available"
+        },
+        {
+          "id": "turn-kept-going",
+          "ok": true,
+          "detail": "the Member turn settled after the probes"
+        }
+      ]
+    },
+    {
+      "id": "pd26:present-confined",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "a governed Member CAN declare an in-lane deliverable through its CONFINED `fs` face (file presented, ONE `deliverables/presented` event, guard facts), while an out-of-lane path — existing or absent — is a typed `IO_READ_DENIED` at the FIRST stat with NO event and no `file not found` existence oracle",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "in-lane-presented",
+          "ok": true,
+          "detail": "isError=false text=Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-26-24Z/workspace/in-lane.txt"
+        },
+        {
+          "id": "in-lane-guard-facts",
+          "ok": true,
+          "detail": "facts=[[\"lstat\",\"allow\"],[\"stat\",\"allow\"]]"
+        },
+        {
+          "id": "in-lane-attributed-to-present",
+          "ok": true,
+          "detail": "tools=[\"present\",\"present\"]"
+        },
+        {
+          "id": "in-lane-one-deliverables-event",
+          "ok": true,
+          "detail": "A session deliverables/presented events=1"
+        },
+        {
+          "id": "out-of-lane-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-26-24Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane"
+        },
+        {
+          "id": "out-of-lane-zero-bytes",
+          "ok": true,
+          "detail": "the refusal carries no out-of-lane bytes"
+        },
+        {
+          "id": "out-of-lane-one-deny-fact",
+          "ok": true,
+          "detail": "facts=[[\"lstat\",\"deny\",\"IO_READ_DENIED\"]]"
+        },
+        {
+          "id": "missing-is-not-an-existence-oracle",
+          "ok": true,
+          "detail": "isError=true facts=1 text=Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-26-24Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of th"
+        },
+        {
+          "id": "no-extra-deliverables-event",
+          "ok": true,
+          "detail": "a refused presentation must not append an event"
+        }
+      ]
+    },
+    {
+      "id": "pd26:fs-controls",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "the confined native faces are UNAFFECTED by the restoration: `bash`, `read` and `grep` still execute on the lane and each writes its own allow fact (so the facts above are not a global shutdown)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "bash-ok",
+          "ok": true,
+          "detail": "text={\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD26_IN_LA"
+        },
+        {
+          "id": "read-ok",
+          "ok": true,
+          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/tests/homes/u5u5a5sfpd26-20261108T06-26-24Z/workspace/in-lane.txt</path>\n<type>"
+        },
+        {
+          "id": "grep-ok",
+          "ok": true,
+          "detail": "text=Found 1 match\n\nin-lane.txt\nLine 1: A5SF_PD26_IN_LANE_BYTES"
+        },
+        {
+          "id": "bash-fact",
+          "ok": true,
+          "detail": "facts=[[\"shellRead\",\"allow\"],[\"spawn\",\"allow\"],[\"spawn:write\",\"allow\"]]"
+        },
+        {
+          "id": "read-fact",
+          "ok": true,
+          "detail": "facts=[[\"stat\",\"allow\"],[\"readText\",\"allow\"]]"
+        },
+        {
+          "id": "grep-fact",
+          "ok": true,
+          "detail": "facts=[[\"spawn\",\"allow\"]]"
+        }
+      ]
+    },
+    {
+      "id": "pd26:fail-closed-typed",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "every name an earlier lane fail-closed is STILL the host router's typed `unknown tool`, and none executed — the restoration is additive, not a reopening",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "all-typed-unknown",
+          "ok": true,
+          "detail": "all typed unknown"
+        }
+      ]
+    },
+    {
+      "id": "pd26:surface-restored",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "the Member surface offers `skill` and `present` (both restored) and still offers no base-fs skill provider row",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "skill-present",
+          "ok": true,
+          "detail": "skill on the surface"
+        },
+        {
+          "id": "present-present",
+          "ok": true,
+          "detail": "present on the surface"
+        },
+        {
+          "id": "no-base-fs-provider",
+          "ok": true,
+          "detail": "skill-filesystem is not a Member tool"
+        }
+      ]
+    },
+    {
+      "id": "pd26:no-out-of-lane-bytes",
+      "verdict": "PASS",
+      "at": "2026-11-08T06:28:02.113Z",
+      "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-requests-with-secret",
+          "ok": true,
+          "detail": "mock requests carrying an out-of-lane secret=0"
+        },
+        {
+          "id": "zero-secret-skill-bytes",
+          "ok": true,
+          "detail": "the Member's durable turn carries no out-of-lane skill body"
+        },
+        {
+          "id": "zero-secret-file-bytes",
+          "ok": true,
+          "detail": "the Member's durable turn carries no out-of-lane file bytes"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T06:27:13.086Z",
+        "runId": "a5sf-pd26-confined-skill-postfix-2026-11-08T06-26-24-377Z-b1",
+        "suite": "a5sf-pd26-confined-skill",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd26-20261108T06-26-24Z",
+        "phase": "a5sf-pd26-confined-skill-postfix-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd26-confined-skill-postfix-boot1",
+      "world": "u5u5a5sfpd26-20261108T06-26-24Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/driver/logs/u5u5a5sfpd26-20261108T06-26-24Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd26-confined-skill-postfix-2026-11-08T06-26-24-377Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T06:28:02.115Z"
+}

@@ -1,0 +1,24 @@
+TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+overall                       PASS                          PASS
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 33                            33
+skillOnSurface                false                         false
+presentOnSurface              false                         false
+skillFacts                    {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+presentFacts                  {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+guardAllow                    6                             6
+guardDeny                     0                             0
+factTools                     {"bash":3,"read":2,"grep":1}  {"bash":3,"read":2,"grep":1}
+deliverablesEvents            0                             0
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                19                            19
+
+agreeing=true differing=[]

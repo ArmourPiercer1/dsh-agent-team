@@ -914,6 +914,33 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
   pre-fix 组合、PIN 各验证自己的颜色）。
 - 复现命令见 evidence README §8；pre-fix 组合由 `git show 6cfc67b76:cordis.patch.yml` 取出，不是手改。
 
+### 1.8.9 CORRECTION（PD-26 追加；只追加，不改 §1.8.0–§1.8.8 的任何等级、`V@B` 或数字）
+
+> 2026-11-14，lane `PD26-CONFINED-SKILL`（base `1e650c3e3`）。本节只**追加**：§1.8 的桶、等级、
+> `FAIL-CLOSED` 名单与 33 名口径都是 **PD-24 时点**的读数，一字未改。
+
+1. **§1.8.2 的 `FAIL-CLOSED = 11`（册上 `present` + 册外 10，含 `skill`）是 PD-24 时点。** PD-26 把
+   册上的 `skill` 与 `present` **两个名字接回受治面**：两者都改由 Member 的 **confined `fs`** 供体
+   （`createMemberFsGuard`）服务，越界读取是 typed `IO_READ_DENIED` + 恰好 1 条 deny fact、0 字节；
+   范围内读取成功（`skill` 回 body，`present` 追加 1 条 `deliverables/presented`）。因此
+   **`FAIL-CLOSED` 降为 9（全部册外）**，GOVERNED 增 2。**本 lane 不改任何既有行的等级，不改 `V@B`，
+   不关闭 G2–G5，不改 `release BLOCKED`**；上面这两句只是对时点的追加说明，权威读数见 §1.8.2 原文 +
+   本条的差值。
+2. **名册差值**：pre-fix 实测 **33**（PD-24 post-fix 口径）→ post-fix 实测 **35**（+`skill` +`present`）。
+   两次都是一对 agreeing `DEV-LIVE` boot 的模型请求 `tools` 数组读数，不是 preset 声明。
+3. **越界读数（before → after，同一 driver 同一 World 布局）**：
+   - `skill` 越界 body 字节：**0 → 0**（pre-fix 是 typed `unknown tool`，什么都没有读；PD-23 的
+     pre-removal 读数是「body 进 7 个后续请求」）；`skill` fact 数：**0 → 1 deny**；
+   - `present` 越界 **存在**文件：pre-fix（PD-24）静默成功 `Presented …`、0 fact、1 条 deliverable
+     event；现在 **typed `IO_READ_DENIED`、0 fact→1 deny fact、0 event**；
+   - `present` 越界 **缺失**文件：pre-fix `file not found`（存在性 oracle）；现在同样是
+     `IO_READ_DENIED`，**不再泄露存在性**；
+   - 范围内：`skill` body 可读（1 allow fact）、`present` 成功且恰好 1 条 `deliverables/presented`。
+4. **证据**：`dev/agent-workflow/evidence/a5sf-pd26-confined-skill/`（post-fix `runs/` 与 pre-fix
+   `archive/pair-prefix/` 两对 agreeing boots、`agreement-*.txt`、README §1–§9）；host-free
+   `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` + `a5sf-pd26-mutation-controls.mjs`。
+
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->

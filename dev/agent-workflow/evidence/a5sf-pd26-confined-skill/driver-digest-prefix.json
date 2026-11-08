@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T06:29:48.457Z",
+  "arm": "prefix",
+  "head": "427d226be48c6b8d5f8f3aca1ae4ed62f79bcb1e",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "5901e52713668b4c957defa7914ec0d945c670057cea8c2b6b2a7c979db7a94b",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd26-confined-skill/dev/agent-workflow/evidence/a5sf-pd26-confined-skill/archive/pre-fix/cordis.patch.yml",
+    "sha256": "317fb22a559dde9e62782aa35644daa8ac885dc772a6eaadac72d8c162e08a2f",
+    "arm": "prefix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "ConfinedSkill",
+    "world": "u5a5sfpd26",
+    "source": "task PD26-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=prefix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd26-confined-skill/run-boot.mjs --arm prefix"
+}
