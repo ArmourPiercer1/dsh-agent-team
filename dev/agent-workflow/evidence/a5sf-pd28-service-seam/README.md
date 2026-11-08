@@ -265,34 +265,43 @@ half: the entry gets **no fiber**, the audit says `never started`, and the *Memb
 creation* fails, so every tool of the preset disappears at once instead of one name
 being absent.
 
-**Scope of that claim, because it decides what the fix is.** The failure is proven for
-**this repo's DEV-LIVE layout**: the host runs from `tests/deepseek-harness-test-use`
-and the bundle is the repo root, so `dsh-agent-team` exists in no `node_modules` on the
-host's resolution path. The *same spelling resolves* once the bundle sits in a
-`node_modules` beside the resolver — verified directly
-(`node_modules/dsh-agent-team -> repo`, `import('dsh-agent-team/web-tool')` → loads
-`a5sf-confined-web`) — so the row may well be correct for a **packaged** install. What
-is proven here is narrower and still serious: **no DEV-LIVE boot in this repo can
-construct the shipped governed preset**, i.e. the instrument every lane's live evidence
-depends on was blind, and the web lane's host-free arms substituted an absolute
-`file:` URL for the row, so nothing in that lane's suite could observe it. Whether a
-packaged install resolves is **untested by this lane**; that is the first thing the fix
-should establish, because it chooses between "change the row's specifier" and "teach
-the harness to install the bundle it is testing".
+**Scope of that claim, because it decides what the fix is — and the fix is NOT a
+product line.** The failure is proven for **this repo's DEV-LIVE layout**: the host
+runs from `tests/deepseek-harness-test-use` and the bundle is the repo root, so
+`dsh-agent-team` exists in no `node_modules` on the host's resolution path. The *same
+spelling resolves* as soon as the bundle is on that path: this lane verified it with a
+symlinked `node_modules` (`import('dsh-agent-team/web-tool')` → loads
+`a5sf-confined-web`), and the Owner reproduced it independently on a pristine `master`
+worktree by linking the repo into the host tree's `node_modules` — same result, exports
+including `isConfinedWebFace`, exactly what `package.json`'s
+`exports["./web-tool"]` declares. So **the row is correct for a packaged install; our
+harness boots a tree whose bundle was never installed and then blames the preset.** The
+remediation is instrument-side — provision the bundle into the pinned host tree's module
+resolution, and gate every live arm on a hard precondition (`no row reported
+never started`, `surfaceACount > 0`) before any case may be read — and **no product
+line changes**. Recorded here because the measurement that establishes it was taken to
+decide this lane's re-bind, not because this lane owns the row.
 
 **What this cost, and why it was not caught at home.** In this harness, for one merge
-window (from `#676` until the web hotfix) the **shipped** governed preset could not
-construct a Member at all: `createMember` failed with `tool-web … never started`, so a governed
-Member had **zero** tools, not a narrowed set. It was caught by a **cross-lane
-re-bind** — this lane merged master and booted the merged tree — and not by the lane
-that introduced it, because that lane's driver rewrote the row it was testing (its
-host-free rows mount the module by absolute `file:` URL, which resolves fine), so its
-measurements booted a tree that was **not** the shipped one: green host-free arms,
-green install arms, and a composition nobody had started. The lesson is not "write
-more tests" — the web lane had tests for its module — it is that **a lane must boot
-the composition as shipped, with no override, before claiming the name is back.** A
-re-bind on a merged tree is the cheapest instrument that catches this class of defect,
-because it is the only run whose input is exactly what users get.
+window (from `#676` until the harness fix) the **shipped** governed preset could not
+construct a Member at all: `createMember` failed with `tool-web … never started`, so a
+governed Member had **zero** tools — **every confined face went with it, not one name**:
+`skill`, `present`, `read`, `grep`, `shell`, the web pair, all of them, because the
+failure is the preset entry tree, not a single row. It went one name too far and took
+the whole surface.
+
+It was caught by a **cross-lane re-bind** — this lane merged master and booted the
+merged tree — and not by the lane that introduced it, and the reason is the reusable
+lesson: **that lane's driver rewrote the row it was testing.** Its host-free rows mount
+the module by absolute `file:` URL, which resolves fine, so its measurements booted a
+tree that was **not** the shipped one: green host-free arms, green install arms, and a
+composition nobody had started. **The instrument substituted the subject** — the row
+under test was replaced by a form of the row that always works, so the arm could not
+fail for the reason the product fails. That is the lesson, and it is not "write more
+tests": the lane had tests for its module. It is that **a lane must boot the composition
+as shipped, with no override, before claiming the name is back** — and that a re-bind on
+a merged tree is the cheapest instrument that catches this class of defect, because it
+is the only run whose input is exactly what a user gets.
 
 **Consequence for this lane's evidence.** The bound live pair for the product claim
 stays the pre-merge one (`archive/pre-merge-6f9a8c1/`, §4.1) — the lane's own claim
