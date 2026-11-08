@@ -1,11 +1,11 @@
 {
-  "at": "2026-11-08T17:17:23.876Z",
+  "at": "2026-11-08T13:20:03.916Z",
   "arm": "allow",
-  "head": "5543a0d58b22fc3688176565dfe251bccf8cb9c4",
+  "head": "9b89765004ee199425abf71ae089a0aad9406cba",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "46e02b61b8ca0383183a4fcb6f9245f327913658fe82eb1d26155384ca09ec66",
+  "driverSha256": "fcdd4e621e4e6c6671d6c5f59b64610ed795a09d789ac783be5938097b566fd0",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
@@ -26,7 +26,7 @@
   ],
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",
-    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
+    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
     "arm": "allow"
   },
   "authorization": {
@@ -35,5 +35,5 @@
     "world": "u5a5sfpd30",
     "source": "task PD30-WEB-PREVIEW explicit boot authorisation (2026-11-14), arm=allow"
   },
-  "command": "node tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs --arm allow --boots 1"
+  "command": "node tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs --arm allow"
 }

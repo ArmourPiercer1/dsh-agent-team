@@ -1,10 +1,8 @@
 {
   "tools": [
     "bash",
-    "create_goal",
     "edit",
     "exit_plan_mode",
-    "get_goal",
     "glob",
     "grep",
     "job_kill",
@@ -32,7 +30,6 @@
     "todo_write",
     "u5_canary",
     "u6fs_probe",
-    "update_goal",
     "web_fetch",
     "web_search",
     "write"
@@ -62,26 +59,6 @@
           "description"
         ],
         "additionalProperties": false
-      }
-    },
-    "create_goal": {
-      "name": "create_goal",
-      "description": "Create a persisted goal that keeps this session working across automatic continuation rounds. Use it when the direct human request is a long-running objective, even if the user did not say \"goal\"; not for single-turn work.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "objective": {
-            "type": "string",
-            "description": "The concrete completion objective inferred from the direct human request."
-          },
-          "max_goal_rounds": {
-            "type": "number",
-            "description": "Optional positive safe-integer limit on automatic continuation rounds."
-          }
-        },
-        "required": [
-          "objective"
-        ]
       }
     },
     "edit": {
@@ -140,14 +117,6 @@
         "required": [
           "plan"
         ]
-      }
-    },
-    "get_goal": {
-      "name": "get_goal",
-      "description": "Read the current session goal, including the id and revision that update_goal requires.",
-      "parameters": {
-        "type": "object",
-        "properties": {}
       }
     },
     "glob": {
@@ -959,51 +928,6 @@
           }
         },
         "required": [
-          "action"
-        ]
-      }
-    },
-    "update_goal": {
-      "name": "update_goal",
-      "description": "Update the current goal.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "goal_id": {
-            "type": "string",
-            "description": "Exact id returned by get_goal."
-          },
-          "revision": {
-            "type": "number",
-            "description": "Exact positive revision returned by get_goal."
-          },
-          "action": {
-            "type": "string",
-            "description": "edit, pause, and resume require a direct top-level human request. complete and blocked are also allowed during an automatic continuation of this goal; blocked is rejected before the configured minimum round count.",
-            "enum": [
-              "edit",
-              "pause",
-              "resume",
-              "complete",
-              "blocked"
-            ]
-          },
-          "objective": {
-            "type": "string",
-            "description": "Replacement objective; valid only with action edit."
-          },
-          "max_goal_rounds": {
-            "type": "number",
-            "description": "Replacement cap; valid only with action edit."
-          },
-          "blocked_reason": {
-            "type": "string",
-            "description": "Required only with action blocked: the concrete condition that persisted across rounds and blocks progress."
-          }
-        },
-        "required": [
-          "goal_id",
-          "revision",
           "action"
         ]
       }
