@@ -1,5 +1,13 @@
 # STATUS — Team vNext 当前状态总览
 
+> **dated CURRENT 快照（2026-11-16，PREVIEW-GO；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(1) Alpha.5 Preview 已放行（`PREVIEW-GO`，判定日期 2026-11-15）**：判定正本 = `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md` §7.2，依据 master `a2e0df3c9` 上的 `--boots 2` 一致对（`RESULT PASS`，各 19/19）。该判定只覆盖 **opt-in 受治 preset 的 Preview**。
+> **(2) 受治面上的名册是 36 个名字**（不是本段下方 2026-11-14 快照里的 40）：报告 §2 的四分类为 **受治 I/O 9 个 + `web_fetch`/`web_search` + Goal 三件套（不是 I/O ceiling 工具）+ `team_*` 控制面 + 2 个 World 夹具**；延期面 `workflow`/`subagent`/`subagent_fork`/`send_message`/`interrupt_agent`/`list_agents`/`ask_user_question` 在受治 Member 面上 **7/7 typed `unknown tool`、0 fact**（报告 §2）。
+> **(3) 本轮恢复的能力（都带 live 证据）**：`skill`/`present` 由**服务面**提供（删掉两个工具 fork，行为逐项不变）；`web_fetch`/`web_search` 走 Member 自己的受限 web face（allow 1 连接 / 1 条 allow fact / body 逐字节；deny 0 连接 / typed 拒绝）；Goal 三件套恢复且**明确 Stop 后不再自动续轮**（含冷会话再物化）；`read_image` 在**声明 `image` 的路由**上可读真图，默认 `['text']` 路由**在任何 provider I/O 之前拒绝**。
+> **(4) Stop 的可辩护保证**：**「durable `pause` 被 ACK 之后不再有 continuation」，不是「点击之后不再有执行」**——两者之间有毫秒级窗口，已测出并写进报告 §4.4/§7.1。停 Leader 的当前回合**不会**停止已委派的异步工作（Preview 设计，非缺陷）；Stop ≠ Archive。
+> **(5) 仍不成立（不得升级）**：`web_search` 是部署条件性的（默认安装 typed `WEB_PROVIDER_UNAVAILABLE`、0 请求）；网络轴是**单一布尔**，不是 per-host ACL、不是 OS 隔离；**无可信全局轮次预算**（`maxGoalRounds` 对 Member 可编辑）；shell 体不由服务轴归属（BL-17）；`team_*` 设计债与延期面留给正式 Alpha.5。
+> **(6) 发布门位置（未变）**：**`release BLOCKED`**——`PREVIEW-GO` **不是**发布门移动；无 `V@B`、无矩阵等级变更、无 `CANDIDATE-C2`。`CORE PATCH BUDGET = 0`，upstream 未改。
+
 > **dated CURRENT 快照（2026-11-14，POSTFIX-DOCS；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(1) 两轮修复之后的地面状态（受治 preset = `a5sf-governed-member`，不是默认 `standard`）**：模型可见面上 **40 个名字**（`dev/agent-workflow/evidence/a5sf-pd18-web-ptc/runs/boot02/member-surface.json`；含 2 个 World 夹具，剔除后 38），其中 **受治 = 7**（`bash`、`read`、`write`、`edit`、`read_image`、`grep`、`glob`：执行经 confined face 且产 `a5sf-guard-consult/1` fact；`read_image` 的 live 调用仍 `NOT_REACHED`，其余 6 条有 `DEV-LIVE` 执行证据）；**表面存在但不受治 = 33**（15 `team_*` + 16 产品原生 + 2 夹具）；**fail-closed 移除 = 3**（`web_fetch`、`web_search`、`workflow`，typed `UNKNOWN_TOOL`、0 执行——这是**能力回退**，不是受治）；**完全不在面 = 13**（3 个 fail-closed + 10 个从未在面：`run_code`、`lsp`、`str_replace_editor`、`pwsh`、6 个 `terminal_*`；MCP 族 0 名）。与 pre-fix 独立复审（`a5sf-recon-review/README.md` §1）的 **1 / 42 / 10** 相比：**7 / 33 / 13**。逐工具表 = 矩阵 §1.7。
 > **(2) 证据类别与边界**：以上全部是 **`DEV-LIVE`**（可重复、`candidateClaimEligibility.eligible=false`）或 host-free 证据；**no `V@B`**、无等级移动、`CANDIDATE-C2` 未运行。fail-closed 的 3 个工具**不得**读成“已受治”；`read_image` 的 live 行为、`subagent` 子 realm、动态 shell 读、`skill` 正文读仍 UNMEASURED/NOT_WIRED。
