@@ -56,7 +56,8 @@
         "web_fetch",
         "web_search",
         "write"
-      ]
+      ],
+      "boot": 1
     },
     {
       "arm": "deny",
@@ -112,9 +113,10 @@
         "web_fetch",
         "web_search",
         "write"
-      ]
+      ],
+      "boot": 2
     }
   ],
-  "table": "AGREEMENT arm=deny: two boots agree on every measured counter\nboot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface\n? | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {\"total\":1,\"allow\":0,\"deny\":1} | 0 | 33\n? | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {\"total\":1,\"allow\":0,\"deny\":1} | 0 | 33",
+  "table": "AGREEMENT arm=deny: two boots agree on every measured counter\nboot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface\nboot1 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {\"total\":1,\"allow\":0,\"deny\":1} | 0 | 33\nboot2 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {\"total\":1,\"allow\":0,\"deny\":1} | 0 | 33",
   "note": "two boots must agree on connections, path hits, fact counts, host-web calls and the surface size; the verdict names are compared too"
 }

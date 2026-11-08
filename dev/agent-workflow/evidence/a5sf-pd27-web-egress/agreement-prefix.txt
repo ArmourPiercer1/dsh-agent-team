@@ -1,4 +1,4 @@
 AGREEMENT arm=prefix: two boots agree on every measured counter
 boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
-? | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
-? | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
+boot1 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
+boot2 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31

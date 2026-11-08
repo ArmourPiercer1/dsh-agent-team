@@ -380,3 +380,27 @@ boot | overall | arm | allow | deny | prefix | closed | connections | pathHits |
 ? | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
 [2026-11-08T10:11:00.670Z] host porcelain after: []
 [2026-11-08T10:11:00.671Z] RESULT PASS arm=prefix (2/2 boots; agreeing pair=true)
+[2026-11-08T10:14:51.779Z] AGREEMENT arm=allow: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {"/known":1} | {"total":1,"allow":1,"deny":0} | 0 | 33
+boot2 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {"/known":1} | {"total":1,"allow":1,"deny":0} | 0 | 33
+[2026-11-08T10:14:51.839Z] AGREEMENT arm=deny: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33
+boot2 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33
+[2026-11-08T10:14:51.894Z] AGREEMENT arm=prefix: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
+boot2 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
+[2026-11-08T10:14:58.642Z] AGREEMENT arm=allow: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {"/known":1} | {"total":1,"allow":1,"deny":0} | 0 | 33
+boot2 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {"/known":1} | {"total":1,"allow":1,"deny":0} | 0 | 33
+[2026-11-08T10:14:58.699Z] AGREEMENT arm=deny: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33
+boot2 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33
+[2026-11-08T10:14:58.754Z] AGREEMENT arm=prefix: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31
+boot2 | PASS | prefix | n/a | n/a | PROVEN | PROVEN | 0 | {} | {"total":0,"allow":0,"deny":0} | 0 | 31

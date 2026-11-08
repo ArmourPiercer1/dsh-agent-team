@@ -1238,13 +1238,14 @@ function buildAgreement(results) {
     surface: r?.counters?.surfaceANames ?? null,
   })
   const rows = results.map((r) => pick(r))
+  rows.forEach((row, i) => { row.boot = results[i]?.boot ?? i + 1 })
   const sig = (r) => JSON.stringify([r.overall, r.serverConnections, r.serverPathHits, r.guardFacts, r.hostWebCalls, r.surfaceCount])
   const agreeing = rows.length === 2 && sig(rows[0]) === sig(rows[1])
   const header = ['boot', 'overall', 'arm', 'allow', 'deny', 'prefix', 'closed', 'connections', 'pathHits', 'webFacts', 'hostWebCalls', 'surface']
   const lines = [header.join(' | ')]
   for (const r of rows) {
     lines.push([
-      String('?'), r.overall, r.arm, r.allowVerdict, r.denyVerdict, r.prefixVerdict, r.closedVerdict,
+      `boot${String(r.boot)}`, r.overall, r.arm, r.allowVerdict, r.denyVerdict, r.prefixVerdict, r.closedVerdict,
       String(r.serverConnections), JSON.stringify(r.serverPathHits), JSON.stringify(r.guardFacts?.webFetch ?? null),
       String(r.hostWebCalls), String(r.surfaceCount),
     ].join(' | '))
@@ -1275,10 +1276,41 @@ function planOnly() {
   log('PLAN OK')
 }
 
+
+/** `--recompute`: rebuild agreement.{json,txt} from the boot artefacts on disk. */
+function recomputeAgreement() {
+  const boots = existsSync(RUNS) ? readdirSync(RUNS).filter((e) => /^boot\d\d$/u.test(e)).sort() : []
+  if (boots.length === 0) throw new Error(`no boot artefacts under ${RUNS}`)
+  const results = boots.map((dir, i) => {
+    const counters = JSON.parse(readFileSync(join(RUNS, dir, 'counters.json'), 'utf8'))
+    const record = JSON.parse(readFileSync(join(RUNS, dir, 'run-record.json'), 'utf8'))
+    const verdictOfCase = (id) => (record.cases ?? []).find((c) => c.id === id)?.verdict === 'PASS' ? 'PROVEN' : 'REFUTED'
+    return {
+      boot: counters.boot ?? i + 1,
+      arm: ARM,
+      overall: record.overall,
+      counters,
+      verdicts: {
+        allow: { verdict: verdictOfCase('pd27:web-allow') },
+        deny: { verdict: verdictOfCase('pd27:web-deny') },
+        prefix: { verdict: verdictOfCase('pd27:web-prefix') },
+        closed: { verdict: verdictOfCase('pd27:closed-still-typed') },
+      },
+    }
+  })
+  const agreement = buildAgreement(results)
+  writeFileSync(join(RUNS, 'agreement.json'), JSON.stringify(agreement, null, 2) + '\n')
+  writeFileSync(join(RUNS, 'agreement.txt'), agreement.table + '\n')
+  writeFileSync(join(EVIDENCE, `agreement-${ARM}.json`), JSON.stringify(agreement, null, 2) + '\n')
+  writeFileSync(join(EVIDENCE, `agreement-${ARM}.txt`), agreement.table + '\n')
+  return agreement
+}
+
 async function main() {
   mkdirSync(EVIDENCE, { recursive: true })
   RUN_LOG = join(EVIDENCE, 'driver.log')
   if (PLAN_ONLY) { planOnly(); return }
+  if (argv.includes('--recompute')) { const a = recomputeAgreement(); log(a.table); return }
   mkdirSync(RUNS, { recursive: true })
 
   const head = resolveHeadCommit(REPO_ROOT)

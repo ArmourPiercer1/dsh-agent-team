@@ -6,8 +6,8 @@
       "arm": "allow",
       "overall": "PASS",
       "allowVerdict": "PROVEN",
-      "denyVerdict": "REFUTED",
-      "prefixVerdict": "REFUTED",
+      "denyVerdict": "n/a",
+      "prefixVerdict": "n/a",
       "closedVerdict": "PROVEN",
       "serverConnections": 1,
       "serverPathHits": {
@@ -58,14 +58,15 @@
         "web_fetch",
         "web_search",
         "write"
-      ]
+      ],
+      "boot": 1
     },
     {
       "arm": "allow",
       "overall": "PASS",
       "allowVerdict": "PROVEN",
-      "denyVerdict": "REFUTED",
-      "prefixVerdict": "REFUTED",
+      "denyVerdict": "n/a",
+      "prefixVerdict": "n/a",
       "closedVerdict": "PROVEN",
       "serverConnections": 1,
       "serverPathHits": {
@@ -116,9 +117,10 @@
         "web_fetch",
         "web_search",
         "write"
-      ]
+      ],
+      "boot": 2
     }
   ],
-  "table": "AGREEMENT arm=allow: two boots agree on every measured counter\nboot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface\n? | PASS | allow | PROVEN | REFUTED | REFUTED | PROVEN | 1 | {\"/known\":1} | {\"total\":1,\"allow\":1,\"deny\":0} | 0 | 33\n? | PASS | allow | PROVEN | REFUTED | REFUTED | PROVEN | 1 | {\"/known\":1} | {\"total\":1,\"allow\":1,\"deny\":0} | 0 | 33",
+  "table": "AGREEMENT arm=allow: two boots agree on every measured counter\nboot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface\nboot1 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {\"/known\":1} | {\"total\":1,\"allow\":1,\"deny\":0} | 0 | 33\nboot2 | PASS | allow | PROVEN | n/a | n/a | PROVEN | 1 | {\"/known\":1} | {\"total\":1,\"allow\":1,\"deny\":0} | 0 | 33",
   "note": "two boots must agree on connections, path hits, fact counts, host-web calls and the surface size; the verdict names are compared too"
 }
