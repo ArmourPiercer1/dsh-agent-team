@@ -305,7 +305,14 @@ router (not the composition) — the two arms are independent.
    script. All product behaviour measured is the Host's; the fixtures only create the targets.
 8. **No `V@B`, no grade, no matrix cell, no Q7/Authority/Required-CI change, `CORE PATCH BUDGET = 0`**
    (no `packages/**` byte changed; the seam blocker above is the reason the loader could not be re-parented).
-9. **Worktree toolchain.** This worktree had no local `pnpm install` (the sandbox cannot write the global
+9. **Runtime package vitest leg, stated honestly.** Full parallel run at this head: **6008 passed /
+   4 failed**. Three of the four fail identically on a tree **without** this lane (`baseline-6files.log`:
+   two collect-time source scans, two 5 s real-kernel timeouts, one kernel capability probe); the fourth
+   (`alpha5-glob-backend X3`, a timeout arm) **passes 53/53 when its file runs alone at this same head**
+   (`head-glob-backend-isolated.log`) and only failed under 485-file parallel load — a load flake. No file
+   in that set reads the composition, and this lane changes no `packages/**` byte. Derived in
+   `runtime-tests-summary.md`.
+10. **Worktree toolchain.** This worktree had no local `pnpm install` (the sandbox cannot write the global
    package store; `pnpm-install.log` is the failed attempt, and the repo-local store under
    `.worktrees/pnpm-store` is a 1.1 MB stub that lacks the host tarball). `pnpm -r typecheck` and the
    runtime vitest leg therefore ran against **read-only symlinks** to the repository's existing
@@ -339,4 +346,6 @@ Artefacts: `driver.log`, `driver-digest-{prefix,postfix}.json`, `run-ledger.json
 `host-tree-porcelain-postfix.txt`, `host-tree-porcelain-prefix.txt`, per-boot `member-probes.json`, `member-surface.json`,
 `sibling-surface.json`, `guard-facts.json`, `proc-observations.json`, `counters.json`,
 `member-a|b-transcript.{json,txt}`, `host-free-pin.log`, `mutation-controls.log`, `a5sf-family.log`,
-`typecheck.log`, `eslint.log`, `runtime-tests.log`, `pnpm-install.log`.
+`typecheck.log`, `eslint.log`, `runtime-tests-summary.md` (derived: the raw 1.12 MB vitest capture is
+over the 1 MiB `EB3-EVIDENCE-GUARD` bound and is NOT committed — reproducible by the command it records),
+`baseline-6files.log`, `head-glob-backend-isolated.log`, `pnpm-install.log`.

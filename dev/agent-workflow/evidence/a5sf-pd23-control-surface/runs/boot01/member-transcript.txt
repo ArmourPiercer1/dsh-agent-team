@@ -1,5 +1,5 @@
 # Member transcript — session-team-child-280c347ee589a6b43c164cb77ab05828
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-41-18Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-48-47Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd
 
 USER:
 [team-work requestToken=a5sf-pd23-turn-delegate] a5sf-pd23-turn: run the probes exactly once each, one tool call at a time, then report. A5SF_PD23_TARGET_B=session-team-child-65e8721e52f17932d0f986ca50101d07 A5SF_PD23_LEADER_JOB=bash-1
@@ -7,12 +7,12 @@ USER:
 USER:
 Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace". Some platform temporary areas may also be writable.
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace". Some platform temporary areas may also be writable.
 
 Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 
 TOOL CALL [bash] call-a5sfpd23-in
-  arguments: {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace/in-lane.txt'; sleep 1","description":"Read the in-lane fixture","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace"}
+  arguments: {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace/in-lane.txt'; sleep 1","description":"Read the in-lane fixture","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace"}
 TOOL RESULT isError=false
   {"kind":"confined-terminal","sessionId":"confined-pty-1","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"cancelled":false,"stdout":"A5SF_PD23_IN_LANE_BYTES\n","stderr":"","scrollback":"A5SF_PD23_IN_LANE_BYTES"}
 
@@ -89,12 +89,12 @@ TOOL RESULT isError=false
 TOOL CALL [create_goal] call-a5sfpd23-goal-create
   arguments: {"objective":"A member must not own a Team-level goal."}
 TOOL RESULT isError=false
-  {"goal":{"id":"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983","revision":1,"objective":"A member must not own a Team-level goal.","phase":"active","roundsStarted":0,"maxGoalRounds":256},"activation":"armed"}
+  {"goal":{"id":"goal-a1e698d0-7ff4-497b-a720-984fa49f327b","revision":1,"objective":"A member must not own a Team-level goal.","phase":"active","roundsStarted":0,"maxGoalRounds":256},"activation":"armed"}
 
 TOOL CALL [update_goal] call-a5sfpd23-goal-update
-  arguments: {"goal_id":"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983","revision":1,"action":"pause"}
+  arguments: {"goal_id":"goal-a1e698d0-7ff4-497b-a720-984fa49f327b","revision":1,"action":"pause"}
 TOOL RESULT isError=false
-  {"goal":{"id":"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983","revision":2,"objective":"A member must not own a Team-level goal.","phase":"paused","roundsStarted":0,"maxGoalRounds":256},"activation":"disarmed"}
+  {"goal":{"id":"goal-a1e698d0-7ff4-497b-a720-984fa49f327b","revision":2,"objective":"A member must not own a Team-level goal.","phase":"paused","roundsStarted":0,"maxGoalRounds":256},"activation":"disarmed"}
 
 ASSISTANT (final):
-A5SF_PD23_MEMBER_A_DONE {"goal":{"id":"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983","revision":2,"objective":"A member must not own a Team-level goal.","phase":"paused","roundsStarted":0,"maxGoalRounds":256},"activation":"disarmed"}
+A5SF_PD23_MEMBER_A_DONE {"goal":{"id":"goal-a1e698d0-7ff4-497b-a720-984fa49f327b","revision":2,"objective":"A member must not own a Team-level goal.","phase":"paused","roundsStarted":0,"maxGoalRounds":256},"activation":"disarmed"}

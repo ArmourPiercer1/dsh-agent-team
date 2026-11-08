@@ -10,7 +10,7 @@
     },
     {
       "seq": 1,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD23_DISC\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an avail",
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD23_DISC\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an avail",
       "isARequest": false,
       "isBRequest": false,
       "tools": 43,
@@ -18,11 +18,11 @@
     },
     {
       "seq": 2,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:654c79f830d67c96343cbe58189965688e5b09442bee0022c21456fd00df2daa] A5SF_PD23_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\\\". Some platform temporary areas may als",
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:654c79f830d67c96343cbe58189965688e5b09442bee0022c21456fd00df2daa] A5SF_PD23_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\\\". Some platform temporary areas may als",
       "isARequest": false,
       "isBRequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-leader-job\",\"name\":\"bash\",\"arguments\":{\"command\":\"sleep 20\",\"description\":\"Hold a background job the Member will try to read\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\",\"run_in_background\":true}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-leader-job\",\"name\":\"bash\",\"arguments\":{\"command\":\"sleep 20\",\"description\":\"Hold a background job the Member will try to read\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\",\"run_in_background\":true}}]}"
     },
     {
       "seq": 3,
@@ -38,7 +38,7 @@
       "isARequest": false,
       "isBRequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-delegate-b\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd23-team\",\"requestToken\":\"a5sf-pd23-wide-delegate\",\"delegationTemplateId\":\"wide\",\"label\":\"a5sfpd23-wide-b\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\",\"prompt\":\"a5sf-p"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-delegate-b\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd23-team\",\"requestToken\":\"a5sf-pd23-wide-delegate\",\"delegationTemplateId\":\"wide\",\"label\":\"a5sfpd23-wide-b\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\",\"prompt\":\"a5sf-p"
     },
     {
       "seq": 5,
@@ -46,15 +46,15 @@
       "isARequest": false,
       "isBRequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd23-team\",\"requestToken\":\"a5sf-pd23-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd23-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\",\"prompt\":\"a5"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd23-team\",\"requestToken\":\"a5sf-pd23-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd23-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\",\"prompt\":\"a5"
     },
     {
       "seq": 6,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd23-wide-delegate] a5sf-pd23-wide: read the in-lane fixture once, then report.\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: as",
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd23-wide-delegate] a5sf-pd23-wide: read the in-lane fixture once, then report.\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: as",
       "isARequest": false,
       "isBRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-in-b\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace/in-lane.txt'; sleep 3\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-in-b\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace/in-lane.txt'; sleep 3\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5"
     },
     {
       "seq": 7,
@@ -70,7 +70,7 @@
       "isARequest": true,
       "isBRequest": false,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-in\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace/in-lane.txt'; sleep 1\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-in\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace/in-lane.txt'; sleep 1\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5"
     },
     {
       "seq": 9,
@@ -202,19 +202,19 @@
     },
     {
       "seq": 25,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd23-goal-create\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"armed\\\"}\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd23-goal-create\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-a1e698d0-7ff4-497b-a720-984fa49f327b\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"armed\\\"}\"}],\"is_error\":false}]",
       "isARequest": true,
       "isBRequest": false,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-goal-update\",\"name\":\"update_goal\",\"arguments\":{\"goal_id\":\"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983\",\"revision\":1,\"action\":\"pause\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd23-goal-update\",\"name\":\"update_goal\",\"arguments\":{\"goal_id\":\"goal-a1e698d0-7ff4-497b-a720-984fa49f327b\",\"revision\":1,\"action\":\"pause\"}}]}"
     },
     {
       "seq": 26,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd23-goal-update\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"paused\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"disarmed\\\"}\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd23-goal-update\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-a1e698d0-7ff4-497b-a720-984fa49f327b\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"paused\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"disarmed\\\"}\"}],\"is_error\":false}]",
       "isARequest": true,
       "isBRequest": false,
       "tools": 34,
-      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD23_MEMBER_A_DONE {\\\"goal\\\":{\\\"id\\\":\\\"goal-38dbdd5d-e6e4-416e-aab5-0729e1403983\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"paused\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"disarmed\\\"}\"}"
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD23_MEMBER_A_DONE {\\\"goal\\\":{\\\"id\\\":\\\"goal-a1e698d0-7ff4-497b-a720-984fa49f327b\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A member must not own a Team-level goal.\\\",\\\"phase\\\":\\\"paused\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":256},\\\"activation\\\":\\\"disarmed\\\"}\"}"
     },
     {
       "seq": 27,
@@ -248,13 +248,13 @@
       "realm": "member",
       "memberIdentity": "inst-1jd8dq5136kg",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:88ec65c17993ea63ec43e9a49882a6ca",
+      "policyRevision": "a5sf1:16995840458ef53c1835eb4fa988a5e0",
       "method": "shellRead",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T02:42:34.513Z",
+      "observedAt": "2026-11-08T02:50:07.577Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in-b"
     },
@@ -263,13 +263,13 @@
       "realm": "member",
       "memberIdentity": "inst-1jd8dq5136kg",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:88ec65c17993ea63ec43e9a49882a6ca",
+      "policyRevision": "a5sf1:16995840458ef53c1835eb4fa988a5e0",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T02:42:34.519Z",
+      "observedAt": "2026-11-08T02:50:07.582Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in-b"
     },
@@ -278,13 +278,13 @@
       "realm": "member",
       "memberIdentity": "inst-1jd8dq5136kg",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:88ec65c17993ea63ec43e9a49882a6ca",
+      "policyRevision": "a5sf1:16995840458ef53c1835eb4fa988a5e0",
       "method": "spawn:write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-08T02:42:34.522Z",
+      "observedAt": "2026-11-08T02:50:07.585Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in-b"
     },
@@ -293,13 +293,13 @@
       "realm": "member",
       "memberIdentity": "inst-0w2vuul0zc5l",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:3b70a6f2408bda9c5d0db2edefe1e249",
+      "policyRevision": "a5sf1:a651a48360d6758060b452f3283ace9a",
       "method": "shellRead",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T02:42:37.897Z",
+      "observedAt": "2026-11-08T02:50:10.922Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in"
     },
@@ -308,13 +308,13 @@
       "realm": "member",
       "memberIdentity": "inst-0w2vuul0zc5l",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:3b70a6f2408bda9c5d0db2edefe1e249",
+      "policyRevision": "a5sf1:a651a48360d6758060b452f3283ace9a",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T02:42:37.899Z",
+      "observedAt": "2026-11-08T02:50:10.925Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in"
     },
@@ -323,13 +323,13 @@
       "realm": "member",
       "memberIdentity": "inst-0w2vuul0zc5l",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:3b70a6f2408bda9c5d0db2edefe1e249",
+      "policyRevision": "a5sf1:a651a48360d6758060b452f3283ace9a",
       "method": "spawn:write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-08T02:42:37.902Z",
+      "observedAt": "2026-11-08T02:50:10.928Z",
       "tool": "bash",
       "callId": "call-a5sfpd23-in"
     }
@@ -369,13 +369,13 @@
     "siblingFinal": "A5SF_PD23_MEMBER_B_DONE {\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD23_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD23_IN_LANE_BYTES\"}",
     "siblingUserMessages": [
       "[team-work requestToken=a5sf-pd23-wide-delegate] a5sf-pd23-wide: read the in-lane fixture once, then report.",
-      "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+      "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
     ],
     "requestsCarryingSecret": 0,
     "requestsCarryingSkillOut": 0,
     "goalEventsBySession": {
       "session-a5sf-pd23-boot": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-41-18Z-workspace--/session-a5sf-pd23-boot/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-48-47Z-workspace--/session-a5sf-pd23-boot/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -397,7 +397,7 @@
         "goalEvents": 0
       },
       "session-a5sf-pd23-team": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-41-18Z-workspace--/session-a5sf-pd23-team/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-48-47Z-workspace--/session-a5sf-pd23-team/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -421,7 +421,7 @@
         "goalEvents": 0
       },
       "session-team-child-280c347ee589a6b43c164cb77ab05828": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-41-18Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-48-47Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -447,7 +447,7 @@
         "goalEvents": 2
       },
       "session-team-child-65e8721e52f17932d0f986ca50101d07": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-41-18Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-41-18Z-workspace--/session-team-child-65e8721e52f17932d0f986ca50101d07/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-48-47Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-48-47Z-workspace--/session-team-child-65e8721e52f17932d0f986ca50101d07/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -479,8 +479,8 @@
       "worker"
     ],
     "memberWindow": {
-      "from": "2026-11-08T02:42:33.777Z",
-      "to": "2026-11-08T02:42:40.904Z"
+      "from": "2026-11-08T02:50:06.811Z",
+      "to": "2026-11-08T02:50:13.903Z"
     },
     "procBatches": 154,
     "otherBwrapPids": 3,

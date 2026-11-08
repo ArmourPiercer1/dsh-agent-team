@@ -33,13 +33,13 @@
   "siblingFinal": "A5SF_PD23_MEMBER_B_DONE {\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD23_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD23_IN_LANE_BYTES\"}",
   "siblingUserMessages": [
     "[team-work requestToken=a5sf-pd23-wide-delegate] a5sf-pd23-wide: read the in-lane fixture once, then report.",
-    "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-42-44Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+    "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
   ],
   "requestsCarryingSecret": 0,
   "requestsCarryingSkillOut": 0,
   "goalEventsBySession": {
     "session-a5sf-pd23-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-42-44Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-42-44Z-workspace--/session-a5sf-pd23-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-a5sf-pd23-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -61,7 +61,7 @@
       "goalEvents": 0
     },
     "session-a5sf-pd23-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-42-44Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-42-44Z-workspace--/session-a5sf-pd23-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-a5sf-pd23-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -85,7 +85,7 @@
       "goalEvents": 0
     },
     "session-team-child-280c347ee589a6b43c164cb77ab05828": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-42-44Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-42-44Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-team-child-280c347ee589a6b43c164cb77ab05828/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -111,7 +111,7 @@
       "goalEvents": 2
     },
     "session-team-child-65e8721e52f17932d0f986ca50101d07": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-42-44Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-42-44Z-workspace--/session-team-child-65e8721e52f17932d0f986ca50101d07/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/tests/homes/u5u5a5sfpd23-20261108T02-50-17Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd23-control-surface-tests-homes-u5u5a5sfpd23-20261108T02-50-17Z-workspace--/session-team-child-65e8721e52f17932d0f986ca50101d07/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -143,11 +143,11 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T02:43:59.377Z",
-    "to": "2026-11-08T02:44:06.547Z"
+    "from": "2026-11-08T02:51:37.085Z",
+    "to": "2026-11-08T02:51:44.159Z"
   },
-  "procBatches": 154,
-  "otherBwrapPids": 5,
+  "procBatches": 152,
+  "otherBwrapPids": 3,
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/cordis.patch.yml",
     "sha256": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
