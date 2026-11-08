@@ -115,3 +115,28 @@ Files: `negative-control/driver.log`, `negative-control/host-log-rows.txt`.
 * It does not fix the two sibling lanes' local copies; they should delete them and inherit this
   one (the owner is telling them to).
 * `web_search`'s default-install gap and every product residual belong to PD-28's row, unchanged.
+
+## 6. The falsification test: factory graph == manually provisioned graph
+
+A claim that the instrument is faithful is worth nothing unless it names what
+would falsify it. **The claim**: provisioning is a graph, not a behaviour — so
+the same tree must measure the same surface either way. **The falsifier**: if a
+World booted with the factory's graph ever measures a *different* surface than
+the same tree measures with a manually provisioned graph, the provisioning is
+wrong.
+
+Measured on the rebased tree (`0c2a8f422`), one arm each, same driver, same
+fixtures, only the provisioning path differing:
+
+| arm | how the graph exists | surface | fixture conns | search conns | host-web calls |
+| --- | --- | --- | --- | --- | --- |
+| factory | `createWorld` (this PR) | **36** | 1 `{"/known":1}` | 1 | 0 |
+| manual | `A5SF_WF_NO_INSTALL_GRAPH=1` + the driver's own `installGraph()` | **36** | 1 `{"/known":1}` | 1 | 0 |
+
+Identical. Files: `equivalence/factory-arm.json` (+ the four boot artifacts);
+the manual arm is recorded here because the driver reuses one boot directory.
+
+Note the absolute number moved 33 → 36 between `da6cc7ba2` and `0c2a8f422`
+(master added the goal tools and the read_image tool), which is exactly why the
+comparison must be same-tree: a cross-tree comparison would have "proven" a
+provisioning defect that was base drift.
