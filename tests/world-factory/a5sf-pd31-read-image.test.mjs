@@ -184,3 +184,20 @@ test('PD31-EVIDENCE-BOUND: the driver binds its run to a real commit and declare
   assert.match(driverText, /bindings: runBindings\(head, authorization\)/u, 'the binding carries the head and the authorization')
   assert.equal(/\bamend\b/u.test(driverText), false, 'the driver never amends')
 })
+
+test('PD31-INSTALL-GRAPH: the shipped surface is measured through the World graph, and the driver cannot silently outlive the shared provisioning', () => {
+  const driver = readFileSync(DRIVER, 'utf8')
+  const factory = readFileSync(join(REPO, 'tests', 'world-factory', 'lib', 'world-factory.mjs'), 'utf8')
+  // NOTHING is rewritten: the surface comes from the shipped `cordis.patch.yml`
+  // and the preset rows, not from a driver-constructed tool list.
+  assert.match(driver, /shippedLayer\(\)/u, 'the driver must read the shipped layer')
+  assert.doesNotMatch(driver, /teamToolPlane/u, 'the driver must not construct a Team tool plane for this row')
+  // The graph must be provisioned exactly once, by ONE owner. Before the
+  // shared library lands that owner is this driver's local helper; after it
+  // lands `createWorld` owns it and this test reds until the copy is deleted.
+  const worldOwns = /install-graph|installGraph|profiles.*node_modules/u.test(factory)
+  const driverOwns = /function provisionInstallGraph\(home\)/u.test(driver)
+  assert.ok(worldOwns !== driverOwns, worldOwns
+    ? 'the World now provisions the profile graph: delete the driver\'s local provisionInstallGraph and its call (PD32-INSTRUMENT-GRAPH)'
+    : 'the World does not provision the graph yet: the driver must keep its local helper')
+})

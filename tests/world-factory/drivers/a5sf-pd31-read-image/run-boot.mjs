@@ -1253,7 +1253,12 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
     bootInfo = await (async () => {
       world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
       log(`[boot${String(index)}] world=${world.id} home=${world.home}`)
-      provisionInstallGraph(world.home)
+      // NEGATIVE CONTROL (`A5SF_PD31_NO_INSTALL_GRAPH=1`): the same shipped
+      // rows with NO profile graph, so a boot can prove that the World (not a
+      // row rewrite) is what makes the shipped names resolvable. Once the
+      // shared world-factory library provisions at createWorld, this helper and
+      // this switch are deleted together.
+      if (process.env.A5SF_PD31_NO_INSTALL_GRAPH !== '1') provisionInstallGraph(world.home)
       mkdirSync(join(world.home, 'blueprints'), { recursive: true })
       const workspace = world.workspaceDir
       writeFileSync(join(workspace, IN_LANE_FILE), `${IN_LANE_TEXT}\n`, 'utf8')
