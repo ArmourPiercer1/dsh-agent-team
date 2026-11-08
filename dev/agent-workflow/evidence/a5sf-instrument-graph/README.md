@@ -139,10 +139,32 @@ fixtures, only the provisioning path differing:
 | factory | `createWorld` (this PR) | **36** | 1 `{"/known":1}` | 1 | 0 |
 | manual | `A5SF_WF_NO_INSTALL_GRAPH=1` + the driver's own `installGraph()` | **36** | 1 `{"/known":1}` | 1 | 0 |
 
-Identical. Files: `equivalence/factory-arm.json` (+ the four boot artifacts);
-the manual arm is recorded here because the driver reuses one boot directory.
+Identical, and **re-recorded on `9d2519b91`** after the force-push that orphaned the first
+pair's records — each arm now carries its own `run-record.json` whose `teamSha` is a commit that
+exists on this branch (`equivalence/factory/` and `equivalence/manual/`, plus the machine-readable
+`equivalence/equivalence.json`).
 
 Note the absolute number moved 33 → 36 between `da6cc7ba2` and `0c2a8f422`
 (master added the goal tools and the read_image tool), which is exactly why the
 comparison must be same-tree: a cross-tree comparison would have "proven" a
 provisioning defect that was base drift.
+
+## 7. A force-push is a mutation of the evidence base
+
+The first version of §6 was recorded, then the branch was rebased twice and force-pushed. The
+records survived the rewrite; the commit they named did not — `ci-integration` went red with
+`RUN_SOURCE_UNRESOLVED … teamSha=5543a0d58 is not a commit in this repository`, the same class as
+the #673 failure. Worse, the run had written into the **PD-30 lane's** evidence directory (that
+driver reuses one boot dir), so my head sha ended up inside another lane's committed record: the
+pollution arrived through `git add -A`, not through a decision.
+
+Two lessons, stated as rules:
+
+1. **A force-push is a mutation of the evidence base, not just of history.** Every record whose
+   `teamSha` named the old head must be re-taken or re-bound — and the check that catches it is a
+   **plain `git clone --no-local`**, because the working tree cannot tell you that a commit is
+   gone. Ancestry (`merge-base --is-ancestor`) plus "the sha exists here" are the two assertions.
+2. **Never commit another lane's evidence directory.** If a driver writes beside a committed
+   record, restore that directory before staging; `git add -A` will happily publish someone else's
+   run as yours. The PD-30 evidence in this PR is byte-identical to master's, and this lane's
+   records live only under `a5sf-instrument-graph/`.
