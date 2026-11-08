@@ -1,0 +1,15 @@
+{
+  "schema": "dist-placements/1",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/confined-skill-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-skill-tool.mjs",
+      "note": "PD-26 (2026-11-14): the Team-owned `skill` shadow, mounted INSIDE the Member's isolated scope by the route-C attach so every SKILL.md body is read through the realm's confined fs face."
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/confined-present-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-present-tool.mjs",
+      "note": "PD-26 (2026-11-14): the Team-owned `present` shadow; it delegates to the pinned host package's apply on the Member's isolated scope, so lstat/stat are admitted by the confined lane before they run."
+    }
+  ]
+}

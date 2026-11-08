@@ -425,6 +425,24 @@ export interface TeamPluginConfig {
     readonly config?: Record<string, unknown>
   }
   /**
+   * PD-26 (2026-11-14): the governed Member's DECLARED skill catalog, so the
+   * route-C `skill` shadow can load a `SKILL.md` body through the realm's
+   * CONFINED `fs` face instead of the base provider PD-23 measured.
+   *
+   * Shape: `{ name, description, path }[]` — `name` is a valid skill name,
+   * `path` is the declared `SKILL.md` host path. The declaration is DATA, not
+   * policy: each body read is admitted by the Member's compiled lane, so an
+   * entry outside the lane is a typed `IO_READ_DENIED` with one deny fact and
+   * zero bytes. A malformed entry refuses at row assembly. ABSENT = no shadow
+   * is appended and the preset's `tool-skill` placeholder answers "unknown"
+   * (fail closed, no read at all).
+   */
+  readonly a5sfSkillCatalog?: readonly {
+    readonly name: string
+    readonly description: string
+    readonly path: string
+  }[]
+  /**
    * The MCP server of the world (null port = not mounted). LEGACY 0|1
    * form — multi-mcp C7: still accepted during this alpha; the canonical
    * 0..N input is `mcpServers` (below), and new documents and tests use
