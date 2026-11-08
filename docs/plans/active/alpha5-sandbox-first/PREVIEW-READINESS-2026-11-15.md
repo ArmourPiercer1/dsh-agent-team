@@ -1,12 +1,12 @@
 # Alpha.5 Preview 就绪报告 — 2026-11-15（PD-33 / `PD33-PREVIEW-E2E`）
 
 > **本报告不是 Alpha.5 候选验收。** 证据类 `DEV-LIVE`（`eligible=false`），不构成 `V@B`、不改矩阵等级、
-> 不改 Q7/Authority/Required CI。`CORE PATCH BUDGET = 0`。
+> 不改 Q7/Authority/Required CI、**不移动 `release` 门（仍 BLOCKED）**。`CORE PATCH BUDGET = 0`。
 >
 > **时钟锚点**：本环境真实 UTC 为 **2026-11-08**；任务/文档日期为 2026-11-15。证据里的 `at`/`observedAt`
 > 是真实时钟，文件名与标题使用任务日期；两者不一致是已知事实，不修正、不重写证据。
 >
-> **测量树**：`task/pd33-preview-e2e-20261115`，HEAD 见 §1。主机 pin `639ed015397290b3745d163aafe02ffee4aa3f84`
+> **测量树**：`origin/master` @ `a2e0df3c9` + 本判定 lane 的 `task/pd33-preview-verdict-flip-20261115`（相对 master 0 个产品文件），详见 §1.2。主机 pin `639ed015397290b3745d163aafe02ffee4aa3f84`
 > （DSH 0.2.0-rc.2，唯一允许的测试运行时）；阶段基线 `1484fa4ee0ff9326a3dafcac060bf63f8d334a1f`；
 > upstream 宿主树在本轮从未被写入（每次启动前后 `git status --porcelain` 均为空）。
 
@@ -21,19 +21,23 @@
 | **#679** `PD29-GOAL-STOP` | `task/pd29-goal-stop-20261114` | **已合并** | `0c2a8f422`；Stop 的 durable CAS + 目标面恢复 |
 | **#680** `PD31-READ-IMAGE` | `task/pd31-read-image-20261112` | **已合并** | `ece8d5a1c`；`read_image` 走模型路由声明，**因此本报告能实测路由门** |
 | **#681** `PD32-INSTRUMENT-GRAPH` | `task/pd32-instrument-graph-20261112` | **已合并** | `3101ca08f`；本报告的全部数字是在它**合并之后**的 master 上重测的（§1.2） |
+| **#682** `PD33-PREVIEW-E2E` | `task/pd33-preview-e2e-20261115` | **已合并** | `edca478bd`；本报告的**上一版**（判定 `PREVIEW-NO-GO`），保留原文不重写（§7.2） |
+| **#683** `PD34-MEMBER-STOP` | `task/pd34-member-stop-20261115` | **已合并** | `a2e0df3c9`；Member 行的一等公民 Stop 控件，S1c 测的就是它发出的序列（§4.3/§4.5） |
+| **#684** `CHORE` | — | **已合并** | `32889a2a8`；移除了 #681 误提交在仓库根的 `.g.log`。本判定基于**移除之后**的 master |
 
 ### 1.2 测量树
 
 ```
-origin/master  3101ca08f   （#679 + #680 + #681，PD-32 仪器已合并）
+origin/master  a2e0df3c9   （#679 + #680 + #681 + #682 + #684 + #683）
       │
-      └─ 53db856e1  task/pd33-preview-e2e-20261115（本 lane：driver / evidence / 本报告；
+      └─ task/pd33-preview-verdict-flip-20261115（本 lane：driver / evidence / 本报告；
                     相对 master 0 个产品文件）
 ```
 
 **测量树就是 master。** 上一版报告测的是 `master + 未合并的 #681`，那是最弱的一条；#681 合并后本 lane
-**整个放弃了叠加的 base**（`git rebase --onto 3101ca08f 9f2a16d87`），在 master 上重跑了两 boot，
-本报告引用的每个数字都来自这次重跑。`git diff --name-only origin/master...HEAD -- packages
+**整个放弃了叠加的 base**（`git rebase --onto 3101ca08f 9f2a16d87`），在 master 上重跑了两 boot。
+本判定的每个数字来自 **`a2e0df3c9`（含 #683）上的第三次两 boot 复跑**：这是一次 clean rebase，
+没有叠加 base，也没有把任何未合并的分支算进测量树。`git diff --name-only origin/master...HEAD -- packages
 cordis.patch.yml scripts package.json` 为**空**，所以"master 的行为"与"本 HEAD 的行为"在这份证据里是同一件事。
 
 **为什么这件事值得写下来**：`#681` 不是"可选的测试改进"，而是**能否构造 governed Member 的前置条件**。
@@ -46,11 +50,15 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 - **本 lane 相对 `origin/master`**：产品文件 **0 个**
   （`git diff --name-status origin/master...HEAD -- packages cordis.patch.yml scripts package.json` → 空）；
   本 lane 只新增 `tests/**`、`docs/**`、`dev/agent-workflow/evidence/**`。
-- **本阶段累计（`1484fa4ee` → 本 HEAD）**：**146 个产品文件**，命令
-  `git diff --name-only 1484fa4ee...HEAD -- packages cordis.patch.yml scripts package.json`：
+- **本阶段累计（`1484fa4ee` → `a2e0df3c9`）**：**158 个产品文件**，命令
+  `git diff --name-only 1484fa4ee...a2e0df3c9 -- packages cordis.patch.yml scripts package.json`：
   `cordis.patch.yml` 1、根 `package.json` 1、`packages/runtime/dist/**` 76、`packages/runtime/src/**` 15、
-  `packages/runtime/{lifecycle,team-sandbox,team-services,sandbox-provider,test}` 27、`packages/testkit/test` 12、
+  `packages/runtime` 其余 28、`packages/client/**` 11、`packages/testkit/**` 13、
   `packages/tools/src` 1、`scripts/**` 12。
+- **#683 自身** 12 个，全部在客户端与测试：`packages/client/src/model/member-stop.ts`（控件本体）、
+  `packages/client/src/plugin/team-mount-core.ts`（注入 `remote.goals` / `remote.session`）、
+  `TeamMembers{.tsx,.module.css}` + `locales.ts`、`composition-shim/client-bundle.js`（它自带构建产物），
+  以及 5 个 client 测试 + `packages/testkit/test/p4t6-bookings/a5sfpd34.json`。
 - **#679 自身** 7 个：`cordis.patch.yml`、`packages/runtime/src/plugin/host.ts`、
   `packages/runtime/src/plugin/live/agent-bindings.mjs` + 4 个 `dist` 产物。
 - **#680 / #681 都已合并进 master**：前者交付 live 测量 + 矩阵/寄存器行 + driver/test，后者交付 World 的
@@ -133,11 +141,11 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 | --- | --- | --- |
 | **S1c 控制面 Stop（PD-34）** | 一等公民控件发出的**同一序列** `goals/get → goals/pause → session/cancel → goals/get`（控件本身不可 headless 点击，见 §4.3） | 首读 `active`、pause 200、cancel 200、**重读 `paused`**；Stop 前 **6** 轮 / **7** 调用 → **0 轮 / 0 请求**，且**durable pause 落地之后新开始的调用 = 0**、行数增量为 0；lifecycle 仍 `SETTLED`（停的是 continuation，不是 Member） |
 | S1 轮内 Stop | 目标 Member 自己的 `session/cancel` | Stop 前 **7** 轮 / **8** 调用 → 窗口内 **0 轮 / 0 调用 / 0 模型请求**，durable `paused`，`turn/end aborted` |
-| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **89** 轮 / **89** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
+| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **107** 轮 / **108** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
 | S2 边界竞态 | 24 次 cancel burst 覆盖 queued/claimed 窗口 | burst 后 **0** 轮，`lost=false` |
-| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=153`） |
+| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=153`，本 pair 实测） |
 | GAP 空闲窗口 | 瞄准 `turn/end` 的 6 次 stop | **6/6 landed，0 dropped** |
-| S6 冷恢复 | SIGTERM（**215** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，7 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **215** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
+| S6 冷恢复 | SIGTERM（**236** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，7 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **236** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
 | S7 显式恢复 | 恢复后 `/goal resume`（`activation=disarmed`） | `rpcStatus=200`，**1** 轮 |
 | S8 未停止 | Member B 的 goal | **3** 轮 → `complete` → **0** 后续轮次 |
 
@@ -152,26 +160,47 @@ PD-34 的控件是**客户端模型** `packages/client/src/model/member-stop.ts`
 点击 → 模型这一段由 PD-34 自己的 client 规格覆盖。**本报告不声称"我点了那个按钮"**，只声称
 "控件所发序列，在我这里实测到 0/0/0 + durable `paused`，且不摧毁 Member"。
 
-### 4.4 一次被自己判红的子句：Stop 不是瞬时的
+**#683 已合并进 master `a2e0df3c9`**：所以本节测的序列，与 master 上实际发布的那个控件发出的序列是同一条，
+不是「预先按设计文档写一遍」。这也是判定从 NO-GO 翻到 GO 的唯一原因（§7.2）。
 
-第一次在 PD-34 的树上跑 S1c，judge 以 `calls-after-zero: tool calls after the stop=1` **判红**。
-没有把它当噪声改掉，而是查了为什么：
+### 4.4 停止不是瞬时的（以及一条被自己的判据判红的子句）
 
-- 那个 `1` 是**行数增量**。一个**在 stop 之前就被准入**、还在飞的调用，会在 stop 之后补上它的
-  `tool/call` 行——它没有"被放过去"，它只是"记完了"。
-- 更关键的窗口：从用户动作到 `goals/pause` 落地之间有几个毫秒到几十毫秒，**这段时间里开始的调用，
-  一个还没落地的 stop 本来就管不着**。
+**结论先行**：Stop 的保证是 **"durable `pause` 被确认之后不再有 continuation"**，不是"点下按钮之后不再有执行"。
+这两句的差别不是措辞，是产品语义：用户动作与 durable `pause` 落地之间存在**毫秒级窗口**，
+窗口内**可以**准入一个调用；而一个在 pause 之前被准入的调用，可以在 pause 之后**完成**并写下它的行。
 
-所以子句被**重述成它真正该断言的事**：`no-call-started-after-durable-pause`（以 pause 被确认的那一刻为界），
-并且把三个数都印在 detail 里（从动作起算 / 从 pause 起算 / 原始行数增量），**一个都不藏**。
+第一次在 PD-34 的树上跑 S1c 时，判据以 `calls-after-zero: 1` 判红。我们没有把它当噪声改掉，而是查了来源：
+
+- 原始计数器是**行数增量**：pause 之前准入、pause 之后补行的调用会让它 +1；
+- 从动作到 pause 落地之间**新开始**的调用，一个尚未落地的 stop 本来就管不着。
+
+于是子句被重述成它真正该断言的事：**`no-call-started-after-durable-pause`**——以 pause 被确认的那一刻为界；
+三个数全部印在子句 detail 里，一个都不藏：**从动作起算 / 从 pause 起算 / 原始行数增量**。
 重测：`0 started / 0 rows / 0 rounds / 0 requests`。
 
-**这是产品事实，不是措辞**：Preview 的"每一次停止都可测量"必须允许"停止不是瞬时的"这个中间态存在，
-并且能把它测出来；把子句写成 `== 0` 只是把中间态判成失败，而不是描述它。
+保留"第一条子句是错的"这件事，因为 **"一个不能证伪的控制是发现，不是尴尬"同样适用于我们自己的断言**——
+这是本阶段第二次学到同一课。
 
-### 4.5 从 #679 继承的「仍然不成立」（逐条复核，不重写）
+### 4.5 继承的断言会带着源驱动的先决条件（PD-34 的 `cold-recovery-no-revival`）
 
-1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 215 轮就是证据。
+PD-34 的 `cold-recovery-no-revival` 子句断言某个 Member「仍然处于停止状态」——但那个 Member 是**它自己那条臂
+先显式 resume 过**的，于是子句读到 `active` 并判红。评审在**自己的 boot** 上连着看到两次；
+而 PD-34 自己的运行看起来是绿的，因为**那些运行从来没有执行 S6 这条臂**。
+
+这是本报告要单独记下来的**一般性危险**：
+
+- **断言可以活得比它被写出来的场景更久**：一句话在被复制进另一个 driver 之后，仍然按旧场景的先决条件成立；
+- **继承的子句带着源驱动的先决条件**，而先决条件通常没有被一起继承。
+
+它产出的两条规则，本报告自己也遵守：
+
+1. **先决条件写在子句旁边**，而不是只写在源 driver 的注释里（本报告每个 case 的 clauses 都写明它假设的起点）；
+2. **`null` 永远不被读成 `active`**：缺失的观测是一个**未知**，不是一个阶段；把 `undefined`/`null` 归一成 `active`
+   会把"没测到"伪装成"测到了"。
+
+### 4.6 从 #679 继承的「仍然不成立」（逐条复核，不重写）
+
+1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 236 轮就是证据。
 2. **仍不成立**：Leader 停止会传播到 Member 的 goal——**本报告按设计陈述**（§4.1），但事实不变。
 3. **仍不成立**：Team 之外的 idle 期 cancel 可被观测。上游契约里 idle 期 cancel 是**不发事件的 no-op**；
    本场景的 GAP 臂测的是驱动器发起的 stop，不是任意第三方。
@@ -238,7 +267,7 @@ boot02 在 `runs/boot02/`。
 | # | 阻塞 | 依据 | 最小修点 |
 | --- | --- | --- | --- |
 | ~~M1~~ **已关闭** | ~~#681 未合并~~：silent 的 preset 行让整只 governed Member 起不来 | 合并后 `3101ca08f` 上重跑：7 个 Member 全部启动、两 boot 19/19（§7） | —（已由 #681 合并 + 本 lane rebase 重跑关闭） |
-| **M2** | **Stop 没有一等公民入口**（**PD-34 在建**：`model/member-stop.ts` + Member 行控件，顺序 `goals/get → goals.pause → session.cancel → goals/get`）。本 HEAD **还没有**这个控件；S1c 只是**预先**按该序列测了机制 | 控件尚未落到 master；S1c 已在本 lane 用同一序列测到 0/0/0 + `paused` | **合并 PD-34**；合并后本 lane rebase 一次、复跑 `--boots 2`，判定随之改为 `PREVIEW-GO`（若无其它变动） |
+| ~~M2~~ **已关闭** | ~~Stop 没有一等公民入口~~：PD-34 已合并（`#683`），Member 行控件按 `goals/get → goals.pause → session.cancel → goals/get` 发出停止，durable 重读是唯一 oracle | 合并后复跑 `--boots 2`：19/19 两 boot 一致，`pd34:control-stops-member` PROVEN（§4.2）。**关闭时点名了一条判错的子句**：PD-34 的 `cold-recovery-no-revival` 断言"仍然停止"的那个 Member 是它自己的臂先 resume 过的（§4.5），两次判红，且在没执行 S6 的运行里看起来是绿的 | —（由 PD-34 合并 + 本 lane 复测关闭） |
 
 ### 6.2 正式 Alpha.5 延后（Preview 接受，不假装已做）
 
@@ -273,6 +302,9 @@ boot02 在 `runs/boot02/`。
 **一句话**：Alpha.5 Preview 是一个**内部的、opt-in 的 governed team runtime 预览**——每一次工具调用都可归因
 （guard fact / typed deny），每一次停止都可测量（20 000 ms 静默窗口 + durable `paused`）。
 
+**stop 的保证是「durable `pause` 被确认之后不再有 continuation」，不是「点下按钮之后不再有执行」**：
+两者之间有一个毫秒级窗口，本报告把它测出来了（§4.4），也没有假装它不存在。
+
 **它明确不是**（这四条写在这里，是为了让人不能从本报告推出我们没测过的保证）：
 
 1. **不是"默认能上网搜"**：`web_search` 是部署条件性的，默认安装是 typed `WEB_PROVIDER_UNAVAILABLE`、0 请求（§3.2）。
@@ -283,30 +315,40 @@ boot02 在 `runs/boot02/`。
 
 ### 7.2 判定
 
-**`PREVIEW-NO-GO`**（#681 已合并、测量树已是 master；剩下的唯一阻断是 M2）。功能面是干净的：**两个 boot 各 19/19 PASS、`agreeing=true`**。
-**M1 已关闭**：#681 合并（`3101ca08f`）后，本 lane 丢弃叠加 base、在 master 上重跑两 boot，19/19 一致。
-剩下的唯一阻断是**产品事实**，不是"证据还不够"：
+> **这个 GO 的范围**：它是**一个 opt-in preset 的 Preview 放行**。**`release` 仍然是 BLOCKED**；
+> 没有 `V@B`、没有矩阵等级变更、没有 Q7/Authority/Required-CI 变更、`CORE PATCH BUDGET = 0`。
+> 把 `PREVIEW-GO` 读成"发布门移动了"是本报告最可能被误读的地方，所以这句话写在这里，而不是脚注里。
 
-- **M2 —— Stop 的一等公民入口尚未落到 master**（PD-34 = PR **#683**，本 lane 已在它的 head `f7cbf62d9` 上
-  预跑过 `--boots 2`：**19/19 两 boot 一致**，S1c `0 started / 0 rows / 0 rounds / 0 requests`。
-  这次预跑**不作为判定依据**——测量树必须是 master，等它合并后重跑一次才算数）：机制三条通道都实测到 0/0/0 + durable `paused`
-  （S1 原生 cancel / S4 Leader 归档 / S1c 控件序列），PD-34 正在把"停止这个 Member"做成 Member 行控件；
-  在它合并前，本报告的判定不能是 GO——那是**产品缺件**，不是证据不足。
+> **2026-11-15 的判定（当时 #683 未合并）：`PREVIEW-NO-GO`** —— 唯一的阻断是 M2（一等公民 Stop 控件未落地）。
+> 该判定原文保留在 PR #682 的合并提交 `edca478bd` 里，本文件不重写它：读者应当能同时看到两个判定，
+> 以及第一个判定**为什么**改变（缺件消失，而不是证据变多）。
 
-**最小放行集（只剩一条）**：合并 **PD-34**（Member 行 Stop 控件，序列 `goals/get → goals.pause →
-session.cancel → goals/get`）。本 lane 已把 S1c 臂写好并测过（见 §4.2/§4.3）；PD-34 合并后 rebase 一次、
-复跑 `--boots 2`（19 个 case，含 `pd34:control-stops-member`），若无其它变动，判定即改为 `PREVIEW-GO`。不需要改代码的部分：把 §6.2 的 8 条延后项写进
-Preview 的"已知限制"，其中 **BL-17（shell 体不由服务轴归属）** 与 **`web_search` 部署条件性** 必须出现在发布说明里。
+**`PREVIEW-GO`** —— 判定日期 **2026-11-15**，依据 **`a2e0df3c9` 上的 `--boots 2` pair**
+（`RESULT PASS (2/2 boots; agreeing pair=true)`，boot1/boot2 各 **19/19**；S1c 见 §4.2），
+测量树 = master `a2e0df3c9` + 本判定提交，相对 master **0 个产品文件**。
+
+- **M1 已关闭**：`#681` 合并后，本 lane 丢弃叠加 base、在 master 上重跑两 boot。
+- **M2 已关闭**：`#683` 合并，Member 行控件按 `goals/get → goals.pause → session.cancel → goals/get` 发出停止，
+  `pd34:control-stops-member` 在本 pair 中 PROVEN（§4.2）。**关闭时点名了一条判错的子句**：
+  PD-34 自己的 `cold-recovery-no-revival` 断言"仍然停止"的那个 Member 是它自己的臂先 resume 过的，
+  两次判红，且在**没有执行 S6** 的运行里看起来是绿的（§4.5）。
+- **两个 boot 19/19 且 `agreeing=true`**；S1c：6 轮/7 调用 → **0 轮 / 0 请求 / durable pause 之后新开始的调用 0**，
+  重读 `paused`，lifecycle 仍 `SETTLED`。
+- **没有别的东西移动**：产品文件 0 个；两个负控、`web_search` 的部署条件性、`read_image` 的路由条件性、
+  §6.2 的 8 条延后项，全部与 NO-GO 那一版逐字一致。
+
+**判定为什么变了**：唯一的阻断是**产品缺件**（控件未落地），不是证据不足；缺件落地并复测后，它就不存在了。
+**放行之后仍然成立的限制**：§6.2 的 8 条延后项，加上 §7.1 的四条"不是"。
 
 **已经成立、不需要重做的部分**（本报告实测，均可复现）：
 
-- Leader 一次建 6 个 Member、二次 `team_collect`（A 从 `running` 到终态，B 直接返回 `memberResult.body`）；
+- Leader 一次建 **7** 个 Member（a、b、s1、s2、cold、stop2、stop3，7/7 被接受）、二次 `team_collect`（A 从 `running` 到终态，B 直接返回 `memberResult.body`）；
 - Member A：8 个受管 I/O 工具 **15** 条 fact、产物逐字落盘、3 次授权尝试（2 个 typed deny + 1 个 OS 兜底）；
 - Member B：真实 fetch **1** 连接 / **26** 字节 / **1** allow fact；`web_search` 0 POST 的 typed gap；
   `read_image` 在 `text` 路由下 0 facts / 0 字节拒绝；goal **3** 轮 → `complete`；
 - 延后面 **7/7** `unknown tool`、**0** facts；
-- Stop：S1 7 轮/8 调用 → **0/0/0** `paused`；S4 **89** 轮/89 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
-  GAP 6/6 landed；S6 **215** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
+- Stop：S1 7 轮/8 调用 → 0/0 `paused`；**S1c（PD-34 控件序列）6 轮/7 调用 → 0 轮 / 0 请求 / durable pause 之后新开始的调用 0**，重读 `paused`，lifecycle 仍 `SETTLED`；S4 **107** 轮/108 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
+  GAP 6/6 landed；S6 **236** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
 - 继承的 base `web` **0** 次；base `fs` **0** 次；`:3080` 从未被触碰。
 
 **负控（两个，都是实测；不做"设计上会红"的推断）**：

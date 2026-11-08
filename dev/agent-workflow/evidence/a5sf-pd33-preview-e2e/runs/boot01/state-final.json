@@ -6,9 +6,9 @@
     "rootSessionId": "session-a5sf-pd33-team",
     "blueprintId": "team.a5sf.pd33.main",
     "revision": "1",
-    "contentHash": "sha256:1220f9f632d05448a904f7d063727adfdf2901d95d6a9713cd9f4cfc94bc1a43",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T19-08-47Z/workspace",
-    "createdAt": "2026-11-08T19:10:44.531Z",
+    "contentHash": "sha256:6fa4be6fbca77e3e2e4889d71cc16d09dc4d843bb42b8d4481f010ed1f980325",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-12-16Z/workspace",
+    "createdAt": "2026-11-08T22:14:24.254Z",
     "generation": 44
   },
   "members": [
@@ -195,18 +195,7 @@
       "requestToken": "a5sf-pd29-cold-delegate"
     },
     {
-      "globalSequence": 28,
-      "factType": "activity-interval-closed",
-      "instanceId": "inst-0u1dugv0ojhv",
-      "subject": "work-unit",
-      "sequence": 2,
-      "op": "interval-close",
-      "progress": "completed",
-      "correlation": "a5sf-pd33-a-delegate",
-      "requestToken": "a5sf-pd33-a-delegate"
-    },
-    {
-      "globalSequence": 32,
+      "globalSequence": 30,
       "factType": "activity-interval-opened",
       "instanceId": "inst-1gcmw3i1lg1e",
       "subject": "work-unit",
@@ -215,6 +204,17 @@
       "progress": "in-progress",
       "correlation": "a5sf-pd34-stop3-delegate",
       "requestToken": "a5sf-pd34-stop3-delegate"
+    },
+    {
+      "globalSequence": 31,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0u1dugv0ojhv",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd33-a-delegate",
+      "requestToken": "a5sf-pd33-a-delegate"
     },
     {
       "globalSequence": 33,
@@ -246,8 +246,8 @@
       "sequence": 3,
       "op": "interval-open",
       "progress": "in-progress",
-      "correlation": "pd29-followup-cold-1794165147451",
-      "requestToken": "pd29-followup-cold-1794165147451"
+      "correlation": "pd29-followup-cold-1794176166890",
+      "requestToken": "pd29-followup-cold-1794176166890"
     },
     {
       "globalSequence": 41,
@@ -257,8 +257,8 @@
       "sequence": 4,
       "op": "interval-close",
       "progress": "completed",
-      "correlation": "pd29-followup-cold-1794165147451",
-      "requestToken": "pd29-followup-cold-1794165147451"
+      "correlation": "pd29-followup-cold-1794176166890",
+      "requestToken": "pd29-followup-cold-1794176166890"
     }
   ],
   "pendingDeliveries": {
