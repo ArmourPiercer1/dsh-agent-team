@@ -71,7 +71,31 @@ and then *verifies* the three subpath exports the composition names
 bytes are rewritten: `preset-effective.json` records `"rewrites": []` and the
 shipped row `{"id":"tool-web","name":"dsh-agent-team/web-tool"}`.
 
-**The reusable sentence** (the reason this is written down):
+### The owner's ruling, and exactly where the link lives
+
+The owner reproduced both halves on a pristine `master` worktree (`9c730c3d7`, no lane
+changes): with nothing linked the shipped composition boots `surfaceACount 0` +
+`never started`; after `ln -s <repo> tests/deepseek-harness-test-use/node_modules/dsh-agent-team`,
+`node -e "import('dsh-agent-team/web-tool')"` **loads** and exports `isConfinedWebFace`. Ruling:
+**the product row is correct, the harness is broken** — do not change the specifier (not to
+`file:`, not to the host `tool-web` package, not by disabling it: the disable experiment silently
+drops the pair, 31 not 33).
+
+This lane had already reached that conclusion from the loader source, and it provisions the link
+**in the World's own module graph** (`<home>/profiles/web/node_modules/dsh-agent-team`) rather
+than in the shared pinned host tree. Both resolve from the same base (`ctx.baseUrl` = the
+profile), and the World-local choice has one extra property the ruling asks for and gets for
+free: **nothing is ever written into the pinned host tree**, so there is nothing to remove
+symmetrically on teardown — the host checkout is byte-identical before and after every boot
+(`host-tree-porcelain-*.txt` = `empty`, and `git status --porcelain` in
+`tests/deepseek-harness-test-use` is `0` lines). The link is per-World and dies with the World's
+home.
+
+**The reusable sentence** (the reason this is written down, in the owner's wording):
+a preset row's specifier must resolve in the host's module graph; a bundle-subpath name only
+resolves where the bundle is installed — so a harness that never installs the bundle cannot tell
+*missing module* from *dead preset*, and **a dead preset takes every confined face down with it,
+not just one name**.
 
 > A preset row's specifier must resolve in the host's module graph; a
 > bundle-subpath name only resolves at the profile layer — so a row that is

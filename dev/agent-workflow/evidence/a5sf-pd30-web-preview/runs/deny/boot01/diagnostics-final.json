@@ -2,24 +2,24 @@
   "mockRequests": [
     {
       "seq": 0,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD30_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
-      "isARequest": false,
-      "tools": 43,
-      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD30_DISC_DONE\"}"
-    },
-    {
-      "seq": 1,
       "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD30_DISC\\\"}]\"}]",
       "isARequest": false,
       "tools": 0,
       "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd30 session\"}"
     },
     {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD30_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD30_DISC_DONE\"}"
+    },
+    {
       "seq": 2,
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3f9ca418c96fff53b668c32e0a4a6a554723a28f7628fcb107c4a6c743363a53] A5SF_PD30_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
       "isARequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd30-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd30-team\",\"requestToken\":\"a5sf-pd30-turn-delegate\",\"delegationTemplateId\":\"webworker-deny\",\"label\":\"a5sfpd30-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-07Z/workspace\",\"prompt\""
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd30-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd30-team\",\"requestToken\":\"a5sf-pd30-turn-delegate\",\"delegationTemplateId\":\"webworker-deny\",\"label\":\"a5sfpd30-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-23-12Z/workspace\",\"prompt\""
     },
     {
       "seq": 3,
@@ -37,17 +37,17 @@
     },
     {
       "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd30-turn-delegate] a5sf-pd30-turn: run the probes exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 ba",
+      "isARequest": true,
+      "tools": 33,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd30-fetch\",\"name\":\"web_fetch\",\"arguments\":{\"url\":\"http://127.0.0.1:46095/denied\"}}]}"
+    },
+    {
+      "seq": 6,
       "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-pd30-turn-delegate] a5sf-pd30-turn: run the probes exactly once each, one tool call at a time, then report.\\\"}]\"}]",
       "isARequest": true,
       "tools": 0,
       "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd30 session\"}"
-    },
-    {
-      "seq": 6,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd30-turn-delegate] a5sf-pd30-turn: run the probes exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 ba",
-      "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd30-fetch\",\"name\":\"web_fetch\",\"arguments\":{\"url\":\"http://127.0.0.1:44789/denied\"}}]}"
     },
     {
       "seq": 7,
@@ -85,13 +85,13 @@
       "realm": "member",
       "memberIdentity": "inst-0hu00gh176s0",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:870bd31e66d0654d8bae989d3139e0fd",
+      "policyRevision": "a5sf1:5655cf91ecadfef13f7d21d34d9b4c46",
       "method": "web:fetch",
-      "locator": "http://127.0.0.1:44789/denied",
+      "locator": "http://127.0.0.1:46095/denied",
       "decision": "deny",
       "decidedBy": "NETWORK_UNCONFINED_REALM",
       "sequence": 1,
-      "observedAt": "2026-11-08T13:15:32.187Z",
+      "observedAt": "2026-11-08T13:23:48.989Z",
       "tool": "web_fetch",
       "callId": "call-a5sfpd30-fetch"
     }
@@ -190,8 +190,8 @@
       "webworker-deny"
     ],
     "memberWindow": {
-      "from": "2026-11-08T13:15:31.392Z",
-      "to": "2026-11-08T13:15:32.228Z"
+      "from": "2026-11-08T13:23:48.208Z",
+      "to": "2026-11-08T13:23:49.051Z"
     },
     "composition": {
       "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",

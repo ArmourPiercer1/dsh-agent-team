@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-pd30-web-preview/member-probes/1",
-  "at": "2026-11-08T13:16:08.190Z",
+  "at": "2026-11-08T13:24:31.271Z",
   "note": "every Member surface call and the result the Member actually received (durable session first, mock transcript fallback)",
   "probes": {
     "fetch": {
@@ -8,14 +8,14 @@
         "id": "call-a5sfpd30-fetch",
         "name": "web_fetch",
         "arguments": {
-          "url": "http://127.0.0.1:44789/denied"
+          "url": "http://127.0.0.1:46095/denied"
         }
       },
       "result": {
         "callId": "call-a5sfpd30-fetch",
         "isError": true,
         "text": "Error: NETWORK_UNCONFINED_REALM: the effective lane requests network=deny, but the web provider's capability probe reports network-destination='unsupported' (the confined provider exposes no capability probe, so network enforcement cannot be proven); refusing before any provider call instead of fetching under a deny claim this host cannot enforce. A backend that proves 'enforced' is the only configuration that admits this call",
-        "at": 1794143764934
+        "at": 1794144268000
       }
     },
     "search": {
@@ -40,7 +40,7 @@
         "callId": "call-a5sfpd30-closed-workflow",
         "isError": true,
         "text": "Error: unknown tool \"workflow\"",
-        "at": 1794143764966
+        "at": 1794144268043
       }
     },
     "runCode": {
@@ -53,7 +53,7 @@
         "callId": "call-a5sfpd30-closed-runcode",
         "isError": true,
         "text": "Error: unknown tool \"run_code\"",
-        "at": 1794143764993
+        "at": 1794144268074
       }
     }
   },

@@ -33,7 +33,7 @@
     },
     "requests": [
       {
-        "at": "2026-11-08T13:16:44.986Z",
+        "at": "2026-11-08T13:25:17.440Z",
         "method": "GET",
         "path": "/known",
         "body": null
@@ -94,8 +94,8 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T13:16:44.085Z",
-    "to": "2026-11-08T13:16:45.020Z"
+    "from": "2026-11-08T13:25:16.568Z",
+    "to": "2026-11-08T13:25:17.478Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",

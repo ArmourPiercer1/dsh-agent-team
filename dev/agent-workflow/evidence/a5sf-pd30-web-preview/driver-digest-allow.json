@@ -1,7 +1,7 @@
 {
-  "at": "2026-11-08T13:11:25.656Z",
+  "at": "2026-11-08T13:20:03.916Z",
   "arm": "allow",
-  "head": "8b5eef9065d1dd4e4cf0d873be5358a094feb3ef",
+  "head": "9b89765004ee199425abf71ae089a0aad9406cba",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
