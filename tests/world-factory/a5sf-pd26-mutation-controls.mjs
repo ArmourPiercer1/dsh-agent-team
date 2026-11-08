@@ -51,6 +51,20 @@ const PRE_FIX = join(ARCHIVE, 'pre-fix', 'cordis.patch.yml')
 const MUTATED_MODULE = join(ARCHIVE, 'mutations', 'confined-skill-tool.base-fs.mjs')
 const BASE_COMMIT = '06adbf850'
 
+// SUPERSEDED BY PD-29 (`PD29-SERVICE-SEAM`). This control mutates the PD-26
+// tool fork; PD-29 deleted that fork, so on this tree the control cannot mean
+// anything and must say so instead of mutating nothing. The live controls for
+// the same two capabilities are `a5sf-pd29-mutation-controls.mjs` (M1 moves the
+// realm's `skills` provider back onto the BASE `fs`; M2 mounts the pinned
+// `present` module through the registration router again).
+const PD26_FORK = join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-skill-tool.mjs')
+if (!existsSync(PD26_FORK)) {
+  const line = `SUPERSEDED by PD-29: ${PD26_FORK} no longer exists (the two Team tool forks were deleted); the live controls are tests/world-factory/a5sf-pd29-mutation-controls.mjs`
+  // NOT written into PD-26's evidence (that lane's log is its own record).
+  console.log(line)
+  process.exit(0)
+}
+
 mkdirSync(dirname(PRE_FIX), { recursive: true })
 mkdirSync(dirname(MUTATED_MODULE), { recursive: true })
 

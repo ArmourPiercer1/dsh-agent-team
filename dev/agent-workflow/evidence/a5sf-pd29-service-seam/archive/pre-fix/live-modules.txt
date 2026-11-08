@@ -1,0 +1,6 @@
+packages/runtime/src/plugin/live/confined-bash-tool.mjs
+packages/runtime/src/plugin/live/confined-fs-tool.mjs
+packages/runtime/src/plugin/live/confined-present-tool.mjs
+packages/runtime/src/plugin/live/confined-search-tool.mjs
+packages/runtime/src/plugin/live/confined-skill-tool.mjs
+packages/runtime/src/plugin/live/confined-terminal-tool.mjs

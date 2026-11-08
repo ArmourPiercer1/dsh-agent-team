@@ -58,7 +58,7 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -72,6 +72,19 @@ const PIN = process.env.A5SF_PD26_PIN === '1'
 const SKILL_MODULE = process.env.A5SF_PD26_SKILL_MODULE
   ?? join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-skill-tool.mjs')
 const PRESENT_MODULE = join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-present-tool.mjs')
+/**
+ * SUPERSEDED BY PD-29 (`PD29-SERVICE-SEAM`). This suite pinned PD-26's TWO
+ * Team tool forks; PD-29 deleted both, because the audit of PD-26 showed the
+ * tools were only ever consumers of a `skills` provider and of `fs` +
+ * `tools/result`. The arms that import a fork are therefore SKIPPED on a tree
+ * where the fork is gone (with this reason on the skip line, never silently):
+ * the same readings are pinned, without any Team tool module, by
+ * `tests/world-factory/a5sf-pd29-service-seam.test.mjs` (`PD29-SKILL`,
+ * `PD29-PRESENT`) and its live driver. The composition arm
+ * (`PD26-SURFACE-RESTORED`) still runs: the preset rows never changed.
+ */
+const FORKS_PRESENT = existsSync(SKILL_MODULE) && existsSync(PRESENT_MODULE)
+const FORK_SKIP = FORKS_PRESENT ? false : 'superseded by PD-29: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd29-service-seam.test.mjs'
 /** The recorded start of this task (origin/master at the PD-26 branch point). */
 const BASE_COMMIT = '06adbf850'
 const PRESET_ID = 'a5sf-governed-member'
@@ -242,8 +255,12 @@ function confinedFsDouble({ allowPrefix }) {
 }
 
 async function loadSkillModule() {
-  const imported = await import(pathToFileURL(SKILL_MODULE).href)
-  return imported
+  // PD-29 moved `skillCatalogOf` out of the deleted fork and into the Team
+  // `skills` provider; the catalog-validation arm therefore reads whichever
+  // module currently owns the normalizer (the fork is authoritative only on a
+  // tree that still has it, e.g. the archived pre-fix copy a control passes in).
+  const target = FORKS_PRESENT ? SKILL_MODULE : join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-skill-provider.mjs')
+  return import(pathToFileURL(target).href)
 }
 
 async function mountSkill({ fs, catalog }) {
@@ -263,7 +280,7 @@ async function mountSkill({ fs, catalog }) {
 
 const EXEC = Object.freeze({ signal: new AbortController().signal, callId: 'pd26-skill', agent: { session: { header: { cwd: REPO } } } })
 
-test('PD26-CONTRACT-SKILL: an in-lane body is returned, an out-of-lane body is a typed denial with 0 bytes and 1 read', async () => {
+test('PD26-CONTRACT-SKILL: an in-lane body is returned, an out-of-lane body is a typed denial with 0 bytes and 1 read', { skip: FORK_SKIP }, async () => {
   const fs = confinedFsDouble({ allowPrefix: ALLOW_PREFIX })
   const catalog = [
     { name: 'pd26-in-lane', description: 'in-lane fixture', path: IN_LANE_SKILL },
@@ -337,7 +354,7 @@ async function mountPresent({ fs }) {
   }
 }
 
-test('PD26-CONTRACT-PRESENT: an in-lane file is presented and recorded; an out-of-lane path is a typed denial with no event', async () => {
+test('PD26-CONTRACT-PRESENT: an in-lane file is presented and recorded; an out-of-lane path is a typed denial with no event', { skip: FORK_SKIP }, async () => {
   const fs = confinedFsDouble({ allowPrefix: ALLOW_PREFIX })
   const { tool, appended, agentListeners, finish, exec } = await mountPresent({ fs })
 
@@ -369,7 +386,7 @@ test('PD26-CONTRACT-PRESENT: an in-lane file is presented and recorded; an out-o
 // ===========================================================================
 // PARITY — the shadow speaks the shipped package's own schema
 // ===========================================================================
-test('PD26-PARITY: both shadows are the pinned host packages\' own definitions', async () => {
+test('PD26-PARITY: both shadows are the pinned host packages\' own definitions', { skip: FORK_SKIP }, async () => {
   const hostSkill = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tool-skill')).href)
   const registered = []
   const hostCtx = {
@@ -428,7 +445,7 @@ test('PD26-CATALOG-VALIDATION: malformed catalog entries refuse, valid ones norm
     [{ name: 'ok', description: 'd', path: '   ' }],
     [{ name: 'ok', description: 'd', path: '/x' }, { name: 'ok', description: 'd', path: '/y' }],
   ]) {
-    assert.throws(() => module.skillCatalogOf(bad), /a5sf-confined-skill: config\.skills/u, `expected a typed refusal for ${JSON.stringify(bad)}`)
+    assert.throws(() => module.skillCatalogOf(bad), /(a5sf-confined-skill|a5sf-skill-provider): config\.skills/u, `expected a typed refusal for ${JSON.stringify(bad)}`)
   }
   // The row parser uses the SAME validator: a bad declaration cannot reach a mount.
   // The SOURCE row imports its team-services siblings as `.js` (they exist in

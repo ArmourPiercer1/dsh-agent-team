@@ -1,0 +1,132 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD28_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD28_DISC_DONE\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD28_DISC\\\"}]\"}]",
+      "isARequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd28 session\"}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:065095271e1dbd4fa8f48c1f7d99c7c2a372a112882b99e2fe86a5cd4b745141] A5SF_PD28_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd28-team\",\"requestToken\":\"a5sf-pd28-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd28-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-53-11Z/workspace\",\"prompt\":\"a5sf-"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:065095271e1dbd4fa8f48c1f7d99c7c2a372a112882b99e2fe86a5cd4b745141] A5SF_PD28_L1_DRIVE\\\"}]\"}]",
+      "isARequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd28 session\"}"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-delegate-a\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\\\",\\\"message\\\":\\\"activation: child-session creation failed for member 'inst-0ck3mov0u1sd': RemoteError: tool-web (dsh-agent-team/web-tool): never started\\\",\\\"details\\\":{\\\"source\\\":\\\"activation-provider\\\",\\\"providerCode\\\":\\\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\\\",\\\"rootSessionId\\\":\\\"session-a5sf-pd28-team\\\",\\\"instanceId\\\":\\\"inst-0ck3mov0u1sd\\\"}}\"}],\"is_error\":false}]",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD28_L1_DONE\"}"
+    }
+  ],
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3188/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n",
+  "guardFacts": [],
+  "counters": {
+    "guardFacts": {
+      "allow": 0,
+      "deny": 0,
+      "byTool": {},
+      "skill": {
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "denyCodes": []
+      },
+      "present": {
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "denyCodes": []
+      }
+    },
+    "mockRequests": 5,
+    "aModelRequests": 0,
+    "surfaceACount": 0,
+    "surfaceANames": [],
+    "skillOutBodyInRequests": 0,
+    "secretTextInRequests": 0,
+    "requestsCarryingSecret": 0,
+    "sessionEvents": {
+      "session-a5sf-pd28-boot": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-53-11Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T11-53-11Z-workspace--/session-a5sf-pd28-boot/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 1,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 1,
+          "step/end": 1,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      },
+      "session-a5sf-pd28-team": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-53-11Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T11-53-11Z-workspace--/session-a5sf-pd28-team/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 2,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 2,
+          "tool/call": 1,
+          "tool/result": 1,
+          "step/end": 2,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      }
+    },
+    "deliverablesEvents": 0,
+    "membersAfter": 1,
+    "memberTemplates": [
+      "leader"
+    ],
+    "memberWindow": {
+      "from": "2026-11-08T11:54:35.884Z",
+      "to": "2026-11-08T11:54:36.544Z"
+    },
+    "composition": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",
+      "sha256": "a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8",
+      "arm": "postfix"
+    },
+    "quiesced": true,
+    "skillOnSurface": false,
+    "presentOnSurface": false
+  }
+}

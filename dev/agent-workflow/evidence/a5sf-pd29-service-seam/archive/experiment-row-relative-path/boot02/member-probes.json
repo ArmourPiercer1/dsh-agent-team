@@ -1,0 +1,81 @@
+{
+  "schema": "a5sf-pd28-service-seam/member-probes/1",
+  "at": "2026-11-08T12:12:04.225Z",
+  "note": "every Member surface call and the result the Member actually received (durable session first, mock transcript fallback)",
+  "probes": {
+    "bash": {
+      "call": null,
+      "result": null
+    },
+    "read": {
+      "call": null,
+      "result": null
+    },
+    "grep": {
+      "call": null,
+      "result": null
+    },
+    "skillIn": {
+      "call": null,
+      "result": null
+    },
+    "skillOut": {
+      "call": null,
+      "result": null
+    },
+    "skillUnknown": {
+      "call": null,
+      "result": null
+    },
+    "presentIn": {
+      "call": null,
+      "result": null
+    },
+    "presentOut": {
+      "call": null,
+      "result": null
+    },
+    "presentMissing": {
+      "call": null,
+      "result": null
+    },
+    "closed": {
+      "interrupt_agent": {
+        "call": null,
+        "result": null
+      },
+      "list_agents": {
+        "call": null,
+        "result": null
+      },
+      "pwsh": {
+        "call": null,
+        "result": null
+      },
+      "send_message": {
+        "call": null,
+        "result": null
+      },
+      "subagent": {
+        "call": null,
+        "result": null
+      },
+      "subagent_fork": {
+        "call": null,
+        "result": null
+      },
+      "web_fetch": {
+        "call": null,
+        "result": null
+      },
+      "web_search": {
+        "call": null,
+        "result": null
+      },
+      "workflow": {
+        "call": null,
+        "result": null
+      }
+    }
+  }
+}

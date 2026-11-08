@@ -90,7 +90,7 @@ import {
   parseProductRealmDeclaration,
 } from '../../../team-services/src/product-assembly.js'
 import { TeamServiceInstallError } from '../../../team-services/src/types.js'
-import { skillCatalogOf } from './confined-skill-tool.mjs'
+import { skillCatalogOf } from './a5sf-skill-provider.mjs'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
@@ -1135,16 +1135,13 @@ function confinedSearchSpecOf(realm, nativeSpecs, surface) {
  */
 const A5SF_CONFINED_FS_TOOL = new URL('./confined-fs-tool.mjs', import.meta.url).href
 
-/** PD-26: the Team-owned `skill` shadow, resolved the same way (dist mirror included). */
-const A5SF_CONFINED_SKILL_TOOL = new URL('./confined-skill-tool.mjs', import.meta.url).href
+/** PD-29: the Team `skills` PROVIDER, resolved from this file's own location (dist mirror included). */
+const A5SF_SKILL_PROVIDER = new URL('./a5sf-skill-provider.mjs', import.meta.url).href
 
-/** PD-26: the pinned host package whose `skill` row the preset keeps for the NAME. */
+/** PD-29: the pinned host package whose `skill` TOOL row the preset keeps (unmodified). */
 const A5SF_HOST_SKILL_PACKAGE = '@deepseek-ai/dsh-tool-skill'
 
-/** PD-26: the Team-owned `present` shadow (delegates to the host package's apply). */
-const A5SF_CONFINED_PRESENT_TOOL = new URL('./confined-present-tool.mjs', import.meta.url).href
-
-/** PD-26: the pinned host package whose `present` row the preset keeps for the NAME. */
+/** PD-29: the pinned host package whose `present` row is re-mounted on the realm's confined `fs`. */
 const A5SF_HOST_PRESENT_PACKAGE = '@deepseek-ai/dsh-tool-present'
 
 /**
@@ -1260,26 +1257,36 @@ function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
 }
 
 /**
- * PD-26 — decide whether THIS realm's `skill` must be shadowed onto the
- * confined `fs` face, and answer the module spec to append.
+ * PD-29 — decide whether THIS realm must mount the Team `skills` PROVIDER, and
+ * answer the module spec to append.
  *
  * THE MEASURED HOLE (PD-23, `evidence/a5sf-pd23-control-surface/README.md`):
  * the preset's `skill-filesystem` provider loaded `$DSH_HOME/skills/<name>/
  * SKILL.md` through the inherited base `fs`, so an out-of-lane body reached the
  * model (`isError=false`) with ZERO `a5sf-guard-consult` facts, and the body
- * then appeared in seven subsequent requests of the Member's turn. The
- * fail-closed disposition removed the rows entirely.
+ * then appeared in seven subsequent requests of the Member's turn. PD-26 restored
+ * the capability by writing a Team `skill` TOOL; PD-29 removes that fork and
+ * mounts the missing SERVICE instead: the pinned host `tool-skill` row is
+ * untouched, and this provider answers `ctx.skills.list()` / `get()` with the
+ * declared catalog while reading every body through the confined `fs`.
  *
  * The conditions mirror the filesystem shadow's, each a refusal to guess:
- *   1. `skill` is on the POST-DENY surface (the attach may replace a
- *      definition, never add a name);
- *   2. the realm answers a confined `fs` face (TOTAL by type, so a shape check);
+ *   1. the realm answers a confined `fs` face (TOTAL by type, so a shape check);
+ *   2. `skill` is on the POST-DENY surface. Without the name the provider would
+ *      have no consumer, and mounting one would be an unobservable side effect;
  *   3. `a5sfSkillCatalog` declares at least one skill. With no declaration the
- *      shadow could only answer "unknown", which is what the preset placeholder
- *      already does — appending it would change nothing but the risk surface;
- *   4. the composition has not already configured a skill owner (this module,
- *      the host package by specifier, an entry declaring `skill`, or a module
- *      that DECLARES a `skills` injection).
+ *      provider could only answer an empty catalog, which is exactly what the
+ *      registry does with no provider — appending it would change nothing;
+ *   4. the composition has not already configured a skill owner (this provider,
+ *      an entry declaring `skill`, or any module that DECLARES a `skills`
+ *      injection). Auto-adding beside a declared owner would register a second
+ *      provider into the same scope layer.
+ *
+ * The spec is `allowEmpty: true` — that is NOT an unverified shadow. This module
+ * registers NO tool and NO prompt section on purpose (the host row owns both);
+ * its frontier is empty by construction, and what it must produce is a
+ * registered skill provider, which the row's host-free suite verifies by
+ * driving the REAL host `tool-skill` against the REAL registry.
  *
  * @param {object} realm - the mounted realm (`installation.members[].faces`).
  * @param {readonly object[]} nativeSpecs - the configured module specs.
@@ -1287,67 +1294,79 @@ function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
  * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED specs.
  * @param {readonly {name: string, description: string, path: string}[]} catalog
  *   - the row's declared catalog (`a5sfRealmConfigOf().skillCatalog`).
- * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
+ * @returns {{url: string, config: object, allowEmpty: boolean} | undefined}
  */
-function confinedSkillSpecOf(realm, nativeSpecs, surface, configuredModules, catalog) {
+function a5sfSkillProviderSpecOf(realm, nativeSpecs, surface, configuredModules, catalog) {
   const faces = realm?.installation?.members?.[0]?.faces
   if (faces === undefined || faces === null || faces.fs !== 'confined') return undefined
   if (!surface.has('skill')) return undefined
   if (!Array.isArray(catalog) || catalog.length === 0) return undefined
   for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_SKILL_TOOL) return undefined
+    if (spec?.url === A5SF_SKILL_PROVIDER) return undefined
     if (spec?.url === A5SF_HOST_SKILL_PACKAGE) return undefined
     if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('skill')) return undefined
   }
   for (const entry of configuredModules) {
-    const moduleName = entry?.module?.name
-    if (moduleName === 'tool-skill' || moduleName === 'a5sf-confined-skill') return undefined
     if (declaredInjectNamesOf(entry?.module).includes('skills')) return undefined
   }
   return Object.freeze({
-    url: A5SF_CONFINED_SKILL_TOOL,
+    url: A5SF_SKILL_PROVIDER,
     config: Object.freeze({ skills: catalog }),
-    expectedTools: Object.freeze(['skill']),
+    allowEmpty: true,
   })
 }
 
 /**
- * PD-26 — decide whether THIS realm's `present` must be shadowed onto the
- * confined `fs` face, and answer the module spec to append.
+ * PD-29 — decide whether THIS realm must re-mount the PINNED HOST `present`
+ * package on the confined `fs` face, and answer the module spec to append.
  *
  * THE MEASURED HOLE (PD-24, `evidence/a5sf-pd24-surface-ledger/README.md`):
  * `present` `lstat`ed/`stat`ed its targets through the inherited base `fs`, so
  * a REAL out-of-lane file was accepted, a missing one was refused `file not
  * found` (a cross-lane existence oracle), and all three calls produced ZERO
- * guard facts while two `deliverables/presented` events landed. The row was
- * removed fail-closed; this shadow is the route-C restoration PD-24 named.
+ * guard facts while two `deliverables/presented` events landed. PD-26 restored
+ * the capability with a Team copy of the tool; PD-29 mounts the HOST MODULE on
+ * the realm's isolated scope instead — its body resolves the confined `fs`, and
+ * its own `ctx.on('tools/result')` listener is the shipped one.
+ *
+ * WHY THIS MOUNT IS `direct` AND NOT ROUTED THROUGH THE REGISTRATION ROUTER:
+ * the router exists to PARTITION one module's suite across binding realms, and
+ * it does that by `isolate('tools', <fresh label>)`. Cordis filters every
+ * service-scoped event by the provider's isolation label, and `tools/result` is
+ * dispatched through the `tools` SERVICE — so a listener registered on a context
+ * whose `tools` label is the router's never receives it (measured, host-free:
+ * 0 events behind the router, 1 event on the same module mounted directly).
+ * A module that ships a `tools/result` listener therefore cannot ride the
+ * router; a `direct` mount keeps the realm's REAL `tools` label (events arrive)
+ * and the confined `fs` label (reads are guarded), registers into the AGENT's
+ * tool layer, and is verified by DEFINITION IDENTITY after the mount instead of
+ * by the router's forwarding receipt.
  *
  * Conditions: `present` on the POST-DENY surface, a confined `fs` face, and no
- * configured `present` owner (this module, the host package, or an entry
+ * configured `present` owner (this mount, the host package, or an entry
  * declaring `present`). No catalog: unlike `skill`, `present` needs no data.
  *
  * @param {object} realm - the mounted realm.
  * @param {readonly object[]} nativeSpecs - the configured module specs.
  * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
  * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED specs.
- * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
+ * @returns {{url: string, config: object, direct: boolean, expectedTools: readonly string[]} | undefined}
  */
-function confinedPresentSpecOf(realm, nativeSpecs, surface, configuredModules) {
+function hostPresentSpecOf(realm, nativeSpecs, surface, configuredModules) {
   const faces = realm?.installation?.members?.[0]?.faces
   if (faces === undefined || faces === null || faces.fs !== 'confined') return undefined
   if (!surface.has('present')) return undefined
   for (const spec of nativeSpecs) {
-    if (spec?.url === A5SF_CONFINED_PRESENT_TOOL) return undefined
     if (spec?.url === A5SF_HOST_PRESENT_PACKAGE) return undefined
     if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('present')) return undefined
   }
   for (const entry of configuredModules) {
-    const moduleName = entry?.module?.name
-    if (moduleName === 'tool-present' || moduleName === 'a5sf-confined-present') return undefined
+    if (entry?.module?.name === 'tool-present') return undefined
   }
   return Object.freeze({
-    url: A5SF_CONFINED_PRESENT_TOOL,
+    url: A5SF_HOST_PRESENT_PACKAGE,
     config: Object.freeze({}),
+    direct: true,
     expectedTools: Object.freeze(['present']),
   })
 }
@@ -1504,17 +1523,19 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
       ...(spec.config === undefined ? {} : { config: spec.config }),
       ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
       ...(spec.allowEmpty === undefined ? {} : { allowEmpty: spec.allowEmpty }),
+      ...(spec.direct === true ? { direct: true } : {}),
     })
   }
   const configuredModules = await Promise.all(nativeSpecs.map(loadNativeModule))
   const fsSpec = confinedFsSpecOf(realm, nativeSpecs, before, configuredModules)
-  // PD-26 (2026-11-14): `skill` and `present` are restored the SAME way — their
-  // reads must ride the Member's confined `fs` face, not the preset scope's
-  // inherited base provider. `skill` carries the declared catalog; `present`
-  // needs none. Both are surface-neutral (same names) and both are verified
-  // through `expectedTools`, so an unshadowed declaration refuses the attach.
-  const skillSpec = confinedSkillSpecOf(realm, nativeSpecs, before, configuredModules, a5sfConfig?.skillCatalog)
-  const presentSpec = confinedPresentSpecOf(realm, nativeSpecs, before, configuredModules)
+  // PD-29 (2026-11-14): the two capabilities are restored at the SERVICE layer
+  // they were always missing. `skill` keeps the pinned host tool row and gains a
+  // Team `skills` provider (`a5sfSkillProviderSpecOf`) whose body read rides the
+  // Member's confined `fs`; `present` is the pinned HOST module re-mounted on the
+  // same confined face (`hostPresentSpecOf`, verified by definition identity).
+  // Neither is a Team copy of a tool.
+  const skillSpec = a5sfSkillProviderSpecOf(realm, nativeSpecs, before, configuredModules, a5sfConfig?.skillCatalog)
+  const presentSpec = hostPresentSpecOf(realm, nativeSpecs, before, configuredModules)
   // PD-27 (2026-11-14): `web_fetch`/`web_search` ride the confined `web` face the
   // same way. PD-18 removed the rows because the preset scope cannot be handed
   // that face; this shadow places the HOST definitions on the realm scope, where
@@ -1947,7 +1968,7 @@ function emptyManagedFrontiers(nativeToolModules, expansion, fibers) {
  */
 async function observeNativeToolOwnership(nativeToolModules, realm) {
   const probes = await realm.mountNativeToolModules(
-    nativeToolModules.map((module) => ({ ...module, observeOnly: true })),
+    nativeToolModules.map((module) => ({ ...module, direct: false, observeOnly: true })),
     {},
   )
   try {

@@ -16,6 +16,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/types
  */
+import { HarnessError } from '@deepseek-ai/dsh-llm';
 /** Closed per-call denial vocabulary of an installed Provider. */
 export const TEAM_IO_DENIAL_CODES = [
     'IO_READ_DENIED',
@@ -199,13 +200,21 @@ export const TEAM_SERVICE_INSTALL_CODES = [
  * closed code, the member identity and the method so the tool layer and the
  * audit trail never depend on message text.
  */
-export class TeamIoDenial extends Error {
+export class TeamIoDenial extends HarnessError {
     code;
     memberIdentity;
     method;
     target;
     constructor(code, message, fields) {
-        super(message);
+        // PD-29 (2026-11-14): a HARNESS error, not a bare `Error`. The tool result
+        // protocol only serializes a typed code for `HarnessError` (`toolErrorResult`
+        // -> `errorInfo`), so before this a confined refusal reached the model as
+        // `Error: <lane text>` with NO code, even though the guard fact carried
+        // `IO_READ_DENIED`. The message is unchanged (the lane's own decision text);
+        // the tool result now also carries `error.info = { name, code }`, so a
+        // refusal and an absence are machine-distinguishable at the consumer — which
+        // is exactly the property the native `skill`/`present` arms rely on.
+        super(message, code);
         this.name = 'TeamIoDenial';
         this.code = code;
         this.memberIdentity = fields.memberIdentity;

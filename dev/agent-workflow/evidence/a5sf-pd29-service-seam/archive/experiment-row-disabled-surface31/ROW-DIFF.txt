@@ -1,0 +1,13 @@
+THE ONE LINE THAT DIFFERS FROM THE SHIPPED MERGED TREE (cordis.patch.yml, governed preset)
+
+  - id: tool-web
+    name: 'dsh-agent-team/web-tool'
++   disabled: true
+
+Result: the Member IS created and the whole suite passes 2/2 boots, 6/6 cases — but the
+surface is 31: with the placeholder disabled the post-deny surface no longer carries
+`web_fetch`/`web_search`, so the realm's `confinedWebSpecOf` declines to append its
+module (it places only names that are ALREADY on the surface) and PD-27's pair is gone
+entirely. So "drop/disable the row" is a WORKING tree but NOT an equivalent feature:
+it silently removes the network pair instead of governing it. Recorded as experiment
+(ii) in ../../README.md §4.3; not a proposal from this lane and not a product form.

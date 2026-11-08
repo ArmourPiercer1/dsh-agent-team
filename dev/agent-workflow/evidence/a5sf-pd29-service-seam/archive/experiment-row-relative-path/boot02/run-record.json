@@ -1,0 +1,312 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T12-10-34-394Z-b2",
+  "suite": "a5sf-pd28-service-seam",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T12:10:34.395Z",
+  "selectedCases": [
+    "pd28:skill-confined",
+    "pd28:present-confined",
+    "pd28:fs-controls",
+    "pd28:fail-closed-typed",
+    "pd28:surface-restored",
+    "pd28:no-out-of-lane-bytes"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "f54ecddea2cf50e189943dbf7d843445800c54c2",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "ConfinedSkill",
+      "world": "u5a5sfpd28",
+      "source": "task PD28-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=postfix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "f54ecddea2cf50e189943dbf7d843445800c54c2",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd28-20261108T12-10-34Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd28:skill-confined",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "a governed Member CAN load a declared skill body through its CONFINED `fs` face: the in-lane body returns with exactly ONE allow fact; the out-of-lane body is a typed `IO_READ_DENIED` with ZERO body bytes and exactly ONE deny fact; an undeclared name is a typed name refusal that reads nothing",
+      "failed": [
+        "in-lane-body-returned: isError=false text=",
+        "in-lane-one-allow-fact: facts=[]",
+        "out-of-lane-typed-refusal: isError=false text=",
+        "out-of-lane-one-deny-fact: facts=[]",
+        "unknown-name-is-not-a-read: isError=false facts=0 text=",
+        "turn-kept-going: the Member turn settled after the probes"
+      ],
+      "clauses": [
+        {
+          "id": "in-lane-body-returned",
+          "ok": false,
+          "detail": "isError=false text="
+        },
+        {
+          "id": "in-lane-one-allow-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "in-lane-attributed-to-skill",
+          "ok": true,
+          "detail": "tools=[]"
+        },
+        {
+          "id": "out-of-lane-typed-refusal",
+          "ok": false,
+          "detail": "isError=false text="
+        },
+        {
+          "id": "out-of-lane-zero-bytes",
+          "ok": true,
+          "detail": "the refusal carries no body bytes"
+        },
+        {
+          "id": "out-of-lane-one-deny-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "out-of-lane-attributed-to-skill",
+          "ok": true,
+          "detail": "tools=[]"
+        },
+        {
+          "id": "unknown-name-is-not-a-read",
+          "ok": false,
+          "detail": "isError=false facts=0 text="
+        },
+        {
+          "id": "turn-kept-going",
+          "ok": false,
+          "detail": "the Member turn settled after the probes"
+        }
+      ]
+    },
+    {
+      "id": "pd28:present-confined",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "a governed Member CAN declare an in-lane deliverable through its CONFINED `fs` face (file presented, ONE `deliverables/presented` event, guard facts), while an out-of-lane path — existing or absent — is refused at the FIRST `lstat` with the guard fact carrying `IO_READ_DENIED`, NO event and no `file not found` existence oracle (the code lives in the FACT and in the tool result's `error.info.code`; the model text is the shipped host module rendering the lane's own decision, which is why this clause reads the code from the fact)",
+      "failed": [
+        "in-lane-presented: isError=false text=",
+        "in-lane-guard-facts: facts=[]",
+        "in-lane-one-deliverables-event: A session deliverables/presented events=0",
+        "out-of-lane-typed-refusal: isError=false facts=[] text=",
+        "out-of-lane-one-deny-fact: facts=[]",
+        "missing-is-not-an-existence-oracle: isError=false facts=[] text=",
+        "no-extra-deliverables-event: a refused presentation must not append an event"
+      ],
+      "clauses": [
+        {
+          "id": "in-lane-presented",
+          "ok": false,
+          "detail": "isError=false text="
+        },
+        {
+          "id": "in-lane-guard-facts",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "in-lane-attributed-to-present",
+          "ok": true,
+          "detail": "tools=[]"
+        },
+        {
+          "id": "in-lane-one-deliverables-event",
+          "ok": false,
+          "detail": "A session deliverables/presented events=0"
+        },
+        {
+          "id": "out-of-lane-typed-refusal",
+          "ok": false,
+          "detail": "isError=false facts=[] text="
+        },
+        {
+          "id": "out-of-lane-zero-bytes",
+          "ok": true,
+          "detail": "the refusal carries no out-of-lane bytes"
+        },
+        {
+          "id": "out-of-lane-one-deny-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "missing-is-not-an-existence-oracle",
+          "ok": false,
+          "detail": "isError=false facts=[] text="
+        },
+        {
+          "id": "no-extra-deliverables-event",
+          "ok": false,
+          "detail": "a refused presentation must not append an event"
+        }
+      ]
+    },
+    {
+      "id": "pd28:fs-controls",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "the confined native faces are UNAFFECTED by the restoration: `bash`, `read` and `grep` still execute on the lane and each writes its own allow fact (so the facts above are not a global shutdown)",
+      "failed": [
+        "bash-ok: text=",
+        "read-ok: text=",
+        "grep-ok: text=",
+        "bash-fact: facts=[]",
+        "read-fact: facts=[]",
+        "grep-fact: facts=[]"
+      ],
+      "clauses": [
+        {
+          "id": "bash-ok",
+          "ok": false,
+          "detail": "text="
+        },
+        {
+          "id": "read-ok",
+          "ok": false,
+          "detail": "text="
+        },
+        {
+          "id": "grep-ok",
+          "ok": false,
+          "detail": "text="
+        },
+        {
+          "id": "bash-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "read-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        },
+        {
+          "id": "grep-fact",
+          "ok": false,
+          "detail": "facts=[]"
+        }
+      ]
+    },
+    {
+      "id": "pd28:fail-closed-typed",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "every name an earlier lane fail-closed is STILL the host router's typed `unknown tool`, and none executed — the restoration is additive, not a reopening",
+      "failed": [
+        "all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"
+      ],
+      "clauses": [
+        {
+          "id": "all-typed-unknown",
+          "ok": false,
+          "detail": "not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"
+        }
+      ]
+    },
+    {
+      "id": "pd28:surface-restored",
+      "verdict": "FAIL",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "the Member surface offers `skill` and `present` (both restored) and still offers no base-fs skill provider row",
+      "failed": [
+        "skill-present: skill on the surface",
+        "present-present: present on the surface"
+      ],
+      "clauses": [
+        {
+          "id": "skill-present",
+          "ok": false,
+          "detail": "skill on the surface"
+        },
+        {
+          "id": "present-present",
+          "ok": false,
+          "detail": "present on the surface"
+        },
+        {
+          "id": "no-base-fs-provider",
+          "ok": true,
+          "detail": "skill-filesystem is not a Member tool"
+        }
+      ]
+    },
+    {
+      "id": "pd28:no-out-of-lane-bytes",
+      "verdict": "PASS",
+      "at": "2026-11-08T12:12:04.229Z",
+      "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-requests-with-secret",
+          "ok": true,
+          "detail": "mock requests carrying an out-of-lane secret=0"
+        },
+        {
+          "id": "zero-secret-skill-bytes",
+          "ok": true,
+          "detail": "the Member's durable turn carries no out-of-lane skill body"
+        },
+        {
+          "id": "zero-secret-file-bytes",
+          "ok": true,
+          "detail": "the Member's durable turn carries no out-of-lane file bytes"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T12:11:21.200Z",
+        "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T12-10-34-394Z-b2",
+        "suite": "a5sf-pd28-service-seam",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd28-20261108T12-10-34Z",
+        "phase": "a5sf-pd28-service-seam-postfix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd28-service-seam-postfix-boot2",
+      "world": "u5u5a5sfpd28-20261108T12-10-34Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-10-34Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd28-service-seam-postfix-2026-11-08T12-10-34-394Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "partial": false,
+  "finishedAt": "2026-11-08T12:12:04.230Z"
+}

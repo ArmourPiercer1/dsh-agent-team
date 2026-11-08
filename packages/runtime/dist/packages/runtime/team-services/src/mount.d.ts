@@ -111,6 +111,21 @@ export interface NativeToolModuleMount {
      */
     readonly toolBindingIdentity?: string;
     /**
+     * PD-29 (2026-11-14) — mount the module DIRECTLY on the Member's isolated
+     * scope, with NO registration router.
+     *
+     * Needed by a module that registers a `tools/result` listener: Cordis filters
+     * service-scoped events by the `tools` isolation label, and the router
+     * isolates `tools`, so a routed module never receives the dispatch (measured).
+     * A direct mount keeps the realm's real `tools` label and its confined `fs`
+     * label, registers into the AGENT's tool layer, and is verified by DEFINITION
+     * IDENTITY instead of the router's forwarding receipt (see
+     * `mountDirectNativeModule`). Refused with a binding identity, without
+     * non-empty `expectedTools`, on a deferred registration, or for a name a
+     * mounted ToolBinding owns.
+     */
+    readonly direct?: boolean;
+    /**
      * ASSEMBLY GAP 1 (2026-11-03) — OBSERVATION-ONLY mount.
      *
      * A binding may only be assigned to the native module that actually OWNS the

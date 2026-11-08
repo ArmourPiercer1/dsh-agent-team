@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-08T14:18:44.434Z",
+  "arm": "postfix",
+  "head": "800d64235fd4f8403eb8525b2c80e343d3024fd6",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "aa751e032f6b0a1d1e9a1fc0604b60195a9dca3beef19be587e69853659bc8f5",
+  "jsSubstitutions": [
+    {
+      "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
+      "value": []
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'",
+      "value": "https://api.exa.ai"
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
+      "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",
+    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+    "arm": "postfix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "ConfinedSkill",
+    "world": "u5a5sfpd29",
+    "source": "task PD29-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=postfix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd29-service-seam/run-boot.mjs --arm postfix"
+}

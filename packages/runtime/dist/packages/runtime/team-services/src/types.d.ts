@@ -16,6 +16,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/types
  */
+import { HarnessError } from '@deepseek-ai/dsh-llm';
 import type { Context } from '@deepseek-ai/cordis';
 import type { TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderSurface } from './fs.js';
@@ -31,7 +32,7 @@ export type TeamServiceInstallCode = (typeof TEAM_SERVICE_INSTALL_CODES)[number]
  * closed code, the member identity and the method so the tool layer and the
  * audit trail never depend on message text.
  */
-export declare class TeamIoDenial extends Error {
+export declare class TeamIoDenial extends HarnessError {
     readonly code: TeamIoDenialCode;
     readonly memberIdentity: string;
     readonly method: string;
