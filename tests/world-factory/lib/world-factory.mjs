@@ -55,6 +55,7 @@ import { captureProfileBinding, verifyProfileBindingLaunched } from './binding-d
 import { preflightHostSandbox as measureSandboxPreflight } from './host-sandbox-assets.mjs'
 import { bindSandboxPreflight } from './run-record.mjs'
 import { bindTeamDefaultWorkspace } from './team-workspace.mjs'
+import { provisionProfileModuleGraph, verifyProfileModuleGraph } from './profile-module-graph.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -367,6 +368,19 @@ export class TestWorldFactory {
     mkdirSync(this.evidenceRoot, { recursive: true })
     mkdirSync(logDir, { recursive: true })
     mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
+    // PD-32: EVERY World gets the profile module graph, the way an install
+    // would provide it. A preset row's specifier resolves from this graph (one
+    // base for every row — see profile-module-graph.mjs), and a row that cannot
+    // import is `never started`, which takes the whole Agent down rather than
+    // one tool. Provisioning here is what makes that impossible to forget in a
+    // driver; `A5SF_WF_NO_INSTALL_GRAPH=1` is the negative control.
+    const profileGraph = provisionProfileModuleGraph({ home, repoRoot: this.repoRoot })
+    // Prove the graph can actually serve the composition BEFORE the host starts:
+    // a linked package whose `exports` map is stale fails here, naming the
+    // subpath, instead of surfacing later as `never started` + a dead Agent.
+    const profileGraphVerified = profileGraph.provisioned
+      ? verifyProfileModuleGraph({ home, repoRoot: this.repoRoot })
+      : { package: profileGraph.package?.name ?? null, resolved: {} }
     mkdirSync(workspaceDir, { recursive: true })
     // Ownership marker FIRST: everything deletable below this World's cleanup
     // must be listed here. Only the home tree is auto-deleted; evidence logs
@@ -378,7 +392,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, kinds: WORLD_KINDS, activeKind, [activeKind?.option ?? '']: activeSpec })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, kinds: WORLD_KINDS, activeKind, profileGraph: { ...profileGraph, verified: profileGraphVerified.resolved }, [activeKind?.option ?? '']: activeSpec })
     this.worlds.push(world)
     return world
   }
@@ -468,6 +482,9 @@ export class TestWorld {
     this.extContributors = spec.extContributors ?? 'disable'
     this.centerAssembly = spec.centerAssembly ?? null
     this.restartIndex = spec.restartIndex
+    // PD-32: where this World's module graph came from (World factory vs a
+    // driver's own copy vs the negative control), so a boot can record it.
+    this.profileGraph = spec.profileGraph ?? null
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
     this.shadowLedgerPath = join(spec.home, 'center-shadow-ledger.jsonl')

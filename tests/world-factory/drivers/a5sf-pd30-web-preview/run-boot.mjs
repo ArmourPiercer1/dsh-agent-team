@@ -61,6 +61,7 @@ import {
 } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
+import { assertShippedPresetMounted } from '../../lib/profile-module-graph.mjs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdDecompressSync } from 'node:zlib'
@@ -452,11 +453,20 @@ function installGraph({ home }) {
   const profileModules = join(home, 'profiles', 'web', 'node_modules')
   mkdirSync(profileModules, { recursive: true })
   const link = join(profileModules, 'dsh-agent-team')
-  // NEGATIVE CONTROL (`A5SF_PD30_NO_INSTALL_GRAPH=1`): the same shipped row
-  // bytes with NO install graph. The sibling lane measured this shape as the
-  // master regression (`tool-web ...: never started`); this driver can
-  // reproduce it on demand so the dependency is a measurement, not a claim.
-  if (process.env.A5SF_PD30_NO_INSTALL_GRAPH !== '1' && !existsSync(link)) {
+  // PD-32: the graph is now the WORLD FACTORY's job (lib/profile-module-graph.mjs
+  // — every World gets it at createWorld). This driver used to build its own
+  // copy, which is exactly how the same defect got re-implemented lane by lane.
+  // `A5SF_PD30_DRIVER_NO_GRAPH=1` proves the shared one is what serves the boot:
+  // the driver then refuses to create the link and fails unless the World
+  // already provisioned it.
+  const sharedOnly = process.env.A5SF_PD30_DRIVER_NO_GRAPH === '1'
+  if (sharedOnly) {
+    if (!existsSync(link)) {
+      throw new Error(`the World factory did not provision ${link}; this boot runs with A5SF_PD30_DRIVER_NO_GRAPH=1, so the driver must not create it`)
+    }
+  } else if (process.env.A5SF_PD30_NO_INSTALL_GRAPH !== '1' && !existsSync(link)) {
+    // NEGATIVE CONTROL (`A5SF_PD30_NO_INSTALL_GRAPH=1`, still honoured by the
+    // shared module): the same shipped row bytes with NO install graph.
     symlinkSync(REPO_ROOT, link, process.platform === 'win32' ? 'junction' : 'dir')
   }
   const manifest = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
@@ -469,7 +479,13 @@ function installGraph({ home }) {
     if (!existsSync(absolute)) throw new Error(`the export '${subpath}' points at ${rel}, which does not exist in this tree`)
     resolved[subpath] = rel
   }
-  return { profileModules, link: { path: link, target: REPO_ROOT }, exports, resolved }
+  return {
+    profileModules,
+    link: { path: link, target: REPO_ROOT },
+    source: sharedOnly ? 'world-factory' : (process.env.A5SF_PD30_NO_INSTALL_GRAPH === '1' ? 'negative-control' : 'driver'),
+    exports,
+    resolved,
+  }
 }
 
 function composedRows({ home, anchorYaml, layer, targetBase: fixtureBase, searchBase: exaBase, graph }) {
@@ -1110,7 +1126,15 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
       return st.status === 200 && st.body?.ok === true
     }, 150_000)
     log(`[boot${String(index)}] p6t6 health=${String(healthOk)}`)
-    if (!healthOk) throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
+    if (!healthOk) {
+      // PD-32: "the harness route never answered" is a SYMPTOM. Ask the host log
+      // why first: a `never started` preset is the cause, and naming it here is
+      // the difference between "0 Members, no goal, TEAM_RUNTIME_DURABLE_WRITE_FAILED"
+      // (what two lanes reported) and "this row did not import".
+      const deadLog = (() => { try { return readFileSync(bootInfo.logPath, 'utf8') } catch { return '' } })()
+      assertShippedPresetMounted({ hostLogText: deadLog })
+      throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
+    }
 
     // ── PRECONDITION: THE PRESET ROWS LOAD AS SHIPPED ──────────────────────
     // A preset row whose module cannot be imported is `never started` — the
@@ -1130,7 +1154,9 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
       installGraph: composedGraph(),
       source: 'host log + /__p6t6/state, read BEFORE the first Member probe',
     }, null, 2) + '\n')
-    if (neverStarted) throw new Error('PRECONDITION FAILED: a preset row is `never started` (its module did not import); the governed Member was never constructed, so no arm below can be evidence')
+    // PD-32: the rule is the SHARED one (lib/profile-module-graph.mjs), so a
+    // lane cannot pass by carrying a weaker local copy of it.
+    assertShippedPresetMounted({ hostLogText })
 
     // The local server's counters are RESET here, after the Host is up, so the
     // only thing they can count is what this Member turn does.
@@ -1294,9 +1320,7 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
     // ── PRECONDITION 2: THE GOVERNED MEMBER AND ITS SURFACE EXIST ─────────
     // (seedMembers is empty by design, so membership is asserted AFTER the
     // Leader created it — but still BEFORE any verdict is computed.)
-    if (surfaceANames.length === 0) {
-      throw new Error('PRECONDITION FAILED: the governed Member has an empty tool surface (the preset did not mount for it)')
-    }
+    assertShippedPresetMounted({ hostLogText, members, surfaceCount: surfaceANames.length })
     const templateMember = members.find((m) => String(m?.templateId ?? '') === TEMPLATE)
     if (templateMember === undefined) throw new Error(`PRECONDITION FAILED: the Team constructed no '${TEMPLATE}' Member`)
     writeFileSync(join(bootDir, 'precondition-member.json'), JSON.stringify({

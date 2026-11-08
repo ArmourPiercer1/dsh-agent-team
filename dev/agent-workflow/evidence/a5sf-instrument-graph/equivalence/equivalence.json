@@ -1,0 +1,26 @@
+{
+  "claim": "provisioning is a graph, not a behaviour: the same tree must measure the same surface whether the graph came from createWorld or from a manual link",
+  "falsifier": "if a World booted with the factory graph ever measures a different surface than the same tree with a manually provisioned graph, the provisioning is wrong",
+  "base": "9d2519b91",
+  "factory": {
+    "graphSource": "world-factory",
+    "surface": 36,
+    "fixtureConnections": 1,
+    "fixturePathHits": {
+      "/known": 1
+    },
+    "searchConnections": 1,
+    "hostWebCalls": 0
+  },
+  "manual": {
+    "graphSource": "driver",
+    "surface": 36,
+    "fixtureConnections": 1,
+    "fixturePathHits": {
+      "/known": 1
+    },
+    "searchConnections": 1,
+    "hostWebCalls": 0
+  },
+  "equal": true
+}

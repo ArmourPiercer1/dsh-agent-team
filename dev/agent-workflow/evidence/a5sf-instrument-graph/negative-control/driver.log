@@ -1,0 +1,26 @@
+[2026-11-08T15:31:10.662Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/archive/allow-2026-11-08T15-31-10-662Z
+[2026-11-08T15:31:10.690Z] LOCAL FIXTURE http://127.0.0.1:45537 (serves 'A5SF_PD30_KNOWN_BODY_BYTES' on /known and /denied; its EXACT origin is the declared test endpoint)
+[2026-11-08T15:31:10.690Z] LOCAL SEARCH ENDPOINT http://127.0.0.1:46321/search (the host Exa provider POSTs here)
+[2026-11-08T15:31:10.690Z] START arm=allow head=da6cc7ba205b799f641d68c18eacfa1f6a3ced98 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml sha256=f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-08T15:31:10.718Z] host porcelain before: []
+[2026-11-08T15:31:10.778Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T15:31:10.780Z] [boot1] dev-live slot #1 face=WebEgress world=u5a5sfpd30 head=da6cc7ba205b799f641d68c18eacfa1f6a3ced98
+[2026-11-08T15:31:10.783Z] [boot1] world=u5u5a5sfpd30-20261108T15-31-10Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T15-31-10Z
+[2026-11-08T15:31:10.784Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T15:31:10.785Z] [boot1] target=http://127.0.0.1:45537 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T15-31-10Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T15:32:14.238Z] [boot1] mock on 13053
+[2026-11-08T15:32:53.400Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T15-31-10Z/instance-port3188.log
+[2026-11-08T15:35:23.549Z] [boot1] p6t6 health=false
+[2026-11-08T15:35:23.550Z] [boot1] FAILED at composition: ShippedPresetAuditError: A5SF_PRESET_NEVER_STARTED: a preset row is `never started` (its module did not import), so the Agent was never constructed and no arm below can be evidence: dsh-agent-team (dsh-agent-team/host): failed to import | a5sf-web-transport (dsh-agent-team/web-transport): failed to import
+    at assertShippedPresetMounted (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/world-factory/lib/profile-module-graph.mjs:211:11)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs:1135:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs:1682:15)
+[2026-11-08T15:35:23.644Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":78,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T15-31-10Z","releasedPorts":[3188,13053,3188],"killedPids":[78],"notes":[]}
+[2026-11-08T15:35:23.644Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T15:35:23.682Z] boot 1 failed at composition; continuing is pointless (no agreeing pair)
+[2026-11-08T15:35:23.683Z] AGREEMENT arm=allow: BOOTS DISAGREE (or fewer than two)
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 |  |  | - | - | - | - | - | - | - | - | null | null | null | null | null | null
+[2026-11-08T15:35:23.719Z] host porcelain after: []
+[2026-11-08T15:35:23.719Z] RESULT FAIL arm=allow (1/1 boots; agreeing pair=false)
