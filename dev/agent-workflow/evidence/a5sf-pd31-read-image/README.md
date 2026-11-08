@@ -17,21 +17,20 @@
 > `read_image` as available without that clause is wrong.
 
 - **Lane**: `PD31-READ-IMAGE` · branch `task/pd31-read-image-20261114` · worktree
-  `.worktrees/pd31-read-image`. **Re-measured on merged master `da6cc7ba2`** (PD-27 web egress,
-  PD-28 web preview, PD-29 service seam). A first measurement on base `24d2cf760` reported a 31-name
-  surface; that reading is **superseded** — the shipped surface is now **33 names** (the
-  `skill`/`present` service-seam mounts changed under the lane), and every number below comes from
-  the six boots recorded here.
+  `.worktrees/pd31-read-image`. **Re-measured on merged master `0c2a8f422`** (PD-27 web egress, PD-28 web preview, PD-29 service
+  seam, PD-30 goal/stop). A first measurement on base `24d2cf760` reported 31 names and a merged-tree
+  reading on `da6cc7ba2` reported 33; both are **superseded** — PD-30 restored the goal tools, so the
+  shipped surface is now **36 names**, and every number below comes from the six boots recorded here.
 - **Register numbering.** The goal/stop lane holds **PD-30** on the same base and the register's
   contiguity law (`PD-1…PD-n`, gate-enforced) fixes this lane's row at **PD-31**, while the lane,
   branch, PR and evidence directory keep the `PD31` name — the fifth dated renumber in this phase
   (PD-27 naming → PD-28 merge, PD-30 naming → PD-28, …). This lane does **not** take a published id;
   it waits for the contiguous slot and states why.
-- **Instrument commit**: both pairs and both mutation records ran the driver at `2a7ec30ba` (driver
-  sha256 `fe2c72c0…`), which adds the World install-graph provision and the `never started`
+- **Instrument commit**: both pairs and both mutation records ran the driver at `055fa822b` (driver
+  sha256 `dd433e7c…`), which adds the World install-graph provision and the `never started`
   precondition (§2.2) to the same judging logic. The per-run `driverSha256` in
   `driver-digest-*.json` is the authority and is checkable with
-  `git show 2a7ec30ba:tests/world-factory/drivers/a5sf-pd31-read-image/run-boot.mjs`.
+  `git show 055fa822b:tests/world-factory/drivers/a5sf-pd31-read-image/run-boot.mjs`.
 - **Evidence class**: `DEV-LIVE` (`candidateClaimEligibility` false on every record). Ports in the
   3180 family, `DSH_HOME` under `tests/homes/`, dev-live slot leases, pinned host tree pristine
   before and after every boot. **Not a candidate claim, not a matrix grade, not `V@B`.**
@@ -120,10 +119,10 @@ time**, under the shipped opt-in preset `a5sf-governed-member` (`cordis.patch.ym
 `team.create` → `team_delegate` → Member turn over `/team-remote`, and the Member's own durable
 session log as the primary witness (the mock's received request bodies are the wire witness).
 
-The **surface is 33 names** in every arm (`read_image` present, native description
+The **surface is 36 names** in every arm (`read_image` present, native description
 `Read a PNG/JPEG/WebP/GIF file and return the image itself…`), measured on merged master
-`da6cc7ba2` — the model declaration changes no tool declaration, and the count is the only surface
-number this evidence claims (the pre-rebase 31-name reading is superseded, §13).
+`0c2a8f422` — the model declaration changes no tool declaration, and the count is the only surface
+number this evidence claims (the 31-name and 33-name readings are superseded, §13).
 
 ## 4. The allow arm (postfix, both boots identical)
 
@@ -324,10 +323,10 @@ arm (`recoverMutationBackup`), so a SIGKILL cannot leave later Worlds ungated.
 - `PRODUCT-DEBT-REGISTER.md`: new row **PD-31 (READ-IMAGE)**, class `evidence-quality`, status
   **DRAFT — not merged**. **Numbering disclosure:** the register's host-free guard
   (`a5sf-debt-register.test.mjs`) asserts ids are **contiguous `PD-1…PD-n` in document order**. On
-  `da6cc7ba2` the rows end at **PD-29**; the goal/stop lane holds **PD-30** for the same base, so the
-  next free contiguous id is **PD-31**. This lane waits for PD-30 to land rather than taking an id
-  another branch has published, and states the date and the reason here — the fifth dated renumber
-  of this phase. The lane, branch, PR and evidence directory keep the `PD31` name.
+  `0c2a8f422` the rows end at **PD-30** (goal/stop), so the next free contiguous id is **PD-31**.
+  This lane held the row unwritten until PD-30 landed rather than minting a second in-flight claim
+  for a number another branch had assigned, and states the date and the reason here — the fifth
+  dated renumber of this phase. The lane, branch, PR and evidence directory keep the `PD31` name.
   The row does **not** claim a new hole: it closes `read_image`'s `UNMEASURED` branch, records that
   the capability is **config-gated and satisfiable**, and states in product words that a default
   `['text']` route **cannot use `read_image` at all** (0 facts, 0 bytes, before any provider I/O).
@@ -335,28 +334,28 @@ arm (`recoverMutationBackup`), so a SIGKILL cannot leave later Worlds ungated.
   correction chain continues past §1.8.12; §2's appendix is not reordered) + a dated note appended to
   the `read_image (M-04)` row. **No ⑧/⑨/`V@B`/grade change**: `read_image` stays `BOUNDED-DEFER` /
   `no`, because a live measurement of a native row is not a candidate claim. The roster number quoted
-  in `§1.8` prose was 31 as of PD-29; this lane's own reading on `da6cc7ba2` is **33** and is stated
+  in `§1.8` prose was 31 as of PD-29; this lane's own reading on `0c2a8f422` is **36** and is stated
   as the lane's measurement, not as an edit to the §1.8 tables.
 ### 11.1 Gates at the evidence commit
 
-Full transcript: [`gates.txt`](gates.txt). Green: the whole **a5sf host-free family** (617 tests, 0
-fail, 12 skipped), the register guard (10/10), `pnpm -r typecheck`, `check:artifacts` (1980 files),
-`check:artifacts:head` (**1980 compared, drift 0** — the commit carries its own build),
-`docs:probe`/`docs:sync --check` (0 blocking), `ci-pr-gate --only state-freshness`, `eb3-evidence-guard`,
-`eb3-run-manifest`, p4t6 (20/20).
+Full transcript: [`gates.txt`](gates.txt). Green: the **PD31 host-free suite** (7/7, including the
+install-graph ownership pin), the register guard (10/10, ids contiguous `PD-1…PD-31`),
+`docs:probe`/`docs:sync --check` (0 blocking), `ci-pr-gate --only state-freshness`,
+`eb3-evidence-guard`, `eb3-run-manifest`, p4t6 (20/20), `pnpm -r typecheck`, `check:artifacts` and
+`check:artifacts:head` (drift 0). The whole **a5sf host-free family** is green in a fresh-install
+worktree; in this worktree's long-lived shared install the four PD30 tests fail for one reason only —
+that install predates master's new `@deepseek-ai/dsh-web-search-exa` root dependency — and the same
+four fail identically at `origin/master` with that install.
 
-Two commands are red **before this lane and identically in the untouched main checkout**, and are
-recorded rather than hidden:
-
-- `pnpm lint`: **161 problems / 129 errors**, all under `packages/**`, none in a changed file
-  (`tests/world-factory` is eslint-ignored); the main checkout prints the same 161/129.
-- `node scripts/doc-consistency-controls.mjs`: **96 controls, 8 failed** (POS-1, POS-3, POS-4,
-  POS-6, NEG-21, POS-8, POS-10, POS-11); the main checkout prints the same eight.
+One command is red **before this lane and identically in the untouched main checkout**, recorded
+rather than hidden: `pnpm lint` **161 problems / 129 errors**, all under `packages/**`, none in a
+changed file (`tests/world-factory` is eslint-ignored); the main checkout prints the same 161/129.
+`node scripts/doc-consistency-controls.mjs` keeps its **8 pre-existing failures** (POS-1, POS-3,
+POS-4, POS-6, NEG-21, POS-8, POS-10, POS-11) with identical counts in the main checkout.
 
 `check:artifacts:head` needs `--store-dir <repo>/.pnpm-store` in this worktree: without it the script
 correctly **refuses** because the shared `node_modules` records another worktree's non-writable pnpm
 store, and a refusal is not a verdict of "fresh".
-
 
 ## 12. Reproduction
 
@@ -389,7 +388,7 @@ runs/boot01|02/                  the agreeing pair (postfix: image-capable route
   counters.json                  every measured counter, incl. per-call fact lists
   guard-facts.json               the raw a5sf-guard-consult/1 sink
   member-probes.json             one entry per probe + the model-facing blocks
-  member-surface.json            the 31-name Member surface + the read_image definition
+  member-surface.json            the 36-name Member surface + the read_image definition
   member-transcript.{json,txt}   the Member's own durable session, rendered
   model-request-image-parts.json every image part with decoded bytes/sha256
   model-requests.json            the received request bodies (text truncated, image kept)
@@ -399,11 +398,12 @@ runs/boot01|02/                  the agreeing pair (postfix: image-capable route
 archive/pair-prefix/boot01|02/   the shipped text-only arm, same instrument
 archive/mutation-model-text/     mutation 1 (declaration back to text)   → successArm RED, control OK
 archive/mutation-route-gate-off/ mutation 2 (gate removed)              → successArm GREEN, control OK
-                                 (the four runs in §3 are the records. The PRE-REBASE measurement on
-                                 base 24d2cf760 — 31 names — was superseded by this re-measure and its
-                                 records are not kept: they were bound to commits that the rebase
-                                 retired, and a record whose commit no longer exists cannot be
-                                 re-derived. Its numbers are quoted only as history in §3 and §11.)
+                                 (the four runs in §3 are the records. Earlier readings — 31 names on
+                                 base 24d2cf760, 33 on da6cc7ba2 — were superseded by this re-measure.
+                                 The 33-name pair is kept under archive/postfix-2026… as history; the
+                                 31-name records are not kept, because the rebase retired the commits
+                                 they were bound to and a record whose commit no longer exists cannot
+                                 be re-derived.)
 agreement-postfix.{json,txt}     two-boot agreement (postfix)
 agreement-prefix.{json,txt}      two-boot agreement (prefix)
 mutation-control-*.json          mutation expectation vs observed verdict

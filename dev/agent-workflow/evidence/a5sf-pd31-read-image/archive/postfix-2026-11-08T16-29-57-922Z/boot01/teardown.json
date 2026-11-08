@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-08T15:06:26.931Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 78,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z",
+    "releasedPorts": [
+      3188,
+      13051,
+      3188
+    ],
+    "killedPids": [
+      78
+    ],
+    "notes": []
+  },
+  "hostTreePorcelain": [],
+  "mutation": null
+}

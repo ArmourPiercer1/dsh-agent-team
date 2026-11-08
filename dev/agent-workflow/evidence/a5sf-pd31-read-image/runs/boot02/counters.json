@@ -26,11 +26,13 @@
   },
   "mockRequests": 21,
   "aModelRequests": 8,
-  "surfaceACount": 33,
+  "surfaceACount": 36,
   "surfaceANames": [
     "bash",
+    "create_goal",
     "edit",
     "exit_plan_mode",
+    "get_goal",
     "glob",
     "grep",
     "job_kill",
@@ -58,6 +60,7 @@
     "todo_write",
     "u5_canary",
     "u6fs_probe",
+    "update_goal",
     "web_fetch",
     "web_search",
     "write"
@@ -79,7 +82,7 @@
   },
   "sessionEvents": {
     "session-a5sf-pd31-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-a5sf-pd31-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-31-46Z-workspace--/session-a5sf-pd31-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -100,7 +103,7 @@
       }
     },
     "session-a5sf-pd31-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-a5sf-pd31-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-31-46Z-workspace--/session-a5sf-pd31-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -123,7 +126,7 @@
       }
     },
     "session-team-child-aacd66b1758e453d3eabdea1195f11d9": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-06-26Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-31-46Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -153,12 +156,12 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T15:08:10.054Z",
-    "to": "2026-11-08T15:08:10.585Z"
+    "from": "2026-11-08T16:33:28.537Z",
+    "to": "2026-11-08T16:33:29.058Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml",
-    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
     "arm": "postfix",
     "mutation": "none"
   },

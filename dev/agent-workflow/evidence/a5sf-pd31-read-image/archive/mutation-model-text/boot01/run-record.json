@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd31-read-image-postfix-model-text-2026-11-08T15-17-17-298Z-b1",
+  "runId": "a5sf-pd31-read-image-postfix-model-text-2026-11-08T16-37-57-016Z-b1",
   "suite": "a5sf-pd31-read-image",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T15:17:17.298Z",
+  "startedAt": "2026-11-08T16:37:57.017Z",
   "selectedCases": [
     "pd31:image-route-allow",
     "pd31:image-bytes-and-attachment",
@@ -24,7 +24,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "2a7ec30ba0cb9bcfab2680ffb6f5541843573863",
+      "head": "055fa822bf4b8ca9428fe6873ff4c1fd033d07bc",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -35,7 +35,7 @@
       "source": "task PD31-READ-IMAGE explicit boot authorisation (2026-11-14), arm=postfix-model-text"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "2a7ec30ba0cb9bcfab2680ffb6f5541843573863",
+    "teamSha": "055fa822bf4b8ca9428fe6873ff4c1fd033d07bc",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "modelSeam": {
       "provider": "deepseek-official",
@@ -45,21 +45,21 @@
     "mutation": "model-text",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd31-20261108T15-17-17Z"
+      "u5u5a5sfpd31-20261108T16-37-57Z"
     ]
   },
   "cases": [
     {
       "id": "pd31:image-route-allow",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.798Z",
+      "at": "2026-11-08T16:39:50.450Z",
       "proposition": "on a model route that does NOT declare image input, `read_image` is refused by the capability gate BEFORE any provider I/O: the refusal names the model and the remedy, and there are ZERO guard facts and ZERO attachment bytes",
       "failed": [],
       "clauses": [
         {
           "id": "refused",
           "ok": true,
-          "detail": "isError=true text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/workspace/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an im"
+          "detail": "isError=true text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/workspace/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an im"
         },
         {
           "id": "names-the-model",
@@ -86,7 +86,7 @@
     {
       "id": "pd31:image-bytes-and-attachment",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "on a text-only route there is no attachment to inspect: the refusal produces ZERO image blocks and ZERO image parts, so no bytes are read, stored or sent",
       "failed": [],
       "clauses": [
@@ -110,14 +110,14 @@
     {
       "id": "pd31:lane-deny-no-existence-oracle",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "on a text-only route the capability gate runs BEFORE path resolution, so an out-of-lane target and an absent one are the SAME refusal with ZERO guard facts: the lane is never consulted and no existence is disclosed",
       "failed": [],
       "clauses": [
         {
           "id": "out-of-lane-route-refusal",
           "ok": true,
-          "detail": "facts=0 text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/out-of-lane/secret-out-of-lane.png\" as an image: model \"deepseek-"
+          "detail": "facts=0 text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/out-of-lane/secret-out-of-lane.png\" as an image: model \"deepseek-"
         },
         {
           "id": "missing-route-refusal",
@@ -139,7 +139,7 @@
     {
       "id": "pd31:non-image-native-shape",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "a `.txt` file is refused by the tool's own EXTENSION law before any fs I/O or attachment write — a typed refusal, not a crash, and it does not depend on the model route",
       "failed": [],
       "clauses": [
@@ -151,7 +151,7 @@
         {
           "id": "extension-law",
           "ok": true,
-          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PN"
+          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PN"
         },
         {
           "id": "zero-facts",
@@ -168,19 +168,19 @@
     {
       "id": "pd31:over-limit-refused-whole",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "on a text-only route the capability gate runs BEFORE the limits: both over-limit calls are the same route refusal with zero guard facts, so the limit arms cannot be confused with a capability answer",
       "failed": [],
       "clauses": [
         {
           "id": "route-gate-precedes-dimension",
           "ok": true,
-          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/workspace/over-dimension.png\" as an image: model \"deepseek-v4-fla facts=0"
+          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/workspace/over-dimension.png\" as an image: model \"deepseek-v4-fla facts=0"
         },
         {
           "id": "route-gate-precedes-byte-cap",
           "ok": true,
-          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/workspace/over-byte-cap.png\" as an image: model \"deepseek-v4-flas facts=0"
+          "detail": "text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/workspace/over-byte-cap.png\" as an image: model \"deepseek-v4-flas facts=0"
         },
         {
           "id": "no-attachment",
@@ -192,7 +192,7 @@
     {
       "id": "pd31:image-block-not-text",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "on a text-only route no image bytes reach the wire at all: ZERO image parts and NO text block embeds the PNG bytes",
       "failed": [],
       "clauses": [
@@ -211,13 +211,13 @@
     {
       "id": "pd31:surface-and-control",
       "verdict": "PASS",
-      "at": "2026-11-08T15:19:08.799Z",
+      "at": "2026-11-08T16:39:50.451Z",
       "proposition": "the confined native faces are UNAFFECTED: `read` on the same lane still returns the text and still writes its allow fact, so a red image arm cannot be explained by a dead realm",
       "clauses": [
         {
           "id": "read-ok",
           "ok": true,
-          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-17-17Z/workspace/in-lane.txt</path>\n<type>file"
+          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/workspace/in-lane.txt</path>\n<type>file"
         },
         {
           "id": "read-fact",
@@ -243,11 +243,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T15:18:23.089Z",
-        "runId": "a5sf-pd31-read-image-postfix-model-text-2026-11-08T15-17-17-298Z-b1",
+        "at": "2026-11-08T16:39:03.007Z",
+        "runId": "a5sf-pd31-read-image-postfix-model-text-2026-11-08T16-37-57-016Z-b1",
         "suite": "a5sf-pd31-read-image",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd31-20261108T15-17-17Z",
+        "world": "u5u5a5sfpd31-20261108T16-37-57Z",
         "phase": "a5sf-pd31-read-image-postfix-model-text-boot1"
       }
     ]
@@ -255,17 +255,17 @@
   "boots": [
     {
       "phase": "a5sf-pd31-read-image-postfix-model-text-boot1",
-      "world": "u5u5a5sfpd31-20261108T15-17-17Z",
+      "world": "u5u5a5sfpd31-20261108T16-37-57Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T15-17-17Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-37-57Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd31-read-image-postfix-model-text-2026-11-08T15-17-17-298Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd31-read-image-postfix-model-text-2026-11-08T16-37-57-016Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T15:19:08.800Z"
+  "finishedAt": "2026-11-08T16:39:50.452Z"
 }

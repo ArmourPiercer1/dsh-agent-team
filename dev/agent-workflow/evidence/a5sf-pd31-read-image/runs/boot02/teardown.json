@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-08T15:08:13.984Z",
+  "at": "2026-11-08T16:33:32.492Z",
   "teardown": {
     "host": {
       "wasRunning": true,
@@ -7,11 +7,11 @@
       "killed": true,
       "portFree": true
     },
-    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-06-26Z",
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z",
     "releasedPorts": [
-      3190,
-      13051,
-      3190
+      3188,
+      13052,
+      3188
     ],
     "killedPids": [
       291

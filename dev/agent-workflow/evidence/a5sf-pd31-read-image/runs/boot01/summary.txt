@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-pd31-read-image-postfix-2026-11-08T15-04-45-159Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T15-04-45Z recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-pd31-read-image-postfix-2026-11-08T16-29-58-376Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-29-58Z recordClass=DEV-LIVE (not candidate evidence)

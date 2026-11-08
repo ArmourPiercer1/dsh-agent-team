@@ -9,7 +9,7 @@ laneVerdict                   PROVEN                        PROVEN
 nonImageVerdict               PROVEN                        PROVEN
 overLimitVerdict              PROVEN                        PROVEN
 notTextVerdict                PROVEN                        PROVEN
-surfaceACount                 33                            33
+surfaceACount                 36                            36
 readImageOnSurface            true                          true
 allowFactsForInLane           2                             2
 denyFactsForOutOfLane         1                             1

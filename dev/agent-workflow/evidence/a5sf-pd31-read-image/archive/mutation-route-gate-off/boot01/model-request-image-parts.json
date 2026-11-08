@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-pd31-read-image/model-request-image-parts/1",
-  "at": "2026-11-08T15:21:19.926Z",
+  "at": "2026-11-08T16:42:02.050Z",
   "note": "every IMAGE content part found in the model requests the leased mock actually received; bytes/sha256 are decoded from the part, so a shell or a text paste cannot pass",
   "expectedImage": {
     "bytes": 68,

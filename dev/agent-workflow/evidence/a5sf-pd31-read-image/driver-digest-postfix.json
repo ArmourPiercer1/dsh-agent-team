@@ -1,12 +1,12 @@
 {
-  "at": "2026-11-08T15:04:45.058Z",
+  "at": "2026-11-08T16:29:57.874Z",
   "arm": "postfix",
   "mutation": "none",
-  "head": "2a7ec30ba0cb9bcfab2680ffb6f5541843573863",
+  "head": "055fa822bf4b8ca9428fe6873ff4c1fd033d07bc",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "fe2c72c00601e49af3a76fe78c50a367c7683d909256a3da37c6f1d0059c48c8",
+  "driverSha256": "dd433e7c3b64f69f7262d2b20122265083262977edf12df04fca7e1c2b21e4a8",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
@@ -27,7 +27,7 @@
   ],
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml",
-    "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
     "arm": "postfix",
     "mutation": "none"
   },

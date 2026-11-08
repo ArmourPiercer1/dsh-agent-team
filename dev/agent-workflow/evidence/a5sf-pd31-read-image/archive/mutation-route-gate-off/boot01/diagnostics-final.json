@@ -2,24 +2,24 @@
   "mockRequests": [
     {
       "seq": 0,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD31_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
-      "isARequest": false,
-      "tools": 43,
-      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD31_DISC_DONE\"}"
-    },
-    {
-      "seq": 1,
       "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD31_DISC\\\"}]\"}]",
       "isARequest": false,
       "tools": 0,
       "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd31 session\"}"
     },
     {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD31_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD31_DISC_DONE\"}"
+    },
+    {
       "seq": 2,
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:daa6ea513a72c058abe506393b530e63d1ea610172a1bf3122f8a9bc783e7936] A5SF_PD31_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
       "isARequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd31-team\",\"requestToken\":\"a5sf-pd31-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd31-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace\",\"prompt\":\"a5sf-pd"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd31-team\",\"requestToken\":\"a5sf-pd31-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd31-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace\",\"prompt\":\"a5sf-pd"
     },
     {
       "seq": 3,
@@ -39,8 +39,8 @@
       "seq": 5,
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd31-turn-delegate] a5sf-pd31-turn: run the probes exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 ba",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-read\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/in-lane.txt\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-read\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/in-lane.txt\"}}]}"
     },
     {
       "seq": 6,
@@ -51,52 +51,52 @@
     },
     {
       "seq": 7,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-read\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_PD31_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-read\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_PD31_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-in\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/probe.png\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-in\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png\"}}]}"
     },
     {
       "seq": 8,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-in\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/probe.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 3x2 px, 68 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"[image omitted because this model accepts text only; attachment sha256:0bf7e492]\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-in\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 3x2 px, 68 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"[image omitted because this model accepts text only; attachment sha256:0bf7e492]\"}],\"is_error\":false}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-out\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/secret-out-of-lane.png\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-out\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/secret-out-of-lane.png\"}}]}"
     },
     {
       "seq": 9,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-missing\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/does-not-exist-out-of-lane.png\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-missing\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/does-not-exist-out-of-lane.png\"}}]}"
     },
     {
       "seq": 10,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-missing\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-missing\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-txt\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/notes.txt\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-txt\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/notes.txt\"}}]}"
     },
     {
       "seq": 11,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-txt\",\"content\":[{\"type\":\"text\",\"text\":\"Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/notes.txt\\\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-txt\",\"content\":[{\"type\":\"text\",\"text\":\"Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/notes.txt\\\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats\"}],\"is_error\":true}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-big-dim\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-dimension.png\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-big-dim\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-dimension.png\"}}]}"
     },
     {
       "seq": 12,
       "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-big-dim\",\"content\":[{\"type\":\"text\",\"text\":\"Error: Image exceeds the configured per-side pixel limit.\"}],\"is_error\":true}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-big-bytes\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-byte-cap.png\"}}]}"
+      "tools": 36,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd31-image-big-bytes\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png\"}}]}"
     },
     {
       "seq": 13,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-big-bytes\",\"content\":[{\"type\":\"text\",\"text\":\"Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-byte-cap.png\\\": 20971521 bytes exceeds the 20971520-byte limit\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd31-image-big-bytes\",\"content\":[{\"type\":\"text\",\"text\":\"Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png\\\": 20971521 bytes exceeds the 20971520-byte limit\"}],\"is_error\":true}]",
       "isARequest": true,
-      "tools": 33,
-      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD31_MEMBER_A_DONE Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-byte-cap.png\\\": 20971521 bytes exceeds the 20971520-byte limit\"}"
+      "tools": 36,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD31_MEMBER_A_DONE Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png\\\": 20971521 bytes exceeds the 20971520-byte limit\"}"
     },
     {
       "seq": 14,
@@ -113,13 +113,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T15:21:16.673Z",
+      "observedAt": "2026-11-08T16:41:58.794Z",
       "tool": "read",
       "callId": "call-a5sfpd31-read"
     },
@@ -128,13 +128,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-08T15:21:16.678Z",
+      "observedAt": "2026-11-08T16:41:58.800Z",
       "tool": "read",
       "callId": "call-a5sfpd31-read"
     },
@@ -143,13 +143,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/probe.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 3,
-      "observedAt": "2026-11-08T15:21:16.720Z",
+      "observedAt": "2026-11-08T16:41:58.849Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-in"
     },
@@ -158,13 +158,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "readBytes",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/probe.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/probe.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 4,
-      "observedAt": "2026-11-08T15:21:16.723Z",
+      "observedAt": "2026-11-08T16:41:58.852Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-in"
     },
@@ -173,13 +173,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/secret-out-of-lane.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/secret-out-of-lane.png",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 5,
-      "observedAt": "2026-11-08T15:21:16.789Z",
+      "observedAt": "2026-11-08T16:41:58.935Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-out"
     },
@@ -188,13 +188,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/out-of-lane/does-not-exist-out-of-lane.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/out-of-lane/does-not-exist-out-of-lane.png",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 6,
-      "observedAt": "2026-11-08T15:21:16.818Z",
+      "observedAt": "2026-11-08T16:41:58.968Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-missing"
     },
@@ -203,13 +203,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-dimension.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-dimension.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 7,
-      "observedAt": "2026-11-08T15:21:16.870Z",
+      "observedAt": "2026-11-08T16:41:59.026Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-big-dim"
     },
@@ -218,13 +218,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "readBytes",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-dimension.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-dimension.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 8,
-      "observedAt": "2026-11-08T15:21:16.872Z",
+      "observedAt": "2026-11-08T16:41:59.028Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-big-dim"
     },
@@ -233,13 +233,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-byte-cap.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 9,
-      "observedAt": "2026-11-08T15:21:16.900Z",
+      "observedAt": "2026-11-08T16:41:59.060Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-big-bytes"
     },
@@ -248,13 +248,13 @@
       "realm": "member",
       "memberIdentity": "inst-00k348v0zo51",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:51697129634bf789d172e8b58d9ac0c8",
+      "policyRevision": "a5sf1:b2cd7421e71ee80b87b2c32cb2dc3248",
       "method": "readBytes",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/workspace/over-byte-cap.png",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/workspace/over-byte-cap.png",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 10,
-      "observedAt": "2026-11-08T15:21:16.902Z",
+      "observedAt": "2026-11-08T16:41:59.063Z",
       "tool": "read_image",
       "callId": "call-a5sfpd31-image-big-bytes"
     }
@@ -287,11 +287,13 @@
     },
     "mockRequests": 15,
     "aModelRequests": 8,
-    "surfaceACount": 33,
+    "surfaceACount": 36,
     "surfaceANames": [
       "bash",
+      "create_goal",
       "edit",
       "exit_plan_mode",
+      "get_goal",
       "glob",
       "grep",
       "job_kill",
@@ -319,6 +321,7 @@
       "todo_write",
       "u5_canary",
       "u6fs_probe",
+      "update_goal",
       "web_fetch",
       "web_search",
       "write"
@@ -333,7 +336,7 @@
     },
     "sessionEvents": {
       "session-a5sf-pd31-boot": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-19-28Z-workspace--/session-a5sf-pd31-boot/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-40-10Z-workspace--/session-a5sf-pd31-boot/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -354,7 +357,7 @@
         }
       },
       "session-a5sf-pd31-team": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-19-28Z-workspace--/session-a5sf-pd31-team/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-40-10Z-workspace--/session-a5sf-pd31-team/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -377,7 +380,7 @@
         }
       },
       "session-team-child-aacd66b1758e453d3eabdea1195f11d9": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-19-28Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T15-19-28Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd31-read-image-tests-homes-u5u5a5sfpd31-20261108T16-40-10Z-workspace--/session-team-child-aacd66b1758e453d3eabdea1195f11d9/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -407,12 +410,12 @@
       "worker"
     ],
     "memberWindow": {
-      "from": "2026-11-08T15:21:16.167Z",
-      "to": "2026-11-08T15:21:16.713Z"
+      "from": "2026-11-08T16:41:58.211Z",
+      "to": "2026-11-08T16:41:58.840Z"
     },
     "composition": {
       "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml",
-      "sha256": "f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48",
+      "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
       "arm": "postfix",
       "mutation": "route-gate-off"
     },

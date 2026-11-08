@@ -274,3 +274,225 @@ agreeing=true differing=[]
 [2026-11-08T15:21:20.179Z] mutation run: no two-boot agreement is claimed (single boot by design); control verdict below
 [2026-11-08T15:21:20.216Z] host porcelain after: []
 [2026-11-08T15:21:20.217Z] MUTATION CONTROL OK mutation=route-gate-off successArm=GREEN propositionVerdict=PROVEN want=served inLaneAllowFacts=2 imageParts=0 proposition=with the host capability gate removed and a TEXT-ONLY model, the read is SERVED 
+[2026-11-08T16:29:57.923Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/archive/postfix-2026-11-08T16-29-57-922Z
+[2026-11-08T16:29:57.927Z] START arm=postfix mutation=none head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml sha256=0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 model=deepseek-flash expectAllow=true boots=2
+[2026-11-08T16:29:58.335Z] host porcelain before: []
+[2026-11-08T16:29:58.416Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:29:58.418Z] [boot1] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:29:58.423Z] [boot1] world=u5u5a5sfpd31-20261108T16-29-58Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z
+[2026-11-08T16:29:58.424Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:29:58.456Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-flash
+[2026-11-08T16:31:01.347Z] [boot1] mock on 13052
+[2026-11-08T16:31:42.014Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-29-58Z/instance-port3188.log
+[2026-11-08T16:31:42.555Z] [boot1] p6t6 health=true
+[2026-11-08T16:31:42.825Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:31:43.397Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-w7hng9u40l","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:e91b2dcb55e9c62cae611d791fb44b817e89113f76a640b58dcfa752019d44bc"},"createdAt":"2026-11-08T16:31:42.878Z","generatio
+[2026-11-08T16:31:43.397Z] [boot1] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:31:46.598Z] [boot1] mock quiesced=true
+[2026-11-08T16:31:46.605Z] [boot1] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:image-route-allow: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:image-block-not-text: PASS
+[2026-11-08T16:31:46.626Z] [boot1] case pd31:surface-and-control: PASS
+[2026-11-08T16:31:46.627Z] [boot1] diagnostics(final): mockRequests=21 guardFacts=10
+[2026-11-08T16:31:46.627Z] [boot1] RUN-SUMMARY run=a5sf-pd31-read-image-postfix-2026-11-08T16-29-58-376Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-29-58Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:31:46.776Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":78,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z","releasedPorts":[3188,13052,3188],"killedPids":[78],"notes":[]}
+[2026-11-08T16:31:46.777Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:31:46.850Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:31:46.850Z] [boot2] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:31:46.853Z] [boot2] world=u5u5a5sfpd31-20261108T16-31-46Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z
+[2026-11-08T16:31:46.854Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:31:46.881Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-flash
+[2026-11-08T16:32:49.466Z] [boot2] mock on 13052
+[2026-11-08T16:33:27.819Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-31-46Z/instance-port3188.log
+[2026-11-08T16:33:28.266Z] [boot2] p6t6 health=true
+[2026-11-08T16:33:28.534Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:33:29.058Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-wlcqim8z9f","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:61c0546a74bc0a9b26a22f20f54785e68e3db75f9db3c6450f7a35e1ad655f12"},"createdAt":"2026-11-08T16:33:28.559Z","generatio
+[2026-11-08T16:33:29.058Z] [boot2] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:33:32.258Z] [boot2] mock quiesced=true
+[2026-11-08T16:33:32.266Z] [boot2] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:33:32.288Z] [boot2] case pd31:image-route-allow: PASS
+[2026-11-08T16:33:32.288Z] [boot2] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:33:32.288Z] [boot2] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:33:32.288Z] [boot2] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:33:32.289Z] [boot2] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:33:32.289Z] [boot2] case pd31:image-block-not-text: PASS
+[2026-11-08T16:33:32.289Z] [boot2] case pd31:surface-and-control: PASS
+[2026-11-08T16:33:32.289Z] [boot2] diagnostics(final): mockRequests=21 guardFacts=10
+[2026-11-08T16:33:32.290Z] [boot2] RUN-SUMMARY run=a5sf-pd31-read-image-postfix-2026-11-08T16-31-46-811Z-b2 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-31-46Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:33:32.449Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":291,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-31-46Z","releasedPorts":[3188,13052,3188],"killedPids":[291],"notes":[]}
+[2026-11-08T16:33:32.449Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:33:32.493Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+mutation                      none                          none
+overall                       PASS                          PASS
+capabilityVerdict             PROVEN                        PROVEN
+attachmentVerdict             PROVEN                        PROVEN
+laneVerdict                   PROVEN                        PROVEN
+nonImageVerdict               PROVEN                        PROVEN
+overLimitVerdict              PROVEN                        PROVEN
+notTextVerdict                PROVEN                        PROVEN
+surfaceACount                 36                            36
+readImageOnSurface            true                          true
+allowFactsForInLane           2                             2
+denyFactsForOutOfLane         1                             1
+guardAllow                    8                             8
+guardDeny                     2                             2
+imageFacts                    {"total":8,"allow":6,"deny":2,"methods":["stat:allow:call-a5sfpd31-image-in","readBytes:allow:call-a5sfpd31-image-in","stat:deny:call-a5sfpd31-image-out","stat:deny:call-a5sfpd31-image-missing","stat:allow:call-a5sfpd31-image-big-dim","readBytes:allow:call-a5sfpd31-image-big-dim","stat:allow:call-a5sfpd31-image-big-bytes","readBytes:allow:call-a5sfpd31-image-big-bytes"]}{"total":8,"allow":6,"deny":2,"methods":["stat:allow:call-a5sfpd31-image-in","readBytes:allow:call-a5sfpd31-image-in","stat:deny:call-a5sfpd31-image-out","stat:deny:call-a5sfpd31-image-missing","stat:allow:call-a5sfpd31-image-big-dim","readBytes:allow:call-a5sfpd31-image-big-dim","stat:allow:call-a5sfpd31-image-big-bytes","readBytes:allow:call-a5sfpd31-image-big-bytes"]}
+requestImageParts             6                             6
+requestImagePartDigests       ["0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"]["0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"]
+model                         {"provider":"deepseek-official","id":"deepseek-flash","expectAllow":true}{"provider":"deepseek-official","id":"deepseek-flash","expectAllow":true}
+mutationRecord                null                          null
+requestsCarryingImageBinaryInText0                             0
+requestsCarryingSecretImage   0                             0
+aModelRequests                8                             8
+
+agreeing=true differing=[]
+[2026-11-08T16:33:32.535Z] host porcelain after: []
+[2026-11-08T16:33:32.535Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T16:33:59.260Z] ARCHIVE: (nothing to archive)
+[2026-11-08T16:33:59.264Z] START arm=prefix mutation=none head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml sha256=0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 model=deepseek-v4-flash expectAllow=false boots=2
+[2026-11-08T16:33:59.292Z] host porcelain before: []
+[2026-11-08T16:33:59.351Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:33:59.352Z] [boot1] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:33:59.356Z] [boot1] world=u5u5a5sfpd31-20261108T16-33-59Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-33-59Z
+[2026-11-08T16:33:59.357Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-33-59Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:33:59.383Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-v4-flash
+[2026-11-08T16:35:02.304Z] [boot1] mock on 13052
+[2026-11-08T16:35:42.214Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-33-59Z/instance-port3188.log
+[2026-11-08T16:35:42.604Z] [boot1] p6t6 health=true
+[2026-11-08T16:35:42.875Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:35:43.457Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-dsk7szv8wg","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:78c718cd9021bd10d3840fb215ec4df2df7549763b3661b10c3d588029df1714"},"createdAt":"2026-11-08T16:35:42.929Z","generatio
+[2026-11-08T16:35:43.457Z] [boot1] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:35:46.658Z] [boot1] mock quiesced=true
+[2026-11-08T16:35:46.666Z] [boot1] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:35:46.692Z] [boot1] case pd31:image-route-allow: PASS
+[2026-11-08T16:35:46.692Z] [boot1] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:35:46.692Z] [boot1] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:35:46.693Z] [boot1] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:35:46.693Z] [boot1] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:35:46.693Z] [boot1] case pd31:image-block-not-text: PASS
+[2026-11-08T16:35:46.693Z] [boot1] case pd31:surface-and-control: PASS
+[2026-11-08T16:35:46.694Z] [boot1] diagnostics(final): mockRequests=15 guardFacts=2
+[2026-11-08T16:35:46.694Z] [boot1] RUN-SUMMARY run=a5sf-pd31-read-image-prefix-2026-11-08T16-33-59-321Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-33-59Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:35:46.856Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":78,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-33-59Z","releasedPorts":[3188,13052,3188],"killedPids":[78],"notes":[]}
+[2026-11-08T16:35:46.856Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:35:46.938Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:35:46.939Z] [boot2] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:35:46.942Z] [boot2] world=u5u5a5sfpd31-20261108T16-35-46Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-35-46Z
+[2026-11-08T16:35:46.943Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-35-46Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:35:46.977Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-v4-flash
+[2026-11-08T16:36:49.896Z] [boot2] mock on 13052
+[2026-11-08T16:37:29.895Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-35-46Z/instance-port3188.log
+[2026-11-08T16:37:30.335Z] [boot2] p6t6 health=true
+[2026-11-08T16:37:30.605Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:37:31.166Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-bcjgv4m3wo","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:eaac06131e1d9f4d365ab72f96a6bb7d7ef8c18c6c49f2b923a2cd329bb6de67"},"createdAt":"2026-11-08T16:37:30.632Z","generatio
+[2026-11-08T16:37:31.167Z] [boot2] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:37:34.368Z] [boot2] mock quiesced=true
+[2026-11-08T16:37:34.375Z] [boot2] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:37:34.399Z] [boot2] case pd31:image-route-allow: PASS
+[2026-11-08T16:37:34.399Z] [boot2] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:37:34.399Z] [boot2] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:37:34.399Z] [boot2] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:37:34.399Z] [boot2] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:37:34.400Z] [boot2] case pd31:image-block-not-text: PASS
+[2026-11-08T16:37:34.400Z] [boot2] case pd31:surface-and-control: PASS
+[2026-11-08T16:37:34.400Z] [boot2] diagnostics(final): mockRequests=15 guardFacts=2
+[2026-11-08T16:37:34.401Z] [boot2] RUN-SUMMARY run=a5sf-pd31-read-image-prefix-2026-11-08T16-35-46-896Z-b2 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-35-46Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:37:34.573Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":290,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-35-46Z","releasedPorts":[3188,13052,3188],"killedPids":[290],"notes":[]}
+[2026-11-08T16:37:34.574Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:37:34.612Z] TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+mutation                      none                          none
+overall                       PASS                          PASS
+capabilityVerdict             PROVEN                        PROVEN
+attachmentVerdict             PROVEN                        PROVEN
+laneVerdict                   PROVEN                        PROVEN
+nonImageVerdict               PROVEN                        PROVEN
+overLimitVerdict              PROVEN                        PROVEN
+notTextVerdict                PROVEN                        PROVEN
+surfaceACount                 36                            36
+readImageOnSurface            true                          true
+allowFactsForInLane           0                             0
+denyFactsForOutOfLane         0                             0
+guardAllow                    2                             2
+guardDeny                     0                             0
+imageFacts                    {"total":0,"allow":0,"deny":0,"methods":[]}{"total":0,"allow":0,"deny":0,"methods":[]}
+requestImageParts             0                             0
+requestImagePartDigests       []                            []
+model                         {"provider":"deepseek-official","id":"deepseek-v4-flash","expectAllow":false}{"provider":"deepseek-official","id":"deepseek-v4-flash","expectAllow":false}
+mutationRecord                null                          null
+requestsCarryingImageBinaryInText0                             0
+requestsCarryingSecretImage   0                             0
+aModelRequests                8                             8
+
+agreeing=true differing=[]
+[2026-11-08T16:37:34.648Z] host porcelain after: []
+[2026-11-08T16:37:34.648Z] RESULT PASS arm=prefix (2/2 boots; agreeing pair=true)
+[2026-11-08T16:37:56.957Z] ARCHIVE: (nothing to archive)
+[2026-11-08T16:37:56.960Z] START arm=postfix mutation=model-text head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml sha256=0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 model=deepseek-v4-flash expectAllow=false boots=1
+[2026-11-08T16:37:56.987Z] host porcelain before: []
+[2026-11-08T16:37:57.046Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:37:57.047Z] [boot1] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:37:57.051Z] [boot1] world=u5u5a5sfpd31-20261108T16-37-57Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z
+[2026-11-08T16:37:57.051Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:37:57.079Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-v4-flash
+[2026-11-08T16:39:03.006Z] [boot1] mock on 13052
+[2026-11-08T16:39:45.955Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-37-57Z/instance-port3188.log
+[2026-11-08T16:39:46.390Z] [boot1] p6t6 health=true
+[2026-11-08T16:39:46.661Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:39:47.220Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-5f7o8gcla7","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:c83ea1384e8749ef90e4419c833e002b855414104a45f783b9e824c8ba6d7a45"},"createdAt":"2026-11-08T16:39:46.714Z","generatio
+[2026-11-08T16:39:47.220Z] [boot1] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:39:50.422Z] [boot1] mock quiesced=true
+[2026-11-08T16:39:50.430Z] [boot1] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:39:50.450Z] [boot1] case pd31:image-route-allow: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:image-block-not-text: PASS
+[2026-11-08T16:39:50.451Z] [boot1] case pd31:surface-and-control: PASS
+[2026-11-08T16:39:50.452Z] [boot1] diagnostics(final): mockRequests=15 guardFacts=2
+[2026-11-08T16:39:50.452Z] [boot1] RUN-SUMMARY run=a5sf-pd31-read-image-postfix-model-text-2026-11-08T16-37-57-016Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-37-57Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:39:50.608Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":79,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-37-57Z","releasedPorts":[3188,13052,3188],"killedPids":[79],"notes":[]}
+[2026-11-08T16:39:50.608Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:39:50.642Z] mutation run: no two-boot agreement is claimed (single boot by design); control verdict below
+[2026-11-08T16:39:50.674Z] host porcelain after: []
+[2026-11-08T16:39:50.674Z] MUTATION CONTROL OK mutation=model-text successArm=RED propositionVerdict=PROVEN want=refused inLaneAllowFacts=0 imageParts=0 proposition=on a model route that does NOT declare image input, `read_image` is refused by t
+[2026-11-08T16:40:10.441Z] ARCHIVE: (nothing to archive)
+[2026-11-08T16:40:10.444Z] START arm=postfix mutation=route-gate-off head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/cordis.patch.yml sha256=0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 model=deepseek-v4-flash expectAllow=true boots=1
+[2026-11-08T16:40:10.472Z] host porcelain before: []
+[2026-11-08T16:40:10.534Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T16:40:10.535Z] [boot1] dev-live slot #0 face=ReadImage world=u5a5sfpd31 head=055fa822bf4b8ca9428fe6873ff4c1fd033d07bc
+[2026-11-08T16:40:10.539Z] [boot1] world=u5u5a5sfpd31-20261108T16-40-10Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z
+[2026-11-08T16:40:10.540Z] [install-graph] /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z/profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image (package dsh-agent-team@0.1.1-alpha.2)
+[2026-11-08T16:40:10.567Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools model=deepseek-v4-flash
+[2026-11-08T16:40:10.568Z] [mutation] route-gate-off applied to /home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-tool-fs@0.2.0-rc.2_bf0da04cc963a4827c7c5eca38b096b0/node_modules/@deepseek-ai/dsh-tool-fs/lib/index.js (66742231de99 -> 12908be1896d); pinned host source /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js sha256=66742231de99 untouched
+[2026-11-08T16:41:13.010Z] [boot1] mock on 13052
+[2026-11-08T16:41:57.367Z] [boot1] BOOTED port=3190 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/dev/agent-workflow/evidence/a5sf-pd31-read-image/driver/logs/u5u5a5sfpd31-20261108T16-40-10Z/instance-port3190.log
+[2026-11-08T16:41:57.907Z] [boot1] p6t6 health=true
+[2026-11-08T16:41:58.178Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T16:41:58.840Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd31-qiweyjwgwh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd31-team","blueprint":{"blueprintId":"team.a5sf.pd31.main","revision":"1","contentHash":"sha256:9384e1381ecfecf8126499395a5cfc0ed3b8b1d71382a53006cde7256369d77b"},"createdAt":"2026-11-08T16:41:58.235Z","generatio
+[2026-11-08T16:41:58.840Z] [boot1] leader chain closed (A5SF_PD31_L1_DONE)=true
+[2026-11-08T16:42:02.040Z] [boot1] mock quiesced=true
+[2026-11-08T16:42:02.046Z] [boot1] members=[{"instanceId":"inst-00k348v0zo51","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-aacd66b1758e453d3eabdea1195f11d9
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:image-route-allow: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:image-bytes-and-attachment: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:lane-deny-no-existence-oracle: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:non-image-native-shape: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:over-limit-refused-whole: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:image-block-not-text: PASS
+[2026-11-08T16:42:02.068Z] [boot1] case pd31:surface-and-control: PASS
+[2026-11-08T16:42:02.069Z] [boot1] diagnostics(final): mockRequests=15 guardFacts=10
+[2026-11-08T16:42:02.070Z] [boot1] RUN-SUMMARY run=a5sf-pd31-read-image-postfix-route-gate-off-2026-11-08T16-40-10-502Z-b1 suite=a5sf-pd31-read-image overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd31-20261108T16-40-10Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T16:42:02.070Z] [mutation] route-gate-off restored /home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-tool-fs@0.2.0-rc.2_bf0da04cc963a4827c7c5eca38b096b0/node_modules/@deepseek-ai/dsh-tool-fs/lib/index.js (66742231de99)
+[2026-11-08T16:42:02.235Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":78,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-40-10Z","releasedPorts":[3190,13052,3190],"killedPids":[78],"notes":[]}
+[2026-11-08T16:42:02.235Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T16:42:02.270Z] mutation run: no two-boot agreement is claimed (single boot by design); control verdict below
+[2026-11-08T16:42:02.304Z] host porcelain after: []
+[2026-11-08T16:42:02.304Z] MUTATION CONTROL OK mutation=route-gate-off successArm=GREEN propositionVerdict=PROVEN want=served inLaneAllowFacts=2 imageParts=0 proposition=with the host capability gate removed and a TEXT-ONLY model, the read is SERVED 

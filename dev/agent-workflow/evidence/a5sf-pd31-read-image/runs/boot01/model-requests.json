@@ -20,7 +20,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -64,7 +64,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -108,7 +108,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -128,7 +128,7 @@
                 "requestToken": "a5sf-pd31-turn-delegate",
                 "delegationTemplateId": "worker",
                 "label": "a5sfpd31-worker-a",
-                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace",
                 "prompt": "a5sf-pd31-turn: run the probes exactly once each, one tool call at a time, then report."
               }
             }
@@ -169,7 +169,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -213,7 +213,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -229,7 +229,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -243,7 +243,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -275,7 +275,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -291,7 +291,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -305,7 +305,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -319,7 +319,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -333,11 +333,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -377,7 +377,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -393,7 +393,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -407,7 +407,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -421,7 +421,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -435,11 +435,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -461,7 +461,7 @@
               "id": "call-a5sfpd31-image-out",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
               }
             }
           ]
@@ -475,7 +475,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -507,7 +507,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -523,7 +523,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -537,7 +537,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -551,7 +551,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -565,11 +565,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -591,7 +591,7 @@
               "id": "call-a5sfpd31-image-out",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
               }
             }
           ]
@@ -605,7 +605,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -619,7 +619,7 @@
               "id": "call-a5sfpd31-image-missing",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png"
               }
             }
           ]
@@ -633,7 +633,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -665,7 +665,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -681,7 +681,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -695,7 +695,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -709,7 +709,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -723,11 +723,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -749,7 +749,7 @@
               "id": "call-a5sfpd31-image-out",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
               }
             }
           ]
@@ -763,7 +763,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -777,7 +777,7 @@
               "id": "call-a5sfpd31-image-missing",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png"
               }
             }
           ]
@@ -791,7 +791,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -805,7 +805,7 @@
               "id": "call-a5sfpd31-image-txt",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt"
               }
             }
           ]
@@ -819,7 +819,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
                 }
               ]
             }
@@ -851,7 +851,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -867,7 +867,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -881,7 +881,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -895,7 +895,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -909,11 +909,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -935,7 +935,7 @@
               "id": "call-a5sfpd31-image-out",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
               }
             }
           ]
@@ -949,7 +949,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -963,7 +963,7 @@
               "id": "call-a5sfpd31-image-missing",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png"
               }
             }
           ]
@@ -977,7 +977,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -991,7 +991,7 @@
               "id": "call-a5sfpd31-image-txt",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt"
               }
             }
           ]
@@ -1005,7 +1005,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
                 }
               ]
             }
@@ -1019,7 +1019,7 @@
               "id": "call-a5sfpd31-image-big-dim",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-dimension.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-dimension.png"
               }
             }
           ]
@@ -1065,7 +1065,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -1081,7 +1081,7 @@
               "id": "call-a5sfpd31-read",
               "name": "read",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt"
               }
             }
           ]
@@ -1095,7 +1095,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD31_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>"
                 }
               ]
             }
@@ -1109,7 +1109,7 @@
               "id": "call-a5sfpd31-image-in",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png"
               }
             }
           ]
@@ -1123,11 +1123,11 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
+                  "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/probe.png</path>\n<type>image</type>\n<content>\nimage/png image, 3x2 px, 68 bytes\n</content>"
                 },
                 {
                   "type": "text",
-                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
+                  "text": "Image \"probe.png\" (sha256:0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95); request preview 3x2px. Normalized copy (read-only; may be resized or re-encoded): \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/attachments/v1/objects/0b/0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95\" (3x2px, image/png"
                 },
                 {
                   "type": "image",
@@ -1149,7 +1149,7 @@
               "id": "call-a5sfpd31-image-out",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png"
               }
             }
           ]
@@ -1163,7 +1163,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/secret-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -1177,7 +1177,7 @@
               "id": "call-a5sfpd31-image-missing",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png"
               }
             }
           ]
@@ -1191,7 +1191,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
+                  "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/out-of-lane/does-not-exist-out-of-lane.png' is outside every allow subtree of the lane"
                 }
               ]
             }
@@ -1205,7 +1205,7 @@
               "id": "call-a5sfpd31-image-txt",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt"
               }
             }
           ]
@@ -1219,7 +1219,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/notes.txt\": the .txt extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
                 }
               ]
             }
@@ -1233,7 +1233,7 @@
               "id": "call-a5sfpd31-image-big-dim",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-dimension.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-dimension.png"
               }
             }
           ]
@@ -1261,7 +1261,7 @@
               "id": "call-a5sfpd31-image-big-bytes",
               "name": "read_image",
               "input": {
-                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-byte-cap.png"
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png"
               }
             }
           ]
@@ -1275,7 +1275,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit"
+                  "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace/over-byte-cap.png\": 20971521 bytes exceeds the 20971520-byte limit"
                 }
               ]
             }
@@ -1301,7 +1301,7 @@
             },
             {
               "type": "text",
-              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace\". Some platform temporary areas may also be"
+              "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace\". Some platform temporary areas may also be"
             },
             {
               "type": "text",
@@ -1321,7 +1321,7 @@
                 "requestToken": "a5sf-pd31-turn-delegate",
                 "delegationTemplateId": "worker",
                 "label": "a5sfpd31-worker-a",
-                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-04-45Z/workspace",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T16-29-58Z/workspace",
                 "prompt": "a5sf-pd31-turn: run the probes exactly once each, one tool call at a time, then report."
               }
             }
