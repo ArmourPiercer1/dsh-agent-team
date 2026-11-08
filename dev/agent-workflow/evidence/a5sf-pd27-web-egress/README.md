@@ -145,14 +145,18 @@ node --test tests/world-factory/a5sf-debt-register.test.mjs
 | `pnpm -r typecheck` | PASS (9 packages) |
 | `eslint` on every touched file | PASS (0 errors; the two test files are outside eslint's scope by the repo's own ignore pattern) |
 | `check:install-manifest` | 8 issues, **the same 8 the base tree reports** (pinned-dist `new URL()` sites); the lane's own new import is a declared dependency |
-| `check:artifacts:head` | NOT-RUN in this sandbox (see the log line reproduced below) |
-| `check:artifacts:committed` | see `gate-artifacts-committed.log` |
+| `check:artifacts:head` | **PASS** with an explicit writable store: `node scripts/check-artifacts-at-head.mjs --store-dir $PWD/.pnpm-store` → `verdict=ok … drift=0`, "HEAD carries its own build" (1981 compared files). Without `--store-dir` it is **NOT-RUN** in this sandbox, and a refusal is not a "fresh" verdict (log line below) |
+| `check:artifacts:committed` | **PASS**: `verdict=ok compared=1981 glue=110` — the working tree equals the git index on both install surfaces |
 | p4t6 session-event scan | **20/20** with the booking (`scanner counts 1449`, ledger `983 + 465 + 1`) |
 | debt register | PASS once the evidence file exists (this file) |
 
-`check:artifacts:head` refuses to run here — it is a sandbox limitation, **not** a green verdict:
+Without `--store-dir`, `check:artifacts:head` refuses to run here — a sandbox limitation, **not** a
+green verdict:
 
 ```
 [check-artifacts-at-head] NOT-RUN: the only discoverable pnpm store ... is not writable, so the
 scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".
 ```
+
+With the writable store the scratch installs and the build is verified (`verdict=ok`, `drift=0`), so
+the committed dist surface **is** a fresh build of itself.

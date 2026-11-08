@@ -8358,6 +8358,6 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   剩余步骤 + 设计写在 `dev/agent-workflow/evidence/a5sf-pd27-web-egress/README.md` §7。这不是 blocker，是预算。
 - **门（本地）**：`pnpm -r typecheck` 9/9；eslint 触碰文件 0 error；`check:install-manifest` **8 issues = base 树同值**
   （无可归因本 lane 的新项）；p4t6 `20/20`（booking `scanner 1449 = 983 + 465 + 1`）；debt register `10/10`；
-  `check:artifacts:head` **NOT-RUN**（沙箱 store 不可写——拒绝不是 fresh 判定，已写进证据 README §9）。
+  `check:artifacts:head` **PASS**（显式 `--store-dir $PWD/.pnpm-store`：`verdict=ok, drift=0`，"HEAD carries its own build"；不带 `--store-dir` 时是 NOT-RUN，拒绝不是 fresh 判定）；`check:artifacts:committed` **PASS**（1981 files / 110 glue）。
 - **纪律**：**无 grade、无 `V@B`、无 Q7/Authority/CI 变更、`CORE PATCH BUDGET = 0`、`release BLOCKED` 不变**；
   未改矩阵既有等级与 `NOT_WIRED`；未 merge、未 settle。
