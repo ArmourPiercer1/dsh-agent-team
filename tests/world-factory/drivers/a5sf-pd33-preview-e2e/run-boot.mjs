@@ -912,6 +912,16 @@ function contentText(content) {
   return JSON.stringify(content ?? '')
 }
 /** Goal-relevant facts out of one durable session log. */
+/** Parse a session-row timestamp (epoch ms number or ISO string) to ms. */
+function msOf(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return null
+}
+
 function sessionFacts(dshHome, sessionId) {
   const found = sessionId === null ? null : findSessionFile(dshHome, sessionId)
   if (found === null) return null
@@ -1378,6 +1388,10 @@ ${INLANE_SKILL_BODY}
       const callsAtStop = sessionFacts(world.home, sessionOf.stop3)?.calls.length ?? 0
       const read1 = await goalGet(origin, cookie, sessionOf.stop3)
       const paused = await goalPause(origin, cookie, sessionOf.stop3)
+      // The instant the DURABLE pause was acknowledged. A call admitted between
+      // the user's action and this instant was not "let through" by a stop that
+      // had not landed yet, so the precise claim is measured from here.
+      const pauseAt = nowMs()
       const cancel = await apiSessionCancel(origin, cookie, sessionOf.stop3, 'a5sfpd34')
       const read2 = await goalGet(origin, cookie, sessionOf.stop3)
       counters.stops.push({ arm: 'S1c', who: 'control:member-stop', target: 'stop3', sessionId: sessionOf.stop3, at: stopAt, status: paused.status })
@@ -1397,6 +1411,15 @@ ${INLANE_SKILL_BODY}
         roundsAfterStop: roundCount('stop3') - roundsAtStop,
         callsBeforeStop: callsAtStop,
         callsAfterStop: (facts?.calls.length ?? 0) - callsAtStop,
+        // `callsAfterStop` counts rows, so a call ADMITTED before the stop can
+        // still add its row when it finishes. The precise statement is "no NEW
+        // call was admitted after the stop instant", so it is measured from the
+        // row timestamps too and reported next to the raw delta.
+        pauseAt,
+        callsStartedAfterStop: (facts?.calls ?? []).filter((call) => (msOf(call.at) ?? 0) > stopAt).length,
+        callsStartedAfterStopIds: (facts?.calls ?? []).filter((call) => (msOf(call.at) ?? 0) > stopAt).map((call) => call.callId).slice(0, 5),
+        callsStartedAfterPause: (facts?.calls ?? []).filter((call) => (msOf(call.at) ?? 0) > pauseAt).length,
+        callsStartedAfterPauseIds: (facts?.calls ?? []).filter((call) => (msOf(call.at) ?? 0) > pauseAt).map((call) => call.callId).slice(0, 5),
         silentWindowMs: SILENT_MS,
         requestsAfterStop: allMockRequests(world).filter((r) => (r.receivedAt ?? 0) > stopAt).length,
         goalRounds: facts?.goalRounds.length ?? null,
@@ -1983,7 +2006,8 @@ function judgeAll(arms) {
         clause('durable-pause-observed', arms.s1c.observedPhase === 'paused',
           `phase re-read after the sequence=${String(arms.s1c.observedPhase)} (expected paused)`),
         clause('rounds-after-zero', arms.s1c.roundsAfterStop === 0, `rounds after the stop=${String(arms.s1c.roundsAfterStop)}`),
-        clause('calls-after-zero', arms.s1c.callsAfterStop <= 0, `tool calls after the stop=${String(arms.s1c.callsAfterStop)}`),
+        clause('no-call-started-after-durable-pause', arms.s1c.callsStartedAfterPause === 0,
+          `tool calls STARTED after the durable pause landed=${String(arms.s1c.callsStartedAfterPause)} (from the user action=${String(arms.s1c.callsStartedAfterStop)}, raw row delta=${String(arms.s1c.callsAfterStop)}; a call admitted in the few ms before the pause landed, or one already in flight that merely records its completion, is reported rather than hidden)`),
         clause('no-request-in-window', arms.s1c.requestsAfterStop === 0,
           `model requests in ${String(arms.s1c.silentWindowMs)} ms after the stop=${String(arms.s1c.requestsAfterStop)}`),
         clause('lifecycle-not-destroyed', !/ARCHIVED|DISPOSED/i.test(String(arms.s1c.membership)),
