@@ -1,0 +1,21 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-03kf81h13ox4",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf-pd27:inst-03kf81h13ox4:g1",
+    "method": "web:fetch",
+    "locator": "http://127.0.0.1:46199/known",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-08T10:21:08.447Z",
+    "tool": "web_fetch",
+    "callId": "call-a5sfpd27-fetch",
+    "annotations": [
+      "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+      "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+    ]
+  }
+]

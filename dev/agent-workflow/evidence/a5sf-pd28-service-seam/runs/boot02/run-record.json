@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T09-53-36-032Z-b2",
+  "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T10-17-00-529Z-b2",
   "suite": "a5sf-pd28-service-seam",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T09:53:36.032Z",
+  "startedAt": "2026-11-08T10:17:00.529Z",
   "selectedCases": [
     "pd28:skill-confined",
     "pd28:present-confined",
@@ -23,7 +23,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "24d2cf760e12f311c9d944152c8ee1b0bbc9ff59",
+      "head": "6f9a8c186634e972a370d094adcf3139a7bf311e",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -34,25 +34,25 @@
       "source": "task PD28-CONFINED-SKILL explicit boot authorisation (2026-11-14), arm=postfix"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "24d2cf760e12f311c9d944152c8ee1b0bbc9ff59",
+    "teamSha": "6f9a8c186634e972a370d094adcf3139a7bf311e",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd28-20261108T09-53-36Z"
+      "u5u5a5sfpd28-20261108T10-17-00Z"
     ]
   },
   "cases": [
     {
       "id": "pd28:skill-confined",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "a governed Member CAN load a declared skill body through its CONFINED `fs` face: the in-lane body returns with exactly ONE allow fact; the out-of-lane body is a typed `IO_READ_DENIED` with ZERO body bytes and exactly ONE deny fact; an undeclared name is a typed name refusal that reads nothing",
       "failed": [],
       "clauses": [
         {
           "id": "in-lane-body-returned",
           "ok": true,
-          "detail": "isError=false text=<skill_content name=\"pd28-in-lane-skill\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09"
+          "detail": "isError=false text=<skill_content name=\"pd28-in-lane-skill\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10"
         },
         {
           "id": "in-lane-one-allow-fact",
@@ -67,7 +67,7 @@
         {
           "id": "out-of-lane-typed-refusal",
           "ok": true,
-          "detail": "isError=true text=Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-53-36Z/skills-out-of-lane/pd28-out-of-lane-skill/"
+          "detail": "isError=true text=Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/skills-out-of-lane/pd28-out-of-lane-skill/"
         },
         {
           "id": "out-of-lane-zero-bytes",
@@ -99,14 +99,14 @@
     {
       "id": "pd28:present-confined",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "a governed Member CAN declare an in-lane deliverable through its CONFINED `fs` face (file presented, ONE `deliverables/presented` event, guard facts), while an out-of-lane path — existing or absent — is refused at the FIRST `lstat` with the guard fact carrying `IO_READ_DENIED`, NO event and no `file not found` existence oracle (the code lives in the FACT and in the tool result's `error.info.code`; the model text is the shipped host module rendering the lane's own decision, which is why this clause reads the code from the fact)",
       "failed": [],
       "clauses": [
         {
           "id": "in-lane-presented",
           "ok": true,
-          "detail": "isError=false text=Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-53-36Z/workspace/in-lane.txt"
+          "detail": "isError=false text=Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt"
         },
         {
           "id": "in-lane-guard-facts",
@@ -126,7 +126,7 @@
         {
           "id": "out-of-lane-typed-refusal",
           "ok": true,
-          "detail": "isError=true facts=[[\"lstat\",\"deny\",\"IO_READ_DENIED\"]] text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-53-36Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane"
+          "detail": "isError=true facts=[[\"lstat\",\"deny\",\"IO_READ_DENIED\"]] text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane"
         },
         {
           "id": "out-of-lane-zero-bytes",
@@ -141,7 +141,7 @@
         {
           "id": "missing-is-not-an-existence-oracle",
           "ok": true,
-          "detail": "isError=true facts=[[\"lstat\",\"deny\",\"IO_READ_DENIED\"]] text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-53-36Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of the lane"
+          "detail": "isError=true facts=[[\"lstat\",\"deny\",\"IO_READ_DENIED\"]] text=Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of the lane"
         },
         {
           "id": "no-extra-deliverables-event",
@@ -153,7 +153,7 @@
     {
       "id": "pd28:fs-controls",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "the confined native faces are UNAFFECTED by the restoration: `bash`, `read` and `grep` still execute on the lane and each writes its own allow fact (so the facts above are not a global shutdown)",
       "failed": [],
       "clauses": [
@@ -165,7 +165,7 @@
         {
           "id": "read-ok",
           "ok": true,
-          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-53-36Z/workspace/in-lane.txt</path>\n<type>fi"
+          "detail": "text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt</path>\n<type>fi"
         },
         {
           "id": "grep-ok",
@@ -192,7 +192,7 @@
     {
       "id": "pd28:fail-closed-typed",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "every name an earlier lane fail-closed is STILL the host router's typed `unknown tool`, and none executed — the restoration is additive, not a reopening",
       "failed": [],
       "clauses": [
@@ -206,7 +206,7 @@
     {
       "id": "pd28:surface-restored",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "the Member surface offers `skill` and `present` (both restored) and still offers no base-fs skill provider row",
       "failed": [],
       "clauses": [
@@ -230,7 +230,7 @@
     {
       "id": "pd28:no-out-of-lane-bytes",
       "verdict": "PASS",
-      "at": "2026-11-08T09:55:07.001Z",
+      "at": "2026-11-08T10:18:39.640Z",
       "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
       "failed": [],
       "clauses": [
@@ -257,11 +257,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T09:54:22.522Z",
-        "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T09-53-36-032Z-b2",
+        "at": "2026-11-08T10:17:50.310Z",
+        "runId": "a5sf-pd28-service-seam-postfix-2026-11-08T10-17-00-529Z-b2",
         "suite": "a5sf-pd28-service-seam",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd28-20261108T09-53-36Z",
+        "world": "u5u5a5sfpd28-20261108T10-17-00Z",
         "phase": "a5sf-pd28-service-seam-postfix-boot2"
       }
     ]
@@ -269,17 +269,17 @@
   "boots": [
     {
       "phase": "a5sf-pd28-service-seam-postfix-boot2",
-      "world": "u5u5a5sfpd28-20261108T09-53-36Z",
+      "world": "u5u5a5sfpd28-20261108T10-17-00Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T09-53-36Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T10-17-00Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd28-service-seam-postfix-2026-11-08T09-53-36-032Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd28-service-seam-postfix-2026-11-08T10-17-00-529Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T09:55:07.002Z"
+  "finishedAt": "2026-11-08T10:18:39.641Z"
 }

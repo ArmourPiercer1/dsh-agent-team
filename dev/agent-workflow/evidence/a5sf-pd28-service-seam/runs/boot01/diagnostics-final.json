@@ -19,7 +19,7 @@
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:065095271e1dbd4fa8f48c1f7d99c7c2a372a112882b99e2fe86a5cd4b745141] A5SF_PD28_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
       "isARequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd28-team\",\"requestToken\":\"a5sf-pd28-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd28-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace\",\"prompt\":\"a5sf-"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd28-team\",\"requestToken\":\"a5sf-pd28-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd28-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace\",\"prompt\":\"a5sf-"
     },
     {
       "seq": 3,
@@ -33,7 +33,7 @@
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd28-turn-delegate] a5sf-pd28-turn: run the probes exactly once each, one tool call at a time, then report.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 ba",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-bash\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt'\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-202611"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-bash\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt'\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-202611"
     },
     {
       "seq": 5,
@@ -54,14 +54,14 @@
       "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-bash\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_PD28_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_PD28_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-read\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-read\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt\"}}]}"
     },
     {
       "seq": 8,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-read\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_PD28_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-read\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_PD28_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-grep\",\"name\":\"grep\",\"arguments\":{\"pattern\":\"A5SF_PD28_IN_LANE_BYTES\",\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace\",\"include\":\"*.txt\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-grep\",\"name\":\"grep\",\"arguments\":{\"pattern\":\"A5SF_PD28_IN_LANE_BYTES\",\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace\",\"include\":\"*.txt\"}}]}"
     },
     {
       "seq": 9,
@@ -72,14 +72,14 @@
     },
     {
       "seq": 10,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-skill-in\",\"content\":[{\"type\":\"text\",\"text\":\"<skill_content name=\\\"pd28-in-lane-skill\\\">\\n<skill_resources>\\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/skills/pd28-in-lane-skill\\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\\n</skill_resources>\\n\\n<skill_instructions>\\nA5SF_PD28_SKILL_BODY_IN_LANE\\n\\n</skill_instructions>\\n</skill_content>\"}],",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-skill-in\",\"content\":[{\"type\":\"text\",\"text\":\"<skill_content name=\\\"pd28-in-lane-skill\\\">\\n<skill_resources>\\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/skills/pd28-in-lane-skill\\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\\n</skill_resources>\\n\\n<skill_instructions>\\nA5SF_PD28_SKILL_BODY_IN_LANE\\n\\n</skill_instructions>\\n</skill_content>\"}],",
       "isARequest": true,
       "tools": 31,
       "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-skill-out\",\"name\":\"skill\",\"arguments\":{\"name\":\"pd28-out-of-lane-skill\"}}]}"
     },
     {
       "seq": 11,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-skill-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/skills-out-of-lane/pd28-out-of-lane-skill/SKILL.md' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-skill-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/skills-out-of-lane/pd28-out-of-lane-skill/SKILL.md' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
       "isARequest": true,
       "tools": 31,
       "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-skill-unknown\",\"name\":\"skill\",\"arguments\":{\"name\":\"pd28-no-such-skill\"}}]}"
@@ -89,25 +89,25 @@
       "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-skill-unknown\",\"content\":[{\"type\":\"text\",\"text\":\"Error: skill \\\"pd28-no-such-skill\\\" is unknown or no longer available\"}],\"is_error\":true}]",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-in\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt\",\"description\":\"in-lane fixture\"}]}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-in\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt\",\"description\":\"in-lane fixture\"}]}}]}"
     },
     {
       "seq": 13,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-in\",\"content\":[{\"type\":\"text\",\"text\":\"Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-in\",\"content\":[{\"type\":\"text\",\"text\":\"Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt\"}],\"is_error\":false}]",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-out\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/secret-out-of-lane.txt\",\"description\":\"out-of-lane fixture\"}]}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-out\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/secret-out-of-lane.txt\",\"description\":\"out-of-lane fixture\"}]}}]}"
     },
     {
       "seq": 14,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-out\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
       "isARequest": true,
       "tools": 31,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-missing\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/does-not-exist-out-of-lane.txt\",\"description\":\"absent out-of-lane fixture\"}]}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-present-missing\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/does-not-exist-out-of-lane.txt\",\"description\":\"absent out-of-lane fixture\"}]}}]}"
     },
     {
       "seq": 15,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-missing\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd28-present-missing\",\"content\":[{\"type\":\"text\",\"text\":\"Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of the lane\"}],\"is_error\":true}]",
       "isARequest": true,
       "tools": 31,
       "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd28-closed-interrupt_agent\",\"name\":\"interrupt_agent\",\"arguments\":{}}]}"
@@ -190,13 +190,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "shellRead",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T09:53:29.425Z",
+      "observedAt": "2026-11-08T10:16:53.865Z",
       "tool": "bash",
       "callId": "call-a5sfpd28-bash"
     },
@@ -205,13 +205,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T09:53:29.430Z",
+      "observedAt": "2026-11-08T10:16:53.870Z",
       "tool": "bash",
       "callId": "call-a5sfpd28-bash"
     },
@@ -220,13 +220,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "spawn:write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-08T09:53:29.432Z",
+      "observedAt": "2026-11-08T10:16:53.873Z",
       "tool": "bash",
       "callId": "call-a5sfpd28-bash"
     },
@@ -235,13 +235,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-08T09:53:32.678Z",
+      "observedAt": "2026-11-08T10:16:57.144Z",
       "tool": "read",
       "callId": "call-a5sfpd28-read"
     },
@@ -250,13 +250,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-08T09:53:32.681Z",
+      "observedAt": "2026-11-08T10:16:57.147Z",
       "tool": "read",
       "callId": "call-a5sfpd28-read"
     },
@@ -265,13 +265,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "spawn",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 3,
-      "observedAt": "2026-11-08T09:53:32.734Z",
+      "observedAt": "2026-11-08T10:16:57.201Z",
       "tool": "grep",
       "callId": "call-a5sfpd28-grep",
       "annotations": [
@@ -284,13 +284,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/skills/pd28-in-lane-skill/SKILL.md",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/skills/pd28-in-lane-skill/SKILL.md",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 3,
-      "observedAt": "2026-11-08T09:53:32.795Z",
+      "observedAt": "2026-11-08T10:16:57.268Z",
       "tool": "skill",
       "callId": "call-a5sfpd28-skill-in"
     },
@@ -299,13 +299,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/skills-out-of-lane/pd28-out-of-lane-skill/SKILL.md",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/skills-out-of-lane/pd28-out-of-lane-skill/SKILL.md",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 4,
-      "observedAt": "2026-11-08T09:53:32.824Z",
+      "observedAt": "2026-11-08T10:16:57.300Z",
       "tool": "skill",
       "callId": "call-a5sfpd28-skill-out"
     },
@@ -314,13 +314,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "lstat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 5,
-      "observedAt": "2026-11-08T09:53:32.878Z",
+      "observedAt": "2026-11-08T10:16:57.358Z",
       "tool": "present",
       "callId": "call-a5sfpd28-present-in"
     },
@@ -329,13 +329,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 6,
-      "observedAt": "2026-11-08T09:53:32.881Z",
+      "observedAt": "2026-11-08T10:16:57.360Z",
       "tool": "present",
       "callId": "call-a5sfpd28-present-in"
     },
@@ -344,13 +344,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "lstat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/secret-out-of-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/secret-out-of-lane.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 7,
-      "observedAt": "2026-11-08T09:53:32.906Z",
+      "observedAt": "2026-11-08T10:16:57.391Z",
       "tool": "present",
       "callId": "call-a5sfpd28-present-out"
     },
@@ -359,13 +359,13 @@
       "realm": "member",
       "memberIdentity": "inst-0ck3mov0u1sd",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:e82e5ea4f9451845d50e6b90cd2b7b21",
+      "policyRevision": "a5sf1:2feb74d35da1a2ace2ccb815659a9497",
       "method": "lstat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/out-of-lane/does-not-exist-out-of-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/out-of-lane/does-not-exist-out-of-lane.txt",
       "decision": "deny",
       "decidedBy": "IO_READ_DENIED",
       "sequence": 8,
-      "observedAt": "2026-11-08T09:53:32.933Z",
+      "observedAt": "2026-11-08T10:16:57.420Z",
       "tool": "present",
       "callId": "call-a5sfpd28-present-missing"
     }
@@ -440,7 +440,7 @@
     "requestsCarryingSecret": 0,
     "sessionEvents": {
       "session-a5sf-pd28-boot": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-a5sf-pd28-boot/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-a5sf-pd28-boot/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -462,7 +462,7 @@
         "goalEvents": 0
       },
       "session-a5sf-pd28-team": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-a5sf-pd28-team/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-a5sf-pd28-team/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -486,7 +486,7 @@
         "goalEvents": 0
       },
       "session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914/session.v4.jsonl.zstd",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914/session.v4.jsonl.zstd",
         "types": {
           "session": 1,
           "permission/preset": 1,
@@ -519,8 +519,8 @@
       "worker"
     ],
     "memberWindow": {
-      "from": "2026-11-08T09:53:28.554Z",
-      "to": "2026-11-08T09:53:32.650Z"
+      "from": "2026-11-08T10:16:53.123Z",
+      "to": "2026-11-08T10:16:57.133Z"
     },
     "composition": {
       "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",

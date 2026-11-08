@@ -68,7 +68,7 @@
   "requestsCarryingSecret": 0,
   "sessionEvents": {
     "session-a5sf-pd28-boot": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-a5sf-pd28-boot/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-a5sf-pd28-boot/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -90,7 +90,7 @@
       "goalEvents": 0
     },
     "session-a5sf-pd28-team": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-a5sf-pd28-team/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-a5sf-pd28-team/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -114,7 +114,7 @@
       "goalEvents": 0
     },
     "session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T09-52-04Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T09-52-04Z-workspace--/session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914/session.v4.jsonl.zstd",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-15-21Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd28-service-seam-tests-homes-u5u5a5sfpd28-20261108T10-15-21Z-workspace--/session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914/session.v4.jsonl.zstd",
       "types": {
         "session": 1,
         "permission/preset": 1,
@@ -147,8 +147,8 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T09:53:28.554Z",
-    "to": "2026-11-08T09:53:32.650Z"
+    "from": "2026-11-08T10:16:53.123Z",
+    "to": "2026-11-08T10:16:57.133Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml",

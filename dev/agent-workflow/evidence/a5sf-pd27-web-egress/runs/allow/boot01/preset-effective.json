@@ -1,0 +1,11 @@
+{
+  "note": "the ONE composition adaptation: the shipped row name is a subpath export of the repo root package, which the pinned test tree does not install; the same module is mounted by file URL",
+  "rewrites": [
+    {
+      "id": "tool-web",
+      "shipped": "dsh-agent-team/web-tool",
+      "effective": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs"
+    }
+  ],
+  "shippedRowPresent": true
+}

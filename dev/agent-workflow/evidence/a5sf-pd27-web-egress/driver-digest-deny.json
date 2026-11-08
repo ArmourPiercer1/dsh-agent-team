@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T10:00:40.445Z",
+  "arm": "deny",
+  "head": "09268e58e9996c27af62112f2471f8fe0ed2e77e",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "b38e70513285a4fa9270066589a6bffbe6a60033e60e8e8f2fedc91886036b75",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/cordis.patch.yml",
+    "sha256": "a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8",
+    "arm": "deny"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "WebEgress",
+    "world": "u5a5sfpd27",
+    "source": "task PD27-WEB-EGRESS explicit boot authorisation (2026-11-14), arm=deny"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs --arm deny"
+}

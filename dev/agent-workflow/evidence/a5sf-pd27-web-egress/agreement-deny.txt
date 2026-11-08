@@ -1,0 +1,4 @@
+AGREEMENT arm=deny: two boots agree on every measured counter
+boot | overall | arm | allow | deny | prefix | closed | connections | pathHits | webFacts | hostWebCalls | surface
+boot1 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33
+boot2 | PASS | deny | n/a | PROVEN | n/a | PROVEN | 0 | {} | {"total":1,"allow":0,"deny":1} | 0 | 33

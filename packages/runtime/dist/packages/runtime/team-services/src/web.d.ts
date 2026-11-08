@@ -100,6 +100,32 @@ export declare const WEB_NETWORK_RESIDUALS: readonly ["WEB_REDIRECT_UNMEDIATED_O
 /** One residual token (the closed set this face can emit). */
 export type WebNetworkResidual = (typeof WEB_NETWORK_RESIDUALS)[number];
 /**
+ * PD-27 — the marker that says "this `web` service IS the Member's confined
+ * face", set on the class `createConfinedWebClass` returns.
+ *
+ * WHY A MARKER IS NEEDED AT ALL. The confined face is a SUBCLASS of the host's
+ * own `web` service, so it exposes exactly the same `fetch`/`search` as the
+ * inherited base provider — duck typing cannot tell them apart, and getting
+ * that wrong is precisely PD-18's hole (the tool runs on the base provider with
+ * zero guard facts). A tool that has to answer "is this scope's `web` governed?"
+ * asks this marker and nothing else.
+ *
+ * WHY A GLOBAL SYMBOL AND NOT AN EXPORT: the model-visible shadow
+ * (`src/plugin/live/confined-web-tool.mjs`) is COPIED into the dist mirror, not
+ * compiled with this file, so it cannot import this constant across the two
+ * trees; both sides spell `Symbol.for('a5sf.confined.web.face')` and the
+ * host-free parity test asserts the two agree.
+ */
+export declare const A5SF_CONFINED_WEB_MARK: unique symbol;
+/**
+ * Whether `service` is a confined web face (PD-27). Only the marker counts;
+ * `undefined`/`null` (no `web` service) and a plain provider are both `false`.
+ *
+ * @param service - the value of `ctx.web` on the scope being asked.
+ * @returns true only for the realm-mounted confined face.
+ */
+export declare function isConfinedWebFace(service: unknown): boolean;
+/**
  * The structural web Provider the confined face delegates to. It mirrors what
  * the host `ctx.web` seam exposes (`fetch`/`search`) and what the composition
  * owns: the ONE transport. The optional `probe` is the SAME capability probe

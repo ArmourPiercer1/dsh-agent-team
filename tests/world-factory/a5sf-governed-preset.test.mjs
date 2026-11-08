@@ -484,12 +484,17 @@ test('G0 the shipped preset is declared, opt-in, shell-free, PD-18 closed and re
   const ids = preset.config.plugins.filter((row) => row?.group !== true).map((row) => row.id)
   assert.equal(ids.includes('tool-bash'), true, 'the preset exposes `bash` (the shadow needs a visible name)')
   assert.equal(ids.includes('tool-pwsh'), false, 'NO second shell: tool-pwsh is not on the governed preset')
-  // PD-18 (2026-11-13): the two executors that resolved to BASE host services
-  // with zero a5sf facts are removed from the governed preset. This is a
-  // capability regression, pinned by tests/world-factory/a5sf-pd18-web-ptc.test.mjs.
-  for (const closed of ['tool-web', 'tool-workflow', 'workflow-ptc']) {
+  // PD-18 (2026-11-13): the executors that resolved to BASE host services with
+  // zero a5sf facts are removed from the governed preset. PD-27 (2026-11-14)
+  // restores ONLY the network pair, and only through the Team module that
+  // refuses a non-confined scope — the workflow/PTC removal is untouched.
+  for (const closed of ['tool-workflow', 'workflow-ptc']) {
     assert.equal(ids.includes(closed), false, `PD-18 fail-closed: ${closed} is not on the governed preset`)
   }
+  const webRow = preset.config.plugins.find((row) => row?.id === 'tool-web')
+  assert.notEqual(webRow, undefined, 'PD-27: the network pair is back on the governed preset')
+  assert.equal(webRow.name, 'dsh-agent-team/web-tool', 'PD-27: and it is the FAIL-CLOSED Team shadow, never the host package row')
+  assert.notEqual(webRow.name, '@deepseek-ai/dsh-tool-web', 'PD-18 stays closed: the host web row is what ran on the inherited base service')
   const flat = []
   const flatten = (list) => {
     for (const row of list ?? []) {
@@ -502,9 +507,15 @@ test('G0 the shipped preset is declared, opt-in, shell-free, PD-18 closed and re
     assert.equal(flat.some((row) => String(row.name ?? '').includes(forbidden) || String(row.id ?? '').includes(forbidden)), false, `the governed preset must not mount a ${forbidden} row`)
   }
   // Every non-group plugin name is a package this workspace can resolve.
+  // A `dsh-agent-team/*` name is a subpath of THIS repository's root package, so
+  // its export map is owned by the root manifest, not by `packages/runtime` —
+  // the loader in a real install resolves it out of the world's node_modules,
+  // where `dsh-agent-team` is the installed bundle.
+  const rootRequire = createRequire(join(REPO_ROOT, 'package.json'))
   for (const row of flat) {
     assert.notEqual(row.name, 'cordis:group')
-    assert.doesNotThrow(() => runtimeRequire.resolve(row.name), `${row.name} (${row.id}) must resolve`)
+    const base = String(row.name).startsWith('dsh-agent-team/') ? rootRequire : runtimeRequire
+    assert.doesNotThrow(() => base.resolve(row.name), `${row.name} (${row.id}) must resolve`)
   }
 })
 

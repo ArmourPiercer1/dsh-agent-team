@@ -31,11 +31,13 @@ export type {
   ToolBindingRealmSpec,
 } from './install.js'
 export {
+  A5SF_CONFINED_WEB_MARK,
   WEB_FETCH_GUARD_METHOD,
   WEB_NETWORK_RESIDUALS,
   WEB_SEARCH_GUARD_METHOD,
   createConfinedWebClass,
   createWebNetworkGuard,
+  isConfinedWebFace,
 } from './web.js'
 export type {
   ConfinedWebOptions,

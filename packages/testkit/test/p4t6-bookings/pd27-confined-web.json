@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "PD27-CONFINED-WEB",
+  "paths": [
+    "packages/runtime/src/plugin/live/confined-web-tool.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1448,
+    "to": 1449
+  },
+  "reason": "PD27-CONFINED-WEB restores the governed preset's `web_fetch`/`web_search` names that PD-18 removed fail-closed, as a route-C shadow mounted INSIDE the Member's isolate so every call is decided by the compiled `network` axis before the composition's transport is entered: `confined-web-tool.mjs` re-serves the pinned host package's OWN tool definitions (it delegates to `@deepseek-ai/dsh-tool-web`'s public `apply`, so description/parameters/output/timeout are the shipped ones by construction) and contributes only a CONTEXT — the realm's confined `web` face when the scope carries the confined marker, a typed `NETWORK_UNCONFINED_REALM` refusal otherwise, so the preset-scope row can never be ordinary ungoverned egress. Everything else this lane touches is an EDIT to an already-counted path (`packages/runtime/src/plugin/live/a5sf-realm-row.mjs`, `packages/runtime/team-services/src/web.ts`, `packages/runtime/team-services/src/index.ts`, `packages/runtime/package.json`, `package.json`, `cordis.patch.yml`, the register/matrix docs) or lives outside the scanned `packages/**` scope (the `tests/world-factory` suite + mutation controls, `scripts/dist-placements/200-a5sf-pd27-confined-web.json`, `dev/agent-workflow/evidence/**`, the `packages/runtime/dist/**` mirrors). Zero new denylist vocabulary; the quarantine hit set is unchanged.",
+  "tieNote": "MEASURED on this tree before booking: the coverage leg read `scanner counts 1449, ledger derives 983 + 465 = 1448` (this commit's `npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts`, 6 failed | 14 passed, every failure carrying that same detail line); the one path is asserted present BY PATH by the by-path loop, and the delta 1449 - 1448 equals `paths.length`. 1448 is the derived total this booking extends (PD26-CONFINED-SKILL's `to`), not a copied chain value."
+}
