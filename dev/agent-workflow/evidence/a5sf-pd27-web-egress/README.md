@@ -1,9 +1,11 @@
 # PD-27 — CONFINED-WEB: can real web egress be attached to a governed Member's network face today?
 
 **Lane**: `PD27-WEB-EGRESS` · branch `task/pd27-web-egress-20261114` · worktree `.worktrees/pd27-web-egress`
-· base `origin/master` = `24d2cf760` (`PD26-CONFINED-SKILL`, merged in) · record class **HOST-FREE**
-(no boot, no port, no `DSH_HOME`; real transport, real sockets, real tool router, real guard facts)
-· `eligible = false`, **no `V@B`, no grade, no Q7/Authority/CI change, `CORE PATCH BUDGET = 0`**.
+· base `origin/master` = `24d2cf760` (`PD26-CONFINED-SKILL`, merged in) · **two evidence classes**:
+the **DEV-LIVE** booted pair (`runs/allow`, `runs/deny`, `archive/pair-prefix`; 2 agreeing boots per
+arm, `recordClass=DEV-LIVE`, `teamSha=09268e58e`) and the **HOST-FREE** suite (real transport, real
+sockets, real tool router, real guard facts, no boot) · `eligible = false`, **no `V@B`, no grade, no
+Q7/Authority/CI change, `CORE PATCH BUDGET = 0`**.
 
 **Question** (the owner's, verbatim in intent): the governed preset lost `web_fetch`/`web_search` at
 PD-18 because the row ran on the **inherited base `web`** with zero `a5sf-guard-consult` facts. Can a
@@ -24,10 +26,18 @@ the two **names** on a context whose `ctx.web` **is** that face. That is what th
 route-C shadow, §3), and it is measured here end to end over a real socket (§5). The two conditions:
 (1) the face and its transport are **supplied by the composition** — the shipped governed realm
 answers `subprocess` + `terminal` only, and the product assembly refuses a narrowed network lane with
-`NETWORK_UNCONFINED_REALM` before any realm exists, so the deny arm is only reachable through a
-composition-supplied compiled answer; (2) the ceiling is **one boolean** (`NetworkAccess =
-'allow' | 'deny'`; `member-io-policy/src/types.ts` says destination ACLs are a future interface), so
-"no host outside the ceiling" is not expressible today and is not claimed.
+`NETWORK_UNCONFINED_REALM` before any realm exists; (2) the ceiling is **one boolean**.
+
+**(1) stated exactly, because it is load-bearing:** *a `network: deny` Member is **not constructible
+through the blueprint path*** — `product-assembly.ts` refuses `NETWORK_UNCONFINED_REALM` before a
+realm exists — **so the deny arm only exists when a composition supplies a compiled answer. That
+means the deny evidence demonstrates the mechanism, not a path a user can take today.**
+
+**(2) stated exactly:** *`NetworkAccess` is one boolean.* Today "network confinement" means **one
+bit**, decided **before the transport**, with **no per-host ACL** — so **a permitted Member may reach
+any host its transport can resolve.** `member-io-policy/src/types.ts` says destination ACLs are a
+future interface; nothing in this lane narrows that, and a ceiling of "no host outside the list" is
+not expressible. That is the honest ceiling and it is a product gap, not a wording choice.
 
 **Where the line sits**: `allow` → real egress, decided by the compiled lane, one allow fact; `deny` →
 **pre-wire admission refusal** with a typed code and zero connections, not a kernel-level netns proof.
@@ -54,6 +64,16 @@ row there is exactly the regression PD-18 removed. So the preset carries **our**
 pinned field-for-field in `PD27-PARITY`), and contributes only a **context**. On the preset scope the
 context is a refusing view; inside the Member's isolated scope, where the realm mounted the confined
 face, the route-C attach re-mounts the same module and `ctx.web` **is** the face.
+
+**Structural note (so a later reader does not mistake this for the pattern the external audit
+objected to):** this module is a **mounting adapter**, not a fork. It imports the pinned host
+package's **own** `apply` and lets it register the definitions, so the description, the parameter
+schema, the output schema, the presenters and the timeout are the host's bytes — `PD27-PARITY`
+compares them field-for-field against the host package's own definitions. What this file adds is a
+**context** (which `web` service the definitions see). The `confined-*-tool.mjs` pattern the audit
+objected to **reimplemented** a tool's behaviour and could drift from the host; this one cannot drift
+on the definition surface, and its only behavioural claim is the refusal path
+(`PD27-REFUSE`/`PD27-E2E-DENY`), which is measured.
 
 Surface neutrality is unchanged from PD-26: `attachA5sfNativeToolModules` refuses to add or remove a
 name, and the shadow registers only the subset already visible (a scoped registration sits **outside**
@@ -85,6 +105,44 @@ documented `resolveAddresses` seam answers `127.0.0.1`, because the shipped reso
 non-public destinations — the socket, request, parse and redirect policy are the shipped ones), and
 the "already visible subset" is the surface the arms pass in.
 
+## 5b. THE BOOTED PAIR (DEV-LIVE) — a real Host, a real delegated Member turn, a real socket
+
+One command per arm, `--boots 2` (the agreeing pair), slot-leased through `dev-live-slots.mjs`, port
+3180-family, `DSH_HOME` under `tests/homes/`, pinned host tree read-only (porcelain empty before and
+after, recorded in `host-tree-porcelain-<arm>.txt`). The driver is
+`tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs` — the PD-26 driver's shape, so a
+reader can diff them — and it starts a **local HTTP server in-process** (`127.0.0.1`, ephemeral port,
+its **own** `connection` counter) serving `A5SF_PD27_KNOWN_BODY_BYTES` on `/known` **and** on
+`/denied`, so a deny arm that reached the transport would **succeed** and be caught by the counter
+rather than by a 404.
+
+| arm | boots | surface | result | server connections | guard facts | inherited host `web` |
+| --- | --- | --- | --- | --- | --- | --- |
+| `allow` (`runs/allow`) | 2/2 **PASS**, agreeing | 33 tools, **incl. `web_fetch` + `web_search`** | the Member received the body **verbatim** + the host's `HTTP 200` presentation | **1** (`pathHits={"/known":1}`) | **1 allow** (`web:fetch`, locator = the declared URL) | **0 calls** |
+| `deny` (`runs/deny`) | 2/2 **PASS**, agreeing | 33 tools, same surface | typed `NETWORK_UNCONFINED_REALM` **before the provider** | **0** (`pathHits={}`) | **1 deny** (`decidedBy=NETWORK_UNCONFINED_REALM`) | **0 calls** |
+| `prefix` (`archive/pair-prefix`) | 2/2 **PASS**, agreeing | 31 tools, **no** network pair | host router's typed `unknown tool "web_fetch"` | **0** | **0** | **0 calls** |
+
+The three arms are the same driver, the same mock model, the same blueprint shape and the same local
+server; only `--arm` changes, and `--arm prefix` boots the **archived** `24d2cf760` composition
+(`archive/pre-fix/cordis.patch.yml`, `A5SF_PD27_COMPOSITION=…`) so "before" is measured on the same
+Host. Every boot writes `run-record.json` (`recordClass=DEV-LIVE`, `bindings.teamSha=09268e58e`,
+`candidateClaimEligibility.eligible=false`), `member-transcript.{json,txt}`,
+`member-probes.json`, `member-surface.json`, `guard-facts.json`, `server.json`,
+`host-web-calls.json`, `counters.json`, `summary.txt`, `teardown.json`.
+
+**One composition adaptation, disclosed and recorded** (`preset-effective.json` in every boot): the
+shipped preset names its network row `dsh-agent-team/web-tool`, a subpath export of **this
+repository's root package**. A real install has that package in the profile's `node_modules` (that is
+how the shipped root row `dsh-agent-team/host` resolves); the pinned test tree does not — its
+`node_modules` carries `@deepseek-ai/*` only. So, exactly as the driver already rewrites the host row
+to a file URL, it points the **same module** at its file URL inside the preset. Nothing is swapped:
+the module, its config and its row id are the shipped ones, and the rewrite is written into the boot's
+evidence. (In the pre-fix arm there is no such row at all — that absence is the defect.)
+
+The local server overlaps nothing: `server.json` is the server's own accounting, `guard-facts.json` is
+the product's, and `host-web-calls.json` is a read-only tripwire wrapped around the **inherited** host
+`web` service's prototype — it forwards every call unchanged and recorded **zero** in all six boots.
+
 ## 6. Mutation controls (a suite that cannot go red is not evidence)
 
 `node tests/world-factory/a5sf-pd27-mutation-controls.mjs` → **VERDICT PASS (8/8)**, log in
@@ -99,36 +157,43 @@ the "already visible subset" is the surface the arms pass in.
 M3 is the arm that matters for the deny claim: if it measured a message instead of egress it would
 stay green.
 
-## 7. What is NOT measured here, stated plainly
+## 7a. Where the live pair still stops, and that is the answer too
 
-**The booted two-arm pair is not run in this window, and nothing here claims it.** No `DEV-LIVE`
-record exists for PD-27. What that step must show, and the design it must use:
+The allow arm's transport is the pinned host `HttpFetchProvider` **mounted by the composition**, and
+the deny arm's compiled answer is likewise the composition's. That is the mechanism, not the product
+path: **a `network: deny` Member is not constructible through the blueprint path** — `product-assembly.ts`
+refuses `NETWORK_UNCONFINED_REALM` before a realm exists. And the ceiling is **one boolean**: a
+permitted Member may reach **any host its transport can resolve**, with no per-host ACL. Both
+statements are the point of this lane, not footnotes to it.
 
-1. `--boots 2`, slot-leased (`dev-live-slots.mjs`), 3180-family ports, `DSH_HOME` under `tests/homes/`,
-   pinned host tree read-only, `bindings.teamSha` = a commit on this branch;
-2. **pre-fix arm**: boot the archived `24d2cf760` composition, one delegated governed Member turn, both
-   names typed `unknown tool`, zero facts — the live form of §4's PIN;
-3. **post-fix allow arm**: one delegated turn on the shipped opt-in preset with a composition-supplied
-   face + the real transport; record the body **byte count** and the **source host**, plus exactly one
-   allow fact;
-4. **post-fix deny arm**: the same world with a `network: deny` compiled answer; record **zero
-   connections** from the transport's own counter (the counter must be proven live by the allow arm in
-   the same boot), one typed deny fact, and the `unknown tool`-free surface.
+## 7. What is NOT measured, stated plainly
 
-The reason it is not there is budget, not a blocker: the host-free chain covers definitions, dispatch,
-the real transport, both lanes, the redirect policy and the mutation controls, but a real Member turn
-additionally exercises the agent scope, the delegation path and the mock model script — machinery that
-the PD-26 driver (`tests/world-factory/drivers/a5sf-pd26-confined-skill/run-boot.mjs`) already carries
-and that would be adapted by swapping its two case families for the two arms above.
+Measured now (was the gap in the previous draft of this file): the booted two-arm pair — allow,
+deny and the recorded pre-fix composition — 2 agreeing boots each, §5b.
 
-Also **not** measured, and not claimed: per-host ceilings (the axis is boolean), a kernel-level
-network proof (`deny` refuses at admission; `probe()` answers `unsupported` for the real transport, so
-`deny` cannot be admitted at all today), and destination auditing of a provider answer that names a
-host the request did not (only the **declared** locator is audited).
+Still **not** measured, and not claimed:
+
+1. **A kernel-level network proof.** `deny` refuses at admission: the real transport's capability
+   probe answers `network-destination='unsupported'`, so `deny` **cannot be admitted at all today**.
+   What is proven is that the call is refused before any provider entry and that the server's own
+   counter stays at zero — not that a hostile socket could not be opened by other code in the process.
+2. **Per-host ceilings.** The axis is boolean (`NetworkAccess = 'allow' | 'deny'`); "no host outside
+   the list" is not expressible, and a permitted Member can reach any host its transport can resolve.
+3. **A user-reachable deny path.** See §1 disclosure (1): the deny arm exists only because a
+   composition supplied the compiled answer.
+4. **Destination auditing of a provider answer** that names a host the request did not (only the
+   **declared** locator is audited; `web_search` audits the declared query, not the returned links).
 
 ## 8. Reproduce
 
 ```bash
+# THE BOOTED PAIR (each arm: 2 agreeing boots, slot-leased, 3180-family)
+node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs              # allow
+node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs --arm deny   # deny
+A5SF_PD27_COMPOSITION=$PWD/dev/agent-workflow/evidence/a5sf-pd27-web-egress/archive/pre-fix/cordis.patch.yml \
+  node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs --arm prefix
+node tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs --plan       # host-free preflight, zero boots
+
 node --test tests/world-factory/a5sf-pd27-confined-web.test.mjs
 A5SF_PD27_PIN=1 node --test tests/world-factory/a5sf-pd27-confined-web.test.mjs
 node tests/world-factory/a5sf-pd27-mutation-controls.mjs

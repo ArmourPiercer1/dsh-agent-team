@@ -1,0 +1,150 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd27-web-egress-prefix-2026-11-08T10-09-24-790Z-b2",
+  "suite": "a5sf-pd27-web-egress",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T10:09:24.791Z",
+  "selectedCases": [
+    "pd27:web-prefix",
+    "pd27:web-surface",
+    "pd27:closed-still-typed",
+    "pd27:no-base-transport"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "09268e58e9996c27af62112f2471f8fe0ed2e77e",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "WebEgress",
+      "world": "u5a5sfpd27",
+      "source": "task PD27-WEB-EGRESS explicit boot authorisation (2026-11-14), arm=prefix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "09268e58e9996c27af62112f2471f8fe0ed2e77e",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd27-20261108T10-09-24Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd27:web-prefix",
+      "verdict": "PASS",
+      "at": "2026-11-08T10:11:00.400Z",
+      "proposition": "PRE-FIX (defect): the governed preset offers no network pair, so `web_fetch` is the host router's typed `unknown tool`, zero facts are recorded and the local server counts ZERO connections — fail-closed, not confined",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "typed-unknown",
+          "ok": true,
+          "detail": "text=Error: unknown tool \"web_fetch\""
+        },
+        {
+          "id": "zero-facts",
+          "ok": true,
+          "detail": "facts=0"
+        },
+        {
+          "id": "zero-connections",
+          "ok": true,
+          "detail": "connections=0"
+        }
+      ]
+    },
+    {
+      "id": "pd27:closed-still-typed",
+      "verdict": "PASS",
+      "at": "2026-11-08T10:11:00.400Z",
+      "proposition": "the names PD-18 closed remain the router's typed `unknown tool` and produce no facts: restoring the network pair did not reopen the workflow surface",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "workflow-unknown",
+          "ok": true,
+          "detail": "text=Error: unknown tool \"workflow\""
+        },
+        {
+          "id": "run-code-unknown",
+          "ok": true,
+          "detail": "text=Error: unknown tool \"run_code\""
+        },
+        {
+          "id": "closed-names-no-facts",
+          "ok": true,
+          "detail": "closed-name facts=0"
+        }
+      ]
+    },
+    {
+      "id": "pd27:web-surface",
+      "verdict": "PASS",
+      "at": "2026-11-08T10:11:00.400Z",
+      "proposition": "PRE-FIX the network pair is ABSENT from the Member's surface: the capability this lane restores is not declared at all",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "both-names-absent",
+          "ok": true,
+          "detail": "surface=[\"bash\",\"edit\",\"exit_plan_mode\",\"glob\",\"grep\",\"job_kill\",\"job_list\",\"job_output\",\"present\",\"read\",\"read_image\",\"skill\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"todo_write\",\"u5_canary\",\"u6fs_probe\",\"write\"]"
+        }
+      ]
+    },
+    {
+      "id": "pd27:no-base-transport",
+      "verdict": "PASS",
+      "at": "2026-11-08T10:11:00.401Z",
+      "proposition": "the inherited unconfined host `web` service is never consulted in either arm (its prototype is instrumented read-only and counts zero calls)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-host-web-calls",
+          "ok": true,
+          "detail": "calls=0"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/dev/agent-workflow/evidence/a5sf-pd27-web-egress/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T10:10:14.372Z",
+        "runId": "a5sf-pd27-web-egress-prefix-2026-11-08T10-09-24-790Z-b2",
+        "suite": "a5sf-pd27-web-egress",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd27-20261108T10-09-24Z",
+        "phase": "a5sf-pd27-web-egress-prefix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd27-web-egress-prefix-boot2",
+      "world": "u5u5a5sfpd27-20261108T10-09-24Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/dev/agent-workflow/evidence/a5sf-pd27-web-egress/driver/logs/u5u5a5sfpd27-20261108T10-09-24Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd27-web-egress-prefix-2026-11-08T10-09-24-790Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T10:11:00.401Z"
+}
