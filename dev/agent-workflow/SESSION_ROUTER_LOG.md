@@ -8475,3 +8475,64 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   `p4t6-session-event-scan` 20/20；`eb3-evidence-guard`/`eb3-run-manifest` pass；`ci-pr-gate --only state-freshness` pass。
 - **交付**：draft PR #679 首行 `PD29-GOAL-STOP`；不 merge、不 settle；`release BLOCKED`，无 grade、无 `V@B`、
   无 Q7/Authority/CI 改动。
+
+## 2026-11-15 — PD34-MEMBER-STOP（Preview 的两条 must-fix 之一：给「停某个 Member」一个可操作入口）
+
+- **背景**：Preview 裁决 `PREVIEW-NO-GO` 的两条 must-fix 之一。PD-30（#679）已把**机制**测成真的（`interrupt`
+  → durable `goals.pause` + disarm；20 000 ms 内 0 轮/0 调用/0 模型请求），但 Team 视图**没有第一类入口**：
+  每 Member 只有 §40 生命周期动作（`archive` 会**结束**成员而不是暂停目标），唯一像“停”的 Leader 级入口
+  被 PD-30 S5 测为**不传播**（+14/+13/+13 轮）。所以人根本按不到那个机制。
+- **本 lane 只做入口，不动机制**：新增纯客户端模型 `packages/client/src/model/member-stop.ts`（固定序列
+  `goals/get` → `goals/pause`（带 `{id,revision}` CAS，仅 active 时）→ `session/cancel` → `goals/get`；
+  第二次读是 UI 呈现的 oracle；typed refusals 是值不是异常）；`team-mount-core.ts` 注入 goal bar 自己的公开
+  命名空间 `remote.goals`/`remote.session` 并暴露 `memberCommands.memberStop` / `leaderStopTurn`；
+  `TeamMembers.tsx` 在**有 `childSessionId` 的 live 行**渲染 `停止此成员`（`data-member-stop`），Leader 行渲染
+  **文案不同**的 `停止 Leader 当前回合`（`data-leader-stop`，cancel-only，明说已委派成员继续跑）；
+  zh/en 两套字典；无乐观本地补丁、不碰 §40 矩阵、`CORE PATCH BUDGET = 0`、无新 host 方法、无新
+  `peerDependencies` 名。
+- **live 证据（DEV-LIVE，agreeing pair 3/3）**：`dev/agent-workflow/evidence/a5sf-pd34-member-stop/`
+  （`runs/boot01|02`，驱动 `--arms s8,s1 --boots 2`，组合 sha256 `0774297f…`，instrument `3101ca08f…`，
+  host porcelain `empty`，slot 释放）。单个 governed Member 在第 **3 轮**（4 次工具调用、4 s 长轮在飞）被
+  UI 的四个公开 RPC 从外部停止：pause **200/ok**（rev1→2，`armed→disarmed`）、cancel **200**、第二次读
+  **`paused` rev2**；随后 **20 000 ms 窗口 0 rounds / 0 tool calls / 0 model requests**，窗口后再读仍
+  `paused`、`revived=false`、生命周期 **`SETTLED`（非 ARCHIVED）**；一次 `goals/resume`（rev2→3）恰好恢复
+  **1 轮**。S8-continue（未停对照 3 轮）与 S8-terminal（round-limit 后 0 轮）同 pair 全 PROVEN。
+- **诚实的限制（已写进证据 README §3.1 与 `docs/PREVIEW-STOP-SEMANTICS.md`）**：（1）**headless 浏览器没有
+  真的点击 DOM**——驱动发的是与按钮处理器**完全相同**的四个 RPC，点击本身由 jsdom 真实组件测试
+  （`team-member-stop.client.spec.tsx`）覆盖，README 明说，不把 RPC 序列冒充点击；（2）模型是共享脚本 mock；
+  （3）仪表披露：本 lane 第一次单 boot 跑出的 `rounds after stop = 1` 是**计数器在 resume 之后才读**（把恢复的
+  1 轮算成了停止后 1 轮），现已改为在 resume 前快照窗口内计数，首个 boot 目录被 pair 覆盖、其行仍留在
+  append-only ledger 里，报告数字不取自它；（4）停 Leader 不传播引用 PD-30 S5，本 lane 未重测 S5。
+- **行号（blocked-by-#682，不伪造连续）**：本 base 的 register 只到 **PD-32**；**PD-33 行在 PR #682**
+  （`task/pd33-preview-e2e-20261115`，证据时刻仍 open）。本 lane 写 **PD-34**、不改号、不补空位；寄存器门在
+  #682 合并并前向合并 `origin/master` 之前 **blocked-by-#682**（写在行内 `blocked by`、证据 README §7 与本条）。
+  该门其余 8 项（锚点/字段/后果类/证据 id/§6）全绿。
+- **门（本地）**：client `tsc`（src+test）clean；client vitest 937/940（3 个失败在 stash 掉本 lane 改动后**同样
+  复现** = base 既有）；新套件 10 + 6 + mount + client 全绿；eslint 变更文件 0 error；
+  `tests/world-factory/a5sf-pd34-member-stop.test.mjs` **8/8**；p4t6 **20/20**（`a5sfpd34` booking 1449→1451，
+  实测未登记读数写进 `tieNote`）；`doc-checks` rc 0；`check-artifacts:head` ok（1981 文件）；`ci-pr-gate --only
+  state-freshness` pass；`eb3-evidence-guard` pass；`eb3-run-manifest` pass。
+- **交付**：分支 `task/pd34-member-stop-20261115`，draft PR 首行 `PD34-MEMBER-STOP`；不 merge、不 settle；
+  `release BLOCKED`，无 grade、无 `V@B`。
+
+### 2026-11-15 追记（PD34-MEMBER-STOP；只追加）—— 主 Agent 在合并头上 boot 出的 `pd34:cold-recovery-no-revival` 失败：是**我的臂**测错了，不是控制失效
+
+- **现象**：主 Agent 在 `dc797c038` 上跑全臂，两 boots 同一红：`stopped-member-still-stopped:
+  the S1 Member after recovery: phase=active`。这是本 lane 最关键的条款（"显式停止后永不自动续轮，
+  包括冷会话语义重建"），所以必须先定性。
+- **定性 = 仪表错误（possibility 2）**。该条款继承 PD-29 的布局，读 `sessionOf.s1`；PD-29 里 S1 停止
+  `s1` 后**从不 resume**，所以那条读数是有效的。我把 S1 改写成 UI 停止时**按交付要求加了 resume 条款**
+  （`goals/resume` 恰好恢复 1 轮），于是到 S6 时 `s1` 的最后一条耐久变更就是那次 **resume** → `active`，
+  条款把"我自己刚 resume 过的成员"判成"没保住停止"。它与合并无关（base 上同样确定性复现），不是 flaky。
+- **修法（不放宽条款，改成测对的东西）**：S6 在 kill 之前用**同样四个 RPC**停止另一个**从不 resume** 的
+  成员 `s2`，重启后断言**耐久投影 `paused` + 0 轮 + `revived=false`**；`s1` 只作为 `informational`
+  记录（注明"其自身臂会 resume"），不参与断言。
+- **新测到的产品事实（比原条款更强）**：`dc797c038` 上 `--arms s8,s1,s6,s7 --boots 2`，**6/6 双方一致**：
+  `s2` 第 94/95 轮经四 RPC 停止（rev2 `paused`），SIGTERM + 同 `DSH_HOME` 重启（团队域 adopt，成员 `SETTLED`）
+  后耐久 phase 仍 **`paused`（同 goal id）**、重启后 **0 轮**、`revived=false`（对照：`cold` 的 active goal
+  重启后同样 0 轮）。即**停止确实活过冷重建**。重启后的子会话在首回合前没有 live agent，`goals/get`
+  返回"无目标"是正常的（`null` ≠ `active`），所以断言用耐久投影 + 轮数。
+- **过程披露**：中间跑过两次（第一次暴露误接，第二次暴露二阶误接——把 `SETTLED` 子会话的 live 读 `null`
+  要求成字符串 `paused`）；两行都留在 append-only `run-ledger.jsonl`，`runs/` 只保留最终 pair。
+- **门**：register 10/10；`a5sf-pd34-member-stop.test.mjs` 8/8；`doc-checks` rc 0；`check-artifacts:head`
+  不受影响（只改 `.mjs` 与文档，无 client bundle 变更）。

@@ -63,7 +63,12 @@ import {
   type MemberCommandKind,
   type MemberCommandOutcome,
   type MemberInstanceCommand,
+  type MemberLifecycle,
 } from '../model/team-member-commands.js'
+import type {
+  MemberStopCancelOutcome,
+  MemberStopOutcome,
+} from '../model/member-stop.js'
 import type { TeamWorkspaceOption } from '../model/team-intent-model.js'
 import type { TeamOpenModeOutcome } from '../plugin/team-mount-core.js'
 import {
@@ -150,12 +155,79 @@ export interface TeamMembersCommandFace {
   memberRestore: (params: RemoteMemberLifecycleParams) => Promise<RemoteResponse>
   /** `member.dispose`. */
   memberDispose: (params: RemoteMemberLifecycleParams) => Promise<RemoteResponse>
+  /**
+   * PD-34 (MEMBER-STOP) — stop ONE Member: durably pause its goal, abort its
+   * current turn, and re-read the durable phase. Optional so the existing
+   * command faces (and their tests) keep compiling unchanged; absent → the
+   * per-Member stop control is not rendered (the section never imitates a
+   * stop locally).
+   */
+  memberStop?: (params: {
+    readonly teamSessionId: string
+    readonly instanceId: string
+    readonly sessionId: string
+  }) => Promise<MemberStopOutcome>
+  /**
+   * PD-34 — stop the LEADER's CURRENT TURN only. Deliberately NOT the team
+   * stop: Preview does not propagate a Leader stop to the Members it already
+   * delegated to (measured in PD-30 S5), and the Leader row says so.
+   */
+  leaderStopTurn?: (rootSessionId: string) => Promise<MemberStopCancelOutcome>
   /** The post-success projection pull (the final-state authority).
    * (repair 20260927, S1-C2) the tightened assessment: the member-command
    * background read reports its failure through the SAME visible state
    * surface — the projection store state the TeamView header renders
    * (the pull itself publishes it; no per-row note lane). */
   pullProjection: (teamSessionId: string) => Promise<ProjectionSyncAssessment>
+}
+
+/** PD-34: the lifecycle states whose Member can still be stopped (live rows). */
+function canStopMember(lifecycle: MemberLifecycle): boolean {
+  return lifecycle !== 'ARCHIVED' && lifecycle !== 'DISPOSED'
+}
+
+/**
+ * PD-34: the human-readable cancel token (the outcome's explicit abort
+ * result; never inferred from the RPC's mere arrival).
+ * @param cancel - the typed abort outcome.
+ * @returns a short stable token for the note.
+ */
+function cancelToken(cancel: MemberStopCancelOutcome): string {
+  return cancel.kind === 'refused' ? `refused:${cancel.code}` : cancel.kind
+}
+
+/**
+ * PD-34: render one stop outcome as a note. Every branch names what was
+ * OBSERVED (`phase` re-read from the goal service) or the verbatim refusal.
+ * @param outcome - the settled stop outcome.
+ * @param t - the team dictionary.
+ * @returns the note text.
+ */
+function stopNote(
+  outcome: MemberStopOutcome,
+  t: PropsLocale<'team'>['t'],
+): string {
+  switch (outcome.kind) {
+    case 'stopped':
+      return t('member.stop.stopped', {
+        phase: outcome.observedPhase ?? outcome.phase,
+        revision: outcome.revision,
+        cancel: cancelToken(outcome.cancel),
+      })
+    case 'no-goal':
+      return t('member.stop.noGoal', { cancel: cancelToken(outcome.cancel) })
+    case 'already-inactive':
+      return t('member.stop.already', {
+        phase: outcome.phase,
+        cancel: cancelToken(outcome.cancel),
+      })
+    case 'read-refused':
+      return t('member.stop.error', { code: outcome.code, message: outcome.message })
+    case 'pause-refused':
+      return t('member.stop.error', { code: outcome.code, message: outcome.message })
+    case 'unavailable':
+      return t('member.stop.unavailable')
+  }
 }
 
 /** The preserved typed error of one command (G5: verbatim wire values). */
@@ -227,12 +299,21 @@ interface InstanceRowProps {
   readonly pendingKind?: MemberInstanceCommand | undefined
   /** The last typed failure for the row (the error note). */
   readonly error?: MemberCommandError | undefined
+  /**
+   * PD-34 — start the per-Member Stop for this row; absent when the host
+   * exposes no goal/session namespace (then no control is rendered).
+   */
+  readonly onStop?: (() => void) | undefined
+  /** PD-34 — the stop request is in flight (disables the control). */
+  readonly stopPending?: boolean | undefined
+  /** PD-34 — the settled stop outcome (the observed note under the row). */
+  readonly stopOutcome?: MemberStopOutcome | undefined
   readonly t: PropsLocale<'team'>['t']
 }
 
 /** One instance row: the navigation button, the lifecycle-gated action cluster, the error note. */
 function InstanceRow({
-  instance, current, onSelect, onCommand, pendingKind, error, t,
+  instance, current, onSelect, onCommand, pendingKind, error, onStop, stopPending, stopOutcome, t,
 }: InstanceRowProps): React.JSX.Element {
   const pending = instance.pendingControlCount
   const actions = onCommand === undefined
@@ -292,6 +373,34 @@ function InstanceRow({
           </div>
         )
         : null}
+      {/* PD-34 — the FIRST-CLASS per-Member Stop: it pauses THIS Member's
+          goal durably and aborts its current turn. It is deliberately NOT
+          the lifecycle `archive` (which ends the Member) and NOT a team-wide
+          stop. The hint states the scope so the two are never confused. */}
+      {onStop !== undefined
+        ? (
+          <div className={styles.memberStopRow} data-member-stop-row>
+            <button
+              type="button"
+              className={styles.memberStopButton}
+              data-member-stop
+              title={t('member.stop.hint')}
+              aria-label={t('member.stop.hint')}
+              disabled={stopPending === true || undefined}
+              onClick={onStop}
+            >
+              {t('member.stop.label')}
+            </button>
+            {stopOutcome !== undefined
+              ? (
+                <span className={styles.memberStopNote} data-member-stop-note>
+                  {stopNote(stopOutcome, t)}
+                </span>
+              )
+              : null}
+          </div>
+        )
+        : null}
     </div>
   )
 }
@@ -315,6 +424,18 @@ interface MemberGroupProps {
   readonly errorsByInstance?: Readonly<Record<string, MemberCommandError>>
   /** The §17 "+" entry; present only on teammate groups with a command face. */
   readonly onCreateInstance?: (() => void) | undefined
+  /** PD-34 — stop one instance row (goal pause + turn abort). */
+  readonly onStopInstance?: ((instance: TeamMemberInstanceRow) => void) | undefined
+  /** PD-34 — the in-flight stop per instance key (disables the control). */
+  readonly stopPendingByInstance?: Readonly<Record<string, boolean>>
+  /** PD-34 — the settled stop outcome per instance key (the observed note). */
+  readonly stopOutcomesByInstance?: Readonly<Record<string, MemberStopOutcome>>
+  /** PD-34 — stop the LEADER's current turn only (present on the leader row). */
+  readonly onStopLeader?: (() => void) | undefined
+  /** PD-34 — the in-flight Leader-turn stop (disables the control). */
+  readonly leaderStopPending?: boolean
+  /** PD-34 — the settled Leader-turn stop outcome (the note under the row). */
+  readonly leaderStopOutcome?: MemberStopCancelOutcome | undefined
   /** The in-flight create for the group's template (disables the "+" entry). */
   readonly createPending?: boolean
   /** The last typed create failure for the group's template (the group note). */
@@ -355,11 +476,16 @@ interface MemberGroupProps {
 function MemberGroup({
   group, current, currentSessionId, onSelectSession, onSelectLeader,
   onCommand, pendingByInstance, errorsByInstance, onCreateInstance,
+  onStopInstance, stopPendingByInstance, stopOutcomesByInstance,
+  onStopLeader, leaderStopPending, leaderStopOutcome,
   createPending, createError, openTeamMode, teamModePending, teamModeError,
   openOrdinaryMode, ordinaryPending, ordinaryError, openMode, t,
 }: MemberGroupProps): React.JSX.Element {
   const name = group.name ?? t('member.leader')
   const label = `${name} · ${t('view.members.active', { count: group.activeCount })}`
+  // PD-34: the per-Member stop is rendered only when the host face exists AND
+  // the row still has a live lifecycle + a bound child session to address.
+  const stopEnabled = onStopInstance !== undefined
   return (
     <div className={styles.group} data-member-group data-current={current || undefined}>
       {onSelectLeader === undefined
@@ -462,6 +588,41 @@ function MemberGroup({
               </div>
             )
             : null}
+          {/* PD-34 — the LEADER row's stop entry. Its copy is deliberately
+              different from a Member's: it stops the Leader's CURRENT TURN
+              only. Preview does not propagate that to the Members the Leader
+              already delegated to (PD-30 S5 measured +14/+13/+13 rounds on
+              three Members after the root turn aborted), so the hint says so
+              and the note repeats it after the click. */}
+          {onStopLeader !== undefined
+            ? (
+              <div className={styles.memberStopRow} data-leader-stop-row>
+                <button
+                  type="button"
+                  className={styles.memberStopButton}
+                  data-leader-stop
+                  title={t('member.stop.leader.hint')}
+                  aria-label={t('member.stop.leader.hint')}
+                  disabled={leaderStopPending === true || undefined}
+                  onClick={onStopLeader}
+                >
+                  {t('member.stop.leader.label')}
+                </button>
+                {leaderStopOutcome !== undefined
+                  ? (
+                    <span className={styles.memberStopNote} data-leader-stop-note>
+                      {leaderStopOutcome.kind === 'refused'
+                        ? t('member.stop.leader.error', {
+                          code: leaderStopOutcome.code,
+                          message: leaderStopOutcome.message,
+                        })
+                        : t('member.stop.leader.note', { cancel: cancelToken(leaderStopOutcome) })}
+                    </span>
+                  )
+                  : null}
+              </div>
+            )
+            : null}
           {/* D3 (D6) — C1 rewire (guide §10.2): the settled rejection of
               the ordinary entry (typed code + message, the async error
               lane — never a silent failure, never swallowed). */}
@@ -502,6 +663,11 @@ function MemberGroup({
                 onCommand={onCommand === undefined ? undefined : kind => { onCommand(kind, instance) }}
                 pendingKind={instancePending === 'create' ? undefined : instancePending}
                 error={errorsByInstance?.[instanceId]}
+                onStop={stopEnabled && canStopMember(instance.lifecycle) && instance.childSessionId !== ''
+                  ? () => { onStopInstance?.(instance) }
+                  : undefined}
+                stopPending={stopPendingByInstance?.[instanceId] === true}
+                stopOutcome={stopOutcomesByInstance?.[instanceId]}
                 t={t}
               />
             )
@@ -543,6 +709,13 @@ export function TeamMembers({
   const [ordinaryError, setOrdinaryError] = useState<
     { readonly code: string; readonly message: string } | null
   >(null)
+  // PD-34 (MEMBER-STOP): the per-Member stop is its OWN page-run state — the
+  // observed durable outcome per instance (never an optimistic guess), and the
+  // Leader row's turn-stop state. The lifecycle/§40 command state is untouched.
+  const [stopPending, setStopPending] = useState<Readonly<Record<string, boolean>>>({})
+  const [stopOutcomes, setStopOutcomes] = useState<Readonly<Record<string, MemberStopOutcome>>>({})
+  const [leaderStopPending, setLeaderStopPending] = useState(false)
+  const [leaderStopOutcome, setLeaderStopOutcome] = useState<MemberStopCancelOutcome | null>(null)
   const nextToken = useMemo(() => createRequestTokenGenerator('ui'), [])
   const teamSessionId = snapshot.teamSessionId
   const workspaceOptions = workspaces ?? []
@@ -600,6 +773,78 @@ export function TeamMembers({
           delete next[key]
           return next
         })
+      })
+  }
+
+  /**
+   * PD-34 — run the per-Member Stop through the face and render the OBSERVED
+   * outcome (the durable phase the sequence re-read), never an optimistic
+   * local patch. A transport throw is rendered as a typed failure; the row's
+   * lifecycle and the projection are deliberately NOT touched locally.
+   * @param instance - the target Member row (its `childSessionId` is the address).
+   */
+  const runStopMember = (instance: TeamMemberInstanceRow): void => {
+    const commands = memberCommands
+    const stop = commands?.memberStop
+    if (stop === undefined) return
+    const instanceId = instanceInstanceKey(instance)
+    setStopPending(prev => ({ ...prev, [instanceId]: true }))
+    setStopOutcomes(prev => {
+      const next = { ...prev }
+      delete next[instanceId]
+      return next
+    })
+    void stop({
+      teamSessionId,
+      instanceId,
+      sessionId: instance.childSessionId,
+    })
+      .then(outcome => {
+        setStopOutcomes(prev => ({ ...prev, [instanceId]: outcome }))
+      })
+      .catch((error: unknown) => {
+        setStopOutcomes(prev => ({
+          ...prev,
+          [instanceId]: {
+            kind: 'read-refused',
+            code: 'transport-loss',
+            message: error instanceof Error ? error.message : String(error),
+          },
+        }))
+      })
+      .finally(() => {
+        setStopPending(prev => {
+          if (prev[instanceId] !== true) return prev
+          const next = { ...prev }
+          delete next[instanceId]
+          return next
+        })
+      })
+  }
+
+  /**
+   * PD-34 — run the LEADER row's turn stop (cancel only). The note states the
+   * non-propagation fact; no Member rows are touched, locally or remotely.
+   */
+  const runStopLeaderTurn = (): void => {
+    const commands = memberCommands
+    const stop = commands?.leaderStopTurn
+    if (stop === undefined) return
+    setLeaderStopPending(true)
+    setLeaderStopOutcome(null)
+    void stop(teamSessionId)
+      .then(outcome => {
+        setLeaderStopOutcome(outcome)
+      })
+      .catch((error: unknown) => {
+        setLeaderStopOutcome({
+          kind: 'refused',
+          code: 'transport-loss',
+          message: error instanceof Error ? error.message : String(error),
+        })
+      })
+      .finally(() => {
+        setLeaderStopPending(false)
       })
   }
 
@@ -739,6 +984,9 @@ export function TeamMembers({
         ordinaryPending={ordinaryPending}
         ordinaryError={ordinaryError === null ? undefined : ordinaryError}
         openMode={teamOpenMode?.(teamSessionId) ?? null}
+        onStopLeader={memberCommands?.leaderStopTurn === undefined ? undefined : runStopLeaderTurn}
+        leaderStopPending={leaderStopPending}
+        leaderStopOutcome={leaderStopOutcome === null ? undefined : leaderStopOutcome}
         t={t}
       />
       {model.groups.map(group => (
@@ -764,6 +1012,9 @@ export function TeamMembers({
             : () => { setOpen({ kind: 'create', group }) }}
           createPending={pending[`template:${group.templateId}`] === 'create'}
           createError={errors[`template:${group.templateId}`]}
+          onStopInstance={memberCommands?.memberStop === undefined ? undefined : runStopMember}
+          stopPendingByInstance={stopPending}
+          stopOutcomesByInstance={stopOutcomes}
           t={t}
         />
       ))}

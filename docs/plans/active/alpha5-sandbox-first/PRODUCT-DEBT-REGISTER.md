@@ -99,6 +99,7 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 
 | PD-32 (INSTRUMENT-GRAPH) | Test infrastructure (whole phase) | The instrument substituted the subject **twice**: the Worlds built `profiles/web/` empty, so the shipped rows (`dsh-agent-team/host`, `dsh-agent-team/web-tool`, `dsh-agent-team/web-transport`) resolved against nothing; a row that cannot import takes the WHOLE governed Member down (not one tool), and every lane then chased a downstream symptom ("no goal" / "0 Members" / `TEAM_RUNTIME_DURABLE_WRITE_FAILED`). Trip 1: PD-27's driver rewrote the row to a `file:` URL and measured a tree that was not the shipped one. Trip 2: the fix landed in one driver, and two sibling lanes re-implemented it. PD-30 moves provisioning into the World factory (`createWorld` → one link of the tree's OWN package + per-subpath verification) and the precondition with it (three NAMED codes, thrown before any arm), so the instrument can no longer substitute its subject **(FIXED, DEV-LIVE + host-free pins)** [row-id chain, all three disclosed: window allocation **PD-32** → base id **PD-31** (because #679 took PD-30) → **PD-32** (because #680 took PD-31). Each step is the same rule: the register's gate-enforced `PD-1…PD-n` contiguity admits only the next free id on the base, so a row keeps the window's number only when nothing merged in between.] | governance hole | correctness |
 | PD-33 (PREVIEW-E2E) | Cross-cutting: Leader → Member → tool → artefact → Leader | Every earlier lane measured ONE face (goal lifecycle, web egress, skill/present seam, fs lanes, read_image); **no run ever put the Leader, two Members, six guards, the deferred surface and a restart in the same World**, so "the Preview scenario works" was an inference from per-face evidence. PD-33 measures it on the shipped opt-in `a5sf-governed-member` preset in ONE composition, two agreeing boots (19/19 cases each): the Leader creates **7** Members in one turn (Leader + 7 = 8 instances) and collects **2** by request token; Member A runs 8 governed I/O tools (**15** facts, artefact verified on disk) and collects **3** typed refusals (`IO_READ_DENIED`, `WEB_DESTINATION_FORBIDDEN`, and the disclosed OS-only stop for an out-of-lane `bash` write); Member B does a real `web_fetch` (**1** connection / **26** bytes / **1** allow fact), a typed `WEB_PROVIDER_UNAVAILABLE` search (**0** POST), a route-gate `read_image` refusal (**0** facts / **0** bytes) and a goal of **3** automatic rounds → `complete`; the **7** deferred names are 7/7 typed `unknown tool` with **0** facts; the Stop arms show **0** rounds / **0** calls / **0** model requests in 20 000 ms windows (S1 cancel 7 rounds/8 calls → 0/0, S1c the PD-34 control sequence 6 rounds/7 calls → 0/0 with the durable re-read `paused`, S4 Leader archive on a running Member 89 rounds/89 calls → 0/0 → `ARCHIVED`), boundary burst `lost=false`, 6/6 idle-window probes landed, cold recovery `revived=false` (215 rounds before the SIGTERM), explicit resume **1** round; the inherited base `web` is called **0** times. **(MEASURED, DEV-LIVE; two agreeing boots)** [row-id note: PD-33 is the next free id on this base (PD-30 = #679, PD-31 = #680, PD-32 = #681); the lane/PR keep `PD33`.] | evidence-quality | correctness |
+| PD-34 (MEMBER-STOP) | Team view / goal Stop | A governed Member's goal was measured stoppable (PD-30), but the Team view had **no first-class "stop THIS Member" entry**: the only per-Member controls were the §40 lifecycle actions, and Archive *ends* the Member instead of pausing its goal. The only Leader-wide stop does **not** propagate to delegated Members (PD-30 S5: +14/+13/+13 rounds). The entry now exists: `发送消息 / 发送跟进 / 归档 / 处置` keeps its matrix, and a separate **停止此成员** issues the UI's four public RPCs (`goals/get` → `goals/pause` (CAS) → `session/cancel` → `goals/get`) and renders the **re-read** phase; a deliberately different **停止 Leader 当前回合** is cancel-only. Live: round 3 → **0 rounds / 0 tool calls / 0 model requests** in 20 000 ms, durable `paused` (rev1→2, armed→disarmed), `revived=false`, and one `goals/resume` restores **exactly 1** round **(FIXED, client entry + DEV-LIVE pair; the headless DOM click was NOT performed and the component-level click is the evidence for it)** | behavioural divergence | semantics |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
@@ -930,6 +931,63 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **blocked by**: nothing. Residuals disclosed above.
 - **anchors**: `tests/world-factory/lib/profile-module-graph.mjs#L2-L2` contains `profile-module-graph.mjs` ; `tests/world-factory/lib/world-factory.mjs#L377-L377` contains `provisionProfileModuleGraph` ; `tests/world-factory/lib/profile-module-graph.mjs#L103-L103` contains `provisionProfileModuleGraph`
 - **status**: **DRAFT — not merged.** 2026-11-15, branch `task/pd32-instrument-graph`, DEV-LIVE boots slot-leased on the 3180 family, `DSH_HOME` under `tests/homes/`, pinned host porcelain `empty`, core patch budget 0.
+### PD-33 (PREVIEW-E2E) — 「Preview 场景能跑通」第一次被端到端测量，而不是从六个单面证据推断
+
+- **source**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`（§1–§7 与 `runs/boot01|boot02/`）；
+  lane / branch / PR = `PD33-PREVIEW-E2E` / `task/pd33-preview-e2e-20261115` / **#682**。驱动器 =
+  `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs`，报告 =
+  `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md`。测量树 = **`origin/master 3101ca08f`**（#679+#680+#681 均已合并）+ 本 lane 的提交 `53db856e1`
+  （只含 driver/evidence/报告，相对 master **0 个产品文件**）。
+- **true today**: **一个 composition、两个逐项一致的 boot**（`--boots 2`，18 个 case，17 PROVEN / 1 因判据写错
+  而红——已被 `read_image` 的路由拒因文本证伪后修正判据，见下）。Leader 一次 `team_delegate` × 6 全部被接受，
+  第二回合 `team_collect` 按 2 个 request token 读回（A 首次 `running`→第二次终态，读回可先于结算）+ `team_list_members`。
+  Member A：`read`/`grep`/`glob`/`write`/`edit`/`bash`/`skill`/`present` 全链 **15** 条 fact、产物
+  `probe-written.txt` = `"probe line\nA5SF_PD33_A_EDIT_AFTER"`；三次授权尝试得到 **2 个 typed deny**
+  （`IO_READ_DENIED` 0 字节、`WEB_DESTINATION_FORBIDDEN` 0 连接）与 **1 个 OS 兜底**（见 not true 第 2 条）。
+  Member B：`web_fetch` **1** 连接 / **26** 字节 / **1** allow fact；`web_search` = typed
+  `WEB_PROVIDER_UNAVAILABLE`（**0** POST）；`read_image` 在 `text` 路由下**于任何 provider I/O 之前**拒绝
+  （**0** facts / **0** 字节，文本 `model "…" does not declare image input`）；goal **3** 轮 → `complete` → 0 后续轮。
+  延后面 **7/7** typed `unknown tool`、**7/7 0 facts**。Stop：S1（目标 Member 自己的 `session/cancel`）
+  2 轮/3 调用 → **0/0/0**，durable `paused`；S4（Leader `team_archive_member` 指向正在跑轮次的 Member）
+  `ARCHIVED`、**0/0**、`paused`；S2 24-cancel burst `lost=false`；GAP 6/6 landed；S6 冷恢复 `revived=false`、0 轮；
+  S7 显式 resume **1** 轮。base 宿主 `web` tripwire **0**；base `fs` **0**。表面 **36** = 19 preset + 15 `team_*` + 2 仪器。
+- **not true**: （1）**这不是候选验收**——`DEV-LIVE`、`eligible=false`、无 `V@B`/grade/Q7/Authority/Required-CI 变更；
+  （2）**shell 体的路径不由服务轴归属**（BL-17）：`bash` 写 `../…` 得到 **2 条 ALLOW**，唯一拦阻是 OS profile
+  （`Permission denied`、0 字节、文件不存在）——本行把它记为**披露的边界**，不记为服务轴拒绝；
+  （3）**默认安装不能搜网页**：`web_search` 的后端是部署条件（Exa 兼容 endpoint+key 才真实 POST+解析），
+  默认是 typed gap；网络轴仍是**单一布尔**，没有 per-host ACL，且**受管 web 工具的限制不等于 `bash` 子进程的限制**；
+  （4）**Stop 语义是"停目标 Member"，不是 Team-wide Stop**：停 Leader 的当前回合**不会**停已委派的异步工作（Preview 设计）；
+  （5）**用户侧仍无一等公民的 "stop this Member" affordance**——入口是 `POST /api/session/cancel`（本行用真实 HTTP 证明
+  它调用的是正确机制），UI 缺一个按钮，最小修点已写在报告 §6.1 M2。
+- **security consequence**: evidence-quality — 无新增越权面；本行是**测量**行。它把"服务轴拒绝越界 shell 写"从假设降级为**未成立**，
+  防止把 OS 兜底读成治理证明。
+- **current backstop**: `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`（host-free：composition、judge 公式、
+  延后面名册、`read_image` 判据）；`--plan` 在任何 boot 之前校验 row/blueprint。
+- **smallest honest fix**: 报告 §6.1 的两条——合入 #681 并 rebase 重跑（M1）；给 Member 行一个 Stop 入口且**确认它走
+  `session/cancel` → durable `pause` → `goals.disarm`**（M2）。BL-17 的 shell 体归属属正式 Alpha.5 延后。
+- **blocked by**: 无（测量已完成）；**#681 未合并**是报告结论的放行条件，不是本行的阻塞。
+- **proof**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/runs/boot01/verdicts.json`；
+  `runs/boot01/e2e.json`；`runs/boot02/`；`guard-facts.json`（PD-33 调用过滤，< 1 MiB）；
+  `run-record.json`（`recordClass=DEV-LIVE`、`eligible=false`）。
+- **anchors**: `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs#L4-L4` contains `PD-33 (Alpha.5 Preview)`, `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs#L2-L2` contains `PD-33: the Preview scenario`, `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md#L1-L1` contains `Alpha.5 Preview`, `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md#L1-L1` contains `PD-33`, `cordis.patch.yml#L302-L302` contains `preset-a5sf-governed-member`
+- **status**: **DRAFT — 未合并。** 2026-11-15（真实 UTC 2026-11-08），branch `task/pd33-preview-e2e-20261115`，
+  worktree `.worktrees/pd33-preview-e2e`，draft PR **#682**（首行 `PD33-PREVIEW-E2E`）；base 已 rebase 到合并 #681 后的 master（`3101ca08f`），叠加 base 已整个丢弃。
+  证据类 **DEV-LIVE**，两 boot 逐项一致；slot 租赁、3180 族端口、`DSH_HOME` 在 `tests/homes/`、
+  宿主树 porcelain 前后为空。**`CORE PATCH BUDGET = 0`：本 lane 相对 master 的产品文件 = 0。**
+
+### PD-34 (MEMBER-STOP) — a measured stop with no operable entry: the Team view could not stop one Member's goal, only end the Member or stop the Leader's turn
+
+- **source**: [a5sf-pd34-member-stop/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd34-member-stop/README.md) (§1–§7; lane `PD34-MEMBER-STOP`, branch `task/pd34-member-stop-20261115`, base `3101ca08f`). **Numbering**: the register's gate asserts contiguous ids in document order. At evidence time the rows ended at **PD-32** because the **PD-33** row was on PR **#682** (open then); this lane therefore wrote **PD-34** and did **not** renumber or fabricate a gap. **#682 has since merged as `edca478bd`**, and this branch **forward-merged** it (a merge, not a rebase, so the six-boot evidence binding to `3101ca08f` survives): PD-33 now sits immediately before PD-34 in both the table and the detail blocks, and the gate's contiguity leg is green. The lane, branch and evidence directory keep `PD34`.
+- **true today**: **measured live, on the real Host, on the merged tree.** A governed Member at goal round 3 (4 prior tool calls, a 4 s round in flight) is stopped through the **exact four public RPCs the new button's handler emits** — `goals/get` (active rev1) → `goals/pause` with `{id, revision}` (CAS rev1→rev2) → `session/cancel` (200) → `goals/get` — and the second read is the oracle: durable **`paused`, rev2, activation `armed → disarmed`**, then **0 goal rounds / 0 tool calls / 0 model requests** across a **20 000 ms** window, phase still `paused` after the window, **`revived=false`**, Member lifecycle **`SETTLED`** (not archived). One explicit `goals/resume` (rev2→rev3) restores the goal as `active`/`armed` and starts **exactly 1** round. Both boots agree 3/3. In the product, the Team view now renders **停止此成员 / Stop this Member** only on a live row with a bound `childSessionId`, and a **separate** **停止 Leader 当前回合 / Stop the Leader's current turn** whose copy states that delegated Members keep running. Stop is NOT in the §40 lifecycle matrix and does not archive.
+- **not true**: (1) not true that the Team view could stop a Member before this lane — the mechanism was real (PD-30) but unreachable through the product; the only per-Member entries ended or messaged the Member. (2) not true that "stop the Leader" is a Member stop — PD-30 S5 measured non-propagation (+14/+13/+13 rounds) and the Leader entry is cancel-only. (3) not true that a 200 is the stop — the UI renders the phase from a second `goals/get`, and a refused read/pause renders a typed error instead of a green note. (4) not true that the DOM was clicked in a real browser for this evidence — the driver issues the four wire calls and the click is covered at the component boundary (jsdom, real handler); the README says so explicitly. (5) not true that the idle window is closed — aiming at the boundary is a race (PD-30 S3 landed 6/6 aimed attempts, a measurement, not a guarantee). (6) not true that Preview has a trustworthy global round budget — unchanged, `maxGoalRounds` stays Member-editable.
+- **security consequence**: **behavioural divergence** — no new authority is granted and nothing crosses a lane. The divergence is between the product's promise ("you can stop a Member") and the surface that offered no such control, which pushed an operator toward Archive (ends the Member) or a Leader turn stop (does not reach delegated Members). The entry closes that gap with the public goal/session commands and leaves every existing permission and lifecycle rule untouched.
+- **current backstop**: live — the two agreeing `DEV-LIVE` boots in `dev/agent-workflow/evidence/a5sf-pd34-member-stop/` (run-record `DEV-LIVE`, agreeing pair 3/3, slot-leased `MemberStop` face, host porcelain `empty`) judged on the Member's own durable log. Host-free — `tests/world-factory/a5sf-pd34-member-stop.test.mjs` (8 pins: sequence order, public inject list, both controls + distinct copy, driver order, no local patch, a mutation control, the base pin, the README disclosure) plus the client suites `packages/client/test/member-stop-model.test.ts` (10) and `packages/client/test/team-member-stop.client.spec.tsx` (6, jsdom) and the mount test. p4t6: 20/20 after the `a5sfpd34` booking (1449 → 1451; one `.tsx` is outside the scanner's extension set).
+- **smallest honest fix**: one pure client model (`member-stop.ts`) + one inject/face wiring (`team-mount-core.ts`) + the two row controls and their copy (`TeamMembers.tsx` + `locales.ts`) + tests. **No host method, no goal-driver change, no upstream patch (`CORE PATCH BUDGET = 0`), no new `peerDependencies` name, and the §40 lifecycle matrix is untouched.** The mechanism (`interrupt` → durable `goals.pause` + disarm) stays exactly PD-30's.
+- **proof**: [a5sf-pd34-member-stop/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd34-member-stop/README.md) — `agreement.txt` / `agreement.json` (**6/6 agree on `dc797c038`**, `runs/boot01|02`, `--arms s8,s1,s6,s7`), the S1-UISTOP / S1-RESUME / S6-cold rows (§3, §3.2 — a Member stopped through the control and **not** resumed is still durably `paused` after SIGTERM + re-materialisation, 0 rounds), `runs/boot01|02/arms.json` (every quoted field), `member-facts.json` (durable log) and `mock-requests.json` (request log), `driver-digest.json` (composition `0774297f…`, instrument `3101ca08f…`), `run-ledger.jsonl`, `host-tree-porcelain.txt` (`empty`). The README §3.1 discloses the superseded first attempt (a counter read after the resume) and that the headless DOM click was not performed.
+- **blocked by**: **nothing.** The contiguity blocker was #682 (the PD-33 row); it **merged as `edca478bd`** and this branch forward-merged it, so PD-33 precedes PD-34 and the gate is green. The product entry itself never depended on it.
+- **anchors**: `packages/client/src/model/member-stop.ts#L2-L2` contains `MEMBER-STOP` ; `packages/client/src/ui/TeamMembers.tsx#L386-L386` contains `data-member-stop` ; `packages/client/src/plugin/team-mount-core.ts#L421-L421` contains `remote.goals` ; `tests/world-factory/drivers/a5sf-pd34-member-stop/run-boot.mjs#L3-L3` contains `a5sf-pd34-member-stop` ; `dev/agent-workflow/evidence/a5sf-pd34-member-stop/README.md#L1-L1` contains `PD-34`
+- **status**: **DRAFT — not merged.** 2026-11-15, branch `task/pd34-member-stop-20261115`, draft PR #683 (first line `PD34-MEMBER-STOP`), base `3101ca08f`, forward-merged with `origin/master` (`edca478bd`, PD-33) — no rebase, so the evidence binding to `3101ca08f` is intact. No merge, no settlement, no `V@B`. The register row is PD-34 and is now contiguous; the lane keeps its `PD34` label.
+
 ## 3. Ranking rationale
 
 Ranked by **what a Member could do**, not by fix size:
@@ -1142,46 +1200,12 @@ Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 > 依据 = `dev/agent-workflow/evidence/a5sf-pd31-read-image/README.md`（DEV-LIVE；合并树 `0c2a8f422` 上两对 agreeing
 > boots + 两个 mutation controls，surface 36）。G2–G5、`V@B`、`release BLOCKED` 均不因此改变。
 
-### PD-33 (PREVIEW-E2E) — 「Preview 场景能跑通」第一次被端到端测量，而不是从六个单面证据推断
+> **2026-11-15 状态更新（PD34-MEMBER-STOP；只追加，不改任何既有行文）**：本册在本 base 上从 **32 行**变为 **33 行**，取 **PD-34**（连续法 `PD-1…PD-n`；本 base 的下一号是 PD-33，但 **PD-33 行在 PR #682**（`task/pd33-preview-e2e-20261115`，证据时刻仍未合并），因此本 lane **不占 PD-33、不伪造连续**：寄存器门在 #682 合并并前向合并 `origin/master` 之前 **blocked-by-#682**，这句话写在行内 `blocked by` 与证据 README §7 里）。依据 =
+> `dev/agent-workflow/evidence/a5sf-pd34-member-stop/README.md`（DEV-LIVE，两 boots agreeing pair **3/3**：S1-UISTOP 在第 3 轮用 UI 的四个公开 RPC 停止 Member，20 000 ms 静默窗 **0 rounds / 0 tool calls / 0 model requests**，durable phase `paused` rev1→2（armed→disarmed），`revived=false`；一次 `goals/resume` 恰好恢复 **1 轮**；S8-continue 与 S8-terminal 为对照）。口径三条：（1）**入口是产品面，机制不是本 lane 的**——PD-30 的 `interrupt` + durable pause 一字未改，本 lane 只补 Team 视图入口与客户端序列；（2）**不是 team-wide Stop，也不是 Archive**——Stop 只暂停一个 Member 的目标并中止其当前回合，§40 生命周期矩阵不变；（3）**headless DOM 点击未执行**——live 驱动发的是与处理器相同的四个 RPC，点击本身由 jsdom 组件测试覆盖，README §3.1 明说，不把 RPC 序列冒充点击。G2–G5、`V@B`、`release BLOCKED` 均不因此改变。
 
-- **source**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`（§1–§7 与 `runs/boot01|boot02/`）；
-  lane / branch / PR = `PD33-PREVIEW-E2E` / `task/pd33-preview-e2e-20261115` / **#682**。驱动器 =
-  `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs`，报告 =
-  `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md`。测量树 = **`origin/master 3101ca08f`**（#679+#680+#681 均已合并）+ 本 lane 的提交 `53db856e1`
-  （只含 driver/evidence/报告，相对 master **0 个产品文件**）。
-- **true today**: **一个 composition、两个逐项一致的 boot**（`--boots 2`，18 个 case，17 PROVEN / 1 因判据写错
-  而红——已被 `read_image` 的路由拒因文本证伪后修正判据，见下）。Leader 一次 `team_delegate` × 6 全部被接受，
-  第二回合 `team_collect` 按 2 个 request token 读回（A 首次 `running`→第二次终态，读回可先于结算）+ `team_list_members`。
-  Member A：`read`/`grep`/`glob`/`write`/`edit`/`bash`/`skill`/`present` 全链 **15** 条 fact、产物
-  `probe-written.txt` = `"probe line\nA5SF_PD33_A_EDIT_AFTER"`；三次授权尝试得到 **2 个 typed deny**
-  （`IO_READ_DENIED` 0 字节、`WEB_DESTINATION_FORBIDDEN` 0 连接）与 **1 个 OS 兜底**（见 not true 第 2 条）。
-  Member B：`web_fetch` **1** 连接 / **26** 字节 / **1** allow fact；`web_search` = typed
-  `WEB_PROVIDER_UNAVAILABLE`（**0** POST）；`read_image` 在 `text` 路由下**于任何 provider I/O 之前**拒绝
-  （**0** facts / **0** 字节，文本 `model "…" does not declare image input`）；goal **3** 轮 → `complete` → 0 后续轮。
-  延后面 **7/7** typed `unknown tool`、**7/7 0 facts**。Stop：S1（目标 Member 自己的 `session/cancel`）
-  2 轮/3 调用 → **0/0/0**，durable `paused`；S4（Leader `team_archive_member` 指向正在跑轮次的 Member）
-  `ARCHIVED`、**0/0**、`paused`；S2 24-cancel burst `lost=false`；GAP 6/6 landed；S6 冷恢复 `revived=false`、0 轮；
-  S7 显式 resume **1** 轮。base 宿主 `web` tripwire **0**；base `fs` **0**。表面 **36** = 19 preset + 15 `team_*` + 2 仪器。
-- **not true**: （1）**这不是候选验收**——`DEV-LIVE`、`eligible=false`、无 `V@B`/grade/Q7/Authority/Required-CI 变更；
-  （2）**shell 体的路径不由服务轴归属**（BL-17）：`bash` 写 `../…` 得到 **2 条 ALLOW**，唯一拦阻是 OS profile
-  （`Permission denied`、0 字节、文件不存在）——本行把它记为**披露的边界**，不记为服务轴拒绝；
-  （3）**默认安装不能搜网页**：`web_search` 的后端是部署条件（Exa 兼容 endpoint+key 才真实 POST+解析），
-  默认是 typed gap；网络轴仍是**单一布尔**，没有 per-host ACL，且**受管 web 工具的限制不等于 `bash` 子进程的限制**；
-  （4）**Stop 语义是"停目标 Member"，不是 Team-wide Stop**：停 Leader 的当前回合**不会**停已委派的异步工作（Preview 设计）；
-  （5）**用户侧仍无一等公民的 "stop this Member" affordance**——入口是 `POST /api/session/cancel`（本行用真实 HTTP 证明
-  它调用的是正确机制），UI 缺一个按钮，最小修点已写在报告 §6.1 M2。
-- **security consequence**: evidence-quality — 无新增越权面；本行是**测量**行。它把"服务轴拒绝越界 shell 写"从假设降级为**未成立**，
-  防止把 OS 兜底读成治理证明。
-- **current backstop**: `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`（host-free：composition、judge 公式、
-  延后面名册、`read_image` 判据）；`--plan` 在任何 boot 之前校验 row/blueprint。
-- **smallest honest fix**: 报告 §6.1 的两条——合入 #681 并 rebase 重跑（M1）；给 Member 行一个 Stop 入口且**确认它走
-  `session/cancel` → durable `pause` → `goals.disarm`**（M2）。BL-17 的 shell 体归属属正式 Alpha.5 延后。
-- **blocked by**: 无（测量已完成）；**#681 未合并**是报告结论的放行条件，不是本行的阻塞。
-- **proof**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/runs/boot01/verdicts.json`；
-  `runs/boot01/e2e.json`；`runs/boot02/`；`guard-facts.json`（PD-33 调用过滤，< 1 MiB）；
-  `run-record.json`（`recordClass=DEV-LIVE`、`eligible=false`）。
-- **anchors**: `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs#L4-L4` contains `PD-33 (Alpha.5 Preview)`, `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs#L2-L2` contains `PD-33: the Preview scenario`, `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md#L1-L1` contains `Alpha.5 Preview`, `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md#L1-L1` contains `PD-33`, `cordis.patch.yml#L302-L302` contains `preset-a5sf-governed-member`
-- **status**: **DRAFT — 未合并。** 2026-11-15（真实 UTC 2026-11-08），branch `task/pd33-preview-e2e-20261115`，
-  worktree `.worktrees/pd33-preview-e2e`，draft PR **#682**（首行 `PD33-PREVIEW-E2E`）；base 已 rebase 到合并 #681 后的 master（`3101ca08f`），叠加 base 已整个丢弃。
-  证据类 **DEV-LIVE**，两 boot 逐项一致；slot 租赁、3180 族端口、`DSH_HOME` 在 `tests/homes/`、
-  宿主树 porcelain 前后为空。**`CORE PATCH BUDGET = 0`：本 lane 相对 master 的产品文件 = 0。**
+> **2026-11-15 追记（PD34-MEMBER-STOP；只追加）**：**#682 已合并 `edca478bd`**（master 现带 PD-33 行），本分支以 **merge（非 rebase）**
+> 前向合并 `origin/master`，`3101ca08f` 仍为祖先（六次 boot 的证据绑定不变）。上一条里「#682 合并前 blocked-by-#682」因此成为历史：
+> 现在 PD-33 紧接 PD-34，表与详情块同序，**连续法门绿**；`check:artifacts:head` 在合并后仍绿（`f7cbf62d9` 重建的客户端 bundle
+> 仍是提交态）。另按外部审查补一条**时序保证**到 `docs/PREVIEW-STOP-SEMANTICS.md` 与 UI 提示：Stop 的保证是**「pause 被确认后
+> 不再有续轮」**，不是「点击后立即没有任何执行」——点击到 durable pause 落盘之间有毫秒级窗口，窗口内被接纳的调用可能在 pause 之后
+> 才完成；闭包条件是 pause 的 ACK + 第二次读，而不是按钮的点击时刻。G2–G5、`V@B`、`release BLOCKED` 均不因此改变。

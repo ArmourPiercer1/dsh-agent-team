@@ -1,0 +1,20 @@
+{
+  "host": {
+    "wasRunning": true,
+    "pid": 21844,
+    "killed": true,
+    "portFree": true
+  },
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd34-member-stop/tests/homes/u5u5a5sfpd34-20261108T20-57-16Z",
+  "releasedPorts": [
+    3191,
+    3191,
+    13054,
+    3191
+  ],
+  "killedPids": [
+    60,
+    21844
+  ],
+  "notes": []
+}
