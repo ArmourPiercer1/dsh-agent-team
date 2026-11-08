@@ -120,6 +120,20 @@ reported `phase=active` and called it a defect: it was measuring a Member its ow
 deliberately resumed. Exactly the "most important clause was wrong" case, and it reproduced on
 both boots, deterministically, at `3101ca08f` too — it is not merge-induced and not flaky.
 
+**The rule this is an instance of: a clause inherited from another driver carries that driver's
+preconditions with it.** This clause carried "s1 is never resumed". Copying a verdict clause is
+copying a scenario, and when the scenario changes underneath it, the clause does not fail loudly —
+it keeps passing or starts failing about a Member that is no longer the subject. Two consequences
+for future arms: state a clause's preconditions next to the clause (here: "the witness Member is
+stopped and never resumed"), and when an arm's own behaviour changes, re-read every inherited
+clause that reads that arm's Member.
+
+**The rule about live reads after a restart (do not re-learn it):** a re-materialised child is
+`SETTLED` and has **no live agent** until its first post-restart turn, so a live `goals/get` on it
+legitimately returns "no goal". **`null` must never be read as `active`; only an observed `active`
+may refute a stop.** Future cold-recovery clauses should assert the durable projection plus the
+round count, and treat the live read as refutation-only.
+
 The fix stops a Member **inside** S6 through the same four RPCs, **never resumes it**, and asserts
 the durable phase plus the round count after restart; `s1` is still recorded, marked
 `informational only — the S1 arm resumes it by design`, and is never asserted. Two intermediate
