@@ -1,0 +1,300 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2",
+  "suite": "a5sf-pd25-unbounded-turn",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T05:48:59.666Z",
+  "selectedCases": [
+    "pd25:goal-self-continuation",
+    "pd25:goal-round-limit",
+    "pd25:goal-cap-caller-chosen",
+    "pd25:no-tool-call-cap",
+    "pd25:ask-user-unattended",
+    "pd25:exit-plan-non-plan",
+    "pd25:todo-session-local",
+    "pd25:goal-tools-absent"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "3527b3f454cdbeb16107e25f256ed709feff8af1",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "UnboundedTurn",
+      "world": "u5a5sfpd25",
+      "source": "task PD25-UNBOUNDED-TURN explicit boot authorisation (2026-11-14), arm=postfix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "3527b3f454cdbeb16107e25f256ed709feff8af1",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd25-20261108T05-48-59Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd25:goal-self-continuation",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "a governed Member cannot open a self-continuation loop: the goal tools are ABSENT (typed unknown tool), no goal is created, and ZERO goal rounds are driven",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-issued",
+          "ok": true,
+          "detail": "the Member issued `create_goal`"
+        },
+        {
+          "id": "typed-unknown",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"create_goal\""
+        },
+        {
+          "id": "no-goal-created",
+          "ok": true,
+          "detail": "create result=Error: unknown tool \"create_goal\""
+        },
+        {
+          "id": "zero-goal-rounds",
+          "ok": true,
+          "detail": "goal-round model requests=0"
+        },
+        {
+          "id": "zero-goal-events",
+          "ok": true,
+          "detail": "durable goal-round user messages=0"
+        },
+        {
+          "id": "no-round-limit-block",
+          "ok": true,
+          "detail": "blocked goals=0"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-round-limit",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "with the goal tools removed there is no round budget to exercise: `create_goal {max_goal_rounds: 2}` is a typed unknown-tool refusal and zero goal rounds are driven",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-typed-unknown",
+          "ok": true,
+          "detail": "Error: unknown tool \"create_goal\""
+        },
+        {
+          "id": "zero-rounds",
+          "ok": true,
+          "detail": "goal-round requests=0"
+        },
+        {
+          "id": "no-blocked-goal",
+          "ok": true,
+          "detail": "blocked goals=0"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-cap-caller-chosen",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "with the goal tools removed the Member can neither create a goal nor raise a cap: both are typed unknown-tool refusals and no goal state is written",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-typed-unknown",
+          "ok": true,
+          "detail": "Error: unknown tool \"create_goal\""
+        },
+        {
+          "id": "edit-typed-unknown",
+          "ok": true,
+          "detail": "Error: unknown tool \"update_goal\""
+        },
+        {
+          "id": "no-goal-state",
+          "ok": true,
+          "detail": "no goal JSON was ever returned"
+        }
+      ]
+    },
+    {
+      "id": "pd25:no-tool-call-cap",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "a delegated Member turn has NO tool-call cap: 30 sequential confined `bash` calls in ONE turn all executed (no typed refusal, no truncation, no counter)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "all-issued",
+          "ok": true,
+          "detail": "issued=30/30"
+        },
+        {
+          "id": "all-answered",
+          "ok": true,
+          "detail": "answered=30"
+        },
+        {
+          "id": "none-refused",
+          "ok": true,
+          "detail": "error results=[]"
+        },
+        {
+          "id": "each-executed",
+          "ok": true,
+          "detail": "results carrying the command marker=30 (one may be a trajectory/flush race)"
+        }
+      ]
+    },
+    {
+      "id": "pd25:ask-user-unattended",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "with `tool-ask-user` removed the unattended Member cannot ask at all: the call is a typed `unknown tool` refusal, the delegation RETURNS, and no question is queued for a non-existent client",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "tool-absent",
+          "ok": true,
+          "detail": "Error: unknown tool \"ask_user_question\""
+        },
+        {
+          "id": "no-block",
+          "ok": true,
+          "detail": "delegationReturned=true blockedSeconds=null"
+        },
+        {
+          "id": "no-fabricated-answer",
+          "ok": true,
+          "detail": "isError=true"
+        }
+      ]
+    },
+    {
+      "id": "pd25:exit-plan-non-plan",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "`exit_plan_mode` outside plan mode is a TYPED REFUSAL and does not switch the session mode",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `exit_plan_mode` from a non-plan turn"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: exit_plan_mode is only available in plan mode"
+        },
+        {
+          "id": "nothing-executed",
+          "ok": true,
+          "detail": "the refusal names the plan-mode precondition"
+        }
+      ]
+    },
+    {
+      "id": "pd25:todo-session-local",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "`todo_write` is SESSION-LOCAL: the `todo/write` event lands in the CALLING Member's own durable session and in no other Member's",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `todo_write`"
+        },
+        {
+          "id": "accepted",
+          "ok": true,
+          "detail": "text=Updated todo list: 1 pending, 1 in progress, 0 completed."
+        },
+        {
+          "id": "write-in-calling-session",
+          "ok": true,
+          "detail": "todo/write events in the calling session=1"
+        },
+        {
+          "id": "no-write-elsewhere",
+          "ok": true,
+          "detail": "todo/write events in the other 4 member sessions=0"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-tools-absent",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:50:36.219Z",
+      "proposition": "the goal tools are GONE from the governed Member surface: every goal call is a typed `unknown tool` and nothing executes",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-goal-absent",
+          "ok": true,
+          "detail": "create_goal on surface=false"
+        },
+        {
+          "id": "update-goal-absent",
+          "ok": true,
+          "detail": "update_goal on surface=false"
+        },
+        {
+          "id": "get-goal-absent",
+          "ok": true,
+          "detail": "get_goal on surface=false"
+        },
+        {
+          "id": "create-typed-unknown",
+          "ok": true,
+          "detail": "Error: unknown tool \"create_goal\""
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T05:49:46.337Z",
+        "runId": "a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2",
+        "suite": "a5sf-pd25-unbounded-turn",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd25-20261108T05-48-59Z",
+        "phase": "a5sf-pd25-unbounded-turn-postfix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd25-unbounded-turn-postfix-boot2",
+      "world": "u5u5a5sfpd25-20261108T05-48-59Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T05-48-59Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T05:50:36.220Z"
+}

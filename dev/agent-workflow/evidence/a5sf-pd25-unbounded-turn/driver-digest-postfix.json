@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-08T05:47:22.633Z",
+  "arm": "postfix",
+  "head": "3527b3f454cdbeb16107e25f256ed709feff8af1",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "0efb0031670c98e37bb3a37e87a7c44013f548511d0a2a658e98a3747431d20b",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/cordis.patch.yml",
+    "sha256": "a593472a9d82fdc97646cd51226b3374c8a190a8cdf56b753f79d3964593c6f9",
+    "arm": "postfix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "UnboundedTurn",
+    "world": "u5a5sfpd25",
+    "source": "task PD25-UNBOUNDED-TURN explicit boot authorisation (2026-11-14), arm=postfix"
+  },
+  "hardObservationCap": 5,
+  "burst": 30,
+  "command": "node tests/world-factory/drivers/a5sf-pd25-unbounded-turn/run-boot.mjs --arm postfix"
+}

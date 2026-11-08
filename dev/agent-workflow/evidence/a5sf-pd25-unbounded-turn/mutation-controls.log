@@ -1,0 +1,11 @@
+PASS CLEAN: every arm is green — exit=0 tests=5 failed=[]
+PASS M1-goal: PD25-TYPED-REFUSAL reddens — refusal=false
+PASS M1-goal: the SURFACE arms stay green (the mutation is not a global break) — closed=true surgical=true
+PASS M2-ask: PD25-TYPED-REFUSAL reddens — refusal=false
+PASS M3-partial: PD25-TYPED-REFUSAL reddens (the trio leaves as a SET) — refusal=false
+PASS M4-row: PD25-SURFACE-CLOSED reddens — closed=false
+PASS M4-row: PD25-TYPED-REFUSAL stays green (the row arm measures the composition, not the router) — refusal=true
+PASS PIN: the BASE commit carries both rows this lane removes — pin=true
+PASS PIN: git really shows the pre-fix rows at the BASE commit — rows=["tool-goal","tool-ask-user"]
+
+MUTATION CONTROLS PASS (9/9)

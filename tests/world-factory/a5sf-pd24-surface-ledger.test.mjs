@@ -90,10 +90,15 @@ const CLOSED_EARLIER = Object.freeze([
 ])
 const CLOSED_TOOLS = Object.freeze([...CLOSED_BY_PD24, ...CLOSED_EARLIER])
 /** Rows the governed preset must keep — the removal must stay surgical. */
+// 2026-11-14: `tool-goal` and `tool-ask-user` left this list when PD-25
+// (UNBOUNDED-TURN, #674) removed them from the same governed preset for its own
+// measured defect; this lane's arm still pins every row IT did not remove, and
+// PD-25's own POSITIVE-CONTROL arm pins its retained set. The `present` removal
+// is this lane's, so `present` must never appear here.
 const KEPT_ROWS = Object.freeze([
   'persona', 'agent-instructions', 'tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs',
-  'command-goal', 'tool-goal', 'plan-mode', 'compaction-basic', 'command-compact',
-  'tool-result-pruner', 'tool-ask-user', 'tool-todo',
+  'command-goal', 'plan-mode', 'compaction-basic', 'command-compact',
+  'tool-result-pruner', 'tool-todo',
 ])
 
 const runtimeRequire = createRequire(join(REPO, 'packages', 'runtime', 'package.json'))
@@ -177,7 +182,9 @@ test('PD24-SURFACE-POSITIVE-CONTROL: the retained rows are untouched', () => {
   for (const id of KEPT_ROWS) {
     assert.equal(ids.includes(id), true, `the governed preset unexpectedly lost '${id}'`)
   }
-  assert.equal(ids.length > 14, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
+  // Floor 16 -> 15 (PD-24 removed `present`) -> 13 (PD-25 removed `tool-goal`
+  // and `tool-ask-user`): a "not a blanket strip" guard, not a roster pin.
+  assert.equal(ids.length >= 13, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
 })
 
 test('PD24-SURFACE-SURGICAL: the pinned standard preset still declares `present` (capability outside the governed preset)', () => {
