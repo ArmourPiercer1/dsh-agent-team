@@ -30,7 +30,12 @@ describe('dsh-agent-team client plugin (P9-T9 mount core)', () => {
     expect(typeof name).toBe('string')
     expect(name).toBe('dsh-agent-team-client')
     expect(Array.isArray(inject)).toBe(true)
-    expect(inject).toEqual(['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets'])
+    // PD-34 adds `remote.goals` + `remote.session` (the per-Member Stop rides
+    // the public namespaces the goal bar itself injects).
+    expect(inject).toEqual([
+      'slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote',
+      'remote.agentPresets', 'remote.goals', 'remote.session',
+    ])
     expect(typeof applyTeamMount).toBe('function')
   })
 })

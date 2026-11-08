@@ -1,0 +1,205 @@
+{
+  "arms": {
+    "s8Continue": {
+      "templateId": "lead",
+      "rounds": 3,
+      "continued": true
+    },
+    "s1": {
+      "stopAt": 1794165219678,
+      "silentFrom": 1794165219713,
+      "uiSequence": {
+        "read1Goal": {
+          "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+          "revision": 1,
+          "objective": "PD-34 stop probe for s1.",
+          "phase": "active",
+          "maxGoalRounds": 100000,
+          "roundsStarted": 3,
+          "createdAt": 1794165211010,
+          "updatedAt": 1794165211010,
+          "activation": "armed"
+        },
+        "pause": {
+          "status": 200,
+          "ok": true,
+          "value": {
+            "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+            "revision": 2,
+            "objective": "PD-34 stop probe for s1.",
+            "phase": "paused",
+            "maxGoalRounds": 100000,
+            "roundsStarted": 3,
+            "createdAt": 1794165211010,
+            "updatedAt": 1794165219701,
+            "activation": "disarmed"
+          },
+          "error": null
+        },
+        "cancel": {
+          "status": 200
+        },
+        "read2Goal": {
+          "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+          "revision": 2,
+          "objective": "PD-34 stop probe for s1.",
+          "phase": "paused",
+          "maxGoalRounds": 100000,
+          "roundsStarted": 3,
+          "createdAt": 1794165211010,
+          "updatedAt": 1794165219701,
+          "activation": "disarmed"
+        }
+      },
+      "roundsBeforeStop": 3,
+      "roundsAfterStop": 0,
+      "roundsAfterWindow": 0,
+      "callsBeforeStop": 4,
+      "callsAfterStop": 0,
+      "callsAfterWindow": 0,
+      "silentWindowMs": 20000,
+      "requestsAfterStop": 0,
+      "requestsInWindow": 0,
+      "goalRounds": 3,
+      "goalChanges": [
+        {
+          "at": 1794165211010,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794165219701,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 2,
+          "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+          "roundsStarted": 3,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "aborts": [
+        {
+          "at": 1794165211106,
+          "kind": "completed"
+        },
+        {
+          "at": 1794165214740,
+          "kind": "completed"
+        },
+        {
+          "at": 1794165219040,
+          "kind": "completed"
+        },
+        {
+          "at": 1794165223257,
+          "kind": "aborted"
+        }
+      ],
+      "observedPhaseAtStop": "paused",
+      "observedPhaseAfterWindow": "paused",
+      "finalPhase": "paused",
+      "revived": false,
+      "membership": "SETTLED",
+      "resume": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "id": "goal-a947b96e-bb72-400a-a8ea-38b12676fe94",
+          "revision": 3,
+          "objective": "PD-34 stop probe for s1.",
+          "phase": "active",
+          "maxGoalRounds": 100000,
+          "roundsStarted": 3,
+          "createdAt": 1794165211010,
+          "updatedAt": 1794165239759,
+          "activation": "armed"
+        },
+        "error": null,
+        "resumed": true,
+        "roundsAfterResume": 1,
+        "phaseAfterResume": "active"
+      }
+    },
+    "s8Terminal": {
+      "blocked": {
+        "reached": true,
+        "rounds": 1,
+        "goalChanges": [
+          {
+            "at": 1794165217057,
+            "operation": "create",
+            "phase": "active",
+            "revision": 1,
+            "id": "goal-b5d930db-98fd-414e-a7e9-2b2a867cc96d",
+            "roundsStarted": 0,
+            "maxGoalRounds": 1,
+            "blockedCode": null
+          },
+          {
+            "at": 1794165217967,
+            "operation": "block",
+            "phase": "blocked",
+            "revision": 2,
+            "id": "goal-b5d930db-98fd-414e-a7e9-2b2a867cc96d",
+            "roundsStarted": 1,
+            "maxGoalRounds": 1,
+            "blockedCode": "round-limit"
+          }
+        ]
+      },
+      "paused": {
+        "at": 1794165241554,
+        "rpcStatus": 200,
+        "rpcOk": true,
+        "pausedSeen": true,
+        "roundsAtPause": 47,
+        "roundsAfterPause": 0,
+        "goalChanges": [
+          {
+            "at": 1794165215839,
+            "operation": "create",
+            "phase": "active",
+            "revision": 1,
+            "id": "goal-1c58e218-d1e5-4403-ac93-f79ae197b7a1",
+            "roundsStarted": 0,
+            "maxGoalRounds": 100000,
+            "blockedCode": null
+          },
+          {
+            "at": 1794165241612,
+            "operation": "pause",
+            "phase": "paused",
+            "revision": 2,
+            "id": "goal-1c58e218-d1e5-4403-ac93-f79ae197b7a1",
+            "roundsStarted": 47,
+            "maxGoalRounds": 100000,
+            "blockedCode": null
+          }
+        ]
+      }
+    }
+  },
+  "counters": {
+    "stops": [
+      {
+        "arm": "S1-UISTOP",
+        "who": "ui:goals/get+goals/pause+session/cancel+goals/get",
+        "target": "s1",
+        "sessionId": "session-team-child-c1493518a9a10e14c3a1ba0e0ee5fa86",
+        "at": 1794165219678,
+        "pauseStatus": 200,
+        "pauseOk": true,
+        "cancelStatus": 200
+      }
+    ],
+    "errors": [],
+    "restarts": 0
+  },
+  "stages": []
+}

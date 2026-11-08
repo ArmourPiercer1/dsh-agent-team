@@ -229,6 +229,8 @@ interface MountFixture {
     readonly component: unknown
   }>
   readonly effects: Array<{ readonly label: string | undefined; readonly dispose: () => void }>
+  /** PD-34: the public goals/session namespace calls (not the /team-remote carrier). */
+  readonly remoteLog: Array<{ readonly seam: string; readonly method: string; readonly args: readonly unknown[] }>
   /** Dispose every inject entry, then every tracked effect (reverse order). */
   readonly disposeAll: () => void
   /** Drive the connection generation seam (the plan §6.3 invalidation). */
@@ -284,9 +286,16 @@ function makeMount(
      * flip it per scenario.
      */
     readonly modeSelectionEnabled?: boolean
+    /**
+     * PD-34: the goal the fake `goals.get` answers (the per-Member Stop
+     * wiring test; absent = no current goal).
+     */
+    readonly goalView?: { readonly id: string; readonly revision: number; readonly phase: 'active' | 'paused' | 'blocked' | 'complete' } | undefined
   } = {},
 ): MountFixture {
   const log: CarrierCall[] = []
+  /** PD-34: the public goals/session namespace calls (not the /team-remote carrier). */
+  const remoteLog: Array<{ readonly seam: string; readonly method: string; readonly args: readonly unknown[] }> = []
   const queues: Record<string, Array<() => RemoteResponse | Promise<RemoteResponse>>> = {}
   const enqueue = (
     endpoint: string,
@@ -491,6 +500,28 @@ function makeMount(
         value: { presets, modeSelectionEnabled },
       }),
     },
+    // PD-34: the two public namespaces the per-Member Stop rides. The double
+    // records the calls so the mount-level wiring test can prove the face
+    // reaches THESE namespaces (the goal bar's own) and not a local imitation.
+    goals: {
+      get: async (memberSessionId: string) => {
+        remoteLog.push({ seam: 'goals', method: 'get', args: [memberSessionId] })
+        return { ok: true as const, value: opts.goalView }
+      },
+      pause: async (memberSessionId: string, ref: { readonly id: string; readonly revision: number }) => {
+        remoteLog.push({ seam: 'goals', method: 'pause', args: [memberSessionId, ref] })
+        return {
+          ok: true as const,
+          value: { id: ref.id, revision: ref.revision + 1, phase: 'paused' as const },
+        }
+      },
+    },
+    session: {
+      cancel: async (request: { readonly sessionId: string }) => {
+        remoteLog.push({ seam: 'session', method: 'cancel', args: [request] })
+        return { ok: true as const, value: { accepted: true } }
+      },
+    },
   }
 
   // The locale runtime double (records registrations; bound translator
@@ -593,6 +624,7 @@ function makeMount(
     injects,
     registers,
     effects,
+    remoteLog,
     disposeAll,
     generation: { set: generation.set },
     readState: { pinTeam: pinTeamReadState, setNone: setReadStateNone },
@@ -1171,6 +1203,39 @@ describe('P9-T9 (P9-S6) client mount — base mount (scenario A)', () => {
     expect(typeof face.governance).toBe('object')
     expect(typeof face.handoff).toBe('object')
     expect(typeof face.legacyInspect).toBe('function')
+  })
+
+  it('PD-34: the per-Member stop face reaches the public goals/session namespaces (the goal bar RPCs)', async () => {
+    const fixture = makeMount({ goalView: { id: 'g-1', revision: 2, phase: 'active' } })
+    applyTeamMount(fixture.ctx, { components: fixture.components })
+    const face = viewFaceOf(fixture, 'plain-1')
+    const stop = face.memberCommands?.memberStop
+    const leaderStop = face.memberCommands?.leaderStopTurn
+    if (stop === undefined || leaderStop === undefined) {
+      throw new Error('mount test: the PD-34 stop faces are not wired')
+    }
+
+    // The Member stop: goals.get -> goals.pause -> session.cancel -> goals.get,
+    // through the PUBLIC namespaces (not a /team-remote endpoint and not a
+    // local state mutation).
+    const outcome = await stop({ teamSessionId: 'team-1', instanceId: 'm-1', sessionId: 'child-1' })
+    expect(outcome.kind).toBe('stopped')
+    expect(fixture.remoteLog.map(entry => `${entry.seam}.${entry.method}`)).toEqual([
+      'goals.get', 'goals.pause', 'session.cancel', 'goals.get',
+    ])
+    expect(fixture.remoteLog[1]?.args).toEqual(['child-1', { id: 'g-1', revision: 2 }])
+    expect(fixture.remoteLog[2]?.args).toEqual([{ sessionId: 'child-1' }])
+
+    // The Leader entry stops the ROOT turn only: no goal read, no pause.
+    fixture.remoteLog.length = 0
+    const leader = await leaderStop('team-1')
+    expect(leader.kind).toBe('accepted')
+    expect(fixture.remoteLog.map(entry => `${entry.seam}.${entry.method}`)).toEqual(['session.cancel'])
+    expect(fixture.remoteLog[0]?.args).toEqual([{ sessionId: 'team-1' }])
+
+    // None of the four calls rode the frozen /team-remote carrier.
+    expect(fixture.log.filter(call => call.endpoint.startsWith('member.'))).toEqual([])
+    fixture.disposeAll()
   })
 
   it('the dock inject face shares the view projection mirror source (D-T9-4 no-op jump)', () => {

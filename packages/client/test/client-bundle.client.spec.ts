@@ -141,7 +141,14 @@ describe('P9-T10 (P9-S7) client package surface (legacy spec ADAPT)', () => {
   it('the static plugin contract is the frozen shape (PACKAGE_ID + name/inject/apply)', () => {
     expect(PACKAGE_ID).toBe('client')
     expect(name).toBe('dsh-agent-team-client')
-    expect(inject).toEqual(['slots', 'locale', 'sessions', 'connection', 'remote', 'remote.agentPresets'])
+    // PD-34 adds the two public namespaces the per-Member Stop rides
+    // (`remote.goals` for the durable pause, `remote.session` for the turn
+    // abort) — the SAME proxies the goal bar injects. `uiWorkspace` was
+    // already injected before this lane; this list now matches the source.
+    expect(inject).toEqual([
+      'slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote',
+      'remote.agentPresets', 'remote.goals', 'remote.session',
+    ])
     expect(typeof apply).toBe('function')
   })
 

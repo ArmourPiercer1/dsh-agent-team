@@ -1,0 +1,101 @@
+[
+  {
+    "id": "pd34:goal-continuous-rounds",
+    "verdict": "PROVEN",
+    "proposition": "a governed Member's goal drives consecutive automatic rounds with no Team-imposed total round budget (the upstream Member-editable maxGoalRounds is the only cap)",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "rounds-reached",
+        "ok": true,
+        "detail": "rounds=3"
+      },
+      {
+        "id": "more-than-one",
+        "ok": true,
+        "detail": "rounds=3 (needs >= 3 automatic rounds)"
+      }
+    ]
+  },
+  {
+    "id": "pd34:ui-member-stop",
+    "verdict": "PROVEN",
+    "proposition": "the Team view's per-Member stop (get -> pause -> cancel -> get) durably pauses THIS Member: zero rounds / tool calls / model requests in the silent window, observed phase `paused`, revived=false, and one resume restores exactly one round",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "pause-accepted",
+        "ok": true,
+        "detail": "goals/pause ok=true status=200 error=null"
+      },
+      {
+        "id": "cancel-answered",
+        "ok": true,
+        "detail": "session/cancel status=200"
+      },
+      {
+        "id": "observed-phase-paused",
+        "ok": true,
+        "detail": "the second goals/get observed phase=paused"
+      },
+      {
+        "id": "rounds-after-stop-zero",
+        "ok": true,
+        "detail": "rounds after stop=0 (before=3)"
+      },
+      {
+        "id": "tool-calls-after-stop-zero",
+        "ok": true,
+        "detail": "tool calls after stop=0"
+      },
+      {
+        "id": "no-model-request-in-window",
+        "ok": true,
+        "detail": "model requests in the 20000 ms window=0"
+      },
+      {
+        "id": "stays-paused-after-window",
+        "ok": true,
+        "detail": "phase after the window=paused"
+      },
+      {
+        "id": "not-revived",
+        "ok": true,
+        "detail": "revived=false"
+      },
+      {
+        "id": "resume-accepted",
+        "ok": true,
+        "detail": "goals/resume ok=true status=200 error=null"
+      },
+      {
+        "id": "exactly-one-round-restored",
+        "ok": true,
+        "detail": "rounds after resume=1 resumed=true phase=active"
+      }
+    ]
+  },
+  {
+    "id": "pd34:terminal-phases-do-not-continue",
+    "verdict": "PROVEN",
+    "proposition": "a blocked goal (product round limit) and a user-paused goal start no further automatic round",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "blocked-reached",
+        "ok": true,
+        "detail": "blocked phase reached=true rounds=1"
+      },
+      {
+        "id": "paused-observed",
+        "ok": true,
+        "detail": "durable paused phase=true"
+      },
+      {
+        "id": "no-round-after-pause",
+        "ok": true,
+        "detail": "rounds after the pause=0"
+      }
+    ]
+  }
+]

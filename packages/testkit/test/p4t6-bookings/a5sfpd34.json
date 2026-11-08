@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SFPD34",
+  "paths": [
+    "packages/client/src/model/member-stop.ts",
+    "packages/client/test/member-stop-model.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1449,
+    "to": 1451
+  },
+  "reason": "PD-34 (MEMBER-STOP, 2026-11-15): the per-Member Stop entry's pure client model (`packages/client/src/model/member-stop.ts` — the fixed get -> pause -> cancel -> get sequence and its typed outcomes) and its plain-node suite (`packages/client/test/member-stop-model.test.ts`). Two NEW scannable paths, both owned by this lane. The third new file, `packages/client/test/team-member-stop.client.spec.tsx`, is a `.tsx` client spec and is outside the scanner's extension set (the measured movement is exactly +2); the edits to `packages/client/src/ui/TeamMembers.tsx`, `TeamMembers.module.css`, `locales.ts`, `src/plugin/team-mount-core.ts`, `client.test.ts`, `client-plugin-mount.test.ts` and `client-bundle.client.spec.ts` ride ALREADY-COUNTED paths. The live driver (`tests/world-factory/drivers/a5sf-pd34-member-stop/run-boot.mjs`) and the evidence README live outside `packages/**` and enter no scan set. Zero denylist vocabulary is added (the model names no Team SessionEvent; the quarantine hit set is unchanged).",
+  "tieNote": "MEASURED on THIS tree, not copied: with both files on disk and no booking, the p4t6 coverage leg read `scanner counts 1451, ledger derives 983 + 466 = 1449` and failed `expected 1449 to be 1451` — the previous 1449 plus exactly the two new paths. Booking those two paths by name makes the ledger derive 983 + 468 = 1451. Re-run after booking: see the driver/evidence README §4 (the p4t6 leg). Nothing is retired, no path is booked twice, and no denylist vocabulary moves."
+}

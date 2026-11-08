@@ -1,0 +1,5 @@
+| case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd34:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd34:ui-member-stop | PROVEN | PROVEN | agree |
+| pd34:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |

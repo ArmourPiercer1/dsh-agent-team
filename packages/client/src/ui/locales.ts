@@ -210,6 +210,20 @@ export type TeamKey =
   | 'member.action.create'
   | 'member.command.pending'
   | 'member.command.error'
+  // PD-34 (MEMBER-STOP): the per-Member stop copy. The label/hint state the
+  // scope explicitly; the Leader keys are a DIFFERENT action with different
+  // copy (turn-only, no propagation to delegated Members).
+  | 'member.stop.label'
+  | 'member.stop.hint'
+  | 'member.stop.stopped'
+  | 'member.stop.noGoal'
+  | 'member.stop.already'
+  | 'member.stop.error'
+  | 'member.stop.unavailable'
+  | 'member.stop.leader.label'
+  | 'member.stop.leader.hint'
+  | 'member.stop.leader.note'
+  | 'member.stop.leader.error'
   | 'member.dialog.close'
   | 'member.create.title'
   | 'member.create.template'
@@ -499,6 +513,19 @@ export const zh: Record<TeamKey, string> = {
   'member.action.create': '创建成员实例',
   'member.command.pending': '处理中…',
   'member.command.error': '命令失败：{code}: {message}',
+  // PD-34: per-Member stop. The hint is the semantic contract: this stops
+  // THIS Member's goal + current turn, not the team, and not by archive.
+  'member.stop.label': '停止此成员',
+  'member.stop.hint': '暂停该成员的目标并中止其当前回合（可稍后 resume）；不影响其他成员，也不等同于归档。',
+  'member.stop.stopped': '已停止：目标 phase={phase}（rev {revision}），回合中止={cancel}',
+  'member.stop.noGoal': '该成员当前没有目标；回合中止={cancel}',
+  'member.stop.already': '该成员的目标已是 {phase}，无需再暂停；回合中止={cancel}',
+  'member.stop.error': '停止失败：{code}: {message}',
+  'member.stop.unavailable': '当前 Host 未提供 goals/session 命名空间，无法停止该成员（未做本地模拟）',
+  'member.stop.leader.label': '停止 Leader 当前回合',
+  'member.stop.leader.hint': '只停止 Leader 这一回合；已委派的成员不会被停止（Preview 的 Stop 语义是按成员的）。',
+  'member.stop.leader.note': '已请求停止 Leader 当前回合（cancel={cancel}）；已委派的成员继续运行。',
+  'member.stop.leader.error': '停止 Leader 当前回合失败：{code}: {message}',
   'member.dialog.close': '关闭',
   'member.create.title': '创建成员实例',
   'member.create.template': '模板',
@@ -785,6 +812,19 @@ export const en: Record<TeamKey, string> = {
   'member.action.create': 'Create a MemberInstance',
   'member.command.pending': 'Pending…',
   'member.command.error': 'Command failed: {code}: {message}',
+  // PD-34: per-Member stop — scope is THIS Member; the Leader entry is a
+  // different action (turn-only) and says so.
+  'member.stop.label': 'Stop this Member',
+  'member.stop.hint': 'Pauses THIS Member’s goal and aborts its current turn (resumable later); it does not stop other Members and is not the same as archiving.',
+  'member.stop.stopped': 'Stopped: goal phase={phase} (rev {revision}), turn abort={cancel}',
+  'member.stop.noGoal': 'This Member has no current goal; turn abort={cancel}',
+  'member.stop.already': 'This Member’s goal is already {phase}; nothing to pause. Turn abort={cancel}',
+  'member.stop.error': 'Stop failed: {code}: {message}',
+  'member.stop.unavailable': 'This Host serves no goals/session namespace, so the Member cannot be stopped (nothing was simulated locally)',
+  'member.stop.leader.label': "Stop the Leader's current turn",
+  'member.stop.leader.hint': 'Stops only the Leader’s current turn; Members it already delegated to keep running (Preview’s Stop is per-Member).',
+  'member.stop.leader.note': 'Asked the Leader’s current turn to stop (cancel={cancel}); delegated Members keep running.',
+  'member.stop.leader.error': 'Stopping the Leader’s turn failed: {code}: {message}',
   'member.dialog.close': 'Close',
   'member.create.title': 'Create MemberInstance',
   'member.create.template': 'Template',

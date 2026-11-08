@@ -60,6 +60,11 @@ import type {
   RemoteResponse,
 } from '../../../remote/src/index.js'
 import { projectionFromWire } from '../model/projection-adapter.js'
+import { stopLeaderTurn, stopMember } from '../model/member-stop.js'
+import type {
+  MemberStopGoalSeam,
+  MemberStopSessionSeam,
+} from '../model/member-stop.js'
 import { createTeamLedgerStore } from '../state/team-ledger-store.js'
 import type {
   TeamLedgerState,
@@ -326,6 +331,20 @@ export interface TeamRemote {
      */
     list(): Promise<TeamAgentPresetsListResult>
   }
+  /**
+   * PD-34: the public goal namespace (`ctx.remote.goals` — the SAME proxy
+   * the goal bar injects; its endpoints are the `/api/goals/*` RPCs). The
+   * Team view uses it to withdraw a Member's goal continuation durably.
+   * Absent on a composition that does not serve the upstream goal package;
+   * the stop control then stays display-only (never simulated locally).
+   */
+  readonly goals?: MemberStopGoalSeam | undefined
+  /**
+   * PD-34: the public session namespace (`ctx.remote.session`; the
+   * `session/cancel` RPC). Absent → the stop control's turn abort is
+   * reported as `unavailable` rather than faked.
+   */
+  readonly session?: MemberStopSessionSeam | undefined
 }
 
 /**
@@ -395,9 +414,11 @@ export interface TeamMountComponents {
  * `remote.agentPresets` is the dotted traced-namespace service itself: a
  * `ctx.remote.<ns>` read is authorized by the context proxy under that
  * dotted key, so the bare `remote` service alone does not open the
- * namespace.
+ * namespace. PD-34 adds `remote.goals` / `remote.session` for the SAME
+ * reason: the per-Member Stop must ride the public `/api/goals/*` and
+ * `/api/session/cancel` commands, never a client-side imitation.
  */
-export const inject = ['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets'] as const
+export const inject = ['slots', 'locale', 'sessions', 'uiWorkspace', 'connection', 'remote', 'remote.agentPresets', 'remote.goals', 'remote.session'] as const
 
 /** Stable Cordis plugin name of the dsh-agent-team client half. */
 export const name = 'dsh-agent-team-client'
@@ -1040,6 +1061,14 @@ export function applyTeamMount(
     memberArchive: (params) => teamRemote.memberArchive(params),
     memberRestore: (params) => teamRemote.memberRestore(params),
     memberDispose: (params) => teamRemote.memberDispose(params),
+    // PD-34: the per-Member Stop rides the public `goals`/`session`
+    // namespaces (the goal bar's own RPCs). The sequence — durable CAS
+    // `pause`, then `session/cancel`, then a durable re-read — lives in
+    // `model/member-stop.ts`, so the click and the evidence share it. The
+    // Leader entry is DELIBERATELY cancel-only: Preview does not propagate
+    // a Leader stop to the Members it already delegated to.
+    memberStop: (params) => stopMember({ goals: ctx.remote.goals, session: ctx.remote.session }, params.sessionId),
+    leaderStopTurn: (rootSessionId) => stopLeaderTurn({ goals: ctx.remote.goals, session: ctx.remote.session }, rootSessionId),
     pullProjection,
   }
 

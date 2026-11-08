@@ -283,3 +283,48 @@
   font: var(--dsw-font-xxxs-11);
   white-space: nowrap;
 }
+
+/* PD-34 (MEMBER-STOP) — the per-Member stop control. It is a dedicated row
+   under the navigation row (never an item in the §40 lifecycle cluster: the
+   stop pauses a goal, the cluster ends or continues a Member) and its note
+   shows the OBSERVED durable phase, not an optimistic label. */
+.memberStopRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 10px 6px 18px;
+}
+
+.memberStopButton {
+  padding: 2px 8px;
+  border: 1px solid var(--dsw-alias-state-warn-secondary);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsw-alias-state-warn-label);
+  font: var(--dsw-font-xxxs-11);
+  cursor: pointer;
+}
+
+.memberStopButton:hover:not(:disabled) {
+  background: var(--dsw-alias-state-warn-tertiary);
+}
+
+.memberStopButton:focus-visible {
+  outline: 1px solid var(--dsw-alias-state-business-primary);
+  outline-offset: -1px;
+}
+
+.memberStopButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.memberStopNote {
+  color: var(--dsw-alias-label-caption);
+  font: var(--dsw-font-xxxs-11);
+  line-height: 1.4;
+  word-break: break-word;
+}
