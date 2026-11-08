@@ -79,7 +79,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync,
+  appendFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, symlinkSync, unlinkSync, writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
@@ -1187,6 +1187,33 @@ function derivedChildSessionId(rootSessionId, instanceId) {
   return `session-team-child-${digest.slice(0, 32)}`
 }
 
+/**
+ * Provision the World's INSTALL GRAPH — instrument-side, because the harness
+ * deliberately does not install the bundle it tests.
+ *
+ * A real install has `dsh-agent-team` in the profile's `node_modules`; that is
+ * how the shipped preset's rows (`dsh-agent-team/web-tool`, `dsh-agent-team/host`)
+ * resolve at all. Without the link, the web row has no fiber, the host audit says
+ * `tool-web (dsh-agent-team/web-tool): never started`, child-session creation
+ * fails, and the arm silently measures a team with only its Leader (surface 0) —
+ * which is exactly what the first merged-tree boot of this driver did. NO row is
+ * rewritten: the composition under test stays byte-for-byte the shipped one.
+ *
+ * This is a LOCAL COPY of the provisioning PD-29/PD-30 drivers also carry; the
+ * shared world-factory library is expected to own it. When that lands, delete
+ * this function and the call below, and re-run — the numbers must not move.
+ */
+function provisionInstallGraph(home) {
+  const modules = join(home, 'profiles', 'web', 'node_modules')
+  mkdirSync(modules, { recursive: true })
+  const link = join(modules, 'dsh-agent-team')
+  try { if (lstatSync(link) !== null) return link } catch { /* absent */ }
+  symlinkSync(REPO_ROOT, link, process.platform === 'win32' ? 'junction' : 'dir')
+  const manifest = JSON.parse(readFileSync(join(link, 'package.json'), 'utf8'))
+  log(`[install-graph] ${link} -> ${REPO_ROOT} (package ${String(manifest.name)}@${String(manifest.version)})`)
+  return link
+}
+
 async function bootOnce({ index, head, authorization, layer, composition }) {
   const bootDir = join(RUNS, `boot${String(index).padStart(2, '0')}`)
   mkdirSync(bootDir, { recursive: true })
@@ -1226,6 +1253,7 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
     bootInfo = await (async () => {
       world = await harness.createWorld({ line: LINE, u6Fs: { rows: [] } })
       log(`[boot${String(index)}] world=${world.id} home=${world.home}`)
+      provisionInstallGraph(world.home)
       mkdirSync(join(world.home, 'blueprints'), { recursive: true })
       const workspace = world.workspaceDir
       writeFileSync(join(workspace, IN_LANE_FILE), `${IN_LANE_TEXT}\n`, 'utf8')
@@ -1269,6 +1297,15 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
       sink: join(world.home, 'a5sf-consult.jsonl'),
     }
     log(`[boot${String(index)}] BOOTED port=${bootInfo.port} log=${bootInfo.logPath}`)
+    // PRECONDITION: a preset row that never started produces a Leader-only
+    // team (surface 0) and every arm "passes" against nothing. Refuse to
+    // measure that shape instead of reporting it. (The first merged-tree boot
+    // did exactly this: `tool-web (dsh-agent-team/web-tool): never started`.)
+    const bootLog = (() => { try { return readFileSync(bootInfo.logPath, 'utf8') } catch { return '' } })()
+    const neverStarted = [...bootLog.matchAll(/^.*never started.*$/gmu)].map((m) => m[0].trim()).slice(0, 6)
+    if (neverStarted.length > 0) {
+      throw new Error(`BOOT PRECONDITION: a preset row never started, so the governed Member cannot be constructed and every arm would measure an empty team: ${neverStarted.join(' ;; ')}`)
+    }
     record.record.boots = [{ phase, world: world.id, port: bootInfo.port, logPath: bootInfo.logPath }]
     record.record.bindings = { ...record.record.bindings, worldIds: [world.id] }
 
