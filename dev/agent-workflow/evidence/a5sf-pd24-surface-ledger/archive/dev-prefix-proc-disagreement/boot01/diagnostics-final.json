@@ -1,0 +1,670 @@
+{
+  "mockRequests": [
+    {
+      "seq": 0,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"A5SF_PD24_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD24_DISC_DONE\"}"
+    },
+    {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5SF_PD24_DISC\\\"}]\"}]",
+      "isARequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd24 session\"}"
+    },
+    {
+      "seq": 2,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:030f43b533d2ab06107e75751ddf893c090bb03454ab84b2c64884b2b582f408] A5SF_PD24_L1_DRIVE\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-leader-job\",\"name\":\"bash\",\"arguments\":{\"command\":\"sleep 20\",\"description\":\"Hold a background job the Member will try to read\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace\",\"run_in_background\":true}}]}"
+    },
+    {
+      "seq": 3,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:030f43b533d2ab06107e75751ddf893c090bb03454ab84b2c64884b2b582f408] A5SF_PD24_L1_DRIVE\\\"}]\"}]",
+      "isARequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd24 session\"}"
+    },
+    {
+      "seq": 4,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-leader-job\",\"content\":[{\"type\":\"text\",\"text\":\"started background job bash-1\"}],\"is_error\":false}]",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-delegate-a\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-a5sf-pd24-team\",\"requestToken\":\"a5sf-pd24-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sfpd24-worker-a\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace\",\"prompt\":\"a5s"
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5sf-pd24-turn-delegate] a5sf-pd24-turn: run the probes exactly once each, one tool call at a time, then report. A5SF_PD24_LEADER_JOB=bash-1\\\"}]\"}]",
+      "isARequest": true,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"a5sf pd24 session\"}"
+    },
+    {
+      "seq": 6,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5sf-pd24-turn-delegate] a5sf-pd24-turn: run the probes exactly once each, one tool call at a time, then report. A5SF_PD24_LEADER_JOB=bash-1\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-bash\",\"name\":\"bash\",\"arguments\":{\"command\":\"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt'\",\"description\":\"Read the in-lane fixture\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20"
+    },
+    {
+      "seq": 7,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-bash\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"kind\\\":\\\"confined-terminal\\\",\\\"sessionId\\\":\\\"confined-pty-1\\\",\\\"exitCode\\\":0,\\\"signal\\\":null,\\\"timedOut\\\":false,\\\"aborted\\\":false,\\\"cancelled\\\":false,\\\"stdout\\\":\\\"A5SF_PD24_IN_LANE_BYTES\\\\n\\\",\\\"stderr\\\":\\\"\\\",\\\"scrollback\\\":\\\"A5SF_PD24_IN_LANE_BYTES\\\"}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-read\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt\"}}]}"
+    },
+    {
+      "seq": 8,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-read\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: A5SF_PD24_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-write\",\"name\":\"write\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/written-by-member.txt\",\"content\":\"A5SF_PD24_IN_LANE_BYTES written\\n\"}}]}"
+    },
+    {
+      "seq": 9,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-write\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/written-by-member.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-edit\",\"name\":\"edit\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt\",\"old_string\":\"A5SF_PD24_IN_LANE_BYTES\",\"new_string\":\"A5SF_PD24_IN_LANE_BYTES\\nA5SF_PD24_IN_LANE_BYTES edited\"}}]}"
+    },
+    {
+      "seq": 10,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-edit\",\"content\":[{\"type\":\"text\",\"text\":\"The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt has been updated successfully.\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-grep\",\"name\":\"grep\",\"arguments\":{\"pattern\":\"A5SF_PD24_IN_LANE_BYTES\",\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace\",\"include\":\"*.txt\"}}]}"
+    },
+    {
+      "seq": 11,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-grep\",\"content\":[{\"type\":\"text\",\"text\":\"Found 4 matches\\n\\nin-lane.txt\\nLine 1: A5SF_PD24_IN_LANE_BYTES\\nLine 2: A5SF_PD24_IN_LANE_BYTES edited\\n\\nwritten-by-member.txt\\nLine 1: A5SF_PD24_IN_LANE_BYTES written\\n\\nedited-by-member.txt\\nLine 1: A5SF_PD24_IN_LANE_BYTES seed\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-glob\",\"name\":\"glob\",\"arguments\":{\"pattern\":\"*.txt\",\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace\"}}]}"
+    },
+    {
+      "seq": 12,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-glob\",\"content\":[{\"type\":\"text\",\"text\":\"edited-by-member.txt\\nwritten-by-member.txt\\nin-lane.txt\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-read-image\",\"name\":\"read_image\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.png\"}}]}"
+    },
+    {
+      "seq": 13,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-read-image\",\"content\":[{\"type\":\"text\",\"text\":\"Error: cannot read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.png\\\" as an image: model \\\"deepseek-v4-flash\\\" does not declare image input; switch to an image-capable model to read images\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-job-list\",\"name\":\"job_list\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 14,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-job-list\",\"content\":[{\"type\":\"text\",\"text\":\"(no background jobs)\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-job-foreign\",\"name\":\"job_output\",\"arguments\":{\"job_id\":\"bash-1\"}}]}"
+    },
+    {
+      "seq": 15,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-job-foreign\",\"content\":[{\"type\":\"text\",\"text\":\"Error: job bash-1 belongs to another session\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-job-kill\",\"name\":\"job_kill\",\"arguments\":{\"job_id\":\"bash-1\",\"reason\":\"pd24 foreign-job probe\"}}]}"
+    },
+    {
+      "seq": 16,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-job-kill\",\"content\":[{\"type\":\"text\",\"text\":\"Error: job bash-1 belongs to another session\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-todo\",\"name\":\"todo_write\",\"arguments\":{\"todos\":[{\"content\":\"PD-24 surface-ledger probe (member-local)\",\"status\":\"in_progress\"},{\"content\":\"PD-24 report\",\"status\":\"pending\"}]}}]}"
+    },
+    {
+      "seq": 17,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-todo\",\"content\":[{\"type\":\"text\",\"text\":\"Updated todo list: 1 pending, 1 in progress, 0 completed.\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-goal-get\",\"name\":\"get_goal\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 18,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-goal-get\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":null}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-exit-plan\",\"name\":\"exit_plan_mode\",\"arguments\":{\"plan\":\"# PD-24 probe plan\\n\\nThis must not leave plan mode.\"}}]}"
+    },
+    {
+      "seq": 19,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-exit-plan\",\"content\":[{\"type\":\"text\",\"text\":\"Error: exit_plan_mode is only available in plan mode\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-present-in\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt\",\"description\":\"in-lane fixture\"}]}}]}"
+    },
+    {
+      "seq": 20,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-present-in\",\"content\":[{\"type\":\"text\",\"text\":\"Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-present-out\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/out-of-lane/secret-out-of-lane.txt\",\"description\":\"out-of-lane fixture\"}]}}]}"
+    },
+    {
+      "seq": 21,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-present-out\",\"content\":[{\"type\":\"text\",\"text\":\"Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/out-of-lane/secret-out-of-lane.txt\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-present-missing\",\"name\":\"present\",\"arguments\":{\"files\":[{\"path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/out-of-lane/does-not-exist-out-of-lane.txt\",\"description\":\"absent out-of-lane fixture\"}]}}]}"
+    },
+    {
+      "seq": 22,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-present-missing\",\"content\":[{\"type\":\"text\",\"text\":\"Error: Cannot present /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/out-of-lane/does-not-exist-out-of-lane.txt: file not found. Check the path, create the file if needed, and retry.\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-canary\",\"name\":\"u5_canary\",\"arguments\":{\"mode\":\"ok\",\"tag\":\"pd24-canary\"}}]}"
+    },
+    {
+      "seq": 23,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-canary\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"ran\\\":true,\\\"tag\\\":\\\"pd24-canary\\\",\\\"mode\\\":\\\"ok\\\"}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-u6fs\",\"name\":\"u6fs_probe\",\"arguments\":{\"action\":\"report\",\"tag\":\"pd24-probe\"}}]}"
+    },
+    {
+      "seq": 24,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-u6fs\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"action\\\":\\\"report\\\",\\\"tag\\\":\\\"pd24-probe\\\",\\\"spoofCount\\\":0}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-interrupt_agent\",\"name\":\"interrupt_agent\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 25,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-interrupt_agent\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"interrupt_agent\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-list_agents\",\"name\":\"list_agents\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 26,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-list_agents\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"list_agents\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-pwsh\",\"name\":\"pwsh\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 27,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-pwsh\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"pwsh\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-send_message\",\"name\":\"send_message\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 28,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-send_message\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"send_message\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-skill\",\"name\":\"skill\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 29,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-skill\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"skill\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-subagent\",\"name\":\"subagent\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 30,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-subagent\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"subagent\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-subagent_fork\",\"name\":\"subagent_fork\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 31,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-subagent_fork\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"subagent_fork\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-web_fetch\",\"name\":\"web_fetch\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 32,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-web_fetch\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"web_fetch\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-web_search\",\"name\":\"web_search\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 33,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-web_search\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"web_search\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-workflow\",\"name\":\"workflow\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 34,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-workflow\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"workflow\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-closed-present\",\"name\":\"present\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 35,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-closed-present\",\"content\":[{\"type\":\"text\",\"text\":\"Error: invalid arguments: missing required property \\\"files\\\"\"}],\"is_error\":true}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-goal-create\",\"name\":\"create_goal\",\"arguments\":{\"objective\":\"A Member goal must stay inside its own session.\",\"max_goal_rounds\":2}}]}"
+    },
+    {
+      "seq": 36,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-goal-create\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"armed\\\"}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD24_MEMBER_A_DONE {\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"armed\\\"}\"}"
+    },
+    {
+      "seq": 37,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"A Member goal must stay inside its own session.\\\"\\nRound: 1/2\\n\\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective is achieved, read the current goal, and mark it complete. If work remains, leave the goal active for the next round. Follow the configured goal-tool poli",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-goal-round-get\",\"name\":\"get_goal\",\"arguments\":{}}]}"
+    },
+    {
+      "seq": 38,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-delegate-a\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5sf-pd24-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0yj9q4v1fyf2\\\",\\\"templateId\\\":\\\"worker\\\",\\\"childSessionId\\\":\\\"session-team-child-5810dedca221cb6b2acdb0ef565bc8fc\\\",\\\"operationId\\\":\\\"op-1te3cbg1hfmhmh0czjqoq04n\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"",
+      "isARequest": false,
+      "tools": 43,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD24_L1_DONE\"}"
+    },
+    {
+      "seq": 39,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-goal-round-get\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":1,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"armed\\\"}\"}],\"is_error\":false}]",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD24_MEMBER_A_DONE {\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":1,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"armed\\\"}\"}"
+    },
+    {
+      "seq": 40,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"A Member goal must stay inside its own session.\\\"\\nRound: 2/2\\n\\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective is achieved, read the current goal, and mark it complete. If work remains, leave the goal active for the next round. Follow the configured goal-tool poli",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sfpd24-goal-complete\",\"name\":\"update_goal\",\"arguments\":{\"goal_id\":\"goal-484280fb-27f4-44de-8c30-877cfb174e19\",\"revision\":1,\"action\":\"complete\"}}]}"
+    },
+    {
+      "seq": 41,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5sfpd24-goal-complete\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"complete\\\",\\\"roundsStarted\\\":2,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"disarmed\\\"}\"}],\"is_error\":false},{\"type\":\"text\",\"text\":\"<goal_complete>\\nObjective: \\\"A Member goal must stay inside its own session.\\\"\\nThe goal is marked complete and this autonomous run is ending. Write the closing message to the user now: state the outcome, summarize w",
+      "isARequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"text\",\"content\":\"A5SF_PD24_MEMBER_A_DONE {\\\"goal\\\":{\\\"id\\\":\\\"goal-484280fb-27f4-44de-8c30-877cfb174e19\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"A Member goal must stay inside its own session.\\\",\\\"phase\\\":\\\"complete\\\",\\\"roundsStarted\\\":2,\\\"maxGoalRounds\\\":2},\\\"activation\\\":\\\"disarmed\\\"}\"}"
+    }
+  ],
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3188/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n",
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "shellRead",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-08T04:11:22.985Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd24-bash"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-08T04:11:22.989Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd24-bash"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "spawn:write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-08T04:11:22.992Z",
+      "tool": "bash",
+      "callId": "call-a5sfpd24-bash"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "stat",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-08T04:11:26.253Z",
+      "tool": "read",
+      "callId": "call-a5sfpd24-read"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "readText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-08T04:11:26.256Z",
+      "tool": "read",
+      "callId": "call-a5sfpd24-read"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "writeText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/written-by-member.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 3,
+      "observedAt": "2026-11-08T04:11:26.319Z",
+      "tool": "write",
+      "callId": "call-a5sfpd24-write"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "editText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 4,
+      "observedAt": "2026-11-08T04:11:26.371Z",
+      "tool": "edit",
+      "callId": "call-a5sfpd24-edit"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 3,
+      "observedAt": "2026-11-08T04:11:26.424Z",
+      "tool": "grep",
+      "callId": "call-a5sfpd24-grep",
+      "annotations": [
+        "search-ignore-discovery=disabled: rg ran with --no-ignore-parent --no-ignore-vcs because an ancestor of the search root is outside the effective read lane, so ancestor/VCS ignore discovery would leave the lane and the kernel would deny it",
+        "search-ignore-semantics: .gitignore and .git/info/exclude are NOT applied (rg --no-ignore-vcs) and parent ignore files are NOT read (--no-ignore-parent); files they would ignore under this search root ARE searched. .git was not read"
+      ]
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0yj9q4v1fyf2",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:842299d3a64399780b90489c56b480df",
+      "method": "spawn",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/workspace",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 4,
+      "observedAt": "2026-11-08T04:11:26.501Z",
+      "tool": "glob",
+      "callId": "call-a5sfpd24-glob"
+    }
+  ],
+  "counters": {
+    "confinedTurnLaunchers": 3,
+    "baseBwrapWithMarkers": 0,
+    "guardFacts": {
+      "allow": 9,
+      "deny": 0,
+      "byTool": {
+        "bash": 3,
+        "read": 2,
+        "write": 1,
+        "edit": 1,
+        "grep": 1,
+        "glob": 1
+      },
+      "present": 0
+    },
+    "mockRequests": 42,
+    "aModelRequests": 35,
+    "surfaceACount": 34,
+    "surfaceANames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "present",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "todo_write",
+      "u5_canary",
+      "u6fs_probe",
+      "update_goal",
+      "write"
+    ],
+    "requestsCarryingSecret": 0,
+    "sessionEvents": {
+      "session-a5sf-pd24-boot": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 1,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 1,
+          "step/end": 1,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      },
+      "session-a5sf-pd24-team": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 3,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 3,
+          "tool/call": 2,
+          "tool/result": 2,
+          "step/end": 3,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      },
+      "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 8,
+          "turn/start": 3,
+          "step/start": 35,
+          "system/message": 1,
+          "user/message": 6,
+          "request/header": 3,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 35,
+          "tool/call": 32,
+          "tool/result": 32,
+          "step/end": 35,
+          "todo/write": 1,
+          "deliverables/presented": 2,
+          "goal/change": 2,
+          "workspace/changes": 1,
+          "turn/end": 3
+        },
+        "goalEvents": 2
+      }
+    },
+    "goalEventsBySession": {
+      "session-a5sf-pd24-boot": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-a5sf-pd24-boot/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 1,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 1,
+          "step/end": 1,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      },
+      "session-a5sf-pd24-team": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-a5sf-pd24-team/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 3,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 3,
+          "tool/call": 2,
+          "tool/result": 2,
+          "step/end": 3,
+          "turn/end": 1
+        },
+        "goalEvents": 0
+      },
+      "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-10-13Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-10-13Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd",
+        "types": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 8,
+          "turn/start": 3,
+          "step/start": 35,
+          "system/message": 1,
+          "user/message": 6,
+          "request/header": 3,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 35,
+          "tool/call": 32,
+          "tool/result": 32,
+          "step/end": 35,
+          "todo/write": 1,
+          "deliverables/presented": 2,
+          "goal/change": 2,
+          "workspace/changes": 1,
+          "turn/end": 3
+        },
+        "goalEvents": 2
+      }
+    },
+    "goalRounds": 2,
+    "goalRoundsInOtherSessions": 0,
+    "membersAfter": 2,
+    "memberTemplates": [
+      "leader",
+      "worker"
+    ],
+    "memberWindow": {
+      "from": "2026-11-08T04:11:22.174Z",
+      "to": "2026-11-08T04:11:27.556Z"
+    },
+    "procBatches": 82,
+    "otherBwrapPids": 3,
+    "composition": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/archive/pre-fix/cordis.patch.yml",
+      "sha256": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
+      "arm": "prefix"
+    },
+    "leaderJob": "bash-1",
+    "quiesced": true,
+    "presentOnSurface": true
+  }
+}

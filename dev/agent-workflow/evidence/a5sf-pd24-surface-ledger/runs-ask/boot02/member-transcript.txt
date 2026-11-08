@@ -1,0 +1,45 @@
+# Member transcript — session-team-child-5810dedca221cb6b2acdb0ef565bc8fc
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-25-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd24-surface-ledger-tests-homes-u5u5a5sfpd24-20261108T04-25-27Z-workspace--/session-team-child-5810dedca221cb6b2acdb0ef565bc8fc/session.v4.jsonl.zstd
+# event types: {"session":1,"permission/preset":1,"sandbox/mode":1,"approval/policy":1,"agent/inbox/spliced":2,"turn/start":1,"step/start":2,"system/message":1,"user/message":3,"request/header":1,"request/context":1,"session/title":2,"session/title-llm-request":1,"assistant/message":2,"tool/call":2,"tool/result":1,"step/end":1}
+
+USER:
+[team-work requestToken=a5sf-pd24-turn-delegate] a5sf-pd24-turn: run the probes exactly once each, one tool call at a time, then report. A5SF_PD24_LEADER_JOB=bash-1
+
+USER:
+<system-reminder>
+The following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.
+
+Instructions from: AGENTS.md
+
+# AGENTS.md — dsh-agent-team 仓库代理规则
+<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-identity: alpha5-sandbox-first -->
+
+
+本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。
+
+## 会话开始必读（提示词注入要求）
+
+在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
+
+1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCK
+… [rendered truncated at 900 chars; the full text is in member-transcript.json]
+
+USER:
+Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
+
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-25-27Z/workspace". Some platform temporary areas may also be writable.
+
+Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
+
+TOOL CALL [bash] call-a5sfpd24-bash
+  arguments: {"command":"cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-25-27Z/workspace/in-lane.txt'","description":"Read the in-lane fixture","workdir":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T04-25-27Z/workspace"}
+TOOL RESULT isError=false
+  {"kind":"confined-terminal","sessionId":"confined-pty-1","exitCode":0,"signal":null,"timedOut":false,"aborted":false,"cancelled":false,"stdout":"A5SF_PD24_IN_LANE_BYTES\n","stderr":"","scrollback":"A5SF_PD24_IN_LANE_BYTES"}
+
+TOOL CALL [ask_user_question] call-a5sfpd24-ask
+  arguments: {"questions":[{"id":"pd24-ask","header":"PD-24 probe","question":"Must a governed Member block its own turn on a human answer?","options":[{"label":"Yes"},{"label":"No"}],"multi_select":false}]}
+TOOL RESULT: <missing>
+
+ASSISTANT (final):
+

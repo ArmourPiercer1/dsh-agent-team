@@ -1,0 +1,499 @@
+{
+  "schema": "a5sf-pd24-surface-ledger/member-probes/1",
+  "at": "2026-11-08T05:10:03.461Z",
+  "note": "every Member-A surface call and the result the Member actually received (durable session first, mock transcript fallback)",
+  "probes": {
+    "bash": {
+      "call": {
+        "id": "call-a5sfpd24-bash",
+        "name": "bash",
+        "arguments": {
+          "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt'",
+          "description": "Read the in-lane fixture",
+          "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-bash",
+        "isError": false,
+        "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
+        "at": 1794114598820
+      }
+    },
+    "read": {
+      "call": {
+        "id": "call-a5sfpd24-read",
+        "name": "read",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-read",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD24_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+        "at": 1794114598867
+      }
+    },
+    "write": {
+      "call": {
+        "id": "call-a5sfpd24-write",
+        "name": "write",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/written-by-member.txt",
+          "content": "A5SF_PD24_IN_LANE_BYTES written\n"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-write",
+        "isError": false,
+        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/written-by-member.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+        "at": 1794114598933
+      }
+    },
+    "edit": {
+      "call": {
+        "id": "call-a5sfpd24-edit",
+        "name": "edit",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt",
+          "old_string": "A5SF_PD24_IN_LANE_BYTES",
+          "new_string": "A5SF_PD24_IN_LANE_BYTES\nA5SF_PD24_IN_LANE_BYTES edited"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-edit",
+        "isError": false,
+        "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt has been updated successfully.",
+        "at": 1794114598985
+      }
+    },
+    "grep": {
+      "call": {
+        "id": "call-a5sfpd24-grep",
+        "name": "grep",
+        "arguments": {
+          "pattern": "A5SF_PD24_IN_LANE_BYTES",
+          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace",
+          "include": "*.txt"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-grep",
+        "isError": false,
+        "text": "Found 4 matches\n\nwritten-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES written\n\nin-lane.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES\nLine 2: A5SF_PD24_IN_LANE_BYTES edited\n\nedited-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES seed",
+        "at": 1794114599083
+      }
+    },
+    "glob": {
+      "call": {
+        "id": "call-a5sfpd24-glob",
+        "name": "glob",
+        "arguments": {
+          "pattern": "*.txt",
+          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-glob",
+        "isError": false,
+        "text": "edited-by-member.txt\nwritten-by-member.txt\nin-lane.txt",
+        "at": 1794114599162
+      }
+    },
+    "readImage": {
+      "call": {
+        "id": "call-a5sfpd24-read-image",
+        "name": "read_image",
+        "arguments": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.png"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-read-image",
+        "isError": true,
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+        "at": 1794114599196
+      }
+    },
+    "jobList": {
+      "call": {
+        "id": "call-a5sfpd24-job-list",
+        "name": "job_list",
+        "arguments": {}
+      },
+      "result": {
+        "callId": "call-a5sfpd24-job-list",
+        "isError": false,
+        "text": "(no background jobs)",
+        "at": 1794114599227
+      }
+    },
+    "jobForeign": {
+      "call": {
+        "id": "call-a5sfpd24-job-foreign",
+        "name": "job_output",
+        "arguments": {
+          "job_id": "bash-1"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-job-foreign",
+        "isError": true,
+        "text": "Error: job bash-1 belongs to another session",
+        "at": 1794114599259
+      }
+    },
+    "jobKill": {
+      "call": {
+        "id": "call-a5sfpd24-job-kill",
+        "name": "job_kill",
+        "arguments": {
+          "job_id": "bash-1",
+          "reason": "pd24 foreign-job probe"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-job-kill",
+        "isError": true,
+        "text": "Error: job bash-1 belongs to another session",
+        "at": 1794114599291
+      }
+    },
+    "todo": {
+      "call": {
+        "id": "call-a5sfpd24-todo",
+        "name": "todo_write",
+        "arguments": {
+          "todos": [
+            {
+              "content": "PD-24 surface-ledger probe (member-local)",
+              "status": "in_progress"
+            },
+            {
+              "content": "PD-24 report",
+              "status": "pending"
+            }
+          ]
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-todo",
+        "isError": false,
+        "text": "Updated todo list: 1 pending, 1 in progress, 0 completed.",
+        "at": 1794114599324
+      }
+    },
+    "goalGet": {
+      "call": {
+        "id": "call-a5sfpd24-goal-get",
+        "name": "get_goal",
+        "arguments": {}
+      },
+      "result": {
+        "callId": "call-a5sfpd24-goal-get",
+        "isError": false,
+        "text": "{\"goal\":null}",
+        "at": 1794114599354
+      }
+    },
+    "exitPlan": {
+      "call": {
+        "id": "call-a5sfpd24-exit-plan",
+        "name": "exit_plan_mode",
+        "arguments": {
+          "plan": "# PD-24 probe plan\n\nThis must not leave plan mode."
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-exit-plan",
+        "isError": true,
+        "text": "Error: exit_plan_mode is only available in plan mode",
+        "at": 1794114599385
+      }
+    },
+    "presentIn": {
+      "call": {
+        "id": "call-a5sfpd24-present-in",
+        "name": "present",
+        "arguments": {
+          "files": [
+            {
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/workspace/in-lane.txt",
+              "description": "in-lane fixture"
+            }
+          ]
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-present-in",
+        "isError": true,
+        "text": "Error: unknown tool \"present\"",
+        "at": 1794114599416
+      }
+    },
+    "presentOut": {
+      "call": {
+        "id": "call-a5sfpd24-present-out",
+        "name": "present",
+        "arguments": {
+          "files": [
+            {
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/out-of-lane/secret-out-of-lane.txt",
+              "description": "out-of-lane fixture"
+            }
+          ]
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-present-out",
+        "isError": true,
+        "text": "Error: unknown tool \"present\"",
+        "at": 1794114599447
+      }
+    },
+    "presentMissing": {
+      "call": {
+        "id": "call-a5sfpd24-present-missing",
+        "name": "present",
+        "arguments": {
+          "files": [
+            {
+              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-08-33Z/out-of-lane/does-not-exist-out-of-lane.txt",
+              "description": "absent out-of-lane fixture"
+            }
+          ]
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-present-missing",
+        "isError": true,
+        "text": "Error: unknown tool \"present\"",
+        "at": 1794114599475
+      }
+    },
+    "canary": {
+      "call": {
+        "id": "call-a5sfpd24-canary",
+        "name": "u5_canary",
+        "arguments": {
+          "mode": "ok",
+          "tag": "pd24-canary"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-canary",
+        "isError": false,
+        "text": "{\"ran\":true,\"tag\":\"pd24-canary\",\"mode\":\"ok\"}",
+        "at": 1794114599507
+      }
+    },
+    "u6fs": {
+      "call": {
+        "id": "call-a5sfpd24-u6fs",
+        "name": "u6fs_probe",
+        "arguments": {
+          "action": "report",
+          "tag": "pd24-probe"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-u6fs",
+        "isError": false,
+        "text": "{\"action\":\"report\",\"tag\":\"pd24-probe\",\"spoofCount\":0}",
+        "at": 1794114599541
+      }
+    },
+    "goalCreate": {
+      "call": {
+        "id": "call-a5sfpd24-goal-create",
+        "name": "create_goal",
+        "arguments": {
+          "objective": "A Member goal must stay inside its own session.",
+          "max_goal_rounds": 2
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-goal-create",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-a04d082f-494a-4465-9ce5-674c694bbf39\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+        "at": 1794114599883
+      }
+    },
+    "goalRoundGet": {
+      "call": {
+        "id": "call-a5sfpd24-goal-round-get",
+        "name": "get_goal",
+        "arguments": {}
+      },
+      "result": {
+        "callId": "call-a5sfpd24-goal-round-get",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-a04d082f-494a-4465-9ce5-674c694bbf39\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":1,\"maxGoalRounds\":2},\"activation\":\"armed\"}",
+        "at": 1794114600084
+      }
+    },
+    "goalComplete": {
+      "call": {
+        "id": "call-a5sfpd24-goal-complete",
+        "name": "update_goal",
+        "arguments": {
+          "goal_id": "goal-a04d082f-494a-4465-9ce5-674c694bbf39",
+          "revision": 1,
+          "action": "complete"
+        }
+      },
+      "result": {
+        "callId": "call-a5sfpd24-goal-complete",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-a04d082f-494a-4465-9ce5-674c694bbf39\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation\":\"disarmed\"}",
+        "at": 1794114600250
+      }
+    },
+    "closed": {
+      "interrupt_agent": {
+        "call": {
+          "id": "call-a5sfpd24-closed-interrupt_agent",
+          "name": "interrupt_agent",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-interrupt_agent",
+          "isError": true,
+          "text": "Error: unknown tool \"interrupt_agent\"",
+          "at": 1794114599576
+        }
+      },
+      "list_agents": {
+        "call": {
+          "id": "call-a5sfpd24-closed-list_agents",
+          "name": "list_agents",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-list_agents",
+          "isError": true,
+          "text": "Error: unknown tool \"list_agents\"",
+          "at": 1794114599605
+        }
+      },
+      "pwsh": {
+        "call": {
+          "id": "call-a5sfpd24-closed-pwsh",
+          "name": "pwsh",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-pwsh",
+          "isError": true,
+          "text": "Error: unknown tool \"pwsh\"",
+          "at": 1794114599633
+        }
+      },
+      "send_message": {
+        "call": {
+          "id": "call-a5sfpd24-closed-send_message",
+          "name": "send_message",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-send_message",
+          "isError": true,
+          "text": "Error: unknown tool \"send_message\"",
+          "at": 1794114599663
+        }
+      },
+      "skill": {
+        "call": {
+          "id": "call-a5sfpd24-closed-skill",
+          "name": "skill",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-skill",
+          "isError": true,
+          "text": "Error: unknown tool \"skill\"",
+          "at": 1794114599692
+        }
+      },
+      "subagent": {
+        "call": {
+          "id": "call-a5sfpd24-closed-subagent",
+          "name": "subagent",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-subagent",
+          "isError": true,
+          "text": "Error: unknown tool \"subagent\"",
+          "at": 1794114599720
+        }
+      },
+      "subagent_fork": {
+        "call": {
+          "id": "call-a5sfpd24-closed-subagent_fork",
+          "name": "subagent_fork",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-subagent_fork",
+          "isError": true,
+          "text": "Error: unknown tool \"subagent_fork\"",
+          "at": 1794114599747
+        }
+      },
+      "web_fetch": {
+        "call": {
+          "id": "call-a5sfpd24-closed-web_fetch",
+          "name": "web_fetch",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-web_fetch",
+          "isError": true,
+          "text": "Error: unknown tool \"web_fetch\"",
+          "at": 1794114599776
+        }
+      },
+      "web_search": {
+        "call": {
+          "id": "call-a5sfpd24-closed-web_search",
+          "name": "web_search",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-web_search",
+          "isError": true,
+          "text": "Error: unknown tool \"web_search\"",
+          "at": 1794114599805
+        }
+      },
+      "workflow": {
+        "call": {
+          "id": "call-a5sfpd24-closed-workflow",
+          "name": "workflow",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-workflow",
+          "isError": true,
+          "text": "Error: unknown tool \"workflow\"",
+          "at": 1794114599831
+        }
+      },
+      "present": {
+        "call": {
+          "id": "call-a5sfpd24-closed-present",
+          "name": "present",
+          "arguments": {}
+        },
+        "result": {
+          "callId": "call-a5sfpd24-closed-present",
+          "isError": true,
+          "text": "Error: unknown tool \"present\"",
+          "at": 1794114599856
+        }
+      }
+    }
+  }
+}

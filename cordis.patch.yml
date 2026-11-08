@@ -195,7 +195,21 @@
     #     removed with it: a disabled row is not a governance boundary, and a
     #     later enable would silently restore a spawn-capable face.
     #     `evidence/a5sf-pd21-subagent/`.
-    #   - `tool-jobs`, fs, search, goal/plan/todo/present and compaction are
+    #   - `present` is REMOVED by PD-24 (2026-11-14). MEASURED on the real Host
+    #     in one delegated Member turn: `present` injects the BASE `fs` (its row
+    #     mounts on the registry generation scope), so `ctx.fs.stat` resolved an
+    #     OUT-OF-LANE path that the Member's compiled read lane does not cover.
+    #     A real out-of-lane file was ACCEPTED (`Presented …/secret-out-of-lane.txt`)
+    #     and a missing one was refused `file not found` — a cross-lane existence
+    #     oracle — with ZERO `a5sf-guard-consult` facts, and two
+    #     `deliverables/presented` events landed in the Member's own session.
+    #     Re-parenting it onto the confined `fs` is the SAME seam PD-23 hit for
+    #     `skill`: the confined provider is a fork in the Member isolate, and no
+    #     preset-level row can be handed it. That is a `CORE_SEAM_BLOCKER`; the
+    #     honest disposition inside this budget is FAIL-CLOSED REMOVAL, a
+    #     CAPABILITY REGRESSION (a governed Member can no longer declare
+    #     deliverables). `evidence/a5sf-pd24-surface-ledger/`.
+    #   - `tool-jobs`, fs, search, goal/plan/todo and compaction are
     #     RETAINED. `tool-jobs` is retained but has no producer on this preset
     #     (the confined face cannot hand a command to the job registry); it
     #     answers from an OWNER-scoped registry, so a Member can only ever see
@@ -295,8 +309,6 @@
             name: '@deepseek-ai/dsh-tool-todo'
             config:
               allowParallelInProgress: true
-          - id: present
-            name: '@deepseek-ai/dsh-tool-present'
           - id: tool-plugin-manager
             name: '@deepseek-ai/dsh-plugin-manager/tools'
             disabled: true

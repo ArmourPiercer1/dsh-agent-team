@@ -1,0 +1,30 @@
+TWO-RUN AGREEMENT (ask arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           ask                           ask
+overall                       PASS                          PASS
+rosterVerdict                 null                          null
+baselineVerdict               null                          null
+fsFamilyVerdict               null                          null
+jobsVerdict                   null                          null
+todoVerdict                   null                          null
+askBlocksVerdict              PROVEN                        PROVEN
+exitPlanVerdict               null                          null
+presentVerdict                null                          null
+fixturesVerdict               null                          null
+failClosedVerdict             null                          null
+goalVerdict                   null                          null
+membersVerdict                null                          null
+bytesVerdict                  null                          null
+surfaceACount                 2                             2
+surfaceANames
+presentOnSurface              null                          null
+goalRounds                    null                          null
+membersAfter                  2                             2
+guardAllow                    null                          null
+guardDeny                     null                          null
+guardPresent                  null                          null
+factTools                     null                          null
+requestsCarryingSecret        null                          null
+aModelRequests                null                          null
+
+agreeing=true differing=[]

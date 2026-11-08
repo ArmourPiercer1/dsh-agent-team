@@ -1,0 +1,57 @@
+{
+  "schema": "a5sf-pd24-surface-ledger/ask-blocked/1",
+  "at": "2026-11-08T04:25:27.338Z",
+  "memberSession": "session-team-child-5810dedca221cb6b2acdb0ef565bc8fc",
+  "windowMs": 60000,
+  "call": {
+    "callId": "call-a5sfpd24-ask",
+    "name": "ask_user_question",
+    "arguments": {
+      "questions": [
+        {
+          "id": "pd24-ask",
+          "header": "PD-24 probe",
+          "question": "Must a governed Member block its own turn on a human answer?",
+          "options": [
+            {
+              "label": "Yes"
+            },
+            {
+              "label": "No"
+            }
+          ],
+          "multi_select": false
+        }
+      ]
+    },
+    "result": null
+  },
+  "result": null,
+  "turnEnded": false,
+  "eventTypes": {
+    "session": 1,
+    "permission/preset": 1,
+    "sandbox/mode": 1,
+    "approval/policy": 1,
+    "agent/inbox/spliced": 2,
+    "turn/start": 1,
+    "step/start": 2,
+    "system/message": 1,
+    "user/message": 3,
+    "request/header": 1,
+    "request/context": 1,
+    "session/title": 2,
+    "session/title-llm-request": 1,
+    "assistant/message": 2,
+    "tool/call": 2,
+    "tool/result": 1,
+    "step/end": 1
+  },
+  "bashControl": {
+    "callId": "call-a5sfpd24-bash",
+    "isError": false,
+    "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD24_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD24_IN_LANE_BYTES\"}",
+    "at": 1794111866324
+  },
+  "note": "the ask call never settles: legacy mode has no timeout, and a delegated turn has no human answerer; the 60 s hold is the observation window, not a product timeout"
+}

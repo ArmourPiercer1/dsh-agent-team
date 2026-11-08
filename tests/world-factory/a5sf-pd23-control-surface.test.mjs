@@ -162,8 +162,13 @@ test('PD23-SURFACE-POSITIVE-CONTROL: the retained rows (jobs, todo, goal, confin
   for (const id of KEPT_ROWS) {
     assert.equal(ids.includes(id), true, `the governed preset unexpectedly lost '${id}'`)
   }
-  // The removal is NOT a blanket strip of the preset.
-  assert.equal(ids.length > 15, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
+  // The removal is NOT a blanket strip of the preset. The floor moved 16 -> 15
+  // on 2026-11-14: PD-24 removed the `present` row for its own measured defect
+  // (BASE-`fs` out-of-lane stat with zero facts — see PD-24 §1.8), so the
+  // shipped governed preset now declares 15 rows. The floor is a "not a blanket
+  // strip" guard, not a roster pin: PD-24's own `PD24-SURFACE-POSITIVE-CONTROL`
+  // pins the exact retained set.
+  assert.equal(ids.length >= 15, true, `the governed preset still carries its retained surface (got ${ids.length} rows)`)
 })
 
 test('PD23-SURFACE-SURGICAL: the pinned standard preset still declares the control tools and the skill loader', () => {

@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-08T04:14:01.594Z",
+  "arm": "prefix",
+  "head": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "29afa8f108b40717a40faa2bd7c1a1d32f12e5bbc266f5b3e895e8b44b5f960c",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/archive/pre-fix/cordis.patch.yml",
+    "sha256": "758a9b5af984d6eb5a5e3ed513f65f67bad824b4148aa269abeb4698411fa49c",
+    "arm": "prefix"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "SurfaceLedger",
+    "world": "u5a5sfpd24",
+    "source": "task PD24-SURFACE-LEDGER explicit boot authorisation (2026-11-14), arm=prefix"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd24-surface-ledger/run-boot.mjs --arm prefix"
+}

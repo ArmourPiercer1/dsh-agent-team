@@ -1,0 +1,570 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2",
+  "suite": "a5sf-pd24-surface-ledger",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T05:10:03.681Z",
+  "selectedCases": [
+    "pd24:surface-roster",
+    "pd24:confined-baseline",
+    "pd24:fs-family-live",
+    "pd24:jobs-owner-scoped",
+    "pd24:todo-session-local",
+    "pd24:exit-plan-refused",
+    "pd24:present-confined",
+    "pd24:fixtures-not-shipped",
+    "pd24:fail-closed-typed",
+    "pd24:goal-self-continuation-session-local",
+    "pd24:no-new-members",
+    "pd24:no-out-of-lane-bytes"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "4d4e68abc7b5b1605d34d0abb88fb89f7e51213a",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "SurfaceLedger",
+      "world": "u5a5sfpd24",
+      "source": "task PD24-SURFACE-LEDGER explicit boot authorisation (2026-11-14), arm=postfix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "4d4e68abc7b5b1605d34d0abb88fb89f7e51213a",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd24-20261108T05-10-03Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd24:surface-roster",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the measured Member surface is the FULL roster this ledger classifies: every shipped name it claims is present, and none of the fail-closed names (including `present`) is",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "roster-nonempty",
+          "ok": true,
+          "detail": "names=33"
+        },
+        {
+          "id": "fixture-0-present",
+          "ok": true,
+          "detail": "fixture u5_canary on the surface"
+        },
+        {
+          "id": "fixture-1-present",
+          "ok": true,
+          "detail": "fixture u6fs_probe on the surface"
+        },
+        {
+          "id": "no-closed-name-on-surface",
+          "ok": true,
+          "detail": "closed names present=[]"
+        },
+        {
+          "id": "no-skill-row",
+          "ok": true,
+          "detail": "PD-23 took `skill`"
+        }
+      ]
+    },
+    {
+      "id": "pd24:confined-baseline",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the Member's model-visible `bash` admits an in-ceiling read through the confined terminal face and records a guard fact (the positive control)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the admitted `bash` call"
+        },
+        {
+          "id": "call-is-bash",
+          "ok": true,
+          "detail": "name=bash"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "confined-terminal-kind",
+          "ok": true,
+          "detail": "kind=confined-terminal"
+        },
+        {
+          "id": "in-lane-bytes",
+          "ok": true,
+          "detail": "the admitted read returned the in-lane bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd24:fs-family-live",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the six confined-face file/search names execute in THIS Member turn through their faces and each records a guard fact carrying `tool`/`callId` (PD-19); `read_image` is refused at the model ROUTE gate before the face",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "read-issued",
+          "ok": true,
+          "detail": "the Member issued `read`"
+        },
+        {
+          "id": "read-bytes",
+          "ok": true,
+          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10"
+        },
+        {
+          "id": "read-fact",
+          "ok": true,
+          "detail": "read facts=2"
+        },
+        {
+          "id": "write-issued",
+          "ok": true,
+          "detail": "the Member issued `write`"
+        },
+        {
+          "id": "write-accepted",
+          "ok": true,
+          "detail": "isError=false text=<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/written-by-member.txt</pa"
+        },
+        {
+          "id": "write-fact",
+          "ok": true,
+          "detail": "write facts=1"
+        },
+        {
+          "id": "edit-issued",
+          "ok": true,
+          "detail": "the Member issued `edit`"
+        },
+        {
+          "id": "edit-accepted",
+          "ok": true,
+          "detail": "isError=false text=The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.txt has been u"
+        },
+        {
+          "id": "edit-fact",
+          "ok": true,
+          "detail": "edit facts=1"
+        },
+        {
+          "id": "grep-issued",
+          "ok": true,
+          "detail": "the Member issued `grep`"
+        },
+        {
+          "id": "grep-matches",
+          "ok": true,
+          "detail": "isError=false text=Found 4 matches\n\nin-lane.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES\nLine 2: A5SF_PD24_IN_LANE_BYTES edited\n\nedited-by-member.txt\nLine 1: A5SF_PD24_IN_LANE_BYTES seed\n\n"
+        },
+        {
+          "id": "grep-fact",
+          "ok": true,
+          "detail": "grep facts=1"
+        },
+        {
+          "id": "glob-issued",
+          "ok": true,
+          "detail": "the Member issued `glob`"
+        },
+        {
+          "id": "glob-matches",
+          "ok": true,
+          "detail": "isError=false text=edited-by-member.txt\nwritten-by-member.txt\nin-lane.txt"
+        },
+        {
+          "id": "glob-fact",
+          "ok": true,
+          "detail": "glob facts=1"
+        },
+        {
+          "id": "read-image-issued",
+          "ok": true,
+          "detail": "the Member issued `read_image` on an in-lane PNG"
+        },
+        {
+          "id": "read-image-refused-before-face",
+          "ok": true,
+          "detail": "isError=true text=Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/tests/homes/u5u5a5sfpd24-20261108T05-10-03Z/workspace/in-lane.png\" as an image: model \"deepseek-v4-flash\""
+        },
+        {
+          "id": "read-image-zero-bytes",
+          "ok": true,
+          "detail": "the route refusal carries no file bytes"
+        }
+      ]
+    },
+    {
+      "id": "pd24:jobs-owner-scoped",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the job registry is OWNER-scoped and has no producer on this preset: `job_list` is empty and a FOREIGN Leader job id is a typed refusal for BOTH `job_output` and `job_kill`, with zero job facts",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "list-issued",
+          "ok": true,
+          "detail": "the Member issued `job_list`"
+        },
+        {
+          "id": "list-empty",
+          "ok": true,
+          "detail": "text=(no background jobs) (no producer on the confined face)"
+        },
+        {
+          "id": "foreign-job-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: job bash-1 belongs to another session"
+        },
+        {
+          "id": "foreign-kill-refused",
+          "ok": true,
+          "detail": "isError=true text=Error: job bash-1 belongs to another session"
+        },
+        {
+          "id": "zero-job-facts",
+          "ok": true,
+          "detail": "job facts={\"list\":0,\"output\":0,\"kill\":0} — the job registry is not an a5sf face"
+        }
+      ]
+    },
+    {
+      "id": "pd24:todo-session-local",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "`todo_write` writes a `todo/write` event to the CALLING Member session only; no other session in the World receives one",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "todo-issued",
+          "ok": true,
+          "detail": "todos=[{\"content\":\"PD-24 surface-ledger probe (member-local)\",\"status\":\"in_progress\"},{\"content\":\"PD-24 report\",\"status\":\"pending\"}]"
+        },
+        {
+          "id": "todo-accepted",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "todo-in-a-session",
+          "ok": true,
+          "detail": "A session todo/write events=1"
+        },
+        {
+          "id": "no-todo-elsewhere",
+          "ok": true,
+          "detail": "sessions with todo/write other than A: []"
+        }
+      ]
+    },
+    {
+      "id": "pd24:exit-plan-refused",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "`exit_plan_mode` while plan mode is INACTIVE is a typed refusal: it presents nothing, appends no `plan/mode` event, and the turn keeps going",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `exit_plan_mode`"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: exit_plan_mode is only available in plan mode"
+        },
+        {
+          "id": "no-plan-mode-event",
+          "ok": true,
+          "detail": "A session plan/mode events=0"
+        },
+        {
+          "id": "turn-continued",
+          "ok": true,
+          "detail": "the next probe ran after this call"
+        }
+      ]
+    },
+    {
+      "id": "pd24:present-confined",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "a governed Member can no longer stat a path above its lane: `present` is ABSENT, all three calls are the router's typed `unknown tool \"present\"`, no `deliverables/presented` event is appended and no guard fact exists",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "in-lane-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"present\""
+        },
+        {
+          "id": "out-of-lane-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"present\""
+        },
+        {
+          "id": "missing-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"present\""
+        },
+        {
+          "id": "zero-out-of-lane-bytes",
+          "ok": true,
+          "detail": "no result carries out-of-lane bytes"
+        },
+        {
+          "id": "no-deliverables-event",
+          "ok": true,
+          "detail": "A session deliverables/presented events=0"
+        },
+        {
+          "id": "zero-present-facts",
+          "ok": true,
+          "detail": "present-attributed guard facts=0"
+        }
+      ]
+    },
+    {
+      "id": "pd24:fixtures-not-shipped",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the two World-composition FIXTURES (`u5_canary`, `u6fs_probe`) are callable and execute OUTSIDE any a5sf face (zero facts). They are NOT shipped tool names: they are test instrumentation the World mounts beside the preset, disclosed and excluded from the shipped roster",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "canary-issued",
+          "ok": true,
+          "detail": "the Member issued `u5_canary`"
+        },
+        {
+          "id": "canary-executed",
+          "ok": true,
+          "detail": "isError=false text={\"ran\":true,\"tag\":\"pd24-canary\",\"mode\":\"ok\"}"
+        },
+        {
+          "id": "u6fs-issued",
+          "ok": true,
+          "detail": "the Member issued `u6fs_probe`"
+        },
+        {
+          "id": "u6fs-executed",
+          "ok": true,
+          "detail": "isError=false text={\"action\":\"report\",\"tag\":\"pd24-probe\",\"spoofCount\":0}"
+        },
+        {
+          "id": "zero-fixture-facts",
+          "ok": true,
+          "detail": "fixture facts={\"canary\":0,\"probe\":0}"
+        }
+      ]
+    },
+    {
+      "id": "pd24:fail-closed-typed",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "every fail-closed name answers the host router's typed `unknown tool \"<name>\"` and executes nothing — the whole removed set in ONE Member turn",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "closed-interrupt_agent",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"interrupt_agent\""
+        },
+        {
+          "id": "closed-list_agents",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"list_agents\""
+        },
+        {
+          "id": "closed-pwsh",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"pwsh\""
+        },
+        {
+          "id": "closed-send_message",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"send_message\""
+        },
+        {
+          "id": "closed-skill",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"skill\""
+        },
+        {
+          "id": "closed-subagent",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"subagent\""
+        },
+        {
+          "id": "closed-subagent_fork",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"subagent_fork\""
+        },
+        {
+          "id": "closed-web_fetch",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"web_fetch\""
+        },
+        {
+          "id": "closed-web_search",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"web_search\""
+        },
+        {
+          "id": "closed-workflow",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"workflow\""
+        },
+        {
+          "id": "closed-present",
+          "ok": true,
+          "detail": "isError=true text=Error: unknown tool \"present\""
+        }
+      ]
+    },
+    {
+      "id": "pd24:goal-self-continuation-session-local",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the goal tools are SESSION-LOCAL and the self-continuation loop REALLY STARTS: `create_goal` is accepted in the Member's own session, a `<goal_round>` request arrives in that same session with `roundsStarted` grown to 1, `update_goal complete` closes it, and no other session holds any goal state or goal round",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-issued",
+          "ok": true,
+          "detail": "the Member issued `create_goal`"
+        },
+        {
+          "id": "create-accepted",
+          "ok": true,
+          "detail": "goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793 text={\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":1,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":2},\"activation\":"
+        },
+        {
+          "id": "goal-state-in-a-session",
+          "ok": true,
+          "detail": "A goal events=2"
+        },
+        {
+          "id": "no-goal-state-elsewhere",
+          "ok": true,
+          "detail": "sessions with goal state other than A: []"
+        },
+        {
+          "id": "round-request-in-a-session",
+          "ok": true,
+          "detail": "A requests carrying <goal_round>=2"
+        },
+        {
+          "id": "rounds-started-grew",
+          "ok": true,
+          "detail": "roundsStarted read from get_goal during the round=1"
+        },
+        {
+          "id": "same-goal-in-round",
+          "ok": true,
+          "detail": "round goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793 create goal id=goal-7058863c-88c1-4533-8bdd-b5bcd90b1793"
+        },
+        {
+          "id": "complete-accepted",
+          "ok": true,
+          "detail": "isError=false text={\"goal\":{\"id\":\"goal-7058863c-88c1-4533-8bdd-b5bcd90b1793\",\"revision\":2,\"objective\":\"A Member goal must stay inside its own session.\",\"phase\":\"complete\",\"roundsStarted\":2,\"maxGoalRounds\":2},\"activation"
+        },
+        {
+          "id": "no-goal-round-in-other-sessions",
+          "ok": true,
+          "detail": "goal-round requests in other sessions=0"
+        }
+      ]
+    },
+    {
+      "id": "pd24:no-new-members",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "the Member turn establishes no Team-level state and mints no member: the roster is exactly the Leader plus the one template the Leader created",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "roster-size-two",
+          "ok": true,
+          "detail": "members after=2 (leader + worker)"
+        },
+        {
+          "id": "templates-are-the-two",
+          "ok": true,
+          "detail": "templates=leader,worker"
+        }
+      ]
+    },
+    {
+      "id": "pd24:no-out-of-lane-bytes",
+      "verdict": "PASS",
+      "at": "2026-11-08T05:11:33.347Z",
+      "proposition": "ZERO out-of-lane bytes reach any model request or the Member's durable turn",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "zero-requests-with-secret",
+          "ok": true,
+          "detail": "mock requests carrying the FILE secret=0"
+        },
+        {
+          "id": "zero-a-transcript-bytes",
+          "ok": true,
+          "detail": "the Member's own durable turn carries no out-of-lane bytes"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T05:10:43.055Z",
+        "runId": "a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2",
+        "suite": "a5sf-pd24-surface-ledger",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd24-20261108T05-10-03Z",
+        "phase": "a5sf-pd24-surface-ledger-postfix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd24-surface-ledger-postfix-boot2",
+      "world": "u5u5a5sfpd24-20261108T05-10-03Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd24-surface-ledger/dev/agent-workflow/evidence/a5sf-pd24-surface-ledger/driver/logs/u5u5a5sfpd24-20261108T05-10-03Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd24-surface-ledger-postfix-2026-11-08T05-10-03-681Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T05:11:33.348Z"
+}
