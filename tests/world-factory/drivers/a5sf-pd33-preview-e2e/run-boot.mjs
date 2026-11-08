@@ -121,7 +121,7 @@ const MK_PING = 'A5SF_PD29_PING'
 /** Every Member template this boot delegates. `a`/`b` are the Preview E2E
  *  scenario (A = governed I/O chain, B = web + goal); `s1..pz` are the
  *  lifecycle arms (Stop / cancel race / cold recovery / terminal phases). */
-const TEMPLATES = Object.freeze(['a', 'b', 's1', 's2', 'cold', 'stop2'])
+const TEMPLATES = Object.freeze(['a', 'b', 's1', 's2', 'cold', 'stop2', 'stop3'])
 /** Templates that must own a durable goal. A is a pure I/O Member by design. */
 const GOAL_TEMPLATES = Object.freeze(TEMPLATES.filter((t) => t !== 'a'))
 const TOKEN_OF = Object.freeze({
@@ -134,6 +134,7 @@ const TOKEN_OF = Object.freeze({
   lead: 'a5sf-pd29-lead',
   cold: 'a5sf-pd29-cold',
   stop2: 'a5sf-pd29-stop2',
+  stop3: 'a5sf-pd34-stop3',
   pz: 'a5sf-pd29-pz',
 })
 const CALL = Object.freeze({
@@ -146,6 +147,7 @@ const CALL = Object.freeze({
   lead: 'call-pd29-lead-create',
   cold: 'call-pd29-cold-create',
   stop2: 'call-pd29-stop2-create',
+  stop3: 'call-pd34-stop3-create',
   pz: 'call-pd29-pz-create',
 })
 const DONE = 'A5SF_PD29_DONE'
@@ -314,6 +316,7 @@ const SELECTED_CASES = Object.freeze([
   'pd33:skill-lane',
   'pd33:no-base-web',
   'pd29:goal-continuous-rounds',
+  'pd34:control-stops-member',
   'pd29:stop-during-round',
   'pd29:stop-at-round-boundary',
   'pd29:stop-in-idle-window',
@@ -501,6 +504,7 @@ function mainBlueprint({ workspace }) {
       member('s2', 'S2 Boundary Worker'),
       member('cold', 'S6 Cold-Recovery Worker'),
       member('stop2', 'Archive-Stop Worker'),
+      member('stop3', 'Control-Stop Worker'),
     ],
     requirements: [],
     teamEnvelope: {
@@ -1357,6 +1361,51 @@ ${INLANE_SKILL_BODY}
     }
 
     // ── S1: stop DURING a running goal round ─────────────────────────────
+    // ── S1c: the FIRST-CLASS per-Member control (PD-34) ─────────────────
+    // PD-34 ships `model/member-stop.ts`: the ONE sequence the UI emits is
+    //   goals.get -> goals.pause (durable CAS) -> session/cancel -> goals.get
+    // and the durable phase RE-READ is the only oracle. The click itself is
+    // not reachable headlessly from this lane (no DOM), so this arm issues the
+    // SAME four public RPCs in the SAME order against a RUNNING Member and
+    // measures the same 20 000 ms window; the UI path is covered by PD-34's
+    // own client specs.
+    if (ARMS === null || ARMS.has('s1c')) {
+      const inRound3 = await waitFor(() => roundCount('stop3') >= 2, 120_000, 50)
+      if (!inRound3) throw new Error('S1c never reached round 2')
+      await sleep(400)
+      const stopAt = nowMs()
+      const roundsAtStop = roundCount('stop3')
+      const callsAtStop = sessionFacts(world.home, sessionOf.stop3)?.calls.length ?? 0
+      const read1 = await goalGet(origin, cookie, sessionOf.stop3)
+      const paused = await goalPause(origin, cookie, sessionOf.stop3)
+      const cancel = await apiSessionCancel(origin, cookie, sessionOf.stop3, 'a5sfpd34')
+      const read2 = await goalGet(origin, cookie, sessionOf.stop3)
+      counters.stops.push({ arm: 'S1c', who: 'control:member-stop', target: 'stop3', sessionId: sessionOf.stop3, at: stopAt, status: paused.status })
+      log(`[boot${String(index)}] S1c control: get=${String(read1.goal?.phase ?? 'none')} pause=${String(paused.status)} cancel=${String(cancel.status)} re-read=${String(read2.goal?.phase ?? 'none')} roundsBefore=${String(roundsAtStop)}`)
+      await sleep(SILENT_MS)
+      const facts = sessionFacts(world.home, sessionOf.stop3)
+      arms.s1c = {
+        control: 'model/member-stop.ts stopMember()',
+        sequence: ['goals/get', 'goals/pause', 'session/cancel', 'goals/get'],
+        stopAt,
+        phaseFirstRead: read1.goal?.phase ?? null,
+        pauseStatus: paused.status,
+        pauseOk: paused.ok === true,
+        cancelStatus: cancel.status,
+        observedPhase: read2.goal?.phase ?? null,
+        roundsBeforeStop: roundsAtStop,
+        roundsAfterStop: roundCount('stop3') - roundsAtStop,
+        callsBeforeStop: callsAtStop,
+        callsAfterStop: (facts?.calls.length ?? 0) - callsAtStop,
+        silentWindowMs: SILENT_MS,
+        requestsAfterStop: allMockRequests(world).filter((r) => (r.receivedAt ?? 0) > stopAt).length,
+        goalRounds: facts?.goalRounds.length ?? null,
+        finalPhase: facts?.goalChanges.at(-1)?.phase ?? null,
+        membership: (await p6t6State(origin)).body?.members?.find((m) => m.templateId === 'stop3')?.lifecycle ?? null,
+      }
+      log(`[boot${String(index)}] S1c result: ${JSON.stringify({ roundsAfter: arms.s1c.roundsAfterStop, callsAfter: arms.s1c.callsAfterStop, observedPhase: arms.s1c.observedPhase })}`)
+    }
+
     if (ARMS === null || ARMS.has('s1')) {
       const inRound2 = await waitFor(() => roundCount('s1') >= 2, 120_000, 50)
       if (!inRound2) throw new Error('S1 never reached round 2')
@@ -1920,6 +1969,25 @@ function judgeAll(arms) {
       [
         clause('rounds-reached', arms.s8Continue.continued, `rounds=${String(arms.s8Continue.rounds)}`),
         clause('more-than-one', arms.s8Continue.rounds >= 3, `rounds=${String(arms.s8Continue.rounds)} (needs >= 3 automatic rounds)`),
+      ]))
+  }
+  if (arms.s1c !== undefined) {
+    out.push(verdictOf('pd34:control-stops-member',
+      'the first-class per-Member stop control (PD-34: goals.get -> goals.pause -> session.cancel -> goals.get) stops a RUNNING Member: the durable phase it re-reads is paused and no round, tool call or model request follows in the observed window',
+      [
+        clause('control-sequence-issued',
+          JSON.stringify(arms.s1c.sequence) === JSON.stringify(['goals/get', 'goals/pause', 'session/cancel', 'goals/get']),
+          `sequence=${JSON.stringify(arms.s1c.sequence)} control=${String(arms.s1c.control)}`),
+        clause('pause-accepted', arms.s1c.pauseOk === true, `goals/pause status=${String(arms.s1c.pauseStatus)}`),
+        clause('cancel-issued', arms.s1c.cancelStatus === 200, `session/cancel status=${String(arms.s1c.cancelStatus)}`),
+        clause('durable-pause-observed', arms.s1c.observedPhase === 'paused',
+          `phase re-read after the sequence=${String(arms.s1c.observedPhase)} (expected paused)`),
+        clause('rounds-after-zero', arms.s1c.roundsAfterStop === 0, `rounds after the stop=${String(arms.s1c.roundsAfterStop)}`),
+        clause('calls-after-zero', arms.s1c.callsAfterStop <= 0, `tool calls after the stop=${String(arms.s1c.callsAfterStop)}`),
+        clause('no-request-in-window', arms.s1c.requestsAfterStop === 0,
+          `model requests in ${String(arms.s1c.silentWindowMs)} ms after the stop=${String(arms.s1c.requestsAfterStop)}`),
+        clause('lifecycle-not-destroyed', !/ARCHIVED|DISPOSED/i.test(String(arms.s1c.membership)),
+          `member lifecycle=${String(arms.s1c.membership)} (a stop ends the goal continuation, not the Member)`),
       ]))
   }
   if (arms.s1 !== undefined) {
