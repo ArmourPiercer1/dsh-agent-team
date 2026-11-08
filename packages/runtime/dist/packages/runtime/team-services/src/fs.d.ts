@@ -81,9 +81,22 @@ export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity
 export type FsGuard = (method: string, hostPath: string, annotations?: readonly string[]) => Promise<void>;
 /**
  * Build the admission function for one Member. All checks are fail-closed:
- * a resolver failure, an unsupported destination, an uncovered target or a
- * write without read coverage all throw a typed {@link TeamIoDenial}; there is
- * no path that returns "allow" by omission.
+ * a resolver failure, an unsupported destination or an uncovered target, a
+ * write without read coverage, and a CLOSED lifecycle admission all throw a
+ * typed refusal; there is no path that returns "allow" by omission.
+ *
+ * LIFECYCLE ADMISSION (PD20-B1, the measured `a5sf-recon-shell` defect): this
+ * function is the ONE boundary in front of every Member execution face
+ * (confined `fs` / `subprocess` / `terminals` / search / web), and it is the
+ * only one a RUNNING Member's own turn passes through on its way to a new
+ * child process or a new byte. So it is where "an archive/dispose has been
+ * requested in this process" is enforced at the NEXT TOOL BOUNDARY: the close
+ * stamp (`lifecycle/admission-state`, written by the live binding of the
+ * lifecycle `AdmissionClosePort` step 1) refuses the call before any locator is
+ * resolved — no spawn, no byte, no lane fact. Before this check existed, the
+ * only consumer of the close was the Team tool-dispatch route, so a Member's own
+ * turn kept obtaining new confined terminal sessions until it ended (measured
+ * window 8.56 s / 8.72 s, a second `bash` 290/427 ms before the commit).
  */
 export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver): FsGuard;
 /**

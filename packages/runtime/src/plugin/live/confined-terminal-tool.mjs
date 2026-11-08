@@ -39,6 +39,7 @@ import { isAbsolute, join } from 'node:path'
 import { clearTimeout, setTimeout } from 'node:timers'
 // The repo's ESLint config declares no Node globals; import the ones used.
 import { cwd } from 'node:process'
+import { assertClosedArguments } from './closed-tool-arguments.mjs'
 
 export const name = 'a5sf-confined-terminal-bash'
 
@@ -103,13 +104,28 @@ export function apply(ctx, config = {}) {
       render: (_args, value) => [{ type: 'text', text: String(value) }],
     },
     async execute(args, exec) {
+      // PD20-C3: the closed schema is enforced HERE, at the call boundary. The
+      // harness hands `execute` whatever the model sent (it does not validate a
+      // native module's closed schema), so an undeclared parameter used to be
+      // silently dropped — `run_in_background: true` ran in the foreground with
+      // no job id and no refusal (measured). Now it is a typed refusal.
+      assertClosedArguments('bash', args, ['command', 'description', 'workdir'])
       const owner = exec?.agent
       if (owner === undefined || owner === null) {
         throw new Error('bash requires an owning agent session (the confined terminal face is owner-scoped)')
       }
       const command = String(args?.command ?? '')
       const cwd = resolveTerminalCwd(args, exec, fallbackCwd)
-      const session = await ctx.terminals.spawn(owner, { type: 'confined-shell', cwd }, exec?.signal)
+      let session
+      try {
+        // The face consults the Member's lane guard BEFORE any child exists; a
+        // refusal here (a denied locator, or the lifecycle admission close after
+        // an archive request) must reach the model as its typed code rather than
+        // as an anonymous crash.
+        session = await ctx.terminals.spawn(owner, { type: 'confined-shell', cwd }, exec?.signal)
+      } catch (error) {
+        throw refusalError(error)
+      }
       let timedOut = false
       let timer
       try {
@@ -164,12 +180,13 @@ export function apply(ctx, config = {}) {
 /**
  * A typed admission refusal must reach the model as the code the face chose,
  * not as an anonymous tool crash. The code is preserved on the thrown error and
- * named in its message.
+ * named in its message — ONCE: a refusal that already leads with its code (the
+ * lifecycle admission close does) keeps its own message intact.
  */
 function refusalError(error) {
   const code = typeof error?.code === 'string' && error.code !== '' ? error.code : 'TERMINALS_REFUSED'
   const message = String(error?.message ?? error)
-  const wrapped = new Error(`${code}: ${message}`)
+  const wrapped = new Error(message.startsWith(`${code}:`) ? message : `${code}: ${message}`)
   wrapped.code = code
   wrapped.cause = error
   return wrapped

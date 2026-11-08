@@ -1,0 +1,4601 @@
+[
+  {
+    "type": "session",
+    "seq": null,
+    "time": null,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "permission/preset",
+    "seq": 0,
+    "time": 1794098211249,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "sandbox/mode",
+    "seq": 1,
+    "time": 1794098211249,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "approval/policy",
+    "seq": 2,
+    "time": 1794098211250,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 3,
+    "time": 1794098211304,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "turn/start",
+    "seq": 4,
+    "time": 1794098211305,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 5,
+    "time": 1794098211305,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 6,
+    "time": 1794098211364,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "system/message",
+    "seq": 7,
+    "time": 1794098211365,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 8,
+    "time": 1794098211365,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 9,
+    "time": 1794098211366,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 10,
+    "time": 1794098211366,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 11,
+    "time": 1794098211366,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "request/header",
+    "seq": 12,
+    "time": 1794098211368,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "request/context",
+    "seq": 13,
+    "time": 1794098211369,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "session/title",
+    "seq": 14,
+    "time": 1794098211371,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "session/title-llm-request",
+    "seq": 15,
+    "time": 1794098211372,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "session/title",
+    "seq": 16,
+    "time": 1794098211388,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 17,
+    "time": 1794098211390,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 18,
+    "time": 1794098211391,
+    "callId": "call-rc-delegate-a",
+    "name": "team_delegate",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 19,
+    "time": 1794098216830,
+    "callId": "call-rc-delegate-a",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 20,
+    "time": 1794098216830,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 21,
+    "time": 1794098216846,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 22,
+    "time": 1794098216855,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 23,
+    "time": 1794098216856,
+    "callId": "call-rc-archive-a",
+    "name": "team_archive_member",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 24,
+    "time": 1794098216924,
+    "callId": "call-rc-archive-a",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 25,
+    "time": 1794098216924,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 26,
+    "time": 1794098216939,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 27,
+    "time": 1794098216948,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 28,
+    "time": 1794098216948,
+    "callId": "call-rc-followup-a",
+    "name": "team_follow_up",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 29,
+    "time": 1794098216953,
+    "callId": "call-rc-followup-a",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 30,
+    "time": 1794098216953,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 31,
+    "time": 1794098216967,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 32,
+    "time": 1794098216976,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 33,
+    "time": 1794098216977,
+    "callId": "call-rc-delegate-b",
+    "name": "team_delegate",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 34,
+    "time": 1794098217105,
+    "callId": "call-rc-delegate-b",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 35,
+    "time": 1794098217106,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 36,
+    "time": 1794098217142,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 37,
+    "time": 1794098217151,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 38,
+    "time": 1794098217152,
+    "callId": "call-rc-collect-b-1",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 39,
+    "time": 1794098217161,
+    "callId": "call-rc-collect-b-1",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 40,
+    "time": 1794098217161,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 41,
+    "time": 1794098217182,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 42,
+    "time": 1794098217196,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 43,
+    "time": 1794098217196,
+    "callId": "call-rc-collect-b-2",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 44,
+    "time": 1794098217204,
+    "callId": "call-rc-collect-b-2",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 45,
+    "time": 1794098217204,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 46,
+    "time": 1794098217217,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 47,
+    "time": 1794098217226,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 48,
+    "time": 1794098217226,
+    "callId": "call-rc-collect-b-3",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 49,
+    "time": 1794098217235,
+    "callId": "call-rc-collect-b-3",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 50,
+    "time": 1794098217235,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 51,
+    "time": 1794098217236,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 52,
+    "time": 1794098217236,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 53,
+    "time": 1794098217262,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 54,
+    "time": 1794098217263,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 55,
+    "time": 1794098217271,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 56,
+    "time": 1794098217272,
+    "callId": "call-rc-collect-b-4",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 57,
+    "time": 1794098217278,
+    "callId": "call-rc-collect-b-4",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 58,
+    "time": 1794098217279,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 59,
+    "time": 1794098217308,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 60,
+    "time": 1794098217320,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 61,
+    "time": 1794098217320,
+    "callId": "call-rc-collect-b-5",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 62,
+    "time": 1794098217327,
+    "callId": "call-rc-collect-b-5",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 63,
+    "time": 1794098217327,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 64,
+    "time": 1794098217327,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 65,
+    "time": 1794098217327,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 66,
+    "time": 1794098217340,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 67,
+    "time": 1794098217341,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 68,
+    "time": 1794098217348,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 69,
+    "time": 1794098217349,
+    "callId": "call-rc-collect-b-6",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 70,
+    "time": 1794098217355,
+    "callId": "call-rc-collect-b-6",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 71,
+    "time": 1794098217355,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 72,
+    "time": 1794098217367,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 73,
+    "time": 1794098217375,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 74,
+    "time": 1794098217375,
+    "callId": "call-rc-collect-b-7",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 75,
+    "time": 1794098217381,
+    "callId": "call-rc-collect-b-7",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 76,
+    "time": 1794098217381,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 77,
+    "time": 1794098217394,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 78,
+    "time": 1794098217402,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 79,
+    "time": 1794098217402,
+    "callId": "call-rc-collect-b-8",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 80,
+    "time": 1794098217411,
+    "callId": "call-rc-collect-b-8",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 81,
+    "time": 1794098217411,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 82,
+    "time": 1794098217411,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "agent/inbox/spliced",
+    "seq": 83,
+    "time": 1794098217412,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 84,
+    "time": 1794098217424,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "user/message",
+    "seq": 85,
+    "time": 1794098217425,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 86,
+    "time": 1794098217432,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 87,
+    "time": 1794098217432,
+    "callId": "call-rc-collect-b-9",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 88,
+    "time": 1794098217438,
+    "callId": "call-rc-collect-b-9",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 89,
+    "time": 1794098217438,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 90,
+    "time": 1794098217449,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 91,
+    "time": 1794098217458,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 92,
+    "time": 1794098217458,
+    "callId": "call-rc-collect-b-10",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 93,
+    "time": 1794098217464,
+    "callId": "call-rc-collect-b-10",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 94,
+    "time": 1794098217464,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 95,
+    "time": 1794098217476,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 96,
+    "time": 1794098217484,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 97,
+    "time": 1794098217484,
+    "callId": "call-rc-collect-b-11",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 98,
+    "time": 1794098217491,
+    "callId": "call-rc-collect-b-11",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 99,
+    "time": 1794098217491,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 100,
+    "time": 1794098217504,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 101,
+    "time": 1794098217512,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 102,
+    "time": 1794098217513,
+    "callId": "call-rc-collect-b-12",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 103,
+    "time": 1794098217518,
+    "callId": "call-rc-collect-b-12",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 104,
+    "time": 1794098217518,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 105,
+    "time": 1794098217530,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 106,
+    "time": 1794098217538,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 107,
+    "time": 1794098217538,
+    "callId": "call-rc-collect-b-13",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 108,
+    "time": 1794098217544,
+    "callId": "call-rc-collect-b-13",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 109,
+    "time": 1794098217544,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 110,
+    "time": 1794098217556,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 111,
+    "time": 1794098217564,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 112,
+    "time": 1794098217564,
+    "callId": "call-rc-collect-b-14",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 113,
+    "time": 1794098217570,
+    "callId": "call-rc-collect-b-14",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 114,
+    "time": 1794098217570,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 115,
+    "time": 1794098217583,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 116,
+    "time": 1794098217591,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 117,
+    "time": 1794098217591,
+    "callId": "call-rc-collect-b-15",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 118,
+    "time": 1794098217598,
+    "callId": "call-rc-collect-b-15",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 119,
+    "time": 1794098217598,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 120,
+    "time": 1794098217610,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 121,
+    "time": 1794098217618,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 122,
+    "time": 1794098217618,
+    "callId": "call-rc-collect-b-16",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 123,
+    "time": 1794098217624,
+    "callId": "call-rc-collect-b-16",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 124,
+    "time": 1794098217624,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 125,
+    "time": 1794098217637,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 126,
+    "time": 1794098217645,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 127,
+    "time": 1794098217646,
+    "callId": "call-rc-collect-b-17",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 128,
+    "time": 1794098217651,
+    "callId": "call-rc-collect-b-17",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 129,
+    "time": 1794098217652,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 130,
+    "time": 1794098217663,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 131,
+    "time": 1794098217671,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 132,
+    "time": 1794098217671,
+    "callId": "call-rc-collect-b-18",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 133,
+    "time": 1794098217677,
+    "callId": "call-rc-collect-b-18",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 134,
+    "time": 1794098217678,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 135,
+    "time": 1794098217690,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 136,
+    "time": 1794098217699,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 137,
+    "time": 1794098217699,
+    "callId": "call-rc-collect-b-19",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 138,
+    "time": 1794098217705,
+    "callId": "call-rc-collect-b-19",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 139,
+    "time": 1794098217705,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 140,
+    "time": 1794098217716,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 141,
+    "time": 1794098217725,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 142,
+    "time": 1794098217725,
+    "callId": "call-rc-collect-b-20",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 143,
+    "time": 1794098217730,
+    "callId": "call-rc-collect-b-20",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 144,
+    "time": 1794098217731,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 145,
+    "time": 1794098217743,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 146,
+    "time": 1794098217751,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 147,
+    "time": 1794098217752,
+    "callId": "call-rc-collect-b-21",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 148,
+    "time": 1794098217757,
+    "callId": "call-rc-collect-b-21",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 149,
+    "time": 1794098217757,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 150,
+    "time": 1794098217769,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 151,
+    "time": 1794098217777,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 152,
+    "time": 1794098217777,
+    "callId": "call-rc-collect-b-22",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 153,
+    "time": 1794098217783,
+    "callId": "call-rc-collect-b-22",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 154,
+    "time": 1794098217783,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 155,
+    "time": 1794098217795,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 156,
+    "time": 1794098217803,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 157,
+    "time": 1794098217803,
+    "callId": "call-rc-collect-b-23",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 158,
+    "time": 1794098217808,
+    "callId": "call-rc-collect-b-23",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 159,
+    "time": 1794098217808,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 160,
+    "time": 1794098217821,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 161,
+    "time": 1794098217829,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 162,
+    "time": 1794098217829,
+    "callId": "call-rc-collect-b-24",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 163,
+    "time": 1794098217834,
+    "callId": "call-rc-collect-b-24",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 164,
+    "time": 1794098217834,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 165,
+    "time": 1794098217846,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 166,
+    "time": 1794098217854,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 167,
+    "time": 1794098217854,
+    "callId": "call-rc-collect-b-25",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 168,
+    "time": 1794098217859,
+    "callId": "call-rc-collect-b-25",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 169,
+    "time": 1794098217860,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 170,
+    "time": 1794098217872,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 171,
+    "time": 1794098217881,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 172,
+    "time": 1794098217881,
+    "callId": "call-rc-collect-b-26",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 173,
+    "time": 1794098217886,
+    "callId": "call-rc-collect-b-26",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 174,
+    "time": 1794098217886,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 175,
+    "time": 1794098217898,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 176,
+    "time": 1794098217906,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 177,
+    "time": 1794098217906,
+    "callId": "call-rc-collect-b-27",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 178,
+    "time": 1794098217912,
+    "callId": "call-rc-collect-b-27",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 179,
+    "time": 1794098217912,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 180,
+    "time": 1794098217924,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 181,
+    "time": 1794098217933,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 182,
+    "time": 1794098217933,
+    "callId": "call-rc-collect-b-28",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 183,
+    "time": 1794098217938,
+    "callId": "call-rc-collect-b-28",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 184,
+    "time": 1794098217939,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 185,
+    "time": 1794098217951,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 186,
+    "time": 1794098217959,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 187,
+    "time": 1794098217960,
+    "callId": "call-rc-collect-b-29",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 188,
+    "time": 1794098217965,
+    "callId": "call-rc-collect-b-29",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 189,
+    "time": 1794098217965,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 190,
+    "time": 1794098217978,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 191,
+    "time": 1794098217986,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 192,
+    "time": 1794098217986,
+    "callId": "call-rc-collect-b-30",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 193,
+    "time": 1794098217992,
+    "callId": "call-rc-collect-b-30",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 194,
+    "time": 1794098217992,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 195,
+    "time": 1794098218004,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 196,
+    "time": 1794098218012,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 197,
+    "time": 1794098218012,
+    "callId": "call-rc-collect-b-31",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 198,
+    "time": 1794098218017,
+    "callId": "call-rc-collect-b-31",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 199,
+    "time": 1794098218017,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 200,
+    "time": 1794098218029,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 201,
+    "time": 1794098218037,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 202,
+    "time": 1794098218037,
+    "callId": "call-rc-collect-b-32",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 203,
+    "time": 1794098218044,
+    "callId": "call-rc-collect-b-32",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 204,
+    "time": 1794098218044,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 205,
+    "time": 1794098218055,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 206,
+    "time": 1794098218063,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 207,
+    "time": 1794098218064,
+    "callId": "call-rc-collect-b-33",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 208,
+    "time": 1794098218069,
+    "callId": "call-rc-collect-b-33",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 209,
+    "time": 1794098218069,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 210,
+    "time": 1794098218081,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 211,
+    "time": 1794098218089,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 212,
+    "time": 1794098218090,
+    "callId": "call-rc-collect-b-34",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 213,
+    "time": 1794098218095,
+    "callId": "call-rc-collect-b-34",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 214,
+    "time": 1794098218095,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 215,
+    "time": 1794098218107,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 216,
+    "time": 1794098218115,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 217,
+    "time": 1794098218116,
+    "callId": "call-rc-collect-b-35",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 218,
+    "time": 1794098218121,
+    "callId": "call-rc-collect-b-35",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 219,
+    "time": 1794098218122,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 220,
+    "time": 1794098218136,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 221,
+    "time": 1794098218145,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 222,
+    "time": 1794098218145,
+    "callId": "call-rc-collect-b-36",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 223,
+    "time": 1794098218151,
+    "callId": "call-rc-collect-b-36",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 224,
+    "time": 1794098218151,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 225,
+    "time": 1794098218163,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 226,
+    "time": 1794098218171,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 227,
+    "time": 1794098218171,
+    "callId": "call-rc-collect-b-37",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 228,
+    "time": 1794098218176,
+    "callId": "call-rc-collect-b-37",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 229,
+    "time": 1794098218177,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 230,
+    "time": 1794098218188,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 231,
+    "time": 1794098218197,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 232,
+    "time": 1794098218198,
+    "callId": "call-rc-collect-b-38",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 233,
+    "time": 1794098218203,
+    "callId": "call-rc-collect-b-38",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 234,
+    "time": 1794098218203,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 235,
+    "time": 1794098218217,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 236,
+    "time": 1794098218226,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 237,
+    "time": 1794098218226,
+    "callId": "call-rc-collect-b-39",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 238,
+    "time": 1794098218232,
+    "callId": "call-rc-collect-b-39",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 239,
+    "time": 1794098218232,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 240,
+    "time": 1794098218243,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 241,
+    "time": 1794098218251,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 242,
+    "time": 1794098218251,
+    "callId": "call-rc-collect-b-40",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 243,
+    "time": 1794098218256,
+    "callId": "call-rc-collect-b-40",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 244,
+    "time": 1794098218257,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 245,
+    "time": 1794098218270,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 246,
+    "time": 1794098218279,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 247,
+    "time": 1794098218279,
+    "callId": "call-rc-collect-b-41",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 248,
+    "time": 1794098218286,
+    "callId": "call-rc-collect-b-41",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 249,
+    "time": 1794098218286,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 250,
+    "time": 1794098218299,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 251,
+    "time": 1794098218308,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 252,
+    "time": 1794098218308,
+    "callId": "call-rc-collect-b-42",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 253,
+    "time": 1794098218314,
+    "callId": "call-rc-collect-b-42",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 254,
+    "time": 1794098218314,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 255,
+    "time": 1794098218326,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 256,
+    "time": 1794098218334,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 257,
+    "time": 1794098218335,
+    "callId": "call-rc-collect-b-43",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 258,
+    "time": 1794098218341,
+    "callId": "call-rc-collect-b-43",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 259,
+    "time": 1794098218341,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 260,
+    "time": 1794098218354,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 261,
+    "time": 1794098218363,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 262,
+    "time": 1794098218364,
+    "callId": "call-rc-collect-b-44",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 263,
+    "time": 1794098218371,
+    "callId": "call-rc-collect-b-44",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 264,
+    "time": 1794098218371,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 265,
+    "time": 1794098218384,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 266,
+    "time": 1794098218392,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 267,
+    "time": 1794098218392,
+    "callId": "call-rc-collect-b-45",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 268,
+    "time": 1794098218397,
+    "callId": "call-rc-collect-b-45",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 269,
+    "time": 1794098218397,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 270,
+    "time": 1794098218409,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 271,
+    "time": 1794098218417,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 272,
+    "time": 1794098218417,
+    "callId": "call-rc-collect-b-46",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 273,
+    "time": 1794098218422,
+    "callId": "call-rc-collect-b-46",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 274,
+    "time": 1794098218423,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 275,
+    "time": 1794098218434,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 276,
+    "time": 1794098218442,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 277,
+    "time": 1794098218442,
+    "callId": "call-rc-collect-b-47",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 278,
+    "time": 1794098218447,
+    "callId": "call-rc-collect-b-47",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 279,
+    "time": 1794098218448,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 280,
+    "time": 1794098218461,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 281,
+    "time": 1794098218469,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 282,
+    "time": 1794098218469,
+    "callId": "call-rc-collect-b-48",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 283,
+    "time": 1794098218474,
+    "callId": "call-rc-collect-b-48",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 284,
+    "time": 1794098218474,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 285,
+    "time": 1794098218486,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 286,
+    "time": 1794098218495,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 287,
+    "time": 1794098218495,
+    "callId": "call-rc-collect-b-49",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 288,
+    "time": 1794098218500,
+    "callId": "call-rc-collect-b-49",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 289,
+    "time": 1794098218500,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 290,
+    "time": 1794098218512,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 291,
+    "time": 1794098218520,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 292,
+    "time": 1794098218520,
+    "callId": "call-rc-collect-b-50",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 293,
+    "time": 1794098218526,
+    "callId": "call-rc-collect-b-50",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 294,
+    "time": 1794098218526,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 295,
+    "time": 1794098218538,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 296,
+    "time": 1794098218546,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 297,
+    "time": 1794098218547,
+    "callId": "call-rc-collect-b-51",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 298,
+    "time": 1794098218552,
+    "callId": "call-rc-collect-b-51",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 299,
+    "time": 1794098218552,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 300,
+    "time": 1794098218564,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 301,
+    "time": 1794098218572,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 302,
+    "time": 1794098218572,
+    "callId": "call-rc-collect-b-52",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 303,
+    "time": 1794098218578,
+    "callId": "call-rc-collect-b-52",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 304,
+    "time": 1794098218578,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 305,
+    "time": 1794098218590,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 306,
+    "time": 1794098218598,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 307,
+    "time": 1794098218599,
+    "callId": "call-rc-collect-b-53",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 308,
+    "time": 1794098218604,
+    "callId": "call-rc-collect-b-53",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 309,
+    "time": 1794098218604,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 310,
+    "time": 1794098218617,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 311,
+    "time": 1794098218625,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 312,
+    "time": 1794098218625,
+    "callId": "call-rc-collect-b-54",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 313,
+    "time": 1794098218631,
+    "callId": "call-rc-collect-b-54",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 314,
+    "time": 1794098218631,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 315,
+    "time": 1794098218643,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 316,
+    "time": 1794098218651,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 317,
+    "time": 1794098218652,
+    "callId": "call-rc-collect-b-55",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 318,
+    "time": 1794098218657,
+    "callId": "call-rc-collect-b-55",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 319,
+    "time": 1794098218657,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 320,
+    "time": 1794098218669,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 321,
+    "time": 1794098218677,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 322,
+    "time": 1794098218677,
+    "callId": "call-rc-collect-b-56",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 323,
+    "time": 1794098218682,
+    "callId": "call-rc-collect-b-56",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 324,
+    "time": 1794098218683,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 325,
+    "time": 1794098218696,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 326,
+    "time": 1794098218704,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 327,
+    "time": 1794098218704,
+    "callId": "call-rc-collect-b-57",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 328,
+    "time": 1794098218710,
+    "callId": "call-rc-collect-b-57",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 329,
+    "time": 1794098218710,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 330,
+    "time": 1794098218721,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 331,
+    "time": 1794098218732,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 332,
+    "time": 1794098218732,
+    "callId": "call-rc-collect-b-58",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 333,
+    "time": 1794098218738,
+    "callId": "call-rc-collect-b-58",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 334,
+    "time": 1794098218738,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 335,
+    "time": 1794098218751,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 336,
+    "time": 1794098218760,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 337,
+    "time": 1794098218760,
+    "callId": "call-rc-collect-b-59",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 338,
+    "time": 1794098218768,
+    "callId": "call-rc-collect-b-59",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 339,
+    "time": 1794098218768,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 340,
+    "time": 1794098218786,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 341,
+    "time": 1794098218796,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 342,
+    "time": 1794098218797,
+    "callId": "call-rc-collect-b-60",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 343,
+    "time": 1794098218803,
+    "callId": "call-rc-collect-b-60",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 344,
+    "time": 1794098218803,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 345,
+    "time": 1794098218816,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 346,
+    "time": 1794098218825,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 347,
+    "time": 1794098218826,
+    "callId": "call-rc-collect-b-61",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 348,
+    "time": 1794098218832,
+    "callId": "call-rc-collect-b-61",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 349,
+    "time": 1794098218833,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 350,
+    "time": 1794098218845,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 351,
+    "time": 1794098218854,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 352,
+    "time": 1794098218855,
+    "callId": "call-rc-collect-b-62",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 353,
+    "time": 1794098218861,
+    "callId": "call-rc-collect-b-62",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 354,
+    "time": 1794098218862,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 355,
+    "time": 1794098218875,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 356,
+    "time": 1794098218885,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 357,
+    "time": 1794098218885,
+    "callId": "call-rc-collect-b-63",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 358,
+    "time": 1794098218892,
+    "callId": "call-rc-collect-b-63",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 359,
+    "time": 1794098218892,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 360,
+    "time": 1794098218904,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 361,
+    "time": 1794098218914,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 362,
+    "time": 1794098218915,
+    "callId": "call-rc-collect-b-64",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 363,
+    "time": 1794098218921,
+    "callId": "call-rc-collect-b-64",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 364,
+    "time": 1794098218921,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 365,
+    "time": 1794098218934,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 366,
+    "time": 1794098218944,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 367,
+    "time": 1794098218945,
+    "callId": "call-rc-collect-b-65",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 368,
+    "time": 1794098218951,
+    "callId": "call-rc-collect-b-65",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 369,
+    "time": 1794098218951,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 370,
+    "time": 1794098218965,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 371,
+    "time": 1794098218975,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 372,
+    "time": 1794098218975,
+    "callId": "call-rc-collect-b-66",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 373,
+    "time": 1794098218981,
+    "callId": "call-rc-collect-b-66",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 374,
+    "time": 1794098218981,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 375,
+    "time": 1794098218994,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 376,
+    "time": 1794098219004,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 377,
+    "time": 1794098219004,
+    "callId": "call-rc-collect-b-67",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 378,
+    "time": 1794098219010,
+    "callId": "call-rc-collect-b-67",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 379,
+    "time": 1794098219010,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 380,
+    "time": 1794098219022,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 381,
+    "time": 1794098219033,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 382,
+    "time": 1794098219033,
+    "callId": "call-rc-collect-b-68",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 383,
+    "time": 1794098219039,
+    "callId": "call-rc-collect-b-68",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 384,
+    "time": 1794098219040,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 385,
+    "time": 1794098219054,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 386,
+    "time": 1794098219064,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 387,
+    "time": 1794098219064,
+    "callId": "call-rc-collect-b-69",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 388,
+    "time": 1794098219070,
+    "callId": "call-rc-collect-b-69",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 389,
+    "time": 1794098219070,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 390,
+    "time": 1794098219083,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 391,
+    "time": 1794098219093,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 392,
+    "time": 1794098219094,
+    "callId": "call-rc-collect-b-70",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 393,
+    "time": 1794098219099,
+    "callId": "call-rc-collect-b-70",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 394,
+    "time": 1794098219099,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 395,
+    "time": 1794098219111,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 396,
+    "time": 1794098219121,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 397,
+    "time": 1794098219122,
+    "callId": "call-rc-collect-b-71",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 398,
+    "time": 1794098219128,
+    "callId": "call-rc-collect-b-71",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 399,
+    "time": 1794098219128,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 400,
+    "time": 1794098219141,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 401,
+    "time": 1794098219150,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 402,
+    "time": 1794098219151,
+    "callId": "call-rc-collect-b-72",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 403,
+    "time": 1794098219156,
+    "callId": "call-rc-collect-b-72",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 404,
+    "time": 1794098219157,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 405,
+    "time": 1794098219169,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 406,
+    "time": 1794098219179,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 407,
+    "time": 1794098219179,
+    "callId": "call-rc-collect-b-73",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 408,
+    "time": 1794098219185,
+    "callId": "call-rc-collect-b-73",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 409,
+    "time": 1794098219185,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 410,
+    "time": 1794098219198,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 411,
+    "time": 1794098219208,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 412,
+    "time": 1794098219209,
+    "callId": "call-rc-collect-b-74",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 413,
+    "time": 1794098219215,
+    "callId": "call-rc-collect-b-74",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 414,
+    "time": 1794098219216,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 415,
+    "time": 1794098219229,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 416,
+    "time": 1794098219239,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 417,
+    "time": 1794098219240,
+    "callId": "call-rc-collect-b-75",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 418,
+    "time": 1794098219245,
+    "callId": "call-rc-collect-b-75",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 419,
+    "time": 1794098219246,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 420,
+    "time": 1794098219263,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 421,
+    "time": 1794098219272,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 422,
+    "time": 1794098219273,
+    "callId": "call-rc-collect-b-76",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 423,
+    "time": 1794098219279,
+    "callId": "call-rc-collect-b-76",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 424,
+    "time": 1794098219279,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 425,
+    "time": 1794098219292,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 426,
+    "time": 1794098219302,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 427,
+    "time": 1794098219302,
+    "callId": "call-rc-collect-b-77",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 428,
+    "time": 1794098219309,
+    "callId": "call-rc-collect-b-77",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 429,
+    "time": 1794098219309,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 430,
+    "time": 1794098219322,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 431,
+    "time": 1794098219332,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 432,
+    "time": 1794098219333,
+    "callId": "call-rc-collect-b-78",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 433,
+    "time": 1794098219339,
+    "callId": "call-rc-collect-b-78",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 434,
+    "time": 1794098219339,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 435,
+    "time": 1794098219351,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 436,
+    "time": 1794098219361,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 437,
+    "time": 1794098219361,
+    "callId": "call-rc-collect-b-79",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 438,
+    "time": 1794098219367,
+    "callId": "call-rc-collect-b-79",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 439,
+    "time": 1794098219367,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 440,
+    "time": 1794098219379,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 441,
+    "time": 1794098219389,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 442,
+    "time": 1794098219390,
+    "callId": "call-rc-collect-b-80",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 443,
+    "time": 1794098219396,
+    "callId": "call-rc-collect-b-80",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 444,
+    "time": 1794098219396,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 445,
+    "time": 1794098219409,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 446,
+    "time": 1794098219419,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 447,
+    "time": 1794098219419,
+    "callId": "call-rc-collect-b-81",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 448,
+    "time": 1794098219425,
+    "callId": "call-rc-collect-b-81",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 449,
+    "time": 1794098219425,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 450,
+    "time": 1794098219437,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 451,
+    "time": 1794098219447,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 452,
+    "time": 1794098219448,
+    "callId": "call-rc-collect-b-82",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 453,
+    "time": 1794098219454,
+    "callId": "call-rc-collect-b-82",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 454,
+    "time": 1794098219454,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 455,
+    "time": 1794098219467,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 456,
+    "time": 1794098219477,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 457,
+    "time": 1794098219477,
+    "callId": "call-rc-collect-b-83",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 458,
+    "time": 1794098219483,
+    "callId": "call-rc-collect-b-83",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 459,
+    "time": 1794098219483,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 460,
+    "time": 1794098219498,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 461,
+    "time": 1794098219508,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 462,
+    "time": 1794098219508,
+    "callId": "call-rc-collect-b-84",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 463,
+    "time": 1794098219514,
+    "callId": "call-rc-collect-b-84",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 464,
+    "time": 1794098219514,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 465,
+    "time": 1794098219527,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 466,
+    "time": 1794098219537,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 467,
+    "time": 1794098219538,
+    "callId": "call-rc-collect-b-85",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 468,
+    "time": 1794098219544,
+    "callId": "call-rc-collect-b-85",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 469,
+    "time": 1794098219545,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 470,
+    "time": 1794098219557,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 471,
+    "time": 1794098219567,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 472,
+    "time": 1794098219567,
+    "callId": "call-rc-collect-b-86",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 473,
+    "time": 1794098219573,
+    "callId": "call-rc-collect-b-86",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 474,
+    "time": 1794098219573,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 475,
+    "time": 1794098219586,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 476,
+    "time": 1794098219596,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 477,
+    "time": 1794098219597,
+    "callId": "call-rc-collect-b-87",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 478,
+    "time": 1794098219604,
+    "callId": "call-rc-collect-b-87",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 479,
+    "time": 1794098219604,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 480,
+    "time": 1794098219616,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 481,
+    "time": 1794098219626,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 482,
+    "time": 1794098219627,
+    "callId": "call-rc-collect-b-88",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 483,
+    "time": 1794098219633,
+    "callId": "call-rc-collect-b-88",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 484,
+    "time": 1794098219633,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 485,
+    "time": 1794098219645,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 486,
+    "time": 1794098219656,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 487,
+    "time": 1794098219656,
+    "callId": "call-rc-collect-b-89",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 488,
+    "time": 1794098219662,
+    "callId": "call-rc-collect-b-89",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 489,
+    "time": 1794098219663,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 490,
+    "time": 1794098219676,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 491,
+    "time": 1794098219686,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 492,
+    "time": 1794098219686,
+    "callId": "call-rc-collect-b-90",
+    "name": "team_collect",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 493,
+    "time": 1794098219692,
+    "callId": "call-rc-collect-b-90",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 494,
+    "time": 1794098219692,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 495,
+    "time": 1794098219704,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 496,
+    "time": 1794098219714,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 497,
+    "time": 1794098219714,
+    "callId": "call-rc-archive-b",
+    "name": "team_archive_member",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 498,
+    "time": 1794098225541,
+    "callId": "call-rc-archive-b",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 499,
+    "time": 1794098225542,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 500,
+    "time": 1794098225557,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 501,
+    "time": 1794098225570,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/call",
+    "seq": 502,
+    "time": 1794098225570,
+    "callId": "call-rc-delegate-c",
+    "name": "team_delegate",
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "tool/result",
+    "seq": 503,
+    "time": 1794098226050,
+    "callId": "call-rc-delegate-c",
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 504,
+    "time": 1794098226050,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/start",
+    "seq": 505,
+    "time": 1794098226062,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "assistant/message",
+    "seq": 506,
+    "time": 1794098226072,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "step/end",
+    "seq": 507,
+    "time": 1794098226072,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "workspace/changes",
+    "seq": 508,
+    "time": 1794098226169,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  },
+  {
+    "type": "turn/end",
+    "seq": 509,
+    "time": 1794098226170,
+    "callId": null,
+    "name": null,
+    "from": null,
+    "to": null
+  }
+]

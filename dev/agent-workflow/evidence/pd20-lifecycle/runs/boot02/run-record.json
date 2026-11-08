@@ -1,0 +1,461 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd20-lifecycle-2026-11-08T00-34-37-964Z-b2",
+  "suite": "a5sf-pd20-lifecycle",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T00:34:37.964Z",
+  "selectedCases": [
+    "pd20:bash-admitted-read-control",
+    "pd20:bash-denied-read-control",
+    "pd20:bash-denied-write-control",
+    "pd20:bash-dynamic-read-control",
+    "pd20:surface-shell-and-jobs-control",
+    "pd20:c3-run-in-background-typed-refusal",
+    "pd20:b1-archive-window-refusal",
+    "pd20:revoked-session-entry-control"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "9a37321fb47188a82ae1cfdfa9f1f669b73acac3",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-subprocess-1",
+      "scope": "DEV-LIVE",
+      "face": "Subprocess",
+      "world": "u5a5sfsub1"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "9a37321fb47188a82ae1cfdfa9f1f669b73acac3",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfsub1-20261108T00-34-37Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd20:bash-admitted-read-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "the Member's model-visible `bash` serves an in-ceiling read on the confined terminal face (fresh confined child, not a PTY), and the child's own tty/ps facts agree",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the admitted `bash` call"
+        },
+        {
+          "id": "result-not-error",
+          "ok": true,
+          "detail": "isError=false"
+        },
+        {
+          "id": "confined-terminal-kind",
+          "ok": true,
+          "detail": "kind=confined-terminal"
+        },
+        {
+          "id": "exit-zero",
+          "ok": true,
+          "detail": "exitCode=0"
+        },
+        {
+          "id": "in-lane-bytes",
+          "ok": true,
+          "detail": "the admitted read returned the in-lane bytes"
+        },
+        {
+          "id": "child-tty-not-a-pty",
+          "ok": true,
+          "detail": "the CHILD'S OWN tty=\"not a tty\""
+        },
+        {
+          "id": "child-not-zombie",
+          "ok": true,
+          "detail": "the CHILD'S OWN ps state=\"S\""
+        }
+      ]
+    },
+    {
+      "id": "pd20:bash-denied-read-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "an out-of-ceiling literal read is refused at ADMISSION by the confined terminal face's read axis: typed IO_READ_DENIED, zero bytes, no confined child",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the denied read"
+        },
+        {
+          "id": "result-is-error",
+          "ok": true,
+          "detail": "isError=true"
+        },
+        {
+          "id": "typed-denial",
+          "ok": true,
+          "detail": "the tool result names the typed refusal code"
+        },
+        {
+          "id": "zero-secret-bytes",
+          "ok": true,
+          "detail": "NO secret bytes reached the Member transcript"
+        },
+        {
+          "id": "no-confined-record",
+          "ok": true,
+          "detail": "the refused command produced no confined-terminal execution record"
+        }
+      ]
+    },
+    {
+      "id": "pd20:bash-denied-write-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "an out-of-ceiling WRITE is NOT refused by the read axis (a redirect target is not a read intent): the command runs and the target write is refused by the confined OS profile, leaving no file",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued the write probe"
+        },
+        {
+          "id": "command-ran",
+          "ok": true,
+          "detail": "kind=confined-terminal (admission admitted it)"
+        },
+        {
+          "id": "write-failed",
+          "ok": true,
+          "detail": "the redirect's own status=\"1\""
+        },
+        {
+          "id": "no-marker-bytes",
+          "ok": true,
+          "detail": "the marker never reached a created file/stdout"
+        },
+        {
+          "id": "target-absent",
+          "ok": true,
+          "detail": "the out-of-ceiling target file does not exist after the command"
+        },
+        {
+          "id": "not-read-attributed",
+          "ok": true,
+          "detail": "guard facts naming the write target on the read/write declaration=0 (the declaration names only the session cwd)"
+        }
+      ]
+    },
+    {
+      "id": "pd20:bash-dynamic-read-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "dynamic shell reads ($VAR path, $(...) substitution) are NOT attributed by the lexical read axis; the OS profile is the boundary and returns no secret bytes",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "var:call-issued",
+          "ok": true,
+          "detail": "the Member issued the dynamic read"
+        },
+        {
+          "id": "var:command-ran",
+          "ok": true,
+          "detail": "kind=confined-terminal (admission admitted it)"
+        },
+        {
+          "id": "var:no-read-fact",
+          "ok": true,
+          "detail": "secret-naming shellRead DENY facts=1 — exactly the ONE deliberate literal-read denial; the two dynamic bodies added none, so the lexical read axis never saw them"
+        },
+        {
+          "id": "var:no-secret-bytes",
+          "ok": true,
+          "detail": "no secret bytes returned"
+        },
+        {
+          "id": "var:os-refused",
+          "ok": true,
+          "detail": "the command's own status=\"VAR_RC=1\" (a trailing status print keeps the overall exit 0; the non-zero RC is the kernel/profile refusal)"
+        },
+        {
+          "id": "var:kernel-not-admission",
+          "ok": true,
+          "detail": "the refusal text is the OS profile's, not an IO_READ_DENIED admission fact"
+        },
+        {
+          "id": "subst:call-issued",
+          "ok": true,
+          "detail": "the Member issued the dynamic read"
+        },
+        {
+          "id": "subst:command-ran",
+          "ok": true,
+          "detail": "kind=confined-terminal (admission admitted it)"
+        },
+        {
+          "id": "subst:no-read-fact",
+          "ok": true,
+          "detail": "secret-naming shellRead DENY facts=1 — exactly the ONE deliberate literal-read denial; the two dynamic bodies added none, so the lexical read axis never saw them"
+        },
+        {
+          "id": "subst:no-secret-bytes",
+          "ok": true,
+          "detail": "no secret bytes returned"
+        },
+        {
+          "id": "subst:os-refused",
+          "ok": true,
+          "detail": "the command's own status=\"SUBST_RC=1\" (a trailing status print keeps the overall exit 0; the non-zero RC is the kernel/profile refusal)"
+        },
+        {
+          "id": "subst:kernel-not-admission",
+          "ok": true,
+          "detail": "the refusal text is the OS profile's, not an IO_READ_DENIED admission fact"
+        }
+      ]
+    },
+    {
+      "id": "pd20:surface-shell-and-jobs-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "the governed preset's Member surface has ONE `bash` (the confined terminal definition) and NO persistent terminal / PTY tool; the job-control TOOLS are present",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "exactly-one-bash",
+          "ok": true,
+          "detail": "bash occurrences=1"
+        },
+        {
+          "id": "bash-params",
+          "ok": true,
+          "detail": "properties=command,description,workdir"
+        },
+        {
+          "id": "bash-confined",
+          "ok": true,
+          "detail": "description=Execute a bash command through this Member's confined terminal face and return its stdout/stderr. Each call runs in a fr"
+        },
+        {
+          "id": "no-terminal-tool",
+          "ok": true,
+          "detail": "persistent-terminal-shaped tool names=[]"
+        },
+        {
+          "id": "preset-has-no-persistent-row",
+          "ok": true,
+          "detail": "the shipped governed preset declares no `@deepseek-ai/dsh-terminal` / `tool-bash-persistent` row"
+        },
+        {
+          "id": "job-tools-present",
+          "ok": true,
+          "detail": "job-control tools=[\"job_kill\",\"job_list\",\"job_output\"]"
+        }
+      ]
+    },
+    {
+      "id": "pd20:c3-run-in-background-typed-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "PD20-C3: an undeclared `run_in_background` is a TYPED refusal (BACKGROUND_NOT_SUPPORTED) with zero execution — not a silent foreground run; the governed preset still exposes NO managed-job producer, so `job_list` reports an empty registry",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "schema-no-run_in_background",
+          "ok": true,
+          "detail": "bash properties=command,description,workdir"
+        },
+        {
+          "id": "bg-attempt-typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=\"Error: BACKGROUND_NOT_SUPPORTED: bash — this shell has no managed-job producer: every command runs in a FRESH foreground confined child, so no job id is ever created and there is nothing to list, read or kill. The parameter was REFUSED instead of silently dropped. Run the command in the foreground a\""
+        },
+        {
+          "id": "bg-attempt-no-execution",
+          "ok": true,
+          "detail": "confined-terminal record=undefined; the command marker ran=false"
+        },
+        {
+          "id": "bg-attempt-no-job-id",
+          "ok": true,
+          "detail": "the background request produced no host job id"
+        },
+        {
+          "id": "job-list-present",
+          "ok": true,
+          "detail": "job_list answered (host tool, no producer on this preset)"
+        },
+        {
+          "id": "job-list-empty-free-text",
+          "ok": true,
+          "detail": "job_list text=\"(no background jobs)\" — still the host tool's FREE TEXT (a typed BACKGROUND_NOT_SUPPORTED for job_* is deferred, see the evidence README §4)"
+        },
+        {
+          "id": "refusal-names-the-capability",
+          "ok": true,
+          "detail": "the refusal states the capability (no producer) and what to do instead (foreground)"
+        }
+      ]
+    },
+    {
+      "id": "pd20:b1-archive-window-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "PD20-B1: a Member archived MID-FLIGHT cannot start new execution — the second `bash` issued after the archive request (inside the quiesce window, before the durable commit) is REFUSED with the typed LIFECYCLE_ADMISSION_CLOSED, creates no confined session and no child, the first command still runs to completion (the turn is not cancelled), and a NEW generation can still acquire a confined terminal",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "archive-a-executed",
+          "ok": true,
+          "detail": "archive result=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-088uk8104uxo\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-chang\""
+        },
+        {
+          "id": "followup-refused",
+          "ok": true,
+          "detail": "follow_up on the archived instance=\"{\\\"status\\\":\\\"blocked\\\",\\\"toolName\\\":\\\"team_follow_up\\\",\\\"correlation\\\":\\\"a5sf-rc-a-followup\\\",\\\"reason\\\":\\\"target-stale\\\"}\""
+        },
+        {
+          "id": "archive-b-executed-mid-flight",
+          "ok": true,
+          "detail": "archive(B) result=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5sf-rc-team\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-changed\\\",\\\"instanceId\\\":\\\"inst-0lui9he0atse\\\",\\\"from\\\":\\\"RUNNING\\\",\\\"to\\\":\\\"ARCHIVED\\\",\\\"sequence\\\"\""
+        },
+        {
+          "id": "first-command-ran-to-completion",
+          "ok": true,
+          "detail": "kind=confined-terminal exit=0 stdoutHasStartMarker=true — the already-running command was NOT aborted by the close (the turn is not cancelled)"
+        },
+        {
+          "id": "first-command-was-in-flight",
+          "ok": true,
+          "detail": "B first call=1794098217178; archive issued=1794098219712; first result=1794098225335 (result AFTER the request ⇒ the archive arrived mid-flight)"
+        },
+        {
+          "id": "second-call-inside-window",
+          "ok": true,
+          "detail": "second call vs the commit window: INSIDE_COMMIT_WINDOW (issueAt=1794098219712, commitUpperAt=1794098225568, secondAt=1794098225361) — INSIDE_COMMIT_WINDOW is the defect's precondition; it is NOT required for the refusal (a refusal after the commit is also honest, it is just less probative)"
+        },
+        {
+          "id": "second-call-refused-typed",
+          "ok": true,
+          "detail": "isError=true text=\"Error: LIFECYCLE_ADMISSION_CLOSED: instance 'inst-0lui9he0atse' of team 'session-a5sf-rc-team' has an archive/dispose in flight in this process (close-admission → interrupt → drain → quiesce → release residency → commit; Architecture §30.1), so the NEXT tool boundary refuses new execution (refused: method 'shellRead', \""
+        },
+        {
+          "id": "second-call-no-execution",
+          "ok": true,
+          "detail": "confined-terminal record=undefined"
+        },
+        {
+          "id": "second-call-no-spawn-fact",
+          "ok": true,
+          "detail": "Member B live-guard facts with method 'spawn'=1 (exactly the long first command; the post-archive call never reached a lane decision — the only consulted facts for B are in guard-facts-B.json)"
+        },
+        {
+          "id": "new-generation-terminal",
+          "ok": true,
+          "detail": "new Member bash kind=confined-terminal exit=0"
+        },
+        {
+          "id": "no-pty-holder-process",
+          "ok": true,
+          "detail": "processes holding /dev/pts fds=0"
+        }
+      ]
+    },
+    {
+      "id": "pd20:revoked-session-entry-control",
+      "verdict": "PASS",
+      "at": "2026-11-08T00:37:52.640Z",
+      "proposition": "after the durable ARCHIVED commit, the revoked Member's OWN session entry cannot obtain a terminal: the session no longer serves a `bash` execution (either the prompt is refused or no tool result exists)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "probe-attempted",
+          "ok": true,
+          "detail": "childSessionId=session-team-child-3628753bbaead6c4976ca7641f20acf3"
+        },
+        {
+          "id": "prompt-answered-or-refused-honestly",
+          "ok": true,
+          "detail": "session/prompt answer={\"status\":200,\"body\":\"{\\\"type\\\":\\\"server-response\\\",\\\"rpcId\\\":\\\"a5sfrcx-777ss8ieci\\\",\\\"result\\\":{\\\"ok\\\":false,\\\"error\\\":{\\\"code\\\":\\\"gateway/internal\\\",\\\"message\\\":\\\"resume failed for session \\\\\\\"session-team-child-3628753bbaead6c4976ca7641f"
+        },
+        {
+          "id": "no-bash-result",
+          "ok": true,
+          "detail": "no `bash` tool result was produced on the revoked session"
+        },
+        {
+          "id": "no-pty-holder",
+          "ok": true,
+          "detail": "processes holding /dev/pts fds=0"
+        },
+        {
+          "id": "probe-surface-recorded",
+          "ok": true,
+          "detail": "promptAccepted=true; xSurface=[]; xBashDescription=\"\""
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/dev/agent-workflow/evidence/pd20-lifecycle/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T00:34:37.997Z",
+        "runId": "a5sf-pd20-lifecycle-2026-11-08T00-34-37-964Z-b2",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-subprocess-1",
+        "grantId": "devlive-subprocess-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the Subprocess/Shell face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "Subprocess",
+        "worldLine": "u5a5sfsub1",
+        "headCommit": "9a37321fb47188a82ae1cfdfa9f1f669b73acac3",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-08T00:35:14.344Z",
+        "runId": "a5sf-pd20-lifecycle-2026-11-08T00-34-37-964Z-b2",
+        "suite": "a5sf-pd20-lifecycle",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfsub1-20261108T00-34-37Z",
+        "phase": "a5sf-live-member-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-member-boot2",
+      "world": "u5u5a5sfsub1-20261108T00-34-37Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd20-lifecycle/dev/agent-workflow/evidence/pd20-lifecycle/driver/logs/u5u5a5sfsub1-20261108T00-34-37Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd20-lifecycle-2026-11-08T00-34-37-964Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T00:37:52.645Z"
+}

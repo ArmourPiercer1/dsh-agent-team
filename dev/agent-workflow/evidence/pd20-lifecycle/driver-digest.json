@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-08T00:31:21.042Z",
+  "head": "9a37321fb47188a82ae1cfdfa9f1f669b73acac3",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "48b05b7f91f1cff1c04cab19d24770883e5037a661a991906558514ff6979fa8",
+  "jsSubstitutions": [
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "command": "node dev/agent-workflow/evidence/a5sf-recon-shell/run-boot.mjs"
+}

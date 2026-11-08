@@ -1,0 +1,24 @@
+TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                            boot1                           boot2
+overall                         PASS                            PASS
+admittedVerdict                 PROVEN                          PROVEN
+deniedReadVerdict               PROVEN                          PROVEN
+deniedWriteVerdict              PROVEN                          PROVEN
+dynamicVerdict                  PROVEN                          PROVEN
+surfaceVerdict                  PROVEN                          PROVEN
+jobsVerdict                     PROVEN                          PROVEN
+revocationVerdict               PROVEN                          PROVEN
+revokedEntryVerdict             PROVEN                          PROVEN
+shellReadAllow                  3                               3
+shellReadDeny                   1                               1
+ptyHolders                      0                               0
+baseBwrapWithMarkers            0                               0
+bashHasNoRunInBackground        true                            true
+jobListEmpty                    true                            true
+newGenerationTerminal           true                            true
+transcriptSourceCount           7                               7
+b1SecondRefusedTyped            true                            true
+b1InFlightCommandCompleted      true                            true
+c3BackgroundRefusedTyped        true                            true
+
+agreeing=true differing=[]

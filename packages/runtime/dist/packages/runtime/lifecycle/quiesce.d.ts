@@ -14,6 +14,24 @@
  * 5 release-residency — drop the resident Agent handle (ResidencyPort, P5-T6)
  * ```
  *
+ * WHAT STEP 1 AND STEP 2 ARE, MEASURED (PD20-B1, `a5sf-recon-shell`):
+ * "close-admission" is the boundary new execution is refused at — the step
+ * publishes the close to the state the Member's lane guard reads
+ * (`lifecycle/admission-state`, keyed by the instance id the compiled policy
+ * carries AND by the child session id), so the NEXT tool boundary of the
+ * member's own turn is refused with `LIFECYCLE_ADMISSION_CLOSED` before it can
+ * spawn a command or touch a byte. The step is where the state is published on
+ * purpose: the procedure owns the close/open lifetime, so a later root wiring
+ * cannot forget it, and the reopened state is dropped on every exit of
+ * Archive/Dispose (`reopenAdmission` below). "interrupt" is the PUBLIC Agent cancel, which stops
+ * the activity at its next step but does NOT retroactively abort a tool call
+ * already running: a turn that is mid-command finishes that command, and the
+ * call returns only after the turn has settled (measured window 8.56 s / 8.72 s
+ * across two boots, a second `bash` refused at the boundary 290/427 ms before
+ * the durable commit). The procedure therefore never promised "the turn is
+ * cancelled instantly" — it promises no NEW execution is admitted, and the
+ * step order above is what makes that true.
+ *
  * Fail-closed guarantees (asserted by the tests):
  *
  * - a FAULT at any live step aborts before the remaining steps and before
