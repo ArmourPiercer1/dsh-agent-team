@@ -1223,7 +1223,44 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
 
     // ── S6/S7: cold recovery on the SAME DSH_HOME ────────────────────────
     if (ARMS === null || ARMS.has('s6')) {
+
+      // The phase forbids exactly one regression: "after an explicit stop, no
+      // automatic round ever starts again, INCLUDING cold session
+      // re-materialisation". The S1 arm above deliberately RESUMES its Member
+      // (that is its resume clause), so s1 cannot witness stop survival — an
+      // earlier version of this arm read s1 here and therefore measured a
+      // Member its own driver had resumed. Instead, stop a DIFFERENT Member
+      // through the SAME four RPCs now, never resume it, and require it to
+      // still be durably paused (and round-free) after SIGTERM + restart.
+      const recoveryTarget = 's2'
+      const recoveryInRound = await waitFor(() => roundCount(recoveryTarget) >= 2, 120_000, 50)
+      const recoveryRead1 = await goalGet(origin, cookie, sessionOf[recoveryTarget])
+      const recoveryPause = await goalPause(origin, cookie, sessionOf[recoveryTarget])
+      const recoveryCancel = await apiSessionCancel(origin, cookie, sessionOf[recoveryTarget], 'a5sfpd34')
+      const recoveryRead2 = await goalGet(origin, cookie, sessionOf[recoveryTarget])
+      const recoveryRoundsAtStop = roundCount(recoveryTarget)
+      // Prove the difference the old clause hid: at kill time s1 is ACTIVE
+      // (because its own arm resumed it) and the recovery target is PAUSED.
+      const preKill = {
+        s1: sessionFacts(world.home, sessionOf.s1)?.goalChanges.at(-1)?.phase ?? null,
+        [recoveryTarget]: sessionFacts(world.home, sessionOf[recoveryTarget])?.goalChanges.at(-1)?.phase ?? null,
+      }
+      const recoveredStop = {
+        target: recoveryTarget,
+        inRound: recoveryInRound,
+        controlSequence: ['goals/get', 'goals/pause', 'session/cancel', 'goals/get'],
+        read1Phase: recoveryRead1.goal?.phase ?? null,
+        pauseStatus: recoveryPause.status,
+        pauseOk: recoveryPause.ok === true,
+        cancelStatus: recoveryCancel.status,
+        read2Phase: recoveryRead2.goal?.phase ?? null,
+        roundsAtStop: recoveryRoundsAtStop,
+        read2GoalId: recoveryRead2.goal?.id ?? null,
+        read2Revision: recoveryRead2.goal?.revision ?? null,
+      }
+      log(`[boot${String(index)}] S6 pre-kill: stopped '${recoveryTarget}' through the control read1=${String(recoveredStop.read1Phase)} pause=${String(recoveredStop.pauseStatus)}/${String(recoveredStop.pauseOk)} cancel=${String(recoveredStop.cancelStatus)} read2=${String(recoveredStop.read2Phase)}; phases at kill=${JSON.stringify(preKill)}`)
       const coldRoundsBeforeKill = roundCount('cold')
+      const recoveryRoundsAtKill = roundCount(recoveryTarget)
       const coldGoalBefore = sessionFacts(world.home, sessionOf.cold)?.goalChanges ?? null
       const killAt = nowMs()
       log(`[boot${String(index)}] S6 killing the Host with goal 'cold' in flight (rounds=${String(coldRoundsBeforeKill)})`)
@@ -1292,10 +1329,33 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
         goalChangesAfter: factsAfterRecovery?.goalChanges ?? null,
         maxGoalRoundsDurable: factsRecovery?.goalChanges.at(-1)?.maxGoalRounds ?? null,
         revived: roundCount('cold') > roundsAtRecovery,
-        stoppedMemberStillPaused: (() => {
-          const s1 = sessionFacts(world.home, sessionOf.s1)
-          return { finalPhase: s1?.goalChanges.at(-1)?.phase ?? null, rounds: s1?.goalRounds.length ?? null }
-        })(),
+        // The stop-survival witness: the Member stopped through the control
+        // BEFORE the SIGTERM, never resumed, read back after re-materialisation
+        // from BOTH the durable projection and a live `goals/get` on the
+        // restarted Host.
+        stoppedThroughControl: {
+          ...recoveredStop,
+          preKillPhase: preKill[recoveryTarget],
+          durableAfterRestart: (sessionFacts(world.home, sessionOf[recoveryTarget])?.goalChanges.at(-1)?.phase) ?? null,
+          liveAfterRestart: await goalGet(origin2, cookie2, sessionOf[recoveryTarget]).then((r) => r.goal?.phase ?? null).catch(() => 'rpc-failed'),
+          // A re-materialised child has no LIVE agent until its first
+          // post-restart turn, so a live `goals/get` can legitimately answer
+          // "no goal" here: null means "there is no live agent to read", not
+          // "the goal is gone". The durable projection is what the goal-round
+          // driver reads, and it is the asserted oracle; the live read is
+          // reported and may only ever REFUTE (by saying `active`).
+          liveSessionLive: (await p6t6State(origin2)).body?.members?.find((m) => m.templateId === recoveryTarget)?.lifecycle ?? null,
+          roundsBeforeKill: recoveryRoundsAtKill,
+          roundsAfterRestart: roundCount(recoveryTarget) - recoveryRoundsAtKill,
+          goalChangesAfterRestart: (sessionFacts(world.home, sessionOf[recoveryTarget])?.goalChanges ?? []).slice(-3),
+        },
+        // Informational only, NEVER asserted: the S1 arm resumes its own Member,
+        // so its post-recovery phase cannot witness stop survival.
+        s1ResumedByItsOwnArm: {
+          phaseAtKill: preKill.s1,
+          phaseAfterRestart: (sessionFacts(world.home, sessionOf.s1)?.goalChanges.at(-1)?.phase) ?? null,
+          note: 'the S1-UISTOP arm resumes s1 by design (its resume clause); this row is recorded, not asserted',
+        },
       }
       log(`[boot${String(index)}] S6 result: ${JSON.stringify({ roundsAfter: arms.s6.roundsAfter, revived: arms.s6.revived })}`)
 
@@ -1505,7 +1565,12 @@ function judgeAll(arms) {
         clause('member-live-and-idle', arms.s6.ping?.seen === true, `the recovered Member served a real follow-up turn=${String(arms.s6.ping?.seen)} (followUp ok=${String(arms.s6.ping?.ok)})`),
         clause('durable-goal-kept', (arms.s6.goalChangesAfter ?? []).some((c) => c.phase !== null), `durable goal changes after recovery=${JSON.stringify((arms.s6.goalChangesAfter ?? []).slice(-2))}`),
         clause('not-revived', arms.s6.revived === false, `revived=${String(arms.s6.revived)}`),
-        clause('stopped-member-still-stopped', arms.s6.stoppedMemberStillPaused?.finalPhase !== 'active', `the S1 Member after recovery: phase=${String(arms.s6.stoppedMemberStillPaused?.finalPhase)}`),
+        clause('stopped-member-still-paused-after-restart',
+          arms.s6.stoppedThroughControl?.durableAfterRestart === 'paused' && arms.s6.stoppedThroughControl?.liveAfterRestart !== 'active',
+          `'${String(arms.s6.stoppedThroughControl?.target)}' stopped through the control before SIGTERM and NOT resumed: durable phase after restart=${String(arms.s6.stoppedThroughControl?.durableAfterRestart)}; live goals/get after restart=${String(arms.s6.stoppedThroughControl?.liveAfterRestart)} (null = the re-materialised child has no live agent before its first post-restart turn, so the durable projection is the oracle; only \`active\` could refute); lifecycle=${String(arms.s6.stoppedThroughControl?.liveSessionLive)}; at kill=${String(arms.s6.stoppedThroughControl?.preKillPhase)}, read2=${String(arms.s6.stoppedThroughControl?.read2Phase)}, rev=${String(arms.s6.stoppedThroughControl?.read2Revision)}`),
+        clause('stopped-member-no-round-after-restart',
+          arms.s6.stoppedThroughControl?.roundsAfterRestart === 0,
+          `rounds on '${String(arms.s6.stoppedThroughControl?.target)}' after the restart=${String(arms.s6.stoppedThroughControl?.roundsAfterRestart)} (at kill=${String(arms.s6.stoppedThroughControl?.roundsBeforeKill)})`),
       ]))
   }
   if (arms.s7 !== undefined) {

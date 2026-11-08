@@ -8514,3 +8514,25 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   state-freshness` pass；`eb3-evidence-guard` pass；`eb3-run-manifest` pass。
 - **交付**：分支 `task/pd34-member-stop-20261115`，draft PR 首行 `PD34-MEMBER-STOP`；不 merge、不 settle；
   `release BLOCKED`，无 grade、无 `V@B`。
+
+### 2026-11-15 追记（PD34-MEMBER-STOP；只追加）—— 主 Agent 在合并头上 boot 出的 `pd34:cold-recovery-no-revival` 失败：是**我的臂**测错了，不是控制失效
+
+- **现象**：主 Agent 在 `dc797c038` 上跑全臂，两 boots 同一红：`stopped-member-still-stopped:
+  the S1 Member after recovery: phase=active`。这是本 lane 最关键的条款（"显式停止后永不自动续轮，
+  包括冷会话语义重建"），所以必须先定性。
+- **定性 = 仪表错误（possibility 2）**。该条款继承 PD-29 的布局，读 `sessionOf.s1`；PD-29 里 S1 停止
+  `s1` 后**从不 resume**，所以那条读数是有效的。我把 S1 改写成 UI 停止时**按交付要求加了 resume 条款**
+  （`goals/resume` 恰好恢复 1 轮），于是到 S6 时 `s1` 的最后一条耐久变更就是那次 **resume** → `active`，
+  条款把"我自己刚 resume 过的成员"判成"没保住停止"。它与合并无关（base 上同样确定性复现），不是 flaky。
+- **修法（不放宽条款，改成测对的东西）**：S6 在 kill 之前用**同样四个 RPC**停止另一个**从不 resume** 的
+  成员 `s2`，重启后断言**耐久投影 `paused` + 0 轮 + `revived=false`**；`s1` 只作为 `informational`
+  记录（注明"其自身臂会 resume"），不参与断言。
+- **新测到的产品事实（比原条款更强）**：`dc797c038` 上 `--arms s8,s1,s6,s7 --boots 2`，**6/6 双方一致**：
+  `s2` 第 94/95 轮经四 RPC 停止（rev2 `paused`），SIGTERM + 同 `DSH_HOME` 重启（团队域 adopt，成员 `SETTLED`）
+  后耐久 phase 仍 **`paused`（同 goal id）**、重启后 **0 轮**、`revived=false`（对照：`cold` 的 active goal
+  重启后同样 0 轮）。即**停止确实活过冷重建**。重启后的子会话在首回合前没有 live agent，`goals/get`
+  返回"无目标"是正常的（`null` ≠ `active`），所以断言用耐久投影 + 轮数。
+- **过程披露**：中间跑过两次（第一次暴露误接，第二次暴露二阶误接——把 `SETTLED` 子会话的 live 读 `null`
+  要求成字符串 `paused`）；两行都留在 append-only `run-ledger.jsonl`，`runs/` 只保留最终 pair。
+- **门**：register 10/10；`a5sf-pd34-member-stop.test.mjs` 8/8；`doc-checks` rc 0；`check-artifacts:head`
+  不受影响（只改 `.mjs` 与文档，无 client bundle 变更）。

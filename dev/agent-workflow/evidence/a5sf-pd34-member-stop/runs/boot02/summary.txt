@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-pd34-member-stop-2026-11-08T19-11-42-480Z-b2 suite=a5sf-pd34-member-stop overall=PASS cases=3 PASS:3 worlds=u5u5a5sfpd34-20261108T19-11-42Z recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-pd34-member-stop-2026-11-08T21-00-42-116Z-b2 suite=a5sf-pd34-member-stop overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd34-20261108T21-00-42Z recordClass=DEV-LIVE (not candidate evidence)

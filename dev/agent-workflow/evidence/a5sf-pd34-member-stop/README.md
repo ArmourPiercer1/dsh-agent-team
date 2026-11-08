@@ -48,11 +48,13 @@ still-active goal continue, which is the failure the entry exists to prevent.
 
 ## 3. The measured acceptance (agreeing two-boot pair)
 
-`agreement.txt` / `agreement.json`: **3/3 cases, both boots, all agree.** Runs
-`runs/boot01` (`19:09:01Z`–`19:11:42Z`) and `runs/boot02` (`19:11:42Z`–`19:14:21Z`), driver
-`19:15Z`, composition `cordis.patch.yml` sha256 `0774297f7e90b2…`, instrument commit
-`3101ca08f4b1…`. Every arm is judged on the **Member's own durable session log** plus the mock's
-request log — never on an RPC's 200.
+`agreement.txt` / `agreement.json`: **6/6 cases, both boots (`--arms s8,s1,s6,s7 --boots 2`), all
+agree** — the stop, its resume, the cold-recovery survival, the two controls and the terminal
+phases in ONE pair. Runs `runs/boot01` / `runs/boot02`, started `20:57:16Z`, driver finished
+`21:04:07Z` (real UTC 2026-11-08), composition `cordis.patch.yml` sha256 `0774297f7e90b2…`,
+instrument commit **`dc797c038`** (the merged head; the earlier stop-only pair was taken at
+`3101ca08f` and its numbers are unchanged). Every arm is judged on the **Member's own durable
+session log** plus the mock's request log — never on an RPC's 200.
 
 | Arm | Condition | boot01 | boot02 |
 | --- | --- | --- | --- |
@@ -60,6 +62,8 @@ request log — never on an RPC's 200.
 | **S1-UISTOP** | a governed Member at **round 3** (`callsBefore=4`, long 4 s round in flight); the UI's four RPCs from outside the Member: `goals/get` (active rev1) → `goals/pause` (CAS rev1→rev2) → `session/cancel` (200) → `goals/get` | pause **200 / ok**, cancel **200**, second read **`paused` rev2**, activation **armed → disarmed**; **0 rounds / 0 tool calls / 0 model requests** in **20 000 ms**; phase after the window **`paused`**; `revived=false`; Member lifecycle **`SETTLED`** (not archived) | identical (goal rev1→2, `paused`, 0/0/0, `revived=false`, `SETTLED`) |
 | **S1-RESUME** | one explicit `goals/resume` (CAS rev2→rev3) after the window | **200 / ok**, phase `active` rev3, activation **armed**, **exactly 1 round** resumed | identical (rev2→3, `active`, 1 round) |
 | S8-terminal | control: the round-limited (`max_goal_rounds: 1`) Member blocks and starts nothing | blocked after 1 round, 0 rounds after a pause | same |
+| **S6-cold** | the anti-revival requirement: stop a **different** Member (`s2`, never resumed) through the same four RPCs, then SIGTERM + restart on the same `DSH_HOME` | durable **`paused`** after restart (rev2, same goal id), **0 rounds** after the restart, `revived=false` — see §3.2 | same |
+| **S7-resume** | one explicit `goals/resume` on the recovered `cold` Member | accepted, exactly 1 round, then `complete` ends it | same |
 
 Durable trail (both boots): goal `create` rev1 `active` `activation:armed` `roundsStarted:3` → goal
 `pause` rev2 `paused` `activation:disarmed` at the stop → goal `resume` rev3 `active`
@@ -84,11 +88,45 @@ session log and `mock-requests.json` the request log the filters ran over.
    `rounds after stop = 1`: that counter was read **after** the resume, so the resumed round was
    counted as a post-stop round. The driver now snapshots the window-scoped counters **before** the
    resume (`roundsAfterWindow` / `callsAfterWindow` / `requestsInWindow`) and the verdict reads
-   those. The first attempt's ledger rows remain in `run-ledger.jsonl` (append-only) and its boot
-   directory was overwritten by the pair; no number above comes from it.
+   those. A later full-arms boot on the merged head then failed `pd34:cold-recovery-no-revival`
+   because that clause still read the **resumed** `s1` (§3.2); the arm was fixed, and two
+   intermediate runs afterwards are also in `run-ledger.jsonl`. All superseded runs are append-only
+   rows; no number above comes from them, and `runs/` holds only the reported pair.
 4. **Leader non-propagation is cited from PD-30, not re-measured here.** This lane's S5 is not run;
    the measured +14/+13/+13 rounds is PD-30's (#679) evidence, and the Leader entry's copy is built
    on it.
+
+### 3.2 Cold recovery: the stop survives SIGTERM + re-materialisation (and the first version of this clause was mis-wired)
+
+The phase forbids one regression above all: **after an explicit stop, no automatic round ever
+starts again, including cold session re-materialisation.** Measured on the merged head
+(`edca478bd` + this lane, forward-merged, not rebased), both boots agree:
+
+| Step | boot01 | boot02 |
+| --- | --- | --- |
+| Member `s2`, **not** previously stopped, at round 94 / 95, stopped through the SAME four RPCs (`get` → `pause` → `cancel` → `get`) immediately before the SIGTERM | `active` → pause 200/ok (rev2) → `paused` | same (rev2) |
+| SIGTERM, Host re-booted on the SAME `DSH_HOME` (`bootPhase: resume`, team domain adopted) | members all `SETTLED` | same |
+| durable goal projection after restart | **`paused`** (rev2, `roundsStarted` 94, id unchanged — no new goal) | **`paused`** (rev2, 95) |
+| live `goals/get` after restart | `null` — the re-materialised child is `SETTLED` and has **no live agent** until its first post-restart turn, so there is nothing to read; `null` cannot mean "active" | same |
+| goal rounds after the restart (`cold` follow-up turn + 20 000 ms) | **0** | **0** |
+| `revived` (the recovered `cold` Member's own active goal) | **false** | false |
+
+**The failure the main agent saw on `dc797c038` was my arm, not the control.** This arm used to
+read `sessionFacts(sessionOf.s1)` as its "still stopped" witness — a leftover from the PD-29
+layout, where `s1` was stopped and **never resumed**. When this lane rewrote S1 into the UI stop,
+it also added the required resume clause (`goals/resume` restores exactly 1 round), so by the time
+S6 ran, `s1`'s last durable change was the **resume** — phase `active`, by design. The clause then
+reported `phase=active` and called it a defect: it was measuring a Member its own driver had
+deliberately resumed. Exactly the "most important clause was wrong" case, and it reproduced on
+both boots, deterministically, at `3101ca08f` too — it is not merge-induced and not flaky.
+
+The fix stops a Member **inside** S6 through the same four RPCs, **never resumes it**, and asserts
+the durable phase plus the round count after restart; `s1` is still recorded, marked
+`informational only — the S1 arm resumes it by design`, and is never asserted. Two intermediate
+runs are in `run-ledger.jsonl` (append-only): the first exposed the mis-wiring, the second exposed
+a second-order version of the same mistake (the live `goals/get` returned `null` for a `SETTLED`
+child and the clause demanded the string `paused`). The reported pair is the third, and the only
+one whose clauses are the ones in the driver today.
 
 ## 4. Gates
 

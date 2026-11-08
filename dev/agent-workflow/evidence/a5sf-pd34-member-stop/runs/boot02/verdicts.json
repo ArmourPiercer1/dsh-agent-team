@@ -76,6 +76,67 @@
     ]
   },
   {
+    "id": "pd34:cold-recovery-no-revival",
+    "verdict": "PROVEN",
+    "proposition": "a cold recovery on the same DSH_HOME keeps the durable goal readable but does NOT revive automatic continuation: a live, idle Member starts no round by itself",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "no-round-after-recovery",
+        "ok": true,
+        "detail": "rounds after recovery=0"
+      },
+      {
+        "id": "member-live-and-idle",
+        "ok": true,
+        "detail": "the recovered Member served a real follow-up turn=true (followUp ok=true)"
+      },
+      {
+        "id": "durable-goal-kept",
+        "ok": true,
+        "detail": "durable goal changes after recovery=[{\"at\":1794171766941,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-dcf23531-74f5-4d5e-9cb6-de00bcd03ba8\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}]"
+      },
+      {
+        "id": "not-revived",
+        "ok": true,
+        "detail": "revived=false"
+      },
+      {
+        "id": "stopped-member-still-paused-after-restart",
+        "ok": true,
+        "detail": "'s2' stopped through the control before SIGTERM and NOT resumed: durable phase after restart=paused; live goals/get after restart=null (null = the re-materialised child has no live agent before its first post-restart turn, so the durable projection is the oracle; only `active` could refute); lifecycle=SETTLED; at kill=active, read2=paused, rev=2"
+      },
+      {
+        "id": "stopped-member-no-round-after-restart",
+        "ok": true,
+        "detail": "rounds on 's2' after the restart=0 (at kill=95)"
+      }
+    ]
+  },
+  {
+    "id": "pd34:explicit-resume-after-recovery",
+    "verdict": "PROVEN",
+    "proposition": "an explicit authorized resume after the cold recovery continues the goal through the legal path (a stopped/deactivated goal is not permanently broken)",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "resume-accepted",
+        "ok": true,
+        "detail": "status=200 ok=true"
+      },
+      {
+        "id": "rounds-resumed",
+        "ok": true,
+        "detail": "rounds after resume=1"
+      },
+      {
+        "id": "goal-still-active-or-progressed",
+        "ok": true,
+        "detail": "goal changes=[{\"at\":1794171766941,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-dcf23531-74f5-4d5e-9cb6-de00bcd03ba8\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null},{\"at\":1794171836910,\"operation\":\"resume\",\"phase\":\"active\",\"revision\":2,\"id\":\"goal-dcf23531-74f5-4d5e-9cb6-de00bcd03ba8\",\"roundsStarted\":92,\"maxGoalRounds\":100000,\"blockedCode\":null}]"
+      }
+    ]
+  },
+  {
     "id": "pd34:terminal-phases-do-not-continue",
     "verdict": "PROVEN",
     "proposition": "a blocked goal (product round limit) and a user-paused goal start no further automatic round",
@@ -95,6 +156,24 @@
         "id": "no-round-after-pause",
         "ok": true,
         "detail": "rounds after the pause=0"
+      }
+    ]
+  },
+  {
+    "id": "pd34:complete-does-not-continue",
+    "verdict": "PROVEN",
+    "proposition": "a completed goal starts no further automatic round",
+    "failed": [],
+    "clauses": [
+      {
+        "id": "complete-observed",
+        "ok": true,
+        "detail": "durable phase=complete"
+      },
+      {
+        "id": "no-round-after-complete",
+        "ok": true,
+        "detail": "rounds after complete=0"
       }
     ]
   }

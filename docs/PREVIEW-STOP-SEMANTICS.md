@@ -63,6 +63,11 @@ Stop **不是瞬时**的。从按下按钮到耐久 `pause` 落盘之间存在**
   按正常规则继续——这是"暂停"而不是"销毁"。
 - 该 Member 的 Team 生命周期**不变**（Stop 不是 archive，不改变 `RUNNING/SETTLED` 等状态）；
   要结束成员请用 Archive。
+- **停止能活过一次冷启动。** 在同一个 `DSH_HOME` 上 SIGTERM + 重启（团队域被 adopt），
+  通过本入口停止且**未被 resume** 的 Member，重启后的耐久 phase 仍是 `paused`（同一 goal
+  id、rev 不变），重启后 **0 个** goal 轮（PD-34 §3.2，两 boots 一致）。重启后该子会话在
+  第一次回合前是 `SETTLED`、没有 live agent，所以此时 `goals/get` 返回"无目标"是正常的；
+  判定用的是耐久投影 + 轮数，不是这一读。
 
 ## 4. 仍然存在的限制（必须知道）
 
