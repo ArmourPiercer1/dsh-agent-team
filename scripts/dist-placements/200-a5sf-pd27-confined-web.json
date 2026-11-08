@@ -1,0 +1,10 @@
+{
+  "schema": "dist-placements/1",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/confined-web-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
+      "note": "PD-27 (2026-11-14): the Team-owned `web_fetch`/`web_search` shadow, mounted INSIDE the Member's isolated scope by the route-C attach so every call is decided by the compiled network axis before the composition's transport is entered."
+    }
+  ]
+}

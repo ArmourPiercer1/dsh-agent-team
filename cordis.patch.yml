@@ -159,21 +159,18 @@
     # capability regression, not a fix that keeps the capability:
     #   - `tool-pwsh` — a second, UNINSTRUMENTED shell; leaving it in place
     #     would keep an un-attributed read path beside the governed `bash`.
-    #   - `tool-web` and `workflow-ptc`/`tool-workflow` (PD-18, 2026-11-13) — on
-    #     the SHIPPED governed preset these resolved to the host's base
-    #     services: `web_fetch`/`web_search` ran on the inherited `ctx.web`
-    #     provider (its refusal is that provider's SSRF policy, with ZERO
-    #     a5sf-guard-consult facts), and `workflow` executed model-written
-    #     JavaScript in a real PTC child under the HOST sandbox policy (again
-    #     zero a5sf facts; `confinedTurnLaunchers` unchanged). Neither could be
-    #     routed onto this realm inside the PD-18 budget: the web face needs a
-    #     composition-owned transport (the shipped layer has none, and the
-    #     product assembly refuses a narrowed network lane with
-    #     `NETWORK_UNCONFINED_REALM`), and the confined subprocess face refuses
-    #     `node`/interpreter argv at admission by design. A Member that cannot
-    #     name these tools gets the host router's typed `UNKNOWN_TOOL` and runs
-    #     nothing; the capability is GONE from the governed preset until a
-    #     governed face exists for it. `run_code` was never on this surface.
+    #   - `workflow-ptc`/`tool-workflow` (PD-18, 2026-11-13) — on the SHIPPED
+    #     governed preset these resolved to the host's base services: `workflow`
+    #     executed model-written JavaScript in a real PTC child under the HOST
+    #     sandbox policy (ZERO a5sf-guard-consult facts; `confinedTurnLaunchers`
+    #     unchanged), and the confined subprocess face refuses `node`/interpreter
+    #     argv at admission by design, so it cannot be routed onto this realm. A
+    #     Member that cannot name it gets the host router's typed `UNKNOWN_TOOL`
+    #     and runs nothing; the capability is GONE from the governed preset until
+    #     a governed face exists for it. `run_code` was never on this surface.
+    #     PD-27 note: PD-18 removed `tool-web` in the SAME change for the same
+    #     reason (base `ctx.web`, zero facts); PD-27 below restores that half
+    #     only, served by the Member's confined `web` face.
     #   - `bash` KEEPS its name but is served by the confined terminal face once
     #     the realm mounts, so it loses `run_in_background`, per-call
     #     `timeoutMs`, `sandbox_permissions`/`justification` and the structured
@@ -288,6 +285,21 @@
             name: '@deepseek-ai/dsh-tool-skill'
           - id: tool-present
             name: '@deepseek-ai/dsh-tool-present'
+          # PD-27 (2026-11-14): the NETWORK pair returns. This row is the
+          # FAIL-CLOSED NAME HOLDER: on this preset scope its `ctx.web` is the
+          # inherited base provider, so it registers the host package's own
+          # `web_fetch`/`web_search` definitions over a REFUSING `web` view — the
+          # name is on the model-visible surface and an unshadowed call is a typed
+          # `NETWORK_UNCONFINED_REALM` with zero provider entries. The realm's
+          # route-C attach re-mounts the SAME module inside the Member's isolated
+          # scope, where `ctx.web` IS the confined face (PD-18's measured hole:
+          # the preset row ran on the base provider with ZERO a5sf facts), so the
+          # compiled `network` axis decides before any transport is entered.
+          # The row is OUR module, never the host `tool-web` package: a host row
+          # on this scope is ordinary ungoverned egress whenever the realm owns no
+          # web face, which is exactly the hole PD-18 removed.
+          - id: tool-web
+            name: 'dsh-agent-team/web-tool'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
           - id: planning

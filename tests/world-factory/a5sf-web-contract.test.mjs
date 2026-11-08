@@ -394,13 +394,16 @@ arm('P4-SHARED-GUARD-BOTH-PATHS: fetch and search consult the SAME guard instanc
   assert.equal(new Set(built.facts.map((fact) => fact.policyRevision)).size, 1, 'both paths report the same compiled policy revision')
 
   // The search request shape the REAL pinned module sends is `{ query,
-  // maxResults }` — and the recorded locator is the face's stable marker for a
-  // request it does not recognize, NOT the query text. That is the honest
-  // current position (and `GAP-WEB-CONTRACT-1` in the face README: the
-  // `queries:N` branch in `declaredUrlOf` is unreachable for this shape).
+  // maxResults }`. PD-27 (2026-11-14) made `declaredUrlOf` read that SINGULAR
+  // `query`, so the recorded locator names the DECLARED request instead of the
+  // `<search:malformed-request>` marker this arm used to pin — the residual
+  // `GAP-WEB-CONTRACT-1` recorded in the face README is closed. The audit rule
+  // is unchanged in kind: the fact names what the MODEL asked for (a fetch fact
+  // already carries the full URL, including its query string); it never carries
+  // a provider answer.
   assert.deepEqual(built.boundary.searches[0].keys, ['query', 'maxResults'], 'the provider received the pinned module\'s request shape')
-  assert.equal(built.facts[1].locator, '<search:malformed-request>', 'the search locator is a marker, never the query text')
-  assert.ok(!String(built.facts[1].locator).includes('web contract search'), 'the query text is not leaked into the fact stream')
+  assert.equal(built.facts[1].locator, 'query:web contract search', 'the search locator names the declared query (PD-27)')
+  assert.ok(!String(built.facts[1].locator).includes('queries:'), 'the locator must not claim the plural shape the pinned module never sends')
 })
 
 // ===========================================================================

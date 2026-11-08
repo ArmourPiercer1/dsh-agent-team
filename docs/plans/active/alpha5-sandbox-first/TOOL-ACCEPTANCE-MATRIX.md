@@ -941,6 +941,42 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
    `tests/world-factory/a5sf-pd26-confined-skill.test.mjs` + `a5sf-pd26-mutation-controls.mjs`。
 
 
+### 1.8.10 CORRECTION（PD-27 追加；只追加，不改 §1.8.0–§1.8.9 的任何等级、`V@B` 或数字）
+
+> 2026-11-14，lane `PD27-WEB-EGRESS`（base `24d2cf760`）。本节只**追加**：§1.8 的桶、等级、
+> `FAIL-CLOSED` 名单与 §1.3/§1.4 的 Web 面读数都是 PD-18/PD-24 时点的读数，一字未改。
+
+1. **PD-18 从受治 preset 删掉的 `tool-web` 行，PD-27 以 Team 自己的模块接回**
+   （`cordis.patch.yml` 行 `tool-web` → `dsh-agent-team/web-tool`）。它不是 host
+   `@deepseek-ai/dsh-tool-web` 行：在 preset scope 上那行的 `ctx.web` 是**继承的 BASE 供体**
+   （PD-18 实测：零星 a5sf facts），本模块在那种 scope 上只用 host 包**自己的定义**覆盖一个
+   **拒绝式** `web` 视图（typed `NETWORK_UNCONFINED_REALM`、0 provider entry）；realm 的
+   route-C attach 在 Member 的 isolated scope 上重挂同一模块，那里 `ctx.web` **就是** confined
+   face，于是编译后的 `network` 轴在任何传输被进入之前裁决。
+2. **M-14 / M-15 的等级、`V@B`、`NOT_WIRED` 均不变**（本 lane 不关闭 G2–G5，不改 `release
+   BLOCKED`，不改 §7 计数）。本条的读数是**记录类 HOST-FREE**（没有 boot、没有端口、
+   没有 `DSH_HOME`），不是 `DEV-LIVE`，也不被折算成任何矩阵格：
+   - allow 车道（**真传输** `@deepseek-ai/dsh-web-fetch-http`，真 socket，本地 server）：
+     HTTP 200、body 原样（25 字节 body / 134 字节渲染）、**1 条连接**、**恰 1 条 allow fact**
+     （`web:fetch`，locator = 声明 URL）；
+   - deny 车道（**同一个** 可达传输在场）：typed `NETWORK_UNCONFINED_REALM`、**0 连接**、
+     `serverRequests=[]`、**恰 1 条 deny fact**；供体能力探针 `network-destination='unsupported'`，
+     因此在 admission 前就被拒（**不是** OS 网络拒绝，§1.4 的结论不变）；
+   - 跨源 302（allow 车道）：`WEB_REDIRECT_BLOCKED`，声明源 1 连接、目标 **0**；
+   - `web_search` 的 locator 现在读 host 工具真正发送的**单数** `query`（PD-10 记的
+     `<search:malformed-request>` 残留因此关闭），`query:pd27 locator query` 进 fact。
+3. **网络轴仍是布尔**（`NetworkAccess = 'allow' | 'deny'`，`member-io-policy/src/types.ts`）：按
+   host 的上界**不可表达**，“不越上界的 host”不可写、也不声称。并且 `product-assembly.ts` 在
+   realm 出现之前就以 `NETWORK_UNCONFINED_REALM` 拒绝 `network != allow` 的 lane，所以 **deny 臂
+   只能由组合提供编译答案**（PD-15 的形态），蓝本路径构造不出 deny Member。
+4. **未跑**：受治 Member 的一次真实委托 turn（booted Host 的 pre/post 两臂 agreeing pair）**没有
+   在本窗口跑，也没有被声称**。剩余步骤写在
+   `dev/agent-workflow/evidence/a5sf-pd27-web-egress/README.md` §7。
+5. **证据**：`dev/agent-workflow/evidence/a5sf-pd27-web-egress/`（README §1–§9、
+   `host-free-runs.jsonl`、`mutation-controls.log`、`archive/`）；host-free
+   `tests/world-factory/a5sf-pd27-confined-web.test.mjs`（9 臂 + PIN）与
+   `tests/world-factory/a5sf-pd27-mutation-controls.mjs`（8/8）。
+
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->

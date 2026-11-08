@@ -57,7 +57,20 @@ const COMPOSITION = process.env.A5SF_PD18_COMPOSITION ?? join(REPO, 'cordis.patc
 const PIN = process.env.A5SF_PD18_PIN === '1'
 const MUTATE_REGISTER_WORKFLOW = process.env.A5SF_PD18_MUTATE_REGISTER_WORKFLOW === '1'
 const BASE_COMMIT = 'd590d58a0'
-const CLOSED_ROWS = Object.freeze(['tool-web', 'tool-workflow', 'workflow-ptc'])
+/**
+ * The rows PD-18 removed and PD-27 did NOT restore.
+ *
+ * PD-27 (2026-11-14) restores the `tool-web` ROW ID, but not as a host row: the
+ * preset now carries `dsh-agent-team/web-tool`, a Team module that refuses a
+ * non-confined scope with a typed `NETWORK_UNCONFINED_REALM` and only serves the
+ * real confined face inside the Member's isolated scope. The PD-18 defect — a
+ * row resolving the INHERITED base `web` with zero a5sf facts — is therefore
+ * still closed, and `RESTORED_ROWS` pins HOW the pair came back.
+ */
+const CLOSED_ROWS = Object.freeze(['tool-workflow', 'workflow-ptc'])
+/** PD-27: the network pair is back, and this is the ONLY shape allowed back. */
+const RESTORED_ROWS = Object.freeze(['tool-web'])
+const RESTORED_MODULE = 'dsh-agent-team/web-tool'
 const CLOSED_TOOLS = Object.freeze(['web_fetch', 'web_search', 'workflow', 'run_code'])
 
 const runtimeRequire = createRequire(join(REPO, 'packages', 'runtime', 'package.json'))
@@ -100,12 +113,16 @@ test('P0 PD-18 defect pin (PRE-FIX): the base preset carried tool-web and workfl
   const pre = execFileSync('git', ['-C', REPO, 'show', `${BASE_COMMIT}:cordis.patch.yml`], { encoding: 'utf8' })
   const prePreset = rowsOf(parseYaml(pre)).find((row) => row?.config?.id === 'a5sf-governed-member')
   const ids = flattenPlugins(prePreset.config.plugins).map((row) => row.id)
-  for (const id of CLOSED_ROWS) {
+  for (const id of [...CLOSED_ROWS, ...RESTORED_ROWS]) {
     assert.equal(ids.includes(id), true, `PRE-FIX the governed preset declared ${id} — that is the defect this commit closes`)
   }
   const now = governedPlugins(join(REPO, 'cordis.patch.yml')).map((row) => row.id)
   for (const id of CLOSED_ROWS) {
     assert.equal(now.includes(id), false, `POST-FIX the governed preset no longer declares ${id}`)
+  }
+  // PD-27: `tool-web` IS declared again — the pin's point is what serves it.
+  for (const id of RESTORED_ROWS) {
+    assert.equal(now.includes(id), true, `PD-27 re-declares ${id} (served by ${RESTORED_MODULE})`)
   }
 })
 
@@ -124,6 +141,13 @@ test('PD18-SURFACE-CLOSED: the governed preset declares NO web/workflow row, and
   for (const closed of CLOSED_ROWS) {
     assert.equal(ids.includes(closed), false, `the governed preset must not carry '${closed}' (PD-18 fail-closed)`)
     assert.equal(rows.some((row) => String(row.name ?? '').includes(closed)), false, `no row may re-introduce '${closed}'`)
+  }
+  // PD-27: the ONE re-introduced id, and its name is the fail-closed Team module.
+  for (const restored of RESTORED_ROWS) {
+    assert.equal(ids.includes(restored), true, `PD-27 restored '${restored}' as a name on the governed preset`)
+    const row = rows.find((entry) => entry.id === restored)
+    assert.equal(String(row?.name), RESTORED_MODULE, `'${restored}' must be served by ${RESTORED_MODULE}, never by the host package row PD-18 removed`)
+    assert.equal(String(row?.name).includes('@deepseek-ai/dsh-tool-web'), false, 'the host web row on the preset scope is ordinary ungoverned egress')
   }
   // The retained-row witness moved from `tool-skill` to `tool-todo` on
   // 2026-11-14: PD-23 removed `tool-skill` + `skill-filesystem` for the same

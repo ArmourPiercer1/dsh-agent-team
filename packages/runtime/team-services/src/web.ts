@@ -114,6 +114,38 @@ export const WEB_NETWORK_RESIDUALS = Object.freeze([
 export type WebNetworkResidual = (typeof WEB_NETWORK_RESIDUALS)[number]
 
 /**
+ * PD-27 — the marker that says "this `web` service IS the Member's confined
+ * face", set on the class `createConfinedWebClass` returns.
+ *
+ * WHY A MARKER IS NEEDED AT ALL. The confined face is a SUBCLASS of the host's
+ * own `web` service, so it exposes exactly the same `fetch`/`search` as the
+ * inherited base provider — duck typing cannot tell them apart, and getting
+ * that wrong is precisely PD-18's hole (the tool runs on the base provider with
+ * zero guard facts). A tool that has to answer "is this scope's `web` governed?"
+ * asks this marker and nothing else.
+ *
+ * WHY A GLOBAL SYMBOL AND NOT AN EXPORT: the model-visible shadow
+ * (`src/plugin/live/confined-web-tool.mjs`) is COPIED into the dist mirror, not
+ * compiled with this file, so it cannot import this constant across the two
+ * trees; both sides spell `Symbol.for('a5sf.confined.web.face')` and the
+ * host-free parity test asserts the two agree.
+ */
+export const A5SF_CONFINED_WEB_MARK = Symbol.for('a5sf.confined.web.face')
+
+/**
+ * Whether `service` is a confined web face (PD-27). Only the marker counts;
+ * `undefined`/`null` (no `web` service) and a plain provider are both `false`.
+ *
+ * @param service - the value of `ctx.web` on the scope being asked.
+ * @returns true only for the realm-mounted confined face.
+ */
+export function isConfinedWebFace(service: unknown): boolean {
+  if (service === null || service === undefined) return false
+  if (typeof service !== 'object' && typeof service !== 'function') return false
+  return (service as Record<symbol, unknown>)[A5SF_CONFINED_WEB_MARK] === true
+}
+
+/**
  * The structural web Provider the confined face delegates to. It mirrors what
  * the host `ctx.web` seam exposes (`fetch`/`search`) and what the composition
  * owns: the ONE transport. The optional `probe` is the SAME capability probe
@@ -301,19 +333,36 @@ export function createConfinedWebClass(
       return provider.search(request, signal)
     }
   }
+  // PD-27: the marker the model-visible shadow (`confined-web-tool.mjs`) asks to
+  // decide whether THIS scope's `web` is governed. It is set on the prototype so
+  // every mounted instance answers it without carrying per-instance state.
+  Object.defineProperty(ConfinedWeb.prototype, A5SF_CONFINED_WEB_MARK, {
+    configurable: true,
+    value: true,
+  })
   return ConfinedWeb as unknown as WebProviderConstructor
 }
 
 /**
- * The `locator` a web consultation is recorded under: the DECLARED URL, never
- * a header, a body or a resolved address. A malformed request records a stable
- * marker instead of throwing before the decision — the provider is the one that
- * rejects a bad request, and the fact must still say what was consulted.
+ * The `locator` a web consultation is recorded under: the DECLARED URL (or the
+ * declared query), never a header, a body or a resolved address. A malformed
+ * request records a stable marker instead of throwing before the decision — the
+ * provider is the one that rejects a bad request, and the fact must still say
+ * what was consulted.
+ *
+ * PD-27: the SINGULAR `query` is read as well. The pinned host `web_search` tool
+ * calls `ctx.web.search({ query, maxResults })` — one query per seam call — while
+ * the tool's PUBLIC schema is the plural `queries`. PD-15 recorded the resulting
+ * `<search:malformed-request>` locator as a product-side gap; reading both
+ * spellings makes the fact name the query that was actually decided without
+ * changing the seam's shape.
  */
 function declaredUrlOf(request: unknown, kind: 'fetch' | 'search'): string {
   if (request !== null && typeof request === 'object') {
     const url = (request as { url?: unknown }).url
     if (typeof url === 'string' && url !== '') return url
+    const query = (request as { query?: unknown }).query
+    if (typeof query === 'string' && query !== '') return `query:${query}`
     const queries = (request as { queries?: unknown }).queries
     if (Array.isArray(queries) && queries.length > 0 && typeof queries[0] === 'string') {
       return `queries:${String(queries.length)}`

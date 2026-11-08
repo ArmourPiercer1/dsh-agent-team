@@ -8335,3 +8335,29 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   故 `state_pointers` / `s7_round*_records` 无需移动）；`node --test tests/world-factory/a5sf-debt-register.test.mjs`
   10/10；`git diff --check` rc 0。
 - **交付**：分支 `task/a5sf-handover-20261113`，draft PR 首行 `HANDOVER`；不 merge、不 settle。
+
+## 2026-11-14 — PD27-WEB-EGRESS：受治 Member 的 net 面对今日能接真运输吗（`task/pd27-web-egress-20261114`，记录类 HOST-FREE，0 boot）
+
+- **问题（owner 口径）**：PD-18 以 **fail-closed 删除** `web_fetch`/`web_search`，因为 preset 行解析到**继承的
+  BASE `ctx.web`**（真 HTTP 供体 + 进程级代理 dispatcher），`a5sf-guard-consult` 事实为 **0**。今日能否把**真运输**
+  接到受治 Member 的 net face 上，从而把这对照 guard 接回，而不是继续删除？
+- **回答**：**allow 车道可以，且已装好并用真 socket 量过**；**deny 车道只能由组合提供编译答案**（蓝本路径在 realm
+  出现之前就以 `NETWORK_UNCONFINED_REALM` 拒绝收窄的 net lane）；**比“每 Member 一个布尔”更细的上界今天不可表达**
+  （`NetworkAccess = 'allow' | 'deny'`，destination ACL 是 future interface）。界线：allow = 真出网、由编译 lane 裁决、
+  恰 1 条 allow fact；deny = **admission 前的 typed 拒绝**、0 连接，不是 OS netns 证明。
+- **装了什么**：`packages/runtime/src/plugin/live/confined-web-tool.mjs`（Team 影子/name holder：把 host 包**自己的**
+  定义委派注册，只贡献 context——带 confined marker 时用 realm 的 face，否则用**拒绝式** `web` 视图）；
+  `team-services/src/web.ts` 的 confined marker + `declaredUrlOf` 补读**单数** `query`；realm 行 `confinedWebSpecOf`
+  把 web 影子追加到 route-C attach（deny 之后、只注册可见子集）；`cordis.patch.yml` 的 `tool-web` 行指向
+  `dsh-agent-team/web-tool`（**绝不**是 host `@deepseek-ai/dsh-tool-web` 行）；root export/dep + lockfile + dist 照旧。
+- **量到的数（HOST-FREE，真运输 `@deepseek-ai/dsh-web-fetch-http`，本地 server 自己的连接计数器）**：
+  allow → HTTP 200、body 原样（25 body / 134 rendered bytes）、**1 连接**、**1 allow fact**；deny（同一可达运输在场）
+  → typed `NETWORK_UNCONFINED_REALM`、**0 连接**、`serverRequests=[]`、**1 deny fact**；跨源 302 → `WEB_REDIRECT_BLOCKED`，
+  声明源 1 / 目标 **0**；真 `ToolRuntime` 按名派发并回 host 呈现；pre-fix `24d2cf760` 两个名字都是 typed `unknown tool`。
+- **未跑（不声称）**：booted Host 上受治 Member 的**真实委托 turn**（pre/post 两臂 agreeing pair）本窗口**没有跑**。
+  剩余步骤 + 设计写在 `dev/agent-workflow/evidence/a5sf-pd27-web-egress/README.md` §7。这不是 blocker，是预算。
+- **门（本地）**：`pnpm -r typecheck` 9/9；eslint 触碰文件 0 error；`check:install-manifest` **8 issues = base 树同值**
+  （无可归因本 lane 的新项）；p4t6 `20/20`（booking `scanner 1449 = 983 + 465 + 1`）；debt register `10/10`；
+  `check:artifacts:head` **NOT-RUN**（沙箱 store 不可写——拒绝不是 fresh 判定，已写进证据 README §9）。
+- **纪律**：**无 grade、无 `V@B`、无 Q7/Authority/CI 变更、`CORE PATCH BUDGET = 0`、`release BLOCKED` 不变**；
+  未改矩阵既有等级与 `NOT_WIRED`；未 merge、未 settle。

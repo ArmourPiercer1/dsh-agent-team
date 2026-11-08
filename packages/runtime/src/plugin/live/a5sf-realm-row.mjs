@@ -1148,6 +1148,21 @@ const A5SF_CONFINED_PRESENT_TOOL = new URL('./confined-present-tool.mjs', import
 const A5SF_HOST_PRESENT_PACKAGE = '@deepseek-ai/dsh-tool-present'
 
 /**
+ * PD-27: the Team-owned `web_fetch`/`web_search` shadow. The module delegates the
+ * DEFINITIONS to the pinned host package's public `apply` (so they are the
+ * shipped ones, byte for byte) and contributes a CONTEXT: on the realm's
+ * isolated scope its `ctx.web` IS the confined face, so every call is decided by
+ * the compiled `network` axis before the composition's transport is entered.
+ */
+const A5SF_CONFINED_WEB_TOOL = new URL('./confined-web-tool.mjs', import.meta.url).href
+
+/** PD-27: the pinned host package whose definitions the web shadow re-serves. */
+const A5SF_HOST_WEB_PACKAGE = '@deepseek-ai/dsh-tool-web'
+
+/** PD-27: the two model-visible network names this shadow can place. */
+const A5SF_WEB_TOOL_NAMES = Object.freeze(['web_fetch', 'web_search'])
+
+/**
  * The pinned host package the governed preset mounts as its own `read`/`write`/
  * `edit`/`read_image` row. A configured entry naming this specifier is a
  * DECLARED filesystem owner: the composition already routed (or explicitly
@@ -1338,6 +1353,68 @@ function confinedPresentSpecOf(realm, nativeSpecs, surface, configuredModules) {
 }
 
 /**
+ * PD-27 — decide whether THIS realm's `web_fetch`/`web_search` must be shadowed
+ * onto the confined `web` face, and answer the module spec to append.
+ *
+ * THE MEASURED HOLE (PD-18, 2026-11-13): on the shipped governed preset the host
+ * `tool-web` row resolved the INHERITED `ctx.web` — the real HTTP provider and
+ * the process-wide proxy dispatcher — so `web_fetch`/`web_search` ran with ZERO
+ * `a5sf-guard-consult` facts. The row was removed fail-closed: the shipped layer
+ * carries no transport, and the preset scope cannot be handed the realm's
+ * confined provider.
+ *
+ * This shadow is the route-C restoration. It is SURFACE-NEUTRAL by construction
+ * (the same two names the preset's placeholder already places, narrowed to the
+ * visible subset) and it contributes a CONTEXT, not a tool implementation: the
+ * definitions are the pinned host package's own `apply`, executed against the
+ * confined `web` face the realm mounted on this scope.
+ *
+ * The conditions are each a refusal to guess:
+ *   1. the realm OWNS a confined `web` face (`faces.web` is not null). Without
+ *      it there is no confined face to route the call to, and the mount seam
+ *      would refuse a `web`-consuming module anyway;
+ *   2. at least one of the two names is on the POST-DENY surface. The module
+ *      narrows its own registration to that subset (`fetch`/`search` toggles),
+ *      because a scoped registration sits outside the inherited `tools.restrict`
+ *      filter: placing a denied name would re-enable it;
+ *   3. the composition has not already configured a web owner — this module, the
+ *      host package by specifier, an entry declaring one of the two names, a
+ *      MODULE whose Cordis name is the host package's or this shadow's, or a
+ *      module that DECLARES a `web` injection (it owns the face itself).
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @param {readonly object[]} configuredModules - the ALREADY-IMPORTED specs.
+ * @returns {{url: string, config: object, expectedTools: readonly string[]} | undefined}
+ */
+function confinedWebSpecOf(realm, nativeSpecs, surface, configuredModules) {
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null || faces.web === undefined || faces.web === null) return undefined
+  const tools = A5SF_WEB_TOOL_NAMES.filter((name) => surface.has(name))
+  if (tools.length === 0) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_CONFINED_WEB_TOOL) return undefined
+    if (spec?.url === A5SF_HOST_WEB_PACKAGE) return undefined
+    if (Array.isArray(spec?.expectedTools)
+      && spec.expectedTools.some((name) => A5SF_WEB_TOOL_NAMES.includes(name))) return undefined
+  }
+  for (const entry of configuredModules) {
+    const moduleName = entry?.module?.name
+    if (moduleName === 'tool-web' || moduleName === 'a5sf-confined-web') return undefined
+    if (declaredInjectNamesOf(entry?.module).includes('web')) return undefined
+  }
+  return Object.freeze({
+    url: A5SF_CONFINED_WEB_TOOL,
+    config: Object.freeze({
+      fetch: tools.includes('web_fetch'),
+      search: tools.includes('web_search'),
+    }),
+    expectedTools: Object.freeze([...tools]),
+  })
+}
+
+/**
  * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
  * the Member capability deny lane, and refuse if it changes the surface.
  *
@@ -1438,7 +1515,13 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // through `expectedTools`, so an unshadowed declaration refuses the attach.
   const skillSpec = confinedSkillSpecOf(realm, nativeSpecs, before, configuredModules, a5sfConfig?.skillCatalog)
   const presentSpec = confinedPresentSpecOf(realm, nativeSpecs, before, configuredModules)
-  const appended = [shellSpec, searchSpec, fsSpec, skillSpec, presentSpec].filter((spec) => spec !== undefined)
+  // PD-27 (2026-11-14): `web_fetch`/`web_search` ride the confined `web` face the
+  // same way. PD-18 removed the rows because the preset scope cannot be handed
+  // that face; this shadow places the HOST definitions on the realm scope, where
+  // `ctx.web` IS the face, so the compiled `network` axis decides before the
+  // composition's transport is entered.
+  const webSpec = confinedWebSpecOf(realm, nativeSpecs, before, configuredModules)
+  const appended = [shellSpec, searchSpec, fsSpec, skillSpec, presentSpec, webSpec].filter((spec) => spec !== undefined)
   if (nativeSpecs.length === 0 && appended.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,
   // not just the name set (a module that registers nothing, or registers late,

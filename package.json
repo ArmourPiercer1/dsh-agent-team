@@ -20,6 +20,7 @@
     ".": "./packages/client/composition-shim/index.js",
     "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
     "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
+    "./web-tool": "./packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
     "./client": "./packages/client/composition-shim/client-bundle.js",
     "./package.json": "./package.json"
   },
@@ -59,6 +60,7 @@
     "@deepseek-ai/dsh-session": "0.2.0-rc.2",
     "@deepseek-ai/dsh-spill-local": "0.2.0-rc.2",
     "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-fs": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tool-fs-search": "0.2.0-rc.2"
   },
   "devDependencies": {
@@ -71,6 +73,7 @@
   },
   "dependencies": {
     "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-web": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
     "yaml": "2.9.0",
     "zod": "4.4.3"
