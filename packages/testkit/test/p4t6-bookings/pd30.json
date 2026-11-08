@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "PD30",
+  "paths": [
+    "packages/runtime/src/plugin/live/a5sf-web-transport.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1449,
+    "to": 1450
+  },
+  "reason": "PD-30 (WEB-PREVIEW): ONE scannable file — the shipped composition-owned web transport row (`dsh-agent-team/web-transport`), the module that provides `teamA5sfWebTransport` and loads the pinned host providers by name. Everything else this lane adds lives outside `packages/**`: the dist mirror (outside the scan), the two host-free suites and the boot driver (`tests/world-factory/**`), the placement booking (`scripts/dist-placements/**`) and the evidence tree (`dev/agent-workflow/**`); the edits to host.ts / web.ts / product-assembly.ts / types.ts / node-min.d.ts / a5sf-governed-realm.mjs ride ALREADY-COUNTED paths. Zero new denylist vocabulary; the quarantine hit set is unchanged at fifteen.",
+  "listNotes": "`packages/runtime/src/plugin/live/a5sf-web-transport.mjs` — the row behind the web face: `loadTransports()` imports `@deepseek-ai/dsh-web-fetch-http` / `@deepseek-ai/dsh-web-search-exa` by public package name (declared as `dependencies`, never as peers, so the audited host-provides contract stays at ten names), a search module that fails to load is a REPORTED gap (`searchGap`) rather than a crash, and `apply()` provides the optional frozen service `Object.freeze({ createProvider, describe })`. The face it feeds is the existing guard in `team-services/src/web.ts`; this file owns no decision.",
+  "tieNote": "Measured on THIS tree by the pre-booking scanner run: `scanner counts 1450, ledger derives 983 + 466 = 1449` — the one-path gap is exactly the file above, verified path-set-wise against the committed scanner set (the transport .mjs is the only .mjs this lane ADDS under `packages/**`; the dist mirror is outside the scan and the two new test suites live under `tests/`). No chain value copied."
+}
