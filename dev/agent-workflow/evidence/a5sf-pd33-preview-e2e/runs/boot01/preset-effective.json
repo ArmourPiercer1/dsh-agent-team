@@ -1,6 +1,6 @@
 {
   "note": "NO shipped row name is rewritten. The transport row carries the World fixture origins in place of the production env expressions; the host row carries the opt-in governed-realm key and the declared skill catalog (DATA). The mutation control removes the realm key only.",
-  "mutation": "no-web-row",
+  "mutation": null,
   "installGraph": {
     "link": "profiles/web/node_modules/dsh-agent-team -> repo root",
     "exports": 7
@@ -45,15 +45,15 @@
           "hard": {},
           "capabilityExists": {}
         },
-        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-14-15Z/blueprints",
+        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-47-02Z/blueprints",
         "memberPresetId": "a5sf-governed-member",
         "a5sfGovernedRealm": true,
-        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-14-15Z/a5sf-consult.jsonl",
+        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-47-02Z/a5sf-consult.jsonl",
         "a5sfSkillCatalog": [
           {
             "name": "pd33-inlane",
             "description": "PD-33 in-lane fixture skill",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-14-15Z/workspace/skills/pd33-inlane/SKILL.md"
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-47-02Z/workspace/skills/pd33-inlane/SKILL.md"
           },
           {
             "name": "pd33-outlane",
@@ -191,10 +191,10 @@
       "name": "dsh-agent-team/web-transport",
       "config": {
         "testEndpoints": [
-          "http://127.0.0.1:46109"
+          "http://127.0.0.1:45137"
         ],
         "search": {
-          "baseURL": "http://127.0.0.1:45219",
+          "baseURL": "http://127.0.0.1:46055",
           "apiKey": "pd33-live-key"
         },
         "fetch": {
@@ -207,7 +207,7 @@
       "id": "a5sf-pd33-base-web-tripwire",
       "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs",
       "config": {
-        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-14-15Z/a5sf-pd33-host-web-calls.jsonl"
+        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-47-02Z/a5sf-pd33-host-web-calls.jsonl"
       }
     },
     {

@@ -20,27 +20,26 @@
 | --- | --- | --- | --- |
 | **#679** `PD29-GOAL-STOP` | `task/pd29-goal-stop-20261114` | **已合并** | `0c2a8f422`；Stop 的 durable CAS + 目标面恢复 |
 | **#680** `PD31-READ-IMAGE` | `task/pd31-read-image-20261112` | **已合并** | `ece8d5a1c`；`read_image` 走模型路由声明，**因此本报告能实测路由门** |
-| **#681** `PD32-INSTRUMENT-GRAPH` | `task/pd32-instrument-graph-20261112` | **未合并**（已 rebase 到 #680 之上，重编号 PD-32） | 本报告测量的是其 tip `9f2a16d87` = master + 4 个提交、**0 个产品文件**；它落地后必须 rebase 重跑（§6.1 M1） |
+| **#681** `PD32-INSTRUMENT-GRAPH` | `task/pd32-instrument-graph-20261112` | **已合并** | `3101ca08f`；本报告的全部数字是在它**合并之后**的 master 上重测的（§1.2） |
 
 ### 1.2 测量树
 
 ```
-origin/master  ece8d5a1c   （#679 + #680）
+origin/master  3101ca08f   （#679 + #680 + #681，PD-32 仪器已合并）
       │
-      └─ 9f2a16d87  PD32-INSTRUMENT-GRAPH（rebase 2；相对 master 0 个产品文件）
-            │
-            └─ task/pd33-preview-e2e-20261115（本 lane 的 driver / evidence / 本报告）
+      └─ 53db856e1  task/pd33-preview-e2e-20261115（本 lane：driver / evidence / 本报告；
+                    相对 master 0 个产品文件）
 ```
 
-**关于 `#681` 的 tip 漂移**：测量后它的 head 又前进了两次（`9f2a16d87` → `eec5e2a2f`），但
-`git diff --name-only 9f2a16d87 eec5e2a2f -- packages cordis.patch.yml scripts tests/world-factory/lib` **为空**——
-变化只在 evidence 记录，仪器代码一字未动。因此本报告的测量对合并后的 #681 仍然成立；合并后按 M1 重跑一次即可。
+**测量树就是 master。** 上一版报告测的是 `master + 未合并的 #681`，那是最弱的一条；#681 合并后本 lane
+**整个放弃了叠加的 base**（`git rebase --onto 3101ca08f 9f2a16d87`），在 master 上重跑了两 boot，
+本报告引用的每个数字都来自这次重跑。`git diff --name-only origin/master...HEAD -- packages
+cordis.patch.yml scripts package.json` 为**空**，所以"master 的行为"与"本 HEAD 的行为"在这份证据里是同一件事。
 
-**必须写清楚的集成事实**：`#681` 不是"可选的测试改进"，而是**能否构造 governed Member 的前置条件**。
+**为什么这件事值得写下来**：`#681` 不是"可选的测试改进"，而是**能否构造 governed Member 的前置条件**。
 没有它，World 的 `profiles/web/node_modules/` 为空，shipped 行无法 import，一个 row 起不来会**整只
 governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——**一个起不来的 preset 会读成行为失败**。
-诚实的顺序只能是：**仪器先修好并合入，验收才能开始**。本报告在一个尚未包含它的 base 上给出结论，
-并把"rebase 到 master 后重跑"列为放行条件（§6.1 M1），不把本树的数字冒充 master 的数字。
+诚实的顺序只能是：**仪器先修好并合入，验收才能开始**。本报告现在是按这个顺序做完的。
 
 ### 1.3 产品文件（由 diff 导出，不手写）
 
@@ -54,8 +53,9 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
   `packages/tools/src` 1、`scripts/**` 12。
 - **#679 自身** 7 个：`cordis.patch.yml`、`packages/runtime/src/plugin/host.ts`、
   `packages/runtime/src/plugin/live/agent-bindings.mjs` + 4 个 `dist` 产物。
-- **#680** 相对本 HEAD：**0** 个产品文件（它交付的是 live 测量 + 矩阵/寄存器行 + driver/test）。
-- **#681** 相对本 HEAD：**0** 个产品文件（测试基础设施 + 证据）。
+- **#680 / #681 都已合并进 master**：前者交付 live 测量 + 矩阵/寄存器行 + driver/test，后者交付 World 的
+  install graph + 前置条件；两者相对 master 都是 **0 个产品文件**（#681 的唯一产品面影响由 WorldFactory 承担，
+  不在 `packages/**` 里）。因此本 HEAD 与 master 的**行为**差异为零，证据对 master 直接成立。
 - 完整逐文件清单：**附录 A**。
 
 ---
@@ -132,17 +132,17 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 | 臂 | 动作 | 结果 |
 | --- | --- | --- |
 | S1 轮内 Stop | 目标 Member 自己的 `session/cancel` | Stop 前 **2** 轮 / **3** 调用 → 窗口内 **0 轮 / 0 调用 / 0 模型请求**，durable `paused`，`turn/end aborted` |
-| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **51** 轮 / **52** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
+| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **58** 轮 / **59** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
 | S2 边界竞态 | 24 次 cancel burst 覆盖 queued/claimed 窗口 | burst 后 **0** 轮，`lost=false` |
-| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=108`） |
+| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=124`） |
 | GAP 空闲窗口 | 瞄准 `turn/end` 的 6 次 stop | **6/6 landed，0 dropped** |
-| S6 冷恢复 | SIGTERM（**165** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，6 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **165** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
+| S6 冷恢复 | SIGTERM（**189** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，6 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **189** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
 | S7 显式恢复 | 恢复后 `/goal resume`（`activation=disarmed`） | `rpcStatus=200`，**1** 轮 |
 | S8 未停止 | Member B 的 goal | **3** 轮 → `complete` → **0** 后续轮次 |
 
 ### 4.3 从 #679 继承的「仍然不成立」（逐条复核，不重写）
 
-1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 165 轮就是证据。
+1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 189 轮就是证据。
 2. **仍不成立**：Leader 停止会传播到 Member 的 goal——**本报告按设计陈述**（§4.1），但事实不变。
 3. **仍不成立**：Team 之外的 idle 期 cancel 可被观测。上游契约里 idle 期 cancel 是**不发事件的 no-op**；
    本场景的 GAP 臂测的是驱动器发起的 stop，不是任意第三方。
@@ -208,7 +208,7 @@ boot02 在 `runs/boot02/`。
 
 | # | 阻塞 | 依据 | 最小修点 |
 | --- | --- | --- | --- |
-| **M1** | **#681 未合并**：silent 的 preset 行让整只 governed Member 起不来，且失败读成行为失败 | 无 install graph 时 0 Member；有图时 6 个 Member 全部启动 | 合入 #681（或等价物），把本 lane rebase 到 master，**重跑 `--boots 2`**，`bindings.candidate.head` 换成 master 上的提交 |
+| ~~M1~~ **已关闭** | ~~#681 未合并~~：silent 的 preset 行让整只 governed Member 起不来 | 合并后 `3101ca08f` 上重跑：6 个 Member 全部启动、两 boot 18/18（§7） | —（已由 #681 合并 + 本 lane rebase 重跑关闭） |
 | **M2** | **Stop 没有一等公民入口**：机制对（API 实测 0/0/0 + `paused`），UI 上没有"停止这个 Member"的 affordance；`team_archive_member` 也不是为"停 goal"设计的 | S1/S4 都是驱动器直接调 API | 加一个 Member 行 Stop 入口，**并确认它调用的是同一 lifecycle 机制**（`session/cancel` → durable `pause` → `goals.disarm`），不是新的 no-op 端口 |
 
 ### 6.2 正式 Alpha.5 延后（Preview 接受，不假装已做）
@@ -239,23 +239,32 @@ boot02 在 `runs/boot02/`。
 
 ## 7. 结论
 
-**`PREVIEW-NO-GO`**（今天，这个 base 上）。功能面是干净的：**两个 boot 各 18/18 PASS、`agreeing=true`**。
-不给 GO 的两个理由都是**产品/集成**事实，不是"证据还不够"：
+### 7.1 这个 Preview 是干什么的（一句话），以及它明确不是什么
 
-1. **M1 —— 测量树不是 master**：`#681` 未合并，master 上构造不出任何 governed Member。
-   Preview 不能在一个"造不出 Member"的树上宣布就绪。合并 #681 并把本 lane rebase 到 master 后
-   **重跑 `--boots 2`**，是本报告翻绿的第一个条件。
-2. **M2 —— Stop 没有一等公民入口**：机制是对的（两条通道都实测到 0/0/0、durable `paused`），
-   但 UI 上没有"停止这个 Member"的按钮；Preview 要求"可操作"。
+**一句话**：Alpha.5 Preview 是一个**内部的、opt-in 的 governed team runtime 预览**——每一次工具调用都可归因
+（guard fact / typed deny），每一次停止都可测量（20 000 ms 静默窗口 + durable `paused`）。
 
-**最小放行集（按顺序）**：
+**它明确不是**（这四条写在这里，是为了让人不能从本报告推出我们没测过的保证）：
 
-1. 合入 `#681`（= PD-32），把本 lane rebase 到 master，`bindings.candidate.head` 换成 master 上的提交；
-2. 重跑 `--boots 2`，要求仍然 18/18 且 `agreeing=true`（预期不变：本 lane 与 #681 相对 master 都是 0 个产品文件，
-   差异只可能来自 rebase 冲突，不来自行为）；
-3. 加 Member 行 Stop 入口（M2），并复跑 S1/S4 两臂确认它调的是同一机制；
-4. 不需要改代码的：把 §6.2 的 8 条延后项写进 Preview 的"已知限制"，其中
-   **BL-17（shell 体不由服务轴归属）** 与 **`web_search` 部署条件性** 必须出现在发布说明里。
+1. **不是"默认能上网搜"**：`web_search` 是部署条件性的，默认安装是 typed `WEB_PROVIDER_UNAVAILABLE`、0 请求（§3.2）。
+2. **不是 per-host 网络策略**：网络轴是**单一布尔** allow/deny，deny 是准入层前置拒绝，不是 per-host ACL、不是 OS 隔离（§3.3）。
+3. **不是 team-wide Stop**：Stop 的语义是"停目标 Member"；停 Leader 的当前回合**不会**停已委派的异步工作，这是设计（§4.1）。
+4. **不是对恶意 Member 的安全边界**：它是"治理可归因"，不是"隔离不可逃逸"——`bash` 的越界写由 OS profile 兜（BL-17，§6.2）、
+   网络只有单一布尔、shell 体不由服务轴归属。要"防住恶意 Member"是正式 Alpha.5 的题目，不是 Preview 的承诺。
+
+### 7.2 判定
+
+**`PREVIEW-NO-GO`**（#681 已合并、测量树已是 master；剩下的唯一阻断是 M2）。功能面是干净的：**两个 boot 各 18/18 PASS、`agreeing=true`**。
+**M1 已关闭**：#681 合并（`3101ca08f`）后，本 lane 丢弃叠加 base、在 master 上重跑两 boot，18/18 一致。
+剩下的唯一阻断是**产品事实**，不是"证据还不够"：
+
+- **M2 —— Stop 没有一等公民入口**：机制是对的（两条通道都实测到 0/0/0、durable `paused`），
+  但 UI 上没有"停止这个 Member"的按钮；Preview 要求"可操作"。
+
+**最小放行集（只剩一条）**：给 Member 行加一个 Stop 入口，**并确认它调用的是同一 lifecycle 机制**
+（`session/cancel` → durable `pause` → `goals.disarm`）；PD-34 落地后，本报告会 rebase 一次、加一条
+"通过该控件停 Member"的臂，然后重新出判定。不需要改代码的部分：把 §6.2 的 8 条延后项写进
+Preview 的"已知限制"，其中 **BL-17（shell 体不由服务轴归属）** 与 **`web_search` 部署条件性** 必须出现在发布说明里。
 
 **已经成立、不需要重做的部分**（本报告实测，均可复现）：
 
@@ -264,8 +273,8 @@ boot02 在 `runs/boot02/`。
 - Member B：真实 fetch **1** 连接 / **26** 字节 / **1** allow fact；`web_search` 0 POST 的 typed gap；
   `read_image` 在 `text` 路由下 0 facts / 0 字节拒绝；goal **3** 轮 → `complete`；
 - 延后面 **7/7** `unknown tool`、**0** facts；
-- Stop：S1 2 轮/3 调用 → **0/0/0** `paused`；S4 **51** 轮/52 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
-  GAP 6/6 landed；S6 **165** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
+- Stop：S1 2 轮/3 调用 → **0/0/0** `paused`；S4 **58** 轮/59 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
+  GAP 6/6 landed；S6 **189** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
 - 继承的 base `web` **0** 次；base `fs` **0** 次；`:3080` 从未被触碰。
 
 **负控（两个，都是实测；不做"设计上会红"的推断）**：

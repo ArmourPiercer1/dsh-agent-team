@@ -6,9 +6,9 @@
     "rootSessionId": "session-a5sf-pd33-team",
     "blueprintId": "team.a5sf.pd33.main",
     "revision": "1",
-    "contentHash": "sha256:b7dd5b0949f8c100600aa21cad98727ec182c1910cf28cf8be3cd3c5c24938a1",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace",
-    "createdAt": "2026-11-08T18:05:24.325Z",
+    "contentHash": "sha256:384c7a87ed1cb98c963b1332590773e6ad149cbe9abb40e8a810ca50ebd46dad",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-50-51Z/workspace",
+    "createdAt": "2026-11-08T18:52:47.449Z",
     "generation": 39
   },
   "members": [
@@ -216,8 +216,8 @@
       "sequence": 3,
       "op": "interval-open",
       "progress": "in-progress",
-      "correlation": "pd29-followup-cold-1794161204541",
-      "requestToken": "pd29-followup-cold-1794161204541"
+      "correlation": "pd29-followup-cold-1794164047184",
+      "requestToken": "pd29-followup-cold-1794164047184"
     },
     {
       "globalSequence": 36,
@@ -227,8 +227,8 @@
       "sequence": 4,
       "op": "interval-close",
       "progress": "completed",
-      "correlation": "pd29-followup-cold-1794161204541",
-      "requestToken": "pd29-followup-cold-1794161204541"
+      "correlation": "pd29-followup-cold-1794164047184",
+      "requestToken": "pd29-followup-cold-1794164047184"
     }
   ],
   "pendingDeliveries": {

@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-pd33-preview-e2e-2026-11-08T18-14-15-438Z-b1 suite=a5sf-pd33-preview-e2e overall=FAIL cases=17 FAIL:7 PASS:10 worlds=u5u5a5sfpd33-20261108T18-14-15Z recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-pd33-preview-e2e-2026-11-08T18-47-02-560Z-b1 suite=a5sf-pd33-preview-e2e overall=PASS cases=18 PASS:18 worlds=u5u5a5sfpd33-20261108T18-47-02Z recordClass=DEV-LIVE (not candidate evidence)
