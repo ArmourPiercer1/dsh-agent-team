@@ -253,7 +253,18 @@
     #     As with the PD-17 filesystem rows, the preset row is replaced by the
     #     shadow; the attach refuses the Member setup when it cannot shadow it.
     #   - `tool-jobs`, fs, search, goal/plan/todo and compaction are
-    #     RETAINED. `tool-jobs` is retained but has no producer on this preset
+    #     RETAINED. `tool-goal` is RETAINED AS OF PD-29 (2026-11-14, owner
+    #     ruling): PD-25 had removed it fail-closed because the round budget is
+    #     caller-chosen and no trustworthy TOTAL round budget exists in Preview.
+    #     The owner ruled that absence of a global budget is ACCEPTED for
+    #     Preview and is not a reason to remove the tool: the goal domain is
+    #     reused as the UPSTREAM one (`@deepseek-ai/dsh-goal` +
+    #     `dsh-goal-round-driver` + `dsh-tool-goal`), the Member keeps the
+    #     upstream, Member-editable `maxGoalRounds`, and the Stop semantics
+    #     (a stopped Member's goal must not start another automatic round) are
+    #     measured live by PD-29. `tool-ask-user` stays OUT (PD-25's other
+    #     finding: an unattended Member's question blocked the delegation).
+    #     `tool-jobs` is retained but has no producer on this preset
     #     (the confined face cannot hand a command to the job registry); it
     #     answers from an OWNER-scoped registry, so a Member can only ever see
     #     its own (empty) list and a foreign job id is refused — PD-23 measured
@@ -340,6 +351,15 @@
             name: 'dsh-agent-team/web-tool'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
+          # PD-29 (2026-11-14 owner ruling): the goal tool is BACK. It is the
+          # upstream `@deepseek-ai/dsh-tool-goal` row unchanged — `get_goal` /
+          # `create_goal` / `update_goal` over the host's own `goals` service,
+          # with the goal-round driver (`@deepseek-ai/dsh-goal-round-driver`,
+          # a BASE bundle row, never on this preset) driving automatic rounds.
+          # No Team-side round budget, no second policy source: the round cap
+          # stays the upstream `maxGoalRounds` the Member itself may edit.
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
           - id: planning
             name: cordis:group
             group: true

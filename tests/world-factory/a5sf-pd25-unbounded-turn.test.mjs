@@ -71,8 +71,16 @@ const PIN = process.env.A5SF_PD25_PIN === '1'
 const MUTATE_REGISTER = process.env.A5SF_PD25_MUTATE_REGISTER ?? ''
 /** The recorded start of this task (origin/master at this branch point). */
 const BASE_COMMIT = '6cfc67b7695672ac817c64d3aec47a48b1dc48b4'
-const CLOSED_ROWS = Object.freeze(['tool-goal', 'tool-ask-user'])
-const CLOSED_TOOLS = Object.freeze(['get_goal', 'create_goal', 'update_goal', 'ask_user_question'])
+// PD-29 (2026-11-14 owner ruling) REOPENED `tool-goal`: Preview accepts the
+// absence of a trustworthy GLOBAL round budget, so the goal trio is served
+// again by the upstream packages (the round cap stays the Member-editable
+// upstream `maxGoalRounds`). PD-25's own finding is unchanged and still
+// pinned: the ask tool stays OUT, because its measured defect (a blocked
+// delegation with no answerer) is a liveness defect, not a budget question.
+const CLOSED_ROWS = Object.freeze(['tool-ask-user'])
+const CLOSED_TOOLS = Object.freeze(['ask_user_question'])
+const REOPENED_ROWS = Object.freeze(['tool-goal'])
+const REOPENED_TOOLS = Object.freeze(['get_goal', 'create_goal', 'update_goal'])
 const KEPT_ROWS = Object.freeze([
   'tool-bash',
   'tool-fs',
@@ -140,17 +148,23 @@ test('PD25-PIN: the BASE commit carries the goal row and the ask-user row (PRE-F
 // ===========================================================================
 // SURFACE — the shipped governed preset is closed, and the removal is surgical
 // ===========================================================================
-test('PD25-SURFACE-CLOSED: the governed preset declares NO goal row and NO ask-user row', () => {
+test('PD25-SURFACE-CLOSED (ask-user only; goal REOPENED by PD-29): the governed preset declares NO ask-user row and the goal row again', () => {
   const text = readFileSync(COMPOSITION, 'utf8')
   const ids = presetPluginIds(text)
   for (const id of CLOSED_ROWS) {
     assert.equal(ids.includes(id), false, `the governed preset must not declare '${id}'`)
   }
-  // A row by ANY id would still expose the tools: assert by package name too,
-  // so a rename cannot smuggle the surface back.
+  // PD-29: the goal ROW is back, by id AND by package name (the upstream
+  // package, never a Team re-implementation).
+  const byId = new Map(presetPlugins(text).map((row) => [row.id, row]))
+  for (const id of REOPENED_ROWS) {
+    assert.equal(byId.has(id), true, `PD-29 reopened '${id}' and the governed preset must declare it`)
+  }
+  assert.equal(byId.get('tool-goal')?.name, '@deepseek-ai/dsh-tool-goal', 'the goal row must mount the upstream tool package')
+  // A row by ANY id could expose the remaining closed surface: assert by
+  // package name too, so a rename cannot smuggle it back.
   for (const row of presetPlugins(text)) {
     const name = String(row.name)
-    assert.equal(name.includes('dsh-tool-goal'), false, `'${String(row.id)}' still mounts the goal tool package`)
     assert.equal(name.includes('dsh-tool-ask-user'), false, `'${String(row.id)}' still mounts the ask-user tool package`)
   }
 })
@@ -193,6 +207,9 @@ const GOVERNED_TOOL_ROWS = Object.freeze({
   'tool-todo': ['todo_write'],
   'plan-mode': ['exit_plan_mode'],
   present: ['present'],
+  // PD-29 reopened the goal trio on the governed preset; it is part of the
+  // preset's RETAINED surface this registry mirrors.
+  'tool-goal': ['get_goal', 'create_goal', 'update_goal'],
 })
 
 async function governedShapedRegistry() {
@@ -219,14 +236,9 @@ async function governedShapedRegistry() {
     for (const name of names) register(name, () => { effects.kept += 1; return { value: 'KEPT_TOOL_REACHED' } })
   }
   if (MUTATE_REGISTER === 'goal') {
-    // MUTATION ARM: make the whole goal trio dispatchable again.
-    for (const name of ['get_goal', 'create_goal', 'update_goal']) {
-      register(name, () => { effects.goal += 1; return { value: 'MUTATION_CONTROL_REACHED' } })
-    }
-  }
-  if (MUTATE_REGISTER === 'partial') {
-    // MUTATION ARM: only the READER survives — the trio must leave as a set.
-    register('get_goal', () => { effects.goal += 1; return { value: 'MUTATION_PARTIAL_REACHED' } })
+    // MUTATION ARM kept for the ask arm's sibling shape: make a goal tool
+    // implementation distinguishable from the retained placeholder.
+    effects.goal = 0
   }
   if (MUTATE_REGISTER === 'ask') {
     register('ask_user_question', () => { effects.ask += 1; return { value: 'MUTATION_ASK_REACHED' } })
@@ -241,7 +253,7 @@ const ARGUMENTS = Object.freeze({
   ask_user_question: { questions: [{ id: 'q1', question: 'pd25 refusal probe' }] },
 })
 
-test('PD25-TYPED-REFUSAL: the goal trio and ask_user_question are UNKNOWN_TOOL and execute nothing', async () => {
+test('PD25-TYPED-REFUSAL: ask_user_question is UNKNOWN_TOOL and executes nothing (the goal trio is dispatchable again, PD-29)', async () => {
   const { tools, effects } = await governedShapedRegistry()
   // Control: the registry itself dispatches (so a green refusal cannot come
   // from a broken harness).
@@ -254,6 +266,19 @@ test('PD25-TYPED-REFUSAL: the goal trio and ask_user_question are UNKNOWN_TOOL a
   })
   assert.equal(kept.isError ?? false, false, 'the retained surface must dispatch in this registry')
   assert.equal(effects.kept, 1)
+  // PD-29: the goal trio is BACK on the governed preset — it must dispatch,
+  // and this positive arm is what M1-row-removed reddens at the composition.
+  for (const name of REOPENED_TOOLS) {
+    const settled = await tools.execute({
+      signal: new AbortController().signal,
+      callId: `pd25-reopened-${name}`,
+      name,
+      arguments: ARGUMENTS[name],
+      agent: {},
+    })
+    assert.notEqual(settled.isError, true, `${name} must be dispatchable again (PD-29 reopened the goal row)`)
+  }
+  assert.equal(effects.kept, 1 + REOPENED_TOOLS.length)
   for (const name of CLOSED_TOOLS) {
     const settled = await tools.execute({
       signal: new AbortController().signal,

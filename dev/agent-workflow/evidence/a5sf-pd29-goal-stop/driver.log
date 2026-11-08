@@ -1,0 +1,1029 @@
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:21:35.687Z =====
+[2026-11-08T11:21:35.692Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T11:21:35.743Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T11:21:35.744Z] composition sha256=60d48a1e692334cd825ff6482fe7873948535be25d25553cfafa25d7ea99169f
+[2026-11-08T11:21:35.744Z] governed preset plugins (16): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,command-goal,tool-goal,plan-mode,compaction-basic,command-compact,tool-result-pruner,tool-todo,tool-plugin-manager
+[2026-11-08T11:21:35.782Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-08T11:21:35.784Z] PLAN OK
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:21:42.007Z =====
+[2026-11-08T11:21:42.010Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:24:13.508Z =====
+[2026-11-08T11:24:13.515Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T11:24:13.560Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T11:24:13.560Z] composition sha256=60d48a1e692334cd825ff6482fe7873948535be25d25553cfafa25d7ea99169f
+[2026-11-08T11:24:13.560Z] governed preset plugins (16): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,command-goal,tool-goal,plan-mode,compaction-basic,command-compact,tool-result-pruner,tool-todo,tool-plugin-manager
+[2026-11-08T11:24:13.597Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-08T11:24:13.598Z] PLAN OK
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:24:35.252Z =====
+[2026-11-08T11:24:35.259Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:26:23.087Z =====
+[2026-11-08T11:26:23.093Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:32:25.311Z =====
+[2026-11-08T11:32:25.322Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:38:45.887Z =====
+[2026-11-08T11:38:45.894Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:44:48.651Z =====
+[2026-11-08T11:44:48.658Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:48:24.798Z =====
+[2026-11-08T11:48:24.804Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:49:37.800Z =====
+[2026-11-08T11:49:37.807Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:51:39.846Z =====
+[2026-11-08T11:51:39.852Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:55:14.931Z =====
+[2026-11-08T11:55:14.938Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T11:59:59.734Z =====
+[2026-11-08T11:59:59.740Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:02:23.347Z =====
+[2026-11-08T12:02:23.354Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:09:46.604Z =====
+[2026-11-08T12:09:46.610Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:11:36.608Z =====
+[2026-11-08T12:11:36.614Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:15:04.516Z =====
+[2026-11-08T12:15:04.523Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:17:34.768Z =====
+[2026-11-08T12:17:34.774Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:19:24.693Z =====
+[2026-11-08T12:19:24.700Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:21:42.276Z =====
+[2026-11-08T12:21:42.282Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:36:15.849Z =====
+[2026-11-08T12:36:15.856Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:46:22.687Z =====
+[2026-11-08T12:46:22.693Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:53:23.057Z =====
+[2026-11-08T12:53:23.063Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+
+===== a5sf-pd29-goal-stop 2026-11-08T12:55:59.278Z =====
+[2026-11-08T12:55:59.284Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T12:55:59.346Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:55:59.347Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T12:55:59.350Z] [boot1] world=u5u5a5sfpd29-20261108T12-55-59Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T12-55-59Z
+[2026-11-08T12:56:54.191Z] [boot1] mock on 13050
+[2026-11-08T12:57:35.865Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T12-55-59Z
+[2026-11-08T12:57:36.332Z] [boot1] p6t6 health=true
+[2026-11-08T12:57:36.352Z] [boot1] discovery prompt status=200
+[2026-11-08T12:57:43.826Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-0zz6wpjbuy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:49dcda0d2acc3e54
+[2026-11-08T12:57:43.826Z] [boot1] delegations seen=true
+[2026-11-08T12:57:43.827Z] [boot1] goals created=true
+[2026-11-08T12:57:43.843Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T12:57:43.856Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":4,"s4":3,"lead":3,"cold":2,"pz":1}
+[2026-11-08T12:57:43.859Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T12:57:44.280Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T12:58:04.317Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T12:58:04.341Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=38 inRound=true
+[2026-11-08T12:58:05.208Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T12:58:25.266Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"active"}
+[2026-11-08T12:58:26.628Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T12:58:26.664Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T12:58:28.328Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T12:58:28.388Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T12:58:30.192Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T12:58:30.261Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T12:58:31.984Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T12:58:32.057Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T12:58:33.572Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T12:58:33.623Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T12:58:35.052Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T12:58:35.110Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T12:58:36.550Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T12:58:56.958Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T12:58:57.599Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T12:59:03.785Z] [boot1] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":11,"cold":11,"pz":0}
+[2026-11-08T12:59:03.815Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T12:59:23.995Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T12:59:24.057Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=173)
+[2026-11-08T12:59:26.085Z] [boot1] restart BOOTED port=3188
+[2026-11-08T12:59:26.093Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T12:59:26.100Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T12:59:26.190Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T12:59:48.218Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T12:59:50.966Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T12:59:58.215Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:leader-archive-stops-goal: REFUTED failed=["goal-deactivated: durable goal phase=active"]
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T12:59:58.482Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T12:59:58.483Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T12-55-59-314Z-b1 suite=a5sf-pd29-goal-stop overall=FAIL cases=10 FAIL:1 PASS:9 worlds=u5u5a5sfpd29-20261108T12-55-59Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:59:58.666Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:59:58.667Z] single boot (no pair agreement required)
+[2026-11-08T12:59:58.704Z] host porcelain after: []
+[2026-11-08T12:59:58.704Z] RESULT FAIL (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:00:40.443Z =====
+[2026-11-08T13:00:40.449Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:00:40.511Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:00:40.512Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:00:40.515Z] [boot1] world=u5u5a5sfpd29-20261108T13-00-40Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-00-40Z
+[2026-11-08T13:01:32.727Z] [boot1] mock on 13050
+[2026-11-08T13:02:11.780Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-00-40Z
+[2026-11-08T13:02:12.028Z] [boot1] p6t6 health=true
+[2026-11-08T13:02:12.048Z] [boot1] discovery prompt status=200
+[2026-11-08T13:02:19.666Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-er0f4qmm3i","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:e8b2ee57a98d6998
+[2026-11-08T13:02:19.666Z] [boot1] delegations seen=true
+[2026-11-08T13:02:19.666Z] [boot1] goals created=true
+[2026-11-08T13:02:19.698Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:02:19.712Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":4,"s4":4,"lead":2,"cold":2,"pz":1}
+[2026-11-08T13:02:19.816Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:02:20.242Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:02:40.271Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:02:40.314Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=39 inRound=true
+[2026-11-08T13:02:41.054Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:03:01.090Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"active"}
+[2026-11-08T13:03:02.423Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:03:02.439Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:03:03.801Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:03:03.834Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:03:05.352Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:03:05.383Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:03:06.864Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:03:06.914Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:03:08.230Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:03:08.240Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:03:09.614Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:03:09.653Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:03:11.092Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:03:31.476Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:03:32.010Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:03:38.153Z] [boot1] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":12,"cold":12,"pz":0}
+[2026-11-08T13:03:38.177Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:03:58.286Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:03:58.340Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=167)
+[2026-11-08T13:04:00.115Z] [boot1] restart BOOTED port=3188
+[2026-11-08T13:04:00.255Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:04:00.262Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:04:00.346Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:04:22.343Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:04:25.076Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:04:32.278Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:leader-archive-stops-goal: REFUTED failed=["goal-deactivated: durable goal phase=active"]
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:04:32.531Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:04:32.532Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-00-40-479Z-b1 suite=a5sf-pd29-goal-stop overall=FAIL cases=10 FAIL:1 PASS:9 worlds=u5u5a5sfpd29-20261108T13-00-40Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:04:32.729Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:04:32.730Z] single boot (no pair agreement required)
+[2026-11-08T13:04:32.767Z] host porcelain after: []
+[2026-11-08T13:04:32.767Z] RESULT FAIL (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:05:40.635Z =====
+[2026-11-08T13:05:40.641Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:05:40.702Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:05:40.703Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:05:40.706Z] [boot1] world=u5u5a5sfpd29-20261108T13-05-40Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-05-40Z
+[2026-11-08T13:06:35.100Z] [boot1] mock on 13050
+[2026-11-08T13:07:16.618Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-05-40Z
+[2026-11-08T13:07:17.004Z] [boot1] p6t6 health=true
+[2026-11-08T13:07:17.025Z] [boot1] discovery prompt status=200
+[2026-11-08T13:07:24.063Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-361d8kul4r","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:ec2e3544a3f5d8f9
+[2026-11-08T13:07:24.064Z] [boot1] delegations seen=true
+[2026-11-08T13:07:24.064Z] [boot1] goals created=true
+[2026-11-08T13:07:24.075Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:07:24.198Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":4,"s4":3,"lead":2,"cold":1,"pz":1}
+[2026-11-08T13:07:24.636Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:07:44.664Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:07:44.702Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=38 inRound=true
+[2026-11-08T13:07:45.057Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:08:05.113Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"active"}
+[2026-11-08T13:08:05.335Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:08:05.335Z] [boot1] case pd29:leader-archive-stops-goal: REFUTED failed=["goal-deactivated: durable goal phase=active"]
+[2026-11-08T13:08:05.336Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-05-40-671Z-b1 suite=a5sf-pd29-goal-stop overall=FAIL cases=9 FAIL:8 PASS:1 worlds=u5u5a5sfpd29-20261108T13-05-40Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:08:05.629Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:08:05.630Z] single boot (no pair agreement required)
+[2026-11-08T13:08:05.668Z] host porcelain after: []
+[2026-11-08T13:08:05.668Z] RESULT FAIL (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:08:52.643Z =====
+[2026-11-08T13:08:52.649Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:08:52.711Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:08:52.711Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:08:52.714Z] [boot1] world=u5u5a5sfpd29-20261108T13-08-52Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-08-52Z
+[2026-11-08T13:09:29.173Z] [boot1] mock on 3497
+[2026-11-08T13:09:56.572Z] [boot1] BOOTED port=3185 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-08-52Z
+[2026-11-08T13:09:56.912Z] [boot1] p6t6 health=true
+[2026-11-08T13:09:56.935Z] [boot1] discovery prompt status=200
+[2026-11-08T13:10:04.207Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-6zpejeorwm","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:284cf6c3b1b74e5a
+[2026-11-08T13:10:04.207Z] [boot1] delegations seen=true
+[2026-11-08T13:10:04.208Z] [boot1] goals created=true
+[2026-11-08T13:10:04.245Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:10:04.363Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":4,"s4":3,"lead":2,"cold":1,"pz":1}
+[2026-11-08T13:10:04.786Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:10:24.824Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:10:24.849Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=37 inRound=true
+[2026-11-08T13:10:25.131Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:10:45.201Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:10:45.361Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:10:45.361Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:10:45.361Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-08-52-681Z-b1 suite=a5sf-pd29-goal-stop overall=FAIL cases=9 FAIL:7 PASS:2 worlds=u5u5a5sfpd29-20261108T13-08-52Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:10:45.638Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:10:45.639Z] single boot (no pair agreement required)
+[2026-11-08T13:10:45.673Z] host porcelain after: []
+[2026-11-08T13:10:45.673Z] RESULT PASS (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:11:05.167Z =====
+[2026-11-08T13:11:05.174Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:11:05.239Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:11:05.240Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:11:05.244Z] [boot1] world=u5u5a5sfpd29-20261108T13-11-05Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-11-05Z
+[2026-11-08T13:11:57.435Z] [boot1] mock on 13050
+[2026-11-08T13:12:36.434Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-11-05Z
+[2026-11-08T13:12:36.893Z] [boot1] p6t6 health=true
+[2026-11-08T13:12:36.914Z] [boot1] discovery prompt status=200
+[2026-11-08T13:12:43.965Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-8vkwvjziqw","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:9f325b40091100ab
+[2026-11-08T13:12:43.965Z] [boot1] delegations seen=true
+[2026-11-08T13:12:43.966Z] [boot1] goals created=true
+[2026-11-08T13:12:43.995Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:12:44.008Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":4,"s3":4,"s4":3,"lead":2,"cold":2,"pz":1}
+[2026-11-08T13:12:44.214Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:12:44.640Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:13:04.688Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:13:04.728Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=37 inRound=true
+[2026-11-08T13:13:04.923Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:13:24.995Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:13:25.740Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:13:25.781Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:13:27.117Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:13:27.157Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:13:28.525Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:13:28.554Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:13:29.944Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:13:29.970Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:13:31.435Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:13:31.481Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:13:32.849Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:13:32.899Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:13:34.193Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:13:54.562Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:13:55.151Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:14:01.305Z] [boot1] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":12,"cold":12,"pz":0}
+[2026-11-08T13:14:01.331Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:14:21.440Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:14:21.504Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=175)
+[2026-11-08T13:14:23.297Z] [boot1] restart BOOTED port=3188
+[2026-11-08T13:14:23.440Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:14:23.447Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:14:23.531Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:14:45.504Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:14:48.254Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:14:55.444Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:14:55.701Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:14:55.702Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-11-05-207Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T13-11-05Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:14:55.894Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:14:55.895Z] single boot (no pair agreement required)
+[2026-11-08T13:14:55.935Z] host porcelain after: []
+[2026-11-08T13:14:55.935Z] RESULT PASS (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:15:14.734Z =====
+[2026-11-08T13:15:14.740Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:15:14.803Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:15:14.804Z] [boot1] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:15:14.807Z] [boot1] world=u5u5a5sfpd29-20261108T13-15-14Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-15-14Z
+[2026-11-08T13:16:06.107Z] [boot1] mock on 13050
+[2026-11-08T13:16:45.272Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-15-14Z
+[2026-11-08T13:16:45.569Z] [boot1] p6t6 health=true
+[2026-11-08T13:16:45.589Z] [boot1] discovery prompt status=200
+[2026-11-08T13:16:52.873Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-dti8dc5bly","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:3fc362d8d2b22c20
+[2026-11-08T13:16:52.873Z] [boot1] delegations seen=true
+[2026-11-08T13:16:52.874Z] [boot1] goals created=true
+[2026-11-08T13:16:52.886Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:16:52.900Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":4,"s3":4,"s4":3,"lead":3,"cold":2,"pz":1}
+[2026-11-08T13:16:52.903Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:16:53.346Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:17:13.400Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:17:13.424Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=38 inRound=true
+[2026-11-08T13:17:13.615Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:17:33.672Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:17:34.942Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:17:34.978Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:17:36.274Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:17:36.297Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:17:37.643Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:17:37.669Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:17:39.058Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:17:39.094Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:17:40.416Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:17:40.471Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:17:41.765Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:17:41.790Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:17:43.110Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:18:03.486Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:18:04.065Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:18:10.214Z] [boot1] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":12,"cold":13,"pz":0}
+[2026-11-08T13:18:10.240Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:18:30.398Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:18:30.485Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=175)
+[2026-11-08T13:18:32.868Z] [boot1] restart BOOTED port=3188
+[2026-11-08T13:18:32.875Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:18:32.883Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:18:32.979Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:18:55.059Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:18:57.798Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:19:05.010Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:19:05.256Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:19:05.257Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:19:05.257Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-15-14-771Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T13-15-14Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:19:05.443Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:19:05.488Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:19:05.488Z] [boot2] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=24d2cf760e12f311c9d944152c8ee1b0bbc9ff59
+[2026-11-08T13:19:05.491Z] [boot2] world=u5u5a5sfpd29-20261108T13-19-05Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-19-05Z
+[2026-11-08T13:19:57.698Z] [boot2] mock on 13050
+[2026-11-08T13:20:35.414Z] [boot2] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-19-05Z
+[2026-11-08T13:20:35.701Z] [boot2] p6t6 health=true
+[2026-11-08T13:20:35.722Z] [boot2] discovery prompt status=200
+[2026-11-08T13:20:42.750Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-dtij1qla7z","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:043de2384b042ab7
+[2026-11-08T13:20:42.750Z] [boot2] delegations seen=true
+[2026-11-08T13:20:42.750Z] [boot2] goals created=true
+[2026-11-08T13:20:42.773Z] [boot2] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:20:42.784Z] [boot2] first rounds on every member=true rounds={"s1":2,"s2":4,"s3":3,"s4":3,"lead":2,"cold":1,"pz":1}
+[2026-11-08T13:20:43.090Z] [boot2] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:20:43.513Z] [boot2] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:21:03.562Z] [boot2] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:21:03.618Z] [boot2] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=38 inRound=true
+[2026-11-08T13:21:03.901Z] [boot2] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:21:23.976Z] [boot2] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:21:24.815Z] [boot2] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:21:24.865Z] [boot2] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:21:26.311Z] [boot2] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:21:26.342Z] [boot2] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:21:27.665Z] [boot2] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:21:27.684Z] [boot2] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:21:29.100Z] [boot2] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:21:29.134Z] [boot2] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:21:30.489Z] [boot2] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:21:30.505Z] [boot2] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:21:31.821Z] [boot2] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:21:31.857Z] [boot2] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:21:33.196Z] [boot2] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:21:53.569Z] [boot2] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:21:54.154Z] [boot2] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:22:00.317Z] [boot2] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":12,"cold":12,"pz":0}
+[2026-11-08T13:22:00.343Z] [boot2] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:22:20.502Z] [boot2] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:22:20.566Z] [boot2] S6 killing the Host with goal 'cold' in flight (rounds=178)
+[2026-11-08T13:22:22.350Z] [boot2] restart BOOTED port=3188
+[2026-11-08T13:22:22.488Z] [boot2] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:22:22.495Z] [boot2] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:22:22.578Z] [boot2] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:22:44.557Z] [boot2] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:22:47.305Z] [boot2] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:22:54.488Z] [boot2] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:22:54.746Z] [boot2] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:22:54.747Z] [boot2] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-19-05-444Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T13-19-05Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:22:54.932Z] [boot2] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:22:54.933Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd29:stop-during-round | PROVEN | PROVEN | agree |
+| pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
+| pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |
+| pd29:stop-in-idle-window | PROVEN | PROVEN | agree |
+| pd29:user-stops-leader-no-propagation | PROVEN | PROVEN | agree |
+| pd29:cold-recovery-no-revival | PROVEN | PROVEN | agree |
+| pd29:explicit-resume-after-recovery | PROVEN | PROVEN | agree |
+| pd29:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |
+| pd29:complete-does-not-continue | PROVEN | PROVEN | agree |
+[2026-11-08T13:22:54.972Z] host porcelain after: []
+[2026-11-08T13:22:54.972Z] RESULT PASS (2/2 boots; agreeing pair=true)
+
+===== a5sf-pd29-goal-stop 2026-11-08T13:30:20.636Z =====
+[2026-11-08T13:30:20.642Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T13:30:20.704Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:30:20.705Z] [boot1] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=12dd538610faf4d5ae6fb6e23895ad3106d8a348
+[2026-11-08T13:30:20.708Z] [boot1] world=u5u5a5sfpd29-20261108T13-30-20Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-30-20Z
+[2026-11-08T13:31:12.715Z] [boot1] mock on 13051
+[2026-11-08T13:31:50.463Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-30-20Z
+[2026-11-08T13:31:50.939Z] [boot1] p6t6 health=true
+[2026-11-08T13:31:50.975Z] [boot1] discovery prompt status=200
+[2026-11-08T13:31:58.887Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-1trfyifqt6","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:de242302df9289f7
+[2026-11-08T13:31:58.888Z] [boot1] delegations seen=true
+[2026-11-08T13:31:58.888Z] [boot1] goals created=true
+[2026-11-08T13:31:58.902Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:31:58.914Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":4,"s4":4,"lead":3,"cold":2,"pz":1}
+[2026-11-08T13:31:58.917Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:31:59.344Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:32:19.384Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:32:19.424Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=39 inRound=true
+[2026-11-08T13:32:19.626Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:32:39.723Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:32:40.842Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:32:40.882Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:32:42.164Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:32:42.181Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:32:43.408Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:32:43.435Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:32:44.701Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:32:44.737Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:32:46.078Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:32:46.112Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:32:47.355Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:32:47.392Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:32:48.801Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:33:09.210Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:33:10.053Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:33:16.221Z] [boot1] S5 result: {"s1":0,"s2":13,"s3":0,"s4":0,"lead":13,"cold":13,"pz":0}
+[2026-11-08T13:33:16.251Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:33:36.426Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:33:36.505Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=201)
+[2026-11-08T13:33:38.513Z] [boot1] restart BOOTED port=3188
+[2026-11-08T13:33:38.522Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:33:38.529Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:33:38.616Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:34:00.710Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:34:03.502Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:34:10.654Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:34:10.926Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-30-20-672Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T13-30-20Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:34:11.101Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:34:11.147Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:34:11.148Z] [boot2] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=12dd538610faf4d5ae6fb6e23895ad3106d8a348
+[2026-11-08T13:34:11.150Z] [boot2] world=u5u5a5sfpd29-20261108T13-34-11Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-34-11Z
+[2026-11-08T13:35:02.569Z] [boot2] mock on 13051
+[2026-11-08T13:35:41.360Z] [boot2] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T13-34-11Z
+[2026-11-08T13:35:41.793Z] [boot2] p6t6 health=true
+[2026-11-08T13:35:41.809Z] [boot2] discovery prompt status=200
+[2026-11-08T13:35:48.848Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-hlfmf4z0iq","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:84ca0d7691b9b352
+[2026-11-08T13:35:48.848Z] [boot2] delegations seen=true
+[2026-11-08T13:35:48.848Z] [boot2] goals created=true
+[2026-11-08T13:35:48.860Z] [boot2] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T13:35:48.871Z] [boot2] first rounds on every member=true rounds={"s1":2,"s2":6,"s3":4,"s4":3,"lead":2,"cold":2,"pz":1}
+[2026-11-08T13:35:48.974Z] [boot2] S8-continue: rounds on 'lead'=3
+[2026-11-08T13:35:49.412Z] [boot2] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T13:36:09.451Z] [boot2] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:36:09.481Z] [boot2] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=42 inRound=true
+[2026-11-08T13:36:09.672Z] [boot2] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T13:36:29.723Z] [boot2] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T13:36:30.952Z] [boot2] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T13:36:31.004Z] [boot2] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T13:36:32.260Z] [boot2] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T13:36:32.278Z] [boot2] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T13:36:33.500Z] [boot2] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T13:36:33.531Z] [boot2] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T13:36:34.901Z] [boot2] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T13:36:34.936Z] [boot2] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T13:36:36.186Z] [boot2] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T13:36:36.246Z] [boot2] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T13:36:37.639Z] [boot2] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T13:36:37.671Z] [boot2] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T13:36:39.048Z] [boot2] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T13:36:59.438Z] [boot2] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T13:37:00.109Z] [boot2] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T13:37:06.286Z] [boot2] S5 result: {"s1":0,"s2":15,"s3":0,"s4":0,"lead":15,"cold":15,"pz":0}
+[2026-11-08T13:37:06.316Z] [boot2] S8 blocked: blocked=true rounds=1
+[2026-11-08T13:37:26.493Z] [boot2] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T13:37:26.568Z] [boot2] S6 killing the Host with goal 'cold' in flight (rounds=218)
+[2026-11-08T13:37:28.322Z] [boot2] restart BOOTED port=3188
+[2026-11-08T13:37:28.458Z] [boot2] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T13:37:28.464Z] [boot2] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T13:37:28.544Z] [boot2] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T13:37:50.581Z] [boot2] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T13:37:53.367Z] [boot2] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T13:38:00.456Z] [boot2] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:stop-during-round: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T13:38:00.754Z] [boot2] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T13:38:00.755Z] [boot2] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T13-34-11-101Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T13-34-11Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:38:00.922Z] [boot2] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:38:00.922Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd29:stop-during-round | PROVEN | PROVEN | agree |
+| pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
+| pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |
+| pd29:stop-in-idle-window | PROVEN | PROVEN | agree |
+| pd29:user-stops-leader-no-propagation | PROVEN | PROVEN | agree |
+| pd29:cold-recovery-no-revival | PROVEN | PROVEN | agree |
+| pd29:explicit-resume-after-recovery | PROVEN | PROVEN | agree |
+| pd29:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |
+| pd29:complete-does-not-continue | PROVEN | PROVEN | agree |
+[2026-11-08T13:38:00.961Z] host porcelain after: []
+[2026-11-08T13:38:00.961Z] RESULT PASS (2/2 boots; agreeing pair=true)
+
+===== a5sf-pd29-goal-stop 2026-11-08T14:13:23.969Z =====
+[2026-11-08T14:13:23.974Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T14:13:24.036Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T14:13:24.037Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=a043bc3cc6a0e24ef2f38b738e9819f33b9ccedc
+[2026-11-08T14:13:24.040Z] [boot1] world=u5u5a5sfpd29-20261108T14-13-24Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-13-24Z
+[2026-11-08T14:14:21.441Z] [boot1] mock on 13051
+[2026-11-08T14:15:01.005Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-13-24Z
+[2026-11-08T14:15:01.358Z] [boot1] p6t6 health=true
+[2026-11-08T14:15:01.378Z] [boot1] discovery prompt status=200
+[2026-11-08T14:15:02.064Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-086px66d5k","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:991c1652701b7075
+[2026-11-08T14:15:02.064Z] [boot1] delegations seen=true
+[2026-11-08T14:19:02.115Z] [boot1] goals created=false
+[2026-11-08T14:19:02.116Z] [boot1] FAILED at Error: not every Member created its goal
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/world-factory/drivers/a5sf-pd29-goal-stop/run-boot.mjs:850:30)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/world-factory/drivers/a5sf-pd29-goal-stop/run-boot.mjs:1449:18)
+[2026-11-08T14:19:02.248Z] [boot1] dev-live slot released (slot=0 state=false)
+[2026-11-08T14:19:02.288Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T14:19:02.288Z] [boot2] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=a043bc3cc6a0e24ef2f38b738e9819f33b9ccedc
+[2026-11-08T14:19:02.291Z] [boot2] world=u5u5a5sfpd29-20261108T14-19-02Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-19-02Z
+[2026-11-08T14:19:59.947Z] [boot2] mock on 13052
+[2026-11-08T14:20:37.988Z] [boot2] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-19-02Z
+[2026-11-08T14:20:38.278Z] [boot2] p6t6 health=true
+[2026-11-08T14:20:38.297Z] [boot2] discovery prompt status=200
+[2026-11-08T14:20:39.019Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-p6cu58642e","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:c6511f72c5f63ac9
+[2026-11-08T14:20:39.019Z] [boot2] delegations seen=true
+[2026-11-08T14:24:39.043Z] [boot2] goals created=false
+[2026-11-08T14:24:39.043Z] [boot2] FAILED at Error: not every Member created its goal
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/world-factory/drivers/a5sf-pd29-goal-stop/run-boot.mjs:850:30)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/world-factory/drivers/a5sf-pd29-goal-stop/run-boot.mjs:1449:18)
+[2026-11-08T14:24:39.147Z] [boot2] dev-live slot released (slot=1 state=true)
+[2026-11-08T14:24:39.147Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+[2026-11-08T14:24:39.179Z] host porcelain after: []
+[2026-11-08T14:24:39.179Z] RESULT FAIL (2/2 boots; agreeing pair=true)
+
+===== a5sf-pd29-goal-stop 2026-11-08T14:27:26.400Z =====
+[2026-11-08T14:27:26.406Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T14:27:26.469Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T14:27:26.469Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=a043bc3cc6a0e24ef2f38b738e9819f33b9ccedc
+[2026-11-08T14:27:26.472Z] [boot1] world=u5u5a5sfpd29-20261108T14-27-26Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-27-26Z
+[2026-11-08T14:27:26.473Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T14:28:24.128Z] [boot1] mock on 13051
+[2026-11-08T14:29:03.827Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-27-26Z
+[2026-11-08T14:29:04.226Z] [boot1] p6t6 health=true
+[2026-11-08T14:29:04.246Z] [boot1] discovery prompt status=200
+[2026-11-08T14:29:11.681Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-ub4toi9s4i","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:ed0e25b23e7a6b38
+[2026-11-08T14:29:11.681Z] [boot1] delegations seen=true
+[2026-11-08T14:29:11.681Z] [boot1] goals created=true
+[2026-11-08T14:29:11.702Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T14:29:11.714Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":5,"s4":4,"lead":2,"cold":2,"pz":1}
+[2026-11-08T14:29:12.162Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T14:29:32.202Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T14:29:32.359Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T14:29:32.359Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T14-27-26-436Z-b1 suite=a5sf-pd29-goal-stop overall=FAIL cases=9 FAIL:8 PASS:1 worlds=u5u5a5sfpd29-20261108T14-27-26Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T14:29:32.576Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T14:29:32.577Z] single boot (no pair agreement required)
+[2026-11-08T14:29:32.611Z] host porcelain after: []
+[2026-11-08T14:29:32.612Z] RESULT PASS (1/1 boots; agreeing pair=null)
+
+===== a5sf-pd29-goal-stop 2026-11-08T14:30:00.526Z =====
+[2026-11-08T14:30:00.533Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T14:30:00.601Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T14:30:00.602Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=193fba59339e92d1bb0b6133f2e63861544220d3
+[2026-11-08T14:30:00.605Z] [boot1] world=u5u5a5sfpd29-20261108T14-30-00Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-30-00Z
+[2026-11-08T14:30:00.606Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T14:30:58.374Z] [boot1] mock on 13051
+[2026-11-08T14:31:38.071Z] [boot1] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-30-00Z
+[2026-11-08T14:31:38.396Z] [boot1] p6t6 health=true
+[2026-11-08T14:31:38.416Z] [boot1] discovery prompt status=200
+[2026-11-08T14:31:45.670Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-e606fphh60","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:fa17c339898b41ad
+[2026-11-08T14:31:45.670Z] [boot1] delegations seen=true
+[2026-11-08T14:31:45.671Z] [boot1] goals created=true
+[2026-11-08T14:31:45.681Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T14:31:45.693Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":6,"s3":5,"s4":4,"lead":3,"cold":2,"pz":1}
+[2026-11-08T14:31:45.696Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T14:31:46.148Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T14:32:06.191Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T14:32:06.214Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=43 inRound=true
+[2026-11-08T14:32:06.536Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T14:32:26.623Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T14:32:27.469Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T14:32:27.534Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T14:32:28.861Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T14:32:28.904Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T14:32:30.324Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T14:32:30.377Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T14:32:31.589Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T14:32:31.631Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T14:32:33.020Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T14:32:33.069Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T14:32:34.443Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T14:32:34.463Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T14:32:35.851Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T14:32:56.259Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T14:32:57.011Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T14:33:03.191Z] [boot1] S5 result: {"s1":0,"s2":14,"s3":0,"s4":0,"lead":14,"cold":14,"pz":0}
+[2026-11-08T14:33:03.221Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T14:33:23.406Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T14:33:23.517Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=213)
+[2026-11-08T14:33:25.512Z] [boot1] restart BOOTED port=3188
+[2026-11-08T14:33:25.520Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T14:33:25.527Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T14:33:25.609Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T14:33:47.687Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T14:33:50.480Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T14:33:57.598Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T14:33:57.925Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T14:33:57.926Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T14-30-00-568Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T14-30-00Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T14:33:58.114Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T14:33:58.164Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T14:33:58.165Z] [boot2] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=193fba59339e92d1bb0b6133f2e63861544220d3
+[2026-11-08T14:33:58.168Z] [boot2] world=u5u5a5sfpd29-20261108T14-33-58Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-33-58Z
+[2026-11-08T14:33:58.169Z] [boot2] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T14:34:55.982Z] [boot2] mock on 13052
+[2026-11-08T14:35:34.202Z] [boot2] BOOTED port=3188 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T14-33-58Z
+[2026-11-08T14:35:34.619Z] [boot2] p6t6 health=true
+[2026-11-08T14:35:34.640Z] [boot2] discovery prompt status=200
+[2026-11-08T14:35:41.870Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-g7px8nsp8s","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:59c881847cc75ebf
+[2026-11-08T14:35:41.871Z] [boot2] delegations seen=true
+[2026-11-08T14:35:41.871Z] [boot2] goals created=true
+[2026-11-08T14:35:41.898Z] [boot2] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T14:35:41.913Z] [boot2] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":5,"s4":4,"lead":2,"cold":2,"pz":1}
+[2026-11-08T14:35:42.019Z] [boot2] S8-continue: rounds on 'lead'=3
+[2026-11-08T14:35:42.472Z] [boot2] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T14:36:02.508Z] [boot2] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T14:36:02.555Z] [boot2] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=41 inRound=true
+[2026-11-08T14:36:02.796Z] [boot2] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T14:36:22.887Z] [boot2] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T14:36:23.981Z] [boot2] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T14:36:24.019Z] [boot2] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T14:36:25.410Z] [boot2] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T14:36:25.444Z] [boot2] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T14:36:26.705Z] [boot2] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T14:36:26.716Z] [boot2] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T14:36:28.110Z] [boot2] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T14:36:28.137Z] [boot2] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T14:36:29.413Z] [boot2] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T14:36:29.458Z] [boot2] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T14:36:30.808Z] [boot2] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T14:36:30.841Z] [boot2] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T14:36:32.196Z] [boot2] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T14:36:52.605Z] [boot2] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T14:36:53.526Z] [boot2] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T14:36:59.701Z] [boot2] S5 result: {"s1":0,"s2":12,"s3":0,"s4":0,"lead":12,"cold":12,"pz":0}
+[2026-11-08T14:36:59.730Z] [boot2] S8 blocked: blocked=true rounds=1
+[2026-11-08T14:37:19.862Z] [boot2] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T14:37:19.939Z] [boot2] S6 killing the Host with goal 'cold' in flight (rounds=201)
+[2026-11-08T14:37:21.967Z] [boot2] restart BOOTED port=3188
+[2026-11-08T14:37:21.974Z] [boot2] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T14:37:21.981Z] [boot2] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T14:37:22.064Z] [boot2] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T14:37:44.068Z] [boot2] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T14:37:46.836Z] [boot2] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T14:37:53.963Z] [boot2] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:stop-during-round: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T14:37:54.275Z] [boot2] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T14:37:54.276Z] [boot2] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T14-33-58-114Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T14-33-58Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T14:37:54.457Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T14:37:54.458Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd29:stop-during-round | PROVEN | PROVEN | agree |
+| pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
+| pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |
+| pd29:stop-in-idle-window | PROVEN | PROVEN | agree |
+| pd29:user-stops-leader-no-propagation | PROVEN | PROVEN | agree |
+| pd29:cold-recovery-no-revival | PROVEN | PROVEN | agree |
+| pd29:explicit-resume-after-recovery | PROVEN | PROVEN | agree |
+| pd29:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |
+| pd29:complete-does-not-continue | PROVEN | PROVEN | agree |
+[2026-11-08T14:37:54.498Z] host porcelain after: []
+[2026-11-08T14:37:54.499Z] RESULT PASS (2/2 boots; agreeing pair=true)
+
+===== a5sf-pd29-goal-stop 2026-11-08T15:00:13.150Z =====
+[2026-11-08T15:00:13.156Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T15:00:13.220Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T15:00:13.221Z] [boot1] dev-live slot #1 face=GoalStop world=u5a5sfpd29 head=0b45a398dbb705cf9fcbd3f644ffa0e60d9e80da
+[2026-11-08T15:00:13.224Z] [boot1] world=u5u5a5sfpd29-20261108T15-00-13Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-00-13Z
+[2026-11-08T15:00:13.225Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T15:00:20.986Z] [boot1] mock on 3492
+[2026-11-08T15:00:37.559Z] [boot1] BOOTED port=3183 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-00-13Z
+[2026-11-08T15:00:37.928Z] [boot1] p6t6 health=true
+[2026-11-08T15:00:37.950Z] [boot1] discovery prompt status=200
+[2026-11-08T15:00:45.463Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-rh6qtvtlp3","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:0bf22a8fc804dfc3
+[2026-11-08T15:00:45.463Z] [boot1] delegations seen=true
+[2026-11-08T15:00:45.464Z] [boot1] goals created=true
+[2026-11-08T15:00:45.475Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T15:00:45.488Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":6,"s3":5,"s4":4,"lead":3,"cold":2,"pz":1}
+[2026-11-08T15:00:45.491Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T15:00:45.914Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T15:01:05.964Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:01:06.011Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=42 inRound=true
+[2026-11-08T15:01:06.239Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T15:01:26.315Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:01:27.592Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T15:01:27.639Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T15:01:28.970Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T15:01:28.996Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T15:01:30.269Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T15:01:30.322Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T15:01:31.745Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T15:01:31.778Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T15:01:33.006Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T15:01:33.032Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T15:01:34.436Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T15:01:34.460Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T15:01:35.932Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T15:01:56.331Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T15:01:57.143Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T15:02:03.315Z] [boot1] S5 result: {"s1":0,"s2":15,"s3":0,"s4":0,"lead":14,"cold":14,"pz":0}
+[2026-11-08T15:02:03.344Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T15:02:23.528Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T15:02:23.619Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=212)
+[2026-11-08T15:02:25.604Z] [boot1] restart BOOTED port=3183
+[2026-11-08T15:02:25.610Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T15:02:25.617Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T15:02:25.704Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T15:02:47.757Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T15:02:50.541Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T15:02:57.650Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T15:02:57.988Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T15-00-13-190Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T15-00-13Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T15:02:58.159Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T15:02:58.212Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T15:02:58.213Z] [boot2] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=0b45a398dbb705cf9fcbd3f644ffa0e60d9e80da
+[2026-11-08T15:02:58.215Z] [boot2] world=u5u5a5sfpd29-20261108T15-02-58Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-02-58Z
+[2026-11-08T15:02:58.217Z] [boot2] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T15:03:07.152Z] [boot2] mock on 3493
+[2026-11-08T15:03:29.828Z] [boot2] BOOTED port=3184 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-02-58Z
+[2026-11-08T15:03:30.177Z] [boot2] p6t6 health=true
+[2026-11-08T15:03:30.195Z] [boot2] discovery prompt status=200
+[2026-11-08T15:03:37.454Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-v0356bt7u2","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:9b5289b14371e8b4
+[2026-11-08T15:03:37.454Z] [boot2] delegations seen=true
+[2026-11-08T15:03:37.454Z] [boot2] goals created=true
+[2026-11-08T15:03:37.507Z] [boot2] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T15:03:37.945Z] [boot2] first rounds on every member=true rounds={"s1":2,"s2":6,"s3":5,"s4":4,"lead":3,"cold":2,"pz":1}
+[2026-11-08T15:03:37.948Z] [boot2] S8-continue: rounds on 'lead'=3
+[2026-11-08T15:03:38.402Z] [boot2] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T15:03:58.450Z] [boot2] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:03:58.476Z] [boot2] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=43 inRound=true
+[2026-11-08T15:03:58.755Z] [boot2] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T15:04:18.836Z] [boot2] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:04:19.626Z] [boot2] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T15:04:19.673Z] [boot2] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T15:04:20.988Z] [boot2] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T15:04:21.030Z] [boot2] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T15:04:22.337Z] [boot2] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T15:04:22.369Z] [boot2] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T15:04:23.620Z] [boot2] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T15:04:23.667Z] [boot2] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T15:04:25.126Z] [boot2] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T15:04:25.179Z] [boot2] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T15:04:26.642Z] [boot2] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T15:04:26.681Z] [boot2] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T15:04:28.256Z] [boot2] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T15:04:48.635Z] [boot2] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T15:04:49.290Z] [boot2] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T15:04:55.470Z] [boot2] S5 result: {"s1":0,"s2":15,"s3":0,"s4":0,"lead":14,"cold":14,"pz":0}
+[2026-11-08T15:04:55.500Z] [boot2] S8 blocked: blocked=true rounds=1
+[2026-11-08T15:05:15.650Z] [boot2] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T15:05:15.719Z] [boot2] S6 killing the Host with goal 'cold' in flight (rounds=204)
+[2026-11-08T15:05:17.706Z] [boot2] restart BOOTED port=3184
+[2026-11-08T15:05:17.714Z] [boot2] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T15:05:17.721Z] [boot2] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T15:05:17.802Z] [boot2] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T15:05:39.810Z] [boot2] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T15:05:42.576Z] [boot2] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T15:05:49.679Z] [boot2] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T15:05:50.010Z] [boot2] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:stop-during-round: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T15:05:50.011Z] [boot2] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T15-02-58-159Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T15-02-58Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T15:05:50.178Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T15:05:50.179Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd29:stop-during-round | PROVEN | PROVEN | agree |
+| pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
+| pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |
+| pd29:stop-in-idle-window | PROVEN | PROVEN | agree |
+| pd29:user-stops-leader-no-propagation | PROVEN | PROVEN | agree |
+| pd29:cold-recovery-no-revival | PROVEN | PROVEN | agree |
+| pd29:explicit-resume-after-recovery | PROVEN | PROVEN | agree |
+| pd29:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |
+| pd29:complete-does-not-continue | PROVEN | PROVEN | agree |
+[2026-11-08T15:05:50.219Z] host porcelain after: []
+[2026-11-08T15:05:50.219Z] RESULT PASS (2/2 boots; agreeing pair=true)
+
+===== a5sf-pd29-goal-stop 2026-11-08T15:12:26.885Z =====
+[2026-11-08T15:12:26.891Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-08T15:12:26.951Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T15:12:26.952Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=8ebdc67e717b2113c40b6810213b9b50df1f7867
+[2026-11-08T15:12:26.956Z] [boot1] world=u5u5a5sfpd29-20261108T15-12-26Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-12-26Z
+[2026-11-08T15:12:26.957Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T15:12:34.757Z] [boot1] mock on 3492
+[2026-11-08T15:12:57.112Z] [boot1] BOOTED port=3184 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-12-26Z
+[2026-11-08T15:12:57.523Z] [boot1] p6t6 health=true
+[2026-11-08T15:12:57.543Z] [boot1] discovery prompt status=200
+[2026-11-08T15:13:05.083Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-vycvy9v8k2","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:6174a859ba78294c
+[2026-11-08T15:13:05.083Z] [boot1] delegations seen=true
+[2026-11-08T15:13:05.084Z] [boot1] goals created=true
+[2026-11-08T15:13:05.095Z] [boot1] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T15:13:05.107Z] [boot1] first rounds on every member=true rounds={"s1":2,"s2":5,"s3":5,"s4":4,"lead":3,"cold":2,"pz":1}
+[2026-11-08T15:13:05.110Z] [boot1] S8-continue: rounds on 'lead'=3
+[2026-11-08T15:13:05.529Z] [boot1] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T15:13:25.561Z] [boot1] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:13:25.619Z] [boot1] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=43 inRound=true
+[2026-11-08T15:13:25.908Z] [boot1] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T15:13:45.991Z] [boot1] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:13:46.713Z] [boot1] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T15:13:46.767Z] [boot1] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T15:13:48.133Z] [boot1] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T15:13:48.178Z] [boot1] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T15:13:49.501Z] [boot1] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T15:13:49.533Z] [boot1] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T15:13:50.896Z] [boot1] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T15:13:50.957Z] [boot1] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T15:13:52.225Z] [boot1] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T15:13:52.247Z] [boot1] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T15:13:53.587Z] [boot1] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T15:13:53.634Z] [boot1] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T15:13:55.137Z] [boot1] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T15:14:15.540Z] [boot1] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T15:14:16.133Z] [boot1] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T15:14:22.301Z] [boot1] S5 result: {"s1":0,"s2":14,"s3":0,"s4":0,"lead":13,"cold":13,"pz":0}
+[2026-11-08T15:14:22.330Z] [boot1] S8 blocked: blocked=true rounds=1
+[2026-11-08T15:14:42.492Z] [boot1] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T15:14:42.557Z] [boot1] S6 killing the Host with goal 'cold' in flight (rounds=204)
+[2026-11-08T15:14:44.536Z] [boot1] restart BOOTED port=3184
+[2026-11-08T15:14:44.544Z] [boot1] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T15:14:44.551Z] [boot1] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T15:14:44.634Z] [boot1] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T15:15:06.643Z] [boot1] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T15:15:09.418Z] [boot1] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T15:15:16.531Z] [boot1] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:stop-during-round: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T15:15:16.818Z] [boot1] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T15:15:16.825Z] [boot1] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T15-12-26-921Z-b1 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T15-12-26Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T15:15:16.984Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T15:15:17.033Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T15:15:17.034Z] [boot2] dev-live slot #0 face=GoalStop world=u5a5sfpd29 head=8ebdc67e717b2113c40b6810213b9b50df1f7867
+[2026-11-08T15:15:17.036Z] [boot2] world=u5u5a5sfpd29-20261108T15-15-17Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-15-17Z
+[2026-11-08T15:15:17.037Z] [boot2] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop (7 exports resolved, incl. ./web-tool)
+[2026-11-08T15:15:25.236Z] [boot2] mock on 3493
+[2026-11-08T15:15:54.277Z] [boot2] BOOTED port=3185 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-15-17Z
+[2026-11-08T15:15:54.629Z] [boot2] p6t6 health=true
+[2026-11-08T15:15:54.647Z] [boot2] discovery prompt status=200
+[2026-11-08T15:16:02.253Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-6y8zqgyeiv","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd29-team","blueprint":{"blueprintId":"team.a5sf.pd29.main","revision":"1","contentHash":"sha256:70bc8027d5567d68
+[2026-11-08T15:16:02.254Z] [boot2] delegations seen=true
+[2026-11-08T15:16:02.254Z] [boot2] goals created=true
+[2026-11-08T15:16:02.264Z] [boot2] member sessions: {"s1":"session-team-child-ac519c72c71153a0400dfdf6846f350c","s2":"session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d","s3":"session-team-child-0a34a332bd9c557b02dc46436b375827","s4":"session-team-child-686a8cf508932b0f88d2d42afcae7fc9","lead":"session-team-child-3f838bbc85d2f5cb8fceb5b533759f64","cold":"session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2","pz":"session-team-child-b2d1dee72c92429c81c201ff046e7caa"}
+[2026-11-08T15:16:02.276Z] [boot2] first rounds on every member=true rounds={"s1":2,"s2":6,"s3":5,"s4":4,"lead":2,"cold":1,"pz":1}
+[2026-11-08T15:16:02.379Z] [boot2] S8-continue: rounds on 'lead'=3
+[2026-11-08T15:16:02.794Z] [boot2] S1 stop status=200 roundsBefore=2 callsBefore=3
+[2026-11-08T15:16:22.822Z] [boot2] S1 result: {"roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:16:22.861Z] [boot2] S4 pre-archive: instance=inst-0mqn50d1qxan rounds=42 inRound=true
+[2026-11-08T15:16:23.190Z] [boot2] S4 archive: status=200 ok=true value={"status":"executed","action":"archive-member","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-0mqn50d1qxan","effect":{"kind":"lifecycle-changed","instanceId":"inst-0mqn50d1qxan","from":"SETTLED","to":"ARCHIVED","sequence":38},"requestToken":"pd29-archive-s4-1
+[2026-11-08T15:16:43.278Z] [boot2] S4 result: {"lifecycle":"ARCHIVED","roundsAfter":0,"callsAfter":0,"finalPhase":"paused"}
+[2026-11-08T15:16:44.570Z] [boot2] gap attempt 0: status=200 phase=paused landed=true
+[2026-11-08T15:16:44.602Z] [boot2] gap re-arm 0: ok=true active=true error=null
+[2026-11-08T15:16:45.982Z] [boot2] gap attempt 1: status=200 phase=paused landed=true
+[2026-11-08T15:16:46.026Z] [boot2] gap re-arm 1: ok=true active=true error=null
+[2026-11-08T15:16:47.361Z] [boot2] gap attempt 2: status=200 phase=paused landed=true
+[2026-11-08T15:16:47.408Z] [boot2] gap re-arm 2: ok=true active=true error=null
+[2026-11-08T15:16:48.777Z] [boot2] gap attempt 3: status=200 phase=paused landed=true
+[2026-11-08T15:16:48.818Z] [boot2] gap re-arm 3: ok=true active=true error=null
+[2026-11-08T15:16:50.142Z] [boot2] gap attempt 4: status=200 phase=paused landed=true
+[2026-11-08T15:16:50.189Z] [boot2] gap re-arm 4: ok=true active=true error=null
+[2026-11-08T15:16:51.586Z] [boot2] gap attempt 5: status=200 phase=paused landed=true
+[2026-11-08T15:16:51.632Z] [boot2] gap re-arm 5: ok=true active=true error=null
+[2026-11-08T15:16:53.105Z] [boot2] S2/S3a raw cancel burst=24 roundsAfterLastRaw=0 lost=false
+[2026-11-08T15:17:13.508Z] [boot2] S2/S3b result: {"pauseSeen":true,"roundsAfterPause":0,"requestsAfterPause":0}
+[2026-11-08T15:17:14.283Z] [boot2] S5 leader stop: prompt=200 running=true cancel=200
+[2026-11-08T15:17:20.458Z] [boot2] S5 result: {"s1":0,"s2":14,"s3":0,"s4":0,"lead":13,"cold":13,"pz":0}
+[2026-11-08T15:17:20.487Z] [boot2] S8 blocked: blocked=true rounds=1
+[2026-11-08T15:17:40.619Z] [boot2] S8 terminal: {"blocked":true,"pzRounds":1,"roundsAfterPause":0}
+[2026-11-08T15:17:40.698Z] [boot2] S6 killing the Host with goal 'cold' in flight (rounds=208)
+[2026-11-08T15:17:42.694Z] [boot2] restart BOOTED port=3185
+[2026-11-08T15:17:42.716Z] [boot2] restart health=true body={"status":200,"body":{"ok":true,"boot":1,"ready":true,"rootSessionId":"session-a5sf-pd29-team","liveSessions":["session-a5sf-pd29-boot"],"toolCount":15}}
+[2026-11-08T15:17:42.723Z] [boot2] restart members: {"s1":"SETTLED","s2":"SETTLED","s3":"SETTLED","s4":"ARCHIVED","lead":"SETTLED","cold":"SETTLED","pz":"SETTLED"}
+[2026-11-08T15:17:42.803Z] [boot2] S6 follow-up: status=200 ok=true {"status":"executed","action":"follow-up","rootSessionId":"session-a5sf-pd29-team","callerRole":"leader","targetInstanceId":"inst-00ovc5a1c0t5","effect":{"kind":"work-admitted","instanceId":"inst-00ovc5a1c0t5","fromLifecycle":"SETTLED","lif
+[2026-11-08T15:18:04.826Z] [boot2] S6 result: {"roundsAfter":0,"revived":false}
+[2026-11-08T15:18:07.590Z] [boot2] S7 result: {"resumedRound":true,"roundsAfterResume":1,"finalPhase":"active"}
+[2026-11-08T15:18:14.744Z] [boot2] S8-complete: ok=true seen=true roundsAfter=0
+[2026-11-08T15:18:15.072Z] [boot2] case pd29:goal-continuous-rounds: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:stop-during-round: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:leader-archive-stops-goal: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:stop-at-round-boundary: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:stop-in-idle-window: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:user-stops-leader-no-propagation: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:cold-recovery-no-revival: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:explicit-resume-after-recovery: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:terminal-phases-do-not-continue: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] case pd29:complete-does-not-continue: PROVEN
+[2026-11-08T15:18:15.078Z] [boot2] RUN-SUMMARY run=a5sf-pd29-goal-stop-2026-11-08T15-15-16-985Z-b2 suite=a5sf-pd29-goal-stop overall=PASS cases=10 PASS:10 worlds=u5u5a5sfpd29-20261108T15-15-17Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T15:18:15.245Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T15:18:15.246Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd29:stop-during-round | PROVEN | PROVEN | agree |
+| pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
+| pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |
+| pd29:stop-in-idle-window | PROVEN | PROVEN | agree |
+| pd29:user-stops-leader-no-propagation | PROVEN | PROVEN | agree |
+| pd29:cold-recovery-no-revival | PROVEN | PROVEN | agree |
+| pd29:explicit-resume-after-recovery | PROVEN | PROVEN | agree |
+| pd29:terminal-phases-do-not-continue | PROVEN | PROVEN | agree |
+| pd29:complete-does-not-continue | PROVEN | PROVEN | agree |
+[2026-11-08T15:18:15.287Z] host porcelain after: []
+[2026-11-08T15:18:15.287Z] RESULT PASS (2/2 boots; agreeing pair=true)

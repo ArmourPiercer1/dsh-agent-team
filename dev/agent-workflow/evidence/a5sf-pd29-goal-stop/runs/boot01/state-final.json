@@ -1,0 +1,369 @@
+{
+  "boot": 1,
+  "phase": "resume",
+  "rootSessionId": "session-a5sf-pd29-team",
+  "teamSession": {
+    "rootSessionId": "session-a5sf-pd29-team",
+    "blueprintId": "team.a5sf.pd29.main",
+    "revision": "1",
+    "contentHash": "sha256:6174a859ba78294cee213474d1a3d956a2b1867d849f42612578c8b37dbf02cd",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-goal-stop/tests/homes/u5u5a5sfpd29-20261108T15-12-26Z/workspace",
+    "createdAt": "2026-11-08T15:12:57.683Z",
+    "generation": 44
+  },
+  "members": [
+    {
+      "instanceId": "inst-00ovc5a1c0t5",
+      "templateId": "cold",
+      "label": "a5sfpd29-cold",
+      "childSessionId": "session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2",
+      "lifecycle": "SETTLED",
+      "activityVersion": 5
+    },
+    {
+      "instanceId": "inst-0mqn50d1qxan",
+      "templateId": "s4",
+      "label": "a5sfpd29-s4",
+      "childSessionId": "session-team-child-686a8cf508932b0f88d2d42afcae7fc9",
+      "lifecycle": "ARCHIVED",
+      "activityVersion": 4
+    },
+    {
+      "instanceId": "inst-13l6btr19bof",
+      "templateId": "s2",
+      "label": "a5sfpd29-s2",
+      "childSessionId": "session-team-child-d60b59a5836ed1f4a1fcf6d34c51522d",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-1i47ml00vteo",
+      "templateId": "s1",
+      "label": "a5sfpd29-s1",
+      "childSessionId": "session-team-child-ac519c72c71153a0400dfdf6846f350c",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-1kfzww20su4c",
+      "templateId": "s3",
+      "label": "a5sfpd29-s3",
+      "childSessionId": "session-team-child-0a34a332bd9c557b02dc46436b375827",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-1l1hb5u1b2lc",
+      "templateId": "pz",
+      "label": "a5sfpd29-pz",
+      "childSessionId": "session-team-child-b2d1dee72c92429c81c201ff046e7caa",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-1vpx8b60vyz1",
+      "templateId": "lead",
+      "label": "a5sfpd29-lead",
+      "childSessionId": "session-team-child-3f838bbc85d2f5cb8fceb5b533759f64",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": []
+  },
+  "activity": [
+    {
+      "globalSequence": 4,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1i47ml00vteo",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-s1-delegate",
+      "requestToken": "a5sf-pd29-s1-delegate"
+    },
+    {
+      "globalSequence": 7,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-13l6btr19bof",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-s2-delegate",
+      "requestToken": "a5sf-pd29-s2-delegate"
+    },
+    {
+      "globalSequence": 10,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1kfzww20su4c",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-s3-delegate",
+      "requestToken": "a5sf-pd29-s3-delegate"
+    },
+    {
+      "globalSequence": 11,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1i47ml00vteo",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-s1-delegate",
+      "requestToken": "a5sf-pd29-s1-delegate"
+    },
+    {
+      "globalSequence": 15,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-0mqn50d1qxan",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-s4-delegate",
+      "requestToken": "a5sf-pd29-s4-delegate"
+    },
+    {
+      "globalSequence": 16,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-13l6btr19bof",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-s2-delegate",
+      "requestToken": "a5sf-pd29-s2-delegate"
+    },
+    {
+      "globalSequence": 18,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1kfzww20su4c",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-s3-delegate",
+      "requestToken": "a5sf-pd29-s3-delegate"
+    },
+    {
+      "globalSequence": 22,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1vpx8b60vyz1",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-lead-delegate",
+      "requestToken": "a5sf-pd29-lead-delegate"
+    },
+    {
+      "globalSequence": 23,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0mqn50d1qxan",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-s4-delegate",
+      "requestToken": "a5sf-pd29-s4-delegate"
+    },
+    {
+      "globalSequence": 27,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-00ovc5a1c0t5",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-cold-delegate",
+      "requestToken": "a5sf-pd29-cold-delegate"
+    },
+    {
+      "globalSequence": 28,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1vpx8b60vyz1",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-lead-delegate",
+      "requestToken": "a5sf-pd29-lead-delegate"
+    },
+    {
+      "globalSequence": 32,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1l1hb5u1b2lc",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd29-pz-delegate",
+      "requestToken": "a5sf-pd29-pz-delegate"
+    },
+    {
+      "globalSequence": 33,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-00ovc5a1c0t5",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-cold-delegate",
+      "requestToken": "a5sf-pd29-cold-delegate"
+    },
+    {
+      "globalSequence": 35,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1l1hb5u1b2lc",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd29-pz-delegate",
+      "requestToken": "a5sf-pd29-pz-delegate"
+    },
+    {
+      "globalSequence": 40,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-00ovc5a1c0t5",
+      "subject": "work-unit",
+      "sequence": 3,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "pd29-followup-cold-1794150884551",
+      "requestToken": "pd29-followup-cold-1794150884551"
+    },
+    {
+      "globalSequence": 41,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-00ovc5a1c0t5",
+      "subject": "work-unit",
+      "sequence": 4,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "pd29-followup-cold-1794150884551",
+      "requestToken": "pd29-followup-cold-1794150884551"
+    }
+  ],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-a5sf-pd29-boot": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-a5sf-pd29-team": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-team-child-28ad4ed96f05da5dd03d7598a5e79fd2": {
+        "instanceId": "inst-00ovc5a1c0t5",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "deepseek-v4-flash"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": []
+}

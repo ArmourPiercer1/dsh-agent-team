@@ -1,20 +1,22 @@
 /**
- * a5sf-pd25-mutation-controls.mjs — the mutation controls for PD-24/UNBOUNDED-TURN.
+ * a5sf-pd25-mutation-controls.mjs — the mutation controls for PD-25/UNBOUNDED-TURN.
  *
  * A green suite proves nothing unless each arm CAN go red. This script drives
- * the host-free suite six times and asserts the exact arm that reddens:
+ * the host-free suite four times and asserts the exact arm that reddens:
  *
- *   CLEAN        no mutation                              everything GREEN
- *   M1-goal      register dispatchable get_goal /          PD25-TYPED-REFUSAL RED,
- *                create_goal / update_goal                 the SURFACE arms stay GREEN
- *   M2-ask       register a dispatchable                   PD25-TYPED-REFUSAL RED
- *                ask_user_question
- *   M3-partial   register `get_goal` ONLY (the reader)     PD25-TYPED-REFUSAL RED —
- *                                                          the trio must leave as a set
- *   M4-row       re-insert the removed `tool-goal` and     PD25-SURFACE-CLOSED RED,
- *                `tool-ask-user` rows into a COPY of the   PD25-TYPED-REFUSAL stays GREEN
- *                composition
- *   PIN          the BASE commit really carries the rows   the PIN arm is GREEN
+ *   CLEAN          no mutation                              everything GREEN
+ *   M1-row         DELETE the reopened `tool-goal` row from  PD25-SURFACE-CLOSED RED
+ *                  a COPY of the composition                 (the PD-29 reopening arm)
+ *   M2-ask         register a dispatchable                   PD25-TYPED-REFUSAL RED
+ *                  ask_user_question
+ *   M4-ask-row     re-insert the closed `tool-ask-user` row  PD25-SURFACE-CLOSED RED,
+ *                  into a COPY of the composition          PD25-TYPED-REFUSAL GREEN
+ *   PIN            the BASE commit really carries the rows   the PIN arm is GREEN
+ *
+ * PD-29 (2026-11-14 owner ruling) changed one thing this script pins: the goal
+ * trio is no longer CLOSED (Preview accepts the absent global round budget), so
+ * the two goal-register mutations of PD-25 no longer apply. The ask removal is
+ * untouched, and the reopening is now the thing a mutation must be able to undo.
  *
  * The mutations are fixtures: they live only inside the child processes and a
  * temp copy of `cordis.patch.yml` under the OS temp dir. The tracked file is
@@ -34,7 +36,7 @@ const SUITE = join(HERE, 'a5sf-pd25-unbounded-turn.test.mjs')
 const COMPOSITION = join(REPO, 'cordis.patch.yml')
 
 const BASE_COMMIT = '6cfc67b7695672ac817c64d3aec47a48b1dc48b4'
-const CLOSED_ROWS = ['tool-goal', 'tool-ask-user']
+const CLOSED_ROWS = ['tool-ask-user']
 
 function runSuite(env) {
   const child = spawnSync(process.execPath, ['--test', '--test-reporter=tap', SUITE], {
@@ -70,25 +72,29 @@ const cleanAll = clean.outcomes.size > 0 && [...clean.outcomes.values()].every((
 check('CLEAN: every arm is green', clean.status === 0 && cleanAll,
   `exit=${String(clean.status)} tests=${String(clean.outcomes.size)} failed=${JSON.stringify([...clean.outcomes.entries()].filter(([, ok]) => ok !== true).map(([n]) => n))}`)
 
-// ── M1: a dispatchable GOAL trio must redden the refusal arm ────────────────
-const m1 = runSuite({ A5SF_PD25_MUTATE_REGISTER: 'goal' })
-check('M1-goal: PD25-TYPED-REFUSAL reddens', named(m1.outcomes, 'PD25-TYPED-REFUSAL') === false,
-  `refusal=${String(named(m1.outcomes, 'PD25-TYPED-REFUSAL'))}`)
-check('M1-goal: the SURFACE arms stay green (the mutation is not a global break)',
-  named(m1.outcomes, 'PD25-SURFACE-CLOSED') === true && named(m1.outcomes, 'PD25-SURFACE-SURGICAL') === true,
-  `closed=${String(named(m1.outcomes, 'PD25-SURFACE-CLOSED'))} surgical=${String(named(m1.outcomes, 'PD25-SURFACE-SURGICAL'))}`)
+// ── M1: DELETING the reopened goal row must redden the reopening arm ────────
+const dirM1 = mkdtempSync(join(tmpdir(), 'pd25-mut1-'))
+let m1
+try {
+  const original = readFileSync(COMPOSITION, 'utf8')
+  const line = "          - id: tool-goal\n            name: '@deepseek-ai/dsh-tool-goal'\n"
+  if (!original.includes(line)) throw new Error('the governed preset no longer declares the exact tool-goal row this mutation removes')
+  const mutated = join(dirM1, 'cordis.patch.yml')
+  writeFileSync(mutated, original.replace(line, ''))
+  m1 = runSuite({ A5SF_PD25_COMPOSITION: mutated })
+} finally {
+  rmSync(dirM1, { recursive: true, force: true })
+}
+check('M1-row-removed: PD25-SURFACE-CLOSED reddens (the goal reopening is pinned, not assumed)',
+  named(m1.outcomes, 'PD25-SURFACE-CLOSED') === false,
+  `closed=${String(named(m1.outcomes, 'PD25-SURFACE-CLOSED'))}`)
 
 // ── M2: a dispatchable ASK tool must redden the refusal arm ─────────────────
 const m2 = runSuite({ A5SF_PD25_MUTATE_REGISTER: 'ask' })
 check('M2-ask: PD25-TYPED-REFUSAL reddens', named(m2.outcomes, 'PD25-TYPED-REFUSAL') === false,
   `refusal=${String(named(m2.outcomes, 'PD25-TYPED-REFUSAL'))}`)
 
-// ── M3: ONE surviving goal tool (the reader) must redden the refusal arm ────
-const m3 = runSuite({ A5SF_PD25_MUTATE_REGISTER: 'partial' })
-check('M3-partial: PD25-TYPED-REFUSAL reddens (the trio leaves as a SET)', named(m3.outcomes, 'PD25-TYPED-REFUSAL') === false,
-  `refusal=${String(named(m3.outcomes, 'PD25-TYPED-REFUSAL'))}`)
-
-// ── M4: re-inserting the removed rows must redden the surface arm ───────────
+// ── M4: re-inserting the CLOSED ask-user row must redden the surface arm ────
 const dir = mkdtempSync(join(tmpdir(), 'pd25-mut-'))
 let m4
 try {
