@@ -1,0 +1,12 @@
+{
+  "schema": "a5sf-pd21-subagent/child-probe/1",
+  "childPresent": false,
+  "childSessionId": null,
+  "childAgentPreset": null,
+  "childDelegationDepth": null,
+  "readCall": null,
+  "readResult": null,
+  "bashCall": null,
+  "bashResult": null,
+  "finalAssistant": null
+}

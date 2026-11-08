@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd23-control-surface-postfix-2026-11-08T02-13-33-181Z-b2",
+  "runId": "a5sf-pd23-control-surface-postfix-2026-11-08T02-42-44-313Z-b2",
   "suite": "a5sf-pd23-control-surface",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T02:13:33.181Z",
+  "startedAt": "2026-11-08T02:42:44.313Z",
   "selectedCases": [
     "pd23:member-confined-baseline",
     "pd23:no-cross-member-enumeration",
@@ -28,7 +28,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "c5d619e5370c196692b02735e41086933119ed0f",
+      "head": "990e1b9d9d51e36297e88770d32b17cf3ecf6319",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -39,18 +39,18 @@
       "source": "task PD23-CONTROL-SURFACE explicit boot authorisation (2026-11-14), arm=postfix"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "c5d619e5370c196692b02735e41086933119ed0f",
+    "teamSha": "990e1b9d9d51e36297e88770d32b17cf3ecf6319",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd23-20261108T02-13-33Z"
+      "u5u5a5sfpd23-20261108T02-42-44Z"
     ]
   },
   "cases": [
     {
       "id": "pd23:member-confined-baseline",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.361Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "the Member's model-visible `bash` admits an in-ceiling read through the confined terminal face and records a guard fact (the positive control)",
       "failed": [],
       "clauses": [
@@ -84,7 +84,7 @@
     {
       "id": "pd23:no-cross-member-enumeration",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.361Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "a governed Member cannot enumerate any agent: `list_agents` is ABSENT and the call is a typed unknown-tool refusal that names no sibling",
       "failed": [],
       "clauses": [
@@ -113,7 +113,7 @@
     {
       "id": "pd23:send-message-refused",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.361Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "a governed Member cannot influence another Member through `send_message`: the delivery is refused by the subagent lineage rule, the sibling is NOT woken, and no byte crosses the lane",
       "failed": [],
       "clauses": [
@@ -162,7 +162,7 @@
     {
       "id": "pd23:interrupt-without-effect",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.361Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "a governed Member cannot stop another Member: `interrupt_agent` is ABSENT (typed unknown-tool refusal) and the sibling's turn settles normally",
       "failed": [],
       "clauses": [
@@ -191,7 +191,7 @@
     {
       "id": "pd23:jobs-owner-scoped",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "the job registry is OWNER-scoped and has no producer on this preset: `job_list` is empty, and a FOREIGN Leader job id (and a SESSION id) are typed refusals, never another agent's output",
       "failed": [],
       "clauses": [
@@ -235,7 +235,7 @@
     {
       "id": "pd23:skill-confined",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "a governed Member cannot read a skill body ABOVE its ceiling: the `skill` tool is absent and every load is a typed unknown-tool refusal with zero bytes",
       "failed": [],
       "clauses": [
@@ -274,7 +274,7 @@
     {
       "id": "pd23:skill-arg-refused",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "the `skill` NAME argument cannot be used to cross the lane: a traversal name and an absolute path are both refused before any read",
       "failed": [],
       "clauses": [
@@ -303,7 +303,7 @@
     {
       "id": "pd23:no-out-of-lane-bytes",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "ZERO out-of-lane bytes reach any model request or either Member's durable turn, and ZERO guard facts are attributed to the skill read",
       "failed": [],
       "clauses": [
@@ -337,7 +337,7 @@
     {
       "id": "pd23:session-state-tools",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "the todo tool touches only the calling session: A's todo is written to A's OWN durable session, B's session stays clean, and `get_goal` reads only the caller's own goal (null before any create)",
       "failed": [],
       "clauses": [
@@ -371,7 +371,7 @@
     {
       "id": "pd23:goal-session-local",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.771Z",
       "proposition": "the goal tools are SESSION-LOCAL: `create_goal` opens a goal in the CALLING Member's own session and `update_goal` changes that same goal, while NO other session — sibling or Leader — holds any goal state and no goal round reaches the Team",
       "failed": [],
       "clauses": [
@@ -383,12 +383,12 @@
         {
           "id": "create-accepted-session-local",
           "ok": true,
-          "detail": "goal id=goal-e1e0cb29-952b-46b1-88e5-9b320ab13ba3 text={\"goal\":{\"id\":\"goal-e1e0cb29-952b-46b1-88e5-9b320ab13ba3\",\"revision\":1,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"active\",\"roundsStarted\":0"
+          "detail": "goal id=goal-7393e183-5398-49e4-a3f2-0d88232d306f text={\"goal\":{\"id\":\"goal-7393e183-5398-49e4-a3f2-0d88232d306f\",\"revision\":1,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"active\",\"roundsStarted\":0"
         },
         {
           "id": "update-changes-the-same-goal",
           "ok": true,
-          "detail": "isError=false text={\"goal\":{\"id\":\"goal-e1e0cb29-952b-46b1-88e5-9b320ab13ba3\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disa"
+          "detail": "isError=false text={\"goal\":{\"id\":\"goal-7393e183-5398-49e4-a3f2-0d88232d306f\",\"revision\":2,\"objective\":\"A member must not own a Team-level goal.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":256},\"activation\":\"disa"
         },
         {
           "id": "goal-state-in-a-session",
@@ -415,7 +415,7 @@
     {
       "id": "pd23:no-new-members",
       "verdict": "PASS",
-      "at": "2026-11-08T02:14:58.362Z",
+      "at": "2026-11-08T02:44:09.772Z",
       "proposition": "the Member turn establishes no Team-level state and mints no member: the roster is exactly the Leader plus the two templates the Leader created",
       "failed": [],
       "clauses": [
@@ -437,11 +437,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T02:14:09.624Z",
-        "runId": "a5sf-pd23-control-surface-postfix-2026-11-08T02-13-33-181Z-b2",
+        "at": "2026-11-08T02:43:20.867Z",
+        "runId": "a5sf-pd23-control-surface-postfix-2026-11-08T02-42-44-313Z-b2",
         "suite": "a5sf-pd23-control-surface",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd23-20261108T02-13-33Z",
+        "world": "u5u5a5sfpd23-20261108T02-42-44Z",
         "phase": "a5sf-pd23-control-surface-postfix-boot2"
       }
     ]
@@ -449,17 +449,17 @@
   "boots": [
     {
       "phase": "a5sf-pd23-control-surface-postfix-boot2",
-      "world": "u5u5a5sfpd23-20261108T02-13-33Z",
+      "world": "u5u5a5sfpd23-20261108T02-42-44Z",
       "port": 3188,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-13-33Z/instance-port3188.log"
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd23-control-surface/dev/agent-workflow/evidence/a5sf-pd23-control-surface/driver/logs/u5u5a5sfpd23-20261108T02-42-44Z/instance-port3188.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd23-control-surface-postfix-2026-11-08T02-13-33-181Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd23-control-surface-postfix-2026-11-08T02-42-44-313Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T02:14:58.363Z"
+  "finishedAt": "2026-11-08T02:44:09.772Z"
 }

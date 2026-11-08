@@ -178,28 +178,45 @@
     #     the realm mounts, so it loses `run_in_background`, per-call
     #     `timeoutMs`, `sandbox_permissions`/`justification` and the structured
     #     result object (the face's answer is bounded text).
-    #   - `tool-jobs`, fs, search, goal/plan/todo/present, `subagent` and
-    #     compaction are RETAINED. `tool-jobs` is retained but has no producer
-    #     on this preset (the confined face cannot hand a command to the job
-    #     registry); it answers from an OWNER-scoped registry, so a Member can
-    #     only ever see its own (empty) job list — PD-23 measured this live.
-    #     `subagent` is retained here; its child-session assembly on a governed
-    #     row is the PD-22 finding (fail-closed removal of the rest of this
-    #     group on the sibling lane — see the evidence README).
-    #   - `send_message`/`interrupt_agent` (`tool-subagent-control`) and
-    #     `list_agents` (`tool-subagent-list-agents`) are REMOVED by PD-23: on
-    #     this preset a Member has no legal lineage target (its sibling and its
-    #     Leader both fail the subagent lineage rule), `list_agents` reports only
-    #     the caller's OWN children (none), and `interrupt_agent` answers a
-    #     success-shaped `interrupt requested for agent …` for a target it never
-    #     touched. All four calls are the router's typed `unknown tool` now.
-    #   - the skills loader is REMOVED by PD-23 too. `skill-filesystem` serves
-    #     bodies from the BASE `fs` (preset rows are mounted on the registry
+    #   - the whole `delegation` GROUP (PD-21, 2026-11-14) — `subagent`,
+    #     `subagent_fork`, `tool-subagent-control` (`send_message`/
+    #     `interrupt_agent`) and `list_agents`. MEASURED on the real Host: a
+    #     governed Member's `subagent` call spawned a live child session whose
+    #     preset label was `a5sf-governed-member` but whose realm was NOT the
+    #     Member's: the child's `read` returned the out-of-lane fixture bytes
+    #     (native `tool-fs`, no guard fact) and its `bash` ran on the BASE
+    #     subprocess (`cat` of the same file, two base-`bwrap` sightings, zero
+    #     a5sf facts). The child also carried `subagent` itself, so depth was
+    #     provider-managed recursion. The child ctx is a SIBLING of the realm's
+    #     `fs`/`subprocess` isolate fork, so no preset-level row can inherit the
+    #     realm; the disposition is therefore FAIL-CLOSED: the family is GONE
+    #     from the governed preset (typed `UNKNOWN_TOOL`, zero children).
+    #     The shipped-disabled `tool-ralph` row (subagentProvider: spawn) is
+    #     removed with it: a disabled row is not a governance boundary, and a
+    #     later enable would silently restore a spawn-capable face.
+    #     `evidence/a5sf-pd21-subagent/`.
+    #   - `tool-jobs`, fs, search, goal/plan/todo/present and compaction are
+    #     RETAINED. `tool-jobs` is retained but has no producer on this preset
+    #     (the confined face cannot hand a command to the job registry); it
+    #     answers from an OWNER-scoped registry, so a Member can only ever see
+    #     its own (empty) list and a foreign job id is refused — PD-23 measured
+    #     both live (`belongs to another session`, `unknown job <session-id>`).
+    #   - the SKILLS LOADER is REMOVED by PD-23 (2026-11-14): `skill-filesystem`
+    #     serves bodies from the BASE `fs` — preset rows mount on the registry
     #     generation scope, so no ctx handed to the preset changes a body's
-    #     `fs`), and a live Member load of a `$DSH_HOME/skills` body returned its
-    #     bytes with ZERO guard facts. Absence is a CAPABILITY REGRESSION, not an
-    #     enforcement; a confined provider needs a `CORE_SEAM_BLOCKER`-class seam
-    #     (see the PD-23 evidence README §5.1).
+    #     `fs` — and a live Member load of a `$DSH_HOME/skills` body returned its
+    #     bytes with ZERO guard facts (that body then sat in 7 model requests).
+    #     THE OPT-IN GOVERNED PRESET NOW OFFERS NO SKILLS AT ALL. That is a
+    #     CAPABILITY REGRESSION, not an enforcement: a confined provider needs a
+    #     `CORE_SEAM_BLOCKER`-class seam (see the PD-23 evidence README §5.1 for
+    #     what would restore skills). `tool-skill` goes with it.
+    #   - `send_message`/`interrupt_agent`/`list_agents` were ALSO measured by
+    #     PD-23 on the pre-merge base and could only refuse or lie there: the
+    #     sibling and the Leader both failed the subagent lineage rule for
+    #     `send_message`, `list_agents` reported only the caller's OWN (empty)
+    #     children, and `interrupt_agent` answered a success-shaped `interrupt
+    #     requested for agent …` for a target it never touched. They are absent
+    #     on this head because the PD-21 group removal already took them.
     #   - NO `persistent-shell`/`dsh-terminal` row appears anywhere on this
     #     preset's scope: a persistent PTY would turn the realm install into
     #     `TERMINALS_DOUBLE_TERMINAL_REFUSED` (no Member at all), and the
@@ -272,47 +289,6 @@
                   thresholdChars: 8192
                   headChars: 4096
                   tailChars: 1024
-          - id: delegation
-            name: cordis:group
-            group: true
-            isolate:
-              workflowEngine: true
-            config:
-              - id: tool-subagent
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: spawn
-                  toolName: subagent
-                  modelSelectionSettings: true
-                  backgroundMode: continuable
-              - id: tool-subagent-fork
-                name: '@deepseek-ai/dsh-tool-subagent'
-                config:
-                  provider: fork
-                  toolName: subagent_fork
-                  backgroundMode: continuable
-              - id: tool-subagent-codex
-                name: '@deepseek-ai/dsh-tool-subagent'
-                disabled: true
-                config:
-                  provider: codex
-                  toolName: subagent_codex
-                  backgroundMode: one-shot
-                  maxDepth: provider-managed
-              - id: tool-subagent-claude-code
-                name: '@deepseek-ai/dsh-tool-subagent'
-                disabled: true
-                config:
-                  provider: claude-code
-                  toolName: subagent_claude_code
-                  backgroundMode: one-shot
-                  maxDepth: provider-managed
-              - id: tool-ralph
-                name: '@deepseek-ai/dsh-tool-ralph'
-                disabled: true
-                config:
-                  subagentProvider: spawn
-                  maxRounds: 64
           - id: tool-ask-user
             name: '@deepseek-ai/dsh-tool-ask-user'
           - id: tool-todo

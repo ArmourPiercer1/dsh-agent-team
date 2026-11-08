@@ -15,8 +15,8 @@ goalsVerdict                  PROVEN                        PROVEN
 membersVerdict                PROVEN                        PROVEN
 skillOnMemberSurface          false                         false
 sendMessageOnMemberSurface    false                         false
-surfaceACount                 36                            36
-surfaceBCount                 36                            36
+surfaceACount                 34                            34
+surfaceBCount                 34                            34
 siblingPresent                true                          true
 goalRounds                    0                             0
 siblingSettled                true                          true

@@ -14,8 +14,6 @@
     "present",
     "read",
     "read_image",
-    "subagent",
-    "subagent_fork",
     "team_archive_member",
     "team_collect",
     "team_create_member",

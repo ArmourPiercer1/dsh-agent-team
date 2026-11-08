@@ -1,7 +1,7 @@
 {
   "schema": "a5sf-pd23-control-surface/agreement/1",
   "arm": "postfix",
-  "at": "2026-11-08T02:14:58.525Z",
+  "at": "2026-11-08T02:44:09.946Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
@@ -23,8 +23,8 @@
       "membersVerdict": "PROVEN",
       "skillOnMemberSurface": false,
       "sendMessageOnMemberSurface": false,
-      "surfaceACount": 36,
-      "surfaceBCount": 36,
+      "surfaceACount": 34,
+      "surfaceBCount": 34,
       "siblingPresent": true,
       "goalRounds": 0,
       "siblingSettled": true,
@@ -59,8 +59,8 @@
       "membersVerdict": "PROVEN",
       "skillOnMemberSurface": false,
       "sendMessageOnMemberSurface": false,
-      "surfaceACount": 36,
-      "surfaceBCount": 36,
+      "surfaceACount": 34,
+      "surfaceBCount": 34,
       "siblingPresent": true,
       "goalRounds": 0,
       "siblingSettled": true,
@@ -79,5 +79,5 @@
       "transcriptSourceCount": 17
     }
   ],
-  "table": "TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\narm                           postfix                       postfix\noverall                       PASS                          PASS\nbaselineVerdict               PROVEN                        PROVEN\nenumerationVerdict            PROVEN                        PROVEN\nsendVerdict                   PROVEN                        PROVEN\ninterruptVerdict              PROVEN                        PROVEN\njobsVerdict                   PROVEN                        PROVEN\nskillVerdict                  PROVEN                        PROVEN\nskillArgsVerdict              PROVEN                        PROVEN\nbytesVerdict                  PROVEN                        PROVEN\nsessionStateVerdict           PROVEN                        PROVEN\ngoalsVerdict                  PROVEN                        PROVEN\nmembersVerdict                PROVEN                        PROVEN\nskillOnMemberSurface          false                         false\nsendMessageOnMemberSurface    false                         false\nsurfaceACount                 36                            36\nsurfaceBCount                 36                            36\nsiblingPresent                true                          true\ngoalRounds                    0                             0\nsiblingSettled                true                          true\naModelRequests                18                            18\nbModelRequests                2                             2\nconfinedTurnLaunchers         2                             2\nbaseBwrapWithMarkers          0                             0\nguardAllow                    6                             6\nguardDeny                     0                             0\nguardSkillFacts               0                             0\nrequestsCarryingSecret        0                             0\nrequestsCarryingSkillOut      0                             0\nmemberInstancesAfter          3                             3\nmemberTemplates               leader+wide+worker            leader+wide+worker\nadmittedBytes                 true                          true\ntranscriptSourceCount         17                            17\n\nagreeing=true differing=[]"
+  "table": "TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\narm                           postfix                       postfix\noverall                       PASS                          PASS\nbaselineVerdict               PROVEN                        PROVEN\nenumerationVerdict            PROVEN                        PROVEN\nsendVerdict                   PROVEN                        PROVEN\ninterruptVerdict              PROVEN                        PROVEN\njobsVerdict                   PROVEN                        PROVEN\nskillVerdict                  PROVEN                        PROVEN\nskillArgsVerdict              PROVEN                        PROVEN\nbytesVerdict                  PROVEN                        PROVEN\nsessionStateVerdict           PROVEN                        PROVEN\ngoalsVerdict                  PROVEN                        PROVEN\nmembersVerdict                PROVEN                        PROVEN\nskillOnMemberSurface          false                         false\nsendMessageOnMemberSurface    false                         false\nsurfaceACount                 34                            34\nsurfaceBCount                 34                            34\nsiblingPresent                true                          true\ngoalRounds                    0                             0\nsiblingSettled                true                          true\naModelRequests                18                            18\nbModelRequests                2                             2\nconfinedTurnLaunchers         2                             2\nbaseBwrapWithMarkers          0                             0\nguardAllow                    6                             6\nguardDeny                     0                             0\nguardSkillFacts               0                             0\nrequestsCarryingSecret        0                             0\nrequestsCarryingSkillOut      0                             0\nmemberInstancesAfter          3                             3\nmemberTemplates               leader+wide+worker            leader+wide+worker\nadmittedBytes                 true                          true\ntranscriptSourceCount         17                            17\n\nagreeing=true differing=[]"
 }

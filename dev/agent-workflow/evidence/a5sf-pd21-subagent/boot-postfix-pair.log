@@ -1,0 +1,79 @@
+[2026-11-08T00:43:18.041Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/dev/agent-workflow/evidence/a5sf-pd21-subagent/archive/2026-11-08T00-43-18-041Z
+[2026-11-08T00:43:18.045Z] START head=3df546de63edef5f4daf81a46c93e2c7cc33c0cd hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T00:43:18.071Z] host porcelain before: []
+[2026-11-08T00:43:18.127Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T00:43:18.128Z] [boot1] dev-live slot #0 face=Subagent world=u5a5sfpd21 head=3df546de63edef5f4daf81a46c93e2c7cc33c0cd
+[2026-11-08T00:43:18.131Z] [boot1] world=u5u5a5sfpd21-20261108T00-43-18Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-43-18Z
+[2026-11-08T00:43:18.132Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T00:43:54.391Z] [boot1] mock on 3498
+[2026-11-08T00:44:32.443Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/dev/agent-workflow/evidence/a5sf-pd21-subagent/driver/logs/u5u5a5sfpd21-20261108T00-43-18Z/instance-port3188.log
+[2026-11-08T00:44:32.930Z] [boot1] p6t6 health=true
+[2026-11-08T00:44:33.202Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T00:44:33.202Z] [boot1] leader builtinToolDeny:
+[2026-11-08T00:44:38.900Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-48o72cwli5","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd21-team","blueprint":{"blueprintId":"team.a5sf.pd21.main","revision":"1","contentHash":"sha256:67473c200425d2553ad91f3b7a7abbf9432831d56654041addf0d473c058243a"},"createdAt":"2026-11-08T00:44:33.272Z","generation"
+[2026-11-08T00:44:40.101Z] [boot1] leader chain closed (A5SF_PD21_L1_DONE)=true
+[2026-11-08T00:44:40.102Z] [boot1] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-pd21-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0fswwvp0rvg5","templateId":"worker","childSessionId":"session-team-child-a511040c4723154e08a9981e69e661bc","operationId":"op-0eiu3gv1fwpgvq0tq1fi915c","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-pd21-turn-delegate","status":"succeeded","body":
+[2026-11-08T00:44:40.109Z] [boot1] members=[{"instanceId":"inst-0fswwvp0rvg5","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-a511040c4723154e08a9981e69e661bc
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:member-confined-baseline: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:member-surface: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:subagent-child-governed: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:no-child-byte-escape: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:child-fact-attribution: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:confined-launcher-accounting: PASS
+[2026-11-08T00:44:40.126Z] [boot1] case pd21:member-create-refused: PASS
+[2026-11-08T00:44:40.127Z] [boot1] diagnostics(final): mockRequests=11 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-pd21-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0fswwvp0rvg5","templateId":"worker","childSessionId":"session-team-child-a511040c4723154e08a9981e69e661bc","operationId":"op-0eiu3gv1fwpgvq0t sessions=["session-a5sf-pd21-boot","session-a5sf-pd21-team","session-team-child-a511040c4723154e08a9981e69e661bc"]
+[2026-11-08T00:44:40.128Z] [boot1] RUN-SUMMARY run=a5sf-pd21-subagent-2026-11-08T00-43-18-098Z-b1 suite=a5sf-pd21-subagent overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd21-20261108T00-43-18Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T00:44:40.355Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-43-18Z","releasedPorts":[3188,3498,3188],"killedPids":[100],"notes":[]}
+[2026-11-08T00:44:40.356Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T00:44:40.431Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T00:44:40.432Z] [boot2] dev-live slot #0 face=Subagent world=u5a5sfpd21 head=3df546de63edef5f4daf81a46c93e2c7cc33c0cd
+[2026-11-08T00:44:40.435Z] [boot2] world=u5u5a5sfpd21-20261108T00-44-40Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z
+[2026-11-08T00:44:40.436Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T00:45:16.752Z] [boot2] mock on 3498
+[2026-11-08T00:45:54.796Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/dev/agent-workflow/evidence/a5sf-pd21-subagent/driver/logs/u5u5a5sfpd21-20261108T00-44-40Z/instance-port3188.log
+[2026-11-08T00:45:55.105Z] [boot2] p6t6 health=true
+[2026-11-08T00:45:55.373Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T00:45:55.373Z] [boot2] leader builtinToolDeny:
+[2026-11-08T00:46:00.920Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-0ko0ru25ny","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd21-team","blueprint":{"blueprintId":"team.a5sf.pd21.main","revision":"1","contentHash":"sha256:b53ab729c2a61284e71e3c90d38a529670e963e070ae89261afdb20a34fdba35"},"createdAt":"2026-11-08T00:45:55.402Z","generation"
+[2026-11-08T00:46:02.121Z] [boot2] leader chain closed (A5SF_PD21_L1_DONE)=true
+[2026-11-08T00:46:02.122Z] [boot2] delegate call=true result={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-pd21-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0fswwvp0rvg5","templateId":"worker","childSessionId":"session-team-child-a511040c4723154e08a9981e69e661bc","operationId":"op-0eiu3gv1fwpgvq0tq1fi915c","replayed":false,"ledgerSequence":2,"admissionCode":"ADMISSION_OPEN","workSequence":3,"workSettled":true,"memberResult":{"requestToken":"a5sf-pd21-turn-delegate","status":"succeeded","body":
+[2026-11-08T00:46:02.129Z] [boot2] members=[{"instanceId":"inst-0fswwvp0rvg5","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=session-team-child-a511040c4723154e08a9981e69e661bc
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:member-confined-baseline: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:member-surface: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:subagent-child-governed: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:no-child-byte-escape: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:child-fact-attribution: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:confined-launcher-accounting: PASS
+[2026-11-08T00:46:02.138Z] [boot2] case pd21:member-create-refused: PASS
+[2026-11-08T00:46:02.139Z] [boot2] diagnostics(final): mockRequests=11 delegateResult={"status":"executed","action":"delegate","rootSessionId":"session-a5sf-pd21-team","callerRole":"leader","effect":{"kind":"member-activated","instanceId":"inst-0fswwvp0rvg5","templateId":"worker","childSessionId":"session-team-child-a511040c4723154e08a9981e69e661bc","operationId":"op-0eiu3gv1fwpgvq0t sessions=["session-a5sf-pd21-boot","session-a5sf-pd21-team","session-team-child-a511040c4723154e08a9981e69e661bc"]
+[2026-11-08T00:46:02.140Z] [boot2] RUN-SUMMARY run=a5sf-pd21-subagent-2026-11-08T00-44-40-392Z-b2 suite=a5sf-pd21-subagent overall=PASS cases=7 PASS:7 worlds=u5u5a5sfpd21-20261108T00-44-40Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T00:46:02.313Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":322,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd21-subagent-realm/tests/homes/u5u5a5sfpd21-20261108T00-44-40Z","releasedPorts":[3188,3498,3188],"killedPids":[322],"notes":[]}
+[2026-11-08T00:46:02.313Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T00:46:02.349Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+overall                       PASS                          PASS
+baselineVerdict               PROVEN                        PROVEN
+memberSurfaceVerdict          PROVEN                        PROVEN
+childRealmVerdict             PROVEN                        PROVEN
+escapeVerdict                 PROVEN                        PROVEN
+childFactsVerdict             PROVEN                        PROVEN
+spawnsVerdict                 PROVEN                        PROVEN
+createVerdict                 PROVEN                        PROVEN
+subagentOnMemberSurface       false                         false
+childPresent                  false                         false
+childModelRequests            0                             0
+childSurfaceCount             0                             0
+confinedTurnLaunchers         1                             1
+baseBwrapWithMarkers          0                             0
+guardAllow                    1                             1
+guardDeny                     0                             0
+requestsCarryingSecret        0                             0
+memberInstancesBefore         2                             2
+memberInstancesAfter          2                             2
+admittedBytes                 true                          true
+transcriptSourceCount         4                             4
+
+agreeing=true differing=[]
+[2026-11-08T00:46:02.384Z] host porcelain after: []
+[2026-11-08T00:46:02.385Z] RESULT PASS (2/2 boots; agreeing pair=true)
+EXIT=0

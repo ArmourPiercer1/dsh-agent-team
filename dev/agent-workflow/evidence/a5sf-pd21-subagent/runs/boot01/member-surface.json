@@ -1,0 +1,118 @@
+{
+  "tools": [
+    "ask_user_question",
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "write"
+  ],
+  "bash": {
+    "name": "bash",
+    "description": "Execute a bash command through this Member's confined terminal face and return its stdout/stderr. Each call runs in a fresh confined shell; pass `workdir` instead of using `cd`. Every path the command names is admitted against the compiled read lane before the shell starts; a refused read returns no bytes and names the typed refusal code in its error.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The bash command line to run (`bash -c`)."
+        },
+        "description": {
+          "type": "string",
+          "description": "One short sentence describing what the command does."
+        },
+        "workdir": {
+          "type": "string",
+          "description": "Optional working directory; absolute, or relative to the session cwd."
+        }
+      },
+      "required": [
+        "command",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "subagent": null,
+  "subagentFork": null,
+  "teamCreateMember": {
+    "name": "team_create_member",
+    "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+          "type": "string",
+          "description": "The blueprint template id the new member is created from."
+        },
+        "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+          "type": "string",
+          "description": "Optional group id for the new member."
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for the new member."
+        }
+      },
+      "required": [
+        "rootSessionId",
+        "requestToken",
+        "delegationTemplateId",
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "schemaKeys": [
+      "name",
+      "description",
+      "input_schema"
+    ]
+  },
+  "requestSeq": 9
+}

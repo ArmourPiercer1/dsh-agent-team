@@ -1,13 +1,18 @@
 # PD-23 (CONTROL-SURFACE) — a governed Member has no reachable cross-Member control surface and no unconfined skill-body read: four rows removed fail-closed
 
-> **Lane identity.** The lane, branch, commit subject and draft-PR first line are `PD23-CONTROL-SURFACE` /
-> `task/pd23-control-surface-20261114`. The **register row number is provisional**: this tree's
-> `PRODUCT-DEBT-REGISTER.md` ends at PD-21, and the register's contiguity gate (`a5sf-debt-register` test (c))
-> forbids appending PD-23 over an absent PD-22. PD-22 is reserved by the sibling lane
-> `task/pd21-subagent-realm-20261114` (commit `5bd690143`, draft PR #671, finding `SUBAGENT-CHILD-REALM`,
-> not merged into `origin/master` at `c5d619e53`). This lane therefore lands **PD-22 (CONTROL-SURFACE)** and
-> records here that on merge *after* that sibling lane the row renumbers to **PD-23**, keeping `PD-1…PD-23`
-> contiguous. Nothing else in the evidence uses the provisional number.
+> **Loudest fact first: the opt-in governed preset `a5sf-governed-member` now offers NO SKILLS AT ALL.**
+> `tool-skill` and `skill-filesystem` are gone, because the loader's body read resolved the **BASE** `fs` and
+> returned an out-of-lane `$DSH_HOME/skills` body with zero guard facts. That is a **capability regression**,
+> disclosed as such, not a governance win: a governed Member can no longer load any skill. §5.1 states what
+> would restore them and who could do it.
+
+> **Lane identity and the renumber.** The lane, branch, commit subject and draft-PR first line are
+> `PD23-CONTROL-SURFACE` / `task/pd23-control-surface-20261114` / PR **#672**. The register row is
+> **PD-23 (CONTROL-SURFACE)**: it was first written as PD-22 because PD-22 was not yet in this tree and the
+> register's contiguity gate forbids a gap; on **2026-11-14** the sibling lane merged as **#671**
+> (`ac1d7958d`, PD-22 = `SUBAGENT-CHILD-REALM`) and this row moved to **PD-23**, keeping `PD-1…PD-23`
+> contiguous. The branch/lane name stays `pd23` on the PD-21 precedent (renaming would desync booted logs and
+> driver digests). The register's status note records the same.
 
 > **Evidence class.** `DEV-LIVE`: four boots in two agreeing pairs (pre-fix composition and post-fix tree),
 > slot-leased via `tests/world-factory/lib/dev-live-slots.mjs`, ports from the 3180 family, `DSH_HOME` under
@@ -25,7 +30,8 @@ sibling and its Leader by the subagent lineage rule, `interrupt_agent` never tou
 caller's own (empty) child list — but **it could read bytes outside its lane**: the `skill` body read ran on
 the **base** `fs`, returned the body of a `$DSH_HOME/skills` bundle installed outside the Member's compiled
 read lane, and recorded **zero** `a5sf-guard-consult` facts (the body then sat in 7 subsequent model
-requests). That row is now removed fail-closed, which is a **capability regression**, not an enforcement.
+requests). That row is now removed fail-closed — **the governed preset offers no skills at all**, a capability
+regression, not an enforcement.
 
 ---
 
@@ -65,6 +71,12 @@ skill bundle **outside** the lane at `$DSH_HOME/skills/pd23-out-of-lane/`. Marke
 composition is for); every other judge is identical in both arms because those claims are arm-independent
 (e.g. "the sibling's turn settles untouched"). This is why both pairs are `overall=PASS`: a post-fix arm
 that merely *fails* would prove nothing about which side of the flip a claim sits on.
+
+**Three boot sets, one driver.** (1) `archive/pair-prefix/` — the base `c5d619e53` composition (pre-fix);
+(2) `archive/pair-postfix/` — this lane's tree before the sibling lane merged (post-fix, surface 40 → 36);
+(3) `runs/` — the head after merging `origin/master` `ac1d7958d` (#671, PD-22), where the `delegation` group
+is gone by PD-22 and this lane's remaining delta is the skill loader (surface **34**). All three pairs are
+agreeing, every verdict PROVEN, and the same driver sha (`8e3ff578…`, see `driver-digest-*.json`).
 
 **Independent witnesses (not product counters).** (a) `a5sf-guard-consult/1` facts, attributed by `tool`
 and `callId` (PD-19); (b) the Member's own durable session log, decompressed from
@@ -123,6 +135,13 @@ would blur this lane's control-plane question.
 | goal rounds / goal state outside A's session | 0 / none | 0 / none |
 | `todo/write` in A's session / in B's session | yes / no | yes / no |
 | agreeing pair | `true` | `true` |
+| **merged head `ac1d7958d` (`runs/`)** — 11/11 PROVEN, agreeing | | **surface 34**, `skill`/control absent, 0 skill bytes, 0 secret bytes, 6 allow facts (all `bash`), jobs still owner-scoped, roster leader+wide+worker |
+
+**Head confirmation pair.** After merging #671 the same driver on the same arms measures **34** names
+(`send_message`, `interrupt_agent`, `list_agents` left with PD-22's `delegation` group; `skill` is this
+lane's), with the same verdicts: `skill` → `unknown tool`, jobs → owner-scoped refusals, 0 out-of-lane skill
+bytes in any model request, 0 secret bytes, 6 allow facts all `bash`, sibling and Leader untouched,
+leader+wide+worker. `runs/` holds that pair; `archive/pair-postfix/` holds the pre-merge 36-name pair.
 
 **Influence count: 0 in both directions, before and after.** The sibling and the Leader cannot be woken,
 interrupted, enumerated or read — the pre-fix refusal is a *host lineage/ownership* refusal, and the
@@ -194,6 +213,20 @@ body, 7 requests), 0 after.**
   `requires: { fs: confined }` binding the host resolves per realm), so a preset-level provider can be
   re-parented onto an isolate fork without patching the host. Until such a seam exists, absence is the only
   honest composition.
+- **What would restore skills — and who could do it.** Two seams, one budget rule:
+  1. *Upstream (forbidden here).* A preset-level provider must be mountable **inside** the realm's isolate
+     fork: `packages/runtime/team-services/src/install.ts` (this repo, L403/L411: `root.isolate('fs', label)`,
+     `isolate('subprocess', …)`) creates the sibling scopes, and upstream
+     `packages/subagent/.../child-agent.ts`'s `composeFrom(childCtx, parent.ctx)` shows the same shape — the
+     patch would be "pass the realm ctx into `presets.mount()` and resolve `ctx.get('fs')` from it". That is
+     an **upstream source patch**, which the red line forbids (`CORE PATCH BUDGET = 0`).
+  2. *Team code (allowed, unbuilt).* A **Team-owned skill provider** that reads `SKILL.md` and its
+     `resources` through the Member's own confined `fs` face (the same face native `read` uses), so an
+     out-of-lane bundle is refused with an `a5sf-guard-consult` fact exactly like a native read. This is
+     legitimate Team code, but it is new capability: it needs a model-visible tool row, a catalog/discovery
+     rule that does not walk `$DSH_HOME`, and its own evidence — **no budget in this phase**, and not
+     attempted or claimed here.
+  Until (1) or (2) lands, the honest composition is **no skills**, and the cost is stated up front.
 
 **This is a capability regression.** The governed preset no longer offers skills at all. That is recorded
 here, in `cordis.patch.yml`'s comment block, and in the register row's `decision = semantics` cell; it is
@@ -205,8 +238,10 @@ here, in `cordis.patch.yml`'s comment block, and in the register row's `decision
 
 | | names | delta |
 |---|---|---|
-| pre-fix governed Member surface (measured) | **40** | — |
-| post-fix governed Member surface (measured) | **36** | **−4**: `send_message`, `interrupt_agent`, `list_agents`, `skill` |
+| pre-fix governed Member surface (measured, base `c5d619e53`) | **40** | — |
+| post-fix governed Member surface (measured, pre-merge tree) | **36** | **−4**: `send_message`, `interrupt_agent`, `list_agents`, `skill` |
+| merged head (after #671) — PD-22 took the `delegation` group | **35** | −5 (PD-22) |
+| merged head — attributable to **this lane** (measured, `runs/`) | **34** | **−1**: `skill` (plus its `skill-filesystem` provider) |
 
 `40` matches the PD-22 lane's independently measured pre-fix Member surface on the same base commit, so the
 two lanes agree on the starting roster. The four removed names are exactly the four registered by the four
@@ -253,8 +288,10 @@ router (not the composition) — the two arms are independent.
 3. **`create_goal`/`update_goal` accept a delegated Member's call** because the delegated work prompt is a
    `user`-kind message, so `hasDirectHumanInput` passes. Measured effect: a goal in the Member's **own**
    session, `revision` 1→2, `phase: paused`; no Team state. With no `pause`, the goal runtime starts a
-   self-continuation loop in that session (measured in a development iteration: 256 rounds before the cap),
-   i.e. a Member can spend its own rounds but cannot reach anyone else. Kept as low risk; disclosed because
+   self-continuation loop in that session (measured in a development iteration: 256 rounds before the cap):
+   **bounded by the session, but unbounded execution from the ceiling's point of view** — a Member can spend
+   its own rounds without any further human turn and cannot reach anyone else. Recorded as a product
+   semantics residual; not "fixed" in this lane. Kept as low risk; disclosed because
    "a Member turn holds no direct-human authority" is **not** what the product does.
 4. **Jobs stay on the surface with no producer.** `job_*` is kept because it is owner-scoped, not because
    it is useful on this preset; `job_list` is always empty and the three calls are only exercised as a
@@ -285,6 +322,9 @@ node --test tests/world-factory/a5sf-pd23-control-surface.test.mjs
 A5SF_PD23_PIN=1 node --test tests/world-factory/a5sf-pd23-control-surface.test.mjs
 node tests/world-factory/a5sf-pd23-mutation-controls.mjs
 
+# live head pair (the merged tree; writes runs/)
+node tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs --arm postfix --boots 2
+
 # live pre-fix pair (recorded base composition; never mutates the tracked file)
 A5SF_PD23_COMPOSITION="$PWD/dev/agent-workflow/evidence/a5sf-pd23-control-surface/archive/pre-fix/cordis.patch.yml" \
   node tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs --arm prefix --boots 2
@@ -294,8 +334,8 @@ node tests/world-factory/drivers/a5sf-pd23-control-surface/run-boot.mjs --arm po
 ```
 
 Artefacts: `driver.log`, `driver-digest-{prefix,postfix}.json`, `run-ledger.jsonl`, `plan-patch.yml`,
-`agreement.{json,txt}` + `runs/boot01-02/` (post-fix), `archive/pair-prefix/agreement.{json,txt}` +
-`archive/pair-prefix/boot01-02/` (pre-fix), `archive/pre-fix/cordis.patch.yml`,
+`agreement.{json,txt}` + `runs/boot01-02/` (merged head), `archive/pair-postfix/` (pre-merge post-fix),
+`archive/pair-prefix/agreement.{json,txt}` + `archive/pair-prefix/boot01-02/` (pre-fix), `archive/pre-fix/cordis.patch.yml`,
 `host-tree-porcelain-postfix.txt`, `host-tree-porcelain-prefix.txt`, per-boot `member-probes.json`, `member-surface.json`,
 `sibling-surface.json`, `guard-facts.json`, `proc-observations.json`, `counters.json`,
 `member-a|b-transcript.{json,txt}`, `host-free-pin.log`, `mutation-controls.log`, `a5sf-family.log`,
