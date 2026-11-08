@@ -991,7 +991,7 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
 
 ### 1.8.11 CORRECTION（PD-28 追加；只追加，不改 §1.8.0–§1.8.10 的任何等级、`V@B` 或数字）
 
-> 2026-11-14，lane `PD28-SERVICE-SEAM`（base `24d2cf760`，PD-26 已并入）。本节只**追加**；§1.8.2 的桶、
+> 2026-11-14，lane `PD28-SERVICE-SEAM`（base `24d2cf760`，PD-26 已并入；**随后并入 `9c730c3d7`（PD-27 #676），本节读数仍是 pre-merge `6f9a8c1` 的一对 boot，合并树的 re-bind 被 master 的 PD-27 组合缺陷挡住——见证据 README §4.3：preset 行 `tool-web` 的 `dsh-agent-team/web-tool` 名字 preset 解析器加载不了，Member 根本建不起来；同一棵树把该行换成绝对 `file:` URL 即 2/2 boot、6/6 case、面 **33**，本节的等级判断因此不变**）。本节只**追加**；§1.8.2 的桶、
 > 等级与 §1.8.9 的差值一字未改——PD-28 不改变任何工具的验收等级，它改的是**安全论证的归属**。
 
 1. **§1.8.9（PD-26）的读数全部成立，且由 PD-28 逐项复现。** 同一 World 布局、同一 driver 的

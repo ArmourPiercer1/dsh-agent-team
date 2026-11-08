@@ -1,1 +1,1 @@
-RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T10-17-00-529Z-b2 suite=a5sf-pd28-service-seam overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd28-20261108T10-17-00Z recordClass=DEV-LIVE (not candidate evidence)
+RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-18-26-443Z-b2 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T12-18-26Z recordClass=DEV-LIVE (not candidate evidence)

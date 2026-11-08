@@ -1,279 +1,72 @@
 {
   "schema": "a5sf-pd28-service-seam/member-probes/1",
-  "at": "2026-11-08T10:18:39.631Z",
+  "at": "2026-11-08T12:19:54.628Z",
   "note": "every Member surface call and the result the Member actually received (durable session first, mock transcript fallback)",
   "probes": {
     "bash": {
-      "call": {
-        "id": "call-a5sfpd28-bash",
-        "name": "bash",
-        "arguments": {
-          "command": "cat '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt'",
-          "description": "Read the in-lane fixture",
-          "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-bash",
-        "isError": false,
-        "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD28_IN_LANE_BYTES\\n\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD28_IN_LANE_BYTES\"}",
-        "at": 1794133116393
-      }
+      "call": null,
+      "result": null
     },
     "read": {
-      "call": {
-        "id": "call-a5sfpd28-read",
-        "name": "read",
-        "arguments": {
-          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-read",
-        "isError": false,
-        "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD28_IN_LANE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-        "at": 1794133116437
-      }
+      "call": null,
+      "result": null
     },
     "grep": {
-      "call": {
-        "id": "call-a5sfpd28-grep",
-        "name": "grep",
-        "arguments": {
-          "pattern": "A5SF_PD28_IN_LANE_BYTES",
-          "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace",
-          "include": "*.txt"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-grep",
-        "isError": false,
-        "text": "Found 1 match\n\nin-lane.txt\nLine 1: A5SF_PD28_IN_LANE_BYTES",
-        "at": 1794133116523
-      }
+      "call": null,
+      "result": null
     },
     "skillIn": {
-      "call": {
-        "id": "call-a5sfpd28-skill-in",
-        "name": "skill",
-        "arguments": {
-          "name": "pd28-in-lane-skill"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-skill-in",
-        "isError": false,
-        "text": "<skill_content name=\"pd28-in-lane-skill\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/skills/pd28-in-lane-skill\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nA5SF_PD28_SKILL_BODY_IN_LANE\n\n</skill_instructions>\n</skill_content>",
-        "at": 1794133116556
-      }
+      "call": null,
+      "result": null
     },
     "skillOut": {
-      "call": {
-        "id": "call-a5sfpd28-skill-out",
-        "name": "skill",
-        "arguments": {
-          "name": "pd28-out-of-lane-skill"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-skill-out",
-        "isError": true,
-        "text": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/skills-out-of-lane/pd28-out-of-lane-skill/SKILL.md' is outside every allow subtree of the lane",
-        "at": 1794133116587
-      }
+      "call": null,
+      "result": null
     },
     "skillUnknown": {
-      "call": {
-        "id": "call-a5sfpd28-skill-unknown",
-        "name": "skill",
-        "arguments": {
-          "name": "pd28-no-such-skill"
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-skill-unknown",
-        "isError": true,
-        "text": "Error: skill \"pd28-no-such-skill\" is unknown or no longer available",
-        "at": 1794133116614
-      }
+      "call": null,
+      "result": null
     },
     "presentIn": {
-      "call": {
-        "id": "call-a5sfpd28-present-in",
-        "name": "present",
-        "arguments": {
-          "files": [
-            {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt",
-              "description": "in-lane fixture"
-            }
-          ]
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-present-in",
-        "isError": false,
-        "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/workspace/in-lane.txt",
-        "at": 1794133116647
-      }
+      "call": null,
+      "result": null
     },
     "presentOut": {
-      "call": {
-        "id": "call-a5sfpd28-present-out",
-        "name": "present",
-        "arguments": {
-          "files": [
-            {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/secret-out-of-lane.txt",
-              "description": "out-of-lane fixture"
-            }
-          ]
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-present-out",
-        "isError": true,
-        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/secret-out-of-lane.txt' is outside every allow subtree of the lane",
-        "at": 1794133116676
-      }
+      "call": null,
+      "result": null
     },
     "presentMissing": {
-      "call": {
-        "id": "call-a5sfpd28-present-missing",
-        "name": "present",
-        "arguments": {
-          "files": [
-            {
-              "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/does-not-exist-out-of-lane.txt",
-              "description": "absent out-of-lane fixture"
-            }
-          ]
-        }
-      },
-      "result": {
-        "callId": "call-a5sfpd28-present-missing",
-        "isError": true,
-        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T10-17-00Z/out-of-lane/does-not-exist-out-of-lane.txt' is outside every allow subtree of the lane",
-        "at": 1794133116705
-      }
+      "call": null,
+      "result": null
     },
     "closed": {
       "interrupt_agent": {
-        "call": {
-          "id": "call-a5sfpd28-closed-interrupt_agent",
-          "name": "interrupt_agent",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-interrupt_agent",
-          "isError": true,
-          "text": "Error: unknown tool \"interrupt_agent\"",
-          "at": 1794133116734
-        }
+        "call": null,
+        "result": null
       },
       "list_agents": {
-        "call": {
-          "id": "call-a5sfpd28-closed-list_agents",
-          "name": "list_agents",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-list_agents",
-          "isError": true,
-          "text": "Error: unknown tool \"list_agents\"",
-          "at": 1794133116762
-        }
+        "call": null,
+        "result": null
       },
       "pwsh": {
-        "call": {
-          "id": "call-a5sfpd28-closed-pwsh",
-          "name": "pwsh",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-pwsh",
-          "isError": true,
-          "text": "Error: unknown tool \"pwsh\"",
-          "at": 1794133116788
-        }
+        "call": null,
+        "result": null
       },
       "send_message": {
-        "call": {
-          "id": "call-a5sfpd28-closed-send_message",
-          "name": "send_message",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-send_message",
-          "isError": true,
-          "text": "Error: unknown tool \"send_message\"",
-          "at": 1794133116815
-        }
+        "call": null,
+        "result": null
       },
       "subagent": {
-        "call": {
-          "id": "call-a5sfpd28-closed-subagent",
-          "name": "subagent",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-subagent",
-          "isError": true,
-          "text": "Error: unknown tool \"subagent\"",
-          "at": 1794133116841
-        }
+        "call": null,
+        "result": null
       },
       "subagent_fork": {
-        "call": {
-          "id": "call-a5sfpd28-closed-subagent_fork",
-          "name": "subagent_fork",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-subagent_fork",
-          "isError": true,
-          "text": "Error: unknown tool \"subagent_fork\"",
-          "at": 1794133116868
-        }
-      },
-      "web_fetch": {
-        "call": {
-          "id": "call-a5sfpd28-closed-web_fetch",
-          "name": "web_fetch",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-web_fetch",
-          "isError": true,
-          "text": "Error: unknown tool \"web_fetch\"",
-          "at": 1794133116895
-        }
-      },
-      "web_search": {
-        "call": {
-          "id": "call-a5sfpd28-closed-web_search",
-          "name": "web_search",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-web_search",
-          "isError": true,
-          "text": "Error: unknown tool \"web_search\"",
-          "at": 1794133116923
-        }
+        "call": null,
+        "result": null
       },
       "workflow": {
-        "call": {
-          "id": "call-a5sfpd28-closed-workflow",
-          "name": "workflow",
-          "arguments": {}
-        },
-        "result": {
-          "callId": "call-a5sfpd28-closed-workflow",
-          "isError": true,
-          "text": "Error: unknown tool \"workflow\"",
-          "at": 1794133116949
-        }
+        "call": null,
+        "result": null
       }
     }
   }

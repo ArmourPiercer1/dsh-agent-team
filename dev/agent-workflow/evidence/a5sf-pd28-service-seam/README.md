@@ -1,7 +1,7 @@
 # PD28-SERVICE-SEAM — the confined `skill`/`present` capabilities are served by the SEAM, not by forked tools
 
 > Lane `PD28-SERVICE-SEAM`, branch `task/pd28-service-seam-20261114`, worktree
-> `.worktrees/pd28-service-seam`, base `origin/master` = `24d2cf760`. Evidence
+> `.worktrees/pd28-service-seam`, base `origin/master` = `24d2cf760`, then merged with `origin/master` = `9c730c3d7` (PD-27, #676). Evidence
 > class **DEV-LIVE** (`eligible = false`, never merge evidence). `CORE PATCH
 > BUDGET = 0`; no `V@B`, no grade, no Q7/Authority/CI change; no second policy
 > source.
@@ -104,6 +104,13 @@ two names.
 
 ## 4. The live pair (two agreeing boots, `DEV-LIVE`)
 
+> **Read this before the table.** The pair bound to this lane's product claim was
+> measured at `6f9a8c1` on top of `24d2cf760`, i.e. BEFORE `origin/master` gained
+> PD-27; it is preserved verbatim under `archive/pre-merge-6f9a8c1/`. The re-bind on
+> the merged tree is **BLOCKED by a master regression** and is documented in §4.3 —
+> `runs/` currently holds that failing pair (the honest state of the shipped tree),
+> and §4.3 contains the controlled experiment that makes the same tree pass 6/6.
+
 Command (slot-leased, `DSH_HOME` under `tests/homes/`, 3180-family ports, pinned
 host tree read-only):
 
@@ -160,13 +167,89 @@ what is refused, and it is the correct behaviour: we do not restate host text.
 
 | path | what |
 | --- | --- |
-| `runs/boot01/`, `runs/boot02/` | the agreeing PASS pair (`counters.json`, `member-probes.json`, `guard-facts.json`, `member-transcript.json/.txt`, `leader-surface.json`, `member-surface.json`, `diagnostics-final.json`, `host-log-final.log`, `run-record.json`, `teardown.json`, `summary.txt`) |
+| `runs/boot01/`, `runs/boot02/` | **the merged tree as it actually ships**: the agreeing FAIL pair of §4.3 (`surfaceACount 0`, no Member created, `tool-web (dsh-agent-team/web-tool): never started`). Overwrites nothing — every earlier pair is archived |
+| `archive/pre-merge-6f9a8c1/` | **the PASS pair bound to this lane's product claim** (§4.1), measured at `6f9a8c1` on `24d2cf760` before PD-27 landed |
+| `archive/merged-9c730c3d7-row-unloadable/` | the first merged-tree FAIL pair (same readings as `runs/`) |
+| `archive/master-control-9c730c3d7/` | **the control**: pristine `origin/master` with no PD-28 commit and no PD-28 file, failing identically (§4.3) |
+| `archive/experiment-row-file-url-PASS/` | the merged tree with ONE line different (the `tool-web` row's specifier): **PASS 2/2, 6/6, surface 33**; `ROW-DIFF.txt` states the line and that it is not a proposed product form |
+| `archive/experiment-row-file-url-stale-closedlist/`, `archive/experiment-row-relative-path/` | the two localization steps in between (URL + the driver's old closed-name list; then a relative specifier, which fails exactly like the bare name) |
 | `agreement-postfix.txt` / `.json` | the two-run agreement table, every row identical (`agreeing=true differing=[]`) |
 | `mutation-controls.log` | the two mutation controls + PIN, 8/8 |
 | `driver.log`, `driver/logs/**` | the driver's own transcript and host instance logs |
 | `archive/postfix-2026-11-08T09-48-28-531Z/` | the earlier pair from the same tree, **kept not rewritten**: it is the record of the judge correction described in §4.1 (5/6 on the present arm) and of the archive it replaced |
 | `archive/postfix-2026-11-08T09-52-04-000Z/` | the intermediate pair, superseded by the README-bearing CLI rerun |
 | `archive/pre-fix/` | the PIN arm's own transcript (`a5sf-realm-row.mjs` at `24d2cf760` + the module list it composed) |
+
+### 4.3 The merge with PD-27 (`9c730c3d7`) and the re-bind — a MASTER regression, proven by control
+
+The Owner's instruction was to merge `origin/master` after #676 landed and re-bind the
+live pair on the merged tree (surface should become **33** = 31 + `web_fetch` +
+`web_search`). The merge is done; the re-bind **cannot pass on the shipped merged
+tree for a reason that has nothing to do with this lane**, and the evidence below
+separates the two claims:
+
+**(a) The merge itself.** Four conflicts, exactly the four predicted: the register
+row/section insertion point, the matrix correction, and `a5sf-realm-row.mjs` (source
+and dist mirror). Both lanes' additions are kept — PD-27's `confinedWebSpecOf` and
+its `tool-web` row, PD-28's provider and direct mount; PD-26's two fork specs stay
+deleted. The matrix is renumbered (PD-27 keeps §1.8.10, PD-28 moves to §1.8.11).
+`dist` was re-generated (`tsc` + `place-dist-glue`, 109 placements), not hand-merged.
+On the merged tree: p4t6 **1448 = 983 + 465**, 0 violations; `plugin-dsh-compat`
+13/13; `check:install-manifest` **8** issues, the same set as master's own (the web
+lane's peer-census repair, none from this lane); PD-28 host-free 5/5; PD-27 host-free
+9 pass + 1 skip.
+
+**(b) The re-bind.** Both boots agree and both FAIL at the **Member creation**, before
+any probe:
+
+```
+activation: child-session creation failed for member 'inst-…':
+  RemoteError: tool-web (dsh-agent-team/web-tool): never started
+surfaceACount 0 · guardFacts 0 · every case REFUTED but `no-out-of-lane-bytes`
+```
+
+`never started` is the host's own preset audit: the row has **no fiber**, i.e. the
+preset resolver never loaded it at all. The row is PD-27's
+`- id: tool-web / name: 'dsh-agent-team/web-tool'` inside
+`preset-a5sf-governed-member`. A profile-layer row may spell our package that way
+(the bundle loader resolves it through the bundle's `package.json` exports: the
+`dsh-agent-team/host` and `dsh-agent-team/spill-local` rows do); a **preset** row is
+resolved against the host's module graph, where no `dsh-agent-team` package exists —
+the same spelling that works one layer up cannot be loaded one layer down, and the
+failure is total: no governed Member can be created, which is worse than the
+fail-closed absence PD-27 intended.
+
+**(c) The control that assigns the blame.** A plain `git worktree` of pristine
+`origin/master` = `9c730c3d7` (no PD-28 commit, no PD-28 product file), booted with
+the same driver, fails **identically** — same message, same counters, 2/2 agreeing
+boots (`archive/master-control-9c730c3d7/`, with the Leader's intact 43-name surface
+showing the profile layer is fine). So the regression is master's own.
+
+**(d) The localization experiment.** Three one-line variants of that row, nothing else
+touched (`archive/experiment-*/`, `ROW-DIFF.txt`):
+
+| row `name` | result |
+| --- | --- |
+| `dsh-agent-team/web-tool` (shipped) | member never created — `never started` |
+| `./packages/runtime/dist/…/confined-web-tool.mjs` | member never created — `never started` |
+| `file:///…/confined-web-tool.mjs` (absolute) | **PASS 2/2 boots, 6/6 cases, `surfaceACount 33`** |
+
+The absolute-URL run reproduces the Owner's predicted surface exactly (31 + the web
+pair) and every PD-28 row stays item-by-item equal to PD-26: `skillFacts
+{total 2, allow 1, deny 1, IO_READ_DENIED}`, `presentFacts {4,2,2}`, exactly
+**1** `deliverables/presented`, `factTools {bash:3,read:2,grep:1,skill:2,present:4}`,
+`guardAllow 9 / guardDeny 3`, `requestsCarryingSecret 0`, `aModelRequests 19`. So the
+merged tree is correct, this lane's seam still holds at 33, and the **only** defect is
+the row's specifier form. The absolute path is worktree-local and is not a proposed
+product form; making the row loadable for real (a `file:` URL anchored at the
+composition, or letting the route-C attach own the names) is the web lane's call, not
+this lane's, and this lane will not edit that row to fix it.
+
+**Consequence for this lane's evidence.** The bound live pair for the product claim
+stays the pre-merge one (`archive/pre-merge-6f9a8c1/`, §4.1) — the lane's own claim
+is unchanged by PD-27. The re-bound pair on the merged tree is **not** claimed: `runs/`
+holds the honest failing pair, and the passing pair exists only as the disclosed
+one-line experiment above.
 
 ---
 
@@ -223,6 +306,14 @@ expectations).
   `tool-present` packages (host tree read-only, `porcelain` empty before and
   after).
 
+**Scope note — this lane asks for no further removals.** PD-25's fail-closed
+removals (`goal` trio / `ask_user_question`) and the Goal trio's caller-writable
+round cap are, per the Owner's Alpha.5 Preview scope, a **deliberate, accepted
+boundary**: `ask_user_question` stays deferred and the cap stays acceptable until
+a separate goal work package lands. Nothing in this lane reopens that decision,
+and the "delete the consumer fork" pattern above is not an argument for closing
+more tools — it is an argument for fixing the *service* when a name has to exist.
+
 ## 7. Gates
 
 | gate | result |
@@ -230,9 +321,12 @@ expectations).
 | `node --test tests/world-factory/a5sf-pd28-service-seam.test.mjs` | 4 pass, 1 skipped (PIN) |
 | `A5SF_PD28_PIN=1 node --test …` | 5 pass, 0 skipped |
 | `node tests/world-factory/a5sf-pd28-mutation-controls.mjs` | `VERDICT PASS` (8/8) |
-| `node tests/world-factory/drivers/a5sf-pd28-service-seam/run-boot.mjs` | 2/2 boots, 6/6 cases each, `agreeing=true differing=[]` |
-| p4t6 (`npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts`) | 20/20 (booking `pd28-service-seam.json`, measured 1447 = 983 + 464) |
-| a5sf family (`node --test` over the PD-1/12–19/21/23–26/28 suites + `a5sf-native-route-c`) | 124 tests, 0 fail (15 skipped: the PIN arms and pre-existing skips) |
+| live pair, pre-merge tree `6f9a8c1` (`archive/pre-merge-6f9a8c1/`) | **PASS** 2/2 boots, 6/6 cases each, `agreeing=true differing=[]`, surface 31 |
+| live pair, merged tree `9c730c3d7` (shipped state, `runs/`) | **FAIL** 2/2 agreeing: no Member created (`tool-web … never started`) — master's regression, §4.3 |
+| live pair, merged tree with the row's one-line specifier experiment (`archive/experiment-row-file-url-PASS/`) | **PASS** 2/2 boots, 6/6 cases, surface **33**, every PD-28 row equal to PD-26 |
+| p4t6 (`npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts`) | 20/20 (booking `pd28-service-seam.json`: 1447 pre-merge, **1448 = 983 + 465** on the merged tree, 0 violations) |
+| `plugin-dsh-compat` (frozen ten host-provides names) | 13/13 — no peer was added to root `peerDependencies` |
+| a5sf family (`node --test` over the PD-1/12–19/21/23–26/28 suites + `a5sf-native-route-c` + PD-27) | 136 tests, 0 fail (pre-merge count 124; PD-27's 9+1 and the PIN arms included) |
 | `pnpm -r typecheck` | 9/9 packages done |
 | `npx eslint` on the changed product files | 0 errors (the 129 repo-wide errors are pre-existing and untouched) |
 | `pnpm check:artifacts:head` / `check:artifacts:committed` | ok (post-commit) |
@@ -240,16 +334,12 @@ expectations).
 | `ci-pr-gate --only state-freshness` | pass |
 | `eb3-evidence-guard` / `eb3-run-manifest` | pass / pass |
 | `tests/world-factory/a5sf-debt-register.test.mjs` | all legs green except **`(c)` ids contiguous** — see the disclosure below |
-| `check-install-manifest` | unchanged from base (9 pre-existing issues, only a line shift) |
+| `check-install-manifest` | **8** issues on the merged tree — the same set as master's own; this lane adds none |
 
-**Disclosed: the register's contiguity leg is red on this branch by construction.**
-`a5sf-debt-register.test.mjs` requires ids to be exactly `PD-1…PD-n`. PD-27 is the
-**in-flight web lane** (`task/pd27-web-egress-20261114`, not merged, its row sits at
-the same insertion point on its branch), so `PD-1…PD-26, PD-28` is not contiguous
-until that lane merges. This lane was instructed to take **PD-28** (PD-27 reserved);
-the alternatives — renumbering into another lane's id, or fabricating a PD-27 row —
-were rejected. Every other register leg (`source` mention, anchors resolving,
-required fields, consequence class, summary/detail agreement) is green.
+**Register contiguity: CLOSED.** The pre-merge tree was red on `a5sf-debt-register`'s
+`(c)` leg by construction (`PD-1…PD-26, PD-28` is not contiguous); PD-27 landed on
+master as #676, so the merged tree now carries `PD-1…PD-28` with no gap, no reserved
+id and no exception, and the leg is green.
 
 **Superseded arms, disclosed:** PD-26's host-free suite pinned the two forks, so its
 three fork-importing arms now carry `{ skip: 'superseded by PD-28 …' }` (2 still run:

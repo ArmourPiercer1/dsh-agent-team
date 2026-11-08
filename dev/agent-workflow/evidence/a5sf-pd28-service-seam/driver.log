@@ -231,3 +231,374 @@ aModelRequests                19                            19
 agreeing=true differing=[]
 [2026-11-08T10:18:39.857Z] host porcelain after: []
 [2026-11-08T10:18:39.858Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T11:53:11.511Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/archive/postfix-2026-11-08T11-53-11-511Z
+[2026-11-08T11:53:11.515Z] START arm=postfix head=f54ecddea2cf50e189943dbf7d843445800c54c2 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml sha256=a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T11:53:11.549Z] host porcelain before: []
+[2026-11-08T11:53:11.622Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T11:53:11.623Z] [boot1] dev-live slot #1 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T11:53:11.626Z] [boot1] world=u5u5a5sfpd28-20261108T11-53-11Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-53-11Z
+[2026-11-08T11:53:11.629Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T11:53:58.255Z] [boot1] mock on 13050
+[2026-11-08T11:54:35.445Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T11-53-11Z/instance-port3188.log
+[2026-11-08T11:54:35.884Z] [boot1] p6t6 health=true
+[2026-11-08T11:54:36.157Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T11:54:36.544Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-oon2nc55is","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:ad9cb765af6ca6b8a6c2a681e72a3f1c756d695a08546bac33268a1a3839709a"},"createdAt":"2026-11-08T11:54:36.197Z","generatio
+[2026-11-08T11:54:36.544Z] [boot1] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T11:54:39.746Z] [boot1] mock quiesced=true
+[2026-11-08T11:54:39.753Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T11:54:39.753Z] [boot1] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"]
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T11:54:39.760Z] [boot1] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T11:54:39.760Z] [boot1] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T11:54:39.761Z] [boot1] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T11-53-11-585Z-b1 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T11-53-11Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T11:54:39.892Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":81,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-53-11Z","releasedPorts":[3188,13050,3188],"killedPids":[81],"notes":[]}
+[2026-11-08T11:54:39.892Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T11:54:39.976Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T11:54:39.977Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T11:54:39.980Z] [boot2] world=u5u5a5sfpd28-20261108T11-54-39Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-54-39Z
+[2026-11-08T11:54:39.984Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T11:55:26.912Z] [boot2] mock on 3500
+[2026-11-08T11:56:05.530Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T11-54-39Z/instance-port3188.log
+[2026-11-08T11:56:05.941Z] [boot2] p6t6 health=true
+[2026-11-08T11:56:06.210Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T11:56:06.562Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-6kyvfmtbbe","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:0ab39d8bbb57054f3c20eb3ba4fdbe8e7b40f75b8c8dee32446c84d1b3131001"},"createdAt":"2026-11-08T11:56:06.230Z","generatio
+[2026-11-08T11:56:06.562Z] [boot2] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T11:56:09.763Z] [boot2] mock quiesced=true
+[2026-11-08T11:56:09.771Z] [boot2] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T11:56:09.771Z] [boot2] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"]
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T11:56:09.775Z] [boot2] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T11:56:09.775Z] [boot2] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T11:56:09.776Z] [boot2] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T11-54-39-932Z-b2 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T11-54-39Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T11:56:09.905Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":217,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T11-54-39Z","releasedPorts":[3188,3500,3188],"killedPids":[217],"notes":[]}
+[2026-11-08T11:56:09.905Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T11:56:09.938Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       FAIL                          FAIL
+skillVerdict                  REFUTED                       REFUTED
+presentVerdict                REFUTED                       REFUTED
+controlsVerdict               REFUTED                       REFUTED
+failClosedVerdict             REFUTED                       REFUTED
+surfaceVerdict                REFUTED                       REFUTED
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 0                             0
+skillOnSurface                false                         false
+presentOnSurface              false                         false
+skillFacts                    {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+presentFacts                  {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+guardAllow                    0                             0
+guardDeny                     0                             0
+factTools                     {}                            {}
+deliverablesEvents            0                             0
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                0                             0
+
+agreeing=true differing=[]
+[2026-11-08T11:56:09.971Z] host porcelain after: []
+[2026-11-08T11:56:09.971Z] RESULT FAIL arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T12:06:05.026Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/archive/postfix-2026-11-08T12-06-05-025Z
+[2026-11-08T12:06:05.030Z] START arm=postfix head=f54ecddea2cf50e189943dbf7d843445800c54c2 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml sha256=53f527a913b01b9ca8b5fcf272017f842b57cd3a113319b8d2bfdefe4e171303 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T12:06:05.061Z] host porcelain before: []
+[2026-11-08T12:06:05.129Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:06:05.130Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:06:05.133Z] [boot1] world=u5u5a5sfpd28-20261108T12-06-05Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-06-05Z
+[2026-11-08T12:06:05.136Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:06:52.154Z] [boot1] mock on 3500
+[2026-11-08T12:07:31.010Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-06-05Z/instance-port3188.log
+[2026-11-08T12:07:31.396Z] [boot1] p6t6 health=true
+[2026-11-08T12:07:31.667Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:07:35.428Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-7c9vzpd2ux","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:50cf4ce6cf8e5d8460eb1b5a0207c1fa91b344c313b35016a050f8017094fe89"},"createdAt":"2026-11-08T12:07:31.708Z","generatio
+[2026-11-08T12:07:35.428Z] [boot1] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:07:38.630Z] [boot1] mock quiesced=true
+[2026-11-08T12:07:38.639Z] [boot1] members=[{"instanceId":"inst-0ck3mov0u1sd","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914
+[2026-11-08T12:07:38.656Z] [boot1] case pd28:skill-confined: PASS
+[2026-11-08T12:07:38.657Z] [boot1] case pd28:present-confined: PASS
+[2026-11-08T12:07:38.657Z] [boot1] case pd28:fs-controls: PASS
+[2026-11-08T12:07:38.657Z] [boot1] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: web_fetch,web_search"]
+[2026-11-08T12:07:38.657Z] [boot1] case pd28:surface-restored: PASS
+[2026-11-08T12:07:38.657Z] [boot1] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:07:38.658Z] [boot1] diagnostics(final): mockRequests=26 guardFacts=12
+[2026-11-08T12:07:38.658Z] [boot1] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-06-05-095Z-b1 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:1 PASS:5 worlds=u5u5a5sfpd28-20261108T12-06-05Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:07:38.826Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":79,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-06-05Z","releasedPorts":[3188,3500,3188],"killedPids":[79],"notes":[]}
+[2026-11-08T12:07:38.826Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:07:38.908Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:07:38.908Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:07:38.911Z] [boot2] world=u5u5a5sfpd28-20261108T12-07-38Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-07-38Z
+[2026-11-08T12:07:38.915Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:08:25.937Z] [boot2] mock on 3500
+[2026-11-08T12:09:04.891Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-07-38Z/instance-port3188.log
+[2026-11-08T12:09:05.246Z] [boot2] p6t6 health=true
+[2026-11-08T12:09:05.514Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:09:09.242Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-ma06hpfrt7","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:4c442ef05bd3c647c2cb5d61baa022497db0b7d7009bd08c9a5dfa807b089da0"},"createdAt":"2026-11-08T12:09:05.539Z","generatio
+[2026-11-08T12:09:09.242Z] [boot2] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:09:12.444Z] [boot2] mock quiesced=true
+[2026-11-08T12:09:12.452Z] [boot2] members=[{"instanceId":"inst-0ck3mov0u1sd","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:skill-confined: PASS
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:present-confined: PASS
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:fs-controls: PASS
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: web_fetch,web_search"]
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:surface-restored: PASS
+[2026-11-08T12:09:12.466Z] [boot2] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:09:12.467Z] [boot2] diagnostics(final): mockRequests=26 guardFacts=12
+[2026-11-08T12:09:12.467Z] [boot2] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-07-38-864Z-b2 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:1 PASS:5 worlds=u5u5a5sfpd28-20261108T12-07-38Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:09:12.625Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":318,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-07-38Z","releasedPorts":[3188,3500,3188],"killedPids":[318],"notes":[]}
+[2026-11-08T12:09:12.625Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:09:12.664Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       FAIL                          FAIL
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             REFUTED                       REFUTED
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 33                            33
+skillOnSurface                true                          true
+presentOnSurface              true                          true
+skillFacts                    {"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}{"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}
+presentFacts                  {"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}{"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}
+guardAllow                    9                             9
+guardDeny                     3                             3
+factTools                     {"bash":3,"read":2,"grep":1,"skill":2,"present":4}{"bash":3,"read":2,"grep":1,"skill":2,"present":4}
+deliverablesEvents            1                             1
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                19                            19
+
+agreeing=true differing=[]
+[2026-11-08T12:09:12.702Z] host porcelain after: []
+[2026-11-08T12:09:12.702Z] RESULT FAIL arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T12:09:44.588Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/archive/postfix-2026-11-08T12-09-44-587Z
+[2026-11-08T12:09:44.591Z] START arm=postfix head=f54ecddea2cf50e189943dbf7d843445800c54c2 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml sha256=050f65588ceed4cb2ac68c3c80216b26f052a651f8b6825d768835fc8c8183bf hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T12:09:44.620Z] host porcelain before: []
+[2026-11-08T12:09:44.682Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:09:44.683Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:09:44.686Z] [boot1] world=u5u5a5sfpd28-20261108T12-09-44Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-09-44Z
+[2026-11-08T12:09:44.689Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:10:11.542Z] [boot1] mock on 13050
+[2026-11-08T12:10:30.005Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-09-44Z/instance-port3188.log
+[2026-11-08T12:10:30.349Z] [boot1] p6t6 health=true
+[2026-11-08T12:10:30.619Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:10:30.993Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-byj0pdp2y9","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:144b8415b1a61cb4b4a75bcc90d515bc4fed389640a70575b94fafe326a9ea5e"},"createdAt":"2026-11-08T12:10:30.655Z","generatio
+[2026-11-08T12:10:30.994Z] [boot1] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:10:34.195Z] [boot1] mock quiesced=true
+[2026-11-08T12:10:34.202Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T12:10:34.202Z] [boot1] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"]
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T12:10:34.209Z] [boot1] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:10:34.210Z] [boot1] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T12:10:34.210Z] [boot1] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-09-44-650Z-b1 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T12-09-44Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:10:34.358Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":80,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-09-44Z","releasedPorts":[3188,13050,3188],"killedPids":[80],"notes":[]}
+[2026-11-08T12:10:34.358Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:10:34.433Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:10:34.434Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:10:34.437Z] [boot2] world=u5u5a5sfpd28-20261108T12-10-34Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-10-34Z
+[2026-11-08T12:10:34.440Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:11:21.200Z] [boot2] mock on 3500
+[2026-11-08T12:12:00.011Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-10-34Z/instance-port3188.log
+[2026-11-08T12:12:00.342Z] [boot2] p6t6 health=true
+[2026-11-08T12:12:00.613Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:12:01.016Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-hty0ddg8o7","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:4c566b1ed967fa58f8fa0d74e2f3a660f897ddfaabfe4bda7df3c0be3400af5c"},"createdAt":"2026-11-08T12:12:00.634Z","generatio
+[2026-11-08T12:12:01.016Z] [boot2] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:12:04.218Z] [boot2] mock quiesced=true
+[2026-11-08T12:12:04.225Z] [boot2] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T12:12:04.225Z] [boot2] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,web_fetch,web_search,workflow"]
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T12:12:04.229Z] [boot2] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:12:04.230Z] [boot2] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T12:12:04.230Z] [boot2] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-10-34-394Z-b2 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T12-10-34Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:12:04.375Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-10-34Z","releasedPorts":[3188,3500,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T12:12:04.375Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:12:04.407Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       FAIL                          FAIL
+skillVerdict                  REFUTED                       REFUTED
+presentVerdict                REFUTED                       REFUTED
+controlsVerdict               REFUTED                       REFUTED
+failClosedVerdict             REFUTED                       REFUTED
+surfaceVerdict                REFUTED                       REFUTED
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 0                             0
+skillOnSurface                false                         false
+presentOnSurface              false                         false
+skillFacts                    {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+presentFacts                  {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+guardAllow                    0                             0
+guardDeny                     0                             0
+factTools                     {}                            {}
+deliverablesEvents            0                             0
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                0                             0
+
+agreeing=true differing=[]
+[2026-11-08T12:12:04.435Z] host porcelain after: []
+[2026-11-08T12:12:04.435Z] RESULT FAIL arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T12:12:55.815Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/archive/postfix-2026-11-08T12-12-55-815Z
+[2026-11-08T12:12:55.819Z] START arm=postfix head=f54ecddea2cf50e189943dbf7d843445800c54c2 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml sha256=53f527a913b01b9ca8b5fcf272017f842b57cd3a113319b8d2bfdefe4e171303 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T12:12:55.850Z] host porcelain before: []
+[2026-11-08T12:12:55.916Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:12:55.917Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:12:55.921Z] [boot1] world=u5u5a5sfpd28-20261108T12-12-55Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-12-55Z
+[2026-11-08T12:12:55.924Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:13:44.780Z] [boot1] mock on 13050
+[2026-11-08T12:14:24.662Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-12-55Z/instance-port3188.log
+[2026-11-08T12:14:25.101Z] [boot1] p6t6 health=true
+[2026-11-08T12:14:25.377Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:14:29.092Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-do7cgbzfiy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:b21cdaa82fb691f08662b8c6edfcc3a9e42260fd4d0642a034c1ef92299a6126"},"createdAt":"2026-11-08T12:14:25.412Z","generatio
+[2026-11-08T12:14:29.092Z] [boot1] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:14:32.294Z] [boot1] mock quiesced=true
+[2026-11-08T12:14:32.301Z] [boot1] members=[{"instanceId":"inst-0ck3mov0u1sd","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914
+[2026-11-08T12:14:32.314Z] [boot1] case pd28:skill-confined: PASS
+[2026-11-08T12:14:32.314Z] [boot1] case pd28:present-confined: PASS
+[2026-11-08T12:14:32.314Z] [boot1] case pd28:fs-controls: PASS
+[2026-11-08T12:14:32.314Z] [boot1] case pd28:fail-closed-typed: PASS
+[2026-11-08T12:14:32.315Z] [boot1] case pd28:surface-restored: PASS
+[2026-11-08T12:14:32.315Z] [boot1] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:14:32.315Z] [boot1] diagnostics(final): mockRequests=24 guardFacts=12
+[2026-11-08T12:14:32.316Z] [boot1] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-12-55-883Z-b1 suite=a5sf-pd28-service-seam overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd28-20261108T12-12-55Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:14:32.470Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":81,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-12-55Z","releasedPorts":[3188,13050,3188],"killedPids":[81],"notes":[]}
+[2026-11-08T12:14:32.470Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:14:32.536Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:14:32.537Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:14:32.540Z] [boot2] world=u5u5a5sfpd28-20261108T12-14-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-14-32Z
+[2026-11-08T12:14:32.543Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:15:21.787Z] [boot2] mock on 3500
+[2026-11-08T12:16:02.931Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-14-32Z/instance-port3188.log
+[2026-11-08T12:16:03.477Z] [boot2] p6t6 health=true
+[2026-11-08T12:16:03.749Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:16:07.518Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-2w8c8n2ikv","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:ee413b0e53e1d0c6af3dab5f243e8d5e034d97a40324d0818d82dc0812e1d5c8"},"createdAt":"2026-11-08T12:16:03.770Z","generatio
+[2026-11-08T12:16:07.518Z] [boot2] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:16:10.719Z] [boot2] mock quiesced=true
+[2026-11-08T12:16:10.726Z] [boot2] members=[{"instanceId":"inst-0ck3mov0u1sd","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-dd3bb8f707d40a04a2a404d6cfa3c914
+[2026-11-08T12:16:10.735Z] [boot2] case pd28:skill-confined: PASS
+[2026-11-08T12:16:10.736Z] [boot2] case pd28:present-confined: PASS
+[2026-11-08T12:16:10.736Z] [boot2] case pd28:fs-controls: PASS
+[2026-11-08T12:16:10.736Z] [boot2] case pd28:fail-closed-typed: PASS
+[2026-11-08T12:16:10.736Z] [boot2] case pd28:surface-restored: PASS
+[2026-11-08T12:16:10.736Z] [boot2] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:16:10.736Z] [boot2] diagnostics(final): mockRequests=24 guardFacts=12
+[2026-11-08T12:16:10.737Z] [boot2] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-14-32-502Z-b2 suite=a5sf-pd28-service-seam overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd28-20261108T12-14-32Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:16:10.872Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":320,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-14-32Z","releasedPorts":[3188,3500,3188],"killedPids":[320],"notes":[]}
+[2026-11-08T12:16:10.872Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:16:10.905Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+skillVerdict                  PROVEN                        PROVEN
+presentVerdict                PROVEN                        PROVEN
+controlsVerdict               PROVEN                        PROVEN
+failClosedVerdict             PROVEN                        PROVEN
+surfaceVerdict                PROVEN                        PROVEN
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 33                            33
+skillOnSurface                true                          true
+presentOnSurface              true                          true
+skillFacts                    {"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}{"total":2,"allow":1,"deny":1,"denyCodes":["IO_READ_DENIED"]}
+presentFacts                  {"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}{"total":4,"allow":2,"deny":2,"denyCodes":["IO_READ_DENIED","IO_READ_DENIED"]}
+guardAllow                    9                             9
+guardDeny                     3                             3
+factTools                     {"bash":3,"read":2,"grep":1,"skill":2,"present":4}{"bash":3,"read":2,"grep":1,"skill":2,"present":4}
+deliverablesEvents            1                             1
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                17                            17
+
+agreeing=true differing=[]
+[2026-11-08T12:16:10.940Z] host porcelain after: []
+[2026-11-08T12:16:10.940Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)
+[2026-11-08T12:16:56.486Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/archive/postfix-2026-11-08T12-16-56-485Z
+[2026-11-08T12:16:56.489Z] START arm=postfix head=f54ecddea2cf50e189943dbf7d843445800c54c2 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/cordis.patch.yml sha256=a77ce1edb462121196cbd3cd0e615579885fdd0b88bb44f3868df092e90aa3b8 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T12:16:56.520Z] host porcelain before: []
+[2026-11-08T12:16:56.587Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:16:56.588Z] [boot1] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:16:56.591Z] [boot1] world=u5u5a5sfpd28-20261108T12-16-56Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-16-56Z
+[2026-11-08T12:16:56.594Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:17:43.491Z] [boot1] mock on 3500
+[2026-11-08T12:18:21.871Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-16-56Z/instance-port3188.log
+[2026-11-08T12:18:22.403Z] [boot1] p6t6 health=true
+[2026-11-08T12:18:22.675Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:18:23.059Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-zgqw6olck","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:4e48d4ae4a81138aee38f37d8c679215c595c26b2d3bd315b00aa8c45ab59e33"},"createdAt":"2026-11-08T12:18:22.711Z","generation
+[2026-11-08T12:18:23.060Z] [boot1] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:18:26.261Z] [boot1] mock quiesced=true
+[2026-11-08T12:18:26.267Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T12:18:26.267Z] [boot1] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,workflow"]
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T12:18:26.272Z] [boot1] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:18:26.273Z] [boot1] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T12:18:26.273Z] [boot1] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-16-56-554Z-b1 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T12-16-56Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:18:26.412Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":80,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-16-56Z","releasedPorts":[3188,3500,3188],"killedPids":[80],"notes":[]}
+[2026-11-08T12:18:26.413Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:18:26.475Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T12:18:26.476Z] [boot2] dev-live slot #0 face=ConfinedSkill world=u5a5sfpd28 head=f54ecddea2cf50e189943dbf7d843445800c54c2
+[2026-11-08T12:18:26.478Z] [boot2] world=u5u5a5sfpd28-20261108T12-18-26Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-18-26Z
+[2026-11-08T12:18:26.481Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T12:19:13.263Z] [boot2] mock on 13050
+[2026-11-08T12:19:50.234Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/dev/agent-workflow/evidence/a5sf-pd28-service-seam/driver/logs/u5u5a5sfpd28-20261108T12-18-26Z/instance-port3188.log
+[2026-11-08T12:19:50.763Z] [boot2] p6t6 health=true
+[2026-11-08T12:19:51.032Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T12:19:51.421Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd28-gc3543zfu8","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd28-team","blueprint":{"blueprintId":"team.a5sf.pd28.main","revision":"1","contentHash":"sha256:22220322d2987ae65e7075356dd6e1ae7fc9f9a6fbe7614e4b287aa7521abfa2"},"createdAt":"2026-11-08T12:19:51.053Z","generatio
+[2026-11-08T12:19:51.421Z] [boot2] leader chain closed (A5SF_PD28_L1_DONE)=true
+[2026-11-08T12:19:54.622Z] [boot2] mock quiesced=true
+[2026-11-08T12:19:54.628Z] [boot2] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=null
+[2026-11-08T12:19:54.628Z] [boot2] MEMBER TRANSCRIPT MISSING for null
+[2026-11-08T12:19:54.631Z] [boot2] case pd28:skill-confined: FAIL failed=["in-lane-body-returned: isError=false text=","in-lane-one-allow-fact: facts=[]","out-of-lane-typed-refusal: isError=false text=","out-of-lane-one-deny-fact: facts=[]","unknown-name-is-not-a-read: isError=false facts=0 text=","turn-kept-going: the Member turn settled after the probes"]
+[2026-11-08T12:19:54.631Z] [boot2] case pd28:present-confined: FAIL failed=["in-lane-presented: isError=false text=","in-lane-guard-facts: facts=[]","in-lane-one-deliverables-event: A session deliverables/presented events=0","out-of-lane-typed-refusal: isError=false facts=[] text=","out-of-lane-one-deny-fact: facts=[]","missing-is-not-an-existence-oracle: isError=false facts=[] text=","no-extra-deliverables-event: a refused presentation must not append an event"]
+[2026-11-08T12:19:54.631Z] [boot2] case pd28:fs-controls: FAIL failed=["bash-ok: text=","read-ok: text=","grep-ok: text=","bash-fact: facts=[]","read-fact: facts=[]","grep-fact: facts=[]"]
+[2026-11-08T12:19:54.632Z] [boot2] case pd28:fail-closed-typed: FAIL failed=["all-typed-unknown: not typed unknown: interrupt_agent,list_agents,pwsh,send_message,subagent,subagent_fork,workflow"]
+[2026-11-08T12:19:54.632Z] [boot2] case pd28:surface-restored: FAIL failed=["skill-present: skill on the surface","present-present: present on the surface"]
+[2026-11-08T12:19:54.632Z] [boot2] case pd28:no-out-of-lane-bytes: PASS
+[2026-11-08T12:19:54.632Z] [boot2] diagnostics(final): mockRequests=5 guardFacts=0
+[2026-11-08T12:19:54.632Z] [boot2] RUN-SUMMARY run=a5sf-pd28-service-seam-postfix-2026-11-08T12-18-26-443Z-b2 suite=a5sf-pd28-service-seam overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u5a5sfpd28-20261108T12-18-26Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T12:19:54.765Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":216,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd28-service-seam/tests/homes/u5u5a5sfpd28-20261108T12-18-26Z","releasedPorts":[3188,13050,3188],"killedPids":[216],"notes":[]}
+[2026-11-08T12:19:54.766Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T12:19:54.797Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       FAIL                          FAIL
+skillVerdict                  REFUTED                       REFUTED
+presentVerdict                REFUTED                       REFUTED
+controlsVerdict               REFUTED                       REFUTED
+failClosedVerdict             REFUTED                       REFUTED
+surfaceVerdict                REFUTED                       REFUTED
+bytesVerdict                  PROVEN                        PROVEN
+surfaceACount                 0                             0
+skillOnSurface                false                         false
+presentOnSurface              false                         false
+skillFacts                    {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+presentFacts                  {"total":0,"allow":0,"deny":0,"denyCodes":[]}{"total":0,"allow":0,"deny":0,"denyCodes":[]}
+guardAllow                    0                             0
+guardDeny                     0                             0
+factTools                     {}                            {}
+deliverablesEvents            0                             0
+requestsCarryingSecret        0                             0
+skillOutBodyInRequests        0                             0
+aModelRequests                0                             0
+
+agreeing=true differing=[]
+[2026-11-08T12:19:54.827Z] host porcelain after: []
+[2026-11-08T12:19:54.828Z] RESULT FAIL arm=postfix (2/2 boots; agreeing pair=true)

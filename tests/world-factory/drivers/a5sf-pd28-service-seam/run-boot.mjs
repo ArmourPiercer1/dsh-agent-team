@@ -130,10 +130,19 @@ const SKILL_OUT_NAME = 'pd28-out-of-lane-skill'
 const SKILL_IN_BODY = 'A5SF_PD28_SKILL_BODY_IN_LANE'
 const SKILL_OUT_BODY = 'A5SF_PD28_SKILL_BODY_OUT_OF_LANE_SECRET'
 const SKILL_UNKNOWN_NAME = 'pd28-no-such-skill'
-/** The names earlier lanes closed; both arms must keep them typed `unknown tool`. */
+/**
+ * The names earlier lanes closed; every boot must keep them typed `unknown tool`.
+ *
+ * `web_fetch`/`web_search` left this list when PD-27 (`#676`) landed on master: the
+ * merged governed preset carries them again as its own governed row, so on the
+ * merged tree they are REAL surface names (33 = 31 + the pair) and asserting them
+ * absent would be asserting the pre-PD-27 composition. They are recorded here, not
+ * measured: this lane reads `surfaceACount` and the two names PRESENT instead, and
+ * `web_fetch`'s own governance is PD-27's evidence, not this lane's.
+ */
 const EARLIER_CLOSED = Object.freeze([
   'interrupt_agent', 'list_agents', 'pwsh', 'send_message', 'subagent', 'subagent_fork',
-  'web_fetch', 'web_search', 'workflow',
+  'workflow',
 ])
 
 const SELECTED_CASES = Object.freeze([
