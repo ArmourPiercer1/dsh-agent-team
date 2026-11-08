@@ -969,13 +969,25 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
    host 的上界**不可表达**，“不越上界的 host”不可写、也不声称。并且 `product-assembly.ts` 在
    realm 出现之前就以 `NETWORK_UNCONFINED_REALM` 拒绝 `network != allow` 的 lane，所以 **deny 臂
    只能由组合提供编译答案**（PD-15 的形态），蓝本路径构造不出 deny Member。
-4. **未跑**：受治 Member 的一次真实委托 turn（booted Host 的 pre/post 两臂 agreeing pair）**没有
-   在本窗口跑，也没有被声称**。剩余步骤写在
-   `dev/agent-workflow/evidence/a5sf-pd27-web-egress/README.md` §7。
-5. **证据**：`dev/agent-workflow/evidence/a5sf-pd27-web-egress/`（README §1–§9、
-   `host-free-runs.jsonl`、`mutation-controls.log`、`archive/`）；host-free
-   `tests/world-factory/a5sf-pd27-confined-web.test.mjs`（9 臂 + PIN）与
-   `tests/world-factory/a5sf-pd27-mutation-controls.mjs`（8/8）。
+4. **live 半场已测**（同一 lane 的后续 commit，只追加，不改本条上面的读数）：booted Host 上的三臂
+   `--boots 2` agreeing pair（`allow` / `deny` / `prefix`，slot-leased、3180 族、`DSH_HOME` 在
+   `tests/homes/`、pinned host 只读），driver 自起**进程内** HTTP server 并用它**自己的**连接计数器
+   作为 ground truth：allow = body 逐字节 + host `HTTP 200` 呈现、**1 连接**（`pathHits={"/known":1}`）、
+   **恰 1 条 allow fact**、继承宿主 `web` **0** 次调用；deny = 同一可达运输、`NETWORK_UNCONFINED_REALM`
+   在 provider 之前、**0 连接**、恰 1 条 deny fact、宿主 `web` 0 次；prefix = 归档 `24d2cf760` 组合在
+   同一 Host 上两个名字都是 typed `unknown tool`、0 fact、0 连接。记录类 `DEV-LIVE`，
+   `bindings.teamSha=09268e58e`，六份 `run-record.json` 在**普通 clone** 中校验为：`teamSha` 存在且是
+   祖先，记录文件的最后一次提交是它的**严格后代**。矩阵格、等级、`V@B`、`NOT_WIRED` 仍**一字未改**。
+5. **两处必须与结论一起读**（owner 决策用，措辞即结论）：(a) **`NetworkAccess` 是一个布尔**——今天的
+   “network confinement” 是**一个 bit**，在运输**之前**裁决，**没有 per-host ACL**，所以被放行的
+   Member **可以到达其运输能解析的任何 host**；(b) **`network: deny` 的 Member 无法通过蓝本路径
+   构造**——`product-assembly.ts` 在 realm 出现之前就拒绝——**因此 deny 证据展示的是机制，不是今天
+   用户可以走的路径**。
+6. **证据**：`dev/agent-workflow/evidence/a5sf-pd27-web-egress/`（README §1–§9、§5b live pair、
+   `runs/{allow,deny}`、`archive/pair-prefix`、`host-free-runs.jsonl`、`mutation-controls.log`）；
+   host-free `tests/world-factory/a5sf-pd27-confined-web.test.mjs`（9 臂 + PIN）与
+   `tests/world-factory/a5sf-pd27-mutation-controls.mjs`（8/8）；driver
+   `tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs`（PD-26 driver 的同一形状）。
 
 ## 2. 静态工具名附录（与主矩阵的映射）
 

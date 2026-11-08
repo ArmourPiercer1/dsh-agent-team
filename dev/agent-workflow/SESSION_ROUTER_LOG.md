@@ -8361,3 +8361,34 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   `check:artifacts:head` **PASS**（显式 `--store-dir $PWD/.pnpm-store`：`verdict=ok, drift=0`，"HEAD carries its own build"；不带 `--store-dir` 时是 NOT-RUN，拒绝不是 fresh 判定）；`check:artifacts:committed` **PASS**（1981 files / 110 glue）。
 - **纪律**：**无 grade、无 `V@B`、无 Q7/Authority/CI 变更、`CORE PATCH BUDGET = 0`、`release BLOCKED` 不变**；
   未改矩阵既有等级与 `NOT_WIRED`；未 merge、未 settle。
+
+## 2026-11-14 — PD27-WEB-EGRESS 续：live 半场跑完了（三臂 × 2 agreeing boots，`task/pd27-web-egress-20261114`）
+
+- **触发**：父 agent 裁决 —— “#676 没有 live pair 不能合并；写 driver、跑 booted pair、记录绑在分支上的
+  commit 上（boot 后禁止 amend）、普通 clone 里校验 teamSha 是祖先且记录文件的最后提交是它的严格后代”。
+- **driver**：`tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs`（**PD-26 driver 的形状**，
+  读者可直接 diff）+ `pd27-web-offer-row.mjs`（组合半边：ONE compiler、pinned host 运输、confined face）。
+  driver 自起**进程内** HTTP server（127.0.0.1、临时端口、**自己的** `connection` 计数器），`/known` 与
+  `/denied` **都**返回同一 body —— 于是“deny 臂打到了运输”会**成功**、被计数器抓住，而不是被 404 掩盖。
+- **三臂 × 2 agreeing boots（全 PASS）**：allow = body 逐字节 + host `HTTP 200` 呈现、server 计数 **1**
+  （`pathHits={"/known":1}`）、**恰 1 条 allow fact**、继承宿主 `web` **0** 次；deny = 同一可达运输、
+  typed `NETWORK_UNCONFINED_REALM` 在 provider 之前、**0 连接**、恰 1 条 deny fact、宿主 `web` 0 次；
+  prefix = 归档 `24d2cf760` 组合在同一 Host、两名字 typed `unknown tool`、0 fact、0 连接。
+  `recordClass=DEV-LIVE`、`teamSha=09268e58e`、`eligible=false`。
+- **绑定校验（普通 clone，非 worktree）**：6 份 `run-record.json` 全部 `teamSha` 存在、是祖先，且记录文件
+  的最后一次提交（`84a7f15ae`）是 `09268e58e` 的**严格后代**；0 违例。boot 后**没有** amend / 改写历史。
+- **一处组合适配（已披露并写进每次 boot 的 `preset-effective.json`）**：shipped 行名
+  `dsh-agent-team/web-tool` 是本仓库 root package 的 subpath export，pinned 测试树只装了
+  `@deepseek-ai/*`（root 行 `dsh-agent-team/host` 本来就靠 driver 改写成 file URL）；因此 preset 内**同一
+  模块**也按 file URL 挂载，module/config/row id 都仍是 shipped 的。pre-fix 臂没有该行——那正是缺陷。
+- **两处披露加硬（措辞即结论）**：(1) **`NetworkAccess` 是一个布尔** —— 今天的 “network confinement”
+  是**一个 bit**、在运输之前裁决、**没有 per-host ACL**，所以被放行的 Member **可以到达其运输能解析的
+  任何 host**；(2) **`network: deny` 的 Member 无法通过蓝本路径构造**（`product-assembly.ts` 在 realm
+  出现前就拒绝）——**因此 deny 证据展示的是机制，不是今天用户能走的路径**。
+- **结构说明**（写进 README §3）：本模块是**挂载适配器**，复用 host 包**自己的** `apply` 产出定义字节
+  （`PD27-PARITY` 逐字段比对），与“fork 掉工具实现”的 `confined-*-tool.mjs` 模式**实质不同**；它在定义面
+  不可能漂移，唯一行为主张是被测过的拒绝路径。
+- **门**：`doc-checks` 0 · debt register 10/10 · a5sf family 全绿 · `check:artifacts:head` 在 driver 落地后
+  **重跑 PASS**（`drift=0`）· eb3 guard/manifest pass · 三臂 driver 各 2/2 PASS。
+- **纪律**：无 grade、无 `V@B`、无 Q7/Authority/CI 变更、`CORE PATCH BUDGET = 0`、release 仍 BLOCKED；
+  未 merge、未 settle。
