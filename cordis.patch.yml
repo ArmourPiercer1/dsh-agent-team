@@ -290,8 +290,6 @@
             name: '@deepseek-ai/dsh-tool-present'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
-          - id: tool-goal
-            name: '@deepseek-ai/dsh-tool-goal'
           - id: planning
             name: cordis:group
             group: true
@@ -330,8 +328,6 @@
                   thresholdChars: 8192
                   headChars: 4096
                   tailChars: 1024
-          - id: tool-ask-user
-            name: '@deepseek-ai/dsh-tool-ask-user'
           - id: tool-todo
             name: '@deepseek-ai/dsh-tool-todo'
             config:

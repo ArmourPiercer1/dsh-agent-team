@@ -1,7 +1,7 @@
 # PD-26 (CONFINED-SKILL) — a governed Member can read a skill body and declare a deliverable again, at the confined `fs` layer
 
 **Lane** `PD26-CONFINED-SKILL` · branch `task/pd26-confined-skill-20261114` · base `origin/master`
-`1e650c3e3` (`PD24-SURFACE-LEDGER`) · evidence class **DEV-LIVE** (`eligible = false`) · 2026-11-14.
+`06adbf850` (`PD25-UNBOUNDED-TURN`, merged in) · evidence class **DEV-LIVE** (`eligible = false`) · 2026-11-14.
 
 > **Answer in one sentence.** Today a governed Member **can** read a declared `SKILL.md` body and
 > **can** declare an in-lane deliverable, and the line is at the Member's **confined `fs` face**
@@ -163,7 +163,7 @@ clean.
 runs/boot01|02/            post-fix evidence (counters, member-probes, member-surface, guard-facts,
                            member-transcript.{json,txt}, run-record.json, summary.txt, teardown.json)
 archive/pair-prefix/       pre-fix arm, same commit, archived composition
-archive/pre-fix/cordis.patch.yml   git show 1e650c3e3:cordis.patch.yml
+archive/pre-fix/cordis.patch.yml   git show 06adbf850:cordis.patch.yml
 archive/mutations/         the M1 mutant (kept for audit)
 agreement-postfix.{json,txt} / agreement-prefix.{json,txt}
 driver.log                 the full run log (both arms, both boots)

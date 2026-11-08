@@ -1,0 +1,345 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-pd25-unbounded-turn-prefix-2026-11-08T04-45-07-671Z-b2",
+  "suite": "a5sf-pd25-unbounded-turn",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-08T04:45:07.671Z",
+  "selectedCases": [
+    "pd25:goal-self-continuation",
+    "pd25:goal-round-limit",
+    "pd25:goal-cap-caller-chosen",
+    "pd25:no-tool-call-cap",
+    "pd25:ask-user-unattended",
+    "pd25:exit-plan-non-plan",
+    "pd25:todo-session-local",
+    "pd25:goal-tools-absent"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d28bdf46c8c7af2d8d5ede38a25333101634469ac1ee85e28756eeee69c9e4c0",
+        "snapshot_version": "as20261105r2"
+      },
+      "pointerSha256": "31ac81fb4c4818b4eb09a61723b7c15a963114272bb9095b18b8e21e5fbc7f0a",
+      "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
+    },
+    "candidate": {
+      "head": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "scope": "DEV-LIVE",
+      "face": "UnboundedTurn",
+      "world": "u5a5sfpd25",
+      "source": "task PD25-UNBOUNDED-TURN explicit boot authorisation (2026-11-14), arm=prefix"
+    },
+    "recordClass": "DEV-LIVE",
+    "teamSha": "6cfc67b7695672ac817c64d3aec47a48b1dc48b4",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "worldIds": [
+      "u5u5a5sfpd25-20261108T04-45-07Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "pd25:goal-self-continuation",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.456Z",
+      "proposition": "a delegated governed Member CAN open a self-continuation loop: `create_goal` is ACCEPTED, the round driver keeps issuing rounds in the Member's own session, and inside this lane's observation cap the run is ended by the MODEL — never by a product limit",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-issued",
+          "ok": true,
+          "detail": "the Member issued `create_goal` with NO max_goal_rounds"
+        },
+        {
+          "id": "create-accepted",
+          "ok": true,
+          "detail": "phase=active activation=armed"
+        },
+        {
+          "id": "armed",
+          "ok": true,
+          "detail": "activation=armed"
+        },
+        {
+          "id": "default-cap-recorded",
+          "ok": true,
+          "detail": "maxGoalRounds=256 (the deployment default, NOT chosen by this probe)"
+        },
+        {
+          "id": "rounds-arrived",
+          "ok": true,
+          "detail": "goal-round model requests=5 (observation cap=5)"
+        },
+        {
+          "id": "rounds-are-sequential-bash",
+          "ok": true,
+          "detail": "rounds=[1,2,3,4,5]"
+        },
+        {
+          "id": "not-stopped-by-product",
+          "ok": true,
+          "detail": "goal reached a blocked phase inside the window: []"
+        },
+        {
+          "id": "model-ended-it",
+          "ok": true,
+          "detail": "complete result={\"goal\":{\"id\":\"goal-28bed0aa-fb8c-4962-aacb-6d77b1dac2a9\",\"revision\":2,\"objective\":\"PD-25: continue the delegated task across automatic rounds until it is done."
+        },
+        {
+          "id": "durable-rounds",
+          "ok": true,
+          "detail": "durable goal-round user messages=5"
+        },
+        {
+          "id": "delegation-returned",
+          "ok": true,
+          "detail": "the synchronous `team_delegate` call returned (the member answered)"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-round-limit",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "the product round budget EXISTS and is effective: `create_goal {max_goal_rounds: 2}` runs exactly two rounds and is then BLOCKED by the goal-round driver with `round-limit`",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-accepted",
+          "ok": true,
+          "detail": "maxGoalRounds=2"
+        },
+        {
+          "id": "exactly-two-rounds",
+          "ok": true,
+          "detail": "rounds=[1,2]"
+        },
+        {
+          "id": "blocked-by-round-limit",
+          "ok": true,
+          "detail": "blocked={\"code\":\"round-limit\",\"message\":\"Goal reached its configured limit of 2 rounds.\",\"maxGoalRounds\":2,\"roundsStarted\":2}"
+        },
+        {
+          "id": "blocked-at-two",
+          "ok": true,
+          "detail": "roundsStarted at block=2"
+        },
+        {
+          "id": "no-third-round",
+          "ok": true,
+          "detail": "no third round was ever issued"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-cap-caller-chosen",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "the round budget is CALLER-CHOSEN, not a ceiling: the same Member raises its own goal cap from the deployment default 256 to 9007199254740991 with `update_goal edit`, and the edit is accepted",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-default-256",
+          "ok": true,
+          "detail": "create maxGoalRounds=256"
+        },
+        {
+          "id": "edit-accepted",
+          "ok": true,
+          "detail": "isError=false text={\"goal\":{\"id\":\"goal-915e047f-482c-40af-b85b-8d5943c15d44\",\"revision\":2,\"objective\":\"PD-25 cap-raise probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":9007199254740991},\"activation\":\"armed\"}"
+        },
+        {
+          "id": "cap-is-huge",
+          "ok": true,
+          "detail": "maxGoalRounds=9007199254740991"
+        },
+        {
+          "id": "same-goal",
+          "ok": true,
+          "detail": "the raised cap belongs to the goal the Member just created"
+        },
+        {
+          "id": "paused-after",
+          "ok": true,
+          "detail": "pause result={\"goal\":{\"id\":\"goal-915e047f-482c-40af-b85b-8d5943c15d44\",\"revision\":3,\"objective\":\"PD-25 cap-raise probe.\",\"phase\":\"paused\",\"roundsStarted\":0,\"maxGoalRounds\":9"
+        }
+      ]
+    },
+    {
+      "id": "pd25:no-tool-call-cap",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "a delegated Member turn has NO tool-call cap: 30 sequential confined `bash` calls in ONE turn all executed (no typed refusal, no truncation, no counter)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "all-issued",
+          "ok": true,
+          "detail": "issued=30/30"
+        },
+        {
+          "id": "all-answered",
+          "ok": true,
+          "detail": "answered=30"
+        },
+        {
+          "id": "none-refused",
+          "ok": true,
+          "detail": "error results=[]"
+        },
+        {
+          "id": "each-executed",
+          "ok": true,
+          "detail": "results carrying the command marker=30 (one may be a trajectory/flush race)"
+        }
+      ]
+    },
+    {
+      "id": "pd25:ask-user-unattended",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "an unattended governed Member's `ask_user_question` is answered by the HOST, not by a human: either a typed rejection that returns promptly, or a measured block — never a fabricated answer",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `ask_user_question`"
+        },
+        {
+          "id": "no-fabricated-answer",
+          "ok": true,
+          "detail": "isError=false text="
+        },
+        {
+          "id": "typed-or-blocked",
+          "ok": true,
+          "detail": "no result within 45s — the delegation is BLOCKED"
+        },
+        {
+          "id": "delegation-outcome-recorded",
+          "ok": true,
+          "detail": "outcome=blocked"
+        }
+      ]
+    },
+    {
+      "id": "pd25:exit-plan-non-plan",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "`exit_plan_mode` outside plan mode is a TYPED REFUSAL and does not switch the session mode",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `exit_plan_mode` from a non-plan turn"
+        },
+        {
+          "id": "typed-refusal",
+          "ok": true,
+          "detail": "isError=true text=Error: exit_plan_mode is only available in plan mode"
+        },
+        {
+          "id": "nothing-executed",
+          "ok": true,
+          "detail": "the refusal names the plan-mode precondition"
+        }
+      ]
+    },
+    {
+      "id": "pd25:todo-session-local",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "`todo_write` is SESSION-LOCAL: the `todo/write` event lands in the CALLING Member's own durable session and in no other Member's",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "call-issued",
+          "ok": true,
+          "detail": "the Member issued `todo_write`"
+        },
+        {
+          "id": "accepted",
+          "ok": true,
+          "detail": "text=Updated todo list: 1 pending, 1 in progress, 0 completed."
+        },
+        {
+          "id": "write-in-calling-session",
+          "ok": true,
+          "detail": "todo/write events in the calling session=1"
+        },
+        {
+          "id": "no-write-elsewhere",
+          "ok": true,
+          "detail": "todo/write events in the other 4 member sessions=0"
+        }
+      ]
+    },
+    {
+      "id": "pd25:goal-tools-absent",
+      "verdict": "PASS",
+      "at": "2026-11-08T04:47:21.457Z",
+      "proposition": "PRE-FIX (defect baseline): the goal tools ARE on the governed Member surface and accept calls",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "create-goal-present",
+          "ok": true,
+          "detail": "create_goal on surface=true"
+        },
+        {
+          "id": "update-goal-present",
+          "ok": true,
+          "detail": "update_goal on surface=true"
+        },
+        {
+          "id": "get-goal-present",
+          "ok": true,
+          "detail": "get_goal on surface=true"
+        },
+        {
+          "id": "create-accepted",
+          "ok": true,
+          "detail": "{\"goal\":{\"id\":\"goal-28bed0aa-fb8c-4962-aacb-6d77b1dac2a9\",\"revision\":1,\"objective\":\"PD-25: continue the delegated task across automatic rounds until it is done."
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-08T04:45:49.039Z",
+        "runId": "a5sf-pd25-unbounded-turn-prefix-2026-11-08T04-45-07-671Z-b2",
+        "suite": "a5sf-pd25-unbounded-turn",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfpd25-20261108T04-45-07Z",
+        "phase": "a5sf-pd25-unbounded-turn-prefix-boot2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-pd25-unbounded-turn-prefix-boot2",
+      "world": "u5u5a5sfpd25-20261108T04-45-07Z",
+      "port": 3188,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T04-45-07Z/instance-port3188.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-pd25-unbounded-turn-prefix-2026-11-08T04-45-07-671Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-08T04:47:21.459Z"
+}

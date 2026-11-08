@@ -1,0 +1,36 @@
+{
+  "schema": "a5sf-pd25-unbounded-turn/delegation-return/1",
+  "at": "2026-11-08T04:47:21.444Z",
+  "note": "leaderSawResultAt = receipt time of the first Leader model request whose history carries that delegation tool_result (the earliest moment the Leader can act on \"delegation completed\"); roundsAfterAre goal-round requests that arrived later",
+  "loop": {
+    "delegateCallId": "call-pd25-delegate-loop",
+    "delegationReturned": true,
+    "leaderSawResultAt": "2026-11-08T04:46:35.668Z",
+    "totalRounds": 5,
+    "roundsAfterLeaderSawResult": 4,
+    "roundTimesAfterLeaderSawResult": [
+      {
+        "round": 2,
+        "at": "2026-11-08T04:46:35.867Z"
+      },
+      {
+        "round": 3,
+        "at": "2026-11-08T04:46:36.096Z"
+      },
+      {
+        "round": 4,
+        "at": "2026-11-08T04:46:36.285Z"
+      },
+      {
+        "round": 5,
+        "at": "2026-11-08T04:46:36.450Z"
+      }
+    ],
+    "secondsResultToLastRound": 0.8
+  },
+  "ask": {
+    "delegateCallId": "call-pd25-delegate-ask",
+    "delegationReturned": false,
+    "blockedSecondsObserved": 45
+  }
+}

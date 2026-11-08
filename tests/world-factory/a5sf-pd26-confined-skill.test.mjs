@@ -16,7 +16,7 @@
  * This suite is HOST-FREE (no boot, no port, no DSH_HOME) and pins:
  *
  *   PIN                 with A5SF_PD26_PIN=1 the recorded pre-fix commit
- *                       (1e650c3e3) is read out of git: its governed preset
+ *                       (06adbf850) is read out of git: its governed preset
  *                       declares NO `skill`/`present` row, and both names are
  *                       the host router's typed `unknown tool` against a real
  *                       tool registry. The CURRENT composition declares both,
@@ -73,7 +73,7 @@ const SKILL_MODULE = process.env.A5SF_PD26_SKILL_MODULE
   ?? join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-skill-tool.mjs')
 const PRESENT_MODULE = join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-present-tool.mjs')
 /** The recorded start of this task (origin/master at the PD-26 branch point). */
-const BASE_COMMIT = '1e650c3e3'
+const BASE_COMMIT = '06adbf850'
 const PRESET_ID = 'a5sf-governed-member'
 
 /** The two names this lane restores (preset row id → the model-visible name). */
@@ -165,9 +165,11 @@ test('PD26-PIN: the pre-fix composition offers neither name and the host router 
 // ===========================================================================
 const KEPT_ROWS = Object.freeze([
   'persona', 'agent-instructions', 'tool-bash', 'tool-fs', 'tool-fs-search', 'tool-jobs',
-  'command-goal', 'tool-goal', 'plan-mode', 'compaction-basic', 'command-compact',
-  'tool-result-pruner', 'tool-ask-user', 'tool-todo',
+  'command-goal', 'plan-mode', 'compaction-basic', 'command-compact',
+  'tool-result-pruner', 'tool-todo',
 ])
+/** PD-25's fail-closed removals on the merged tree; PD-26 must not resurrect them. */
+const PD25_CLOSED_ROWS = Object.freeze(['tool-goal', 'tool-ask-user'])
 
 test('PD26-SURFACE-RESTORED: the governed preset restores the two NAMES and no base-fs skill provider', () => {
   const plugins = presetPlugins(readFileSync(COMPOSITION, 'utf8'))
@@ -183,6 +185,9 @@ test('PD26-SURFACE-RESTORED: the governed preset restores the two NAMES and no b
   }
   for (const id of KEPT_ROWS) {
     assert.equal(byId.has(id), true, `the governed preset unexpectedly lost '${id}'`)
+  }
+  for (const id of PD25_CLOSED_ROWS) {
+    assert.equal(byId.has(id), false, `PD-25 closed '${id}' and PD-26 must not bring it back`)
   }
 })
 

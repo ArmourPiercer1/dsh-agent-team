@@ -916,7 +916,7 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
 
 ### 1.8.9 CORRECTION（PD-26 追加；只追加，不改 §1.8.0–§1.8.8 的任何等级、`V@B` 或数字）
 
-> 2026-11-14，lane `PD26-CONFINED-SKILL`（base `1e650c3e3`）。本节只**追加**：§1.8 的桶、等级、
+> 2026-11-14，lane `PD26-CONFINED-SKILL`（base `06adbf850`）。本节只**追加**：§1.8 的桶、等级、
 > `FAIL-CLOSED` 名单与 33 名口径都是 **PD-24 时点**的读数，一字未改。
 
 1. **§1.8.2 的 `FAIL-CLOSED = 11`（册上 `present` + 册外 10，含 `skill`）是 PD-24 时点。** PD-26 把

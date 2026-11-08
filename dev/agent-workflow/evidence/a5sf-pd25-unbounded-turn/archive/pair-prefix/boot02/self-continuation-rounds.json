@@ -1,0 +1,87 @@
+{
+  "schema": "a5sf-pd25-unbounded-turn/rounds/1",
+  "at": "2026-11-08T04:47:21.419Z",
+  "hardObservationCap": 5,
+  "note": "each row is ONE model request whose last user message is the goal-round prompt; timestamps are the mock provider's receipt time",
+  "loop": {
+    "token": "a5sf-pd25-loop",
+    "rounds": [
+      {
+        "seq": 54,
+        "at": "2026-11-08T04:46:35.608Z",
+        "round": 1,
+        "maxRounds": 256,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25: continue the delegated task across automatic rounds until it i",
+        "roundsBefore": 0,
+        "toolCalls": [
+          "bash"
+        ]
+      },
+      {
+        "seq": 58,
+        "at": "2026-11-08T04:46:35.867Z",
+        "round": 2,
+        "maxRounds": 256,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25: continue the delegated task across automatic rounds until it i",
+        "roundsBefore": 1,
+        "toolCalls": [
+          "bash"
+        ]
+      },
+      {
+        "seq": 60,
+        "at": "2026-11-08T04:46:36.096Z",
+        "round": 3,
+        "maxRounds": 256,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25: continue the delegated task across automatic rounds until it i",
+        "roundsBefore": 2,
+        "toolCalls": [
+          "bash"
+        ]
+      },
+      {
+        "seq": 64,
+        "at": "2026-11-08T04:46:36.285Z",
+        "round": 4,
+        "maxRounds": 256,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25: continue the delegated task across automatic rounds until it i",
+        "roundsBefore": 3,
+        "toolCalls": [
+          "get_goal"
+        ]
+      },
+      {
+        "seq": 66,
+        "at": "2026-11-08T04:46:36.450Z",
+        "round": 5,
+        "maxRounds": 256,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25: continue the delegated task across automatic rounds until it i",
+        "roundsBefore": 4,
+        "toolCalls": [
+          "update_goal"
+        ]
+      }
+    ],
+    "secondsFromFirstToLast": 0.842
+  },
+  "cap2": {
+    "token": "a5sf-pd25-cap2",
+    "rounds": [
+      {
+        "seq": 7,
+        "at": "2026-11-08T04:46:29.052Z",
+        "round": 1,
+        "maxRounds": 2,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25 cap probe: the product round limit must stop this goal.\\\"\\nRoun"
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-08T04:46:29.133Z",
+        "round": 2,
+        "maxRounds": 2,
+        "lastUser": "[{\"type\":\"text\",\"text\":\"<goal_round>\\nObjective: \\\"PD-25 cap probe: the product round limit must stop this goal.\\\"\\nRoun"
+      }
+    ],
+    "secondsFromFirstToLast": 0.081
+  }
+}

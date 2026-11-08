@@ -1,0 +1,83 @@
+[2026-11-08T05:47:22.664Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/archive/postfix-2026-11-08T05-47-22-660Z
+[2026-11-08T05:47:22.667Z] START arm=postfix head=3527b3f454cdbeb16107e25f256ed709feff8af1 composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/cordis.patch.yml sha256=a593472a9d82fdc97646cd51226b3374c8a190a8cdf56b753f79d3964593c6f9 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2 cap=5
+[2026-11-08T05:47:22.694Z] host porcelain before: []
+[2026-11-08T05:47:22.751Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T05:47:22.753Z] [boot1] dev-live slot #0 face=UnboundedTurn world=u5a5sfpd25 head=3527b3f454cdbeb16107e25f256ed709feff8af1
+[2026-11-08T05:47:22.756Z] [boot1] world=u5u5a5sfpd25-20261108T05-47-22Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z
+[2026-11-08T05:47:22.757Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T05:48:09.365Z] [boot1] mock on 3500
+[2026-11-08T05:48:48.331Z] [boot1] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T05-47-22Z/instance-port3188.log
+[2026-11-08T05:48:48.746Z] [boot1] p6t6 health=true
+[2026-11-08T05:48:48.768Z] [boot1] discovery prompt status=200
+[2026-11-08T05:48:49.019Z] [boot1] discovery turn seen=true
+[2026-11-08T05:48:55.950Z] [boot1] team.create status=200 error=<none> ok=true {"type":"server-response","rpcId":"a5sfpd25-hvy0izfun","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd25-team","blueprint":{"blueprintId":"team.a5sf.pd25.main","revision":"1","contentHash":"sha256:7dec7abc84135fed5d8266ee9d8e78c9d269d2019510064f8dda5e5a4d1575a5"},"createdAt":"2026-11-08T05:48:49.081Z","generation
+[2026-11-08T05:48:55.956Z] [boot1] ask turn prompt status=200 error=<none>
+[2026-11-08T05:48:59.462Z] [boot1] chain wait done: requests=58 blockedAsk=null
+[2026-11-08T05:48:59.471Z] [boot1] members=[{"templateId":"plan","lifecycle":"SETTLED"},{"templateId":"cap2","lifecycle":"SETTLED"},{"templateId":"ask","lifecycle":"SETTLED"},{"templateId":"loop","lifecycle":"SETTLED"},{"templateId":"raise","lifecycle":"SETTLED"},{"templateId":"leader","lifecycle":"undefined"}] ids={"cap2":"session-team-child-2817ac0de98bf876ed7353aca32bc2ba","raise":"session-team-child-272fd02beddf67439eb6da676fea4d98","plan":"session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e","loop":"session-team-child-9446f38eb3ab5d14a1a5d32755dcb5b8","ask":"session-team-child-9730d64a845da5bf2d673a473c44e1f1"}
+[2026-11-08T05:48:59.508Z] [boot1] case pd25:goal-self-continuation: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:goal-round-limit: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:goal-cap-caller-chosen: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:no-tool-call-cap: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:ask-user-unattended: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:exit-plan-non-plan: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:todo-session-local: PASS
+[2026-11-08T05:48:59.509Z] [boot1] case pd25:goal-tools-absent: PASS
+[2026-11-08T05:48:59.509Z] [boot1] diagnostics(final): mockRequests=58
+[2026-11-08T05:48:59.510Z] [boot1] RUN-SUMMARY run=a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-47-22-722Z-b1 suite=a5sf-pd25-unbounded-turn overall=PASS cases=8 PASS:8 worlds=u5u5a5sfpd25-20261108T05-47-22Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T05:48:59.636Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-47-22Z","releasedPorts":[3188,3500,3188],"killedPids":[99],"notes":[]}
+[2026-11-08T05:48:59.636Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T05:48:59.696Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T05:48:59.697Z] [boot2] dev-live slot #0 face=UnboundedTurn world=u5a5sfpd25 head=3527b3f454cdbeb16107e25f256ed709feff8af1
+[2026-11-08T05:48:59.699Z] [boot2] world=u5u5a5sfpd25-20261108T05-48-59Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-48-59Z
+[2026-11-08T05:48:59.699Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-08T05:49:46.337Z] [boot2] mock on 3500
+[2026-11-08T05:50:25.081Z] [boot2] BOOTED port=3188 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/dev/agent-workflow/evidence/a5sf-pd25-unbounded-turn/driver/logs/u5u5a5sfpd25-20261108T05-48-59Z/instance-port3188.log
+[2026-11-08T05:50:25.401Z] [boot2] p6t6 health=true
+[2026-11-08T05:50:25.419Z] [boot2] discovery prompt status=200
+[2026-11-08T05:50:25.670Z] [boot2] discovery turn seen=true
+[2026-11-08T05:50:32.658Z] [boot2] team.create status=200 error=<none> ok=true {"type":"server-response","rpcId":"a5sfpd25-0rhzlvbmym","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd25-team","blueprint":{"blueprintId":"team.a5sf.pd25.main","revision":"1","contentHash":"sha256:81f8696b725ce66fbc34708ec6996eabe56e91884af8e62858be626d112aa1aa"},"createdAt":"2026-11-08T05:50:25.703Z","generatio
+[2026-11-08T05:50:32.664Z] [boot2] ask turn prompt status=200 error=<none>
+[2026-11-08T05:50:36.170Z] [boot2] chain wait done: requests=58 blockedAsk=null
+[2026-11-08T05:50:36.180Z] [boot2] members=[{"templateId":"plan","lifecycle":"SETTLED"},{"templateId":"cap2","lifecycle":"SETTLED"},{"templateId":"ask","lifecycle":"SETTLED"},{"templateId":"loop","lifecycle":"SETTLED"},{"templateId":"raise","lifecycle":"SETTLED"},{"templateId":"leader","lifecycle":"undefined"}] ids={"cap2":"session-team-child-2817ac0de98bf876ed7353aca32bc2ba","raise":"session-team-child-272fd02beddf67439eb6da676fea4d98","plan":"session-team-child-e0fdfeca4e3ca131ce3317566c54ea3e","loop":"session-team-child-9446f38eb3ab5d14a1a5d32755dcb5b8","ask":"session-team-child-9730d64a845da5bf2d673a473c44e1f1"}
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:goal-self-continuation: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:goal-round-limit: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:goal-cap-caller-chosen: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:no-tool-call-cap: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:ask-user-unattended: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:exit-plan-non-plan: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:todo-session-local: PASS
+[2026-11-08T05:50:36.219Z] [boot2] case pd25:goal-tools-absent: PASS
+[2026-11-08T05:50:36.220Z] [boot2] diagnostics(final): mockRequests=58
+[2026-11-08T05:50:36.220Z] [boot2] RUN-SUMMARY run=a5sf-pd25-unbounded-turn-postfix-2026-11-08T05-48-59-666Z-b2 suite=a5sf-pd25-unbounded-turn overall=PASS cases=8 PASS:8 worlds=u5u5a5sfpd25-20261108T05-48-59Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T05:50:36.393Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":626,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd25-unbounded-turn/tests/homes/u5u5a5sfpd25-20261108T05-48-59Z","releasedPorts":[3188,3500,3188],"killedPids":[626],"notes":[]}
+[2026-11-08T05:50:36.393Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T05:50:36.430Z] TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+overall                       PASS                          PASS
+selfContinuation              PROVEN                        PROVEN
+roundLimit                    PROVEN                        PROVEN
+callerChosenCap               PROVEN                        PROVEN
+burstVerdict                  PROVEN                        PROVEN
+ask                           PROVEN                        PROVEN
+plan                          PROVEN                        PROVEN
+todo                          PROVEN                        PROVEN
+goalToolsAbsent               PROVEN                        PROVEN
+surfaceCount                  29                            29
+createGoalOnSurface           false                         false
+loopRounds                    0                             0
+loopDefaultCap                null                          null
+cap2Rounds                    0                             0
+cap2Blocked                   null                          null
+raisedCap                     null                          null
+burst                         30                            30
+askBlockedSeconds             null                          null
+askError                      true                          true
+planError                     true                          true
+memberModelRequests           {"loop":33,"cap2":2,"raise":4,"plan":2,"ask":2}{"loop":33,"cap2":2,"raise":4,"plan":2,"ask":2}
+delegationsReturned           {"call-pd25-delegate-cap2":true,"call-pd25-delegate-raise":true,"call-pd25-delegate-plan":true,"call-pd25-delegate-loop":true,"call-pd25-delegate-ask":true}{"call-pd25-delegate-cap2":true,"call-pd25-delegate-raise":true,"call-pd25-delegate-plan":true,"call-pd25-delegate-loop":true,"call-pd25-delegate-ask":true}
+askDelegationBlocked          false                         false
+
+agreeing=true differing=[]
+[2026-11-08T05:50:36.465Z] host porcelain after: []
+[2026-11-08T05:50:36.465Z] RESULT PASS arm=postfix (2/2 boots; agreeing pair=true)

@@ -49,7 +49,7 @@ const LOG = join(EVIDENCE, 'mutation-controls.log')
 const ARCHIVE = join(EVIDENCE, 'archive')
 const PRE_FIX = join(ARCHIVE, 'pre-fix', 'cordis.patch.yml')
 const MUTATED_MODULE = join(ARCHIVE, 'mutations', 'confined-skill-tool.base-fs.mjs')
-const BASE_COMMIT = '1e650c3e3'
+const BASE_COMMIT = '06adbf850'
 
 mkdirSync(dirname(PRE_FIX), { recursive: true })
 mkdirSync(dirname(MUTATED_MODULE), { recursive: true })
