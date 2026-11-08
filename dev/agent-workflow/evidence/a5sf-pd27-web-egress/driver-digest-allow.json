@@ -1,11 +1,11 @@
 {
-  "at": "2026-11-08T09:55:26.844Z",
+  "at": "2026-11-08T10:18:59.486Z",
   "arm": "allow",
-  "head": "09268e58e9996c27af62112f2471f8fe0ed2e77e",
+  "head": "3d4ab1cbc8071b4a19bde0918e3c21aaaeb5b176",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "2da68d05067217464217bed211aa681ff1fd7c4090eec27279016f95f1257c7f",
+  "driverSha256": "2a2da49d6610d39ed41306f01737ed555e446260c29ff546f0a6ad4c0c2f3f79",
   "jsSubstitutions": [
     {
       "expression": "process.platform === 'win32'",

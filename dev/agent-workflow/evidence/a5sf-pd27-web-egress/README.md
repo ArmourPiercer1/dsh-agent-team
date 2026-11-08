@@ -181,7 +181,11 @@ Still **not** measured, and not claimed:
    the list" is not expressible, and a permitted Member can reach any host its transport can resolve.
 3. **A user-reachable deny path.** See §1 disclosure (1): the deny arm exists only because a
    composition supplied the compiled answer.
-4. **Destination auditing of a provider answer** that names a host the request did not (only the
+4. **`web_search`'s real search backend.** This lane proves the **name**, the **dispatch**, the
+   governed **fact** and the deny/allow decision — **not** that a real search index or upstream
+   backend answers. `web_search`'s search provider is out of scope here and is being picked up as
+   separate work; surface + dispatch must not be read as search capability.
+5. **Destination auditing of a provider answer** that names a host the request did not (only the
    **declared** locator is audited; `web_search` audits the declared query, not the returned links).
 
 ## 8. Reproduce
@@ -209,7 +213,7 @@ node --test tests/world-factory/a5sf-debt-register.test.mjs
 | --- | --- |
 | `pnpm -r typecheck` | PASS (9 packages) |
 | `eslint` on every touched file | PASS (0 errors; the two test files are outside eslint's scope by the repo's own ignore pattern) |
-| `check:install-manifest` | 8 issues, **the same 8 the base tree reports** (pinned-dist `new URL()` sites); the lane's own new import is a declared dependency |
+| `check:install-manifest` | **8** issues, and they are the 8 pre-existing computed-URL sites (two in `a5sf-realm-row.mjs`, six in `packages/tools/web-family`). Base `origin/master` reports **10**: those 8 **plus two undeclared bare imports** — `@deepseek-ai/dsh-tool-fs` (PD-17's `confined-fs-tool.mjs`, which that lane declared in `packages/runtime` but never at the root) and this lane's `@deepseek-ai/dsh-tool-web`. Both are now root **dependencies**; the audited DSH-peer contract stays at its **ten** names (see the booking note in `plugin-dsh-compat.test.ts`, and §9a) |
 | `check:artifacts:head` | **PASS** with an explicit writable store: `node scripts/check-artifacts-at-head.mjs --store-dir $PWD/.pnpm-store` → `verdict=ok … drift=0`, "HEAD carries its own build" (1981 compared files). Without `--store-dir` it is **NOT-RUN** in this sandbox, and a refusal is not a "fresh" verdict (log line below) |
 | `check:artifacts:committed` | **PASS**: `verdict=ok compared=1981 glue=110` — the working tree equals the git index on both install surfaces |
 | p4t6 session-event scan | **20/20** with the booking (`scanner counts 1449`, ledger `983 + 465 + 1`) |
@@ -222,6 +226,32 @@ green verdict:
 [check-artifacts-at-head] NOT-RUN: the only discoverable pnpm store ... is not writable, so the
 scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".
 ```
+
+
+### 9a. Booking the peer census (the `ci-census` red, and why the ten stayed ten)
+
+`packages/testkit/test/plugin-dsh-compat.test.ts` failed on its frozen `EXPECTED_HOST_PEERS` literal
+with **4 failed / 9 passed**. The extra peer was **mine and wrong**: the PD-27 commit put
+`@deepseek-ai/dsh-tool-fs` into the root manifest's `peerDependencies` to clear
+`check:install-manifest`, which is the wrong instrument — a peer *is* the audited host-provides
+contract, and widening it to silence a packaging gate is exactly the silent absorption that literal
+exists to prevent. Audited and rejected: the set stays **ten**. The missing declaration is real
+(PD-17's `confined-fs-tool.mjs` imports the host package and only ever declared it in
+`packages/runtime`), so it now rides the **dependency** lane — the same shape `@deepseek-ai/dsh-skill`,
+`@deepseek-ai/dsh-tools` and this lane's `@deepseek-ai/dsh-tool-web` use — and the same edit books
+`@deepseek-ai/dsh-tool-web`. The whole file is **13 passed** again; `check:install-manifest` goes
+**10 → 8** (the two sites in `a5sf-realm-row.mjs` and six in `packages/tools/web-family`, all
+pre-existing), i.e. this lane *pays down* an inherited gate failure instead of absorbing it.
+
+**No re-boot was needed for this change, and none was run for it**: it is a manifest declaration (who
+provides `@deepseek-ai/dsh-tool-fs`/`-web`), not a composition row, a provider or a guard — the
+allow/deny decision path, the guard facts and the member surface are untouched. (The committed
+`runs/allow` pair *is* a re-measurement — the allow arm re-ran once while the agreement table was
+being regenerated, during the earlier commit. It reproduced the pair exactly: the counters projection
+is identical, only the timestamps differ; the previous pair is kept under
+`archive/allow-2026-11-08T10-18-59-515Z/` and is bound to the earlier `teamSha` `09268e58e`, the new
+one to `3d4ab1cbc`. Both are agreeing pairs, and both bindings are verified in a plain clone.)
+
 
 With the writable store the scratch installs and the build is verified (`verdict=ok`, `drift=0`), so
 the committed dist surface **is** a fresh build of itself.

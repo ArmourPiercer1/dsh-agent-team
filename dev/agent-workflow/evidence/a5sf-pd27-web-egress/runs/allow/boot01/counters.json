@@ -15,7 +15,7 @@
     },
     "requests": [
       {
-        "at": "2026-11-08T09:56:53.372Z",
+        "at": "2026-11-08T10:20:02.905Z",
         "method": "GET",
         "path": "/known"
       }
@@ -69,8 +69,8 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T09:56:52.598Z",
-    "to": "2026-11-08T09:56:53.412Z"
+    "from": "2026-11-08T10:20:02.162Z",
+    "to": "2026-11-08T10:20:02.968Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/cordis.patch.yml",

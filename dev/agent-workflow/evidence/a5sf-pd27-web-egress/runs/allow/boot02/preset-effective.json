@@ -6,5 +6,6 @@
       "shipped": "dsh-agent-team/web-tool",
       "effective": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd27-web-egress/packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs"
     }
-  ]
+  ],
+  "shippedRowPresent": true
 }
