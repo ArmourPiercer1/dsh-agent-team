@@ -1,4 +1,8 @@
-# PD-21 — the governed Member's SUBAGENT realm (measured, then fail-closed)
+# PD-22 (SUBAGENT-CHILD-REALM) — the governed Member's subagent realm (measured, then fail-closed)
+
+> **Names on disk.** This lane was assigned "PD-21" and its branch, driver, tests and this directory
+> carry `pd21`/`PD21-SUBAGENT-REALM`; the product-debt register slot is **PD-22 (SUBAGENT-CHILD-REALM)**
+> because #670 (PD20-LIFECYCLE) took PD-20/PD-21 first. Both names point at this one measurement.
 
 > **Evidence class: `DEV-LIVE`.** Development evidence, never a candidate claim; `candidateClaimEligibility`
 > is false by construction. No `V@B`, no matrix grade change, no CI change. `CORE PATCH BUDGET = 0`:
@@ -132,7 +136,59 @@ The Member's model-visible surface drops from **40** to **35** names: `subagent`
 all. This is a *removal*, not an enforcement: there is no governed child realm today. The standard
 preset still declares `tool-subagent`/`tool-subagent-fork` (asserted by the positive-control arm), so
 the capability exists outside the governed preset. Restoring it requires a provider seam that builds
-the child inside the Member's isolate fork, then a governed-child measurement.
+the child inside the Member's isolate fork, then a governed-child measurement — see §4.1.
+
+### 4.1 What a real fix would need — `CORE_SEAM_BLOCKER`-shaped
+
+This is written down so a later round with budget can pick it up instead of rediscovering it. **It is
+not a follow-up anyone may assume is easy.**
+
+The child's assembly is not in this repository. It is in the **pinned upstream host** (read-only,
+gitignored, `tests/deepseek-harness-test-use`), in `packages/subagent/subagent/src/child-agent.ts`:
+
+```ts
+export function applyChildComposition(childCtx, parent) {            // :200
+  childCtx.get('agentPresets')?.composeFrom(childCtx, parent.ctx)    // :205
+```
+
+and the child's own policy comes from the parent session, not from a realm:
+
+```ts
+sandboxMode: parent.ctx.get('sandboxPolicy')?.overrideOf(parent.session),   // :253
+approvalPolicy: parent.ctx.get('approval') === undefined ? undefined : 'never',  // :254
+```
+
+The builder creates `childCtx` through `ctx.agents.create(...)` under the **Member's agent context**,
+so `childCtx` is a *sibling* of the isolate fork our realm installs
+(`packages/runtime/team-services/src/install.ts:403` `root.isolate('fs', label)`, then `:411`/`:417`/
+`:423` for `subprocess`/`web`/`terminals`). Re-mounting preset **rows** into a sibling cannot resolve
+services that only exist **below** the fork.
+
+Two candidate paths, both blocked today:
+
+| path | what would have to change | why it is blocked |
+| --- | --- | --- |
+| upstream | `child-agent.ts` would have to create `childCtx` from a caller-supplied parent context (or accept a ctx factory/realm handle) so `agents.create` lands **inside** `memberScope` | it is an **upstream source patch**: `CORE_SEAM_BLOCKER`, forbidden by the red line and outside `CORE PATCH BUDGET = 0` |
+| ours | a composition-owned subagent provider registered through a public seam that builds the child on the Member's isolated ctx and assembles the child prompt/preset itself | needs a public seam that accepts an already-isolated ctx (unverified), plus a new provider, prompt assembly and a full governed-child measurement — **new capability, not a fix**; no budget in this phase |
+
+Either path also has to answer what the child's *own* `subagent` recursion means (measured pre-fix:
+the child carried `subagent` itself, §1.3), i.e. a governed child needs its own depth/allowlist rule,
+not just a realm.
+
+### 4.2 Two judged clauses that are easy to "fix" back — do not
+
+Both of these were got wrong in this lane's first draft, and other lanes have got them wrong too. They
+are **product semantics**, not test-writer taste:
+
+1. **A role refusal from the team runtime is a SUCCESSFUL tool result.** `team_create_member` answers
+   `{"status":"rejected","code":"TEAM_RUNTIME_CALLER_AUTHORITY_DENIED","message":"… restricted to roles
+   [human, leader] (got role 'member')"}` with `isError: false`. Asserting `isError === true` here reds
+   the arm on a correct product. The refusal is typed by its `status`/`code`, not by the error flag.
+2. **The unknown-tool refusal is lowercase prose.** Removing a row from a preset makes the host router
+   answer `Error: unknown tool "subagent"` — it is *not* the uppercase `UNKNOWN_TOOL` token that some
+   a5sf paths use internally. An arm that greps for `UNKNOWN_TOOL` here reds on a correct product
+   (and a case-insensitive match is the honest fix, not a relaxation: the arm still requires
+   `isError === true` **and** the tool name in the message).
 
 ## 5. Evidence inventory
 
