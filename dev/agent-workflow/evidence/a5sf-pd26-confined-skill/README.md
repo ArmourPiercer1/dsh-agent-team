@@ -72,7 +72,9 @@ Two seams were **measured**, not assumed, and both are part of the design:
 
 One delegated Member turn, real Host, shipped opt-in preset `a5sf-governed-member`, shipped route-C
 attach, pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, booted **twice** per arm
-(`--boots 2`), both records bound to the pushed commit `427d226be`. The scripted model is the shared
+(`--boots 2`), both records bound to the pushed commit `427d226be` — the **code** commit; the two
+follow-up commits after it touch no module (root dependency declaration, superseded absence arms,
+register/matrix/README), so the records describe exactly the code this PR ships. The scripted model is the shared
 mock; the skill files, the deliverable and the secret are World files. Every Member surface call and the
 result the Member actually received are in `runs/boot0*/member-probes.json`.
 
