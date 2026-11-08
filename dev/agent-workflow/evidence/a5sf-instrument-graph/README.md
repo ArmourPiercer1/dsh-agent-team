@@ -1,8 +1,15 @@
-# a5sf-instrument-graph — PD-30 (window allocation PD-32): the World factory provisions the module graph
+# a5sf-instrument-graph — PD-31 (window allocation PD-32): the World factory provisions the module graph
 
-**Lane** `pd32-instrument-graph` · **branch** `task/pd32-instrument-graph` · **base** `da6cc7ba2`
-(`PD28-SERVICE-SEAM` #677, contains the merged `PD30-WEB-PREVIEW` #678 at `1879e3ebc`) ·
+**Lane** `pd32-instrument-graph` · **branch** `task/pd32-instrument-graph` ·
+**boot-time HEAD** `da6cc7ba2` (the two boots below ran with the working-tree files, and the
+run records bind `teamSha = da6cc7ba2`) · **rebased onto** `0c2a8f422` (`PD29-GOAL-STOP` #679,
+which also carries #677/#678); the rebase changed only the register row's id and the docs, so
+the measured files are byte-identical and the records' `teamSha` remains an ancestor ·
 **class** DEV-LIVE for the two boots below, host-free for the unit pins.
+
+**Row id, both disclosed**: the window allocates **PD-32** to this lane; **#679 merged PD-30**
+before this row, so the register's `PD-1…PD-n` contiguity law makes the id on this base
+**PD-31** (PD-30 → PD-31 is the only renaming; the defect and the evidence are unchanged).
 
 ## 0. Why this exists: the instrument substituted the subject — twice
 
