@@ -1,0 +1,7510 @@
+{
+  "a": {
+    "sessionId": "session-team-child-c63faae83d9a80429d3002bf9e60facf",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-c63faae83d9a80429d3002bf9e60facf/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 113,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 2,
+      "turn/start": 1,
+      "step/start": 19,
+      "system/message": 1,
+      "user/message": 4,
+      "request/header": 1,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 19,
+      "tool/call": 18,
+      "tool/result": 18,
+      "step/end": 19,
+      "deliverables/presented": 1,
+      "workspace/changes": 1,
+      "turn/end": 1
+    },
+    "goalRounds": [],
+    "goalChanges": [],
+    "calls": [
+      {
+        "at": 1794161124847,
+        "name": "read",
+        "callId": "call-pd33-a-read"
+      },
+      {
+        "at": 1794161124900,
+        "name": "grep",
+        "callId": "call-pd33-a-grep"
+      },
+      {
+        "at": 1794161128316,
+        "name": "glob",
+        "callId": "call-pd33-a-glob"
+      },
+      {
+        "at": 1794161128405,
+        "name": "write",
+        "callId": "call-pd33-a-write"
+      },
+      {
+        "at": 1794161128470,
+        "name": "edit",
+        "callId": "call-pd33-a-edit"
+      },
+      {
+        "at": 1794161128674,
+        "name": "bash",
+        "callId": "call-pd33-a-bash"
+      },
+      {
+        "at": 1794161128778,
+        "name": "skill",
+        "callId": "call-pd33-a-skill"
+      },
+      {
+        "at": 1794161128964,
+        "name": "present",
+        "callId": "call-pd33-a-present"
+      },
+      {
+        "at": 1794161129082,
+        "name": "read",
+        "callId": "call-pd33-a-read-out"
+      },
+      {
+        "at": 1794161129144,
+        "name": "web_fetch",
+        "callId": "call-pd33-a-web-out"
+      },
+      {
+        "at": 1794161129336,
+        "name": "bash",
+        "callId": "call-pd33-a-bash-out"
+      },
+      {
+        "at": 1794161129516,
+        "name": "workflow",
+        "callId": "call-pd33-a-closed-workflow"
+      },
+      {
+        "at": 1794161129591,
+        "name": "subagent",
+        "callId": "call-pd33-a-closed-subagent"
+      },
+      {
+        "at": 1794161129687,
+        "name": "subagent_fork",
+        "callId": "call-pd33-a-closed-subagent_fork"
+      },
+      {
+        "at": 1794161129870,
+        "name": "send_message",
+        "callId": "call-pd33-a-closed-send_message"
+      },
+      {
+        "at": 1794161129949,
+        "name": "interrupt_agent",
+        "callId": "call-pd33-a-closed-interrupt_agent"
+      },
+      {
+        "at": 1794161130076,
+        "name": "list_agents",
+        "callId": "call-pd33-a-closed-list_agents"
+      },
+      {
+        "at": 1794161130167,
+        "name": "ask_user_question",
+        "callId": "call-pd33-a-closed-ask_user_question"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161124868,
+        "callId": "call-pd33-a-read",
+        "isError": false
+      },
+      {
+        "at": 1794161128141,
+        "callId": "call-pd33-a-grep",
+        "isError": false
+      },
+      {
+        "at": 1794161128369,
+        "callId": "call-pd33-a-glob",
+        "isError": false
+      },
+      {
+        "at": 1794161128430,
+        "callId": "call-pd33-a-write",
+        "isError": false
+      },
+      {
+        "at": 1794161128505,
+        "callId": "call-pd33-a-edit",
+        "isError": false
+      },
+      {
+        "at": 1794161128735,
+        "callId": "call-pd33-a-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161128789,
+        "callId": "call-pd33-a-skill",
+        "isError": false
+      },
+      {
+        "at": 1794161128984,
+        "callId": "call-pd33-a-present",
+        "isError": false
+      },
+      {
+        "at": 1794161129090,
+        "callId": "call-pd33-a-read-out",
+        "isError": false
+      },
+      {
+        "at": 1794161129251,
+        "callId": "call-pd33-a-web-out",
+        "isError": false
+      },
+      {
+        "at": 1794161129433,
+        "callId": "call-pd33-a-bash-out",
+        "isError": false
+      },
+      {
+        "at": 1794161129520,
+        "callId": "call-pd33-a-closed-workflow",
+        "isError": false
+      },
+      {
+        "at": 1794161129600,
+        "callId": "call-pd33-a-closed-subagent",
+        "isError": false
+      },
+      {
+        "at": 1794161129713,
+        "callId": "call-pd33-a-closed-subagent_fork",
+        "isError": false
+      },
+      {
+        "at": 1794161129876,
+        "callId": "call-pd33-a-closed-send_message",
+        "isError": false
+      },
+      {
+        "at": 1794161129987,
+        "callId": "call-pd33-a-closed-interrupt_agent",
+        "isError": false
+      },
+      {
+        "at": 1794161130099,
+        "callId": "call-pd33-a-closed-list_agents",
+        "isError": false
+      },
+      {
+        "at": 1794161130178,
+        "callId": "call-pd33-a-closed-ask_user_question",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161130437,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `pd33-inlane`: PD-33 in-lane fixture skill\n- `pd33-outlane`: PD-33 out-of-lane fixture skill\n- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity fro",
+    "lastAssistant": "A5SF_PD33_A_DONE n tool \"subagent\"\nError: unknown tool \"subagent_fork\"\nError: unknown tool \"send_message\"\nError: unknown tool \"interrupt_agent\"\nError: unknown tool \"list_agents\"\nError: unknown tool \"ask_user_question\""
+  },
+  "b": {
+    "sessionId": "session-team-child-601eb61ddb9c29453cfd84348361e067",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-601eb61ddb9c29453cfd84348361e067/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 93,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 10,
+      "turn/start": 4,
+      "step/start": 12,
+      "system/message": 1,
+      "user/message": 8,
+      "request/header": 4,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 12,
+      "tool/call": 8,
+      "tool/result": 8,
+      "step/end": 12,
+      "goal/change": 2,
+      "turn/end": 4
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+        "revision": 1,
+        "at": 1794161128971
+      },
+      {
+        "round": 2,
+        "goalId": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+        "revision": 1,
+        "at": 1794161129526
+      },
+      {
+        "round": 3,
+        "goalId": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+        "revision": 1,
+        "at": 1794161130118
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794161128678,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161130205,
+        "operation": "complete",
+        "phase": "complete",
+        "revision": 2,
+        "id": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+        "roundsStarted": 3,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794161128323,
+        "name": "web_fetch",
+        "callId": "call-pd33-b-fetch"
+      },
+      {
+        "at": 1794161128409,
+        "name": "web_search",
+        "callId": "call-pd33-b-search"
+      },
+      {
+        "at": 1794161128452,
+        "name": "skill",
+        "callId": "call-pd33-b-skill-out"
+      },
+      {
+        "at": 1794161128512,
+        "name": "read_image",
+        "callId": "call-pd33-b-read-image"
+      },
+      {
+        "at": 1794161128669,
+        "name": "create_goal",
+        "callId": "call-pd33-b-create-goal"
+      },
+      {
+        "at": 1794161129004,
+        "name": "bash",
+        "callId": "call-pd33-b-round-1"
+      },
+      {
+        "at": 1794161129568,
+        "name": "bash",
+        "callId": "call-pd33-b-round-2"
+      },
+      {
+        "at": 1794161130133,
+        "name": "update_goal",
+        "callId": "call-pd33-b-complete"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161128374,
+        "callId": "call-pd33-b-fetch",
+        "isError": false
+      },
+      {
+        "at": 1794161128417,
+        "callId": "call-pd33-b-search",
+        "isError": false
+      },
+      {
+        "at": 1794161128459,
+        "callId": "call-pd33-b-skill-out",
+        "isError": false
+      },
+      {
+        "at": 1794161128544,
+        "callId": "call-pd33-b-read-image",
+        "isError": false
+      },
+      {
+        "at": 1794161128679,
+        "callId": "call-pd33-b-create-goal",
+        "isError": false
+      },
+      {
+        "at": 1794161129227,
+        "callId": "call-pd33-b-round-1",
+        "isError": false
+      },
+      {
+        "at": 1794161129850,
+        "callId": "call-pd33-b-round-2",
+        "isError": false
+      },
+      {
+        "at": 1794161130207,
+        "callId": "call-pd33-b-complete",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161128825,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161129451,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161130052,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161130410,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_complete>\nObjective: \"PD-33 preview goal: at least three automatic rounds, then converge.\"\nThe goal is marked complete and this autonomous run is ending. Write the closing message to the user now: state the outcome, summarize what was done and how it was verified, and point to the concrete results (files, commits, or other artifacts). Report only what earlier rounds and tool results in this ",
+    "lastAssistant": "A5SF_PD33_B_DONE created"
+  },
+  "s1": {
+    "sessionId": "session-team-child-c98107c8db0087de6f75d58677283fbc",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-c98107c8db0087de6f75d58677283fbc/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 54,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 6,
+      "turn/start": 3,
+      "step/start": 5,
+      "system/message": 1,
+      "user/message": 6,
+      "request/header": 3,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 5,
+      "tool/call": 3,
+      "goal/change": 2,
+      "tool/result": 3,
+      "step/end": 5,
+      "turn/end": 3,
+      "workspace/changes": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+        "revision": 1,
+        "at": 1794161128979
+      },
+      {
+        "round": 2,
+        "goalId": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+        "revision": 1,
+        "at": 1794161129509
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794161128675,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161133626,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 2,
+        "id": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+        "roundsStarted": 2,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794161128662,
+        "name": "create_goal",
+        "callId": "call-pd29-s1-create"
+      },
+      {
+        "at": 1794161129015,
+        "name": "bash",
+        "callId": "call-pd29-s1-round-1-bash"
+      },
+      {
+        "at": 1794161129523,
+        "name": "bash",
+        "callId": "call-pd29-s1-round-2-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161128677,
+        "callId": "call-pd29-s1-create",
+        "isError": false
+      },
+      {
+        "at": 1794161129229,
+        "callId": "call-pd29-s1-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133624,
+        "callId": "call-pd29-s1-round-2-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161128849,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161129439,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133625,
+        "kind": "aborted"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for s1.\"\nRound: 2/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective i",
+    "lastAssistant": "A5SF_PD29_S1_CREATED"
+  },
+  "s2": {
+    "sessionId": "session-team-child-d7c127890591a07df6eee9044a8b88eb",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-d7c127890591a07df6eee9044a8b88eb/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 1624,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 236,
+      "turn/start": 118,
+      "step/start": 224,
+      "system/message": 1,
+      "user/message": 116,
+      "request/header": 113,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 223,
+      "tool/call": 112,
+      "goal/change": 14,
+      "tool/result": 112,
+      "step/end": 224,
+      "turn/end": 118,
+      "workspace/changes": 4,
+      "assistant/attempt": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161129374
+      },
+      {
+        "round": 2,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161129984
+      },
+      {
+        "round": 3,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161130563
+      },
+      {
+        "round": 4,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161131163
+      },
+      {
+        "round": 5,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161131584
+      },
+      {
+        "round": 6,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161131989
+      },
+      {
+        "round": 7,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161132415
+      },
+      {
+        "round": 8,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161132842
+      },
+      {
+        "round": 9,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161133305
+      },
+      {
+        "round": 10,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161133766
+      },
+      {
+        "round": 11,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161134207
+      },
+      {
+        "round": 12,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161134657
+      },
+      {
+        "round": 13,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161135085
+      },
+      {
+        "round": 14,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161135542
+      },
+      {
+        "round": 15,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161135984
+      },
+      {
+        "round": 16,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161136424
+      },
+      {
+        "round": 17,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161136850
+      },
+      {
+        "round": 18,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161137270
+      },
+      {
+        "round": 19,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161137691
+      },
+      {
+        "round": 20,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161138118
+      },
+      {
+        "round": 21,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161138568
+      },
+      {
+        "round": 22,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161138989
+      },
+      {
+        "round": 23,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161139428
+      },
+      {
+        "round": 24,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161139866
+      },
+      {
+        "round": 25,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161140334
+      },
+      {
+        "round": 26,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161140794
+      },
+      {
+        "round": 27,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161141238
+      },
+      {
+        "round": 28,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161141687
+      },
+      {
+        "round": 29,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161142126
+      },
+      {
+        "round": 30,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161142556
+      },
+      {
+        "round": 31,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161142985
+      },
+      {
+        "round": 32,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161143417
+      },
+      {
+        "round": 33,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161143882
+      },
+      {
+        "round": 34,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161144308
+      },
+      {
+        "round": 35,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161144726
+      },
+      {
+        "round": 36,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161145154
+      },
+      {
+        "round": 37,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161145594
+      },
+      {
+        "round": 38,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161146063
+      },
+      {
+        "round": 39,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161146529
+      },
+      {
+        "round": 40,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161146972
+      },
+      {
+        "round": 41,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161147388
+      },
+      {
+        "round": 42,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161147823
+      },
+      {
+        "round": 43,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161148264
+      },
+      {
+        "round": 44,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161148690
+      },
+      {
+        "round": 45,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161149133
+      },
+      {
+        "round": 46,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161149563
+      },
+      {
+        "round": 47,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161149980
+      },
+      {
+        "round": 48,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161150413
+      },
+      {
+        "round": 49,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161150860
+      },
+      {
+        "round": 50,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161151308
+      },
+      {
+        "round": 51,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161151777
+      },
+      {
+        "round": 52,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161152229
+      },
+      {
+        "round": 53,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161152691
+      },
+      {
+        "round": 54,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161153144
+      },
+      {
+        "round": 55,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161153632
+      },
+      {
+        "round": 56,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161154043
+      },
+      {
+        "round": 57,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161154472
+      },
+      {
+        "round": 58,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161154878
+      },
+      {
+        "round": 59,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161155289
+      },
+      {
+        "round": 60,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161155702
+      },
+      {
+        "round": 61,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161156112
+      },
+      {
+        "round": 62,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161156524
+      },
+      {
+        "round": 63,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161156938
+      },
+      {
+        "round": 64,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161157374
+      },
+      {
+        "round": 65,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161157804
+      },
+      {
+        "round": 66,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161158233
+      },
+      {
+        "round": 67,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161158648
+      },
+      {
+        "round": 68,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161159059
+      },
+      {
+        "round": 69,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161159474
+      },
+      {
+        "round": 70,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161159891
+      },
+      {
+        "round": 71,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161160304
+      },
+      {
+        "round": 72,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161160718
+      },
+      {
+        "round": 73,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161161135
+      },
+      {
+        "round": 74,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161161548
+      },
+      {
+        "round": 75,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161161960
+      },
+      {
+        "round": 76,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161162368
+      },
+      {
+        "round": 77,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161162795
+      },
+      {
+        "round": 78,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161163225
+      },
+      {
+        "round": 79,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161163654
+      },
+      {
+        "round": 80,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161164077
+      },
+      {
+        "round": 81,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161164496
+      },
+      {
+        "round": 82,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161164925
+      },
+      {
+        "round": 83,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161165337
+      },
+      {
+        "round": 84,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161165751
+      },
+      {
+        "round": 85,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161166165
+      },
+      {
+        "round": 86,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161166575
+      },
+      {
+        "round": 87,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161166988
+      },
+      {
+        "round": 88,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161167402
+      },
+      {
+        "round": 89,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161167818
+      },
+      {
+        "round": 90,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161168261
+      },
+      {
+        "round": 91,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161168699
+      },
+      {
+        "round": 92,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161169134
+      },
+      {
+        "round": 93,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161169571
+      },
+      {
+        "round": 94,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161169993
+      },
+      {
+        "round": 95,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161170436
+      },
+      {
+        "round": 96,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161170855
+      },
+      {
+        "round": 97,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161171269
+      },
+      {
+        "round": 98,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161171682
+      },
+      {
+        "round": 99,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161172095
+      },
+      {
+        "round": 100,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161172515
+      },
+      {
+        "round": 101,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161172934
+      },
+      {
+        "round": 102,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 1,
+        "at": 1794161173349
+      },
+      {
+        "round": 103,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 3,
+        "at": 1794161174600
+      },
+      {
+        "round": 104,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 5,
+        "at": 1794161175776
+      },
+      {
+        "round": 105,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 5,
+        "at": 1794161176248
+      },
+      {
+        "round": 106,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 7,
+        "at": 1794161176951
+      },
+      {
+        "round": 107,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 9,
+        "at": 1794161178199
+      },
+      {
+        "round": 108,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 11,
+        "at": 1794161179359
+      },
+      {
+        "round": 109,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 13,
+        "at": 1794161180606
+      },
+      {
+        "round": 110,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 13,
+        "at": 1794161181106
+      },
+      {
+        "round": 111,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 13,
+        "at": 1794161181534
+      },
+      {
+        "round": 112,
+        "goalId": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "revision": 13,
+        "at": 1794161181993
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794161129070,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161173867,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 2,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 102,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161174542,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 3,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 102,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161175073,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 4,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 103,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161175739,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 5,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 103,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161176260,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 6,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 105,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161176913,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 7,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 105,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161177460,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 8,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 106,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161178137,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 9,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 106,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161178656,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 10,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 107,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161179321,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 11,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 107,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161179880,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 12,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 108,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161180556,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 13,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 108,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161182151,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 14,
+        "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+        "roundsStarted": 112,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794161129062,
+        "name": "create_goal",
+        "callId": "call-pd29-s2-create"
+      },
+      {
+        "at": 1794161129412,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-1-bash"
+      },
+      {
+        "at": 1794161130000,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-2-bash"
+      },
+      {
+        "at": 1794161130591,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-3-bash"
+      },
+      {
+        "at": 1794161131190,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-4-bash"
+      },
+      {
+        "at": 1794161131594,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-5-bash"
+      },
+      {
+        "at": 1794161132015,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-6-bash"
+      },
+      {
+        "at": 1794161132425,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-7-bash"
+      },
+      {
+        "at": 1794161132853,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-8-bash"
+      },
+      {
+        "at": 1794161133316,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-9-bash"
+      },
+      {
+        "at": 1794161133778,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-10-bash"
+      },
+      {
+        "at": 1794161134219,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-11-bash"
+      },
+      {
+        "at": 1794161134669,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-12-bash"
+      },
+      {
+        "at": 1794161135097,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-13-bash"
+      },
+      {
+        "at": 1794161135553,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-14-bash"
+      },
+      {
+        "at": 1794161135995,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-15-bash"
+      },
+      {
+        "at": 1794161136435,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-16-bash"
+      },
+      {
+        "at": 1794161136861,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-17-bash"
+      },
+      {
+        "at": 1794161137281,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-18-bash"
+      },
+      {
+        "at": 1794161137705,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-19-bash"
+      },
+      {
+        "at": 1794161138128,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-20-bash"
+      },
+      {
+        "at": 1794161138581,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-21-bash"
+      },
+      {
+        "at": 1794161138999,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-22-bash"
+      },
+      {
+        "at": 1794161139439,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-23-bash"
+      },
+      {
+        "at": 1794161139877,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-24-bash"
+      },
+      {
+        "at": 1794161140346,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-25-bash"
+      },
+      {
+        "at": 1794161140807,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-26-bash"
+      },
+      {
+        "at": 1794161141250,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-27-bash"
+      },
+      {
+        "at": 1794161141699,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-28-bash"
+      },
+      {
+        "at": 1794161142136,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-29-bash"
+      },
+      {
+        "at": 1794161142567,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-30-bash"
+      },
+      {
+        "at": 1794161142995,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-31-bash"
+      },
+      {
+        "at": 1794161143428,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-32-bash"
+      },
+      {
+        "at": 1794161143895,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-33-bash"
+      },
+      {
+        "at": 1794161144319,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-34-bash"
+      },
+      {
+        "at": 1794161144736,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-35-bash"
+      },
+      {
+        "at": 1794161145164,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-36-bash"
+      },
+      {
+        "at": 1794161145605,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-37-bash"
+      },
+      {
+        "at": 1794161146077,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-38-bash"
+      },
+      {
+        "at": 1794161146541,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-39-bash"
+      },
+      {
+        "at": 1794161146983,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-40-bash"
+      },
+      {
+        "at": 1794161147400,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-41-bash"
+      },
+      {
+        "at": 1794161147834,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-42-bash"
+      },
+      {
+        "at": 1794161148278,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-43-bash"
+      },
+      {
+        "at": 1794161148700,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-44-bash"
+      },
+      {
+        "at": 1794161149151,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-45-bash"
+      },
+      {
+        "at": 1794161149577,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-46-bash"
+      },
+      {
+        "at": 1794161149991,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-47-bash"
+      },
+      {
+        "at": 1794161150425,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-48-bash"
+      },
+      {
+        "at": 1794161150871,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-49-bash"
+      },
+      {
+        "at": 1794161151321,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-50-bash"
+      },
+      {
+        "at": 1794161151789,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-51-bash"
+      },
+      {
+        "at": 1794161152241,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-52-bash"
+      },
+      {
+        "at": 1794161152703,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-53-bash"
+      },
+      {
+        "at": 1794161153156,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-54-bash"
+      },
+      {
+        "at": 1794161153644,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-55-bash"
+      },
+      {
+        "at": 1794161154056,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-56-bash"
+      },
+      {
+        "at": 1794161154483,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-57-bash"
+      },
+      {
+        "at": 1794161154889,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-58-bash"
+      },
+      {
+        "at": 1794161155301,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-59-bash"
+      },
+      {
+        "at": 1794161155713,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-60-bash"
+      },
+      {
+        "at": 1794161156125,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-61-bash"
+      },
+      {
+        "at": 1794161156537,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-62-bash"
+      },
+      {
+        "at": 1794161156950,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-63-bash"
+      },
+      {
+        "at": 1794161157388,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-64-bash"
+      },
+      {
+        "at": 1794161157817,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-65-bash"
+      },
+      {
+        "at": 1794161158246,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-66-bash"
+      },
+      {
+        "at": 1794161158660,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-67-bash"
+      },
+      {
+        "at": 1794161159071,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-68-bash"
+      },
+      {
+        "at": 1794161159486,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-69-bash"
+      },
+      {
+        "at": 1794161159905,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-70-bash"
+      },
+      {
+        "at": 1794161160315,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-71-bash"
+      },
+      {
+        "at": 1794161160729,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-72-bash"
+      },
+      {
+        "at": 1794161161148,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-73-bash"
+      },
+      {
+        "at": 1794161161561,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-74-bash"
+      },
+      {
+        "at": 1794161161972,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-75-bash"
+      },
+      {
+        "at": 1794161162379,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-76-bash"
+      },
+      {
+        "at": 1794161162809,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-77-bash"
+      },
+      {
+        "at": 1794161163239,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-78-bash"
+      },
+      {
+        "at": 1794161163667,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-79-bash"
+      },
+      {
+        "at": 1794161164090,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-80-bash"
+      },
+      {
+        "at": 1794161164509,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-81-bash"
+      },
+      {
+        "at": 1794161164937,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-82-bash"
+      },
+      {
+        "at": 1794161165350,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-83-bash"
+      },
+      {
+        "at": 1794161165763,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-84-bash"
+      },
+      {
+        "at": 1794161166177,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-85-bash"
+      },
+      {
+        "at": 1794161166587,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-86-bash"
+      },
+      {
+        "at": 1794161167000,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-87-bash"
+      },
+      {
+        "at": 1794161167415,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-88-bash"
+      },
+      {
+        "at": 1794161167830,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-89-bash"
+      },
+      {
+        "at": 1794161168277,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-90-bash"
+      },
+      {
+        "at": 1794161168715,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-91-bash"
+      },
+      {
+        "at": 1794161169148,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-92-bash"
+      },
+      {
+        "at": 1794161169584,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-93-bash"
+      },
+      {
+        "at": 1794161170006,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-94-bash"
+      },
+      {
+        "at": 1794161170449,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-95-bash"
+      },
+      {
+        "at": 1794161170867,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-96-bash"
+      },
+      {
+        "at": 1794161171281,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-97-bash"
+      },
+      {
+        "at": 1794161171695,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-98-bash"
+      },
+      {
+        "at": 1794161172109,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-99-bash"
+      },
+      {
+        "at": 1794161172527,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-100-bash"
+      },
+      {
+        "at": 1794161172947,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-101-bash"
+      },
+      {
+        "at": 1794161173362,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-102-bash"
+      },
+      {
+        "at": 1794161174632,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-103-bash"
+      },
+      {
+        "at": 1794161175816,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-104-bash"
+      },
+      {
+        "at": 1794161176994,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-105-bash"
+      },
+      {
+        "at": 1794161178220,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-107-bash"
+      },
+      {
+        "at": 1794161179427,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-108-bash"
+      },
+      {
+        "at": 1794161180640,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-109-bash"
+      },
+      {
+        "at": 1794161181142,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-110-bash"
+      },
+      {
+        "at": 1794161181556,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-111-bash"
+      },
+      {
+        "at": 1794161182004,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-112-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161129071,
+        "callId": "call-pd29-s2-create",
+        "isError": false
+      },
+      {
+        "at": 1794161129634,
+        "callId": "call-pd29-s2-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161130227,
+        "callId": "call-pd29-s2-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161130815,
+        "callId": "call-pd29-s2-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161131414,
+        "callId": "call-pd29-s2-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161131837,
+        "callId": "call-pd29-s2-round-5-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132267,
+        "callId": "call-pd29-s2-round-6-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132679,
+        "callId": "call-pd29-s2-round-7-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133111,
+        "callId": "call-pd29-s2-round-8-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133570,
+        "callId": "call-pd29-s2-round-9-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134023,
+        "callId": "call-pd29-s2-round-10-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134476,
+        "callId": "call-pd29-s2-round-11-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134921,
+        "callId": "call-pd29-s2-round-12-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135363,
+        "callId": "call-pd29-s2-round-13-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135819,
+        "callId": "call-pd29-s2-round-14-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136243,
+        "callId": "call-pd29-s2-round-15-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136691,
+        "callId": "call-pd29-s2-round-16-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137111,
+        "callId": "call-pd29-s2-round-17-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137533,
+        "callId": "call-pd29-s2-round-18-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137962,
+        "callId": "call-pd29-s2-round-19-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138379,
+        "callId": "call-pd29-s2-round-20-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138836,
+        "callId": "call-pd29-s2-round-21-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139278,
+        "callId": "call-pd29-s2-round-22-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139696,
+        "callId": "call-pd29-s2-round-23-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140154,
+        "callId": "call-pd29-s2-round-24-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140607,
+        "callId": "call-pd29-s2-round-25-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141070,
+        "callId": "call-pd29-s2-round-26-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141521,
+        "callId": "call-pd29-s2-round-27-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141948,
+        "callId": "call-pd29-s2-round-28-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142398,
+        "callId": "call-pd29-s2-round-29-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142833,
+        "callId": "call-pd29-s2-round-30-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143252,
+        "callId": "call-pd29-s2-round-31-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143694,
+        "callId": "call-pd29-s2-round-32-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144148,
+        "callId": "call-pd29-s2-round-33-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144579,
+        "callId": "call-pd29-s2-round-34-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144991,
+        "callId": "call-pd29-s2-round-35-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145413,
+        "callId": "call-pd29-s2-round-36-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145874,
+        "callId": "call-pd29-s2-round-37-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146335,
+        "callId": "call-pd29-s2-round-38-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146794,
+        "callId": "call-pd29-s2-round-39-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147235,
+        "callId": "call-pd29-s2-round-40-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147654,
+        "callId": "call-pd29-s2-round-41-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148092,
+        "callId": "call-pd29-s2-round-42-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148531,
+        "callId": "call-pd29-s2-round-43-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148954,
+        "callId": "call-pd29-s2-round-44-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149400,
+        "callId": "call-pd29-s2-round-45-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149828,
+        "callId": "call-pd29-s2-round-46-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150249,
+        "callId": "call-pd29-s2-round-47-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150682,
+        "callId": "call-pd29-s2-round-48-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151125,
+        "callId": "call-pd29-s2-round-49-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151581,
+        "callId": "call-pd29-s2-round-50-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152044,
+        "callId": "call-pd29-s2-round-51-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152497,
+        "callId": "call-pd29-s2-round-52-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152970,
+        "callId": "call-pd29-s2-round-53-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161153416,
+        "callId": "call-pd29-s2-round-54-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161153892,
+        "callId": "call-pd29-s2-round-55-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161154301,
+        "callId": "call-pd29-s2-round-56-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161154729,
+        "callId": "call-pd29-s2-round-57-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161155134,
+        "callId": "call-pd29-s2-round-58-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161155548,
+        "callId": "call-pd29-s2-round-59-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161155959,
+        "callId": "call-pd29-s2-round-60-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161156368,
+        "callId": "call-pd29-s2-round-61-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161156779,
+        "callId": "call-pd29-s2-round-62-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161157196,
+        "callId": "call-pd29-s2-round-63-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161157634,
+        "callId": "call-pd29-s2-round-64-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161158066,
+        "callId": "call-pd29-s2-round-65-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161158494,
+        "callId": "call-pd29-s2-round-66-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161158907,
+        "callId": "call-pd29-s2-round-67-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161159319,
+        "callId": "call-pd29-s2-round-68-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161159732,
+        "callId": "call-pd29-s2-round-69-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160147,
+        "callId": "call-pd29-s2-round-70-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160560,
+        "callId": "call-pd29-s2-round-71-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160977,
+        "callId": "call-pd29-s2-round-72-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161161389,
+        "callId": "call-pd29-s2-round-73-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161161806,
+        "callId": "call-pd29-s2-round-74-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161162216,
+        "callId": "call-pd29-s2-round-75-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161162627,
+        "callId": "call-pd29-s2-round-76-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161163056,
+        "callId": "call-pd29-s2-round-77-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161163486,
+        "callId": "call-pd29-s2-round-78-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161163916,
+        "callId": "call-pd29-s2-round-79-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161164335,
+        "callId": "call-pd29-s2-round-80-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161164752,
+        "callId": "call-pd29-s2-round-81-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161165183,
+        "callId": "call-pd29-s2-round-82-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161165593,
+        "callId": "call-pd29-s2-round-83-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161166010,
+        "callId": "call-pd29-s2-round-84-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161166421,
+        "callId": "call-pd29-s2-round-85-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161166832,
+        "callId": "call-pd29-s2-round-86-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161167248,
+        "callId": "call-pd29-s2-round-87-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161167659,
+        "callId": "call-pd29-s2-round-88-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161168076,
+        "callId": "call-pd29-s2-round-89-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161168531,
+        "callId": "call-pd29-s2-round-90-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161168961,
+        "callId": "call-pd29-s2-round-91-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161169395,
+        "callId": "call-pd29-s2-round-92-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161169833,
+        "callId": "call-pd29-s2-round-93-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161170254,
+        "callId": "call-pd29-s2-round-94-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161170694,
+        "callId": "call-pd29-s2-round-95-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161171107,
+        "callId": "call-pd29-s2-round-96-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161171524,
+        "callId": "call-pd29-s2-round-97-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161171940,
+        "callId": "call-pd29-s2-round-98-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161172350,
+        "callId": "call-pd29-s2-round-99-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161172778,
+        "callId": "call-pd29-s2-round-100-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161173192,
+        "callId": "call-pd29-s2-round-101-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161173604,
+        "callId": "call-pd29-s2-round-102-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161174871,
+        "callId": "call-pd29-s2-round-103-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161176058,
+        "callId": "call-pd29-s2-round-104-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161177234,
+        "callId": "call-pd29-s2-round-105-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161178466,
+        "callId": "call-pd29-s2-round-107-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161179649,
+        "callId": "call-pd29-s2-round-108-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161180870,
+        "callId": "call-pd29-s2-round-109-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161181344,
+        "callId": "call-pd29-s2-round-110-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161181780,
+        "callId": "call-pd29-s2-round-111-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161182234,
+        "callId": "call-pd29-s2-round-112-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161129262,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161129881,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161130432,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131035,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131529,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131948,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132380,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132806,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133273,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133718,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134173,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134619,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135050,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135508,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135952,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136392,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136817,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137238,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137659,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138086,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138536,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138958,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139396,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139833,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140298,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140759,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141204,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141655,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142094,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142525,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142953,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143384,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143850,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144277,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144695,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145122,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145560,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146028,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146492,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146935,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147356,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147788,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148232,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148658,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149091,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149530,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149948,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150380,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150826,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151272,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151737,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152189,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152655,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161153108,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161153600,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161154009,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161154437,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161154844,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161155253,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161155669,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161156078,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161156489,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161156901,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161157332,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161157767,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161158195,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161158614,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161159024,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161159440,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161159858,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161160270,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161160685,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161161100,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161161510,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161161927,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161162335,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161162758,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161163187,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161163617,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161164042,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161164459,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161164890,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161165302,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161165717,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161166131,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161166541,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161166953,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161167368,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161167781,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161168218,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161168658,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161169095,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161169530,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161169956,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161170389,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161170817,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161171230,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161171646,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161172060,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161172479,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161172898,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161173313,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161173826,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161173865,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161175035,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161175071,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161176208,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161176259,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161177416,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161177459,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161178621,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161178655,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161179843,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161179879,
+        "kind": "aborted"
+      },
+      {
+        "at": 1794161181039,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161181479,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161181933,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161182234,
+        "kind": "aborted"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for s2.\"\nRound: 112/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective",
+    "lastAssistant": "A5SF_PD29_S2_CREATED"
+  },
+  "cold": {
+    "sessionId": "session-team-child-421a8ea96efdea7a541eb5594f6cffce",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-421a8ea96efdea7a541eb5594f6cffce/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 2409,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 342,
+      "turn/start": 171,
+      "step/start": 340,
+      "system/message": 1,
+      "user/message": 174,
+      "request/header": 171,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 339,
+      "tool/call": 169,
+      "goal/change": 3,
+      "tool/result": 169,
+      "step/end": 340,
+      "turn/end": 171,
+      "workspace/changes": 10,
+      "session/end-seed": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161130115
+      },
+      {
+        "round": 2,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161130702
+      },
+      {
+        "round": 3,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161131301
+      },
+      {
+        "round": 4,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161131705
+      },
+      {
+        "round": 5,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161132123
+      },
+      {
+        "round": 6,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161132578
+      },
+      {
+        "round": 7,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161133082
+      },
+      {
+        "round": 8,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161133511
+      },
+      {
+        "round": 9,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161133949
+      },
+      {
+        "round": 10,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161134394
+      },
+      {
+        "round": 11,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161134819
+      },
+      {
+        "round": 12,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161135280
+      },
+      {
+        "round": 13,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161135741
+      },
+      {
+        "round": 14,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161136201
+      },
+      {
+        "round": 15,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161136616
+      },
+      {
+        "round": 16,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161137038
+      },
+      {
+        "round": 17,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161137460
+      },
+      {
+        "round": 18,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161137889
+      },
+      {
+        "round": 19,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161138317
+      },
+      {
+        "round": 20,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161138735
+      },
+      {
+        "round": 21,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161139184
+      },
+      {
+        "round": 22,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161139615
+      },
+      {
+        "round": 23,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161140066
+      },
+      {
+        "round": 24,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161140554
+      },
+      {
+        "round": 25,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161140977
+      },
+      {
+        "round": 26,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161141439
+      },
+      {
+        "round": 27,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161141907
+      },
+      {
+        "round": 28,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161142327
+      },
+      {
+        "round": 29,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161142735
+      },
+      {
+        "round": 30,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161143174
+      },
+      {
+        "round": 31,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161143646
+      },
+      {
+        "round": 32,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161144077
+      },
+      {
+        "round": 33,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161144480
+      },
+      {
+        "round": 34,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161144924
+      },
+      {
+        "round": 35,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161145370
+      },
+      {
+        "round": 36,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161145807
+      },
+      {
+        "round": 37,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161146257
+      },
+      {
+        "round": 38,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161146690
+      },
+      {
+        "round": 39,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161147141
+      },
+      {
+        "round": 40,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161147578
+      },
+      {
+        "round": 41,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161148033
+      },
+      {
+        "round": 42,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161148457
+      },
+      {
+        "round": 43,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161148884
+      },
+      {
+        "round": 44,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161149296
+      },
+      {
+        "round": 45,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161149734
+      },
+      {
+        "round": 46,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161150174
+      },
+      {
+        "round": 47,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161150626
+      },
+      {
+        "round": 48,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161151057
+      },
+      {
+        "round": 49,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161151489
+      },
+      {
+        "round": 50,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161151961
+      },
+      {
+        "round": 51,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161152427
+      },
+      {
+        "round": 52,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161152889
+      },
+      {
+        "round": 53,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161153464
+      },
+      {
+        "round": 54,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161153889
+      },
+      {
+        "round": 55,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161154298
+      },
+      {
+        "round": 56,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161154713
+      },
+      {
+        "round": 57,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161155139
+      },
+      {
+        "round": 58,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161155545
+      },
+      {
+        "round": 59,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161155953
+      },
+      {
+        "round": 60,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161156376
+      },
+      {
+        "round": 61,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161156788
+      },
+      {
+        "round": 62,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161157201
+      },
+      {
+        "round": 63,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161157638
+      },
+      {
+        "round": 64,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161158070
+      },
+      {
+        "round": 65,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161158489
+      },
+      {
+        "round": 66,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161158904
+      },
+      {
+        "round": 67,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161159314
+      },
+      {
+        "round": 68,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161159741
+      },
+      {
+        "round": 69,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161160160
+      },
+      {
+        "round": 70,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161160565
+      },
+      {
+        "round": 71,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161160971
+      },
+      {
+        "round": 72,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161161392
+      },
+      {
+        "round": 73,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161161802
+      },
+      {
+        "round": 74,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161162213
+      },
+      {
+        "round": 75,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161162642
+      },
+      {
+        "round": 76,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161163063
+      },
+      {
+        "round": 77,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161163492
+      },
+      {
+        "round": 78,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161163920
+      },
+      {
+        "round": 79,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161164338
+      },
+      {
+        "round": 80,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161164749
+      },
+      {
+        "round": 81,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161165186
+      },
+      {
+        "round": 82,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161165589
+      },
+      {
+        "round": 83,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161166003
+      },
+      {
+        "round": 84,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161166417
+      },
+      {
+        "round": 85,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161166829
+      },
+      {
+        "round": 86,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161167245
+      },
+      {
+        "round": 87,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161167656
+      },
+      {
+        "round": 88,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161168087
+      },
+      {
+        "round": 89,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161168520
+      },
+      {
+        "round": 90,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161168968
+      },
+      {
+        "round": 91,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161169403
+      },
+      {
+        "round": 92,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161169830
+      },
+      {
+        "round": 93,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161170251
+      },
+      {
+        "round": 94,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161170691
+      },
+      {
+        "round": 95,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161171110
+      },
+      {
+        "round": 96,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161171520
+      },
+      {
+        "round": 97,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161171937
+      },
+      {
+        "round": 98,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161172358
+      },
+      {
+        "round": 99,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161172767
+      },
+      {
+        "round": 100,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161173189
+      },
+      {
+        "round": 101,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161173619
+      },
+      {
+        "round": 102,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161174089
+      },
+      {
+        "round": 103,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161174518
+      },
+      {
+        "round": 104,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161175076
+      },
+      {
+        "round": 105,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161175494
+      },
+      {
+        "round": 106,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161175988
+      },
+      {
+        "round": 107,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161176414
+      },
+      {
+        "round": 108,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161176825
+      },
+      {
+        "round": 109,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161177335
+      },
+      {
+        "round": 110,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161177755
+      },
+      {
+        "round": 111,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161178213
+      },
+      {
+        "round": 112,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161178695
+      },
+      {
+        "round": 113,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161179101
+      },
+      {
+        "round": 114,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161179625
+      },
+      {
+        "round": 115,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161180122
+      },
+      {
+        "round": 116,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161180594
+      },
+      {
+        "round": 117,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161181043
+      },
+      {
+        "round": 118,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161181475
+      },
+      {
+        "round": 119,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161181961
+      },
+      {
+        "round": 120,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161182356
+      },
+      {
+        "round": 121,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161182761
+      },
+      {
+        "round": 122,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161183179
+      },
+      {
+        "round": 123,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161183589
+      },
+      {
+        "round": 124,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161183999
+      },
+      {
+        "round": 125,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161184410
+      },
+      {
+        "round": 126,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161184825
+      },
+      {
+        "round": 127,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161185249
+      },
+      {
+        "round": 128,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161185682
+      },
+      {
+        "round": 129,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161186141
+      },
+      {
+        "round": 130,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161186571
+      },
+      {
+        "round": 131,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161186989
+      },
+      {
+        "round": 132,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161187404
+      },
+      {
+        "round": 133,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161187815
+      },
+      {
+        "round": 134,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161188226
+      },
+      {
+        "round": 135,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161188644
+      },
+      {
+        "round": 136,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161189062
+      },
+      {
+        "round": 137,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161189477
+      },
+      {
+        "round": 138,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161189886
+      },
+      {
+        "round": 139,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161190299
+      },
+      {
+        "round": 140,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161190743
+      },
+      {
+        "round": 141,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161191179
+      },
+      {
+        "round": 142,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161191610
+      },
+      {
+        "round": 143,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161192036
+      },
+      {
+        "round": 144,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161192465
+      },
+      {
+        "round": 145,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161192880
+      },
+      {
+        "round": 146,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161193292
+      },
+      {
+        "round": 147,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161193709
+      },
+      {
+        "round": 148,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161194123
+      },
+      {
+        "round": 149,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161194537
+      },
+      {
+        "round": 150,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161194951
+      },
+      {
+        "round": 151,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161195361
+      },
+      {
+        "round": 152,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161195772
+      },
+      {
+        "round": 153,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161196187
+      },
+      {
+        "round": 154,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161196608
+      },
+      {
+        "round": 155,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161197042
+      },
+      {
+        "round": 156,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161197469
+      },
+      {
+        "round": 157,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161197897
+      },
+      {
+        "round": 158,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161198311
+      },
+      {
+        "round": 159,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161198722
+      },
+      {
+        "round": 160,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161199136
+      },
+      {
+        "round": 161,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161199548
+      },
+      {
+        "round": 162,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161199962
+      },
+      {
+        "round": 163,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161200376
+      },
+      {
+        "round": 164,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161200791
+      },
+      {
+        "round": 165,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161201207
+      },
+      {
+        "round": 166,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161201617
+      },
+      {
+        "round": 167,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161202039
+      },
+      {
+        "round": 168,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "at": 1794161202479
+      },
+      {
+        "round": 169,
+        "goalId": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 2,
+        "at": 1794161226647
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794161129758,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161226608,
+        "operation": "resume",
+        "phase": "active",
+        "revision": 2,
+        "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "roundsStarted": 168,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161229929,
+        "operation": "complete",
+        "phase": "complete",
+        "revision": 3,
+        "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "roundsStarted": 169,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794161129712,
+        "name": "create_goal",
+        "callId": "call-pd29-cold-create"
+      },
+      {
+        "at": 1794161130132,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-1-bash"
+      },
+      {
+        "at": 1794161130729,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-2-bash"
+      },
+      {
+        "at": 1794161131314,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-3-bash"
+      },
+      {
+        "at": 1794161131717,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-4-bash"
+      },
+      {
+        "at": 1794161132149,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-5-bash"
+      },
+      {
+        "at": 1794161132590,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-6-bash"
+      },
+      {
+        "at": 1794161133131,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-7-bash"
+      },
+      {
+        "at": 1794161133534,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-8-bash"
+      },
+      {
+        "at": 1794161133961,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-9-bash"
+      },
+      {
+        "at": 1794161134408,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-10-bash"
+      },
+      {
+        "at": 1794161134829,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-11-bash"
+      },
+      {
+        "at": 1794161135293,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-12-bash"
+      },
+      {
+        "at": 1794161135752,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-13-bash"
+      },
+      {
+        "at": 1794161136214,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-14-bash"
+      },
+      {
+        "at": 1794161136626,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-15-bash"
+      },
+      {
+        "at": 1794161137048,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-16-bash"
+      },
+      {
+        "at": 1794161137471,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-17-bash"
+      },
+      {
+        "at": 1794161137901,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-18-bash"
+      },
+      {
+        "at": 1794161138329,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-19-bash"
+      },
+      {
+        "at": 1794161138751,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-20-bash"
+      },
+      {
+        "at": 1794161139194,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-21-bash"
+      },
+      {
+        "at": 1794161139626,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-22-bash"
+      },
+      {
+        "at": 1794161140077,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-23-bash"
+      },
+      {
+        "at": 1794161140567,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-24-bash"
+      },
+      {
+        "at": 1794161140989,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-25-bash"
+      },
+      {
+        "at": 1794161141452,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-26-bash"
+      },
+      {
+        "at": 1794161141932,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-27-bash"
+      },
+      {
+        "at": 1794161142344,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-28-bash"
+      },
+      {
+        "at": 1794161142746,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-29-bash"
+      },
+      {
+        "at": 1794161143185,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-30-bash"
+      },
+      {
+        "at": 1794161143673,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-31-bash"
+      },
+      {
+        "at": 1794161144090,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-32-bash"
+      },
+      {
+        "at": 1794161144491,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-33-bash"
+      },
+      {
+        "at": 1794161144949,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-34-bash"
+      },
+      {
+        "at": 1794161145397,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-35-bash"
+      },
+      {
+        "at": 1794161145821,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-36-bash"
+      },
+      {
+        "at": 1794161146274,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-37-bash"
+      },
+      {
+        "at": 1794161146702,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-38-bash"
+      },
+      {
+        "at": 1794161147153,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-39-bash"
+      },
+      {
+        "at": 1794161147591,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-40-bash"
+      },
+      {
+        "at": 1794161148044,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-41-bash"
+      },
+      {
+        "at": 1794161148468,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-42-bash"
+      },
+      {
+        "at": 1794161148895,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-43-bash"
+      },
+      {
+        "at": 1794161149308,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-44-bash"
+      },
+      {
+        "at": 1794161149745,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-45-bash"
+      },
+      {
+        "at": 1794161150186,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-46-bash"
+      },
+      {
+        "at": 1794161150643,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-47-bash"
+      },
+      {
+        "at": 1794161151069,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-48-bash"
+      },
+      {
+        "at": 1794161151502,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-49-bash"
+      },
+      {
+        "at": 1794161151974,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-50-bash"
+      },
+      {
+        "at": 1794161152464,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-51-bash"
+      },
+      {
+        "at": 1794161152901,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-52-bash"
+      },
+      {
+        "at": 1794161153483,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-53-bash"
+      },
+      {
+        "at": 1794161153904,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-54-bash"
+      },
+      {
+        "at": 1794161154311,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-55-bash"
+      },
+      {
+        "at": 1794161154728,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-56-bash"
+      },
+      {
+        "at": 1794161155150,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-57-bash"
+      },
+      {
+        "at": 1794161155559,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-58-bash"
+      },
+      {
+        "at": 1794161155968,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-59-bash"
+      },
+      {
+        "at": 1794161156387,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-60-bash"
+      },
+      {
+        "at": 1794161156800,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-61-bash"
+      },
+      {
+        "at": 1794161157214,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-62-bash"
+      },
+      {
+        "at": 1794161157651,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-63-bash"
+      },
+      {
+        "at": 1794161158083,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-64-bash"
+      },
+      {
+        "at": 1794161158502,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-65-bash"
+      },
+      {
+        "at": 1794161158917,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-66-bash"
+      },
+      {
+        "at": 1794161159329,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-67-bash"
+      },
+      {
+        "at": 1794161159754,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-68-bash"
+      },
+      {
+        "at": 1794161160172,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-69-bash"
+      },
+      {
+        "at": 1794161160580,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-70-bash"
+      },
+      {
+        "at": 1794161160985,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-71-bash"
+      },
+      {
+        "at": 1794161161404,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-72-bash"
+      },
+      {
+        "at": 1794161161813,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-73-bash"
+      },
+      {
+        "at": 1794161162227,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-74-bash"
+      },
+      {
+        "at": 1794161162657,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-75-bash"
+      },
+      {
+        "at": 1794161163076,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-76-bash"
+      },
+      {
+        "at": 1794161163505,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-77-bash"
+      },
+      {
+        "at": 1794161163932,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-78-bash"
+      },
+      {
+        "at": 1794161164351,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-79-bash"
+      },
+      {
+        "at": 1794161164763,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-80-bash"
+      },
+      {
+        "at": 1794161165197,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-81-bash"
+      },
+      {
+        "at": 1794161165602,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-82-bash"
+      },
+      {
+        "at": 1794161166018,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-83-bash"
+      },
+      {
+        "at": 1794161166430,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-84-bash"
+      },
+      {
+        "at": 1794161166845,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-85-bash"
+      },
+      {
+        "at": 1794161167259,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-86-bash"
+      },
+      {
+        "at": 1794161167670,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-87-bash"
+      },
+      {
+        "at": 1794161168101,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-88-bash"
+      },
+      {
+        "at": 1794161168534,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-89-bash"
+      },
+      {
+        "at": 1794161168982,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-90-bash"
+      },
+      {
+        "at": 1794161169416,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-91-bash"
+      },
+      {
+        "at": 1794161169845,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-92-bash"
+      },
+      {
+        "at": 1794161170265,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-93-bash"
+      },
+      {
+        "at": 1794161170706,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-94-bash"
+      },
+      {
+        "at": 1794161171123,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-95-bash"
+      },
+      {
+        "at": 1794161171536,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-96-bash"
+      },
+      {
+        "at": 1794161171952,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-97-bash"
+      },
+      {
+        "at": 1794161172372,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-98-bash"
+      },
+      {
+        "at": 1794161172783,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-99-bash"
+      },
+      {
+        "at": 1794161173205,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-100-bash"
+      },
+      {
+        "at": 1794161173658,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-101-bash"
+      },
+      {
+        "at": 1794161174104,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-102-bash"
+      },
+      {
+        "at": 1794161174537,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-103-bash"
+      },
+      {
+        "at": 1794161175092,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-104-bash"
+      },
+      {
+        "at": 1794161175508,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-105-bash"
+      },
+      {
+        "at": 1794161176007,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-106-bash"
+      },
+      {
+        "at": 1794161176426,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-107-bash"
+      },
+      {
+        "at": 1794161176839,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-108-bash"
+      },
+      {
+        "at": 1794161177358,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-109-bash"
+      },
+      {
+        "at": 1794161177768,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-110-bash"
+      },
+      {
+        "at": 1794161178268,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-111-bash"
+      },
+      {
+        "at": 1794161178719,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-112-bash"
+      },
+      {
+        "at": 1794161179113,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-113-bash"
+      },
+      {
+        "at": 1794161179648,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-114-bash"
+      },
+      {
+        "at": 1794161180135,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-115-bash"
+      },
+      {
+        "at": 1794161180630,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-116-bash"
+      },
+      {
+        "at": 1794161181094,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-117-bash"
+      },
+      {
+        "at": 1794161181506,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-118-bash"
+      },
+      {
+        "at": 1794161181988,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-119-bash"
+      },
+      {
+        "at": 1794161182368,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-120-bash"
+      },
+      {
+        "at": 1794161182773,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-121-bash"
+      },
+      {
+        "at": 1794161183192,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-122-bash"
+      },
+      {
+        "at": 1794161183601,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-123-bash"
+      },
+      {
+        "at": 1794161184011,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-124-bash"
+      },
+      {
+        "at": 1794161184423,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-125-bash"
+      },
+      {
+        "at": 1794161184839,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-126-bash"
+      },
+      {
+        "at": 1794161185263,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-127-bash"
+      },
+      {
+        "at": 1794161185698,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-128-bash"
+      },
+      {
+        "at": 1794161186156,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-129-bash"
+      },
+      {
+        "at": 1794161186585,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-130-bash"
+      },
+      {
+        "at": 1794161187003,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-131-bash"
+      },
+      {
+        "at": 1794161187418,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-132-bash"
+      },
+      {
+        "at": 1794161187828,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-133-bash"
+      },
+      {
+        "at": 1794161188240,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-134-bash"
+      },
+      {
+        "at": 1794161188659,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-135-bash"
+      },
+      {
+        "at": 1794161189076,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-136-bash"
+      },
+      {
+        "at": 1794161189490,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-137-bash"
+      },
+      {
+        "at": 1794161189900,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-138-bash"
+      },
+      {
+        "at": 1794161190314,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-139-bash"
+      },
+      {
+        "at": 1794161190758,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-140-bash"
+      },
+      {
+        "at": 1794161191194,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-141-bash"
+      },
+      {
+        "at": 1794161191627,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-142-bash"
+      },
+      {
+        "at": 1794161192052,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-143-bash"
+      },
+      {
+        "at": 1794161192481,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-144-bash"
+      },
+      {
+        "at": 1794161192893,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-145-bash"
+      },
+      {
+        "at": 1794161193306,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-146-bash"
+      },
+      {
+        "at": 1794161193723,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-147-bash"
+      },
+      {
+        "at": 1794161194138,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-148-bash"
+      },
+      {
+        "at": 1794161194551,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-149-bash"
+      },
+      {
+        "at": 1794161194966,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-150-bash"
+      },
+      {
+        "at": 1794161195375,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-151-bash"
+      },
+      {
+        "at": 1794161195788,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-152-bash"
+      },
+      {
+        "at": 1794161196201,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-153-bash"
+      },
+      {
+        "at": 1794161196623,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-154-bash"
+      },
+      {
+        "at": 1794161197059,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-155-bash"
+      },
+      {
+        "at": 1794161197485,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-156-bash"
+      },
+      {
+        "at": 1794161197912,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-157-bash"
+      },
+      {
+        "at": 1794161198326,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-158-bash"
+      },
+      {
+        "at": 1794161198736,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-159-bash"
+      },
+      {
+        "at": 1794161199151,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-160-bash"
+      },
+      {
+        "at": 1794161199563,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-161-bash"
+      },
+      {
+        "at": 1794161199976,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-162-bash"
+      },
+      {
+        "at": 1794161200390,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-163-bash"
+      },
+      {
+        "at": 1794161200805,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-164-bash"
+      },
+      {
+        "at": 1794161201221,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-165-bash"
+      },
+      {
+        "at": 1794161201631,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-166-bash"
+      },
+      {
+        "at": 1794161202055,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-167-bash"
+      },
+      {
+        "at": 1794161226667,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-169-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161129759,
+        "callId": "call-pd29-cold-create",
+        "isError": false
+      },
+      {
+        "at": 1794161130356,
+        "callId": "call-pd29-cold-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161130925,
+        "callId": "call-pd29-cold-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161131521,
+        "callId": "call-pd29-cold-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161131956,
+        "callId": "call-pd29-cold-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132402,
+        "callId": "call-pd29-cold-round-5-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132831,
+        "callId": "call-pd29-cold-round-6-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133327,
+        "callId": "call-pd29-cold-round-7-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133775,
+        "callId": "call-pd29-cold-round-8-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134213,
+        "callId": "call-pd29-cold-round-9-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134654,
+        "callId": "call-pd29-cold-round-10-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135101,
+        "callId": "call-pd29-cold-round-11-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135562,
+        "callId": "call-pd29-cold-round-12-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136017,
+        "callId": "call-pd29-cold-round-13-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136447,
+        "callId": "call-pd29-cold-round-14-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136870,
+        "callId": "call-pd29-cold-round-15-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137288,
+        "callId": "call-pd29-cold-round-16-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137712,
+        "callId": "call-pd29-cold-round-17-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138139,
+        "callId": "call-pd29-cold-round-18-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138576,
+        "callId": "call-pd29-cold-round-19-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139007,
+        "callId": "call-pd29-cold-round-20-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139454,
+        "callId": "call-pd29-cold-round-21-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139890,
+        "callId": "call-pd29-cold-round-22-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140356,
+        "callId": "call-pd29-cold-round-23-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140807,
+        "callId": "call-pd29-cold-round-24-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141259,
+        "callId": "call-pd29-cold-round-25-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141721,
+        "callId": "call-pd29-cold-round-26-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142155,
+        "callId": "call-pd29-cold-round-27-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142574,
+        "callId": "call-pd29-cold-round-28-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143008,
+        "callId": "call-pd29-cold-round-29-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143449,
+        "callId": "call-pd29-cold-round-30-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143901,
+        "callId": "call-pd29-cold-round-31-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144323,
+        "callId": "call-pd29-cold-round-32-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144750,
+        "callId": "call-pd29-cold-round-33-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145187,
+        "callId": "call-pd29-cold-round-34-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145619,
+        "callId": "call-pd29-cold-round-35-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146066,
+        "callId": "call-pd29-cold-round-36-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146516,
+        "callId": "call-pd29-cold-round-37-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146967,
+        "callId": "call-pd29-cold-round-38-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147410,
+        "callId": "call-pd29-cold-round-39-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147852,
+        "callId": "call-pd29-cold-round-40-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148285,
+        "callId": "call-pd29-cold-round-41-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148708,
+        "callId": "call-pd29-cold-round-42-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149143,
+        "callId": "call-pd29-cold-round-43-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149569,
+        "callId": "call-pd29-cold-round-44-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150005,
+        "callId": "call-pd29-cold-round-45-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150445,
+        "callId": "call-pd29-cold-round-46-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150883,
+        "callId": "call-pd29-cold-round-47-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151316,
+        "callId": "call-pd29-cold-round-48-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151773,
+        "callId": "call-pd29-cold-round-49-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152243,
+        "callId": "call-pd29-cold-round-50-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152712,
+        "callId": "call-pd29-cold-round-51-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161153173,
+        "callId": "call-pd29-cold-round-52-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161153723,
+        "callId": "call-pd29-cold-round-53-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161154149,
+        "callId": "call-pd29-cold-round-54-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161154566,
+        "callId": "call-pd29-cold-round-55-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161154985,
+        "callId": "call-pd29-cold-round-56-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161155393,
+        "callId": "call-pd29-cold-round-57-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161155806,
+        "callId": "call-pd29-cold-round-58-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161156220,
+        "callId": "call-pd29-cold-round-59-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161156631,
+        "callId": "call-pd29-cold-round-60-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161157041,
+        "callId": "call-pd29-cold-round-61-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161157469,
+        "callId": "call-pd29-cold-round-62-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161157904,
+        "callId": "call-pd29-cold-round-63-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161158336,
+        "callId": "call-pd29-cold-round-64-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161158752,
+        "callId": "call-pd29-cold-round-65-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161159164,
+        "callId": "call-pd29-cold-round-66-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161159578,
+        "callId": "call-pd29-cold-round-67-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160001,
+        "callId": "call-pd29-cold-round-68-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160415,
+        "callId": "call-pd29-cold-round-69-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161160823,
+        "callId": "call-pd29-cold-round-70-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161161236,
+        "callId": "call-pd29-cold-round-71-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161161648,
+        "callId": "call-pd29-cold-round-72-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161162065,
+        "callId": "call-pd29-cold-round-73-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161162474,
+        "callId": "call-pd29-cold-round-74-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161162902,
+        "callId": "call-pd29-cold-round-75-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161163328,
+        "callId": "call-pd29-cold-round-76-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161163755,
+        "callId": "call-pd29-cold-round-77-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161164183,
+        "callId": "call-pd29-cold-round-78-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161164599,
+        "callId": "call-pd29-cold-round-79-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161165034,
+        "callId": "call-pd29-cold-round-80-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161165441,
+        "callId": "call-pd29-cold-round-81-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161165855,
+        "callId": "call-pd29-cold-round-82-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161166269,
+        "callId": "call-pd29-cold-round-83-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161166680,
+        "callId": "call-pd29-cold-round-84-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161167094,
+        "callId": "call-pd29-cold-round-85-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161167506,
+        "callId": "call-pd29-cold-round-86-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161167918,
+        "callId": "call-pd29-cold-round-87-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161168357,
+        "callId": "call-pd29-cold-round-88-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161168799,
+        "callId": "call-pd29-cold-round-89-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161169237,
+        "callId": "call-pd29-cold-round-90-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161169673,
+        "callId": "call-pd29-cold-round-91-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161170095,
+        "callId": "call-pd29-cold-round-92-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161170526,
+        "callId": "call-pd29-cold-round-93-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161170956,
+        "callId": "call-pd29-cold-round-94-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161171367,
+        "callId": "call-pd29-cold-round-95-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161171784,
+        "callId": "call-pd29-cold-round-96-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161172199,
+        "callId": "call-pd29-cold-round-97-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161172615,
+        "callId": "call-pd29-cold-round-98-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161173037,
+        "callId": "call-pd29-cold-round-99-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161173452,
+        "callId": "call-pd29-cold-round-100-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161173904,
+        "callId": "call-pd29-cold-round-101-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161174350,
+        "callId": "call-pd29-cold-round-102-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161174812,
+        "callId": "call-pd29-cold-round-103-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161175333,
+        "callId": "call-pd29-cold-round-104-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161175763,
+        "callId": "call-pd29-cold-round-105-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161176257,
+        "callId": "call-pd29-cold-round-106-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161176671,
+        "callId": "call-pd29-cold-round-107-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161177088,
+        "callId": "call-pd29-cold-round-108-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161177596,
+        "callId": "call-pd29-cold-round-109-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161178014,
+        "callId": "call-pd29-cold-round-110-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161178478,
+        "callId": "call-pd29-cold-round-111-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161178948,
+        "callId": "call-pd29-cold-round-112-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161179363,
+        "callId": "call-pd29-cold-round-113-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161179958,
+        "callId": "call-pd29-cold-round-114-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161180385,
+        "callId": "call-pd29-cold-round-115-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161180852,
+        "callId": "call-pd29-cold-round-116-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161181300,
+        "callId": "call-pd29-cold-round-117-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161181733,
+        "callId": "call-pd29-cold-round-118-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161182193,
+        "callId": "call-pd29-cold-round-119-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161182608,
+        "callId": "call-pd29-cold-round-120-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161183025,
+        "callId": "call-pd29-cold-round-121-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161183434,
+        "callId": "call-pd29-cold-round-122-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161183845,
+        "callId": "call-pd29-cold-round-123-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161184254,
+        "callId": "call-pd29-cold-round-124-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161184669,
+        "callId": "call-pd29-cold-round-125-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161185083,
+        "callId": "call-pd29-cold-round-126-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161185513,
+        "callId": "call-pd29-cold-round-127-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161185965,
+        "callId": "call-pd29-cold-round-128-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161186405,
+        "callId": "call-pd29-cold-round-129-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161186829,
+        "callId": "call-pd29-cold-round-130-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161187244,
+        "callId": "call-pd29-cold-round-131-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161187660,
+        "callId": "call-pd29-cold-round-132-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161188071,
+        "callId": "call-pd29-cold-round-133-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161188482,
+        "callId": "call-pd29-cold-round-134-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161188906,
+        "callId": "call-pd29-cold-round-135-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161189322,
+        "callId": "call-pd29-cold-round-136-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161189732,
+        "callId": "call-pd29-cold-round-137-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161190142,
+        "callId": "call-pd29-cold-round-138-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161190555,
+        "callId": "call-pd29-cold-round-139-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161191014,
+        "callId": "call-pd29-cold-round-140-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161191439,
+        "callId": "call-pd29-cold-round-141-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161191872,
+        "callId": "call-pd29-cold-round-142-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161192304,
+        "callId": "call-pd29-cold-round-143-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161192723,
+        "callId": "call-pd29-cold-round-144-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161193136,
+        "callId": "call-pd29-cold-round-145-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161193549,
+        "callId": "call-pd29-cold-round-146-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161193965,
+        "callId": "call-pd29-cold-round-147-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161194381,
+        "callId": "call-pd29-cold-round-148-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161194793,
+        "callId": "call-pd29-cold-round-149-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161195206,
+        "callId": "call-pd29-cold-round-150-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161195617,
+        "callId": "call-pd29-cold-round-151-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161196030,
+        "callId": "call-pd29-cold-round-152-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161196442,
+        "callId": "call-pd29-cold-round-153-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161196869,
+        "callId": "call-pd29-cold-round-154-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161197306,
+        "callId": "call-pd29-cold-round-155-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161197731,
+        "callId": "call-pd29-cold-round-156-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161198154,
+        "callId": "call-pd29-cold-round-157-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161198566,
+        "callId": "call-pd29-cold-round-158-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161198978,
+        "callId": "call-pd29-cold-round-159-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161199391,
+        "callId": "call-pd29-cold-round-160-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161199804,
+        "callId": "call-pd29-cold-round-161-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161200216,
+        "callId": "call-pd29-cold-round-162-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161200632,
+        "callId": "call-pd29-cold-round-163-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161201049,
+        "callId": "call-pd29-cold-round-164-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161201460,
+        "callId": "call-pd29-cold-round-165-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161201871,
+        "callId": "call-pd29-cold-round-166-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161202309,
+        "callId": "call-pd29-cold-round-167-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161230107,
+        "callId": "call-pd29-cold-round-169-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161130045,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161130582,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131132,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131661,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132090,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132532,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132986,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133468,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133903,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134342,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134784,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135245,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135705,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136155,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136571,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136993,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137415,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137842,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138265,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138702,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139148,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139583,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140028,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140503,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140941,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141403,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141861,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142282,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142700,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143141,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143594,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144029,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144446,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144883,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145321,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145758,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146205,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146650,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147096,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147546,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147988,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148411,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148836,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149265,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149700,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150139,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150580,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151010,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151450,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151900,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152387,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152852,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161153394,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161153858,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161154264,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161154680,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161155101,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161155510,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161155922,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161156338,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161156749,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161157162,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161157597,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161158027,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161158457,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161158870,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161159277,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161159695,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161160123,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161160528,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161160938,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161161355,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161161769,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161162181,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161162599,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161163023,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161163453,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161163880,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161164301,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161164715,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161165150,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161165555,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161165968,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161166385,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161166796,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161167210,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161167622,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161168040,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161168481,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161168924,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161169359,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161169793,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161170213,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161170650,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161171072,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161171484,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161171900,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161172316,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161172731,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161173153,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161173575,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161174048,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161174473,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161174987,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161175456,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161175945,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161176378,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161176789,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161177267,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161177715,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161178161,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161178652,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161179066,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161179562,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161180084,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161180520,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161180982,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161181420,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161181890,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161182318,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161182725,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161183142,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161183551,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161183961,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161184373,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161184789,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161185208,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161185641,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161186097,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161186529,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161186950,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161187366,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161187778,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161188190,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161188604,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161189024,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161189440,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161189850,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161190260,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161190698,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161191139,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161191569,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161191997,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161192427,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161192842,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161193256,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161193669,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161194087,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161194499,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161194913,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161195323,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161195736,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161196148,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161196569,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161196999,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161197430,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161197858,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161198274,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161198684,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161199097,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161199511,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161199924,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161200339,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161200752,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161201168,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161201578,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161201997,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161202438,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161202480,
+        "kind": "interrupted"
+      },
+      {
+        "at": 1794161204905,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161230282,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for cold.\"\nRound: 169/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objecti",
+    "lastAssistant": "A5SF_PD29_COLD_CREATED"
+  },
+  "stop2": {
+    "sessionId": "session-team-child-2f1eae16018a06cee9a40eda2e85408a",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-pd33-preview-e2e-tests-homes-u5u5a5sfpd33-20261108T18-03-27Z-workspace--/session-team-child-2f1eae16018a06cee9a40eda2e85408a/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 745,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 104,
+      "turn/start": 52,
+      "step/start": 104,
+      "system/message": 1,
+      "user/message": 55,
+      "request/header": 52,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 103,
+      "tool/call": 52,
+      "goal/change": 2,
+      "tool/result": 52,
+      "step/end": 104,
+      "turn/end": 52,
+      "workspace/changes": 3,
+      "assistant/attempt": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161130709
+      },
+      {
+        "round": 2,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161131318
+      },
+      {
+        "round": 3,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161131757
+      },
+      {
+        "round": 4,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161132194
+      },
+      {
+        "round": 5,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161132632
+      },
+      {
+        "round": 6,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161133123
+      },
+      {
+        "round": 7,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161133588
+      },
+      {
+        "round": 8,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161134008
+      },
+      {
+        "round": 9,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161134454
+      },
+      {
+        "round": 10,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161134927
+      },
+      {
+        "round": 11,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161135389
+      },
+      {
+        "round": 12,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161135844
+      },
+      {
+        "round": 13,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161136257
+      },
+      {
+        "round": 14,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161136668
+      },
+      {
+        "round": 15,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161137091
+      },
+      {
+        "round": 16,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161137512
+      },
+      {
+        "round": 17,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161137940
+      },
+      {
+        "round": 18,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161138372
+      },
+      {
+        "round": 19,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161138833
+      },
+      {
+        "round": 20,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161139283
+      },
+      {
+        "round": 21,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161139716
+      },
+      {
+        "round": 22,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161140181
+      },
+      {
+        "round": 23,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161140612
+      },
+      {
+        "round": 24,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161141082
+      },
+      {
+        "round": 25,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161141547
+      },
+      {
+        "round": 26,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161141959
+      },
+      {
+        "round": 27,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161142384
+      },
+      {
+        "round": 28,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161142837
+      },
+      {
+        "round": 29,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161143275
+      },
+      {
+        "round": 30,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161143707
+      },
+      {
+        "round": 31,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161144131
+      },
+      {
+        "round": 32,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161144576
+      },
+      {
+        "round": 33,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161145016
+      },
+      {
+        "round": 34,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161145426
+      },
+      {
+        "round": 35,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161145866
+      },
+      {
+        "round": 36,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161146321
+      },
+      {
+        "round": 37,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161146791
+      },
+      {
+        "round": 38,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161147239
+      },
+      {
+        "round": 39,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161147678
+      },
+      {
+        "round": 40,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161148087
+      },
+      {
+        "round": 41,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161148511
+      },
+      {
+        "round": 42,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161148941
+      },
+      {
+        "round": 43,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161149396
+      },
+      {
+        "round": 44,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161149836
+      },
+      {
+        "round": 45,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161150274
+      },
+      {
+        "round": 46,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161150686
+      },
+      {
+        "round": 47,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161151112
+      },
+      {
+        "round": 48,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161151600
+      },
+      {
+        "round": 49,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161152075
+      },
+      {
+        "round": 50,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161152543
+      },
+      {
+        "round": 51,
+        "goalId": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "revision": 1,
+        "at": 1794161152983
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794161130393,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794161153289,
+        "operation": "pause",
+        "phase": "paused",
+        "revision": 2,
+        "id": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+        "roundsStarted": 51,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794161130301,
+        "name": "create_goal",
+        "callId": "call-pd29-stop2-create"
+      },
+      {
+        "at": 1794161130737,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-1-bash"
+      },
+      {
+        "at": 1794161131335,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-2-bash"
+      },
+      {
+        "at": 1794161131769,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-3-bash"
+      },
+      {
+        "at": 1794161132207,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-4-bash"
+      },
+      {
+        "at": 1794161132644,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-5-bash"
+      },
+      {
+        "at": 1794161133136,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-6-bash"
+      },
+      {
+        "at": 1794161133607,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-7-bash"
+      },
+      {
+        "at": 1794161134022,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-8-bash"
+      },
+      {
+        "at": 1794161134475,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-9-bash"
+      },
+      {
+        "at": 1794161134940,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-10-bash"
+      },
+      {
+        "at": 1794161135400,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-11-bash"
+      },
+      {
+        "at": 1794161135855,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-12-bash"
+      },
+      {
+        "at": 1794161136275,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-13-bash"
+      },
+      {
+        "at": 1794161136682,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-14-bash"
+      },
+      {
+        "at": 1794161137102,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-15-bash"
+      },
+      {
+        "at": 1794161137524,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-16-bash"
+      },
+      {
+        "at": 1794161137953,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-17-bash"
+      },
+      {
+        "at": 1794161138386,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-18-bash"
+      },
+      {
+        "at": 1794161138846,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-19-bash"
+      },
+      {
+        "at": 1794161139294,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-20-bash"
+      },
+      {
+        "at": 1794161139729,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-21-bash"
+      },
+      {
+        "at": 1794161140194,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-22-bash"
+      },
+      {
+        "at": 1794161140633,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-23-bash"
+      },
+      {
+        "at": 1794161141093,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-24-bash"
+      },
+      {
+        "at": 1794161141558,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-25-bash"
+      },
+      {
+        "at": 1794161141971,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-26-bash"
+      },
+      {
+        "at": 1794161142404,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-27-bash"
+      },
+      {
+        "at": 1794161142850,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-28-bash"
+      },
+      {
+        "at": 1794161143285,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-29-bash"
+      },
+      {
+        "at": 1794161143726,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-30-bash"
+      },
+      {
+        "at": 1794161144151,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-31-bash"
+      },
+      {
+        "at": 1794161144588,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-32-bash"
+      },
+      {
+        "at": 1794161145029,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-33-bash"
+      },
+      {
+        "at": 1794161145446,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-34-bash"
+      },
+      {
+        "at": 1794161145889,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-35-bash"
+      },
+      {
+        "at": 1794161146345,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-36-bash"
+      },
+      {
+        "at": 1794161146808,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-37-bash"
+      },
+      {
+        "at": 1794161147251,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-38-bash"
+      },
+      {
+        "at": 1794161147689,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-39-bash"
+      },
+      {
+        "at": 1794161148099,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-40-bash"
+      },
+      {
+        "at": 1794161148522,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-41-bash"
+      },
+      {
+        "at": 1794161148953,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-42-bash"
+      },
+      {
+        "at": 1794161149411,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-43-bash"
+      },
+      {
+        "at": 1794161149847,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-44-bash"
+      },
+      {
+        "at": 1794161150289,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-45-bash"
+      },
+      {
+        "at": 1794161150708,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-46-bash"
+      },
+      {
+        "at": 1794161151125,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-47-bash"
+      },
+      {
+        "at": 1794161151613,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-48-bash"
+      },
+      {
+        "at": 1794161152092,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-49-bash"
+      },
+      {
+        "at": 1794161152557,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-50-bash"
+      },
+      {
+        "at": 1794161153002,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-51-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794161130394,
+        "callId": "call-pd29-stop2-create",
+        "isError": false
+      },
+      {
+        "at": 1794161130974,
+        "callId": "call-pd29-stop2-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161131578,
+        "callId": "call-pd29-stop2-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132016,
+        "callId": "call-pd29-stop2-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132447,
+        "callId": "call-pd29-stop2-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161132881,
+        "callId": "call-pd29-stop2-round-5-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133392,
+        "callId": "call-pd29-stop2-round-6-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161133843,
+        "callId": "call-pd29-stop2-round-7-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134267,
+        "callId": "call-pd29-stop2-round-8-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161134715,
+        "callId": "call-pd29-stop2-round-9-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135190,
+        "callId": "call-pd29-stop2-round-10-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161135649,
+        "callId": "call-pd29-stop2-round-11-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136090,
+        "callId": "call-pd29-stop2-round-12-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136511,
+        "callId": "call-pd29-stop2-round-13-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161136933,
+        "callId": "call-pd29-stop2-round-14-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137352,
+        "callId": "call-pd29-stop2-round-15-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161137770,
+        "callId": "call-pd29-stop2-round-16-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138201,
+        "callId": "call-pd29-stop2-round-17-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161138644,
+        "callId": "call-pd29-stop2-round-18-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139094,
+        "callId": "call-pd29-stop2-round-19-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139535,
+        "callId": "call-pd29-stop2-round-20-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161139973,
+        "callId": "call-pd29-stop2-round-21-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140436,
+        "callId": "call-pd29-stop2-round-22-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161140874,
+        "callId": "call-pd29-stop2-round-23-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141345,
+        "callId": "call-pd29-stop2-round-24-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161141791,
+        "callId": "call-pd29-stop2-round-25-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142216,
+        "callId": "call-pd29-stop2-round-26-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161142640,
+        "callId": "call-pd29-stop2-round-27-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143092,
+        "callId": "call-pd29-stop2-round-28-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143523,
+        "callId": "call-pd29-stop2-round-29-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161143958,
+        "callId": "call-pd29-stop2-round-30-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144385,
+        "callId": "call-pd29-stop2-round-31-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161144832,
+        "callId": "call-pd29-stop2-round-32-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145260,
+        "callId": "call-pd29-stop2-round-33-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161145679,
+        "callId": "call-pd29-stop2-round-34-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146125,
+        "callId": "call-pd29-stop2-round-35-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161146571,
+        "callId": "call-pd29-stop2-round-36-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147057,
+        "callId": "call-pd29-stop2-round-37-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147495,
+        "callId": "call-pd29-stop2-round-38-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161147926,
+        "callId": "call-pd29-stop2-round-39-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148350,
+        "callId": "call-pd29-stop2-round-40-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161148775,
+        "callId": "call-pd29-stop2-round-41-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149203,
+        "callId": "call-pd29-stop2-round-42-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161149647,
+        "callId": "call-pd29-stop2-round-43-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150089,
+        "callId": "call-pd29-stop2-round-44-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150519,
+        "callId": "call-pd29-stop2-round-45-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161150948,
+        "callId": "call-pd29-stop2-round-46-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151380,
+        "callId": "call-pd29-stop2-round-47-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161151860,
+        "callId": "call-pd29-stop2-round-48-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152329,
+        "callId": "call-pd29-stop2-round-49-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161152797,
+        "callId": "call-pd29-stop2-round-50-bash",
+        "isError": false
+      },
+      {
+        "at": 1794161153249,
+        "callId": "call-pd29-stop2-round-51-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794161130623,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131265,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161131709,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132150,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161132588,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133073,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133531,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161133958,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134399,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161134878,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135339,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161135796,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136207,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161136624,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137046,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137469,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161137897,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138321,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161138791,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139237,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161139671,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140124,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161140558,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141034,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141498,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161141910,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142333,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161142794,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143229,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161143650,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144081,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144534,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161144959,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145374,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161145810,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146263,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161146729,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147195,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161147633,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148042,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148466,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161148893,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149353,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161149789,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150227,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161150633,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151065,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161151547,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152019,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152489,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161152947,
+        "kind": "completed"
+      },
+      {
+        "at": 1794161153290,
+        "kind": "aborted"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for stop2.\"\nRound: 51/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objecti",
+    "lastAssistant": "A5SF_PD29_STOP2_CREATED"
+  }
+}

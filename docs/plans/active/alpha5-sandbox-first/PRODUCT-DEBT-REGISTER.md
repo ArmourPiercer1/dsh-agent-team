@@ -98,6 +98,7 @@ indistinguishable, six weeks later, from a decision nobody ever made.
 | PD-31 (READ-IMAGE) | FS (native `read_image`) | `read_image` was the one governed row whose **live** branch stayed `UNMEASURED`: every call was rejected first by model routing (`model "deepseek-v4-flash" does not declare image input`), and that state cannot tell a real capability gate from a broken tool. PD-31 measures the **native** host row on merged master (`0c2a8f422`, surface **36**) through the public `staticModel` seam: an in-lane 3×2 PNG (68 B, sha256 `0bf7e492…`) returns a real `image` block with **2** allow facts (`stat`→`readBytes`, attributed to `read_image` + the call's `callId`) and the same bytes as a base64 `image` part on the wire (6 requests; decoded sha256 matches; **0** text blocks carry the binary); out-of-lane existing and missing give the **identical** lane sentence with **1** `IO_READ_DENIED` deny fact, **0 bytes**, no existence oracle; `.txt` gets the extension law (0 facts); over-dimension (9000×1) and 20 MiB+1 are refused **whole** after 2 allow facts, never truncated. **A governed Member can read images only when its model route declares `image`; a default `['text']` route (what the shipped `deepseek-v4-flash` resolves to) cannot use `read_image` at all — the refusal arrives before any provider I/O, with 0 guard facts and 0 bytes.** Two mutation controls: declaration→text **red**, gate-removed **green** (same text-only route serves the read and the wire gets a text placeholder, 0 image parts). **(MEASURED, DEV-LIVE; two agreeing pairs on merged master)** [row id note: the lane/window is **PD31-READ-IMAGE**; register contiguity (`PD-1…PD-n`) and the goal lane's **PD-30** put this row at **PD-31** — the fifth dated renumber of this phase (PD-27→PD-28 at merge, PD-30→PD-28, …). Branch, PR and evidence directory keep `PD31`.] | evidence-quality | semantics |
 
 | PD-32 (INSTRUMENT-GRAPH) | Test infrastructure (whole phase) | The instrument substituted the subject **twice**: the Worlds built `profiles/web/` empty, so the shipped rows (`dsh-agent-team/host`, `dsh-agent-team/web-tool`, `dsh-agent-team/web-transport`) resolved against nothing; a row that cannot import takes the WHOLE governed Member down (not one tool), and every lane then chased a downstream symptom ("no goal" / "0 Members" / `TEAM_RUNTIME_DURABLE_WRITE_FAILED`). Trip 1: PD-27's driver rewrote the row to a `file:` URL and measured a tree that was not the shipped one. Trip 2: the fix landed in one driver, and two sibling lanes re-implemented it. PD-30 moves provisioning into the World factory (`createWorld` → one link of the tree's OWN package + per-subpath verification) and the precondition with it (three NAMED codes, thrown before any arm), so the instrument can no longer substitute its subject **(FIXED, DEV-LIVE + host-free pins)** [row-id chain, all three disclosed: window allocation **PD-32** → base id **PD-31** (because #679 took PD-30) → **PD-32** (because #680 took PD-31). Each step is the same rule: the register's gate-enforced `PD-1…PD-n` contiguity admits only the next free id on the base, so a row keeps the window's number only when nothing merged in between.] | governance hole | correctness |
+| PD-33 (PREVIEW-E2E) | Cross-cutting: Leader → Member → tool → artefact → Leader | Every earlier lane measured ONE face (goal lifecycle, web egress, skill/present seam, fs lanes, read_image); **no run ever put the Leader, two Members, six guards, the deferred surface and a restart in the same World**, so "the Preview scenario works" was an inference from per-face evidence. PD-33 measures it on the shipped opt-in `a5sf-governed-member` preset in ONE composition, two agreeing boots: the Leader creates **6** Members in one turn and collects **2** by request token; Member A runs 8 governed I/O tools (**15** facts, artefact verified on disk) and collects **3** typed refusals (`IO_READ_DENIED`, `WEB_DESTINATION_FORBIDDEN`, and the disclosed OS-only stop for an out-of-lane `bash` write); Member B does a real `web_fetch` (**1** connection / **26** bytes / **1** allow fact), a typed `WEB_PROVIDER_UNAVAILABLE` search (**0** POST), a route-gate `read_image` refusal (**0** facts / **0** bytes) and a goal of **3** automatic rounds → `complete`; the **7** deferred names are 7/7 typed `unknown tool` with **0** facts; the Stop arms show **0** rounds / **0** calls / **0** model requests in 20 000 ms windows (S1 cancel, S4 Leader archive → `ARCHIVED`), boundary burst `lost=false`, 6/6 idle-window probes landed, cold recovery `revived=false`, explicit resume **1** round; the inherited base `web` is called **0** times. **(MEASURED, DEV-LIVE; two agreeing boots)** [row-id note: PD-33 is the next free id on this base (PD-30 = #679, PD-31 = #680, PD-32 = #681); the lane/PR keep `PD33`.] | evidence-quality | correctness |
 
 **`decision = semantics`** means the fix changes product-observable behaviour (a signature, an
 environment, a recorded value, which provider a child reaches) and therefore needs the owner;
@@ -1140,3 +1141,47 @@ Gates: `node --test tests/world-factory/a5sf-debt-register.test.mjs`,
 > PD-27→PD-28 的合并顺延）。本行不新增缺口：它关闭 `read_image` 的 `UNMEASURED` 分支并记录能力“可配置即满足”。
 > 依据 = `dev/agent-workflow/evidence/a5sf-pd31-read-image/README.md`（DEV-LIVE；合并树 `0c2a8f422` 上两对 agreeing
 > boots + 两个 mutation controls，surface 36）。G2–G5、`V@B`、`release BLOCKED` 均不因此改变。
+
+### PD-33 (PREVIEW-E2E) — 「Preview 场景能跑通」第一次被端到端测量，而不是从六个单面证据推断
+
+- **source**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`（§1–§7 与 `runs/boot01|boot02/`）；
+  lane / branch / PR = `PD33-PREVIEW-E2E` / `task/pd33-preview-e2e-20261115` / **#682**。驱动器 =
+  `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs`，报告 =
+  `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md`。测量树 = `9f2a16d87`
+  （`origin/master ece8d5a1c` + #681 的 4 个提交，**0 个产品文件**）。
+- **true today**: **一个 composition、两个逐项一致的 boot**（`--boots 2`，18 个 case，17 PROVEN / 1 因判据写错
+  而红——已被 `read_image` 的路由拒因文本证伪后修正判据，见下）。Leader 一次 `team_delegate` × 6 全部被接受，
+  第二回合 `team_collect` 按 2 个 request token 读回（A 首次 `running`→第二次终态，读回可先于结算）+ `team_list_members`。
+  Member A：`read`/`grep`/`glob`/`write`/`edit`/`bash`/`skill`/`present` 全链 **15** 条 fact、产物
+  `probe-written.txt` = `"probe line\nA5SF_PD33_A_EDIT_AFTER"`；三次授权尝试得到 **2 个 typed deny**
+  （`IO_READ_DENIED` 0 字节、`WEB_DESTINATION_FORBIDDEN` 0 连接）与 **1 个 OS 兜底**（见 not true 第 2 条）。
+  Member B：`web_fetch` **1** 连接 / **26** 字节 / **1** allow fact；`web_search` = typed
+  `WEB_PROVIDER_UNAVAILABLE`（**0** POST）；`read_image` 在 `text` 路由下**于任何 provider I/O 之前**拒绝
+  （**0** facts / **0** 字节，文本 `model "…" does not declare image input`）；goal **3** 轮 → `complete` → 0 后续轮。
+  延后面 **7/7** typed `unknown tool`、**7/7 0 facts**。Stop：S1（目标 Member 自己的 `session/cancel`）
+  2 轮/3 调用 → **0/0/0**，durable `paused`；S4（Leader `team_archive_member` 指向正在跑轮次的 Member）
+  `ARCHIVED`、**0/0**、`paused`；S2 24-cancel burst `lost=false`；GAP 6/6 landed；S6 冷恢复 `revived=false`、0 轮；
+  S7 显式 resume **1** 轮。base 宿主 `web` tripwire **0**；base `fs` **0**。表面 **36** = 19 preset + 15 `team_*` + 2 仪器。
+- **not true**: （1）**这不是候选验收**——`DEV-LIVE`、`eligible=false`、无 `V@B`/grade/Q7/Authority/Required-CI 变更；
+  （2）**shell 体的路径不由服务轴归属**（BL-17）：`bash` 写 `../…` 得到 **2 条 ALLOW**，唯一拦阻是 OS profile
+  （`Permission denied`、0 字节、文件不存在）——本行把它记为**披露的边界**，不记为服务轴拒绝；
+  （3）**默认安装不能搜网页**：`web_search` 的后端是部署条件（Exa 兼容 endpoint+key 才真实 POST+解析），
+  默认是 typed gap；网络轴仍是**单一布尔**，没有 per-host ACL，且**受管 web 工具的限制不等于 `bash` 子进程的限制**；
+  （4）**Stop 语义是"停目标 Member"，不是 Team-wide Stop**：停 Leader 的当前回合**不会**停已委派的异步工作（Preview 设计）；
+  （5）**用户侧仍无一等公民的 "stop this Member" affordance**——入口是 `POST /api/session/cancel`（本行用真实 HTTP 证明
+  它调用的是正确机制），UI 缺一个按钮，最小修点已写在报告 §6.1 M2。
+- **security consequence**: evidence-quality — 无新增越权面；本行是**测量**行。它把"服务轴拒绝越界 shell 写"从假设降级为**未成立**，
+  防止把 OS 兜底读成治理证明。
+- **current backstop**: `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`（host-free：composition、judge 公式、
+  延后面名册、`read_image` 判据）；`--plan` 在任何 boot 之前校验 row/blueprint。
+- **smallest honest fix**: 报告 §6.1 的两条——合入 #681 并 rebase 重跑（M1）；给 Member 行一个 Stop 入口且**确认它走
+  `session/cancel` → durable `pause` → `goals.disarm`**（M2）。BL-17 的 shell 体归属属正式 Alpha.5 延后。
+- **blocked by**: 无（测量已完成）；**#681 未合并**是报告结论的放行条件，不是本行的阻塞。
+- **proof**: `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/runs/boot01/verdicts.json`；
+  `runs/boot01/e2e.json`；`runs/boot02/`；`guard-facts.json`（PD-33 调用过滤，< 1 MiB）；
+  `run-record.json`（`recordClass=DEV-LIVE`、`eligible=false`）。
+- **anchors**: `tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs#L4-L4` contains `PD-33 (Alpha.5 Preview)`, `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs#L2-L2` contains `PD-33: the Preview scenario`, `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md#L1-L1` contains `Alpha.5 Preview`, `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md#L1-L1` contains `PD-33`, `cordis.patch.yml#L302-L302` contains `preset-a5sf-governed-member`
+- **status**: **DRAFT — 未合并。** 2026-11-15（真实 UTC 2026-11-08），branch `task/pd33-preview-e2e-20261115`，
+  worktree `.worktrees/pd33-preview-e2e`，draft PR **#682**（首行 `PD33-PREVIEW-E2E`）。
+  证据类 **DEV-LIVE**，两 boot 逐项一致；slot 租赁、3180 族端口、`DSH_HOME` 在 `tests/homes/`、
+  宿主树 porcelain 前后为空。**`CORE PATCH BUDGET = 0`：本 lane 相对 master 的产品文件 = 0。**

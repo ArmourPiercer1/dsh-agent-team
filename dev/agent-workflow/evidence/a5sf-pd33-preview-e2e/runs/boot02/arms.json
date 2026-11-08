@@ -1,0 +1,1632 @@
+{
+  "arms": {
+    "e2e": {
+      "at": "2026-11-08T18:05:32.810Z",
+      "leader": {
+        "delegated": {
+          "a": true,
+          "b": true,
+          "s1": true,
+          "s2": true,
+          "cold": true,
+          "stop2": true
+        },
+        "delegatedCount": 6,
+        "collect": {
+          "promptStatus": 200,
+          "seen": true,
+          "call": {
+            "id": "call-pd33-collect",
+            "name": "team_collect",
+            "arguments": {
+              "rootSessionId": "session-a5sf-pd33-team",
+              "requestToken": "pd33-collect:initial-work:sha256:0000000000000000000000000000000000000000000000000000000000000000",
+              "requestTokens": [
+                "a5sf-pd33-a-delegate",
+                "a5sf-pd33-b-delegate"
+              ]
+            }
+          },
+          "resultText": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-a5sf-pd33-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"a5sf-pd33-a-delegate\",\"status\":\"succeeded\",\"instanceId\":\"inst-0u1dugv0ojhv\",\"admittedSequence\":3,\"settledSequence\":29,\"memberResult\":{\"body\":\"A5SF_PD33_A_DONE n tool \\\"subagent\\\"\\nError: unknown tool \\\"subagent_fork\\\"\\nError: unknown tool \\\"send_message\\\"\\nError: unknown tool \\\"interrupt_agent\\\"\\nError: unknown tool \\\"list_agents\\\"\\nError: unknown tool \\\"ask_user_question\\\"\",\"requestToken\":\"a5sf-pd33-a-delegate\",\"status\":\"succeede",
+          "isError": false,
+          "listMembersCall": true,
+          "secondCollect": false,
+          "secondCollectText": "",
+          "listMembersText": "{\"status\":\"executed\",\"action\":\"list-members\",\"rootSessionId\":\"session-a5sf-pd33-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"members-listed\",\"members\":[{\"instanceId\":\"inst-08hcx210odtc\",\"templateId\":\"stop2\",\"label\":\"a5sfpd29-stop2\",\"lifecycle\":\"SETTLED\",\"childSessionId\":\"session-team-child-2f1eae16018a06cee9a40eda2e85408a\"},{\"instanceId\":\"inst-0ihp8zd1q197\",\"templateId\":\"s1\",\"label\":\"a5sfpd29-s1\",\"lifecycle\":\"SETTLED\",\"childSessionId\":\"session-team-child-c98107c8db0087de6f75d58677283fbc\"},{\"instanceId\":\"inst-0jy83041n72a\",\"templateId\":\"b\",\"label\":\"a5sfpd29-b\",\"lifecycle\":\"SETTLED\",\"childSessi"
+        }
+      },
+      "members": [
+        {
+          "instanceId": "inst-08hcx210odtc",
+          "templateId": "stop2",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-0ihp8zd1q197",
+          "templateId": "s1",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-0jy83041n72a",
+          "templateId": "b",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-0u1dugv0ojhv",
+          "templateId": "a",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-0vba2l61nkvp",
+          "templateId": "s2",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-1dsveir1tsz8",
+          "templateId": "cold",
+          "lifecycle": "SETTLED"
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "lifecycle": "undefined"
+        }
+      ],
+      "sessions": {
+        "a": "session-team-child-c63faae83d9a80429d3002bf9e60facf",
+        "b": "session-team-child-601eb61ddb9c29453cfd84348361e067"
+      },
+      "a": {
+        "surfaceA": [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "present",
+          "read",
+          "read_image",
+          "skill",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "todo_write",
+          "u5_canary",
+          "u6fs_probe",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "write"
+        ],
+        "surfaceCount": 36,
+        "aDone": true,
+        "calls": [
+          {
+            "at": 1794161124847,
+            "name": "read",
+            "callId": "call-pd33-a-read"
+          },
+          {
+            "at": 1794161124900,
+            "name": "grep",
+            "callId": "call-pd33-a-grep"
+          },
+          {
+            "at": 1794161128316,
+            "name": "glob",
+            "callId": "call-pd33-a-glob"
+          },
+          {
+            "at": 1794161128405,
+            "name": "write",
+            "callId": "call-pd33-a-write"
+          },
+          {
+            "at": 1794161128470,
+            "name": "edit",
+            "callId": "call-pd33-a-edit"
+          },
+          {
+            "at": 1794161128674,
+            "name": "bash",
+            "callId": "call-pd33-a-bash"
+          },
+          {
+            "at": 1794161128778,
+            "name": "skill",
+            "callId": "call-pd33-a-skill"
+          },
+          {
+            "at": 1794161128964,
+            "name": "present",
+            "callId": "call-pd33-a-present"
+          },
+          {
+            "at": 1794161129082,
+            "name": "read",
+            "callId": "call-pd33-a-read-out"
+          },
+          {
+            "at": 1794161129144,
+            "name": "web_fetch",
+            "callId": "call-pd33-a-web-out"
+          },
+          {
+            "at": 1794161129336,
+            "name": "bash",
+            "callId": "call-pd33-a-bash-out"
+          },
+          {
+            "at": 1794161129516,
+            "name": "workflow",
+            "callId": "call-pd33-a-closed-workflow"
+          },
+          {
+            "at": 1794161129591,
+            "name": "subagent",
+            "callId": "call-pd33-a-closed-subagent"
+          },
+          {
+            "at": 1794161129687,
+            "name": "subagent_fork",
+            "callId": "call-pd33-a-closed-subagent_fork"
+          },
+          {
+            "at": 1794161129870,
+            "name": "send_message",
+            "callId": "call-pd33-a-closed-send_message"
+          },
+          {
+            "at": 1794161129949,
+            "name": "interrupt_agent",
+            "callId": "call-pd33-a-closed-interrupt_agent"
+          },
+          {
+            "at": 1794161130076,
+            "name": "list_agents",
+            "callId": "call-pd33-a-closed-list_agents"
+          },
+          {
+            "at": 1794161130167,
+            "name": "ask_user_question",
+            "callId": "call-pd33-a-closed-ask_user_question"
+          }
+        ],
+        "results": [
+          {
+            "at": 1794161124868,
+            "callId": "call-pd33-a-read",
+            "isError": false
+          },
+          {
+            "at": 1794161128141,
+            "callId": "call-pd33-a-grep",
+            "isError": false
+          },
+          {
+            "at": 1794161128369,
+            "callId": "call-pd33-a-glob",
+            "isError": false
+          },
+          {
+            "at": 1794161128430,
+            "callId": "call-pd33-a-write",
+            "isError": false
+          },
+          {
+            "at": 1794161128505,
+            "callId": "call-pd33-a-edit",
+            "isError": false
+          },
+          {
+            "at": 1794161128735,
+            "callId": "call-pd33-a-bash",
+            "isError": false
+          },
+          {
+            "at": 1794161128789,
+            "callId": "call-pd33-a-skill",
+            "isError": false
+          },
+          {
+            "at": 1794161128984,
+            "callId": "call-pd33-a-present",
+            "isError": false
+          },
+          {
+            "at": 1794161129090,
+            "callId": "call-pd33-a-read-out",
+            "isError": false
+          },
+          {
+            "at": 1794161129251,
+            "callId": "call-pd33-a-web-out",
+            "isError": false
+          },
+          {
+            "at": 1794161129433,
+            "callId": "call-pd33-a-bash-out",
+            "isError": false
+          },
+          {
+            "at": 1794161129520,
+            "callId": "call-pd33-a-closed-workflow",
+            "isError": false
+          },
+          {
+            "at": 1794161129600,
+            "callId": "call-pd33-a-closed-subagent",
+            "isError": false
+          },
+          {
+            "at": 1794161129713,
+            "callId": "call-pd33-a-closed-subagent_fork",
+            "isError": false
+          },
+          {
+            "at": 1794161129876,
+            "callId": "call-pd33-a-closed-send_message",
+            "isError": false
+          },
+          {
+            "at": 1794161129987,
+            "callId": "call-pd33-a-closed-interrupt_agent",
+            "isError": false
+          },
+          {
+            "at": 1794161130099,
+            "callId": "call-pd33-a-closed-list_agents",
+            "isError": false
+          },
+          {
+            "at": 1794161130178,
+            "callId": "call-pd33-a-closed-ask_user_question",
+            "isError": false
+          }
+        ],
+        "probeCount": 18,
+        "factsByTool": {
+          "read": 3,
+          "grep": 1,
+          "glob": 1,
+          "web_fetch": 2,
+          "write": 1,
+          "web_search": 1,
+          "skill": 2,
+          "edit": 1,
+          "bash": 48,
+          "present": 2
+        },
+        "probes": {
+          "read": {
+            "call": {
+              "id": "call-pd33-a-read",
+              "name": "read",
+              "arguments": {
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-input.txt"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-input.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD33_A_INPUT\n\n(End of file - total 1 lines)\n</content>"
+            },
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-input.txt</path>\n<type>file</type>\n<content>\n1: A5SF_PD33_A_INPUT\n\n(End of file - total 1 lines)\n</content>",
+            "isError": false,
+            "facts": 2,
+            "decisions": [
+              "allow",
+              "allow"
+            ],
+            "codes": [
+              "ALLOW",
+              "ALLOW"
+            ]
+          },
+          "grep": {
+            "call": {
+              "id": "call-pd33-a-grep",
+              "name": "grep",
+              "arguments": {
+                "pattern": "A5SF_PD33_A_INPUT",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "Found 1 match\n\nprobe-input.txt\nLine 1: A5SF_PD33_A_INPUT"
+            },
+            "text": "Found 1 match\n\nprobe-input.txt\nLine 1: A5SF_PD33_A_INPUT",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "glob": {
+            "call": {
+              "id": "call-pd33-a-glob",
+              "name": "glob",
+              "arguments": {
+                "pattern": "*.txt",
+                "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "probe-input.txt"
+            },
+            "text": "probe-input.txt",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "write": {
+            "call": {
+              "id": "call-pd33-a-write",
+              "name": "write",
+              "arguments": {
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt",
+                "content": "probe line\nA5SF_PD33_A_EDIT_BEFORE\n"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+            },
+            "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "edit": {
+            "call": {
+              "id": "call-pd33-a-edit",
+              "name": "edit",
+              "arguments": {
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt",
+                "old_string": "A5SF_PD33_A_EDIT_BEFORE",
+                "new_string": "A5SF_PD33_A_EDIT_AFTER"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt has been updated successfully."
+            },
+            "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt has been updated successfully.",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "bash": {
+            "call": {
+              "id": "call-pd33-a-bash",
+              "name": "bash",
+              "arguments": {
+                "command": "printf A5SF_PD33_A_BASH_OK",
+                "description": "pd33 a regression probe",
+                "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD33_A_BASH_OK\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD33_A_BASH_OK\"}"
+            },
+            "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"A5SF_PD33_A_BASH_OK\",\"stderr\":\"\",\"scrollback\":\"A5SF_PD33_A_BASH_OK\"}",
+            "isError": false,
+            "facts": 2,
+            "decisions": [
+              "allow",
+              "allow"
+            ],
+            "codes": [
+              "ALLOW",
+              "ALLOW"
+            ]
+          },
+          "skill": {
+            "call": {
+              "id": "call-pd33-a-skill",
+              "name": "skill",
+              "arguments": {
+                "name": "pd33-inlane"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "<skill_content name=\"pd33-inlane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/skills/pd33-inlane\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nA5SF_PD33_INLANE_SKILL_BODY\n\n</skill_instructions>\n</skill_content>"
+            },
+            "text": "<skill_content name=\"pd33-inlane\">\n<skill_resources>\nBase directory for this skill: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/skills/pd33-inlane\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nA5SF_PD33_INLANE_SKILL_BODY\n\n</skill_instructions>\n</skill_content>",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "present": {
+            "call": {
+              "id": "call-pd33-a-present",
+              "name": "present",
+              "arguments": {
+                "files": [
+                  {
+                    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt",
+                    "description": "PD-33 Member A artefact"
+                  }
+                ]
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt"
+            },
+            "text": "Presented /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe-written.txt",
+            "isError": false,
+            "facts": 2,
+            "decisions": [
+              "allow",
+              "allow"
+            ],
+            "codes": [
+              "ALLOW",
+              "ALLOW"
+            ]
+          },
+          "readOut": {
+            "call": {
+              "id": "call-pd33-a-read-out",
+              "name": "read",
+              "arguments": {
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md"
+              }
+            },
+            "result": {
+              "isError": true,
+              "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane"
+            },
+            "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane",
+            "isError": true,
+            "facts": 1,
+            "decisions": [
+              "deny"
+            ],
+            "codes": [
+              "IO_READ_DENIED"
+            ]
+          },
+          "webOut": {
+            "call": {
+              "id": "call-pd33-a-web-out",
+              "name": "web_fetch",
+              "arguments": {
+                "url": "http://127.0.0.1:44637/known"
+              }
+            },
+            "result": {
+              "isError": true,
+              "text": "Error: WEB_DESTINATION_FORBIDDEN: the declared destination \"127.0.0.1\" is a loopback/private/link-local/unroutable literal; refusing before the transport (SSRF leg). A public destination is required, or an exact declared test endpoint"
+            },
+            "text": "Error: WEB_DESTINATION_FORBIDDEN: the declared destination \"127.0.0.1\" is a loopback/private/link-local/unroutable literal; refusing before the transport (SSRF leg). A public destination is required, or an exact declared test endpoint",
+            "isError": true,
+            "facts": 1,
+            "decisions": [
+              "deny"
+            ],
+            "codes": [
+              "WEB_DESTINATION_FORBIDDEN"
+            ]
+          },
+          "bashOut": {
+            "call": {
+              "id": "call-pd33-a-bash-out",
+              "name": "bash",
+              "arguments": {
+                "command": "printf A5SF_PD33_OUTSIDE > ../a5sf-pd33-outside.txt",
+                "description": "pd33 out-of-lane write attempt",
+                "workdir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-2\",\"exitCode\":1,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"\",\"stderr\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\\n\",\"scrollback\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\"}"
+            },
+            "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-2\",\"exitCode\":1,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"\",\"stderr\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\\n\",\"scrollback\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\"}",
+            "isError": false,
+            "facts": 2,
+            "decisions": [
+              "allow",
+              "allow"
+            ],
+            "codes": [
+              "ALLOW",
+              "ALLOW"
+            ]
+          }
+        },
+        "artefact": "probe line\nA5SF_PD33_A_EDIT_AFTER\n",
+        "artefactExists": true,
+        "sessionTypes": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 2,
+          "turn/start": 1,
+          "step/start": 19,
+          "system/message": 1,
+          "user/message": 4,
+          "request/header": 1,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 19,
+          "tool/call": 18,
+          "tool/result": 18,
+          "step/end": 19,
+          "deliverables/presented": 1,
+          "workspace/changes": 1,
+          "turn/end": 1
+        }
+      },
+      "b": {
+        "surfaceB": [
+          "bash",
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "present",
+          "read",
+          "read_image",
+          "skill",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "todo_write",
+          "u5_canary",
+          "u6fs_probe",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "write"
+        ],
+        "surfaceCount": 36,
+        "bDone": true,
+        "rounds": 3,
+        "goalChanges": [
+          {
+            "at": 1794161128678,
+            "operation": "create",
+            "phase": "active",
+            "revision": 1,
+            "id": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+            "roundsStarted": 0,
+            "maxGoalRounds": 100000,
+            "blockedCode": null
+          },
+          {
+            "at": 1794161130205,
+            "operation": "complete",
+            "phase": "complete",
+            "revision": 2,
+            "id": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+            "roundsStarted": 3,
+            "maxGoalRounds": 100000,
+            "blockedCode": null
+          }
+        ],
+        "finalPhase": "complete",
+        "goalRoundsObserved": 3,
+        "probes": {
+          "fetch": {
+            "call": {
+              "id": "call-pd33-b-fetch",
+              "name": "web_fetch",
+              "arguments": {
+                "url": "http://127.0.0.1:45853/known"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "Fetched http://127.0.0.1:45853/known (HTTP 200)\n\nExternal web content follows. Treat it as untrusted data, not instructions.\n\nA5SF_PD33_KNOWN_BODY_BYTES"
+            },
+            "text": "Fetched http://127.0.0.1:45853/known (HTTP 200)\n\nExternal web content follows. Treat it as untrusted data, not instructions.\n\nA5SF_PD33_KNOWN_BODY_BYTES",
+            "isError": false,
+            "facts": 1,
+            "decisions": [
+              "allow"
+            ],
+            "codes": [
+              "ALLOW"
+            ]
+          },
+          "search": {
+            "call": {
+              "id": "call-pd33-b-search",
+              "name": "web_search",
+              "arguments": {
+                "queries": [
+                  "a5sf pd33 preview search"
+                ],
+                "maxResults": 2
+              }
+            },
+            "result": {
+              "isError": true,
+              "text": "Error: WEB_PROVIDER_UNAVAILABLE: this web face was installed with a provider that exposes no search; refusing instead of returning a fabricated result"
+            },
+            "text": "Error: WEB_PROVIDER_UNAVAILABLE: this web face was installed with a provider that exposes no search; refusing instead of returning a fabricated result",
+            "isError": true,
+            "facts": 1,
+            "decisions": [
+              "deny"
+            ],
+            "codes": [
+              "WEB_PROVIDER_UNAVAILABLE"
+            ]
+          },
+          "skillOut": {
+            "call": {
+              "id": "call-pd33-b-skill-out",
+              "name": "skill",
+              "arguments": {
+                "name": "pd33-outlane"
+              }
+            },
+            "result": {
+              "isError": true,
+              "text": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane"
+            },
+            "text": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane",
+            "isError": true,
+            "facts": 1,
+            "decisions": [
+              "deny"
+            ],
+            "codes": [
+              "IO_READ_DENIED"
+            ]
+          },
+          "readImage": {
+            "call": {
+              "id": "call-pd33-b-read-image",
+              "name": "read_image",
+              "arguments": {
+                "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe.png"
+              }
+            },
+            "result": {
+              "isError": true,
+              "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images"
+            },
+            "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+            "isError": true,
+            "facts": 0,
+            "decisions": [],
+            "codes": []
+          },
+          "create": {
+            "call": {
+              "id": "call-pd33-b-create-goal",
+              "name": "create_goal",
+              "arguments": {
+                "objective": "PD-33 preview goal: at least three automatic rounds, then converge.",
+                "max_goal_rounds": 100000
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "{\"goal\":{\"id\":\"goal-c245625c-63a2-433b-a477-f546ae1bf45d\",\"revision\":1,\"objective\":\"PD-33 preview goal: at least three automatic rounds, then converge.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}"
+            },
+            "text": "{\"goal\":{\"id\":\"goal-c245625c-63a2-433b-a477-f546ae1bf45d\",\"revision\":1,\"objective\":\"PD-33 preview goal: at least three automatic rounds, then converge.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+            "isError": false,
+            "facts": 0,
+            "decisions": [],
+            "codes": []
+          },
+          "complete": {
+            "call": {
+              "id": "call-pd33-b-complete",
+              "name": "update_goal",
+              "arguments": {
+                "goal_id": "goal-c245625c-63a2-433b-a477-f546ae1bf45d",
+                "revision": 1,
+                "action": "complete"
+              }
+            },
+            "result": {
+              "isError": false,
+              "text": "{\"goal\":{\"id\":\"goal-c245625c-63a2-433b-a477-f546ae1bf45d\",\"revision\":2,\"objective\":\"PD-33 preview goal: at least three automatic rounds, then converge.\",\"phase\":\"complete\",\"roundsStarted\":3,\"maxGoalRounds\":100000},\"activation\":\"disarmed\"}"
+            },
+            "text": "{\"goal\":{\"id\":\"goal-c245625c-63a2-433b-a477-f546ae1bf45d\",\"revision\":2,\"objective\":\"PD-33 preview goal: at least three automatic rounds, then converge.\",\"phase\":\"complete\",\"roundsStarted\":3,\"maxGoalRounds\":100000},\"activation\":\"disarmed\"}",
+            "isError": false,
+            "facts": 0,
+            "decisions": [],
+            "codes": []
+          }
+        },
+        "sessionTypes": {
+          "session": 1,
+          "permission/preset": 1,
+          "sandbox/mode": 1,
+          "approval/policy": 1,
+          "agent/inbox/spliced": 10,
+          "turn/start": 4,
+          "step/start": 12,
+          "system/message": 1,
+          "user/message": 8,
+          "request/header": 4,
+          "request/context": 1,
+          "session/title": 2,
+          "session/title-llm-request": 1,
+          "assistant/message": 12,
+          "tool/call": 8,
+          "tool/result": 8,
+          "step/end": 12,
+          "goal/change": 2,
+          "turn/end": 4
+        }
+      },
+      "web": {
+        "fetchServer": {
+          "connections": 1,
+          "pathHits": {
+            "/known": 1
+          },
+          "requests": [
+            {
+              "at": "2026-11-08T18:05:28.368Z",
+              "method": "GET",
+              "path": "/known",
+              "body": null
+            }
+          ],
+          "bytesServed": 26,
+          "openSockets": 0
+        },
+        "searchServer": {
+          "connections": 0,
+          "pathHits": {},
+          "requests": [],
+          "bytesServed": 0,
+          "openSockets": 0
+        },
+        "hostWebCalls": 0
+      },
+      "deferred": {
+        "workflow": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"workflow\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "subagent": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"subagent\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "subagent_fork": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"subagent_fork\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "send_message": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"send_message\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "interrupt_agent": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"interrupt_agent\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "list_agents": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"list_agents\"",
+          "onSurface": false,
+          "facts": 0
+        },
+        "ask_user_question": {
+          "dispatched": true,
+          "isError": true,
+          "text": "Error: unknown tool \"ask_user_question\"",
+          "onSurface": false,
+          "facts": 0
+        }
+      },
+      "authorization": {
+        "readOut": {
+          "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane",
+          "isError": true,
+          "facts": 1,
+          "codes": [
+            "IO_READ_DENIED"
+          ],
+          "decisions": [
+            "deny"
+          ]
+        },
+        "webOut": {
+          "text": "Error: WEB_DESTINATION_FORBIDDEN: the declared destination \"127.0.0.1\" is a loopback/private/link-local/unroutable literal; refusing before the transport (SSRF leg). A public destination is required, or an exact declared test endpoint",
+          "isError": true,
+          "facts": 1,
+          "codes": [
+            "WEB_DESTINATION_FORBIDDEN"
+          ],
+          "decisions": [
+            "deny"
+          ]
+        },
+        "bashOut": {
+          "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-2\",\"exitCode\":1,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"\",\"stderr\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\\n\",\"scrollback\":\"/bin/bash: line 1: ../a5sf-pd33-outside.txt: Permission denied\"}",
+          "isError": false,
+          "facts": 2,
+          "codes": [
+            "ALLOW",
+            "ALLOW"
+          ],
+          "decisions": [
+            "allow",
+            "allow"
+          ],
+          "outsideFileExists": false
+        },
+        "skillOut": {
+          "text": "Error: IO_READ_DENIED: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md' is outside every allow subtree of the lane",
+          "isError": true,
+          "facts": 1,
+          "codes": [
+            "IO_READ_DENIED"
+          ],
+          "decisions": [
+            "deny"
+          ]
+        },
+        "readImage": {
+          "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-03-27Z/workspace/probe.png\" as an image: model \"deepseek-v4-flash\" does not declare image input; switch to an image-capable model to read images",
+          "isError": true,
+          "facts": 0,
+          "codes": [],
+          "decisions": []
+        }
+      },
+      "mutation": null
+    },
+    "s8Continue": {
+      "templateId": "b",
+      "rounds": 3,
+      "continued": true
+    },
+    "s1": {
+      "stopAt": 1794161133219,
+      "roundsBeforeStop": 2,
+      "roundsAfterStop": 0,
+      "callsBeforeStop": 3,
+      "callsAfterStop": 0,
+      "silentWindowMs": 20000,
+      "requestsAfterStop": 0,
+      "goalRounds": 2,
+      "goalChanges": [
+        {
+          "at": 1794161128675,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161133626,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 2,
+          "id": "goal-b7b40193-dbd3-4406-887b-7372f4444cce",
+          "roundsStarted": 2,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "aborts": [
+        {
+          "at": 1794161128849,
+          "kind": "completed"
+        },
+        {
+          "at": 1794161129439,
+          "kind": "completed"
+        },
+        {
+          "at": 1794161133625,
+          "kind": "aborted"
+        }
+      ],
+      "finalPhase": "paused",
+      "membership": "SETTLED"
+    },
+    "s4": {
+      "stopAt": 1794161153279,
+      "archive": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "status": "executed",
+          "action": "archive-member",
+          "rootSessionId": "session-a5sf-pd33-team",
+          "callerRole": "leader",
+          "targetInstanceId": "inst-08hcx210odtc",
+          "effect": {
+            "kind": "lifecycle-changed",
+            "instanceId": "inst-08hcx210odtc",
+            "from": "SETTLED",
+            "to": "ARCHIVED",
+            "sequence": 33
+          },
+          "requestToken": "pd29-archive-stop2-1794161153279"
+        }
+      },
+      "roundsBeforeStop": 51,
+      "roundsAfterStop": 0,
+      "callsBeforeStop": 52,
+      "callsAfterStop": 0,
+      "silentWindowMs": 20000,
+      "requestsAfterStop": 0,
+      "goalChanges": [
+        {
+          "at": 1794161130393,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161153289,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 2,
+          "id": "goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a",
+          "roundsStarted": 51,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "finalPhase": "paused",
+      "lifecycle": "ARCHIVED",
+      "observations": [
+        "pd29: goal stopped on Team interrupt of 'inst-08hcx210odtc': id=goal-8cb3a1d0-2ba3-4ba3-add6-9b6dec9f637a revision=2 phase=paused paused=paused@2 activation armed->disarmed"
+      ]
+    },
+    "gap": {
+      "attempts": [
+        {
+          "attempt": 0,
+          "at": 1794161173857,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 102,
+          "turnEnds": 104
+        },
+        {
+          "attempt": 1,
+          "at": 1794161175057,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 103,
+          "turnEnds": 106
+        },
+        {
+          "attempt": 2,
+          "at": 1794161176243,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 104,
+          "turnEnds": 108
+        },
+        {
+          "attempt": 3,
+          "at": 1794161177456,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 105,
+          "turnEnds": 110
+        },
+        {
+          "attempt": 4,
+          "at": 1794161178649,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 106,
+          "turnEnds": 112
+        },
+        {
+          "attempt": 5,
+          "at": 1794161179862,
+          "status": 200,
+          "phase": "paused",
+          "landed": true,
+          "rounds": 107,
+          "turnEnds": 114
+        }
+      ],
+      "landed": 6,
+      "dropped": 0
+    },
+    "s23": {
+      "raw": {
+        "burst": [
+          {
+            "at": 1794161180575,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180629,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180677,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180720,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180763,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180803,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180843,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180885,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180940,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161180987,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181066,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181134,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181177,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181216,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181254,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181293,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181331,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181384,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181433,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181486,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181559,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181609,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181648,
+            "status": 200,
+            "roundsSeen": 0
+          },
+          {
+            "at": 1794161181687,
+            "status": 200,
+            "roundsSeen": 0
+          }
+        ],
+        "lastStopAt": 1794161181687,
+        "roundsAfterLastRawStop": 0,
+        "lost": false
+      },
+      "supported": {
+        "pauseAt": 1794161182144,
+        "resumedOk": false,
+        "promptStatus": 200,
+        "pausedSeen": true,
+        "roundsAtPause": 111,
+        "roundsAfterPause": 0,
+        "requestsAfterPause": 0,
+        "anyRequestAfterPause": 0,
+        "silentWindowMs": 20000
+      },
+      "goalChanges": [
+        {
+          "at": 1794161129070,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161173867,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 2,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 102,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161174542,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 3,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 102,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161175073,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 4,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 103,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161175739,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 5,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 103,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161176260,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 6,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 105,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161176913,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 7,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 105,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161177460,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 8,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 106,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161178137,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 9,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 106,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161178656,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 10,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 107,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161179321,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 11,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 107,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161179880,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 12,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 108,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161180556,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 13,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 108,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161182151,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 14,
+          "id": "goal-060ce3c2-00ee-465e-90d7-75c42b842051",
+          "roundsStarted": 112,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "finalPhase": "paused"
+    },
+    "s6": {
+      "killAt": 1794161202556,
+      "roundsBeforeKill": 167,
+      "goalChangesBeforeKill": [
+        {
+          "at": 1794161129758,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "restart": {
+        "port": 3190,
+        "health": true,
+        "members": {
+          "a": "SETTLED",
+          "b": "SETTLED",
+          "s1": "SETTLED",
+          "s2": "SETTLED",
+          "cold": "SETTLED",
+          "stop2": "ARCHIVED"
+        }
+      },
+      "ping": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "status": "executed",
+          "action": "follow-up",
+          "rootSessionId": "session-a5sf-pd33-team",
+          "callerRole": "leader",
+          "targetInstanceId": "inst-1dsveir1tsz8",
+          "effect": {
+            "kind": "work-admitted",
+            "instanceId": "inst-1dsveir1tsz8",
+            "fromLifecycle": "SETTLED",
+            "lifecycleCommitted": true,
+            "sequence": 34,
+            "settled": false,
+            "workStatus": "admitted"
+          },
+          "requestToken": "pd29-followup-cold-1794161204541"
+        },
+        "seen": true
+      },
+      "roundsAtRecovery": 169,
+      "roundsAfter": 0,
+      "silentWindowMs": 20000,
+      "goalChangesAfter": [
+        {
+          "at": 1794161129758,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "maxGoalRoundsDurable": 100000,
+      "revived": false,
+      "stoppedMemberStillPaused": {
+        "finalPhase": "paused",
+        "rounds": 2
+      }
+    },
+    "s7": {
+      "resumeAt": 1794161226593,
+      "rpcStatus": 200,
+      "rpcOk": true,
+      "error": null,
+      "goalBeforeResume": {
+        "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 1,
+        "objective": "PD-29 stop probe for cold.",
+        "phase": "active",
+        "maxGoalRounds": 100000,
+        "roundsStarted": 168,
+        "createdAt": 1794161129758,
+        "updatedAt": 1794161129758,
+        "activation": "disarmed"
+      },
+      "resumedRound": true,
+      "roundsAfterResume": 1,
+      "goalChanges": [
+        {
+          "at": 1794161129758,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794161226608,
+          "operation": "resume",
+          "phase": "active",
+          "revision": 2,
+          "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+          "roundsStarted": 168,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "finalPhase": "active"
+    },
+    "s8Complete": {
+      "rpcStatus": 200,
+      "rpcOk": true,
+      "completeSeen": true,
+      "roundsAtComplete": 170,
+      "roundsAfterComplete": 0,
+      "goal": {
+        "id": "goal-66cf76af-a607-40e3-82d9-841b4c06569b",
+        "revision": 3,
+        "objective": "PD-29 stop probe for cold.",
+        "phase": "complete",
+        "maxGoalRounds": 100000,
+        "roundsStarted": 169,
+        "createdAt": 1794161129758,
+        "updatedAt": 1794161229929,
+        "activation": "disarmed"
+      }
+    }
+  },
+  "counters": {
+    "stops": [
+      {
+        "arm": "S1",
+        "who": "user",
+        "target": "s1",
+        "sessionId": "session-team-child-c98107c8db0087de6f75d58677283fbc",
+        "at": 1794161133219,
+        "status": 200
+      },
+      {
+        "arm": "S4",
+        "who": "leader:team_archive_member",
+        "target": "stop2",
+        "instanceId": "inst-08hcx210odtc",
+        "at": 1794161153279,
+        "status": 200,
+        "ok": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 0,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161173857,
+        "landed": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 1,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161175057,
+        "landed": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 2,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161176243,
+        "landed": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 3,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161177456,
+        "landed": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 4,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161178649,
+        "landed": true
+      },
+      {
+        "arm": "gap",
+        "attempt": 5,
+        "who": "user:session/cancel",
+        "target": "s2",
+        "at": 1794161179862,
+        "landed": true
+      },
+      {
+        "arm": "S2/S3a",
+        "who": "user:session/cancel",
+        "target": "s3",
+        "at": 1794161181687,
+        "burst": 24,
+        "lost": false
+      },
+      {
+        "arm": "S2/S3b",
+        "who": "user:goals/pause",
+        "target": "s2",
+        "sessionId": "session-team-child-d7c127890591a07df6eee9044a8b88eb",
+        "at": 1794161182144,
+        "status": 200,
+        "ok": true,
+        "pausedSeen": true
+      }
+    ],
+    "errors": [],
+    "restarts": 1
+  },
+  "stages": []
+}
