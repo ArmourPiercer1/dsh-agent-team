@@ -11,6 +11,7 @@
 | pd33:skill-lane | PROVEN | PROVEN | agree |
 | pd33:no-base-web | PROVEN | PROVEN | agree |
 | pd29:goal-continuous-rounds | PROVEN | PROVEN | agree |
+| pd34:control-stops-member | PROVEN | PROVEN | agree |
 | pd29:stop-during-round | PROVEN | PROVEN | agree |
 | pd29:leader-archive-stops-goal | PROVEN | PROVEN | agree |
 | pd29:stop-at-round-boundary | PROVEN | PROVEN | agree |

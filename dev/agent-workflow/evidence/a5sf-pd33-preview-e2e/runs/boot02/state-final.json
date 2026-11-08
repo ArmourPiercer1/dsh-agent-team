@@ -6,10 +6,10 @@
     "rootSessionId": "session-a5sf-pd33-team",
     "blueprintId": "team.a5sf.pd33.main",
     "revision": "1",
-    "contentHash": "sha256:384c7a87ed1cb98c963b1332590773e6ad149cbe9abb40e8a810ca50ebd46dad",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-50-51Z/workspace",
-    "createdAt": "2026-11-08T18:52:47.449Z",
-    "generation": 39
+    "contentHash": "sha256:1f2cb4840be5ee954bdf6d838a13e87efc4ca039cac6e723510c483869b600df",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T19-12-59Z/workspace",
+    "createdAt": "2026-11-08T19:14:56.628Z",
+    "generation": 44
   },
   "members": [
     {
@@ -59,6 +59,14 @@
       "childSessionId": "session-team-child-421a8ea96efdea7a541eb5594f6cffce",
       "lifecycle": "SETTLED",
       "activityVersion": 5
+    },
+    {
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "templateId": "stop3",
+      "label": "a5sfpd29-stop3",
+      "childSessionId": "session-team-child-3241d9a92f4dd2e657724b49359fbf7a",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
     },
     {
       "instanceId": "inst-leader",
@@ -123,17 +131,6 @@
     {
       "globalSequence": 14,
       "factType": "activity-interval-closed",
-      "instanceId": "inst-0jy83041n72a",
-      "subject": "work-unit",
-      "sequence": 2,
-      "op": "interval-close",
-      "progress": "completed",
-      "correlation": "a5sf-pd33-b-delegate",
-      "requestToken": "a5sf-pd33-b-delegate"
-    },
-    {
-      "globalSequence": 16,
-      "factType": "activity-interval-closed",
       "instanceId": "inst-0ihp8zd1q197",
       "subject": "work-unit",
       "sequence": 2,
@@ -141,6 +138,17 @@
       "progress": "completed",
       "correlation": "a5sf-pd29-s1-delegate",
       "requestToken": "a5sf-pd29-s1-delegate"
+    },
+    {
+      "globalSequence": 16,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0jy83041n72a",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd33-b-delegate",
+      "requestToken": "a5sf-pd33-b-delegate"
     },
     {
       "globalSequence": 20,
@@ -187,7 +195,18 @@
       "requestToken": "a5sf-pd29-cold-delegate"
     },
     {
-      "globalSequence": 28,
+      "globalSequence": 30,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd34-stop3-delegate",
+      "requestToken": "a5sf-pd34-stop3-delegate"
+    },
+    {
+      "globalSequence": 31,
       "factType": "activity-interval-closed",
       "instanceId": "inst-0u1dugv0ojhv",
       "subject": "work-unit",
@@ -198,7 +217,7 @@
       "requestToken": "a5sf-pd33-a-delegate"
     },
     {
-      "globalSequence": 30,
+      "globalSequence": 33,
       "factType": "activity-interval-closed",
       "instanceId": "inst-08hcx210odtc",
       "subject": "work-unit",
@@ -210,25 +229,36 @@
     },
     {
       "globalSequence": 35,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd34-stop3-delegate",
+      "requestToken": "a5sf-pd34-stop3-delegate"
+    },
+    {
+      "globalSequence": 40,
       "factType": "activity-interval-opened",
       "instanceId": "inst-1dsveir1tsz8",
       "subject": "work-unit",
       "sequence": 3,
       "op": "interval-open",
       "progress": "in-progress",
-      "correlation": "pd29-followup-cold-1794164047184",
-      "requestToken": "pd29-followup-cold-1794164047184"
+      "correlation": "pd29-followup-cold-1794165399475",
+      "requestToken": "pd29-followup-cold-1794165399475"
     },
     {
-      "globalSequence": 36,
+      "globalSequence": 41,
       "factType": "activity-interval-closed",
       "instanceId": "inst-1dsveir1tsz8",
       "subject": "work-unit",
       "sequence": 4,
       "op": "interval-close",
       "progress": "completed",
-      "correlation": "pd29-followup-cold-1794164047184",
-      "requestToken": "pd29-followup-cold-1794164047184"
+      "correlation": "pd29-followup-cold-1794165399475",
+      "requestToken": "pd29-followup-cold-1794165399475"
     }
   ],
   "pendingDeliveries": {

@@ -1,3 +1,0 @@
-[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
-dsh web: http://127.0.0.1:3190/?token=LwmH2w5JUqtmthaAQ-KjqjXXRaqOJ6J-8r9tleNON50
-[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 106ms — the connection service appeared after the mount step)

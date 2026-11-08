@@ -131,18 +131,30 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 
 | 臂 | 动作 | 结果 |
 | --- | --- | --- |
-| S1 轮内 Stop | 目标 Member 自己的 `session/cancel` | Stop 前 **2** 轮 / **3** 调用 → 窗口内 **0 轮 / 0 调用 / 0 模型请求**，durable `paused`，`turn/end aborted` |
-| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **58** 轮 / **59** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
+| **S1c 控制面 Stop（PD-34）** | 一等公民控件发出的**同一序列** `goals/get → goals/pause → session/cancel → goals/get`（控件本身不可 headless 点击，见 §4.3） | 首读 `active`、pause 200、cancel 200、**重读 `paused`**；Stop 前 **6** 轮 / **7** 调用 → **0 轮 / 0 调用 / 0 请求**；lifecycle 仍 `SETTLED`（停的是 continuation，不是 Member） |
+| S1 轮内 Stop | 目标 Member 自己的 `session/cancel` | Stop 前 **7** 轮 / **8** 调用 → 窗口内 **0 轮 / 0 调用 / 0 模型请求**，durable `paused`，`turn/end aborted` |
+| S4 Leader 归档 | `team_archive_member` 指向正在跑轮次的 Member（归档前 **89** 轮 / **89** 调用） | `status=executed`，`SETTLED→ARCHIVED`，**0 轮 / 0 调用 / 0 请求**，durable `paused` |
 | S2 边界竞态 | 24 次 cancel burst 覆盖 queued/claimed 窗口 | burst 后 **0** 轮，`lost=false` |
-| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=124`） |
+| S2(b) 受支持通道 | `goals/pause`（先发 `goals/resume`；goal 已被 burst 暂停故 `resumedOk=false`，披露） | `pausedSeen=true`，窗口内 **0 轮 / 0 请求**（`roundsAtPause=153`） |
 | GAP 空闲窗口 | 瞄准 `turn/end` 的 6 次 stop | **6/6 landed，0 dropped** |
-| S6 冷恢复 | SIGTERM（**189** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，6 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **189** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
+| S6 冷恢复 | SIGTERM（**215** 轮在跑）→ 同 `DSH_HOME` 重启（`health=true`，7 个 Member 全在）→ 真实 `team_follow_up` | 恢复时仍 **215** 轮，之后 **0** 轮，`revived=false`；被 Stop 的 Member 仍 `paused` |
 | S7 显式恢复 | 恢复后 `/goal resume`（`activation=disarmed`） | `rpcStatus=200`，**1** 轮 |
 | S8 未停止 | Member B 的 goal | **3** 轮 → `complete` → **0** 后续轮次 |
 
-### 4.3 从 #679 继承的「仍然不成立」（逐条复核，不重写）
+### 4.3 一等公民控件（PD-34）与"headless 不可点击"的诚实说明
 
-1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 189 轮就是证据。
+PD-34 的控件是**客户端模型** `packages/client/src/model/member-stop.ts` 里的 `stopMember()`：
+`goals.get → goals.pause（durable CAS） → session.cancel → goals.get`，**唯一 oracle 是最后那次重读**，
+不做任何乐观本地改写。它由 UI 按钮触发，本 lane 没有 DOM harness，**点不到**。
+
+所以 S1c 的做法是：**发同一序列的四条公开 RPC**（同一 order、同一参数形状），在**正在跑轮次**的 Member 上测同一个
+20 000 ms 窗口；**顺序一致性**由 judge 的 `control-sequence-issued` 子句钉住（与我写进臂里的常量比对），
+点击 → 模型这一段由 PD-34 自己的 client 规格覆盖。**本报告不声称"我点了那个按钮"**，只声称
+"控件所发序列，在我这里实测到 0/0/0 + durable `paused`，且不摧毁 Member"。
+
+### 4.4 从 #679 继承的「仍然不成立」（逐条复核，不重写）
+
+1. **仍不成立**：存在可信的**全局轮次预算**。`maxGoalRounds` 仍由调用方写（本场景 `100000`）；S6 的 215 轮就是证据。
 2. **仍不成立**：Leader 停止会传播到 Member 的 goal——**本报告按设计陈述**（§4.1），但事实不变。
 3. **仍不成立**：Team 之外的 idle 期 cancel 可被观测。上游契约里 idle 期 cancel 是**不发事件的 no-op**；
    本场景的 GAP 臂测的是驱动器发起的 stop，不是任意第三方。
@@ -154,13 +166,13 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 
 ## 5. Leader → Member → 工具 → 产物 → Leader：实测数字（两 boot 一致）
 
-`--boots 2`，一个 composition，两 boot **逐项一致**（`agreeing=true`，各 18/18）。下列为 boot01 原始数字，
+`--boots 2`，一个 composition，两 boot **逐项一致**（`agreeing=true`，各 19/19）。下列为 boot01 原始数字，
 boot02 在 `runs/boot02/`。
 
 ### 5.1 Leader
 
-- 第一回合**一次** `team_delegate` × **6** 个 Member（a、b、s1、s2、cold、stop2），**6/6 被接受**
-  （Leader + 6 = 7 个实例，配额 8）；
+- 第一回合**一次** `team_delegate` × **7** 个 Member（a、b、s1、s2、cold、stop2、stop3），**7/7 被接受**
+  （Leader + 7 = 8 个实例，仍在配额内；`stop3` 只服务 S1c，不参与 E2E 的 A/B 链）；
 - 第二回合 `team_collect`（按 **2** 个 request token）+ `team_list_members`：`status=executed`；
   B 的条目直接返回 `memberResult.body = "A5SF_PD33_B_DONE created"`；
   A 首次读回是 `status=running`（**读回可以先于结算**），第二次 collect 读到终态——两次都 200；
@@ -208,8 +220,8 @@ boot02 在 `runs/boot02/`。
 
 | # | 阻塞 | 依据 | 最小修点 |
 | --- | --- | --- | --- |
-| ~~M1~~ **已关闭** | ~~#681 未合并~~：silent 的 preset 行让整只 governed Member 起不来 | 合并后 `3101ca08f` 上重跑：6 个 Member 全部启动、两 boot 18/18（§7） | —（已由 #681 合并 + 本 lane rebase 重跑关闭） |
-| **M2** | **Stop 没有一等公民入口**：机制对（API 实测 0/0/0 + `paused`），UI 上没有"停止这个 Member"的 affordance；`team_archive_member` 也不是为"停 goal"设计的 | S1/S4 都是驱动器直接调 API | 加一个 Member 行 Stop 入口，**并确认它调用的是同一 lifecycle 机制**（`session/cancel` → durable `pause` → `goals.disarm`），不是新的 no-op 端口 |
+| ~~M1~~ **已关闭** | ~~#681 未合并~~：silent 的 preset 行让整只 governed Member 起不来 | 合并后 `3101ca08f` 上重跑：7 个 Member 全部启动、两 boot 19/19（§7） | —（已由 #681 合并 + 本 lane rebase 重跑关闭） |
+| **M2** | **Stop 没有一等公民入口**（**PD-34 在建**：`model/member-stop.ts` + Member 行控件，顺序 `goals/get → goals.pause → session.cancel → goals/get`）。本 HEAD **还没有**这个控件；S1c 只是**预先**按该序列测了机制 | 控件尚未落到 master；S1c 已在本 lane 用同一序列测到 0/0/0 + `paused` | **合并 PD-34**；合并后本 lane rebase 一次、复跑 `--boots 2`，判定随之改为 `PREVIEW-GO`（若无其它变动） |
 
 ### 6.2 正式 Alpha.5 延后（Preview 接受，不假装已做）
 
@@ -254,16 +266,17 @@ boot02 在 `runs/boot02/`。
 
 ### 7.2 判定
 
-**`PREVIEW-NO-GO`**（#681 已合并、测量树已是 master；剩下的唯一阻断是 M2）。功能面是干净的：**两个 boot 各 18/18 PASS、`agreeing=true`**。
-**M1 已关闭**：#681 合并（`3101ca08f`）后，本 lane 丢弃叠加 base、在 master 上重跑两 boot，18/18 一致。
+**`PREVIEW-NO-GO`**（#681 已合并、测量树已是 master；剩下的唯一阻断是 M2）。功能面是干净的：**两个 boot 各 19/19 PASS、`agreeing=true`**。
+**M1 已关闭**：#681 合并（`3101ca08f`）后，本 lane 丢弃叠加 base、在 master 上重跑两 boot，19/19 一致。
 剩下的唯一阻断是**产品事实**，不是"证据还不够"：
 
-- **M2 —— Stop 没有一等公民入口**：机制是对的（两条通道都实测到 0/0/0、durable `paused`），
-  但 UI 上没有"停止这个 Member"的按钮；Preview 要求"可操作"。
+- **M2 —— Stop 的一等公民入口尚未落到 master**：机制三条通道都实测到 0/0/0 + durable `paused`
+  （S1 原生 cancel / S4 Leader 归档 / S1c 控件序列），PD-34 正在把"停止这个 Member"做成 Member 行控件；
+  在它合并前，本报告的判定不能是 GO——那是**产品缺件**，不是证据不足。
 
-**最小放行集（只剩一条）**：给 Member 行加一个 Stop 入口，**并确认它调用的是同一 lifecycle 机制**
-（`session/cancel` → durable `pause` → `goals.disarm`）；PD-34 落地后，本报告会 rebase 一次、加一条
-"通过该控件停 Member"的臂，然后重新出判定。不需要改代码的部分：把 §6.2 的 8 条延后项写进
+**最小放行集（只剩一条）**：合并 **PD-34**（Member 行 Stop 控件，序列 `goals/get → goals.pause →
+session.cancel → goals/get`）。本 lane 已把 S1c 臂写好并测过（见 §4.2/§4.3）；PD-34 合并后 rebase 一次、
+复跑 `--boots 2`（19 个 case，含 `pd34:control-stops-member`），若无其它变动，判定即改为 `PREVIEW-GO`。不需要改代码的部分：把 §6.2 的 8 条延后项写进
 Preview 的"已知限制"，其中 **BL-17（shell 体不由服务轴归属）** 与 **`web_search` 部署条件性** 必须出现在发布说明里。
 
 **已经成立、不需要重做的部分**（本报告实测，均可复现）：
@@ -273,8 +286,8 @@ Preview 的"已知限制"，其中 **BL-17（shell 体不由服务轴归属）**
 - Member B：真实 fetch **1** 连接 / **26** 字节 / **1** allow fact；`web_search` 0 POST 的 typed gap；
   `read_image` 在 `text` 路由下 0 facts / 0 字节拒绝；goal **3** 轮 → `complete`；
 - 延后面 **7/7** `unknown tool`、**0** facts；
-- Stop：S1 2 轮/3 调用 → **0/0/0** `paused`；S4 **58** 轮/59 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
-  GAP 6/6 landed；S6 **189** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
+- Stop：S1 7 轮/8 调用 → **0/0/0** `paused`；S4 **89** 轮/89 调用 → **0/0** `ARCHIVED`；S2 burst 24 次 `lost=false`；
+  GAP 6/6 landed；S6 **215** 轮 → 之后 **0** 轮、`revived=false`；S7 显式 resume **1** 轮；
 - 继承的 base `web` **0** 次；base `fs` **0** 次；`:3080` 从未被触碰。
 
 **负控（两个，都是实测；不做"设计上会红"的推断）**：

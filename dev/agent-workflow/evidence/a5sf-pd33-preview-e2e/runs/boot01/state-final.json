@@ -6,10 +6,10 @@
     "rootSessionId": "session-a5sf-pd33-team",
     "blueprintId": "team.a5sf.pd33.main",
     "revision": "1",
-    "contentHash": "sha256:1bd406fa785ce6c2fa4cb53d5dd46d81e734e0f34ba083c6a9f834b6c8d9acfa",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-47-02Z/workspace",
-    "createdAt": "2026-11-08T18:48:58.933Z",
-    "generation": 39
+    "contentHash": "sha256:1220f9f632d05448a904f7d063727adfdf2901d95d6a9713cd9f4cfc94bc1a43",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T19-08-47Z/workspace",
+    "createdAt": "2026-11-08T19:10:44.531Z",
+    "generation": 44
   },
   "members": [
     {
@@ -59,6 +59,14 @@
       "childSessionId": "session-team-child-421a8ea96efdea7a541eb5594f6cffce",
       "lifecycle": "SETTLED",
       "activityVersion": 5
+    },
+    {
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "templateId": "stop3",
+      "label": "a5sfpd29-stop3",
+      "childSessionId": "session-team-child-3241d9a92f4dd2e657724b49359fbf7a",
+      "lifecycle": "SETTLED",
+      "activityVersion": 3
     },
     {
       "instanceId": "inst-leader",
@@ -198,7 +206,18 @@
       "requestToken": "a5sf-pd33-a-delegate"
     },
     {
-      "globalSequence": 30,
+      "globalSequence": 32,
+      "factType": "activity-interval-opened",
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "subject": "work-unit",
+      "sequence": 1,
+      "op": "interval-open",
+      "progress": "in-progress",
+      "correlation": "a5sf-pd34-stop3-delegate",
+      "requestToken": "a5sf-pd34-stop3-delegate"
+    },
+    {
+      "globalSequence": 33,
       "factType": "activity-interval-closed",
       "instanceId": "inst-08hcx210odtc",
       "subject": "work-unit",
@@ -210,25 +229,36 @@
     },
     {
       "globalSequence": 35,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-1gcmw3i1lg1e",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd34-stop3-delegate",
+      "requestToken": "a5sf-pd34-stop3-delegate"
+    },
+    {
+      "globalSequence": 40,
       "factType": "activity-interval-opened",
       "instanceId": "inst-1dsveir1tsz8",
       "subject": "work-unit",
       "sequence": 3,
       "op": "interval-open",
       "progress": "in-progress",
-      "correlation": "pd29-followup-cold-1794163818754",
-      "requestToken": "pd29-followup-cold-1794163818754"
+      "correlation": "pd29-followup-cold-1794165147451",
+      "requestToken": "pd29-followup-cold-1794165147451"
     },
     {
-      "globalSequence": 36,
+      "globalSequence": 41,
       "factType": "activity-interval-closed",
       "instanceId": "inst-1dsveir1tsz8",
       "subject": "work-unit",
       "sequence": 4,
       "op": "interval-close",
       "progress": "completed",
-      "correlation": "pd29-followup-cold-1794163818754",
-      "requestToken": "pd29-followup-cold-1794163818754"
+      "correlation": "pd29-followup-cold-1794165147451",
+      "requestToken": "pd29-followup-cold-1794165147451"
     }
   ],
   "pendingDeliveries": {

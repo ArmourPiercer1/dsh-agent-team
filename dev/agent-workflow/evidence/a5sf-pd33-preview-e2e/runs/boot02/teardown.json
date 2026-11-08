@@ -1,20 +1,20 @@
 {
   "host": {
     "wasRunning": true,
-    "pid": 38784,
+    "pid": 49609,
     "killed": true,
     "portFree": true
   },
-  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T18-50-51Z",
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T19-12-59Z",
   "releasedPorts": [
     3190,
     3190,
-    13053,
+    13055,
     3190
   ],
   "killedPids": [
-    19738,
-    38784
+    24605,
+    49609
   ],
   "notes": []
 }
