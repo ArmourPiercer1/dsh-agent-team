@@ -1,0 +1,27 @@
+TWO-RUN AGREEMENT (prefix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           prefix                        prefix
+mutation                      none                          none
+overall                       PASS                          PASS
+capabilityVerdict             PROVEN                        PROVEN
+attachmentVerdict             PROVEN                        PROVEN
+laneVerdict                   PROVEN                        PROVEN
+nonImageVerdict               PROVEN                        PROVEN
+overLimitVerdict              PROVEN                        PROVEN
+notTextVerdict                PROVEN                        PROVEN
+surfaceACount                 33                            33
+readImageOnSurface            true                          true
+allowFactsForInLane           0                             0
+denyFactsForOutOfLane         0                             0
+guardAllow                    2                             2
+guardDeny                     0                             0
+imageFacts                    {"total":0,"allow":0,"deny":0,"methods":[]}{"total":0,"allow":0,"deny":0,"methods":[]}
+requestImageParts             0                             0
+requestImagePartDigests       []                            []
+model                         {"provider":"deepseek-official","id":"deepseek-v4-flash","expectAllow":false}{"provider":"deepseek-official","id":"deepseek-v4-flash","expectAllow":false}
+mutationRecord                null                          null
+requestsCarryingImageBinaryInText0                             0
+requestsCarryingSecretImage   0                             0
+aModelRequests                8                             8
+
+agreeing=true differing=[]

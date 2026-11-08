@@ -1,0 +1,16 @@
+{
+  "schema": "a5sf-pd31-read-image/mutation-control/2",
+  "mutation": "model-text",
+  "model": "deepseek-v4-flash",
+  "expectation": "with the model declaration taken back to [text], the post-fix composition must REFUSE before any provider I/O (successArm=RED, 0 guard facts, 0 image parts) — which proves the declaration is load-bearing",
+  "want": "refused",
+  "successArm": "RED",
+  "propositionVerdict": "PROVEN",
+  "observedProposition": "on a model route that does NOT declare image input, `read_image` is refused by the capability gate BEFORE any provider I/O: the refusal names the model and the remedy, and there are ZERO guard facts and ZERO attachment bytes",
+  "observedInLaneAllowFacts": 0,
+  "observedImageParts": 0,
+  "observedOverall": "PASS",
+  "mutationRecord": null,
+  "hostPorcelainAfter": [],
+  "satisfied": true
+}

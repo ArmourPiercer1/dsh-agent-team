@@ -1,0 +1,27 @@
+TWO-RUN AGREEMENT (postfix arm; the same command, two boots; every row must be identical)
+fact                          boot1                         boot2
+arm                           postfix                       postfix
+mutation                      none                          none
+overall                       PASS                          PASS
+capabilityVerdict             PROVEN                        PROVEN
+attachmentVerdict             PROVEN                        PROVEN
+laneVerdict                   PROVEN                        PROVEN
+nonImageVerdict               PROVEN                        PROVEN
+overLimitVerdict              PROVEN                        PROVEN
+notTextVerdict                PROVEN                        PROVEN
+surfaceACount                 33                            33
+readImageOnSurface            true                          true
+allowFactsForInLane           2                             2
+denyFactsForOutOfLane         1                             1
+guardAllow                    8                             8
+guardDeny                     2                             2
+imageFacts                    {"total":8,"allow":6,"deny":2,"methods":["stat:allow:call-a5sfpd31-image-in","readBytes:allow:call-a5sfpd31-image-in","stat:deny:call-a5sfpd31-image-out","stat:deny:call-a5sfpd31-image-missing","stat:allow:call-a5sfpd31-image-big-dim","readBytes:allow:call-a5sfpd31-image-big-dim","stat:allow:call-a5sfpd31-image-big-bytes","readBytes:allow:call-a5sfpd31-image-big-bytes"]}{"total":8,"allow":6,"deny":2,"methods":["stat:allow:call-a5sfpd31-image-in","readBytes:allow:call-a5sfpd31-image-in","stat:deny:call-a5sfpd31-image-out","stat:deny:call-a5sfpd31-image-missing","stat:allow:call-a5sfpd31-image-big-dim","readBytes:allow:call-a5sfpd31-image-big-dim","stat:allow:call-a5sfpd31-image-big-bytes","readBytes:allow:call-a5sfpd31-image-big-bytes"]}
+requestImageParts             6                             6
+requestImagePartDigests       ["0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"]["0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95","0bf7e49230407e1a478f021e556e8094f209ef01fe8f95fb94d3152374dddd95"]
+model                         {"provider":"deepseek-official","id":"deepseek-flash","expectAllow":true}{"provider":"deepseek-official","id":"deepseek-flash","expectAllow":true}
+mutationRecord                null                          null
+requestsCarryingImageBinaryInText0                             0
+requestsCarryingSecretImage   0                             0
+aModelRequests                8                             8
+
+agreeing=true differing=[]

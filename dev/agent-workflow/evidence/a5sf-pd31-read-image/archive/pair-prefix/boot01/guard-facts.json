@@ -1,0 +1,32 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-00k348v0zo51",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:7cf460d2bb48a39eef27f319e7f72b4e",
+    "method": "stat",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-08-51Z/workspace/in-lane.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-08T15:10:30.265Z",
+    "tool": "read",
+    "callId": "call-a5sfpd31-read"
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-00k348v0zo51",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:7cf460d2bb48a39eef27f319e7f72b4e",
+    "method": "readText",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd31-read-image/tests/homes/u5u5a5sfpd31-20261108T15-08-51Z/workspace/in-lane.txt",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 2,
+    "observedAt": "2026-11-08T15:10:30.269Z",
+    "tool": "read",
+    "callId": "call-a5sfpd31-read"
+  }
+]
