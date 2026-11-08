@@ -138,7 +138,18 @@ cd packages/client && npx vitest run test/member-stop-model.test.ts test/team-me
 
 Register row **PD-34** (`docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md`,
 `### PD-34 (MEMBER-STOP)`). The register's gate enforces contiguous ids in document order; on the
-lane base the rows end at **PD-32** because the **PD-33** row lives on PR **#682**
-(`task/pd33-preview-e2e-20261115`), still open at evidence time. This lane therefore writes
-**PD-34** and **does not renumber or fake a gap**: until #682 merges and this branch forward-merges
-`origin/master`, the register gate is **blocked-by-#682** (stated, not worked around).
+lane base the rows end at **PD-32** because the **PD-33** row lived on PR **#682**
+(`task/pd33-preview-e2e-20261115`), open at evidence time. This lane therefore wrote **PD-34** and
+**did not renumber or fake a gap**. **#682 has since merged as `edca478bd`** and this branch
+**forward-merged** `origin/master` — a merge, not a rebase, so the six-boot evidence binding to
+`3101ca08f` survives — and the gate's contiguity leg is now **green (10/10 register legs)**.
+
+## 8. Timing guarantee (added after external review)
+
+Stop is **not instantaneous**: between the click and the durable `pause` landing there is a
+millisecond-scale window in which a call can be admitted, and a call admitted before the pause can
+complete after it. The only defensible guarantee is **"no new round after `goals/pause` is
+acknowledged"**, not "no execution after the click" — the closure condition is the pause ACK plus
+the durable `paused` read by the second `goals/get`, which is also what the UI renders. The UI copy
+says exactly that and promises nothing earlier. `docs/PREVIEW-STOP-SEMANTICS.md` §2.1 states it, and
+the E2E lane (#682) measured the same window independently.
