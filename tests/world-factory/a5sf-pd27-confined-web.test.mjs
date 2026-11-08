@@ -351,11 +351,11 @@ test('PD27-REFUSE: on a non-confined scope both names refuse typed and enter no 
 // ===========================================================================
 // E2E — the real chain: shadow -> confined face -> guard -> REAL transport
 // ===========================================================================
-async function e2eFace({ network, provider }) {
+async function e2eFace({ network, provider, testEndpoints }) {
   const { loadWebSeams, effectiveOf, makeFace } = await import(pathToFileURL(join(HERE, 'lib', 'a5sf-web-arms.mjs')).href)
   const seams = await loadWebSeams(REPO)
   const effective = effectiveOf(seams, { network })
-  const { face, facts } = makeFace(seams, { effective, boundary: provider })
+  const { face, facts } = makeFace(seams, { effective, boundary: provider, testEndpoints })
   // MUTATION-CONTROL HOOK (never set in CI): the bypass module
   // (a5sf-pd27-mutation-controls.mjs M3) needs a direct transport to retry
   // against once the face has refused. Publishing it here is what makes the
@@ -373,7 +373,9 @@ test('PD27-E2E-ALLOW: a real fetch through the confined face reaches a local ser
     const { loadWebSeams } = await import(pathToFileURL(join(HERE, 'lib', 'a5sf-web-arms.mjs')).href)
     const seams = await loadWebSeams(REPO)
     const transport = await realTransport(seams)
-    const { face, facts } = await e2eFace({ network: 'allow', provider: transport })
+    // PD-30: the fixture's exact origin is declared (loopback is otherwise an
+    // SSRF refusal in the face, before the transport).
+    const { face, facts } = await e2eFace({ network: 'allow', provider: transport, testEndpoints: [server.url] })
     const { registered } = await mountShadow(face)
     const definition = registered.find((entry) => entry.name === 'web_fetch')
     const url = `${server.url}/known`
@@ -421,7 +423,7 @@ test('PD27-DISPATCH: the REAL tool router dispatches `web_fetch` by NAME onto th
     const { loadWebSeams } = await import(pathToFileURL(join(HERE, 'lib', 'a5sf-web-arms.mjs')).href)
     const seams = await loadWebSeams(REPO)
     const transport = await realTransport(seams)
-    const { face, facts } = await e2eFace({ network: 'allow', provider: transport })
+    const { face, facts } = await e2eFace({ network: 'allow', provider: transport, testEndpoints: [server.url] })
     // A REAL tool registry (the pinned ToolRuntime), not a fake list: the call
     // travels the same `tools.execute` the model's tool-call goes through.
     const tools = await realToolRouter()
@@ -499,7 +501,9 @@ test('PD27-E2E-REDIRECT: an allow-lane cross-origin redirect is NOT followed (no
     const { loadWebSeams } = await import(pathToFileURL(join(HERE, 'lib', 'a5sf-web-arms.mjs')).href)
     const seams = await loadWebSeams(REPO)
     const transport = await realTransport(seams)
-    const { face } = await e2eFace({ network: 'allow', provider: transport })
+    // PD-30: the FIRST hop's exact origin is declared; the cross-origin 302 hop
+    // is the host provider's own policy and must still be refused by it.
+    const { face } = await e2eFace({ network: 'allow', provider: transport, testEndpoints: [redirector.url] })
     const { registered } = await mountShadow(face)
     const definition = registered.find((entry) => entry.name === 'web_fetch')
     await assert.rejects(

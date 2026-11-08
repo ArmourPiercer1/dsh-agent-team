@@ -1,0 +1,16 @@
+{
+  "connections": 1,
+  "pathHits": {
+    "/search": 1
+  },
+  "requests": [
+    {
+      "at": "2026-11-08T12:31:15.322Z",
+      "method": "POST",
+      "path": "/search",
+      "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
+    }
+  ],
+  "bytesServed": 366,
+  "openSockets": 0
+}

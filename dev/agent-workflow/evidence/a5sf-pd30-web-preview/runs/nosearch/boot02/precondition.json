@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-08T13:25:50.419Z",
+  "proposition": "the shipped preset mounts every row it declares: no row is `never started` and the Team constructs its governed Member(s) before any probe runs",
+  "neverStarted": false,
+  "members": [],
+  "installGraph": {
+    "profileModules": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-25-20Z/profiles/web/node_modules",
+    "link": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-25-20Z/profiles/web/node_modules/dsh-agent-team",
+      "target": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview"
+    },
+    "exports": [
+      ".",
+      "./client",
+      "./host",
+      "./package.json",
+      "./spill-local",
+      "./web-tool",
+      "./web-transport"
+    ],
+    "resolved": {
+      "./host": "packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "./web-tool": "packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
+      "./web-transport": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs"
+    }
+  },
+  "source": "host log + /__p6t6/state, read BEFORE the first Member probe"
+}

@@ -1,0 +1,7 @@
+--- CLEAN: exit=green failing=[]
+--- M1 ssrf-leg-removed: exit=red failing=[PD30-SSRF: loopback/private/link-local/ULA/metadata targets are refused on an ALLOW lane with 0 provider entries (20.264855ms) | PD30-BASE-FALLBACK-ZERO: every refusal leaves a transport that WOULD answer completely untouched (0.910313ms) | PD30-SHIPPED-SERVICE: the row's own service object serves the allow lane over a real socket and refuses SSRF (24.357905ms) | PD30-NO-BASE-FALLBACK: the shipped transport never consults the inherited base web service (15.919157ms)]
+--- M2 transport->BASE: exit=red failing=[PD30-NO-BASE-FALLBACK: the shipped transport never consults the inherited base web service (16.018056ms)]
+--- M3 search-credential-dropped: exit=red failing=[PD30-TRANSPORT: the shipped row loads the host providers by name and reports the backend it owns (19.948826ms) | PD30-E2E-SEARCH: the host Exa provider issues a real POST and PARSES the answer into sources (3.692642ms) | PD30-SHIPPED-SERVICE: the row's own service object serves the allow lane over a real socket and refuses SSRF (15.800883ms)]
+
+PD-30 mutation controls: CLEAN green, M1/M2/M3 red on the arm that names the property, and the
+neighbouring arms stayed green. The suite can fail.

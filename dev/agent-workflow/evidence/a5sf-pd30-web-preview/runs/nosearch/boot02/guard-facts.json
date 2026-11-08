@@ -1,0 +1,36 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0hu00gh176s0",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:f2b33f387d0c4951b518b8d44ec76c70",
+    "method": "web:fetch",
+    "locator": "http://127.0.0.1:44971/known",
+    "decision": "allow",
+    "decidedBy": "ALLOW",
+    "sequence": 1,
+    "observedAt": "2026-11-08T13:25:51.243Z",
+    "tool": "web_fetch",
+    "callId": "call-a5sfpd30-fetch",
+    "annotations": [
+      "WEB_REDIRECT_UNMEDIATED_ON_ALLOW",
+      "WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW"
+    ]
+  },
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0hu00gh176s0",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:f2b33f387d0c4951b518b8d44ec76c70",
+    "method": "web:search",
+    "locator": "query:a5sf pd30 governed search",
+    "decision": "deny",
+    "decidedBy": "WEB_PROVIDER_UNAVAILABLE",
+    "sequence": 2,
+    "observedAt": "2026-11-08T13:25:51.432Z",
+    "tool": "web_search",
+    "callId": "call-a5sfpd30-search"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "schema": "a5sf-guard-consult/1",
+    "realm": "member",
+    "memberIdentity": "inst-0hu00gh176s0",
+    "toolBindingIdentity": null,
+    "policyRevision": "a5sf1:07c35d3d53aa1da0f5907cb743a980c6",
+    "method": "web:fetch",
+    "locator": "http://127.0.0.1:46385/denied",
+    "decision": "deny",
+    "decidedBy": "NETWORK_UNCONFINED_REALM",
+    "sequence": 1,
+    "observedAt": "2026-11-08T12:52:21.786Z",
+    "tool": "web_fetch",
+    "callId": "call-a5sfpd30-fetch"
+  }
+]

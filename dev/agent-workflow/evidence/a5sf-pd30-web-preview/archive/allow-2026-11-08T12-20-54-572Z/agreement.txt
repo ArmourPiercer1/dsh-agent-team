@@ -1,0 +1,3 @@
+AGREEMENT arm=allow: BOOTS DISAGREE (or fewer than two)
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | FAIL | allow | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | 0 | {} | 0 | {"total":0,"fetch":0,"search":0,"allow":0,"deny":0,"perCall":{"fetch":0,"search":0,"ssrf":0,"malformed":0}} | 0 | 33

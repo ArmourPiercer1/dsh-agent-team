@@ -1462,6 +1462,15 @@ export async function apply(ctx, config) {
                 scratchRoot: governedRealmScratch(),
                 resolveBoundBlueprint: (teamRootSid) => resolveBoundBlueprint(teamRootSid),
                 readAuthority: readGovernedAuthority,
+                // PD-30: the COMPOSITION-owned web transport, read lazily from the
+                // optional `teamA5sfWebTransport` service (the shipped
+                // `a5sf-web-transport` row provides it). A GETTER, not a snapshot:
+                // the transport row and this row mount in one insert layer, so the
+                // question "does this deployment own a web transport?" is answered
+                // when a Member's realm is attached, not when the rows are parsed.
+                // Absent service = no `web` face (the pre-PD-30 answer), so a
+                // deployment that never mounts the row keeps its exact behaviour.
+                webTransport: () => ctx.get('teamA5sfWebTransport'),
             })
             : undefined;
         // PR4 ROUND 5 (FIX-2a): the ONE server-side canonicalizer over the row's

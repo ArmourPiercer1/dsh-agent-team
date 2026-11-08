@@ -1,0 +1,29 @@
+{
+  "arm": "allow",
+  "agreeing": false,
+  "rows": [
+    {
+      "arm": null,
+      "overall": null,
+      "allowVerdict": null,
+      "denyVerdict": null,
+      "searchVerdict": null,
+      "ssrfVerdict": null,
+      "malformedVerdict": null,
+      "regressionVerdict": null,
+      "noProviderVerdict": null,
+      "closedVerdict": null,
+      "fixtureConnections": null,
+      "fixturePathHits": null,
+      "searchConnections": null,
+      "searchPathHits": null,
+      "guardFacts": null,
+      "hostWebCalls": null,
+      "surfaceCount": null,
+      "surface": null,
+      "boot": 1
+    }
+  ],
+  "table": "AGREEMENT arm=allow: BOOTS DISAGREE (or fewer than two)\nboot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface\nboot1 |  |  | - | - | - | - | - | - | - | - | null | null | null | null | null | null",
+  "note": "two boots must agree on fixture connections/path hits, search connections, fact counts, host-web calls, the surface size AND every verdict name"
+}
