@@ -33,7 +33,7 @@
     },
     "requests": [
       {
-        "at": "2026-11-08T12:46:56.273Z",
+        "at": "2026-11-08T13:14:46.064Z",
         "method": "GET",
         "path": "/known",
         "body": null
@@ -49,7 +49,7 @@
     },
     "requests": [
       {
-        "at": "2026-11-08T12:46:56.364Z",
+        "at": "2026-11-08T13:14:46.158Z",
         "method": "POST",
         "path": "/search",
         "body": "{\"query\":\"a5sf pd30 governed search\",\"type\":\"auto\",\"contents\":{\"highlights\":{\"highlightsPerUrl\":1}},\"numResults\":8}"
@@ -103,8 +103,8 @@
     "worker"
   ],
   "memberWindow": {
-    "from": "2026-11-08T12:46:55.361Z",
-    "to": "2026-11-08T12:46:56.297Z"
+    "from": "2026-11-08T13:14:45.198Z",
+    "to": "2026-11-08T13:14:46.106Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",

@@ -475,3 +475,176 @@ boot1 | PASS | nosearch | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUT
 boot2 | PASS | nosearch | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | PROVEN | 1 | {"/known":1} | 0 | {"total":2,"fetch":1,"search":1,"allow":1,"deny":1,"perCall":{"fetch":1,"search":1,"ssrf":0,"malformed":0}} | 0 | 33
 [2026-11-08T12:55:54.458Z] host porcelain after: []
 [2026-11-08T12:55:54.459Z] RESULT PASS arm=nosearch (2/2 boots; agreeing pair=true)
+[2026-11-08T13:11:25.684Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/archive/allow-2026-11-08T13-11-25-684Z
+[2026-11-08T13:11:25.712Z] LOCAL FIXTURE http://127.0.0.1:45849 (serves 'A5SF_PD30_KNOWN_BODY_BYTES' on /known and /denied; its EXACT origin is the declared test endpoint)
+[2026-11-08T13:11:25.712Z] LOCAL SEARCH ENDPOINT http://127.0.0.1:44955/search (the host Exa provider POSTs here)
+[2026-11-08T13:11:25.712Z] START arm=allow head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml sha256=f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T13:11:25.741Z] host porcelain before: []
+[2026-11-08T13:11:25.804Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:11:25.806Z] [boot1] dev-live slot #1 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:11:25.809Z] [boot1] world=u5u5a5sfpd30-20261108T13-11-25Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-11-25Z
+[2026-11-08T13:11:25.811Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:11:25.811Z] [boot1] target=http://127.0.0.1:45849 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-11-25Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:12:18.059Z] [boot1] mock on 13051
+[2026-11-08T13:13:02.261Z] [boot1] BOOTED port=3190 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-11-25Z/instance-port3190.log
+[2026-11-08T13:13:02.826Z] [boot1] p6t6 health=true
+[2026-11-08T13:13:03.107Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:13:03.837Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-px5wr2cvql","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:4a6995e588ac1e993c8a7073efc425ec161026dda00363a73420327c98989cde"},"createdAt":"2026-11-08T13:13:03.160Z","generatio
+[2026-11-08T13:13:03.837Z] [boot1] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:13:08.305Z] [boot1] member settled={"ok":true,"calls":14} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:13:10.305Z] [boot1] mock quiesced=true
+[2026-11-08T13:13:10.311Z] [boot1] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:web-allow: PASS
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:web-search: PASS
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:web-ssrf: PASS
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:web-malformed: PASS
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:regression-tools: PASS
+[2026-11-08T13:13:10.317Z] [boot1] case pd30:closed-still-typed: PASS
+[2026-11-08T13:13:10.318Z] [boot1] case pd30:web-surface: PASS
+[2026-11-08T13:13:10.318Z] [boot1] case pd30:no-base-transport: PASS
+[2026-11-08T13:13:10.319Z] [boot1] diagnostics(final): mockRequests=22 guardFacts=14
+[2026-11-08T13:13:10.319Z] [boot1] RUN-SUMMARY run=a5sf-pd30-web-preview-allow-2026-11-08T13-11-25-772Z-b1 suite=a5sf-pd30-web-preview overall=PASS cases=8 PASS:8 worlds=u5u5a5sfpd30-20261108T13-11-25Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:13:10.452Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":78,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-11-25Z","releasedPorts":[3190,13051,3190],"killedPids":[78],"notes":[]}
+[2026-11-08T13:13:10.452Z] [boot1] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:13:10.528Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:13:10.529Z] [boot2] dev-live slot #1 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:13:10.531Z] [boot2] world=u5u5a5sfpd30-20261108T13-13-10Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-13-10Z
+[2026-11-08T13:13:10.533Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:13:10.533Z] [boot2] target=http://127.0.0.1:45849 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-13-10Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:14:00.925Z] [boot2] mock on 13051
+[2026-11-08T13:14:44.656Z] [boot2] BOOTED port=3190 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-13-10Z/instance-port3190.log
+[2026-11-08T13:14:45.196Z] [boot2] p6t6 health=true
+[2026-11-08T13:14:45.465Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:14:46.106Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-juxfx4boqa","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:e7bf7c2d9be36e4fac113ea2b127c74e655d47c61c0badb2e354519a78e801cd"},"createdAt":"2026-11-08T13:14:45.491Z","generatio
+[2026-11-08T13:14:46.106Z] [boot2] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:14:50.499Z] [boot2] member settled={"ok":true,"calls":14} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:14:52.499Z] [boot2] mock quiesced=true
+[2026-11-08T13:14:52.506Z] [boot2] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:14:52.511Z] [boot2] case pd30:web-allow: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:web-search: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:web-ssrf: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:web-malformed: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:regression-tools: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:closed-still-typed: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:web-surface: PASS
+[2026-11-08T13:14:52.512Z] [boot2] case pd30:no-base-transport: PASS
+[2026-11-08T13:14:52.513Z] [boot2] diagnostics(final): mockRequests=22 guardFacts=14
+[2026-11-08T13:14:52.513Z] [boot2] RUN-SUMMARY run=a5sf-pd30-web-preview-allow-2026-11-08T13-13-10-489Z-b2 suite=a5sf-pd30-web-preview overall=PASS cases=8 PASS:8 worlds=u5u5a5sfpd30-20261108T13-13-10Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:14:52.667Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":323,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-13-10Z","releasedPorts":[3190,13051,3190],"killedPids":[323],"notes":[]}
+[2026-11-08T13:14:52.667Z] [boot2] dev-live slot released (slot=1 state=true)
+[2026-11-08T13:14:52.705Z] AGREEMENT arm=allow: two boots agree on every measured counter
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | PASS | allow | PROVEN | REFUTED | PROVEN | PROVEN | PROVEN | PROVEN | REFUTED | PROVEN | 1 | {"/known":1} | 1 | {"total":4,"fetch":3,"search":1,"allow":2,"deny":2,"perCall":{"fetch":1,"search":1,"ssrf":1,"malformed":1}} | 0 | 33
+boot2 | PASS | allow | PROVEN | REFUTED | PROVEN | PROVEN | PROVEN | PROVEN | REFUTED | PROVEN | 1 | {"/known":1} | 1 | {"total":4,"fetch":3,"search":1,"allow":2,"deny":2,"perCall":{"fetch":1,"search":1,"ssrf":1,"malformed":1}} | 0 | 33
+[2026-11-08T13:14:52.742Z] host porcelain after: []
+[2026-11-08T13:14:52.742Z] RESULT PASS arm=allow (2/2 boots; agreeing pair=true)
+[2026-11-08T13:15:07.641Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/archive/deny-2026-11-08T13-15-07-641Z
+[2026-11-08T13:15:07.672Z] LOCAL FIXTURE http://127.0.0.1:44789 (serves 'A5SF_PD30_KNOWN_BODY_BYTES' on /known and /denied; its EXACT origin is the declared test endpoint)
+[2026-11-08T13:15:07.672Z] LOCAL SEARCH ENDPOINT http://127.0.0.1:46067/search (the host Exa provider POSTs here)
+[2026-11-08T13:15:07.672Z] START arm=deny head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml sha256=f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T13:15:07.710Z] host porcelain before: []
+[2026-11-08T13:15:07.786Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:15:07.787Z] [boot1] dev-live slot #0 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:15:07.790Z] [boot1] world=u5u5a5sfpd30-20261108T13-15-07Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-07Z
+[2026-11-08T13:15:07.793Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:15:07.793Z] [boot1] target=http://127.0.0.1:44789 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-07Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:15:15.420Z] [boot1] mock on 3492
+[2026-11-08T13:15:31.025Z] [boot1] BOOTED port=3183 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-15-07Z/instance-port3183.log
+[2026-11-08T13:15:31.389Z] [boot1] p6t6 health=true
+[2026-11-08T13:15:31.662Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:15:32.227Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-au628al5qt","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:58effcc4ee50b5f7d6a2445a111d431e76477ea16f779713c49a59f3aaf7b9e4"},"createdAt":"2026-11-08T13:15:31.703Z","generatio
+[2026-11-08T13:15:32.228Z] [boot1] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:15:33.440Z] [boot1] member settled={"ok":true,"calls":3} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:15:35.442Z] [boot1] mock quiesced=true
+[2026-11-08T13:15:35.447Z] [boot1] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"webworker-deny","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:15:35.451Z] [boot1] case pd30:web-deny: PASS
+[2026-11-08T13:15:35.451Z] [boot1] case pd30:closed-still-typed: PASS
+[2026-11-08T13:15:35.451Z] [boot1] case pd30:web-surface: PASS
+[2026-11-08T13:15:35.451Z] [boot1] case pd30:no-base-transport: PASS
+[2026-11-08T13:15:35.452Z] [boot1] diagnostics(final): mockRequests=11 guardFacts=1
+[2026-11-08T13:15:35.453Z] [boot1] RUN-SUMMARY run=a5sf-pd30-web-preview-deny-2026-11-08T13-15-07-749Z-b1 suite=a5sf-pd30-web-preview overall=PASS cases=4 PASS:4 worlds=u5u5a5sfpd30-20261108T13-15-07Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:15:35.602Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":638,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-07Z","releasedPorts":[3183,3492,3183],"killedPids":[638],"notes":[]}
+[2026-11-08T13:15:35.602Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:15:35.669Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:15:35.670Z] [boot2] dev-live slot #0 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:15:35.672Z] [boot2] world=u5u5a5sfpd30-20261108T13-15-35Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-35Z
+[2026-11-08T13:15:35.674Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:15:35.674Z] [boot2] target=http://127.0.0.1:44789 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-35Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:15:49.619Z] [boot2] mock on 3493
+[2026-11-08T13:16:03.716Z] [boot2] BOOTED port=3183 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-15-35Z/instance-port3183.log
+[2026-11-08T13:16:04.140Z] [boot2] p6t6 health=true
+[2026-11-08T13:16:04.414Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:16:04.973Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-rvders9cyv","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:7ec9ac9e271675d19682a57d90a4c116abe1fb2f4272d61f262bb3424d0707dd"},"createdAt":"2026-11-08T13:16:04.435Z","generatio
+[2026-11-08T13:16:04.973Z] [boot2] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:16:06.180Z] [boot2] member settled={"ok":true,"calls":3} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:16:08.182Z] [boot2] mock quiesced=true
+[2026-11-08T13:16:08.188Z] [boot2] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"webworker-deny","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:16:08.192Z] [boot2] case pd30:web-deny: PASS
+[2026-11-08T13:16:08.192Z] [boot2] case pd30:closed-still-typed: PASS
+[2026-11-08T13:16:08.192Z] [boot2] case pd30:web-surface: PASS
+[2026-11-08T13:16:08.192Z] [boot2] case pd30:no-base-transport: PASS
+[2026-11-08T13:16:08.192Z] [boot2] diagnostics(final): mockRequests=11 guardFacts=1
+[2026-11-08T13:16:08.193Z] [boot2] RUN-SUMMARY run=a5sf-pd30-web-preview-deny-2026-11-08T13-15-35-634Z-b2 suite=a5sf-pd30-web-preview overall=PASS cases=4 PASS:4 worlds=u5u5a5sfpd30-20261108T13-15-35Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:16:08.349Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":850,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-15-35Z","releasedPorts":[3183,3493,3183],"killedPids":[850],"notes":[]}
+[2026-11-08T13:16:08.349Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:16:08.383Z] AGREEMENT arm=deny: two boots agree on every measured counter
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | PASS | deny | REFUTED | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | 0 | {} | 0 | {"total":1,"fetch":1,"search":0,"allow":0,"deny":1,"perCall":{"fetch":1,"search":0,"ssrf":0,"malformed":0}} | 0 | 33
+boot2 | PASS | deny | REFUTED | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | 0 | {} | 0 | {"total":1,"fetch":1,"search":0,"allow":0,"deny":1,"perCall":{"fetch":1,"search":0,"ssrf":0,"malformed":0}} | 0 | 33
+[2026-11-08T13:16:08.415Z] host porcelain after: []
+[2026-11-08T13:16:08.416Z] RESULT PASS arm=deny (2/2 boots; agreeing pair=true)
+[2026-11-08T13:16:23.325Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/archive/nosearch-2026-11-08T13-16-23-325Z
+[2026-11-08T13:16:23.355Z] LOCAL FIXTURE http://127.0.0.1:45015 (serves 'A5SF_PD30_KNOWN_BODY_BYTES' on /known and /denied; its EXACT origin is the declared test endpoint)
+[2026-11-08T13:16:23.355Z] LOCAL SEARCH ENDPOINT http://127.0.0.1:45931/search (the host Exa provider POSTs here)
+[2026-11-08T13:16:23.355Z] START arm=nosearch head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef composition=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml sha256=f045703c7819e1bf02ee67694b2d4271c91daec2c86c0e197f28997742b39a48 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-08T13:16:23.391Z] host porcelain before: []
+[2026-11-08T13:16:23.470Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:16:23.471Z] [boot1] dev-live slot #0 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:16:23.475Z] [boot1] world=u5u5a5sfpd30-20261108T13-16-23Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-23Z
+[2026-11-08T13:16:23.478Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:16:23.478Z] [boot1] target=http://127.0.0.1:45015 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-23Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:16:31.116Z] [boot1] mock on 3492
+[2026-11-08T13:16:43.679Z] [boot1] BOOTED port=3183 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-16-23Z/instance-port3183.log
+[2026-11-08T13:16:44.083Z] [boot1] p6t6 health=true
+[2026-11-08T13:16:44.356Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:16:45.020Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-gwj584nycd","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:632f6c080b20e6233ddcbd78e433684fdf11da7be79bb4880fd101b95d442156"},"createdAt":"2026-11-08T13:16:44.394Z","generatio
+[2026-11-08T13:16:45.020Z] [boot1] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:16:46.228Z] [boot1] member settled={"ok":true,"calls":4} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:16:48.230Z] [boot1] mock quiesced=true
+[2026-11-08T13:16:48.235Z] [boot1] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:16:48.240Z] [boot1] case pd30:search-no-backend: PASS
+[2026-11-08T13:16:48.240Z] [boot1] case pd30:closed-still-typed: PASS
+[2026-11-08T13:16:48.240Z] [boot1] case pd30:web-surface: PASS
+[2026-11-08T13:16:48.240Z] [boot1] case pd30:no-base-transport: PASS
+[2026-11-08T13:16:48.241Z] [boot1] diagnostics(final): mockRequests=12 guardFacts=2
+[2026-11-08T13:16:48.241Z] [boot1] RUN-SUMMARY run=a5sf-pd30-web-preview-nosearch-2026-11-08T13-16-23-432Z-b1 suite=a5sf-pd30-web-preview overall=PASS cases=4 PASS:4 worlds=u5u5a5sfpd30-20261108T13-16-23Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:16:48.390Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":1132,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-23Z","releasedPorts":[3183,3492,3183],"killedPids":[1132],"notes":[]}
+[2026-11-08T13:16:48.390Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:16:48.454Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-08T13:16:48.454Z] [boot2] dev-live slot #0 face=WebEgress world=u5a5sfpd30 head=8b5eef9065d1dd4e4cf0d873be5358a094feb3ef
+[2026-11-08T13:16:48.457Z] [boot2] world=u5u5a5sfpd30-20261108T13-16-48Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-48Z
+[2026-11-08T13:16:48.459Z] [boot2] rows: dsh-agent-team,preset-a5sf-governed-member,a5sf-web-transport,a5sf-pd30-base-web-tripwire,p6t6-team-tools
+[2026-11-08T13:16:48.459Z] [boot2] target=http://127.0.0.1:45015 counters=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-48Z/a5sf-pd30-web-counters.jsonl
+[2026-11-08T13:16:56.384Z] [boot2] mock on 3492
+[2026-11-08T13:17:18.917Z] [boot2] BOOTED port=3184 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-16-48Z/instance-port3184.log
+[2026-11-08T13:17:19.474Z] [boot2] p6t6 health=true
+[2026-11-08T13:17:19.745Z] [boot2] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-08T13:17:20.449Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd30-s1duhupqwy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd30-team","blueprint":{"blueprintId":"team.a5sf.pd30.main","revision":"1","contentHash":"sha256:a0dbd52870202a85a1b94aee262a00c8b955e869edd3a7cd5df447e6ecb7ff66"},"createdAt":"2026-11-08T13:17:19.770Z","generatio
+[2026-11-08T13:17:20.449Z] [boot2] leader chain closed (A5SF_PD30_L1_DONE)=true
+[2026-11-08T13:17:21.656Z] [boot2] member settled={"ok":true,"calls":4} session=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:17:23.658Z] [boot2] mock quiesced=true
+[2026-11-08T13:17:23.663Z] [boot2] members=[{"instanceId":"inst-0hu00gh176s0","templateId":"worker","lifecycle":"SETTLED"},{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] A=session-team-child-ce7676dc1032f75c8bd06cbf353ad74c
+[2026-11-08T13:17:23.666Z] [boot2] case pd30:search-no-backend: PASS
+[2026-11-08T13:17:23.666Z] [boot2] case pd30:closed-still-typed: PASS
+[2026-11-08T13:17:23.666Z] [boot2] case pd30:web-surface: PASS
+[2026-11-08T13:17:23.666Z] [boot2] case pd30:no-base-transport: PASS
+[2026-11-08T13:17:23.667Z] [boot2] diagnostics(final): mockRequests=12 guardFacts=2
+[2026-11-08T13:17:23.667Z] [boot2] RUN-SUMMARY run=a5sf-pd30-web-preview-nosearch-2026-11-08T13-16-48-421Z-b2 suite=a5sf-pd30-web-preview overall=PASS cases=4 PASS:4 worlds=u5u5a5sfpd30-20261108T13-16-48Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-08T13:17:23.840Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":1344,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/tests/homes/u5u5a5sfpd30-20261108T13-16-48Z","releasedPorts":[3184,3492,3184],"killedPids":[1344],"notes":[]}
+[2026-11-08T13:17:23.840Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-08T13:17:23.874Z] AGREEMENT arm=nosearch: two boots agree on every measured counter
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | PASS | nosearch | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | PROVEN | 1 | {"/known":1} | 0 | {"total":2,"fetch":1,"search":1,"allow":1,"deny":1,"perCall":{"fetch":1,"search":1,"ssrf":0,"malformed":0}} | 0 | 33
+boot2 | PASS | nosearch | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | PROVEN | 1 | {"/known":1} | 0 | {"total":2,"fetch":1,"search":1,"allow":1,"deny":1,"perCall":{"fetch":1,"search":1,"ssrf":0,"malformed":0}} | 0 | 33
+[2026-11-08T13:17:23.907Z] host porcelain after: []
+[2026-11-08T13:17:23.907Z] RESULT PASS arm=nosearch (2/2 boots; agreeing pair=true)

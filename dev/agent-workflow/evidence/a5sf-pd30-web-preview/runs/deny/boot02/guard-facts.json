@@ -4,13 +4,13 @@
     "realm": "member",
     "memberIdentity": "inst-0hu00gh176s0",
     "toolBindingIdentity": null,
-    "policyRevision": "a5sf1:07c35d3d53aa1da0f5907cb743a980c6",
+    "policyRevision": "a5sf1:a3208905f06504f070389c07605eb56b",
     "method": "web:fetch",
-    "locator": "http://127.0.0.1:46385/denied",
+    "locator": "http://127.0.0.1:44789/denied",
     "decision": "deny",
     "decidedBy": "NETWORK_UNCONFINED_REALM",
     "sequence": 1,
-    "observedAt": "2026-11-08T12:52:21.786Z",
+    "observedAt": "2026-11-08T13:16:04.931Z",
     "tool": "web_fetch",
     "callId": "call-a5sfpd30-fetch"
   }

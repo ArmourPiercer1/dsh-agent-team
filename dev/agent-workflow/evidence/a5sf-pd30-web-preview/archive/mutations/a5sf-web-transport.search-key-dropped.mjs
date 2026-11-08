@@ -64,6 +64,12 @@ export const name = 'a5sf-web-transport'
  * pre-PD-30 state byte-for-byte (a governed realm with `subprocess` + `terminal`
  * and NO web face).
  */
+// Node's `URL` is the parser this row uses to normalise the composition's
+// declared fixture origins. IMPORTED, never taken from the ambient global: this
+// module needs no ambient global at all, so it adds no identity to the lint
+// diff and needs no node-globals booking.
+import { URL } from 'node:url'
+
 export const A5SF_WEB_TRANSPORT_SERVICE = 'teamA5sfWebTransport'
 
 /** The two host modules this row loads, by their PUBLIC package names. */

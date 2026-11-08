@@ -259,3 +259,22 @@ A5SF_PD30_NO_INSTALL_GRAPH=1 node tests/world-factory/drivers/a5sf-pd30-web-prev
 node --test tests/world-factory/a5sf-pd30-web-preview.test.mjs
 node tests/world-factory/a5sf-pd30-mutation-controls.mjs
 ```
+
+## 10. Record hygiene (read this before citing a number)
+
+* **The three pairs were re-run on the FINAL built dist.** The first pair was booted before the
+  guard's order was corrected to SHAPE → LANE → DESTINATION → AVAILABILITY (a denied lane must
+  answer its own code for *any* target, which PD-18's suite pins). The re-run's counters are
+  **identical** to the table in §2 — the correction changes *which typed code* a denied lane
+  answers with an undeclared target, not any counter in this evidence.
+* **The register row is `PD-28` on this base, not `PD-30`.** The window allocates PD-30 for this
+  lane (two sibling lanes hold PD-28/PD-29), but the register's gate-enforced contiguity
+  (`PD-1…PD-n`) only admits the next free id on this tree. The row carries that note and
+  renumbers at merge if the siblings land first (the PD-25-from-PD-24 precedent).
+* **Five older register anchors re-resolved** (`web.ts#L676` for PD-10, `host.ts#L3246/L3255` for
+  PD-11, `types.ts#L265/L286` for PD-12/PD-13, `web.ts#L183` for PD-15, `cordis.patch.yml#L339/L291`
+  for PD-18/PD-22/PD-23): this lane moved code inside those same files rather than editing the
+  claims. Pointer corrections only — no row's text, grade or status changed.
+* The `PD18-WEB-*` and `PD27-E2E-*` arms keep their loopback fixtures by **declaring that exact
+  origin** (`testEndpoints`), which is the same exemption the product uses; nothing in those
+  arms was weakened — an undeclared loopback literal is still refused.

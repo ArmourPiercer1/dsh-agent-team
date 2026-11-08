@@ -201,13 +201,17 @@ class BareWeb {
 }
 
 /** Build ONE confined web face over the REAL module, with the fake boundary. */
-export function makeFace(seams, { effective, boundary }) {
+export function makeFace(seams, { effective, boundary, testEndpoints }) {
   const facts = []
   const Confined = seams.services.createConfinedWebClass(BareWeb, {
     effective,
     provider: boundary,
     onGuardConsult: (fact) => facts.push(fact),
     realmId: 'realm-bl18-web',
+    // PD-30: the SSRF leg is a property of an ADMITTED call, so a suite that
+    // serves its fixture from loopback must DECLARE that exact origin. Absent =
+    // no exemption, and loopback is refused (the product default).
+    ...(testEndpoints === undefined ? {} : { testEndpoints }),
   })
   const face = new Confined({})
   return { face, facts }

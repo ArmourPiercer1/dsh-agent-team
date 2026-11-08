@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-pd30-web-preview-deny-2026-11-08T12-49-02-492Z-b1",
+  "runId": "a5sf-pd30-web-preview-deny-2026-11-08T13-15-07-749Z-b1",
   "suite": "a5sf-pd30-web-preview",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-08T12:49:02.492Z",
+  "startedAt": "2026-11-08T13:15:07.749Z",
   "selectedCases": [
     "pd30:web-deny",
     "pd30:web-surface",
@@ -21,7 +21,7 @@
       "snapshotDigest": "0818013d362c3d8d61daf6e3d3480ff83a9127ac02ffdfbe91b89794f8616184"
     },
     "candidate": {
-      "head": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+      "head": "8b5eef9065d1dd4e4cf0d873be5358a094feb3ef",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -32,18 +32,18 @@
       "source": "task PD30-WEB-PREVIEW explicit boot authorisation (2026-11-14), arm=deny"
     },
     "recordClass": "DEV-LIVE",
-    "teamSha": "9c730c3d7f19b41c160273b3e809e7e5be70205b",
+    "teamSha": "8b5eef9065d1dd4e4cf0d873be5358a094feb3ef",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfpd30-20261108T12-49-02Z"
+      "u5u5a5sfpd30-20261108T13-15-07Z"
     ]
   },
   "cases": [
     {
       "id": "pd30:web-deny",
       "verdict": "PASS",
-      "at": "2026-11-08T12:50:43.734Z",
+      "at": "2026-11-08T13:15:35.451Z",
       "proposition": "on the deny lane the shipped face refuses BEFORE the provider: the call is a typed NETWORK_UNCONFINED_REALM, the fixture counts ZERO connections, the inherited host transport is never consulted, and exactly ONE deny fact records the decision",
       "failed": [],
       "clauses": [
@@ -87,7 +87,7 @@
     {
       "id": "pd30:closed-still-typed",
       "verdict": "PASS",
-      "at": "2026-11-08T12:50:43.734Z",
+      "at": "2026-11-08T13:15:35.451Z",
       "proposition": "the names PD-18 closed remain the router's typed `unknown tool` and produce no facts: the shipped web capability did not reopen the workflow surface",
       "failed": [],
       "clauses": [
@@ -111,7 +111,7 @@
     {
       "id": "pd30:web-surface",
       "verdict": "PASS",
-      "at": "2026-11-08T12:50:43.734Z",
+      "at": "2026-11-08T13:15:35.451Z",
       "proposition": "both web names are on the Member's surface under the SHIPPED composition, so every arm above is dispatched through a real declaration and not a stub",
       "failed": [],
       "clauses": [
@@ -125,7 +125,7 @@
     {
       "id": "pd30:no-base-transport",
       "verdict": "PASS",
-      "at": "2026-11-08T12:50:43.735Z",
+      "at": "2026-11-08T13:15:35.451Z",
       "proposition": "the inherited unconfined host `web` service is never consulted in any arm (its prototype is instrumented read-only and counts zero calls)",
       "failed": [],
       "clauses": [
@@ -142,11 +142,11 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-11-08T12:49:54.844Z",
-        "runId": "a5sf-pd30-web-preview-deny-2026-11-08T12-49-02-492Z-b1",
+        "at": "2026-11-08T13:15:15.421Z",
+        "runId": "a5sf-pd30-web-preview-deny-2026-11-08T13-15-07-749Z-b1",
         "suite": "a5sf-pd30-web-preview",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfpd30-20261108T12-49-02Z",
+        "world": "u5u5a5sfpd30-20261108T13-15-07Z",
         "phase": "a5sf-pd30-web-preview-deny-boot1"
       }
     ]
@@ -154,17 +154,17 @@
   "boots": [
     {
       "phase": "a5sf-pd30-web-preview-deny-boot1",
-      "world": "u5u5a5sfpd30-20261108T12-49-02Z",
-      "port": 3190,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T12-49-02Z/instance-port3190.log"
+      "world": "u5u5a5sfpd30-20261108T13-15-07Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/dev/agent-workflow/evidence/a5sf-pd30-web-preview/driver/logs/u5u5a5sfpd30-20261108T13-15-07Z/instance-port3183.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-pd30-web-preview-deny-2026-11-08T12-49-02-492Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-pd30-web-preview-deny-2026-11-08T13-15-07-749Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-08T12:50:43.736Z"
+  "finishedAt": "2026-11-08T13:15:35.452Z"
 }

@@ -169,18 +169,30 @@ export function createWebNetworkGuard(effective, provider, admission = {}) {
     const testOrigins = new Set(normaliseTestEndpoints(admission.testEndpoints));
     return async function webNetworkGuard(method, target) {
         const fields = { memberIdentity: effective.memberIdentity, method, target };
-        if (method === WEB_SEARCH_GUARD_METHOD) {
-            assertDeclaredQuery(target, fields);
-            assertSearchAvailable(provider, fields);
-        }
-        else {
-            const declared = assertDeclaredUrl(target, fields);
-            assertDestinationAllowed(declared, testOrigins, fields);
-        }
+        // ORDER (PD-30): SHAPE -> LANE -> DESTINATION -> AVAILABILITY.
+        //   SHAPE       a request that cannot even be parsed is malformed whatever
+        //               the lane says: it must not borrow the lane's code.
+        //   LANE        the compiled ceiling is the PERMISSION. A `deny` lane refuses
+        //               its own typed code for ANY target — the deny arm is about the
+        //               policy, not the address — so it is decided before the
+        //               destination and before the backend question (PD-18 pins this:
+        //               a denied lane over a local fixture must answer
+        //               NETWORK_UNCONFINED_REALM, never the SSRF code).
+        //   DESTINATION the SSRF leg is a property of an ADMITTED call.
+        //   AVAILABILITY the backend question is last: it is about this deployment,
+        //               not about the request.
+        const declared = method === WEB_SEARCH_GUARD_METHOD
+            ? (assertDeclaredQuery(target, fields), undefined)
+            : assertDeclaredUrl(target, fields);
         // The permission: the ONE compiled lane. A non-`deny` axis is not a
         // network refusal (the face does not invent a second class of deny).
-        if (effective.network.access !== 'deny')
+        if (effective.network.access !== 'deny') {
+            if (method === WEB_SEARCH_GUARD_METHOD)
+                assertSearchAvailable(provider, fields);
+            else
+                assertDestinationAllowed(declared, testOrigins, fields);
             return;
+        }
         // The capability: BL-17's probe, imported. Only an explicit `enforced`
         // answer proceeds; everything else is the closed `unsupported`.
         const capability = await probeNetworkDenial(provider);

@@ -85,8 +85,8 @@
     "webworker-deny"
   ],
   "memberWindow": {
-    "from": "2026-11-08T12:50:39.612Z",
-    "to": "2026-11-08T12:50:40.515Z"
+    "from": "2026-11-08T13:15:31.392Z",
+    "to": "2026-11-08T13:15:32.228Z"
   },
   "composition": {
     "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd30-web-preview/cordis.patch.yml",
