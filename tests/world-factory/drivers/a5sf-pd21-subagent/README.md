@@ -15,8 +15,9 @@ node tests/world-factory/drivers/a5sf-pd21-subagent/run-boot.mjs --boots 1
 node tests/world-factory/drivers/a5sf-pd21-subagent/run-boot.mjs --plan   # host-free
 ```
 
-Artefacts: `dev/agent-workflow/evidence/a5sf-pd21-subagent/runs/boot0N/` and the
-append-only DEV-LIVE ledger beside them. The measured result and its reading are
+Artefacts: the driver writes `dev/agent-workflow/evidence/a5sf-pd21-subagent/runs/boot01/`
+and `runs/boot02/` (one per boot; a previous pair is moved to `archive/` first) and
+appends to the DEV-LIVE ledger beside them. The measured result and its reading are
 in that directory's `README.md`; this file documents the driver only.
 
 ## What the run measures, per boot
