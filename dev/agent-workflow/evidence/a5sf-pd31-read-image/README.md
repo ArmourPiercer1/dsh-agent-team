@@ -343,7 +343,7 @@ install-graph ownership pin), the register guard (10/10, ids contiguous `PD-1…
 `docs:probe`/`docs:sync --check` (0 blocking), `ci-pr-gate --only state-freshness`,
 `eb3-evidence-guard`, `eb3-run-manifest`, p4t6 (20/20), `pnpm -r typecheck`, `check:artifacts` and
 `check:artifacts:head` (drift 0). The whole **a5sf host-free family** is green in a fresh-install
-worktree; in this worktree's long-lived shared install the four PD30 tests fail for one reason only —
+worktree (**648 tests, 631 pass, 17 skipped, 0 fail**); in this worktree's long-lived shared install the four PD30 tests fail for one reason only —
 that install predates master's new `@deepseek-ai/dsh-web-search-exa` root dependency — and the same
 four fail identically at `origin/master` with that install.
 

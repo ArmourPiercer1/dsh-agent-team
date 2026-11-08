@@ -1204,3 +1204,11 @@ $ eslint .
 [ELIFECYCLE] Command failed with exit code 1.
 
 [lint] exit=1
+
+FRESH-INSTALL VERIFICATION (detached worktree at this evidence commit, `pnpm install
+--frozen-lockfile` from the repo store, plus the pinned host tree):
+
+[pass] node --test tests/world-factory/a5sf-*.test.mjs
+       648 tests, 631 pass, 17 skipped, 0 fail — including the four PD30 tests the
+       shared install cannot run (missing master's @deepseek-ai/dsh-web-search-exa)
+       and the seven PD31 tests
