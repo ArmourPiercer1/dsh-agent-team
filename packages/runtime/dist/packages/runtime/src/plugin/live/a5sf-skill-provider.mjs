@@ -3,7 +3,7 @@
  * realm mounts, so the NATIVE `skill` tool loads bodies through the Member's
  * CONFINED `fs` face.
  *
- * WHY THIS MODULE EXISTS (PD-28, 2026-11-14; the row PD-26 opened).
+ * WHY THIS MODULE EXISTS (PD-29, 2026-11-14; the row PD-26 opened).
  *
  * PD-23 measured the preset's `skill-filesystem` provider returning an
  * out-of-lane `SKILL.md` body through the inherited BASE `fs` and removed the

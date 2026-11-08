@@ -111,7 +111,7 @@ export interface NativeToolModuleMount {
      */
     readonly toolBindingIdentity?: string;
     /**
-     * PD-28 (2026-11-14) — mount the module DIRECTLY on the Member's isolated
+     * PD-29 (2026-11-14) — mount the module DIRECTLY on the Member's isolated
      * scope, with NO registration router.
      *
      * Needed by a module that registers a `tools/result` listener: Cordis filters

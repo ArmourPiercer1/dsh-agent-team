@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd29-service-seam-postfix-2026-11-08T14-18-44-530Z-b1 suite=a5sf-pd29-service-seam overall=PASS cases=6 PASS:6 worlds=u5u5a5sfpd29-20261108T14-18-44Z recordClass=DEV-LIVE (not candidate evidence)

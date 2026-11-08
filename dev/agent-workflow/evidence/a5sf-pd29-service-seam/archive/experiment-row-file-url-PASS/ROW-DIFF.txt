@@ -1,0 +1,9 @@
+THE ONE LINE THAT DIFFERS FROM THE SHIPPED MERGED TREE (cordis.patch.yml, governed preset)
+
+-            name: 'dsh-agent-team/web-tool'
++            name: 'file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd29-service-seam/packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs'
+
+Everything else in this run is byte-identical to the branch: same commit, same dist,
+same driver. The absolute path is WORKTREE-LOCAL and is NOT proposed as the product
+form — it is the experiment that localizes the master regression to this row's
+specifier form (see ../../README.md §4.3). Do not copy it into the composition.

@@ -1105,7 +1105,7 @@ export async function mountA5sfRealm(input) {
             };
             const routedPartitions = managedPartitions;
             /**
-             * PD-28 (2026-11-14) — mount ONE module DIRECTLY on the Member's isolated
+             * PD-29 (2026-11-14) — mount ONE module DIRECTLY on the Member's isolated
              * scope, without the registration router.
              *
              * WHY A DIRECT MOUNT EXISTS. The router partitions a module's suite by

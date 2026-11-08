@@ -989,32 +989,6 @@ fact 数 **0**；`bash`/`read`/`write`/`edit`/`grep`/`glob` 的 9 条 allow fact
    `tests/world-factory/a5sf-pd27-mutation-controls.mjs`（8/8）；driver
    `tests/world-factory/drivers/a5sf-pd27-web-egress/run-boot.mjs`（PD-26 driver 的同一形状）。
 
-### 1.8.11 CORRECTION（PD-28 追加；只追加，不改 §1.8.0–§1.8.10 的任何等级、`V@B` 或数字）
-
-> 2026-11-14，lane `PD28-SERVICE-SEAM`（base `24d2cf760`，PD-26 已并入；**随后并入 `9c730c3d7`（PD-27 #676），本节读数仍是 pre-merge `6f9a8c1` 的一对 boot，合并树的 re-bind 被 master 的 PD-27 组合缺陷挡住——见证据 README §4.3：preset 行 `tool-web` 的 `dsh-agent-team/web-tool` 名字 preset 解析器加载不了，Member 根本建不起来；同一棵树把该行换成绝对 `file:` URL 即 2/2 boot、6/6 case、面 **33**，本节的等级判断因此不变**）。本节只**追加**；§1.8.2 的桶、
-> 等级与 §1.8.9 的差值一字未改——PD-28 不改变任何工具的验收等级，它改的是**安全论证的归属**。
-
-1. **§1.8.9（PD-26）的读数全部成立，且由 PD-28 逐项复现。** 同一 World 布局、同一 driver 的
-   一对 agreeing `DEV-LIVE` boot 读数：名册 **31**；`skill` 范围内 1 allow fact（`readText`）、
-   越界 `IO_READ_DENIED` + 0 字节 + 1 deny fact；`present` 范围内 2 allow fact（`lstat`+`stat`）+
-   恰好 1 条 `deliverables/presented`，越界（存在/缺失）各 1 deny fact、0 event、无存在性 oracle；
-   `factTools {bash:3,read:2,grep:1,skill:2,present:4}`、guard allow/deny `9/3` 与 PD-26 的
-   `runs/boot01|02` **逐字段相同**。
-2. **这两条能力不再由 Team 侧重写的工具服务，改由「服务」提供**：`skill` 由 Member realm 挂载的
-   Team `skills` **provider** 提供（`list()` 不碰 fs；`get()` 走 confined `fs` 的 `resolve` +
-   `readText`），`present` 由**钉死的宿主** `@deepseek-ai/dsh-tool-present` 包以 `direct` 方式挂到
-   同一 realm scope（不经注册路由器，故其自身的 `ctx.on('tools/result')` 能收到派发）。
-   两个 `confined-*-tool.mjs` 已删除，`packages/**` 下这两个名字**不再有任何 Team 工具模块**。
-3. **一条被纠正的归因（记录，不覆盖）**：§1.8.9 沿用 PD-26 的解释「realm ctx 带的是 Member 的 isolate
-   scope，收不到 agent scope 的 `tools/result` 派发」。实测 `scopeOf(realmCtx)` 在 **direct 与 routed
-   两种挂载下都是 agent**；真正过滤掉监听的是路由器给模块重新分配的 `tools` **服务** isolate 标签
-   （`Service.prototype[filter]` 的标签比较）。同一宿主模块 direct 挂载 → 1 条 event，routed → 0 条。
-   这条不改任何等级，只是让下一次遇到「事件到了却没触发」的人不必再猜 scope。
-4. **证据**：`dev/agent-workflow/evidence/a5sf-pd28-service-seam/`（`runs/boot01|02` 一对 agreeing
-   boots、`agreement-postfix.txt`、`mutation-controls.log`、README §1–§8）；host-free
-   `tests/world-factory/a5sf-pd28-service-seam.test.mjs`（4 通过 + 1 个 `A5SF_PD28_PIN=1` 的 pre-fix
-   PIN）与 `a5sf-pd28-mutation-controls.mjs`（`VERDICT PASS 8/8`）。
-
 ## 2. 静态工具名附录（与主矩阵的映射）
 
 <!-- q5:appendix-begin -->
@@ -1151,3 +1125,30 @@ read-before-write 契约**拒掉，该拒绝属于原生工具、**不属于** T
    （0 连接、0 host-web 调用、每条 1 条 fact）。BASE web fallback **恒为 0**。
 5. **部署差异**：安装图是 symlink，不是打包安装；本 lane 只断言「发货行字节 + 解析形状」，对 packaged
    installer 不作断言（README §6 已写明，不得读成「等价」）。
+
+
+### 1.8.12 CORRECTION（PD-29 追加；只追加，不改 §1.8.0–§1.8.11 的任何等级、`V@B` 或数字）
+
+> 2026-11-14 → 2026-11-15，lane `PD28-SERVICE-SEAM`（寄存器号 **PD-29**；base `24d2cf760`，依次并入 PD-27 `9c730c3d7`、PD-30/PD-28 web preview `1879e3ebc`）。**本节现在是 re-bind 后的读数**：合并树上 2/2 一致 boot、6/6 case、面 **33**（31 + PD-27 的 `web_fetch`/`web_search`），PD-26 的九项读数逐项相同——等级判断与 §1.8.9 的差值一字未改。其间那段"组合建不起 Member"的窗口（`tool-web (dsh-agent-team/web-tool): never started`、面 0、所有 confined face 一起消失）与四处定位实验、pristine-master 对照、以及最终**仪器侧**修复（driver 里 `provisionInstallGraph()` + `TT_INSTRUMENT_PRESET_DEAD` 前置条件，不改任何产品行）全部留在证据 README §4.3，未删未改。本节只**追加**；§1.8.2 的桶、等级与 §1.8.9 的差值一字未改。
+> 等级与 §1.8.9 的差值一字未改——PD-29 不改变任何工具的验收等级，它改的是**安全论证的归属**。
+
+1. **§1.8.9（PD-26）的读数全部成立，且由 PD-29 逐项复现。** 同一 World 布局、同一 driver 的
+   一对 agreeing `DEV-LIVE` boot 读数：名册 **31**；`skill` 范围内 1 allow fact（`readText`）、
+   越界 `IO_READ_DENIED` + 0 字节 + 1 deny fact；`present` 范围内 2 allow fact（`lstat`+`stat`）+
+   恰好 1 条 `deliverables/presented`，越界（存在/缺失）各 1 deny fact、0 event、无存在性 oracle；
+   `factTools {bash:3,read:2,grep:1,skill:2,present:4}`、guard allow/deny `9/3` 与 PD-26 的
+   `runs/boot01|02` **逐字段相同**。
+2. **这两条能力不再由 Team 侧重写的工具服务，改由「服务」提供**：`skill` 由 Member realm 挂载的
+   Team `skills` **provider** 提供（`list()` 不碰 fs；`get()` 走 confined `fs` 的 `resolve` +
+   `readText`），`present` 由**钉死的宿主** `@deepseek-ai/dsh-tool-present` 包以 `direct` 方式挂到
+   同一 realm scope（不经注册路由器，故其自身的 `ctx.on('tools/result')` 能收到派发）。
+   两个 `confined-*-tool.mjs` 已删除，`packages/**` 下这两个名字**不再有任何 Team 工具模块**。
+3. **一条被纠正的归因（记录，不覆盖）**：§1.8.9 沿用 PD-26 的解释「realm ctx 带的是 Member 的 isolate
+   scope，收不到 agent scope 的 `tools/result` 派发」。实测 `scopeOf(realmCtx)` 在 **direct 与 routed
+   两种挂载下都是 agent**；真正过滤掉监听的是路由器给模块重新分配的 `tools` **服务** isolate 标签
+   （`Service.prototype[filter]` 的标签比较）。同一宿主模块 direct 挂载 → 1 条 event，routed → 0 条。
+   这条不改任何等级，只是让下一次遇到「事件到了却没触发」的人不必再猜 scope。
+4. **证据**：`dev/agent-workflow/evidence/a5sf-pd29-service-seam/`（`runs/boot01|02` 一对 agreeing
+   boots、`agreement-postfix.txt`、`mutation-controls.log`、README §1–§8）；host-free
+   `tests/world-factory/a5sf-pd29-service-seam.test.mjs`（4 通过 + 1 个 `A5SF_PD29_PIN=1` 的 pre-fix
+   PIN）与 `a5sf-pd29-mutation-controls.mjs`（`VERDICT PASS 8/8`）。

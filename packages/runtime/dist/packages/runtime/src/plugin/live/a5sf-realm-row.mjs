@@ -1135,13 +1135,13 @@ function confinedSearchSpecOf(realm, nativeSpecs, surface) {
  */
 const A5SF_CONFINED_FS_TOOL = new URL('./confined-fs-tool.mjs', import.meta.url).href
 
-/** PD-28: the Team `skills` PROVIDER, resolved from this file's own location (dist mirror included). */
+/** PD-29: the Team `skills` PROVIDER, resolved from this file's own location (dist mirror included). */
 const A5SF_SKILL_PROVIDER = new URL('./a5sf-skill-provider.mjs', import.meta.url).href
 
-/** PD-28: the pinned host package whose `skill` TOOL row the preset keeps (unmodified). */
+/** PD-29: the pinned host package whose `skill` TOOL row the preset keeps (unmodified). */
 const A5SF_HOST_SKILL_PACKAGE = '@deepseek-ai/dsh-tool-skill'
 
-/** PD-28: the pinned host package whose `present` row is re-mounted on the realm's confined `fs`. */
+/** PD-29: the pinned host package whose `present` row is re-mounted on the realm's confined `fs`. */
 const A5SF_HOST_PRESENT_PACKAGE = '@deepseek-ai/dsh-tool-present'
 
 /**
@@ -1257,7 +1257,7 @@ function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
 }
 
 /**
- * PD-28 — decide whether THIS realm must mount the Team `skills` PROVIDER, and
+ * PD-29 — decide whether THIS realm must mount the Team `skills` PROVIDER, and
  * answer the module spec to append.
  *
  * THE MEASURED HOLE (PD-23, `evidence/a5sf-pd23-control-surface/README.md`):
@@ -1265,7 +1265,7 @@ function confinedFsSpecOf(realm, nativeSpecs, surface, configuredModules) {
  * SKILL.md` through the inherited base `fs`, so an out-of-lane body reached the
  * model (`isError=false`) with ZERO `a5sf-guard-consult` facts, and the body
  * then appeared in seven subsequent requests of the Member's turn. PD-26 restored
- * the capability by writing a Team `skill` TOOL; PD-28 removes that fork and
+ * the capability by writing a Team `skill` TOOL; PD-29 removes that fork and
  * mounts the missing SERVICE instead: the pinned host `tool-skill` row is
  * untouched, and this provider answers `ctx.skills.list()` / `get()` with the
  * declared catalog while reading every body through the confined `fs`.
@@ -1317,7 +1317,7 @@ function a5sfSkillProviderSpecOf(realm, nativeSpecs, surface, configuredModules,
 }
 
 /**
- * PD-28 — decide whether THIS realm must re-mount the PINNED HOST `present`
+ * PD-29 — decide whether THIS realm must re-mount the PINNED HOST `present`
  * package on the confined `fs` face, and answer the module spec to append.
  *
  * THE MEASURED HOLE (PD-24, `evidence/a5sf-pd24-surface-ledger/README.md`):
@@ -1325,7 +1325,7 @@ function a5sfSkillProviderSpecOf(realm, nativeSpecs, surface, configuredModules,
  * a REAL out-of-lane file was accepted, a missing one was refused `file not
  * found` (a cross-lane existence oracle), and all three calls produced ZERO
  * guard facts while two `deliverables/presented` events landed. PD-26 restored
- * the capability with a Team copy of the tool; PD-28 mounts the HOST MODULE on
+ * the capability with a Team copy of the tool; PD-29 mounts the HOST MODULE on
  * the realm's isolated scope instead — its body resolves the confined `fs`, and
  * its own `ctx.on('tools/result')` listener is the shipped one.
  *
@@ -1528,7 +1528,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   }
   const configuredModules = await Promise.all(nativeSpecs.map(loadNativeModule))
   const fsSpec = confinedFsSpecOf(realm, nativeSpecs, before, configuredModules)
-  // PD-28 (2026-11-14): the two capabilities are restored at the SERVICE layer
+  // PD-29 (2026-11-14): the two capabilities are restored at the SERVICE layer
   // they were always missing. `skill` keeps the pinned host tool row and gains a
   // Team `skills` provider (`a5sfSkillProviderSpecOf`) whose body read rides the
   // Member's confined `fs`; `present` is the pinned HOST module re-mounted on the

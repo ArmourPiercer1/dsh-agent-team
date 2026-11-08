@@ -73,18 +73,18 @@ const SKILL_MODULE = process.env.A5SF_PD26_SKILL_MODULE
   ?? join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-skill-tool.mjs')
 const PRESENT_MODULE = join(REPO, 'packages', 'runtime', 'src', 'plugin', 'live', 'confined-present-tool.mjs')
 /**
- * SUPERSEDED BY PD-28 (`PD28-SERVICE-SEAM`). This suite pinned PD-26's TWO
- * Team tool forks; PD-28 deleted both, because the audit of PD-26 showed the
+ * SUPERSEDED BY PD-29 (`PD29-SERVICE-SEAM`). This suite pinned PD-26's TWO
+ * Team tool forks; PD-29 deleted both, because the audit of PD-26 showed the
  * tools were only ever consumers of a `skills` provider and of `fs` +
  * `tools/result`. The arms that import a fork are therefore SKIPPED on a tree
  * where the fork is gone (with this reason on the skip line, never silently):
  * the same readings are pinned, without any Team tool module, by
- * `tests/world-factory/a5sf-pd28-service-seam.test.mjs` (`PD28-SKILL`,
- * `PD28-PRESENT`) and its live driver. The composition arm
+ * `tests/world-factory/a5sf-pd29-service-seam.test.mjs` (`PD29-SKILL`,
+ * `PD29-PRESENT`) and its live driver. The composition arm
  * (`PD26-SURFACE-RESTORED`) still runs: the preset rows never changed.
  */
 const FORKS_PRESENT = existsSync(SKILL_MODULE) && existsSync(PRESENT_MODULE)
-const FORK_SKIP = FORKS_PRESENT ? false : 'superseded by PD-28: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd28-service-seam.test.mjs'
+const FORK_SKIP = FORKS_PRESENT ? false : 'superseded by PD-29: the two Team tool forks this arm pinned are deleted; see tests/world-factory/a5sf-pd29-service-seam.test.mjs'
 /** The recorded start of this task (origin/master at the PD-26 branch point). */
 const BASE_COMMIT = '06adbf850'
 const PRESET_ID = 'a5sf-governed-member'
@@ -255,7 +255,7 @@ function confinedFsDouble({ allowPrefix }) {
 }
 
 async function loadSkillModule() {
-  // PD-28 moved `skillCatalogOf` out of the deleted fork and into the Team
+  // PD-29 moved `skillCatalogOf` out of the deleted fork and into the Team
   // `skills` provider; the catalog-validation arm therefore reads whichever
   // module currently owns the normalizer (the fork is authoritative only on a
   // tree that still has it, e.g. the archived pre-fix copy a control passes in).

@@ -223,7 +223,7 @@ export class TeamIoDenial extends HarnessError {
     readonly method: string
     readonly target: string
   }) {
-    // PD-28 (2026-11-14): a HARNESS error, not a bare `Error`. The tool result
+    // PD-29 (2026-11-14): a HARNESS error, not a bare `Error`. The tool result
     // protocol only serializes a typed code for `HarnessError` (`toolErrorResult`
     // -> `errorInfo`), so before this a confined refusal reached the model as
     // `Error: <lane text>` with NO code, even though the guard fact carried
