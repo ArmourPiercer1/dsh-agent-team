@@ -69,6 +69,9 @@ export const familyAssembly = Object.freeze({
       shellBackend: backends.shell,
       names: cap.names,
       callIdPrefix: cap.callIdPrefix,
+      // A6 GAP-1: same dependency-object law as the shell row — an omitted
+      // observation key is a silent dead hook one layer above the pipeline.
+      onExecutionResult: cap.onExecutionResult,
       ...(injected.search === undefined && fsInstance !== null && typeof fsInstance.rootDir === 'string'
         ? { effectAnchorRoot: fsInstance.rootDir }
         : {}),

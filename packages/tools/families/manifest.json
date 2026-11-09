@@ -37,11 +37,11 @@
     },
     {
       "module": "process.mjs",
-      "sha256": "6e71fa0dff324a1fdafdf95225c34d8b09ad4e21d1a09c06bff09733558b8289"
+      "sha256": "e8910e2e749d7953b354fec8f2cdb0514b709408fd00c7880803d370386a8647"
     },
     {
       "module": "search.mjs",
-      "sha256": "33b4569909d9f77a298d2c06be5d10630650a697491d09c593e096189fcb689b"
+      "sha256": "acf3a2a9dc6498addedb644a46c602f2fdefae5b22fa74623d5a2b261d1b13b3"
     },
     {
       "module": "inspect.mjs",

@@ -111,6 +111,12 @@ export const familyAssembly = Object.freeze({
         shellBackend: cap.backends.shell,
         names: { bash: cap.names.bash },
         callIdPrefix: cap.callIdPrefix,
+        // A6 GAP-1: the family build assembles the row's dependency object
+        // field by field; the execution-result observation must ride it or
+        // the registered row can never report its outcome (the pre-fix file
+        // omitted this key, so even a correctly placed pipeline hook stayed
+        // dead data one layer above it).
+        onExecutionResult: cap.onExecutionResult,
       }, cap.transport.createGovernedShellRowDefinition),
       output: cap.presentationFace,
     })
