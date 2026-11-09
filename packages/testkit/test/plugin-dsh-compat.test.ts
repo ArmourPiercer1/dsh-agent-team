@@ -203,6 +203,32 @@ const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
  * **10** install-manifest issues: that import + `@deepseek-ai/dsh-tool-web` + 8 pre-existing
  * computed-URL sites; this lane now reports 8). Both names ship as root dependencies, this list
  * stays at ten, and the set/`toEqual` assertions below are unchanged.
+ *
+ * [PD-37 installed-tools lane, 2026-11-09 — the set widens TEN -> FIFTEEN, and the PD-27 ruling is
+ * superseded for the installed shape]
+ *
+ * The PD-27 ruling above was correct for the *source-tree* shape it was argued in: inside this
+ * checkout a `dependencies` entry resolves through `packages/runtime` to the host's own copy, and
+ * a peer declared but not installed imposes nothing. It is WRONG for the *installed* shape, and
+ * the pin was the reason the two shapes were told apart. `dsh plugin add` installs the plugin's
+ * `dependencies` into the PROFILE (not merely into the checkout), and `nodeLinker: hoisted` puts
+ * them at `node_modules/@deepseek-ai/*` in the profile root — the app-boot profile layer then
+ * answers the `tools` row with that copy while the host process keeps its own `dsh-agent-loop`.
+ * `TOOL_RUNTIME_SCHEDULER` is a plain `Symbol(...)` (packages/core/tools/src/index.ts), NOT
+ * `Symbol.for(...)`, so the two copies mint different symbols and
+ * `ctx.tools[TOOL_RUNTIME_SCHEDULER].prepare(...)` throws `Cannot read properties of undefined
+ * (reading 'prepare')` on EVERY tool call. Measured in `dev/agent-workflow/evidence/
+ * a5sf-pd37-installed-tools/`: two `dsh-tools` module URLs in one process
+ * (08-module-instances.json), `pluginImport.sameSymbol === false`, a real install that returned
+ * `pd37-bash-ok` after the fix and `{"code":"UNKNOWN"}` before it (01/02/03/05/07).
+ *
+ * Five of the six names this plugin imports by value are shipped by the pinned host install
+ * (09-host-provides-six.txt resolves them from the host CLI entry with NO plugin installed), so
+ * they are *host-provided* and belong in this contract — a peer that is never installed into the
+ * profile cannot shadow a host singleton. The sixth, `@deepseek-ai/dsh-web-search-exa`, is NOT
+ * host-provided (present in the host source tree, absent from its install scope), so it stays a
+ * regular dependency — it drags no `dsh-tools` (01-install-fixed.txt shows the profile it
+ * produces: no `dsh-tools` copy), and the exception is asserted below so it cannot silently grow.
  */
 const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh': EXPECTED_PEER_RANGE,
@@ -212,9 +238,14 @@ const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh-mcp-client': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-scope': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-session': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-skill': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-spill-local': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-storage-domain': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tool-fs': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-tool-fs-search': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tool-web': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tools': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-web-fetch-http': EXPECTED_PEER_RANGE,
 })
 const EXPECTED_HOST_PEER_NAMES: readonly string[] = Object.freeze(Object.keys(EXPECTED_HOST_PEERS))
 /** The generation this plugin was pinned to before 2026-10-03 (older side). */
@@ -269,7 +300,22 @@ async function loadEvaluator(): Promise<{
 
 const manifest = JSON.parse(
   readFileSync(join(repoRoot, 'package.json'), 'utf8'),
-) as { readonly name: string; readonly version: string; readonly peerDependencies?: Record<string, string> }
+) as {
+  readonly name: string
+  readonly version: string
+  readonly peerDependencies?: Record<string, string>
+  readonly peerDependenciesMeta?: Record<string, { readonly optional?: boolean }>
+  readonly dependencies?: Record<string, string>
+  readonly optionalDependencies?: Record<string, string>
+}
+
+/**
+ * The ONE `@deepseek-ai/*` name that may stay a regular dependency: the pinned
+ * host does not ship it (09-host-provides-six.txt), so a peer declaration would
+ * leave the a5sf Exa web-search row unresolvable in an install. It drags no
+ * `dsh-tools`, which is the only thing that must never reach a profile.
+ */
+const HOST_ABSENT_DEPENDENCY = '@deepseek-ai/dsh-web-search-exa'
 
 describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evaluator, test-use @ ' + TEST_USE_BASELINE_SHA.slice(0, 10) + ')', () => {
   it('the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version', async () => {
@@ -282,10 +328,10 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
-  it('the root manifest declares exactly the audited ten host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency', () => {
+  it('the root manifest declares exactly the audited fifteen host-provided DSH peers (each exact-RC, optional, none as a regular dependency) and no other @deepseek-ai copy can reach a profile', () => {
     const peers = manifest.peerDependencies ?? {}
     const dshPeers = Object.entries(peers).filter(([name]) => name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-'))
-    // Exact set: the ten audited names, each at the exact RC — nothing more,
+    // Exact set: the fifteen audited names, each at the exact RC — nothing more,
     // nothing less (an extra/missing dsh* peer fails here, loudly).
     expect(Object.keys(peers).sort()).toEqual([...EXPECTED_HOST_PEER_NAMES].sort())
     expect(dshPeers.length).toBe(EXPECTED_HOST_PEER_NAMES.length)
@@ -296,12 +342,36 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     for (const [, requirement] of dshPeers) {
       expect(requirement).not.toMatch(/[\s|^~*><=]/)
     }
+    // Every peer is OPTIONAL. This is the PD-37 shape: a peer is satisfied by the
+    // host install, so `dsh plugin add` must never install one into the profile
+    // (a profile-local `@deepseek-ai/dsh-tools` re-mints the scheduler symbol and
+    // kills every tool call — the defect this lane fixes).
+    const meta = manifest.peerDependenciesMeta ?? {}
+    for (const name of EXPECTED_HOST_PEER_NAMES) {
+      expect(meta[name]?.optional).toBe(true)
+    }
     // Host-provided contract: a declared peer must NOT also ship as a
-    // regular dependency of this manifest (10/10 stay out of `dependencies`).
-    const deps = (manifest as { readonly dependencies?: Record<string, string> }).dependencies ?? {}
+    // regular dependency of this manifest (15/15 stay out of `dependencies`).
+    const deps = manifest.dependencies ?? {}
     for (const name of EXPECTED_HOST_PEER_NAMES) {
       expect(deps).not.toHaveProperty(name)
     }
+    // THE REGRESSION PIN for PD-37, stated as the rule rather than as today's
+    // instance of it: no `@deepseek-ai/*` package may be a regular or optional
+    // dependency (both are installed into the profile by `dsh plugin add`),
+    // except the single audited host-absent name — which must not be a peer and
+    // must be exact-pinned like everything else.
+    const everyCoreDependency = [
+      ...Object.keys(deps),
+      ...Object.keys(manifest.optionalDependencies ?? {}),
+    ].filter((name) => name.startsWith('@deepseek-ai/'))
+    expect(everyCoreDependency.sort()).toEqual([HOST_ABSENT_DEPENDENCY])
+    expect(peers).not.toHaveProperty(HOST_ABSENT_DEPENDENCY)
+    expect(deps[HOST_ABSENT_DEPENDENCY]).toBe(EXPECTED_PEER_RANGE)
+    // `@deepseek-ai/dsh-tools` in particular can never come back: it is the
+    // module whose Symbol identity the agent-loop depends on.
+    expect(deps).not.toHaveProperty('@deepseek-ai/dsh-tools')
+    expect(manifest.optionalDependencies ?? {}).not.toHaveProperty('@deepseek-ai/dsh-tools')
   })
 
   it('positive: runtime ' + EXPECTED_RUNTIME + ' → compatible, the evaluator reports no issue (no exemption needed)', async () => {

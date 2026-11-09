@@ -1,0 +1,38 @@
+# install of the FIXED tarball (pack-v7) into a pristine profile
+# profile shape = what 'dsh plugin add' writes: nodeLinker: hoisted, autoInstallPeers: false
+# plus machine-local storeDir and strictDepBuilds:false (sandbox: native build scripts are blocked)
+
+$ dsh plugin --profile web add pack-v7/dsh-agent-team-0.1.1-alpha.2.tgz
+
+$ ls node_modules
+@deepseek-ai
+@standard-schema
+dsh-agent-team
+yaml
+zod
+
+$ ls node_modules/@deepseek-ai
+cosmokit
+dsh-web-search-exa
+schemastery
+
+$ ls -d node_modules/.pnpm/@deepseek-ai+dsh-tools*
+(none: no dsh-tools copy in the profile)
+
+$ cat package.json (profile)
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  },
+  "dependencies": {
+    "dsh-agent-team": "file:/home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/pack-v7/dsh-agent-team-0.1.1-alpha.2.tgz"
+  }
+}

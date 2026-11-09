@@ -1,0 +1,158 @@
+{
+  "steps": [
+    {
+      "key": "rounds-before-stop",
+      "method": "goals/get",
+      "at": 1794199475195,
+      "injectedRef": {
+        "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+        "revision": 1
+      },
+      "result": {
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "pd37-puu2cm8l",
+          "result": {
+            "ok": true,
+            "value": {
+              "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+              "revision": 1,
+              "objective": "PD37 goal-round proof objective",
+              "phase": "active",
+              "maxGoalRounds": 50,
+              "roundsStarted": 4,
+              "createdAt": 1794199472732,
+              "updatedAt": 1794199472732,
+              "activation": "armed"
+            }
+          }
+        },
+        "ok": true,
+        "value": {
+          "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+          "revision": 1,
+          "objective": "PD37 goal-round proof objective",
+          "phase": "active",
+          "maxGoalRounds": 50,
+          "roundsStarted": 4,
+          "createdAt": 1794199472732,
+          "updatedAt": 1794199472732,
+          "activation": "armed"
+        }
+      }
+    },
+    {
+      "key": "pause",
+      "method": "goals/pause",
+      "at": 1794199475201,
+      "injectedRef": {
+        "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+        "revision": 1
+      },
+      "result": {
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "pd37-ihculzrr",
+          "result": {
+            "ok": true,
+            "value": {
+              "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+              "revision": 2,
+              "objective": "PD37 goal-round proof objective",
+              "phase": "paused",
+              "maxGoalRounds": 50,
+              "roundsStarted": 4,
+              "createdAt": 1794199472732,
+              "updatedAt": 1794199475203,
+              "activation": "disarmed"
+            }
+          }
+        },
+        "ok": true,
+        "value": {
+          "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+          "revision": 2,
+          "objective": "PD37 goal-round proof objective",
+          "phase": "paused",
+          "maxGoalRounds": 50,
+          "roundsStarted": 4,
+          "createdAt": 1794199472732,
+          "updatedAt": 1794199475203,
+          "activation": "disarmed"
+        }
+      }
+    },
+    {
+      "key": "cancel",
+      "method": "session/cancel",
+      "at": 1794199475221,
+      "injectedRef": {
+        "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+        "revision": 2
+      },
+      "result": {
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "pd37-6lzx5t9r",
+          "result": {
+            "ok": true,
+            "value": {
+              "accepted": true
+            }
+          }
+        },
+        "ok": true,
+        "value": {
+          "accepted": true
+        }
+      }
+    },
+    {
+      "key": "after-stop",
+      "method": "goals/get",
+      "at": 1794199475229,
+      "injectedRef": {
+        "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+        "revision": 2
+      },
+      "result": {
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "pd37-9jq808q0",
+          "result": {
+            "ok": true,
+            "value": {
+              "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+              "revision": 2,
+              "objective": "PD37 goal-round proof objective",
+              "phase": "paused",
+              "maxGoalRounds": 50,
+              "roundsStarted": 4,
+              "createdAt": 1794199472732,
+              "updatedAt": 1794199475203,
+              "activation": "disarmed"
+            }
+          }
+        },
+        "ok": true,
+        "value": {
+          "id": "goal-1c714075-3df6-4ee1-80d0-47261f66a5ec",
+          "revision": 2,
+          "objective": "PD37 goal-round proof objective",
+          "phase": "paused",
+          "maxGoalRounds": 50,
+          "roundsStarted": 4,
+          "createdAt": 1794199472732,
+          "updatedAt": 1794199475203,
+          "activation": "disarmed"
+        }
+      }
+    }
+  ],
+  "requestsAtStop": 12,
+  "requestsAfterStop": 12
+}

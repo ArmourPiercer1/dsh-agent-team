@@ -1,0 +1,13 @@
+# The pinned host ships five of the six packages this plugin imports by value.
+# Resolution is done from the host CLI entry (NO plugin installed, no profile involved):
+
+@deepseek-ai/dsh-skill             -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/skill/skill/lib/index.js
+@deepseek-ai/dsh-tool-fs           -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js
+@deepseek-ai/dsh-tool-web          -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/web/tool-web/lib/index.js
+@deepseek-ai/dsh-tools             -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js
+@deepseek-ai/dsh-web-fetch-http    -> /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/web/web-fetch-http/lib/index.js
+@deepseek-ai/dsh-web-search-exa    -> NOT RESOLVABLE from the host CLI entry (MODULE_NOT_FOUND)
+
+# dsh-web-search-exa exists in the host SOURCE tree (tests/deepseek-harness-test-use/packages/web/web-search-exa)
+# but is not linked into the host CLI install scope, so it is NOT host-provided at runtime.
+# It therefore stays a plugin dependency (it drags no dsh-tools; see 01-install-fixed.txt).
