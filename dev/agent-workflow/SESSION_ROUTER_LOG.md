@@ -8536,3 +8536,39 @@ STATUS 已经写下的两个 falsifier（逐字保留）：
   要求成字符串 `paused`）；两行都留在 append-only `run-ledger.jsonl`，`runs/` 只保留最终 pair。
 - **门**：register 10/10；`a5sf-pd34-member-stop.test.mjs` 8/8；`doc-checks` rc 0；`check-artifacts:head`
   不受影响（只改 `.mjs` 与文档，无 client bundle 变更）。
+
+## 2026-11-09 — INT-V016：联合 Alpha.5 + Alpha.6 候选收尾，master 前移到 `a1d8f6f33`（**不是发布**）
+
+**裁决与范围**：按 Owner 2026-11-09 的联合收尾裁决执行四门中的第 1–3 门；**第 4 门（`v0.1.6-rc.1`）未执行**，
+因为 G2–G5 与独立 `CANDIDATE-C2` 未运行。`release` 仍 **BLOCKED**，无 `V@B`，无等级变更。
+
+**落地（全部经 PR + 合并前 Required CI 绿）**：
+- `#691` `integration/v0.1.6` → `master`：Alpha.6 栈落到 Alpha.5 Preview 基座，merged live-binding 从 A6 侧重
+  建、PD-29 Stop 语义保留；ARC-A 以具名 override 记账。这是**候选线第一次拿到 Required CI 判决**——三个
+  required context 都声明 `pull_request: branches: [master]`，base 为未保护的 integration 分支时零检查，
+  三份验收报告因此都写 `NOT-RUN`，没有一份把它写成通过。
+- `#692` A56-SEMANTICS：工作投递保持 `kind:'user'`（上游 `RuntimeRoot ∧ SourceKindUser` 使 `create_goal` 合法），
+  机器中继/控制通知/review wake 保持 `plugin:dsh-agent-team`；Sticky Stop 恢复仲裁改由新 Team 法则
+  `input-provenance.mjs`（冻结信封 + 有界机器输入账本，**异常即 fail-closed 判机器**）提供。同一 E2E 双向测量：
+  基线 `GOAL_TOOL_AUTHORITY_REQUIRED`/0 轮，本头 3 轮→`complete`、19/19。
+  明确拒绝了「Team 自建 Goal 适配层」：那是**受限方自己抬高自己的限制**。
+- `#693` A6-GAPS：执行结果写者**从未接线**（`onExecutionResult` 落在 `request:` 字面量内，spread 让 TS 的
+  excess-property 检查失效）；修复后正常路径写下耐久 `succeeded`（`A6-27`，`facts=1`）。**`A6-26` 保持 FAIL**：
+  Inbox `ACCEPTED`-but-not-`CLAIMED` 崩溃窗口**终态放弃**该请求（0 重复执行、0 副作用，恢复=重新发起）。
+- `#694` PD-38/PD-39/PD-40 登记；`#695` 版本 `0.1.6` + Release Notes + 操作员 runbook；`#696` 独立审查
+  （0 P0 / 3 P1 / 6 P2）；`#697` 修 P1：中继归因按 A6 opt-in 门控（A6 关恢复基线 `kind:'user'`）、
+  Sticky Stop 如实写为 **latch-scoped**（PD-40）、`handoff-context` 信封按生产者真实渲染补为不带方括号。
+- `#698` 第三门验收证据：A5 E2E 2/2（preset 内无 `alpha6` 字符串）；A6 allow/deny/exception/Stop/crash-restart/
+  claimed-inbox 各两轮一致；**0.1.6 tarball**（`4 359 449 B`，`sha256 881065c9…`）安装 → Team → Member → Goal →
+  Stop → 回收 → SIGKILL 冷恢复两轮一致（`records=51->51`），真实模型。
+
+**四个门各自红了，一个都没有放宽**：证据体积门（census 原始捕获截断保留完整字节指向，不删）、p4t6 文件账
+（补登 `INT_V016` 1499→1502，且**先在旧头上复现**才认定是 A6 合并所致）、blueprint-fence 自检（删除陈旧裁决行）、
+blueprint-fence 基线（A6 的 `=v5` 是**新工作**，公开重录并写明理由）。
+
+**我自己造成并自己纠正的错误**：第一次处理 census 捕获时删除了三个文件，直接让 p4t6 少算 3 个文件——
+「让一个仪器的输入消失来讨好另一个仪器」。已改为截断保留。
+
+**下一步（阻塞项，按序）**：G2–G5 逐工具验收（`TOOL-ACCEPTANCE-MATRIX` 的 BL-14…BL-37）与独立 `CANDIDATE-C2`
+（不可变 SHA + Authority + Host + Oracle + 独立裁决）；`A6-26` 的收窄承诺与 runbook 已入档但缺陷仍在；
+`v0.1.6-rc.1` 在上述门通过前不得打 tag。
