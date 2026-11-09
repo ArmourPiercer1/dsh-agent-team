@@ -34,7 +34,11 @@
  *   routing — a newer/older Blueprint never lends its policy to an old leg;
  * - no current-leg transfer exists for the leg;
  * - exactly ONE live (`RUNNING`) Member instance carries the Blueprint's Officer
- *   template in this team — zero or multiple Officers refuse (never "pick one");
+ *   template in this team — zero or multiple live Officers refuse THE QUERY
+ *   (never "pick one"). This is a per-query refusal, not a boot refusal: the
+ *   Team boots with zero Officer rows and the review attempt is what refuses
+ *   (`officer-instance-count`); only a missing/Leader-equal
+ *   `officerTemplateId` refuses at boot (`composition.ts`);
  * - the frozen authority generation is present and equals the composition's
  *   CURRENT generation FOR THE OPERATION OWNER (not the Officer's). `0` is a
  *   legal initial generation; absence (`undefined`) refuses;
@@ -51,9 +55,12 @@
  * service from the durable row, and `memberCapabilityProblem()` re-binds the
  * resulting candidate to that row. This port therefore cannot widen authority.
  *
- * The module is unwired in production today (see the PR5 design note): the
- * control service refuses the delegated entry whenever a port is absent, which
- * is why an unwired composition stays fail-closed.
+ * The module IS wired in production (2026-11-09 update; the earlier "unwired
+ * in production today" note was stale): `createAlpha6LiveRootComposition`
+ * calls `createAlpha6ControlPorts` and the production root passes both ports
+ * into `createControlService` (`root.ts:3180-3190`). The control service still
+ * refuses the delegated entry whenever a port is absent, which is why an
+ * Alpha.6-absent composition stays fail-closed.
  *
  * @module @dsh-agent-team/runtime/alpha6/assigned-officer-facts
  */

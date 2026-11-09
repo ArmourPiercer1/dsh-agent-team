@@ -1960,6 +1960,15 @@ export function createTeamProductionRoot(params) {
      * not. The marker is written BEFORE the reducer so a restart between the two
      * cannot lose the Stop; an unclaimed queued wake is withdrawn and its intent
      * row cleared, never replayed.
+     *
+     * KNOWN LIMIT (measured, P1-2): the marker is LATCH-SCOPED, not session-
+     * scoped. It is written only when a wake coordinator already exists for the
+     * session (`alpha6WakeBySession`, populated by a wake dispatch or by boot
+     * recovery of an intent/stopped row). A human Stop issued between asks — or
+     * after a restart, before the next ask — finds no coordinator, writes NO
+     * marker and returns false, so the next review wake may activate the
+     * reviewer. PD-40 tracks the session-scoped marker as a design decision
+     * (crash semantics), deliberately not attempted in 0.1.6.
      */
     const alpha6WakeUserStop = alpha6Wiring.mode === 'alpha6' && alpha6WakeIntents !== undefined
         ? async (targetSessionId) => {

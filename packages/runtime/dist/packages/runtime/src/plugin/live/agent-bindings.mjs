@@ -5437,13 +5437,19 @@ export function createAgentBindings(deps) {
       }
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
-        // A56-SEMANTICS (kept A6 law): only a HUMAN sender (the closed
-        // attribution's fromHumanId) is a human interaction; a Leader/model
-        // relay carries the producer-owned MACHINE kind, so it can never clear
-        // a human Sticky Stop on the recipient and can never manufacture a
-        // direct-human goal turn for it (upstream authority.ts
-        // `hasDirectHumanInput` reads exactly this source kind).
-        source: input.attribution.fromHumanId === undefined
+        // A56-SEMANTICS (P1-3, gated on the Alpha.6 opt-in): only a HUMAN
+        // sender (the closed attribution's fromHumanId) is a human
+        // interaction. A Leader/model relay carries the producer-owned
+        // MACHINE kind ONLY while the Alpha.6 review plane is opted in — the
+        // SAME `config.alpha6ReviewRouting === true` flag `root.ts` hands to
+        // `createAlpha6RootWiring(true, thunk)`; then it can never clear a
+        // human Sticky Stop on the recipient. With the opt-in absent/false no
+        // Sticky Stop listener is registered at all, so this path restores the
+        // base `{kind:'user'}` attribution and a relay-started Member turn
+        // keeps the upstream direct-human goal authority (`hasDirectHumanInput`,
+        // authority.ts) — the Alpha.5 behaviour is literally unchanged.
+        source: config?.alpha6ReviewRouting === true
+          && input.attribution.fromHumanId === undefined
           ? TEAM_PRODUCER_SOURCE
           : { kind: 'user' },
       })
