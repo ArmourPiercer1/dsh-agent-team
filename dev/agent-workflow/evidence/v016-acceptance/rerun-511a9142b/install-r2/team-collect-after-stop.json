@@ -1,0 +1,46 @@
+{
+  "note": "the exact team_collect request and response issued after Stop, from the root session log",
+  "collected": [
+    {
+      "kind": "call",
+      "turn": 1,
+      "step": 6,
+      "arguments": {
+        "requestToken": "tok-instflow-r2-collect-1",
+        "requestTokens": [
+          "tok-instflow-r2-delegate-1"
+        ],
+        "rootSessionId": "session-v016-install-root-r2"
+      }
+    },
+    {
+      "kind": "result",
+      "turn": 1,
+      "step": 6,
+      "text": {
+        "status": "executed",
+        "action": "work-status",
+        "rootSessionId": "session-v016-install-root-r2",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "work-status",
+          "entries": [
+            {
+              "requestToken": "tok-instflow-r2-delegate-1",
+              "status": "succeeded",
+              "instanceId": "inst-1tw5edl1ewej",
+              "admittedSequence": 2,
+              "settledSequence": 5,
+              "memberResult": {
+                "body": "Command ran successfully (exit code 0).\n\nOutput:\n```\nINSTALL_FLOW_r2\n```\n\nThe command created `install-flow-r2.txt` in the workspace root (`/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r2/ws`) and printed `INSTALL_FLOW_r2` with no stderr.",
+                "requestToken": "tok-instflow-r2-delegate-1",
+                "status": "succeeded"
+              }
+            }
+          ]
+        },
+        "requestToken": "tok-instflow-r2-collect-1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "promptStatus": 200,
+  "doneSeen": true,
+  "wakes": 0,
+  "leaderWakes": 0,
+  "officerWakes": 0,
+  "leaderNotifications": 6,
+  "selfRequestId": "ctrl-0ab3lau184bt5p0gk5mts1y9",
+  "selfActionName": "team-tool-execute",
+  "selfDecision": {
+    "sequence": 32,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-0ab3lau184bt5p0gk5mts1y9",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "createdAt": "2026-11-09T19:02:59.824Z"
+  },
+  "leaderDecided": true,
+  "executed": true,
+  "execText": "c1-a6-self-2026-11-09T19-01-45\n",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/tests/homes/c1-smoke-2026-11-09T19-01-45/workspace/c1-a6-self-2026-11-09T19-01-45.txt",
+  "requestId": "ctrl-0ab3lau184bt5p0gk5mts1y9"
+}

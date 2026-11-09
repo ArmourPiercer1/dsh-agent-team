@@ -1,0 +1,25 @@
+[2026-11-09T19:43:29.426Z] packed /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/dev/agent-workflow/evidence/v016-acceptance/pack/dsh-agent-team-0.1.6.tgz bytes=4358631 sha256=e23257e8b07b6590904fa680b6a81c3a7a33f7b747f285f90018c506400a3929
+[2026-11-09T19:43:31.575Z] dsh plugin --profile web add: Progress: resolved 7, reused 7, downloaded 0, added 7, done | Done in 1.9s using pnpm v11.7.0
+[2026-11-09T19:43:31.610Z] profile cordis.patch.yml written (host row + operator provider); blueprint v016-install-bp v4 with memberIoCeilings
+[2026-11-09T19:43:33.122Z] boot line: http://127.0.0.1:3197/?token=<redacted>
+[2026-11-09T19:43:33.122Z] ── flow: team.create -> member execute -> human approval -> goal -> stop -> collect ──
+[2026-11-09T19:43:33.123Z] boot line: http://127.0.0.1:3197/?token=<redacted>
+[2026-11-09T19:43:33.156Z] authenticated (303 + cookie); origin=http://127.0.0.1:3197
+[2026-11-09T19:43:33.675Z] team-remote MOUNTED (team.listRoots ok)
+[2026-11-09T19:43:33.691Z] team.create status=200 ok=true err=null
+[2026-11-09T19:43:33.703Z] team.ensureRootLive ok=true live=true
+[2026-11-09T19:43:33.717Z] leader prompt status=200 accepted=true
+[2026-11-09T19:43:37.798Z] member created: {"instanceId":"inst-1ls3ps80m8r9","templateId":"worker","label":"w1","lifecycle":"CREATED","childSessionId":"session-team-child-c13d580c4e3905cd03b88d68a892af83","result":null}
+[2026-11-09T19:43:48.719Z] no pending control for the member bash; side effect already present -> approval=none-required (finding)
+[2026-11-09T19:43:48.719Z] member executed: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/tests/homes/v016-install-r1/ws/install-flow-r1.txt body="INSTALL_FLOW_r1"
+[2026-11-09T19:43:48.722Z] consumption=false execution=none
+[2026-11-09T19:43:48.726Z] member goal prompt status=200 ok=true
+[2026-11-09T19:43:51.253Z] goal active: id=goal-7c647998-3bb1-4526-947b-6d1c85e44e29 phase=active roundsStarted=1
+[2026-11-09T19:44:06.300Z] stop: pause=true cancel=200 phase=paused rounds=1 recordsDelta=0 ok=true
+[2026-11-09T19:44:06.304Z] leader collect prompt status=200
+[2026-11-09T19:44:29.361Z] collect: ok=true
+[2026-11-09T19:44:29.361Z] ── cold recovery: SIGKILL + restart on the same DSH_HOME ──
+[2026-11-09T19:44:49.427Z] host killed for cold restart (exit=null)
+[2026-11-09T19:45:11.269Z] cold recovery: member=true goal=paused rounds=1->1 records=51->51 ok=true
+[2026-11-09T19:45:11.269Z] teardown: stopping host
+[2026-11-09T19:45:12.771Z] world retained at /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/tests/homes/v016-install-r1 (evidence; delete after the run)
