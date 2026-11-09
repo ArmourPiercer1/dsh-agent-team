@@ -58,6 +58,15 @@ export const TEAM_PRODUCER_SOURCE = Object.freeze({ kind: 'plugin:dsh-agent-team
  * from the producers:
  *   - `[team-work requestToken=`            workDelivery.deliver (delegation/follow-up)
  *   - `[team-root-work requestToken=`       deliverRootWork (root initial work)
+ *   - `handoff-context `                    deliverRootContext (B6 handoff context;
+ *                                           `root.ts` renders `handoff-context <token>\n<json>`,
+ *                                           token-leading but NOT bracketed)
+ *
+ * The handoff entry was missing from the first revision of this law and was
+ * LATENT rather than exploitable: a handoff target is a freshly created root,
+ * and a Sticky Stop marker exists only for a reviewer session with a wake
+ * coordinator — so the misclassified claim had no marker to clear. It is listed
+ * now because the durable text shape is the only restart-proof half.
  *
  * Deliberately ABSENT, and the reason each needs no entry:
  *   - relays (human vs machine share ONE envelope): a human `member.send`
@@ -73,6 +82,7 @@ export const TEAM_PRODUCER_SOURCE = Object.freeze({ kind: 'plugin:dsh-agent-team
 export const TEAM_MACHINE_ENVELOPES = Object.freeze([
   '[team-work requestToken=',
   '[team-root-work requestToken=',
+  'handoff-context ',
 ])
 
 /**

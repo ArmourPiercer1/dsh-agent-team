@@ -78,8 +78,13 @@ interface ProvenanceBinding {
   deliverRootControlNotification(input: { rootSessionId: string; requestId: string; text: string }): Promise<void>
 }
 
-async function world(): Promise<{ binding: ProvenanceBinding; records: { followups: FollowupRecord[] } }> {
-  const live = await createLiveWorld({ rootSessionId: ROOT })
+async function world(options: { alpha6ReviewRouting?: boolean } = {}): Promise<{ binding: ProvenanceBinding; records: { followups: FollowupRecord[] } }> {
+  const live = await createLiveWorld({
+    rootSessionId: ROOT,
+    ...(options.alpha6ReviewRouting === undefined
+      ? {}
+      : { configOverrides: { alpha6ReviewRouting: options.alpha6ReviewRouting } }),
+  })
   const binding = live.binding as unknown as ProvenanceBinding
   await binding.boot()
   await binding.createRootAgent(ROOT)
@@ -90,12 +95,17 @@ async function world(): Promise<{ binding: ProvenanceBinding; records: { followu
 
 describe('A56 law: the machine envelopes are the frozen wire contract', () => {
   it('every producer envelope is classified machine, at the head only', () => {
-    expect(TEAM_MACHINE_ENVELOPES).toEqual(['[team-work requestToken=', '[team-root-work requestToken='])
+    expect(TEAM_MACHINE_ENVELOPES).toEqual([
+      '[team-work requestToken=',
+      '[team-root-work requestToken=',
+      'handoff-context ',
+    ])
     // ONLY the human-attributed deliveries are envelope-classified (the others
     // carry the producer machine kind). See the module doc for why.
     const samples: Record<string, string> = {
       '[team-work requestToken=': '[team-work requestToken=tok-1] do the work',
       '[team-root-work requestToken=': '[team-root-work requestToken=tok-2] start',
+      'handoff-context ': 'handoff-context tok-3\n{"contextToken":"tok-3"}',
     }
     for (const [prefix, text] of Object.entries(samples)) {
       expect(TEAM_MACHINE_ENVELOPES).toContain(prefix)
@@ -107,6 +117,23 @@ describe('A56 law: the machine envelopes are the frozen wire contract', () => {
     expect(isTeamMachineText('I saw "[team-work requestToken=x] yesterday"')).toBe(false)
     expect(isTeamMachineText('')).toBe(false)
     expect(isTeamMachineText(undefined)).toBe(false)
+  })
+
+  it('the B6 handoff context is a third human-attributed producer, envelope-classified', () => {
+    // `root.ts` renders `handoff-context <contextToken>\n<canonical JSON>` and
+    // `deliverRootContext` delivers it with `source.kind === 'user'` (it is the
+    // target root's initial work). The ledger remembers it only in-process, so
+    // the durable half is this envelope — otherwise a restart/new ledger would
+    // classify the handoff as a human interaction.
+    const text = 'handoff-context tok-b6\n{"contextToken":"tok-b6","note":"frozen context"}'
+    const claim = { id: 'msg-handoff-1', source: { kind: 'user' }, content: [{ type: 'text', text }] }
+    expect(isTeamMachineText(text)).toBe(true)
+    expect(isHumanInteractionClaim(claim, createMachineInputLedger(4), 'session-a')).toBe(false)
+    // Not bracketed: the producer's literal prefix is the law, and a mid-body
+    // occurrence stays human (the token-leading convention).
+    expect(isTeamMachineText(text.replace('handoff-context ', 'context: handoff-context '))).toBe(false)
+    // A human can still type the prefix; that is fail-closed (self-DoS only).
+    expect(isTeamMachineInput({ source: { kind: 'user' }, content: [{ type: 'text', text: 'handoff-context hello' }] })).toBe(true)
   })
 
   it('the producer kind is the plugin-owned v4 kind, never the retired generic wrapper', () => {
@@ -208,8 +235,28 @@ describe('A56 glue: work delivery keeps A5 goal authority and is machine for the
     expect(binding.isTeamMachineInput(added[1]!.sessionId, notification)).toBe(true)
   })
 
-  it('a human-sent relay stays human; a model/Leader relay is machine', async () => {
-    const { binding, records } = await world()
+  it('A6 OFF: a relay restores the base user attribution (relay-started goals work)', async () => {
+    // P1-3: with the Alpha.6 opt-in absent there is no Sticky Stop listener,
+    // so the machine kind buys nothing and costs every relay-started Member its
+    // `create_goal` authority (upstream `hasDirectHumanInput`). This is the
+    // literal base (`87484ded1`) behaviour: `{kind:'user'}` for every relay.
+    const { binding, records } = await world({ alpha6ReviewRouting: false })
+    const before = records.followups.length
+    await binding.sessionInput.submitAttributedInput({
+      sessionId: ROOT,
+      text: '[team-relay] from=instance:leader to=instance:officer please look',
+      attribution: { kind: 'team-relay', fromInstanceId: 'instance:leader' },
+    })
+    const added = records.followups.slice(before)
+    expect(added).toHaveLength(1)
+    expect(added[0]!.message.source).toEqual({ kind: 'user' })
+    // Truthful provenance is kept in the ledger even though no A6 listener
+    // exists: a later A6 opt-in/restart cannot read this delivery as human.
+    expect(binding.isTeamMachineInput(added[0]!.sessionId, added[0]!.message)).toBe(true)
+  })
+
+  it('A6 ON: a human-sent relay stays human; a model/Leader relay is machine', async () => {
+    const { binding, records } = await world({ alpha6ReviewRouting: true })
     const before = records.followups.length
     await binding.sessionInput.submitAttributedInput({
       sessionId: ROOT,

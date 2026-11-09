@@ -63,9 +63,9 @@ and it may refuse to boot rather than degrade silently.
 | Surface | Status |
 | --- | --- |
 | **Approval routing** (`reviewRouting`) | Experimental. Requires a v5 blueprint and the opt-in; absent/false keeps the Alpha.5 path. |
-| **Officer plane** (assigned-Officer review, transfer, escalation) | Experimental. Needs exactly one legal Officer template; zero or multiple Officers is a configuration refusal. |
-| **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. Known defect A6-26 applies (§5). |
-| **Sticky Stop** (durable human-Stop marker; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. |
+| **Officer plane** (assigned-Officer review, transfer, escalation) | Experimental. Needs exactly one legal Officer template in the routing; zero or multiple live Officers is refused **per query** when a review is attempted (the Team itself boots — the boot only checks the template declaration). |
+| **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. The accepted-but-unclaimed abandonment defect applies (§5). |
+| **Sticky Stop** (human-Stop marker; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. |
 | **v5 blueprints** (`schemaVersion: 5`, `TeamBlueprintV5Core`) | Experimental. v5 extends v4 and one blueprint still carries the v4 I/O ceilings; v3/v4 documents remain supported and byte-identical. |
 
 **Default-off proof, not a promise:** the Alpha.6 opt-in is the boolean
@@ -101,8 +101,9 @@ missing part is a boot-time refusal (`TEAM_PLUGIN_CONFIG_INVALID`), never a sile
 Leader path:
 
 - `alpha6ReviewRouting: true` in the Team plugin config (absent/false = Alpha.5 behaviour);
-- a **v5** bound blueprint whose `reviewRouting` is enabled and which has **exactly one legal
-  Officer template** (zero or two is refused);
+- a **v5** bound blueprint whose `reviewRouting` is enabled and which declares **one legal Officer
+  template** (a missing or Leader-equal `officerTemplateId` refuses at boot; zero or two live
+  Officer *instances* are refused per query when a review is attempted — see §4.7);
 - an **absolute, non-empty durable** `alpha6WakeIntentPath` (one wake-intent row per latch, so two
   reviewers cannot overwrite each other);
 - a Host that exposes both the live review-wake delivery seam and `live.reviewWakeInbox`;
@@ -135,12 +136,33 @@ closes.
 6. **This is not a security boundary against a malicious Member.** It is governance with
    attribution, not isolation with non-escape. A malicious Member is the subject of a later phase,
    not a property this release claims.
+7. **The Alpha.6 Sticky Stop is latch-scoped, not session-scoped (PD-40).** A human Stop writes its
+   durable marker only when a wake coordinator already exists for that reviewer session (a wake was
+   dispatched, or boot recovery adopted an intent/stopped row). A Stop issued **between asks**, or
+   **after a restart before the next ask**, finds no coordinator, writes nothing and returns
+   `false`; the next review wake can then activate the "stopped" reviewer. This is why §2.2 states
+   the condition instead of promising an unconditional durable marker. Falsifier (the reviewer's):
+   call the stop hook on a session with no latch and observe a `stopped-*` marker; or show a
+   production path that creates a coordinator for every live reviewer at boot. Making the marker
+   session-scoped is a design change with crash semantics and is tracked as PD-40, not attempted here.
+8. **With Alpha.6 ON, a relay-started turn cannot authorize `create_goal`.** A machine
+   `team_send_message` / Leader relay carries the producer kind `plugin:dsh-agent-team`, so upstream
+   `hasDirectHumanInput` refuses `create_goal` on that turn. Work delivery, root work and a human
+   `member.send` still carry `source.kind: 'user'` and keep the authority. With Alpha.6 **off** the
+   relay attribution is the base `{kind:'user'}` (and no Sticky Stop listener exists), so the
+   Alpha.5 Goals row in §2.1 is unchanged.
 
 ---
 
-## 5. Known defect A6-26 — read before relying on review wake
+## 5. Known defect A6-GAPS-26 — read before relying on review wake
 
-**A6-26 (open; affects the experimental Alpha.6 review-wake plane).** An Inbox wake that was
+> **Id scope.** `A6-26` is reused by two different evidence sets: in
+> `dev/agent-workflow/evidence/a56-semantics/05-a6-kit-run.log` it is "relay/work delivery does not
+> clear the Sticky Stop" (**PASS**); in `a6-gaps-g2-unclaimed-r11/run.log` it is the abandonment below
+> (**FAIL**). This section cites the second by path and text (`FAIL A6-26 … verdict=abandoned-terminal`)
+> and does not rely on the bare id. Renaming the A6-GAPS ids (e.g. `A6G-26`) is tracked separately.
+
+**A6-GAPS-26 (open; affects the experimental Alpha.6 review-wake plane).** An Inbox wake that was
 **accepted but not yet claimed** can be **terminally abandoned** across a crash. The measured
 consequence is:
 
@@ -151,8 +173,9 @@ consequence is:
   `CONTROL_REQUEST_ABANDONED` ("can never become an allow");
 - the Inbox wake is not redelivered.
 
-The measured run is `dev/agent-workflow/evidence/a6-gaps-g2-unclaimed-r11/` (check `A6-26` FAIL,
-verdict `abandoned-terminal`). A crash **at claim time** recovers: a claimed wake is replaced by
+The measured run is `dev/agent-workflow/evidence/a6-gaps-g2-unclaimed-r11/run.log` (the line
+`FAIL A6-26 … verdict=abandoned-terminal`; any `A6-26 PASS` you find in `a56-semantics/` is a
+different assertion). A crash **at claim time** recovers: a claimed wake is replaced by
 exactly one new wake and its durable request is preserved or decided
 (`dev/agent-workflow/evidence/a6-gaps-g2-claimed-r10/`, `A6-25` PASS). The gap is specific to the
 **accepted-but-unclaimed** window.
