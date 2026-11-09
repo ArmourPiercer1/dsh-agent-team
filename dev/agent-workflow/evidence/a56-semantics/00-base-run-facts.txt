@@ -1,0 +1,10 @@
+# Measurement A — the integration tree's own attribution (base 356993d2d behaviour)
+
+Instrument: tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs (A5 Preview E2E),
+A5SF_PD29_KEEP_HOME=1 so the member session log survives (world u5u5a5sfpd33-20261109T17-01-34Z).
+The only difference from HEAD is the two attribution expressions, restored to the base bytes
+(work delivery + root-work input = TEAM_PRODUCER_SOURCE, i.e. plugin:dsh-agent-team; diff in 02-*).
+
+[2026-11-09T17:06:40.107Z] [boot1] first rounds on every member=false rounds={"b":0,"s1":0,"s2":0,"cold":0,"stop2":0,"stop3":0}
+[2026-11-09T17:06:42.046Z] [boot1] E2E: members=8 a.calls=18 b.rounds=0 b.phase=null fetchConn=1 searchPOST=0 hostWebCalls=0 collect=true
+[2026-11-09T17:10:42.137Z] [boot1] FAILED at Error: S1c never reached round 2

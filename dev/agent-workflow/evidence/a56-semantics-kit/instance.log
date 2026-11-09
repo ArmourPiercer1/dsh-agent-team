@@ -1,0 +1,23 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a56-semantics/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=nyCCkb9LdYvdvDuXmPDwkXA--GVK6GMDyZk7jAUGTAU
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-09T17-22-34 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-09T17-22-34
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-09T17-22-34 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a56-semantics/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-09T17-22-34 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-09T17-22-34
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-09T17-22-34 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-09T17-22-34
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0igjs351uq0d-bash:hexec:1e92c8c9-fd97-4c6d-8e6c-3cf7653260e5-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-09T17-22-34:inst-0igjs351uq0d:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a56-semantics/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=spQK4hviYJCLScyMgewJ1f9s5yTF0v4SznuPR5PLhG8
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 101ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-09T17-22-34 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-09T17-22-34
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-09T17-22-34 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a56-semantics/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)

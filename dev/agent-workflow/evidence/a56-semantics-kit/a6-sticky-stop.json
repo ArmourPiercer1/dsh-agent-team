@@ -1,0 +1,29 @@
+{
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "c1a6sticky-2h4637dl19",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "rows": [
+    "stopped-f0f56deb.json"
+  ],
+  "stoppedRows": [
+    "stopped-f0f56deb.json"
+  ],
+  "wakeRows": [],
+  "wakeSeen": 1,
+  "wakesAfter": 1,
+  "markersAfterRestart": [
+    "stopped-f0f56deb.json"
+  ],
+  "wakesAfterRestart": 1,
+  "markersAfterResume": [],
+  "wakesAfterResume": 4,
+  "executedAfterResume": false,
+  "restartError": null
+}

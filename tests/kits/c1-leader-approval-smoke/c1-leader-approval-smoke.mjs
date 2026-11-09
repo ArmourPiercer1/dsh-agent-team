@@ -1333,6 +1333,62 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     const ok = cancelOk && stoppedRows.length === 1 && wakeRows.length === 0 && wakesAfter === wakeSeen
     check('A6-22', 'a real Host user Stop leaves a durable Sticky Stop marker, withdraws the queued wake row, and does not re-deliver', ok,
       `cancel=${String(cancelOk)} markers=${stoppedRows.join(',')} wakeRows=${wakeRows.join(',')} wakes=${wakeSeen}->${wakesAfter}`)
+      // ── A56-SEMANTICS: MACHINE input must never clear a human Sticky Stop ──
+      // Delivered HERE, while the stopped Officer Session is still LIVE, so the
+      // native Inbox actually CLAIMS each message (the mock sees it and a turn
+      // starts): that is the arbour's real question. A delivery that merely
+      // queues behind a suspended latch would prove nothing about the arbour.
+      // The Alpha.6 resume arbour used to key on `source.kind === 'user'` alone.
+      // That is necessary but NOT sufficient after the joint close-out: WORK
+      // delivery (delegation / follow-up) must keep the human attribution,
+      // because upstream `tool-goal` authority (`hasDirectHumanInput`) reads
+      // exactly it — without it a governed Member loses `create_goal`. So the
+      // producer classifies its own input and the arbour asks the producer.
+      const stoppedMarkersNow = () => {
+        const now = existsSync(markerDir) ? readdirSync(markerDir) : []
+        return now.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      }
+      const wakesNow = () => mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      const sawText = (needle) => mock.requests.some((r) => lastUserTextOf(r).includes(needle))
+      const wakesBeforeMachine = wakesNow()
+      const machineRelay = await remoteCall(booted.origin, booted.cookie, 'member.send', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'instance', instanceId: 'instance-c1-a6-leader' },
+        recipientInstanceId: officer.instanceId,
+        body: 'C1_A6_MACHINE_RELAY',
+        requestToken: `c1-a6-machine-relay-${String(Date.now())}`,
+      }, 'c1a6mrelay', 4)
+      await new Promise((resolve) => setTimeout(resolve, 6000))
+      const markersAfterMachineRelay = stoppedMarkersNow()
+      const wakesAfterMachineRelay = wakesNow()
+      const relayClaimed = sawText('C1_A6_MACHINE_RELAY')
+      writeEvidence('a56-machine-relay.json', { relay: machineRelay.body ?? machineRelay, markersAfterMachineRelay, wakesBeforeMachine, wakesAfterMachineRelay, relayClaimed })
+      // MEASURED (run 2026-11-09): a stopped latch accepts the machine relay
+      // into the native Inbox (status 200) and does NOT claim it — `relayClaimed`
+      // is recorded, not required: the Stop holds at the claim boundary before
+      // the arbour is even reached. The arbour below is the fail-closed guard for
+      // the paths where a claim DOES happen.
+      check('A6-26', 'A56: a machine relay to a stopped reviewer does not clear the human Sticky Stop and does not re-deliver the wake',
+        markersAfterMachineRelay.length === 1 && wakesAfterMachineRelay === wakesBeforeMachine,
+        `relayStatus=${String(machineRelay.status)} relayClaimed=${String(relayClaimed)} markers=${markersAfterMachineRelay.join(',')} wakes=${String(wakesBeforeMachine)}->${String(wakesAfterMachineRelay)}`)
+      const machineFollowup = await remoteCall(booted.origin, booted.cookie, 'member.followup', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'instance', instanceId: 'instance-c1-a6-leader' },
+        targetInstanceId: officer.instanceId,
+        requestToken: `c1-a6-machine-work-${String(Date.now())}`,
+        payload: { prompt: 'C1_A6_MACHINE_WORK' },
+      }, 'c1a6mwork', 4)
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      const markersAfterMachineWork = stoppedMarkersNow()
+      const wakesAfterMachineWork = wakesNow()
+      const workClaimed = sawText('C1_A6_MACHINE_WORK')
+      writeEvidence('a56-machine-work.json', { followup: machineFollowup.body ?? machineFollowup, markersAfterMachineWork, wakesAfterMachineWork, workClaimed, wakesBeforeMachine })
+      // The WORK delivery is the one Team input that still carries the human
+      // `kind: 'user'` attribution (A5 goal authority). If the arbour keyed on
+      // the kind alone this leg would fail: the marker would be gone.
+      check('A6-27', 'A56: a machine WORK delivery (human-attributed for A5 goal authority) does not clear the Stop either',
+        markersAfterMachineWork.length === 1 && wakesAfterMachineWork === wakesBeforeMachine,
+        `followupStatus=${String(machineFollowup.status)} workClaimed=${String(workClaimed)} markers=${markersAfterMachineWork.join(',')} wakes=${String(wakesBeforeMachine)}->${String(wakesAfterMachineWork)}`)
     // Cross-restart: the marker is a FILE, not process memory. Kill the Host,
     // boot it again, and prove the Stop survives and no wake is re-delivered.
     let restartError = null
@@ -1374,6 +1430,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
         try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
       }
       if (cookie2 === null) throw new Error('restart auth failed for resume')
+
       const resumed = await remoteCall(origin2, cookie2, 'member.send', {
         teamSessionId: CREATE_ROOT_A6,
         caller: { kind: 'human', humanId: CREATE_ROOT_A6 },

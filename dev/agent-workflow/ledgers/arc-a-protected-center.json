@@ -331,6 +331,12 @@
    "sha256": "0c25bb0a5829cb08931f42a39efac261d047174a52c7012ee834d17e6f73d9f8",
    "pr": "integration/v0.1.6 (PR #691) - NAMED integration-tree booking",
    "reason": "Joint Alpha.5+Alpha.6 close-out: the merged live-binding keeps PD-29 stop semantics (derived childSessionId, durable pause, disarm) and restores the Alpha.6 glue (review-wake delivery, execution-result callback) that the first merge pass dropped; cancel provenance is hook (machine stop) so a relay cannot clear a human Sticky Stop. This digest is the only truthful byte for the integrated tree."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "1c78c59bd0a09a3d358d2302dc076d035622d2a55df7c45649ffd080bb2a3b58",
+   "pr": "A56-SEMANTICS draft PR on task/a56-semantics-20261109, base origin/integration/v0.1.6 (PR #691) @ 356993d2d - NAMED center-interface change, coordinator-assigned",
+   "reason": "A56-SEMANTICS (gateway 2 of the joint Alpha.5+Alpha.6 close-out, target v0.1.6) - NAMED center-interface booking, same file/class as the PD-29 (#679) and Alpha.6 (#585) bookings above. MEASURED DEFECT: the integration tree delivered work/root-work input with the Alpha.6 producer kind (plugin:dsh-agent-team), so upstream tool-goal authority (authority.ts hasDirectHumanInput @ 639ed01539) refused EVERY governed Member's create_goal with GOAL_TOOL_AUTHORITY_REQUIRED and 0 rounds, and the A5 Preview E2E died at its first stop arm; evidence dev/agent-workflow/evidence/a56-semantics/. FIX (resolution a): work/root-work delivery keeps source.kind 'user' (the A5 authority, upstream unchanged) while machine relays, control/completion notifications and review wakes keep the producer machine kind; the new sibling law module input-provenance.mjs (placement 220-a56-input-provenance.json) classifies every Team delivery (frozen [team-work]/[team-root-work] envelopes + a bounded process-local ledger) and the Alpha.6 Sticky Stop resume arbour asks it instead of the raw kind, FAIL-CLOSED (an arbiter exception is machine, never a widening of a human Stop). No upstream patch (CORE PATCH BUDGET = 0), no re-implemented goal state machine. Proven live: A6-26/27 hold the human Stop against a machine relay AND a machine work delivery, A6-24 still resumes on a human send, A5 preview 19/19 incl. the pd29/pd34 stop families."
   }
  ]
 }
