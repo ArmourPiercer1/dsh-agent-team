@@ -1,0 +1,10 @@
+turn/start {"turn":1}
+call t1 s1 skill {"name":"team-leader-operations"}
+call t1 s2 team_list_templates {"rootSessionId":"session-v016-install-root-r2","requestToken":"tok-instflow-r2-list-templates"}
+call t1 s3 team_create_member {"rootSessionId":"session-v016-install-root-r2","requestToken":"tok-instflow-r2-create-w1","delegationTemplateId":"worke
+call t1 s4 team_delegate {"rootSessionId":"session-v016-install-root-r2","requestToken":"tok-instflow-r2-delegate-1","delegationInstanceId":"inst
+call t1 s5 bash {"command":"sleep 15; echo waited","description":"Wait briefly for member work"}
+call t1 s6 team_collect {"requestToken":"tok-instflow-r2-collect-1","requestTokens":["tok-instflow-r2-delegate-1"],"rootSessionId":"session-v016
+turn/end {"turn":1,"reason":{"kind":"completed"}}
+turn/start {"turn":2}
+turn/end {"turn":2,"reason":{"kind":"interrupted"}}

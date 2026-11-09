@@ -1,0 +1,9 @@
+turn/start {"turn":1}
+call t1 s1 skill {"name":"team-leader-operations"}
+call t1 s2 team_list_templates {"rootSessionId":"session-v016-install-root-r1","requestToken":"r1-list-templates-001"}
+call t1 s3 team_create_member {"rootSessionId":"session-v016-install-root-r1","requestToken":"r1-create-w1-001","delegationTemplateId":"worker","label
+call t1 s4 team_delegate {"rootSessionId":"session-v016-install-root-r1","requestToken":"r1-delegate-install-flow-001","delegationInstanceId":"in
+call t1 s5 team_collect {"requestToken":"r1-collect-001","requestTokens":["r1-delegate-install-flow-001"],"rootSessionId":"session-v016-install-
+call t1 s6 bash {"command":"sleep 20; echo waited","description":"Wait for member work to settle"}
+call t1 s7 team_collect {"requestToken":"r1-collect-002","requestTokens":["r1-delegate-install-flow-001"],"rootSessionId":"session-v016-install-
+turn/end {"turn":1,"reason":{"kind":"interrupted"}}

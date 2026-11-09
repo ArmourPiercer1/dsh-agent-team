@@ -125,10 +125,16 @@ approval=none-required`). The `人工审批` step is only real with the Alpha.6 
 install with the governed preset configured as documented executes without a prompt. This is recorded,
 not worked around, and no product change was made to force a prompt.
 
-**Finding C-2 (measurement, not a defect claim):** after Stop, the Leader's `team_collect` still
-returns the Member's settled body (`collect: ok=true` in both runs). Stop freezes goal rounds
-(`rounds=1->1`, `recordsDelta=0` over the 15 s quiet window) but does not hide the already-settled
-work result.
+**Finding C-2 — CORRECTED on re-read (see the appendix for the raw evidence).** The first write-up
+said "post-Stop `team_collect` still returns the settled body". That was a **wrong reading of my own
+driver**: the `collect: ok=true` it logged came from the **pre-Stop** collection inside the Leader's
+first turn (`team_collect` at turn 1), not from a collection issued after Stop. On this head the
+post-Stop prompt reached a turn that the Stop's `session/cancel` **interrupted** (run 1: turn 1
+`interrupted`; run 2: turn 2 `interrupted`), so **no post-Stop collection happened at all**. Stop
+therefore *does* withdraw continuation, as its name says; the durable result stays readable through
+the collection already taken. I do not consider this a defect and am dropping it from the finding
+list. The exact request/response and the turn records are in
+`rerun-511a9142b/install-r2/team-collect-after-stop.json` and `.../root-session-turns.txt`.
 
 Limitations: no headless browser is available in this environment (`bsk` missing), so Stop and the
 approval decision were issued through the **exact RPCs the buttons issue** (`goals/get`,
@@ -192,3 +198,62 @@ sets, not a substitute for required CI. Its absence is a gap in the evidence, no
   orphan (`:3189`) was reaped through the job handle. Neither is `:3080` or the stable instance.
 - The tracked `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/` directory is byte-restored; only
   this new `v016-acceptance/` directory is added by the commit.
+
+
+---
+
+## Re-runs on a moved head — `511a9142b` (V016-FIX)
+
+`origin/integration/v0.1.6` moved **once**, from `c66fa8b03` to `511a9142b` ("V016-FIX: gate the
+relay attribution on the A6 opt-in; disclose the latch-scoped Sticky Stop", PR #697). The candidate
+was therefore **not** stable during acceptance; that is why the rows below are a *subset* re-run on
+the new head and the rows above are **not** rewritten. Each row carries its own head.
+
+Worktree: `.worktrees/v016-accept2` at `511a9142b` (fresh, off the new head). Drivers copied from
+this evidence directory; host baseline unchanged (`0.2.0-rc.2 @ 639ed01539`). Scratch worlds under
+that worktree; teardown as before.
+
+| Row (head `511a9142b`) | Result | Decisive line |
+| --- | --- | --- |
+| A5 zero-regression E2E `--boots 2` | **PASS** (2/2 agreeing) | `RESULT PASS (2/2 boots; agreeing pair=true)`; 19/19 PROVEN both boots; effective preset still contains no `alpha6` string |
+| A6 normal allow → execute, r1 | **PASS** | `PASS A6-27: ... executed=true ... outcome=succeeded facts=1` |
+| A6 normal allow → execute, r2 | **PASS** | `PASS A6-27: ... executed=true ... outcome=succeeded facts=1` |
+| Install joint flow, 0.1.6 tarball from `511a9142b`, r1 | **PASS** (same two findings, C-1 stands) | `cold recovery: member=true goal=paused rounds=1->1 records=51->51 ok=true` |
+| Install joint flow, 0.1.6 tarball from `511a9142b`, r2 | **PASS** (same two findings) | `cold recovery: member=true goal=paused rounds=1->1 records=51->51 ok=true` |
+
+Tarball on this head: **`dsh-agent-team-0.1.6.tgz`, 4,359,449 bytes, sha256
+`881065c9e195531109bea6f4398cfe6f8756f0a4f91bf4a76f2a8f80c01e296d`** (packed from `511a9142b`; the
+`c66fa8b03` tarball was 4,358,631 bytes / `e23257e8…`). Both install runs on this head used the
+new hash.
+
+**Install flow, same shape as §C on the old head, and the same two observations:**
+
+- **C-1 unchanged and not "fixed":** the shipped default still surfaced **no human approval prompt**
+  for the governed member bash (`no pending control for the member bash; side effect already present
+  -> approval=none-required` in both runs). Per the coordinator's ruling this is the correct boundary
+  of the ordinary-install claim: the joint flow itself is proven, the *approval* step is the opt-in
+  Alpha.6 plane (part B). Enabling A6 to make this row "look approved" would be the wrong measurement.
+- **C-2 corrected:** no post-Stop collection occurred; the post-Stop turn was interrupted by the
+  Stop. See the correction above and `rerun-511a9142b/install-r1|r2/root-session-turns.txt` —
+  run 1 `turn/end {"turn":1,"reason":{"kind":"interrupted"}}`, run 2 `turn/start {"turn":2}` →
+  `turn/end {"turn":2,"reason":{"kind":"interrupted"}}`.
+
+Not re-run on `511a9142b` (unchanged code paths per the fix's disclosure, and out of the agreed
+subset): deny/negatives, exception, Stop, crash/restart, claimed inbox, accepted-unclaimed. Their
+`c66fa8b03` results above stand as measured; they are **not** claimed for `511a9142b`.
+
+### Release Notes §5 on `511a9142b` — the surface distinction is still not stated (P2)
+
+`V016-FIX` did add the id-scope box and now cites `a6-gaps-g2-unclaimed-r11/run.log` plus the
+`FAIL A6-26 … verdict=abandoned-terminal` text, and it separates the `a56-semantics` PASS from the
+abandonment FAIL. **But the sentence at line 189 is unchanged:**
+
+> "an accepted wake may end in a durable, discoverable, side-effect-free abandonment; it is not a
+> promise that every accepted wake is eventually delivered or decidable on this base."
+
+"discoverable" is still unqualified: nothing in §5 says **which surface** makes it discoverable. The
+measurement is `requestFactVisible: true` (ledger page) but `pendingControlCount: 0` and
+`pendingAfter: 0` (`team_list_pending_control` shows nothing, and the request is not decidable).
+An operator reading only §5 and then the pending-control list will conclude the request vanished.
+This is a documentation defect, not a behaviour claim — the same P2 as before, still open on
+`511a9142b`.

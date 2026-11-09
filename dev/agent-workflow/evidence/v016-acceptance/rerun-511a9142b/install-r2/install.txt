@@ -1,0 +1,6 @@
+run=2
+tarball=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/dev/agent-workflow/evidence/v016-acceptance-r2/pack/dsh-agent-team-0.1.6.tgz
+sha256=881065c9e195531109bea6f4398cfe6f8756f0a4f91bf4a76f2a8f80c01e296d
+bytes=4359449
+host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r2/host/node_modules/@deepseek-ai/dsh
+profile=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r2/home/profiles/web

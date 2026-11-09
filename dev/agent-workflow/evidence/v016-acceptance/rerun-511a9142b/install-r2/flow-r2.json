@@ -1,0 +1,120 @@
+{
+  "schema": "v016-install-flow/1",
+  "run": "2",
+  "steps": {
+    "mount": {
+      "ok": true,
+      "at": "2026-11-09T20:17:32.070Z"
+    },
+    "teamCreate": {
+      "status": 200,
+      "ok": true,
+      "error": null
+    },
+    "memberCreated": {
+      "member": {
+        "instanceId": "inst-1tw5edl1ewej",
+        "templateId": "worker",
+        "label": "w1",
+        "lifecycle": "CREATED",
+        "childSessionId": "session-team-child-d9921020379d55d321aacdab0227ed0b",
+        "result": null
+      },
+      "members": [
+        {
+          "instanceId": "inst-1tw5edl1ewej",
+          "templateId": "worker",
+          "label": "w1",
+          "lifecycle": "CREATED",
+          "childSessionId": "session-team-child-d9921020379d55d321aacdab0227ed0b",
+          "result": null
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader",
+          "lifecycle": "RUNNING",
+          "childSessionId": null,
+          "result": null
+        }
+      ]
+    },
+    "pendingControl": {
+      "request": null,
+      "finding": "no durable approval was surfaced for the member bash in the shipped configuration"
+    },
+    "humanApprove": {
+      "ok": false,
+      "skipped": true,
+      "finding": "member bash executed without an approval prompt; approval required the opt-in A6 plane (measured in part B)"
+    },
+    "memberExecuted": {
+      "ok": true,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r2/ws/install-flow-r2.txt",
+      "body": "INSTALL_FLOW_r2"
+    },
+    "executionFacts": {
+      "consumption": null,
+      "execution": null
+    },
+    "goal": {
+      "ok": true,
+      "goal": {
+        "id": "goal-51c81310-3b13-4d98-b525-7d4e9655a566",
+        "revision": 1,
+        "objective": "v016 install-flow goal INSTALL_FLOW_r2",
+        "phase": "active",
+        "maxGoalRounds": 3,
+        "roundsStarted": 1,
+        "createdAt": 1794255468571,
+        "updatedAt": 1794255468571,
+        "activation": "armed"
+      }
+    },
+    "stop": {
+      "before": {
+        "phase": "active",
+        "revision": 1,
+        "roundsStarted": 1
+      },
+      "pause": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "id": "goal-51c81310-3b13-4d98-b525-7d4e9655a566",
+          "revision": 2,
+          "objective": "v016 install-flow goal INSTALL_FLOW_r2",
+          "phase": "paused",
+          "maxGoalRounds": 3,
+          "roundsStarted": 1,
+          "createdAt": 1794255468571,
+          "updatedAt": 1794255469418,
+          "activation": "disarmed"
+        },
+        "error": null
+      },
+      "cancel": {
+        "status": 200,
+        "ok": true
+      },
+      "after": {
+        "phase": "paused",
+        "revision": 2,
+        "roundsStarted": 1
+      },
+      "note": "goals/get -> goals/pause -> session/cancel -> goals/get are the RPCs the Stop button issues; no DOM click occurred (no headless browser in this environment).",
+      "silentWindowMs": 15000,
+      "recordsBefore": 50,
+      "recordsAfter": 50,
+      "recordsDelta": 0,
+      "roundsAfter": 1,
+      "ok": true
+    },
+    "collect": {
+      "ok": true,
+      "body": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-v016-install-root-r2\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"tok-instflow-r2-delegate-1\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-1tw5edl1ewej\\\",\\\"admittedSequence\\\":2,\\\"settledSequence\\\":5,\\\"memberResult\\\":{\\\"body\\\":\\\"Command ran successfully (exit code 0).\\\\n\\\\nOutput:\\\\n```\\\\nINSTALL_FLOW_r2\\\\n```\\\\n\\\\nThe command created `install-flow-r2.txt` in the workspace root (`/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r2/ws`) and printed `INSTALL_FLOW_r2` with no stderr.\\\",\\\"requestToken\\\":\\\"tok-instflow-r2-delegate-1\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"tok-instflow-r2-collect-1\\\"}\"}]"
+    }
+  },
+  "ok": true,
+  "origin": "http://127.0.0.1:3198"
+}
