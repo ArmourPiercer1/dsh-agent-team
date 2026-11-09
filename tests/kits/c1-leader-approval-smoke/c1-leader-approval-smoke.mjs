@@ -1970,7 +1970,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       && wakesBefore === 0 && delivered === 0 && abandonedAfter.length > 0
       && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
       && ((discoveryAfter.recovery?.body?.result?.error?.code ?? discoveryAfter.recovery?.body?.error?.code) === 'CONTROL_REQUEST_ABANDONED')
-    const ok = exactlyOnce || strandedAcceptable || abandonedTerminal
+    const ok = exactlyOnce || strandedAcceptable
     const verdict = exactlyOnce ? 'exactly-once'
       : delivered > 1 ? 'duplicate-P1'
         : abandonedTerminal ? 'abandoned-terminal'
@@ -1980,6 +1980,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       ?? (acceptedRow === null ? 'no ACCEPTED row observed before the kill'
         : busySeen !== true ? 'the Officer was never BUSY, so the window was not constructed'
           : wakesBefore !== 0 ? `the wake was already claimed before the kill (wake turns=${wakesBefore})`
+            : delivered === 0 && abandonedAfter.length > 0 ? 'ABANDONED: no claim after restart; the accepted wake/request is terminally abandoned (no duplicate, but the review work is dropped and cannot be resolved)'
             : delivered === 0 ? 'STRANDED: no claim after restart and the pending request is not discoverable'
               : delivered > 1 ? `DUPLICATE: the accepted message was claimed ${delivered} times after restart`
                 : 'the durable request did not settle after the replayed claim')

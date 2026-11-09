@@ -63,10 +63,10 @@ was not forced: on a stopped latch machine inputs are accepted (200) but never c
 window is unreachable that way by design — a legitimate "cannot construct this way" result, not
 faked.
 
-**Measured result (`a6-gaps-g2-unclaimed-r9/`, verdict `abandoned-terminal`).**
-`accepted wake=review-wake:...:a6wake%3Av1%3A1%3A9a4c803b`, `busy=true`, wake turns
+**Measured result (`a6-gaps-g2-unclaimed-r11/`; `A6-26` FAIL, verdict `abandoned-terminal`).**
+`accepted wake=review-wake:...:a6wake%3Av1%3A1%3Aa56bd830`, `busy=true`, wake turns
 `0 → 0 → 0`, intent rows `1 → 0 → 0`, after restart **zero claims and zero duplicates**. The
-durable PA request `ctrl-0gd7qt40i6z5zj1flkisu0hv` is **terminally abandoned**:
+durable PA request `ctrl-007bqk91qmca7m117zpi30ak` is **terminally abandoned**:
 `control-request-abandoned` at ledger sequence 11, reason `invocation-abandoned`, zero side
 effects. `team.resolveControl` after restart is refused with the typed
 `CONTROL_REQUEST_ABANDONED` ("can never become an allow"). The public `team.getLedgerPage`
@@ -76,7 +76,9 @@ still returns the request id (discoverable by id); `team.getProjection` reports
 **Classification.** Neither exactly-once nor the audit's stranded-and-resolvable variant: this
 base converts the accepted window into a **terminal abandonment** (at-most-once). That avoids
 the P1 (no duplicate execution, no side effect) but **drops the review work**: the wake is not
-redelivered and the request cannot be resolved; recovery is to re-issue the ask. Also measured:
+redelivered and the request cannot be resolved; recovery is to re-issue the ask. Under the
+audit's two acceptable outcomes the check therefore **FAILs**; the failure is the finding, not
+a kit artifact. Also measured:
 the **CLAIMED control** (`a6-gaps-g2-claimed-r10/`, `A6-25` PASS) — a wake claimed by a crashed
 turn is replaced by exactly one new wake (`wakes 1 → 2 → 2`) and its durable request is
 preserved or decided; so claim-time crashes recover, acceptance-time crashes abandon.
@@ -85,8 +87,8 @@ preserved or decided; so claim-time crashes recover, acceptance-time crashes aba
 
 **Gap 1 was RC-blocking and is fixed here** (the Alpha.6 claim "normal allow → execute writes a
 durable `succeeded` fact" was false before the writer fix); **Gap 2 is not P1** (no duplicate
-execution — the accepted window ends in a typed, side-effect-free abandonment), but it **is**
-RC-blocking for the promise that every accepted review wake is eventually delivered/decidable:
+execution — the accepted window ends in a typed, side-effect-free abandonment), but `A6-26`
+FAILs and it **is** RC-blocking for the promise that every accepted review wake is eventually delivered/decidable:
 on this base it is silently dropped, so either that promise is narrowed and the re-issue
 runbook is written, or a redelivery/claim for the accepted state is added before RC.
 
@@ -99,9 +101,9 @@ C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 node tests/kits/c1-leader-approval-smoke
 # Gap 1 negatives (r13): denial + post-consumption spawn failure
 C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_EXEC_NEG=1 C1_A6_RECIPIENTS=1 node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
   --host-port 3186 --mock-port 3491 --evidence-dir dev/agent-workflow/evidence/a6-gaps-g1-neg-r13 --keep
-# Gap 2 accepted-unclaimed (r9)
+# Gap 2 accepted-unclaimed (r11)
 C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_INBOX_UNCLAIMED=1 node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
-  --host-port 3186 --mock-port 3491 --evidence-dir dev/agent-workflow/evidence/a6-gaps-g2-unclaimed-r9 --keep
+  --host-port 3186 --mock-port 3491 --evidence-dir dev/agent-workflow/evidence/a6-gaps-g2-unclaimed-r11 --keep
 # Gap 2 claimed control (r10)
 C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_INBOX=1 node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
   --host-port 3186 --mock-port 3491 --evidence-dir dev/agent-workflow/evidence/a6-gaps-g2-claimed-r10 --keep
