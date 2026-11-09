@@ -19,6 +19,13 @@
     // by plain .mjs shadow glue only, so without this entry the lane would
     // be typechecked by nothing at all (same rationale as the two above).
     "governance-center",
+    // A6-PR3: the review-wake latch lane (pure activation/poll/latch). It has
+    // NO production consumer yet, so it is added to the TYPECHECK surface
+    // only; tsconfig.build.json deliberately does not emit it (the lane's
+    // hygiene spec pins both halves).
+    "review-wake",
+
+    "alpha6",
     // A5 integration wiring (G-d, Scope-2): PR3 ControlledFs and PR4
     // sandbox-provider join the SHARED typecheck surface (their reviews'
     // "lane never entered a repo-wide tsc" condition). `controlled-fs` is
@@ -35,6 +42,10 @@
     "team-services/src",
     // Alpha.5 P1-07: the OS execution lane (profile + runner + subprocess).
     "team-sandbox/src",
+    // Alpha.6 PR1: the pure Blueprint-first router + shared review policy.
+    // No production consumer yet; named here so repo-wide tsc reads the lane.
+    "review-router",
+    "review-authority",
     "test",
     "vitest.config.ts"
   ]

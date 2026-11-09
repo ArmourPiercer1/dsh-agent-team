@@ -1,0 +1,95 @@
+{
+  "mode": "before",
+  "durable": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1p1g6xp178bi",
+        "correlation": "call-c1-wch6tr4i",
+        "approvalCaseId": "case-0iewfhk0n3lk8f06659di1jf",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:21:50.754Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-05T21:21:52.112Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "createdAt": "2026-11-05T21:21:52.351Z"
+      }
+    ],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "restart": {
+    "error": null
+  },
+  "pa": null,
+  "final": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1p1g6xp178bi",
+        "correlation": "call-c1-wch6tr4i",
+        "approvalCaseId": "case-0iewfhk0n3lk8f06659di1jf",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-05T21:21:50.754Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-05T21:21:52.112Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1ktnnza11vral10v7g0o815y",
+        "createdAt": "2026-11-05T21:21:52.351Z"
+      }
+    ],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "revived": false,
+  "phantom": false
+}

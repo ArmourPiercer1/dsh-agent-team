@@ -107,6 +107,7 @@ import {
 // the module declares the closed vocabulary and the strict parser there).
 import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js'
 import type {
+  ApprovalCaseIdentityInput,
   ControlDecisionRecord,
   ControlGuardVerdict,
   ControlOperationScope,
@@ -213,6 +214,47 @@ export interface PaControlServiceLike {
     readonly reviewPayload?: RemoteSafeJsonValue
     readonly reviewPayloadDigest?: string
   }): Promise<ControlRequestRecord>
+  /**
+   * A6-PR2b: create the first CASE leg (instead of a legacy row) and keep the
+   * strict PA manifest on it. Optional so every legacy stand-in remains valid.
+   */
+  requestApprovalLeg?: (args: {
+    readonly rootSessionId: string
+    readonly caller: PaControlCaller
+    readonly kind: ControlRequestKind
+    readonly reviewAuthority: 'member' | 'leader' | 'human-user' | 'human-admin'
+    readonly requiredAuthorityAtCreation: 'member' | 'leader' | 'human-user' | 'human-admin'
+    readonly identity: ApprovalCaseIdentityInput
+    readonly actionName: string
+    readonly toolName?: string
+    readonly summary?: string
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
+    readonly paApprovalCaseId?: string
+    readonly operationOwnerTemplateId?: string
+    readonly operationToolDefinitionIdentity?: string
+    readonly operationToolOwner?: string
+    readonly operationToolName?: string
+    readonly authorityGeneration?: number
+    readonly blueprintContentHash?: string
+    readonly blueprintRevision?: string
+    readonly perEffectRequiredAuthorities?: readonly ('member' | 'leader' | 'human-user' | 'human-admin')[]
+  }) => Promise<
+    | { readonly kind: 'leg'; readonly leg: ControlRequestRecord }
+    | { readonly kind: 'authority-unavailable'; readonly approvalCaseId: string; readonly detail: string }
+  >
+  awaitApprovalCaseDecision?: (input: {
+    readonly rootSessionId: string
+    readonly approvalCaseId: string
+    readonly signal?: ControlWaitSignal
+  }) => Promise<ControlDecisionRecord>
+  /** Non-authorizing lifecycle close: the approval DECISION is untouched. */
+  abandonControlRequest?: (input: {
+    readonly rootSessionId: string
+    readonly caller: PaControlCaller
+    readonly requestId: string
+    readonly reason?: string
+  }) => Promise<unknown>
   awaitControlDecision(input: {
     readonly rootSessionId: string
     readonly requestId: string
@@ -240,6 +282,12 @@ export interface PaControlBridgeDeps {
   readonly caller: PaControlCaller
   /** Whose authority the case elevates (the plane's beneficiary rung). */
   readonly beneficiaryAuthority: RuntimeAuthority
+  /** A6-PR2b: opt in to the REAL approval-case chain (default = legacy row). */
+  readonly a6?: boolean
+  /** A6-PR2b: the actual OperationOwner template from trusted call identity. */
+  readonly operationOwnerTemplateId?: string
+  readonly blueprintContentHash?: string
+  readonly blueprintRevision?: string
   /** The logical operation name of the guarded execution (scope identity;
    *  request and guard MUST carry the same one — the bridge derives both). */
   readonly actionName?: string
@@ -397,30 +445,79 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
 
     // ── 1. the durable Control row (create OR idempotently REUSE) ───────
     let record: ControlRequestRecord
-    try {
-      record = await deps.controlService.requestControl({
-        rootSessionId: deps.rootSessionId,
-        caller: deps.caller,
-        kind: requestKind,
-        targetInstanceId: member.instanceId,
-        actionName,
-        toolName,
-        correlation,
-        // A5-M1: the row identity binds the PAYLOAD-INTEGRITY digest (the
-        // service recomputes and enforces it; the parameters fingerprint
-        // rides the manifest as the separate execution-side fact). Same
-        // case replayed with ANY different manifest bytes = different
-        // scope key = a new row, never a silent reuse.
-        operationFingerprint: digest,
-        summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
-        // The manifest is a pure JSON round-trip (deepLossless), i.e. a
-        // lossless JSON value BY CONSTRUCTION; the type carries that fact.
-        reviewPayload: manifest as unknown as RemoteSafeJsonValue,
-        reviewPayloadDigest: digest,
-      })
-    } catch (error: unknown) {
-      // No row → no decision → no grant. Approved-by-default does not exist.
-      return deny(`durable control request failed: ${error instanceof Error ? error.message : String(error)}`)
+    if (deps.a6 === true) {
+      if (deps.controlService.requestApprovalLeg === undefined || deps.controlService.awaitApprovalCaseDecision === undefined) {
+        return deny('A6 review chain requires requestApprovalLeg + awaitApprovalCaseDecision on the ControlService')
+      }
+      const kind = authorityRank(plan.requiredAuthority) <= authorityRank('leader')
+        ? CONTROL_REQUEST_KINDS.LEADER_APPROVAL
+        : CONTROL_REQUEST_KINDS.USER_APPROVAL
+      let outcome: Awaited<ReturnType<NonNullable<typeof deps.controlService.requestApprovalLeg>>>
+      try {
+        outcome = await deps.controlService.requestApprovalLeg({
+          rootSessionId: deps.rootSessionId,
+          caller: deps.caller,
+          kind,
+          reviewAuthority: plan.requiredAuthority,
+          requiredAuthorityAtCreation: plan.requiredAuthority,
+          identity: {
+            subject: { kind: 'instance', instanceId: member.instanceId },
+            beneficiaryAuthority: deps.beneficiaryAuthority,
+            // The PA leg asks to ALLOW the operation; the consumption-point
+            // recheck only answers an `allow` effect, and a durable allow is
+            // exactly what this leg becomes. `ask` here left every A6 PA
+            // execution blocked at guard as authority-undetermined.
+            requestedEffect: 'allow',
+            operationFingerprint: digest,
+            authorityScope,
+            correlation,
+          },
+          actionName,
+          toolName,
+          summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
+          reviewPayload: manifest as unknown as RemoteSafeJsonValue,
+          reviewPayloadDigest: digest,
+          paApprovalCaseId: plan.approvalCaseId,
+          ...(deps.operationOwnerTemplateId !== undefined
+            ? { operationOwnerTemplateId: deps.operationOwnerTemplateId }
+            : {}),
+          ...(request.binding !== undefined
+            ? {
+                operationToolDefinitionIdentity: request.binding.definitionIdentity,
+                operationToolOwner: request.binding.providerId,
+                operationToolName: request.binding.toolName,
+              }
+            : {}),
+          authorityGeneration: plan.authorityGeneration,
+          ...(deps.blueprintContentHash !== undefined ? { blueprintContentHash: deps.blueprintContentHash } : {}),
+          ...(deps.blueprintRevision !== undefined ? { blueprintRevision: deps.blueprintRevision } : {}),
+          perEffectRequiredAuthorities: plan.perEffectRequired,
+        })
+      } catch (error: unknown) {
+        return deny(`durable approval case creation failed: ${error instanceof Error ? error.message : String(error)}`)
+      }
+      if (outcome.kind !== 'leg') {
+        return deny(`the approval case closed without a reviewable leg (${outcome.kind}: ${outcome.detail})`)
+      }
+      record = outcome.leg
+    } else {
+      try {
+        record = await deps.controlService.requestControl({
+          rootSessionId: deps.rootSessionId,
+          caller: deps.caller,
+          kind: requestKind,
+          targetInstanceId: member.instanceId,
+          actionName,
+          toolName,
+          correlation,
+          operationFingerprint: digest,
+          summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
+          reviewPayload: manifest as unknown as RemoteSafeJsonValue,
+          reviewPayloadDigest: digest,
+        })
+      } catch (error: unknown) {
+        return deny(`durable control request failed: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }
     observe({ stage: 'request-created', callId, requestId: record.requestId, paCaseId: plan.approvalCaseId, correlation })
     // Reuse honesty: the SAME scope key may only ever answer the SAME strict
@@ -445,28 +542,61 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     }
     let controller: AbortController | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
+    let timedOut = false
     try {
       if (deps.waitTimeoutMs !== undefined) {
         controller = new AbortController()
-        timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs)
+        timer = setTimeout(() => { timedOut = true; controller?.abort() }, deps.waitTimeoutMs)
         signals.push(controller.signal as unknown as ControlWaitSignal)
       }
-      decision = await deps.controlService.awaitControlDecision({
-        rootSessionId: deps.rootSessionId,
-        requestId: record.requestId,
-        ...(signals.length === 1
-          ? { signal: signals[0] as ControlWaitSignal }
-          : signals.length > 1
-            ? { signal: AbortSignal.any(signals.map((s) => s as unknown as AbortSignal)) as unknown as ControlWaitSignal }
-            : {}),
-      })
+      const waitSignal = signals.length === 1
+        ? signals[0] as ControlWaitSignal
+        : signals.length > 1
+          ? AbortSignal.any(signals.map((s) => s as unknown as AbortSignal)) as unknown as ControlWaitSignal
+          : undefined
+      if (deps.a6 === true) {
+        if (record.approvalCaseId === undefined) return deny('A6 leg carries no approval case id', record.requestId)
+        decision = await deps.controlService.awaitApprovalCaseDecision!({
+          rootSessionId: deps.rootSessionId,
+          approvalCaseId: record.approvalCaseId,
+          ...(waitSignal === undefined ? {} : { signal: waitSignal }),
+        })
+        const finalState = await deps.controlService.listControlState(deps.rootSessionId)
+        const finalRecord = finalState.requests.find((row) => row.requestId === decision.requestId)
+        if (finalRecord === undefined) {
+          return deny(`the final decision '${decision.requestId}' has no durable request row`, decision.requestId)
+        }
+        record = finalRecord
+      } else {
+        decision = await deps.controlService.awaitControlDecision({
+          rootSessionId: deps.rootSessionId,
+          requestId: record.requestId,
+          ...(waitSignal === undefined ? {} : { signal: waitSignal }),
+        })
+      }
     } catch (error: unknown) {
       if (isControlError(error)
         && (error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED || error.code === CONTROL_ERROR_CODES.CONTROL_WAIT_CLOSED)) {
         // UNSETTLED: the durable row stays exactly as it is (a later resolve
         // is unaffected); zero mint, zero guard, zero body by construction.
+        // A bounded wait that expires ABANDONS this invocation (a durable,
+        // non-authorizing terminal mark). The approval DECISION is never
+        // rewritten: no allow→deny, no deny→allow. A later human resolve on an
+        // abandoned request is refused as terminal, not recorded as a deny.
+        if (deps.a6 === true && timedOut && deps.controlService.abandonControlRequest !== undefined) {
+          try {
+            await deps.controlService.abandonControlRequest({
+              rootSessionId: deps.rootSessionId,
+              caller: deps.caller,
+              requestId: record.requestId,
+              reason: 'invocation-abandoned',
+            })
+          } catch (abandonError: unknown) {
+            observe({ stage: 'leg-abandon-failed', callId, requestId: record.requestId, detail: abandonError instanceof Error ? abandonError.message : String(abandonError) })
+          }
+        }
         observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, code: (error as { code: string }).code })
-        return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String((error as { code: string }).code)} (the durable request is untouched)` }
+        return { decision: 'unsettled', requestId: record.requestId, detail: `the approval wait settled ${String((error as { code: string }).code)} (the invocation is abandoned; the durable decision is untouched)` }
       }
       return deny(`the approval wait failed: ${error instanceof Error ? error.message : String(error)}`, record.requestId)
     } finally {
@@ -517,7 +647,12 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     }
 
     // ── 4. the trusted presenter: the PresentedApproval, real facts only ─
-    const reviewerAuthority = deciderAuthority(decision.decider)
+    // The durable capability evidence (A6-PR2b) records the rung this decider
+    // EXERCISED. An assigned Officer reviews at the leg's frozen rung, so the
+    // presented approval must carry that rung, not the Officer principal's
+    // native member rung; native/legacy rows have no evidence and are unchanged.
+    const reviewerAuthority = decision.reviewCapability?.effectiveReviewAuthority
+      ?? deciderAuthority(decision.decider)
     if (reviewerAuthority === undefined) {
       return deny('the durable decider is outside the closed ControlCallerRef vocabulary — no reviewer rung can be presented', record.requestId)
     }
@@ -560,6 +695,10 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
       // digest the row was created under (the parameters binding is
       // inside the manifest the digest covers).
       operationFingerprint: digest,
+      // A6: the authority point rides the decision snapshot once the case
+      // leg carries it; the guard must present the SAME point or its exact
+      // scope comparison refuses a legitimate final allow.
+      ...(deps.a6 === true && authorityScope !== undefined ? { authorityScope } : {}),
     })
     let verdict: ControlGuardVerdict
     try {
@@ -720,7 +859,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId })
       return { ok: false, reason: 'pa-authority-drift', detail }
     }
-    const deciderRung = deciderAuthority(decider)
+    const deciderRung = input.reviewerAuthority ?? deciderAuthority(decider)
     if (deciderRung === undefined) {
       return undetermined('the durable decider is outside the closed ControlCallerRef vocabulary — its reach cannot be derived')
     }

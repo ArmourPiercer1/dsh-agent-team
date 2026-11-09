@@ -230,6 +230,10 @@ const FACT_TEAM_COORDINATION_RECORDED = 'team-coordination-recorded'
 const FACT_CONTROL_REQUEST_RECORDED = 'control-request-recorded'
 const FACT_CONTROL_DECISION_RECORDED = 'control-decision-recorded'
 const FACT_CONTROL_ALLOW_CONSUMED = 'control-allow-consumed'
+// A6 closing round: the minimal execution-result observation fact. It is a
+// `control` fact beside the decision/consumption rows it describes, never an
+// authority: the fold only projects it, no settlement reads it as permission.
+const FACT_CONTROL_EXECUTION_RESULT = 'control-execution-result'
 // A4-PR0a: the inline-abort terminal mark, written by `abandonControlRequest`
 // (`control/service.ts`). It was the ONLY production-written fact type missing from
 // FACT_TYPE_CATEGORY below — and because the fold throws on any unmapped type on
@@ -248,6 +252,10 @@ const FACT_CONTROL_REQUEST_ABANDONED = 'control-request-abandoned'
 // writer's, so the closed-set guard test — not this table — is what catches a
 // drift between the two.
 const FACT_CONTROL_ESCALATION_RECORDED = 'control-escalation-recorded'
+// A6-PR2c: the current-leg transfer fact (officer handoff / unavailable
+// takeover) closes the former reviewer's leg; it belongs beside the other
+// control-leg rows in the frozen `control` category.
+const FACT_CONTROL_CURRENT_LEG_TRANSFERRED = 'control-current-leg-transferred'
 const FACT_ACTIVITY_PROGRESS_RECORDED = 'activity-progress-recorded'
 const FACT_ACTIVITY_INTERVAL_OPENED = 'activity-interval-opened'
 const FACT_ACTIVITY_INTERVAL_CLOSED = 'activity-interval-closed'
@@ -297,7 +305,9 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_CONTROL_REQUEST_RECORDED, 'control'],
   [FACT_CONTROL_DECISION_RECORDED, 'control'],
   [FACT_CONTROL_ALLOW_CONSUMED, 'control'],
+  [FACT_CONTROL_EXECUTION_RESULT, 'control'],
   [FACT_CONTROL_ESCALATION_RECORDED, 'control'],
+  [FACT_CONTROL_CURRENT_LEG_TRANSFERRED, 'control'],
   // A4-PR0a: the abandonment terminal mark — a control fact, paired with the
   // request/decision rows it closes (same home the artifact-read grant repair
   // chose for a non-ControlRequest control fact). The eight categories are frozen:

@@ -1,0 +1,1 @@
+{"version":3,"file":"errors.d.ts","sourceRoot":"","sources":["../../../../review-wake/errors.ts"],"names":[],"mappings":"AAAA;;;;;;;;GAQG;AAEH,eAAO,MAAM,4BAA4B,EAAG,aAAsB,CAAA;AAClE,MAAM,MAAM,wBAAwB,GAAG,OAAO,4BAA4B,CAAA;AAE1E,qBAAa,oBAAqB,SAAQ,KAAK;IAC7C,QAAQ,CAAC,IAAI,EAAE,wBAAwB,CAA+B;gBAE1D,OAAO,EAAE,MAAM;CAI5B"}

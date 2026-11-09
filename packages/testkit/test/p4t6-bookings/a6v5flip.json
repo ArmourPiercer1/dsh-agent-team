@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6V5FLIP",
+  "paths": ["packages/domain/test/a6-v5flip-activation.test.ts"],
+  "expectedDelta": { "from": 1438, "to": 1439 },
+  "reason": "alpha6 v5-activation DRILL round: the focused v5 round-trip / hash-stability / v3-v4 byte-identity / catalog-acceptance / rollback suite. The activation itself edits already-counted sources only (schema.ts, validate.ts, types.ts, index.ts, blueprint-v5.ts) — this ONE new test file is the scan delta. Zero denylist vocabulary.",
+  "tieNote": "MEASURED on this drill tree: the unbooked p4t6 run read `scanner counts 1439, ledger derives 983 + 455 = 1438`; exactly this one path."
+}

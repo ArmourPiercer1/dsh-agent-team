@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 5,
+  "runtime": "real Host 0.2.0-rc.2",
+  "create": {
+    "rootSessionId": "session-c1-smoke-a6-2026-11-06T10-59-56",
+    "status": 200,
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "path": "fresh-root",
+          "durable": {
+            "teamSession": {
+              "schemaVersion": 1,
+              "rootSessionId": "session-c1-smoke-a6-2026-11-06T10-59-56",
+              "blueprint": {
+                "blueprintId": "team.c1-a6-officer",
+                "revision": "1",
+                "contentHash": "sha256:edd65bf44368312840f7a20351efd4a326a62ca85d13e9cb9ff1e1c6363a7a33"
+              },
+              "createdAt": "2026-11-06T11:00:05.670Z",
+              "generation": 1,
+              "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T10-59-56/workspace"
+            },
+            "binding": {
+              "schemaVersion": 1,
+              "kind": "team-root",
+              "sessionId": "session-c1-smoke-a6-2026-11-06T10-59-56"
+            },
+            "wrote": true,
+            "leaderRow": {
+              "schemaVersion": 2,
+              "rootSessionId": "session-c1-smoke-a6-2026-11-06T10-59-56",
+              "instanceId": "inst-leader",
+              "templateId": "leader",
+              "label": "leader",
+              "createdAt": "2026-11-06T11:00:05.685Z",
+              "activityVersion": 1
+            }
+          },
+          "bind": {
+            "requested": "fresh-root",
+            "bound": true,
+            "installed": true,
+            "identity": {
+              "kind": "root",
+              "sessionId": "session-c1-smoke-a6-2026-11-06T10-59-56",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-06T10-59-56"
+            },
+            "admitted": true,
+            "admissionCode": "ADMISSION_OPEN",
+            "emittedEvents": [
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "persona"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "model"
+              },
+              {
+                "name": "agent-setup/overlay-installed",
+                "detail": "capability"
+              },
+              {
+                "name": "agent-setup/admission-decided",
+                "detail": "ADMISSION_OPEN"
+              }
+            ]
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.create",
+          "endpoint": "team.create",
+          "contractVersion": 1,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "wakes": [],
+  "leaderWakeCount": 0,
+  "memberToolResults": [
+    "bash · exit=0\n> a6-allow-executed\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+  ],
+  "memberDoneSeen": true,
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-06T10-59-56\n",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T10-59-56/workspace/c1-a6-allow-2026-11-06T10-59-56.txt",
+  "ledger": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0ywfal90gcl3yi1eo47130mk",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1aqstc10th33",
+        "correlation": "call-c1-wp3ptn6g",
+        "approvalCaseId": "case-0nobjgy1m2v2250sggo541l1",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-06T11:00:09.088Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-15s8ry91bfvifa0w2dgiv1x4",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-1aqstc10th33",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-06T10-59-56:inst-1aqstc10th33:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1aqstc10th33-bash:hexec:28651403-d38f-4f3c-962c-0a368d57e86b-1",
+        "approvalCaseId": "case-03yze5u0v9t37p03dqacw0oy",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-06T11:00:10.719Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0ywfal90gcl3yi1eo47130mk",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-06T11:00:10.472Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-15s8ry91bfvifa0w2dgiv1x4",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-06T11:00:13.198Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0ywfal90gcl3yi1eo47130mk",
+        "createdAt": "2026-11-06T11:00:10.673Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-15s8ry91bfvifa0w2dgiv1x4",
+        "createdAt": "2026-11-06T11:00:13.291Z"
+      }
+    ],
+    "transfers": [],
+    "escalations": [],
+    "error": null
+  },
+  "selfReview": {
+    "ok": true,
+    "promptStatus": 200,
+    "doneSeen": true,
+    "wakes": 0,
+    "leaderWakes": 0,
+    "officerWakes": 0,
+    "leaderNotifications": 7,
+    "selfRequestId": "ctrl-12jma0e1tsub1119uc8bs1q4",
+    "selfActionName": "team-tool-execute",
+    "selfDecision": {
+      "sequence": 19,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-12jma0e1tsub1119uc8bs1q4",
+      "decision": "allow",
+      "decider": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "createdAt": "2026-11-06T11:00:20.337Z"
+    },
+    "leaderDecided": true,
+    "executed": true,
+    "execText": "c1-a6-self-2026-11-06T10-59-56\n",
+    "filePath": "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-06T10-59-56/workspace/c1-a6-self-2026-11-06T10-59-56.txt",
+    "requestId": "ctrl-12jma0e1tsub1119uc8bs1q4"
+  },
+  "handoff": null
+}

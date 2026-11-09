@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6WAKEPLAN",
+  "paths": [
+    "packages/runtime/alpha6/wake-plan.ts",
+    "packages/runtime/test/a6-pr6-wake-plan.test.ts"
+  ],
+  "expectedDelta": { "from": 1427, "to": 1429 },
+  "reason": "Alpha.6 main wake plan: ReviewRouter decisions merged per recipient (one wake for three asks), plus its spec. No denylist vocabulary.",
+  "tieNote": "MEASURED on this tree: the unbooked coverage leg reads 1427 -> 1429; exactly these two paths."
+}

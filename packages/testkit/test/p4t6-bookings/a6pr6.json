@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6PR6",
+  "paths": [
+    "packages/runtime/alpha6/composition.ts",
+    "packages/runtime/test/a6-pr6-composition.test.ts"
+  ],
+  "expectedDelta": { "from": 1405, "to": 1407 },
+  "reason": "Alpha.6 PR6 opt-in gate: the pure composition decision module plus its spec. No denylist vocabulary.",
+  "tieNote": "MEASURED on this tree after the PR4 booking: the unbooked coverage leg would read 1405 -> 1407; exactly these two paths."
+}

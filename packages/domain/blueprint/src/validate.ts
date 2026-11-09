@@ -133,6 +133,17 @@ import {
   validateBlueprintV4Document,
 } from './blueprint-v4.js'
 import type { TeamBlueprintV4Core } from './blueprint-v4.js'
+// The v5 dispatch imports. Same RUNTIME cycle and same safety grounds as the
+// v4 join above: `blueprint-v5.js` delegates its core face to the FROZEN v4
+// parser (which restamps to 4 before recursing into this module), and this
+// dispatch is selected by `schemaVersion`, so the v5 branch can never loop.
+// The dispatch LINE joins here; the v5 GRAMMAR stays in its own branch.
+import {
+  BLUEPRINT_V5_SCHEMA_VERSION,
+  toHashableBlueprintV5,
+  validateBlueprintV5Document,
+} from './blueprint-v5.js'
+import type { TeamBlueprintV5Core } from './blueprint-v5.js'
 import { deriveContentHash } from './hash.js'
 import { parseModelPreferenceToken } from './model-preference.js'
 import type {
@@ -1334,6 +1345,18 @@ export function validateBlueprintDocument(raw: unknown): TeamBlueprintCore {
     return validateBlueprintV4Document(record)
   }
 
+  // --- the per-version dispatch: `5` routes to the parallel fifth parser ----
+  // The v5-activation stroke (DRILL branch only). A v5 document RUNS through
+  // this entry, but it does NOT enter the field tables below: its grammar is
+  // the fifth parser (`blueprint-v5.ts`), joined here and nowhere else. That
+  // parser delegates its whole core face to the FROZEN v4 parser with
+  // `reviewRouting` stripped and the version restamped to 4, so the v1/v2/v3
+  // branch keeps every byte of its behavior and there is exactly ONE parser
+  // per version — the runtime has no second source of truth.
+  if (schemaVersion === BLUEPRINT_V5_SCHEMA_VERSION) {
+    return validateBlueprintV5Document(record) as unknown as TeamBlueprintCore
+  }
+
   // The TOP-LEVEL closed field set is version-gated (plan §E.2): a v1
   // document parses against the FROZEN v1 set (the v2 `teamRequirements`
   // field is an unknown field there — the v1 validator is NOT tightened); a
@@ -1674,16 +1697,24 @@ export function parseBlueprint(source: string): TeamBlueprint {
   // (two v4 documents differing only in `toolBindings` MUST hash differently
   // — hashing a v4 core through the v3 projection would launder the family
   // out of the content identity, the exact crack the flip suite pins shut).
-  // v1/v2/v3 cores take the FROZEN projection, byte-identical to before.
+  // The v5 core mirrors that join: it hashes through the v5 projection,
+  // which is the frozen v4 projection (restamped) plus the declared
+  // `reviewRouting` family, so two v5 documents differing only in routing
+  // MUST hash differently. v1/v2/v3 cores take the FROZEN projection,
+  // byte-identical to before.
   const contentHash = deriveContentHash(
-    core.schemaVersion === BLUEPRINT_V4_SCHEMA_VERSION
+    core.schemaVersion === BLUEPRINT_V5_SCHEMA_VERSION
       ? // The assertion is DISCHARGED BY THE DISPATCH above: a core whose
-        // stamp is 4 can only have come out of `validateBlueprintV4Document`
-        // (the v1/v2/v3 branch stamps 1|2|3), which is exactly the producer of
-        // `TeamBlueprintV4Core`. TS cannot narrow an interface through a
-        // property test, so the narrowing is stated here once, at the join.
-        toHashableBlueprintV4(core as TeamBlueprintV4Core)
-      : toHashableBlueprint(core),
+        // stamp is 5 can only have come out of `validateBlueprintV5Document`.
+        toHashableBlueprintV5(core as unknown as TeamBlueprintV5Core)
+      : core.schemaVersion === BLUEPRINT_V4_SCHEMA_VERSION
+        ? // The assertion is DISCHARGED BY THE DISPATCH above: a core whose
+          // stamp is 4 can only have come out of `validateBlueprintV4Document`
+          // (the v1/v2/v3 branch stamps 1|2|3), which is exactly the producer of
+          // `TeamBlueprintV4Core`. TS cannot narrow an interface through a
+          // property test, so the narrowing is stated here once, at the join.
+          toHashableBlueprintV4(core as TeamBlueprintV4Core)
+        : toHashableBlueprint(core),
   )
   return deepFreeze({ ...core, contentHash })
 }

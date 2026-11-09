@@ -1,0 +1,47 @@
+{
+  "escalation": {
+    "sequence": 12,
+    "factType": "control-escalation-recorded",
+    "approvalCaseId": "case-0qgfdhp0oyg7ey17p2vqf1ee",
+    "escalatedBy": {
+      "instanceId": "inst-13me8wt0pd9o",
+      "kind": "instance",
+      "role": "member"
+    },
+    "legOrdinal": 1,
+    "previousRequestId": "ctrl-0zecd2k0gr7kt71k83qem1qc"
+  },
+  "humanLeg": {
+    "sequence": 13,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-108b65h0h176i61jy44pn1pi",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-1q95r1j0c34q",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-06T10-45-38:inst-1q95r1j0c34q:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1q95r1j0c34q-bash:hexec:ba76c1eb-59b1-4e3b-adfb-a20e2be30a6b-1",
+    "approvalCaseId": "case-0qgfdhp0oyg7ey17p2vqf1ee",
+    "legOrdinal": 2,
+    "reviewAuthority": "human-user",
+    "createdAt": "2026-11-06T10:45:54.574Z"
+  },
+  "decision": {
+    "sequence": 14,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-108b65h0h176i61jy44pn1pi",
+    "decision": "allow",
+    "decider": {
+      "humanId": "session-c1-smoke-a6-2026-11-06T10-45-38",
+      "kind": "human"
+    },
+    "createdAt": "2026-11-06T10:45:54.652Z"
+  },
+  "consumption": {
+    "sequence": 15,
+    "factType": "control-allow-consumed",
+    "requestId": "ctrl-108b65h0h176i61jy44pn1pi",
+    "createdAt": "2026-11-06T10:45:54.851Z"
+  },
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-06T10-45-38\n"
+}

@@ -693,6 +693,7 @@ const renderAdmissionObservation = (row) => {
  * point maps them to the AgentSetup contract's fail-closed throw).
  */
 export function createTeamToolPlaneAssembly(input = {}) {
+  const onExecutionResult = typeof input.onExecutionResult === 'function' ? input.onExecutionResult : undefined
   const { permissionPolicy, realmId, templateId, role, onObserve } = input
   const observe = (row) => {
     if (typeof onObserve === 'function') onObserve(row)
@@ -1699,6 +1700,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     subtreeContains: input.fs?.subtreeContains,
     decide,
     pa: paAdmit,
+    ...(onExecutionResult === undefined ? {} : { onExecutionResult }),
     backends: Object.freeze({ ...backends }),
     presentationFace: PLANE_PRESENTATION_FACE,
     transport: Object.freeze({ createGovernedToolDefinitions, createGovernedShellRowDefinition }),

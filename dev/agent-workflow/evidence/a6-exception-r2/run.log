@@ -1,0 +1,22 @@
+[2026-11-05T18:48:56.683Z] c1 real-host smoke — stamp 2026-11-05T18-48-56
+[2026-11-05T18:48:56.684Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-05T18:48:56.684Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-05T18:48:56.684Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-exception-r2
+[2026-11-05T18:48:58.233Z] ports: host=3682 mock=3683
+[2026-11-05T18:49:03.244Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-05T18:49:03.246Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-05T18:49:03.252Z] mock model listening on 3683
+[2026-11-05T18:49:05.831Z] host booted at http://127.0.0.1:3682; row ready — toolCount=15
+[2026-11-05T18:49:05.832Z] ── L0: discovery ──
+[2026-11-05T18:49:06.252Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-05T18:49:06.253Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-05T18:49:06.253Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-05T18:49:06.253Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-05T18:49:09.440Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-u89lysmu9c","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-05T18-48-56","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:56afbb78ba325b8c824c67816d8e4a443f3646258f706e18a848cc9735303e4c"},"createdAt":"2026-11-05T18:49:06.295Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-05T18:49:14.247Z] A6: wakes=0 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-05T18:49:14.247Z] PASS A6-2: the declared Leader exception produced a model-visible Leader notification, not an Officer wake — wakes=0 notifications=3 requests=16
+[2026-11-05T18:49:14.247Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=
+[2026-11-05T18:49:14.247Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T18-48-56/workspace/c1-a6-allow-2026-11-05T18-48-56.txt text="c1-a6-allow-2026-11-05T18-48-56\n"
+[2026-11-05T18:49:14.247Z] PASS A6-5: the Leader exception reached the Leader and no Officer review wake was created — wakes=0 leaderWakes=0 notifications=3
+[2026-11-05T18:49:14.248Z] PASS A6-10: the PA leg of a declared Leader exception was decided by the Leader, never the Officer — pa={"sequence":10,"factType":"control-request-recorded","requestId":"ctrl-1s00b320zywn7l0lz6gio0xt","kind":"leader-approval","toolName":"bash","actionName":"team-tool-execute","targetInstanceId":"inst-1qh2q8f1o2su","correlation":"pa:tadm:session-c1-smoke-a6-2026-11-05T18-48-56:inst-1qh2q8f1o2su:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1qh2q8f1o2su-bash:hexec:9f034b24-55d8-443e-8820-4ad0ad08bd8f-1","approvalCaseId":"case-0489qdp1tu4c0e0uj33p70iy","legOr
+[2026-11-05T18:49:14.248Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=

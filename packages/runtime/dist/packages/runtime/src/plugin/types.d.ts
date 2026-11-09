@@ -154,6 +154,41 @@ export interface TeamPluginConfig {
      * host row).
      */
     readonly blueprintDir?: string;
+    /**
+     * Alpha.6 trusted-review-facts ports — EXPLICIT OPT-IN, DEFAULT `false`
+     * (absent and `false` are the same state). When `true`, the production
+     * root wires the two trusted Control ports
+     * (`reviewCallFactsForAssignedOfficer` / `currentReviewerForTransfer`)
+     * assembled by `createAlpha6RootWiring` over the LIVE durable member view
+     * and the non-locking `ControlService.readControlState`. When absent or
+     * `false`, the object handed to `createControlService` is byte-identical
+     * to the Alpha.5 wiring (no Alpha.6 parse, no member read, no ports).
+     *
+     * This flag does NOT swap the control notifier and does NOT deliver review
+     * wake — the direct Officer notifier stays off the production root path
+     * until Control WorkChanged → Router → Coordinator → Inbox is the declared
+     * main path. It only arms the facts ports.
+     *
+     * Fail-closed: with `true`, a non-v5 source / disabled `reviewRouting` /
+     * missing Officer template is REFUSED at root construction (the Team
+     * refuses to boot) — never a silent fall back to the Leader path.
+     */
+    readonly alpha6ReviewRouting?: boolean;
+    /**
+     * Alpha.6 (opt-in only) — the durable DIRECTORY holding one wake-intent
+     * row per latch (two reviewers never overwrite each other). Required for
+     * full recovery; when absent the latch still works in-process but a restart
+     * cannot reconcile a queued wake.
+     */
+    readonly alpha6WakeIntentPath?: string;
+    /**
+     * Alpha.6 (opt-in only) — the bounded approval wait for an A6 PA leg, in
+     * milliseconds. When unset the production wiring uses 600000 (10 minutes);
+     * the wait is still abortable by the caller's signal and a timeout never
+     * decides, mints or consumes. The durable request keeps its original
+     * meaning and can be resolved later; this invocation simply stops waiting.
+     */
+    readonly alpha6WaitTimeoutMs?: number;
     /** The durable TeamSession `generation` (positive integer). */
     readonly generation: number;
     /** The effective default workspace (TeamSession record field). */
@@ -954,6 +989,28 @@ export interface TeamProductionRoot {
     readonly messaging: MessagingCoordinator;
     /** A25 — the durable control-plane service. */
     readonly control: ControlService;
+    /**
+     * Alpha.6 (opt-in only) — the Host's REAL turn boundary for a review
+     * recipient's latch. `start` is called from `agent/inbox/claimed` when the
+     * claimed message carries the review-wake marker; `end` is called from the
+     * `agent/status` idle transition and answers the post-turn rescan with the
+     * SAME trusted facts read. Absent when `alpha6ReviewRouting` is off.
+     */
+    readonly alpha6TurnLatchStart?: (targetSessionId: string) => void;
+    readonly alpha6TurnLatchEnd?: (targetSessionId: string) => Promise<void>;
+    /**
+     * Alpha.6 — boot-time adoption of a persisted queued latch. It adopts ONLY
+     * when the native Inbox still holds the wake message; otherwise the stale
+     * row is discarded and a later plan may deliver again.
+     */
+    readonly alpha6RecoverWakeLatches?: () => Promise<void>;
+    /**
+     * Alpha.6 — a trusted user Stop for the reviewer's latch (durable marker +
+     * in-memory Sticky Stop). Ordinal tool aborts and timeouts never call it.
+     */
+    readonly alpha6WakeUserStop?: (targetSessionId: string) => Promise<boolean>;
+    /** Alpha.6 — an explicit new user interaction clears the Stop. */
+    readonly alpha6WakeUserResume?: (targetSessionId: string) => Promise<boolean>;
     /** A26 — the activity ledger (guarded progress writes + durable reads). */
     readonly activity: ActivityLedger;
     /** A27 — the fork reconciliation (sidecar recognition + child team). */
@@ -1244,6 +1301,29 @@ export interface TeamAgentBindings {
         readonly rootSessionId: string;
         readonly text: string;
     }) => Promise<void>;
+    /**
+     * Alpha.6 review-wake delivery: write ONE attributed review wake into the
+     * TARGET session's native Host inbox (the Officer's child session), through
+     * the same live-agent seam the PR7 E2E exercises. NON-AUTHORITY: the durable
+     * control row remains the authority; the wake is a hint. OPTIONAL at the
+     * type level, but an explicitly Alpha.6 root REFUSES to boot without it —
+     * never a silent Leader fallback.
+     */
+    readonly deliverReviewWake?: (input: {
+        readonly rootSessionId: string;
+        readonly targetSessionId: string;
+        readonly wakeId: string;
+        readonly text: string;
+    }) => Promise<void>;
+    /**
+     * Alpha.6 — the native-Inbox probe for one recipient session (live pending
+     * messages only). Recovery uses it to adopt a queued intent ONLY when the
+     * wake message still exists.
+     */
+    readonly reviewWakeInbox?: (targetSessionId: string) => {
+        readonly has: (wakeId: string) => boolean | Promise<boolean>;
+        readonly remove?: (wakeId: string) => void | boolean | Promise<void | boolean>;
+    };
     /** The P8-S4B request boundary (re-apply the durable truth). */
     readonly prepareAgentForRequest: (sessionId: string) => Promise<void>;
     /** Execute one tool on the live agent's ctx (the /__p6t6/tool route). */

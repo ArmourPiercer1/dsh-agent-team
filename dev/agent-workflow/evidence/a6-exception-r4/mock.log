@@ -1,0 +1,25 @@
+mock: listening on 127.0.0.1:3799
+mock: 1 [messages] text reply (16 chars): "C1 smoke session"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] tool-call reply: team_create_member
+mock: 5 [messages] tool-call reply: team_delegate
+mock: 6 [messages] tool-call reply: bash
+mock: 7 [messages] text reply (17 chars): "C1_A6_LEADER_DONE"
+mock: 8 [messages] tool-call reply: team_list_pending_control
+mock: 9 [messages] tool-call reply: team_resolve_control
+mock: 10 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 11 [messages] tool-call reply: team_list_pending_control
+mock: 12 [messages] tool-call reply: team_resolve_control
+mock: 13 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 14 [messages] text reply (17 chars): "C1_A6_MEMBER_DONE"
+mock: 15 [messages] tool-call reply: bash
+mock: 16 [messages] text reply (16 chars): "C1 smoke session"
+mock: 17 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 18 [messages] tool-call reply: team_list_pending_control
+mock: 19 [messages] tool-call reply: team_resolve_control
+mock: 20 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 21 [messages] tool-call reply: team_list_pending_control
+mock: 22 [messages] tool-call reply: team_resolve_control
+mock: 23 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 24 [messages] text reply (15 chars): "C1_A6_SELF_DONE"

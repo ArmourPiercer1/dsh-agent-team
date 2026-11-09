@@ -80,6 +80,7 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
   'team-coordination-recorded': 'message',
   'control-request-recorded': 'control-request',
   'control-decision-recorded': 'control-decision',
+  'control-execution-result': 'control-decision',
   'control-allow-consumed': 'control-consumed',
   'activity-progress-recorded': 'progress-recorded',
   'activity-interval-opened': 'interval-opened',
@@ -88,6 +89,7 @@ const FACT_ROW_KIND: Readonly<Record<string, TeamLedgerRowKind>> = {
   // A4-PR6 §6.C: structured families, never the `unknown` serializer.
   'governance-proposal-recorded': 'governance-proposal',
   'control-escalation-recorded': 'control-escalation',
+  'control-current-leg-transferred': 'control-escalation',
 }
 
 /**
