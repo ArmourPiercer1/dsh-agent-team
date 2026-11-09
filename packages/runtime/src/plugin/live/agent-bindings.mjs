@@ -353,6 +353,16 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
+// A56-SEMANTICS: the ONE input-provenance law shared by the producers here
+// (which source kind a delivery carries) and the Host's Alpha.6 Sticky Stop
+// resume arbour (whether a claimed input is an explicit HUMAN interaction).
+// See the module header for why `source.kind` alone cannot answer both.
+import {
+  TEAM_PRODUCER_SOURCE,
+  createMachineInputLedger,
+  isHumanInteractionClaim,
+  isTeamMachineInput,
+} from './input-provenance.mjs'
 // T12-M2: READ-ONLY reuse of the persona resolver (agent-setup/persona) and
 // the blueprint parser (the domain facade) — the composition that puts the
 // blueprint persona onto the real DSH Agent at create/setup.
@@ -955,6 +965,19 @@ export function createAgentBindings(deps) {
 
   /** @type {Map<string, object>} live agent handles keyed by session id. */
   const liveAgents = new Map()
+  /**
+   * A56-SEMANTICS: the process-local ledger of model-visible inputs THIS row
+   * delivered as MACHINE origin. Work delivery and root work keep the human
+   * `kind: 'user'` attribution — upstream `create_goal` authority is decided
+   * by exactly that (`hasDirectHumanInput`: a runtime root whose open turn
+   * carries a `user/message` with `source.kind === 'user'`), so a machine
+   * delivery that must authorize a goal cannot use the `plugin:` kind. The
+   * consequence is that attribution alone cannot tell the Sticky Stop arbour
+   * that the input was not a human interaction; this ledger is that signal for
+   * the live process, and the durable envelope list in `input-provenance.mjs`
+   * is the cold-start fallback.
+   */
+  const machineInputs = createMachineInputLedger()
   /**
    * @type {Map<string, {instanceId: string, rootSessionId: string}>} the
    * per-member ADMISSION CLOSE (the archive/dispose race close, row 6).
@@ -3173,17 +3196,50 @@ export function createAgentBindings(deps) {
             return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
           }
           const a5IsLeaderPlane = sessionId === String(teamRoot)
+          // Alpha.6 (opt-in, v5 only): the PA leg becomes an approval CASE
+          // leg, so the executing Member's identity/generation and the bound
+          // Blueprint identity are frozen on the durable row. Absent the
+          // opt-in (or on v4) the exact legacy requestControl path is used.
+          const a6BoundBlueprint = getBoundBlueprint(String(teamRoot))
+          const a6PaCase = config?.alpha6ReviewRouting === true
+            && Number(a6BoundBlueprint?.schemaVersion) === 5
           const a5Leg = createPaControlLeg({
             controlService: a5ControlService,
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            ...(a6PaCase
+              ? {
+                  a6: true,
+                  ...(boundTemplate?.templateId === undefined
+                    ? {}
+                    : { operationOwnerTemplateId: String(boundTemplate.templateId) }),
+                  ...(a6BoundBlueprint?.contentHash === undefined
+                    ? {}
+                    : { blueprintContentHash: String(a6BoundBlueprint.contentHash) }),
+                  ...(a6BoundBlueprint?.revision === undefined
+                    ? {}
+                    : { blueprintRevision: String(a6BoundBlueprint.revision) }),
+                  waitTimeoutMs: config?.alpha6WaitTimeoutMs ?? 600_000,
+                }
+              : {}),
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
+          onExecutionResult: ({ callId, outcome }) => {
+            const service = controlServiceRef?.current
+            if (service === undefined || service === null || typeof service.recordExecutionResult !== 'function') return
+            void service.recordExecutionResult({
+              rootSessionId: String(teamRoot),
+              callId,
+              outcome,
+            }).catch((error) => {
+              observations.push(`alpha6-execution-result: failed callId=${String(callId)}: ${error instanceof Error ? error.message : String(error)}`)
+            })
+          },
           // PR358 fix-2: the DURABLE attribution the Control rows live under
           // is the real TeamSession root — never a `plane:<template>`
           // fallback. Missing teamSessionId is a wiring bug the plane now
@@ -5381,8 +5437,28 @@ export function createAgentBindings(deps) {
       }
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
-        source: { kind: 'user' },
+        // A56-SEMANTICS (P1-3, gated on the Alpha.6 opt-in): only a HUMAN
+        // sender (the closed attribution's fromHumanId) is a human
+        // interaction. A Leader/model relay carries the producer-owned
+        // MACHINE kind ONLY while the Alpha.6 review plane is opted in — the
+        // SAME `config.alpha6ReviewRouting === true` flag `root.ts` hands to
+        // `createAlpha6RootWiring(true, thunk)`; then it can never clear a
+        // human Sticky Stop on the recipient. With the opt-in absent/false no
+        // Sticky Stop listener is registered at all, so this path restores the
+        // base `{kind:'user'}` attribution and a relay-started Member turn
+        // keeps the upstream direct-human goal authority (`hasDirectHumanInput`,
+        // authority.ts) — the Alpha.5 behaviour is literally unchanged.
+        source: config?.alpha6ReviewRouting === true
+          && input.attribution.fromHumanId === undefined
+          ? TEAM_PRODUCER_SOURCE
+          : { kind: 'user' },
       })
+      // Only a MACHINE relay is registered: a human `member.send` carries the
+      // human attribution precisely so it may clear a human Sticky Stop, and
+      // the ledger must not take that back.
+      if (input.attribution.fromHumanId === undefined) {
+        machineInputs.note(String(input.sessionId), message)
+      }
       // Success boundary = inbox acceptance: NO whenIdle, NO
       // ensureMaterialized (the turn's durable log is materialized by the
       // recipient's own turn settlement, not by the sender).
@@ -5439,8 +5515,20 @@ export function createAgentBindings(deps) {
         : args.prompt
       const message = createUserMessage({
         content: [{ type: 'text', text: `[team-work requestToken=${args.requestToken}] ${text}` }],
+        // A56-SEMANTICS — resolution (a), the MEASURED half: work delivery is
+        // the ONE Team delivery a governed Member must be able to start a goal
+        // from, and upstream grants that authority only to a runtime ROOT whose
+        // open turn carries `source.kind === 'user'` (authority.ts
+        // `hasDirectHumanInput`). Alpha.6 had moved this line to the `plugin:`
+        // kind to protect the Sticky Stop, which silently removed `create_goal`
+        // from every Member (measured: GOAL_TOOL_AUTHORITY_REQUIRED, 0 rounds).
+        // The two properties are kept apart instead: this turn keeps the human
+        // attribution for AUTHORITY and is registered with the machine-input
+        // ledger, so the Alpha.6 resume arbour still refuses to read it as an
+        // explicit human interaction (host wiring: `isHumanInteractionClaim`).
         source: { kind: 'user' },
       })
+      machineInputs.note(String(args.childSessionId), message)
       handle.agent.followup(message)
       const signal = args.signal
       if (
@@ -5450,13 +5538,13 @@ export function createAgentBindings(deps) {
         typeof signal.removeEventListener === 'function'
       ) {
         if (signal.aborted) {
-          handle.agent.cancel({ kind: 'user' })
+          handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
           throw signal.reason ?? new Error('team work delivery aborted')
         }
         let onAbort
         const aborted = new Promise((_, reject) => {
           onAbort = () => {
-            handle.agent.cancel({ kind: 'user' })
+            handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
             reject(signal.reason ?? new Error('team work delivery aborted'))
           }
           signal.addEventListener('abort', onAbort, { once: true })
@@ -5585,7 +5673,7 @@ export function createAgentBindings(deps) {
    * materializes the durable log so the delivered turn is on disk before
    * the caller settles.
    * @param {{rootSessionId: string, text: string}} input
-   * @param {{livenessOnly?: boolean}} [options]
+   * @param {{livenessOnly?: boolean, machineSource?: boolean}} [options]
    *   - `livenessOnly: true` marks the LIVENESS-PRESERVED notification
    *     class (the C1 control notification — the consolidated-revision
    *     P2a fix, the explicit final-input-boundary distinction between
@@ -5599,10 +5687,23 @@ export function createAgentBindings(deps) {
    *     a swallowed control notification is a liveness hole in the C1
    *     channel). NORMAL root work (the Root initial work, the B6
    *     context) passes NO such flag and REMAINS gated.
+   *   - `machineSource: true` marks the NOTIFICATION provenance class: the
+   *     turn carries the producer-owned machine source kind instead of the
+   *     human attribution, so it can neither authorize a goal on the root nor
+   *     be read as an explicit human interaction by the Alpha.6 Sticky Stop
+   *     arbour. The WORK classes (handoff context, creation-time root work)
+   *     keep the human attribution — a Root's `create_goal` authority is
+   *     decided by it — and are classified machine through the machine-input
+   *     ledger instead (A56-SEMANTICS).
    * @returns {Promise<void>}
    */
   async function deliverRootInput(input, options) {
     const livenessOnly = options !== undefined && options.livenessOnly === true
+    // A56-SEMANTICS: the provenance class of THIS root input. `machineSource`
+    // marks the notification classes (they must not read as human work); the
+    // work classes keep the human attribution for goal authority and are
+    // machine-classified through the ledger instead.
+    const machineSource = options !== undefined && options.machineSource === true
     const sid = String(input?.rootSessionId ?? '')
     const text = String(input?.text ?? '')
     if (sid === '') {
@@ -5640,8 +5741,18 @@ export function createAgentBindings(deps) {
     }
     const message = createUserMessage({
       content: [{ type: 'text', text }],
-      source: { kind: 'user' },
+      // A56-SEMANTICS — resolution (a), the same split as work delivery:
+      //   - ROOT WORK (the handoff context, the creation-time initial work) is
+      //     a work input: the target Root is a runtime root and its goal
+      //     authority is decided by this turn's source kind, so it keeps the
+      //     human attribution and is registered as MACHINE in the ledger (the
+      //     Sticky Stop arbour therefore still refuses to read it as human);
+      //   - a CONTROL notification (`machineSource`) is not work input at all:
+      //     it carries the producer-owned machine kind, so it cannot authorize
+      //     a goal and cannot resume a stopped session.
+      source: machineSource ? TEAM_PRODUCER_SOURCE : { kind: 'user' },
     })
+    machineInputs.note(sid, message)
     handle.agent.followup(message)
     await handle.agent.whenIdle()
     await sessionPersistence.ensureMaterialized(handle.agent.session)
@@ -5754,7 +5865,10 @@ export function createAgentBindings(deps) {
     // (the pending-approval leader must stay reachable while the root's
     // required mcp materialization is failed). Normal root work stays
     // gated (no flag on those paths).
-    await deliverRootInput({ rootSessionId: sid, text }, { livenessOnly: true })
+    await deliverRootInput(
+      { rootSessionId: sid, text },
+      { livenessOnly: true, machineSource: true },
+    )
   }
 
   /**
@@ -5878,6 +5992,112 @@ export function createAgentBindings(deps) {
     // ensureMaterialized. The turn (if any) runs on its own.
   }
 
+  /**
+   * A6-PR4 — deliver ONE generic Review Wake to the review recipient's
+   * session inbox (the PR4 delivery slice's real Host seam). The caller has
+   * already resolved the recipient to a live/durable session (PR6 owns that
+   * mapping: Leader root or Officer child). Semantics are the same as the
+   * work-completion wake: idle -> followup, busy -> steer, success boundary
+   * = inbox acceptance, NO whenIdle/ensureMaterialized. Non-authority: the
+   * text is pre-rendered and the durable case ledger remains the authority.
+   * A rejection PROPAGATES: the wake coordinator's `delivery-failed`
+   * transition releases `queued`.
+   * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  /**
+   * Alpha.6 — the native-Inbox truth for ONE recipient session. `has` reads
+   * the LIVE pending lists only (never materializes an agent), matching the
+   * wakeId inside the rendered text; `remove` withdraws that exact message.
+   * @param {string} targetSessionId
+   * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
+   */
+  function reviewWakeInbox(targetSessionId) {
+    const sid = String(targetSessionId)
+    const handle = async () => {
+      const existing = liveAgents.get(sid)
+      if (existing !== undefined) return existing
+      try {
+        // Boot recovery runs before the recipient handle exists; materialising
+        // its durable session is what makes the native Inbox readable at all.
+        return await ensureLiveAgent(sid)
+      } catch {
+        return undefined
+      }
+    }
+    const pending = async () => {
+      const live = await handle()
+      if (live === undefined) return []
+      return [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+    }
+    const matches = (message, wakeId) => {
+      const content = Array.isArray(message?.content) ? message.content : []
+      return content.some(
+        (part) => part?.type === 'text' && typeof part.text === 'string' && part.text.includes(wakeId),
+      )
+    }
+    return {
+      async has(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // An unreadable Inbox is NOT evidence of absence. Callers must keep
+          // the queued row and retry rather than release + duplicate.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const messages = [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+        return messages.some((message) => matches(message, String(wakeId)))
+      },
+      async remove(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // Same contract as `has`: unreadable is not evidence the message is
+          // gone. Keep the intent instead of reporting a refusal that the
+          // caller would mistake for an absent message.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
+        if (message === undefined) return false
+        return live.agent.inbox.remove(message.id)
+      },
+    }
+  }
+
+  async function deliverReviewWake(input) {
+    const rootSessionId = String(input?.rootSessionId ?? '')
+    const targetSessionId = String(input?.targetSessionId ?? '')
+    const wakeId = String(input?.wakeId ?? '')
+    const text = String(input?.text ?? '')
+    if (rootSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty rootSessionId')
+    }
+    if (targetSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty targetSessionId')
+    }
+    if (wakeId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty wakeId (the token-leading hint)')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty text')
+    }
+    if (closing) {
+      throw new Error('agent-bindings: live bindings are closing — review wake dropped (best-effort)')
+    }
+    const handle = await ensureLiveAgent(targetSessionId)
+    await prepareAgentForRequest(String(targetSessionId), teamRootOfSession(targetSessionId))
+    if (closing) {
+      throw new Error('agent-bindings: live bindings began closing before the review wake — dropped (best-effort)')
+    }
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin:dsh-agent-team' },
+    })
+    if (handle.agent.status === 'idle') {
+      handle.agent.followup(message)
+    } else {
+      handle.agent.steer(message)
+    }
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -5923,7 +6143,11 @@ export function createAgentBindings(deps) {
       observations.push(`pd29: Team interrupt of '${String(target?.instanceId ?? '<unknown>')}' found NO live agent (childSessionId=${childSid}); nothing to cancel or disarm`)
       return // no activity in flight: no-op by contract
     }
-    handle.agent.cancel({ kind: 'user' })
+    // A6 provenance: a Team machine stop is NOT human input, so it carries the
+    // hook cause and cannot clear a human Sticky Stop. The durable pause below
+    // is what withdraws continuation; the human Stop button reaches the host
+    // through its own client RPC and does not pass through this function.
+    handle.agent.cancel({ kind: 'hook', reason: 'team-member-interrupt' })
     disarmStoppedGoal(handle.agent, target)
   }
 
@@ -6712,6 +6936,23 @@ export function createAgentBindings(deps) {
     // delivery failure is a liveness failure only, swallowed by the
     // router's completion observer)
     deliverRootWorkCompletionNotification,
+    // additive (A6-PR4): the generic Review Wake inbox delivery. The caller
+    // resolves the recipient session; idle -> followup, busy -> steer, and a
+    // rejection releases the coordinator's queued latch.
+    deliverReviewWake,
+    reviewWakeInbox,
+    // additive (A56-SEMANTICS): the input-provenance arbiter port. The Host's
+    // Alpha.6 Sticky Stop resume arbour asks THIS (the producer) whether a
+    // claimed inbox message was a Team delivery, because a work delivery
+    // necessarily carries the human `kind: 'user'` attribution that the
+    // upstream goal authority requires. Text-envelope fallback included, so a
+    // message queued across a restart stays classified machine.
+    isTeamMachineInput: (sessionId, message) =>
+      isHumanInteractionClaim(message, machineInputs, String(sessionId)) === false,
+    // additive (A56-SEMANTICS): the pure predicate, exported for the Host
+    // wiring's own fallback when this row is absent (a host without the live
+    // glue has no Team deliveries, so non-human attribution is the whole law).
+    classification: { isTeamMachineInput, isHumanInteractionClaim },
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,

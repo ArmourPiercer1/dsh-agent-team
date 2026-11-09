@@ -3735,6 +3735,7 @@ var __dshFactory = (require) => {
 			    'team-coordination-recorded': 'message',
 			    'control-request-recorded': 'control',
 			    'control-decision-recorded': 'control',
+			    'control-execution-result': 'control',
 			    'control-allow-consumed': 'control',
 			    // A4-PR0a: mirror of the host category map — the inline-abort terminal mark.
 			    // The renderer already had a case for this fact type while the category map
@@ -3755,6 +3756,7 @@ var __dshFactory = (require) => {
 			    // decision row (reason `escalated`) is what closes leg 1, and the risen leg
 			    // is an ordinary request row — so no pending count can double-count a case.
 			    'control-escalation-recorded': 'control',
+			    'control-current-leg-transferred': 'control',
 			    // Strict-read durable authorization grant: a control-and-persistence
 			    // fact, NOT a control request/decision (it never enters the pairing
 			    // switch below, never increments a pending count, and is hidden from
@@ -10490,6 +10492,7 @@ REMOTE_CORRUPT_CONTROL_LEGS_CAP });
 			    'team-coordination-recorded': 'message',
 			    'control-request-recorded': 'control-request',
 			    'control-decision-recorded': 'control-decision',
+			    'control-execution-result': 'control-decision',
 			    'control-allow-consumed': 'control-consumed',
 			    'activity-progress-recorded': 'progress-recorded',
 			    'activity-interval-opened': 'interval-opened',
@@ -10498,6 +10501,7 @@ REMOTE_CORRUPT_CONTROL_LEGS_CAP });
 			    // A4-PR6 §6.C: structured families, never the `unknown` serializer.
 			    'governance-proposal-recorded': 'governance-proposal',
 			    'control-escalation-recorded': 'control-escalation',
+			    'control-current-leg-transferred': 'control-escalation',
 			};
 			/**
 			 * The INTERNAL authority fact types that never become Events rows

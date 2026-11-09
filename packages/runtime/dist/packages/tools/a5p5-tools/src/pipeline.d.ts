@@ -87,6 +87,13 @@ export interface RunToolCallDeps {
     readonly spill?: {
         readonly store: SpillStore;
     };
+    /** Optional A6 execution-result observation: called ONCE after the backend
+     *  answered (success or failure), with the callId. It observes only; it can
+     *  never change the result. Cancelled/refused paths do not call it. */
+    readonly onExecutionResult?: (input: {
+        readonly callId: string;
+        readonly outcome: 'succeeded' | 'failed';
+    }) => void;
 }
 export interface SpillPointerFact {
     readonly spillId: string;

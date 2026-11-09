@@ -1,0 +1,10 @@
+5523,5524c5523
+<         // A56-MEASUREMENT (temporary): the integration tree's own attribution.
+<         source: TEAM_PRODUCER_SOURCE,
+---
+>         source: { kind: 'user' },
+5748,5749c5747
+<       // A56-MEASUREMENT (temporary): the integration tree's own attribution.
+<       source: TEAM_PRODUCER_SOURCE,
+---
+>       source: machineSource ? TEAM_PRODUCER_SOURCE : { kind: 'user' },

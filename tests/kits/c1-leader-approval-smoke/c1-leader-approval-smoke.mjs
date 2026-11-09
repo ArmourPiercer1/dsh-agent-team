@@ -136,11 +136,13 @@
  * dump in the evidence dir); 1 = fatal (environment/boot/row).
  */
 
+import { createHash } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, statSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
+import { DSH_BASELINE_VERSION } from '../../../tests/paths.mjs'
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
@@ -153,6 +155,20 @@ function argValue(name, dflt) {
   return v
 }
 const FLAG_KEEP = args.includes('--keep')
+// Boot-only Alpha.6 check: mount the SAME production row with a v5 routing
+// source + the opt-in config, prove the Host boots it (durable wake-intent
+// path present, live wake seam present), then stop after L0. The model
+// scenario below is the legacy Leader-approval arc, not the Officer arc.
+const ALPHA6_BOOT_ONLY = process.env['C1_ALPHA6_BOOT_ONLY'] === '1'
+// Real-Host ARC-A probe: mount the governed tool plane with the bash TAKEOVER
+// spelling (`bash@bash`). The legacy C1 blueprint asks `bash`, and the
+// non-takeover native name is refused at the binding gate by design; the same
+// blueprint is plane-shaped once the row mounts the shell takeover.
+const PLANE_TAKEOVER = process.env['C1_PLANE_TAKEOVER'] === '1'
+// A6-OFFICER: the same real Host, but the ask is routed to a live Officer
+// through the opt-in review-routing plane. Requires the plane takeover so an
+// approved bash can actually execute.
+const ALPHA6_OFFICER = process.env['C1_ALPHA6_OFFICER'] === '1'
 
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
@@ -199,6 +215,12 @@ const TEAM_TOOL_CATALOG = [
   'team_request_control',
   'team_resolve_control',
   'team_list_pending_control',
+  // 0.2.0-rc.2 added these to the boot Leader's global surface; listing them
+  // keeps them OUT of the discovery-computed builtinToolDeny (denying an
+  // unknown name makes tools.restrict() fail the root start).
+  'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
 ]
 // The Leader teamTools allow list (the closed subset this smoke drives):
 // create + delegate + collect + list members/templates/config for
@@ -237,6 +259,8 @@ const BP_ANCHOR_ID = 'team.c1-anchor'
 const BP_X_ID = 'team.c1-x'
 const BP_Y_ID = 'team.c1-y'
 const BP_Z_ID = 'team.c1-z'
+const BP_A6_ID = 'team.c1-a6-officer'
+const CREATE_ROOT_A6 = `session-c1-smoke-a6-${RUN_STAMP}`
 
 // Distinct markers (no substring collisions).
 const MK_DISC = `C1MK_DISC_${RUN_STAMP}`
@@ -248,6 +272,12 @@ const MK_Z = `C1MK_Z_${RUN_STAMP}`
 const MK_ZMEM = `C1MK_ZMEM_${RUN_STAMP}`
 const MK_ZCHECK = `C1MK_ZCHECK_${RUN_STAMP}`
 const MK_XCROSS = `C1MK_XCROSS_${RUN_STAMP}`
+const MK_A6 = `C1MK_A6LEAD_${RUN_STAMP}`
+const MK_A6MEM = `C1MK_A6MEM_${RUN_STAMP}`
+const MK_A6SELF = `C1MK_A6SELF_${RUN_STAMP}`
+const MK_A6_HANDOFF = `C1MK_A6HANDOFF_${RUN_STAMP}`
+const MK_A6_NEWWORKER = `C1MK_A6NEWW_${RUN_STAMP}`
+const MK_A6_OFFICER_READY = `C1MK_A6OFFREADY_${RUN_STAMP}`
 
 // The C1 notification prefix token (the renderer's first line).
 const NOTIF_PREFIX = '[team-control requestId='
@@ -267,10 +297,51 @@ const S5_TOKEN = `c1-z-s5tok-${RUN_STAMP}`
 // executed branch is distinguishable in the tool result).
 const FILE_X_ALLOW = join(WORKSPACE, `c1-x-allow-${RUN_STAMP}.txt`)
 const FILE_X_DENY = join(WORKSPACE, `c1-x-deny-${RUN_STAMP}.txt`)
+const SUM_A6_ALLOW = `c1-a6-allow-${RUN_STAMP}`
+const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
+const FILE_A6_BODY_START = join(WORKSPACE, `c1-a6-body-start-${RUN_STAMP}.txt`)
+// Optional recipient probe: the OFFICER itself asks for a governed bash tool.
+// The current-leg OperationOwner is then the Officer template, so the router
+// must route the self-ask to the Leader (never back to the Officer).
+const A6_RECIPIENTS = process.env['C1_A6_RECIPIENTS'] === '1'
+const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
+const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
+const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
+const A6_STOP = process.env['C1_A6_STOP'] === '1'
+const A6_CRASH = ['1', 'allow', 'consume', 'body', 'before'].includes(String(process.env['C1_A6_CRASH']))
+const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
+const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
+const A6_INBOX = process.env['C1_A6_INBOX'] === '1'
+// A6-INBOX-UNCLAIMED: the window the audit never injected — the native Inbox
+// ACCEPTED the review wake into the recipient's next-step list but the turn
+// never claimed it (the Officer is kept busy on a long tool call). Kill the
+// Host BEFORE any wake turn starts, then restart and count claims.
+const A6_INBOX_UNCLAIMED = process.env['C1_A6_INBOX_UNCLAIMED'] === '1'
+const A6_INBOX_ACTIVE = A6_INBOX || A6_INBOX_UNCLAIMED
+// A6-EXEC-NEG: after the normal allow/execute measurement, drive the two
+// negative controls against the SAME plane: (1) a denied call must produce NO
+// execution-result, (2) a call whose backend THROWS must produce a terminal
+// `failed` fact, never `succeeded`.
+const A6_EXEC_NEG = process.env['C1_A6_EXEC_NEG'] === '1'
+const SUM_A6_DENY = 'c1-a6-deny-sentinel'
+const SUM_A6_THROW = 'c1-a6-throw-sentinel'
+const MK_A6DENY = 'C1MK_A6DENY'
+const MK_A6THROW = 'C1MK_A6THROW'
+const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
+const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
+const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
+const CMD_A6_SELF = `echo ${SUM_A6_SELF} > ${FILE_A6_SELF} && echo a6-self-executed`
+const SUM_A6_HANDOFF = `c1-a6-handoff-${RUN_STAMP}`
+const FILE_A6_HANDOFF = join(WORKSPACE, `c1-a6-handoff-${RUN_STAMP}.txt`)
+const CMD_A6_HANDOFF = `echo ${SUM_A6_HANDOFF} > ${FILE_A6_HANDOFF} && echo a6-handoff-executed`
 const FILE_Y = join(WORKSPACE, `c1-y-${RUN_STAMP}.txt`)
 const FILE_Z = join(WORKSPACE, `c1-z-${RUN_STAMP}.txt`)
 const CMD_X_ALLOW = `echo ${SUM_X_ALLOW} > ${FILE_X_ALLOW} && echo x-allow-executed`
 const CMD_X_DENY = `echo ${SUM_X_DENY} > ${FILE_X_DENY} && echo x-deny-executed`
+const CMD_A6_ALLOW = `echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW} && echo a6-allow-executed`
+// body-started-but-result-unknown probe: the start marker is durable BEFORE the
+// result write; a crash between them must never replay the body.
+const CMD_A6_BODY = `echo body-started > ${FILE_A6_BODY_START} && sleep 20 && echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW}`
 const CMD_Y = `echo ${SUM_Y} > ${FILE_Y} && echo y-executed`
 const CMD_Z = `echo ${SUM_Z_FILE} > ${FILE_Z} && echo z-executed`
 
@@ -364,6 +435,19 @@ async function apiPrompt(origin, cookie, sessionId, text, tag = 'c1') {
       },
     }),
   }, 240_000)
+}
+
+async function apiCancel(origin, cookie, sessionId, tag = 'c1cancel') {
+  return fetchJson(`${origin}/api/session/cancel`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({
+      type: 'client-request',
+      rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`,
+      method: 'session/cancel',
+      payload: { args: { request: { sessionId } } },
+    }),
+  }, 30_000)
 }
 
 async function p6t6State(port) {
@@ -475,11 +559,28 @@ function yamlEmitItem(item, indent) {
   return [`${pad}- ${firstLines[0].slice((indent + 1) * 2)}`, ...firstLines.slice(1), ...rest]
 }
 
+function planeLauncherSha() {
+  return createHash('sha256').update(readFileSync(join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py'))).digest('hex')
+}
+
 function teamRowConfig() {
+  const launcher = join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py')
+  const planeRealmId = `c1-plane-realm-${RUN_STAMP}`
+  const plane = PLANE_TAKEOVER
+    ? {
+        realmId: planeRealmId,
+        names: { bash: 'bash' },
+        workingDir: join(HOME, 'workspace'),
+        confinedProvider: {
+          trustRoot: `sha256:${planeLauncherSha().slice(0, 16)}#${launcher}`,
+          assembly: { launcherPath: launcher, launcherSha256: planeLauncherSha(), minAbiVersion: 3 },
+        },
+      }
+    : undefined
   return {
     rootSessionId: ROOT,
     bootPhase: 'create',
-    blueprintSource: BP_ANCHOR_YAML,
+    blueprintSource: (ALPHA6_BOOT_ONLY || ALPHA6_OFFICER) ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
     blueprintDir: BLUEPRINT_DIR,
     rootPresetId: SMOKE_PRESET_ID,
     memberPresetId: SMOKE_PRESET_ID,
@@ -497,6 +598,14 @@ function teamRowConfig() {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
     glueUrl: GLUE_URL,
     seamUrl: SEAM_URL,
+    ...(plane === undefined ? {} : { teamToolPlane: plane }),
+    ...(ALPHA6_BOOT_ONLY || ALPHA6_OFFICER
+      ? {
+          alpha6ReviewRouting: true,
+          alpha6WakeIntentPath: join(HOME, 'alpha6-wake-intents'),
+          ...(A6_TIMEOUT_MS > 0 ? { alpha6WaitTimeoutMs: A6_TIMEOUT_MS } : {}),
+        }
+      : {}),
   }
 }
 
@@ -520,6 +629,39 @@ const BP_ANCHOR_YAML = [
   '  rules: []',
   'policyStates: []',
   'metadata: {}',
+  '---',
+  '',
+].join('\n')
+
+/** The v5 opt-in anchor: Officer admitted, routing declared, durable path configured. */
+const BP_A6_ANCHOR_YAML = [
+  '---',
+  'schemaVersion: 5',
+  `blueprintId: ${BP_ANCHOR_ID}`,
+  'revision: "1"',
+  'leader: { templateId: leader, persona: C1 Alpha.6 boot anchor. }',
+  'members:',
+  '  - templateId: officer',
+  '    persona: Review asks for this team.',
+  '  - templateId: worker',
+  '    persona: Worker of the C1 smoke boot team.',
+  'requirements: []',
+  'memberEnvelopes: []',
+  'policyStates: []',
+  'permissionMutationEnvelope: { rules: [] }',
+  'teamHardEnvelope: { rules: [] }',
+  'teamEnvelope:',
+  '  allow:',
+  '    - request-control',
+  '  deny: []',
+  'metadata: {}',
+  'reviewRouting:',
+  '  enabled: true',
+  '  officerTemplateId: officer',
+  '  ordinaryToolApprovals:',
+  '    default: officer',
+  '    leaderExceptions: []',
+  '  whenOfficerUnavailable: hold',
   '---',
   '',
 ].join('\n')
@@ -569,11 +711,13 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '        - tool: bash',
     '          resource:',
     '            kind: any',
-    '      deny:',
-    '        - tool: read',
-    '          resource:',
-    '            kind: subtree',
-    '            path: runtime',
+    ...(PLANE_TAKEOVER ? ['      deny: []'] : [
+      '      deny:',
+      '        - tool: read',
+      '          resource:',
+      '            kind: subtree',
+      '            path: runtime',
+    ]),
   ]
   const workerBlock = [
     'members:',
@@ -600,11 +744,13 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '          - tool: bash',
     '            resource:',
     '              kind: any',
-    '        deny:',
-    '          - tool: read',
-    '            resource:',
-    '              kind: subtree',
-    '              path: runtime',
+    ...(PLANE_TAKEOVER ? ['        deny: []'] : [
+      '        deny:',
+      '          - tool: read',
+      '          resource:',
+      '            kind: subtree',
+      '            path: runtime',
+    ]),
   ]
   const teamEnvelope = [
     'teamEnvelope:',
@@ -645,6 +791,72 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '---',
     '',
   ].join('\n')
+}
+
+/** The v5 Officer shape: the strict worker/leader plus a real reviewer. */
+function savedBlueprintA6Yaml(denyList) {
+  const officer = [
+    '  - templateId: officer',
+    '    persona: "You are the C1 smoke Officer. Resolve the review legs routed to you; do not execute work."',
+    '    capabilities:',
+    '      teamTools:',
+    '        kind: allow',
+    '        items:',
+    '          - team_list_pending_control',
+    '          - team_resolve_control',
+    '      builtinToolDeny: []',
+    '      skills:',
+    '        kind: allow',
+    '        items: []',
+    '      mcp:',
+    '        kind: allow',
+    '        items: []',
+    '      permissions:',
+    '        default: deny',
+    '        allow: []',
+    ...(A6_EXTRA
+      ? ['        ask:', '          - tool: bash', '            resource:', '              kind: any']
+      : ['        ask: []']),
+    '        deny: []',
+  ]
+  let text = savedBlueprintYaml(
+    BP_A6_ID,
+    `You are the A6 leader of the C1 smoke team. ${MK_A6}`,
+    `You are worker-a6 of the C1 smoke team. ${MK_A6MEM}`,
+    denyList,
+  )
+  text = text.replace('schemaVersion: 3', 'schemaVersion: 5')
+  text = text.replace('revision: "1"', 'revision: "1"\nrequirements: []')
+  text = text.replace('memberEnvelopes:', officer.join('\n') + '\nmemberEnvelopes:')
+  // The worker envelope follows `memberEnvelopes:`; append the Officer entry
+  // under the SAME key (a second mapping key would be duplicate YAML).
+  if (A6_EXTRA) {
+    text = text.replace(
+      '      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - request-control\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+    )
+  } else {
+    text = text.replace(
+      '      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+    )
+  }
+  text = text.replace(
+    'metadata: {}',
+    [
+      'reviewRouting:',
+      '  enabled: true',
+      '  officerTemplateId: officer',
+      '  ordinaryToolApprovals:',
+      '    default: officer',
+      ...(A6_EXCEPTION
+        ? ['    leaderExceptions:', '      - memberTemplateId: worker', '        tool:', '          owner: dsh-agent-team', '          name: bash']
+        : ['    leaderExceptions: []']),
+      '  whenOfficerUnavailable: hold',
+      'metadata: {}',
+    ].join('\n'),
+  )
+  return text
 }
 
 /**
@@ -792,6 +1004,11 @@ async function bootHost({ port, home, mockPort, instanceLog }) {
 
 // ── mock decide policy (C1: leaders, members, notification turns) ──────────
 
+/** The plane's shell row is CLOSED: it names `timeout`, not the native `timeoutMs`. */
+function bashArgs(command) {
+  return PLANE_TAKEOVER ? { command, timeout: 30_000 } : { command, timeoutMs: 30_000 }
+}
+
 function toolCall(name, argumentsObj) {
   return { kind: 'tool-call', toolCalls: [{ id: `call-c1-${Math.random().toString(36).slice(2, 10)}`, name, arguments: argumentsObj }] }
 }
@@ -823,28 +1040,56 @@ function userTextOf(req) {
  *  input; sessions with no marker in the history fall back to the raw
  *  last user message. */
 const TRIGGER_RE = /C1MK_[A-Z0-9_]+_[0-9T:-]+|\[team-control requestId=/
+
+/**
+ * 0.2.0-rc.2 delivers tool results as `user` messages carrying a
+ * `tool_result` content block (0.1.x used role `tool`). Such a message can
+ * echo the prompt/persona text, so it must never be mistaken for a NEW chain
+ * trigger and must count as chain progress.
+ */
+function isToolResultMessage(m) {
+  if (m?.role === 'tool') return true
+  return m?.role === 'user' && Array.isArray(m.content)
+    && m.content.some((block) => block?.type === 'tool_result')
+}
+
 function lastTriggerIndex(req) {
   const messages = messagesOf(req)
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const m = messages[i]
-    if (m.role !== 'user') continue
+    if (m.role !== 'user' || isToolResultMessage(m)) continue
     const t = typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '')
     if (TRIGGER_RE.test(t)) return i
   }
-  // Fallback: the raw last user message.
+  // Fallback: the raw last non-tool-result user message.
   for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role === 'user') return i
+    if (messages[i].role === 'user' && !isToolResultMessage(messages[i])) return i
   }
   return -1
 }
 
 /** The chain trigger text (see lastTriggerIndex). */
+/**
+ * Count wake TURN STARTS. A fresh wake delivery has exactly the wake text as
+ * its only message (`messageCount === 1`); later model calls of that same turn
+ * carry prior assistant/tool messages. A native resume of the crashed turn
+ * therefore appears as `messageCount > 1`, while a newly delivered wake
+ * appears as `messageCount === 1`. Two starts = two deliveries.
+ */
+function wakeStartCount(requests) {
+  return requests.filter((request) =>
+    /^\[team-review-wake wakeId=([^\]]+)\]/.test(lastUserTextOf(request))
+    && (request.body?.messages?.length ?? 0) === 1).length
+}
+
 function lastUserTextOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
   if (i === -1) return ''
   const last = messages[i]
-  return typeof last.content === 'string' ? last.content : JSON.stringify(last.content ?? '')
+  // 0.2.0 user messages carry content BLOCKS; the notification/trigger text is
+  // the concatenated text blocks, never the JSON wrapper.
+  return contentText(last.content)
 }
 
 /**
@@ -855,15 +1100,26 @@ function lastUserTextOf(req) {
 function toolMsgsOf(req) {
   const messages = messagesOf(req)
   const i = lastTriggerIndex(req)
-  return messages.slice(i + 1).filter((m) => m.role === 'tool')
+  return messages.slice(i + 1).filter(isToolResultMessage)
+}
+
+/** Flatten 0.2.0 content blocks (text / tool_result) to plain text. */
+function contentText(content) {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) return content.map((block) => {
+    if (block?.type === 'tool_result') return contentText(block.content)
+    return typeof block?.text === 'string' ? block.text : ''
+  }).join('\n')
+  return JSON.stringify(content ?? '')
 }
 
 /** The instance id from a team_create_member / team_delegate tool result. */
 function extractInstanceId(content) {
+  const text = contentText(content)
   const m =
-    /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /"instanceId"\s*:\s*"([^"]+)"/.exec(String(content)) ??
-    /inst-[A-Za-z0-9][A-Za-z0-9-]{3,64}/.exec(String(content))
+    /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(text) ??
+    /"instanceId"\s*:\s*"([^"]+)"/.exec(text) ??
+    /inst-[A-Za-z0-9][A-Za-z0-9-]{3,64}/.exec(text)
   return m === null ? null : m[1]
 }
 
@@ -906,17 +1162,1233 @@ function extractResultRequestId(content) {
  *      ROOTZ → done — both must reject TEAM_TOOL_CALLER_ROOT_MISMATCH
  *      (RH2/RH3, PR #20 closure)).
  */
+function replyToolNames(record) {
+  return (record?.reply?.toolCalls ?? []).map((t) => t?.name ?? '').filter((n) => n !== '')
+}
+
+/**
+ * Real-Host A6 acceptance: a Member bash ask is routed to the live Officer,
+ * the Officer resolves it through the production tools, and the approved call
+ * executes through the plane takeover. The ledger is captured verbatim so a
+ * second (plane PA) approval leg is visible rather than inferred.
+ */
+async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
+  log('── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──')
+  writeFileSync(join(BLUEPRINT_DIR, 'c1-a6.yaml'), savedBlueprintA6Yaml(denyList))
+  const create = await remoteCall(booted.origin, booted.cookie, 'team.create', {
+    rootSessionId: CREATE_ROOT_A6,
+    blueprintId: BP_A6_ID,
+    initialWork: { prompt: MK_A6 },
+  }, 'c1a6')
+  const createOk = create.status === 200 && create.body?.result?.ok === true
+  check('A6-1', 'v5 team.create admits the Officer + routing on the real Host', createOk,
+    `status=${create.status} body=${JSON.stringify(create.body ?? create).slice(0, 700)}`)
+  if (!createOk) {
+    writeEvidence('a6-create-fail.json', create.body ?? create)
+    return false
+  }
+  {
+    const sha = spawnSync('git', ['-C', process.cwd(), 'rev-parse', 'HEAD'], { encoding: 'utf8' })
+    const blueprintHash = create.body?.result?.value?.data?.durable?.teamSession?.blueprint?.contentHash ?? null
+    writeEvidence('run-manifest.json', {
+      runId: RUN_STAMP,
+      productSha: sha.status === 0 ? sha.stdout.trim() : null,
+      hostVersion: DSH_BASELINE_VERSION,
+      hostBaselineSha: HOST_BASELINE_SHA,
+      blueprintHash,
+      rootSessionId: CREATE_ROOT_A6,
+      optIn: {
+        alpha6Officer: ALPHA6_OFFICER,
+        planeTakeover: PLANE_TAKEOVER,
+        stickyStop: A6_STICKY_STOP,
+        inboxReconcile: A6_INBOX,
+        timeoutMs: A6_TIMEOUT_MS,
+      },
+    })
+  }
+
+  if (A6_INBOX) {
+    // Native-Inbox reconciliation: the wake turn is held open (30 s mock think
+    // time) AFTER the native Inbox CLAIMED the wake; SIGKILL the Host and
+    // restart. Boot recovery must discard the consumed intent without a
+    // duplicate, while the durable pending Control row survives.
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const intentDeadline = Date.now() + 120_000
+    let wakeRows = []
+    let wakesBefore = 0
+    while (Date.now() < intentDeadline) {
+      wakeRows = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesBefore = wakeStartCount(mock.requests)
+      if (wakeRows.length > 0 && wakesBefore > 0) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    const busySeen = mock.requests.some((r) => lastUserTextOf(r).includes('C1_A6_BUSY'))
+    const intentBefore = wakeRows.length === 0
+      ? null
+      : JSON.parse(readFileSync(join(markerDir, wakeRows[0]), 'utf8'))
+    const pendingBefore = readControlLedger(CREATE_ROOT_A6).requests.filter(
+      (r) => !readControlLedger(CREATE_ROOT_A6).decisions.some((d) => d.requestId === r.requestId),
+    ).map((r) => r.requestId)
+    const requestsAtRestart = mock.requests.length
+    const wakeTraceBefore = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null }
+    }).filter((row) => row !== null)
+    let restartError = null
+    let wakesAfterRestart = wakesBefore
+    let rowsAfterRestart = wakeRows
+    let wakesAfterDrain = wakesBefore
+    let rowsAfterDrain = wakeRows
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      rowsAfterRestart = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesAfterRestart = wakeStartCount(mock.requests)
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no boot URL after inbox crash')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for inbox crash')
+      // Boot recovery must reconcile the crashed claim from the durable
+      // ledger: one replacement wake, never a duplicate of the consumed one.
+      const replacementDeadline = Date.now() + 90_000
+      while (Date.now() < replacementDeadline) {
+        wakesAfterDrain = wakeStartCount(mock.requests)
+        if (wakesAfterDrain > wakesAfterRestart) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      rowsAfterDrain = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+    const pendingAfter = ledgerAfter.requests.filter(
+      (r) => !ledgerAfter.decisions.some((d) => d.requestId === r.requestId),
+    )
+    // LIVENESS: the crashed claim must be replaced by exactly ONE NEW wake
+    // (distinct wakeId) at recovery, never the old one redelivered; the
+    // durable request must be either still pending or durably decided (the
+    // replacement wake may legitimately resolve it). `wakes*` = distinct ids.
+    const decidedAfter = new Set(ledgerAfter.decisions.map((d) => d.requestId))
+    const inboxOk = restartError === null && intentBefore !== null
+      && rowsAfterRestart.length <= 1
+      && wakesAfterRestart === wakesBefore + 1
+      && wakesAfterDrain <= wakesAfterRestart
+      && pendingBefore.length > 0
+      && pendingBefore.every((id) => decidedAfter.has(id) || pendingAfter.some((r) => r.requestId === id))
+    check('A6-25', 'a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided', inboxOk,
+      `intent=${intentBefore === null ? 'none' : intentBefore.wakeId} pendingBefore=${pendingBefore.length} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} pending=${pendingAfter.length} restart=${restartError ?? 'ok'}`)
+    const wakeTraceAfter = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+    }).filter((row) => row !== null)
+    writeEvidence('a6-inbox-reconcile.json', {
+      busySeen,
+      requestsAtRestart,
+      wakeTraceBefore,
+      wakeTraceAfter,
+      wakesBefore,
+      wakesAfterRestart,
+      wakesAfterDrain,
+      intentBefore,
+      rowsAfterRestart,
+      rowsAfterDrain,
+      pendingBefore,
+      restartError,
+      mockRequests: mock.requests.length,
+    })
+    return inboxOk
+  }
+
+  if (A6_STICKY_STOP) {
+    const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
+    let wakeSeen = 0
+    while (Date.now() < deadline) {
+      wakeSeen = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      if (wakeSeen > 0) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    const officer = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer')
+    const cancel = officer === undefined
+      ? { status: 0, body: { error: 'no officer child session' } }
+      : await apiCancel(booted.origin, booted.cookie, officer.childSessionId, 'c1a6sticky')
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const rows = existsSync(markerDir) ? readdirSync(markerDir) : []
+    const stoppedRows = rows.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+    const wakeRows = rows.filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+    const wakesAfter = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+    const cancelOk = cancel.status === 200 && cancel.body?.result?.ok === true
+    const ok = cancelOk && stoppedRows.length === 1 && wakeRows.length === 0 && wakesAfter === wakeSeen
+    check('A6-22', 'a real Host user Stop leaves a durable Sticky Stop marker, withdraws the queued wake row, and does not re-deliver', ok,
+      `cancel=${String(cancelOk)} markers=${stoppedRows.join(',')} wakeRows=${wakeRows.join(',')} wakes=${wakeSeen}->${wakesAfter}`)
+      // ── A56-SEMANTICS: MACHINE input must never clear a human Sticky Stop ──
+      // Delivered HERE, while the stopped Officer Session is still LIVE, so the
+      // native Inbox actually CLAIMS each message (the mock sees it and a turn
+      // starts): that is the arbour's real question. A delivery that merely
+      // queues behind a suspended latch would prove nothing about the arbour.
+      // The Alpha.6 resume arbour used to key on `source.kind === 'user'` alone.
+      // That is necessary but NOT sufficient after the joint close-out: WORK
+      // delivery (delegation / follow-up) must keep the human attribution,
+      // because upstream `tool-goal` authority (`hasDirectHumanInput`) reads
+      // exactly it — without it a governed Member loses `create_goal`. So the
+      // producer classifies its own input and the arbour asks the producer.
+      const stoppedMarkersNow = () => {
+        const now = existsSync(markerDir) ? readdirSync(markerDir) : []
+        return now.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      }
+      const wakesNow = () => mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      const sawText = (needle) => mock.requests.some((r) => lastUserTextOf(r).includes(needle))
+      const wakesBeforeMachine = wakesNow()
+      const machineRelay = await remoteCall(booted.origin, booted.cookie, 'member.send', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'instance', instanceId: 'instance-c1-a6-leader' },
+        recipientInstanceId: officer.instanceId,
+        body: 'C1_A6_MACHINE_RELAY',
+        requestToken: `c1-a6-machine-relay-${String(Date.now())}`,
+      }, 'c1a6mrelay', 4)
+      await new Promise((resolve) => setTimeout(resolve, 6000))
+      const markersAfterMachineRelay = stoppedMarkersNow()
+      const wakesAfterMachineRelay = wakesNow()
+      const relayClaimed = sawText('C1_A6_MACHINE_RELAY')
+      writeEvidence('a56-machine-relay.json', { relay: machineRelay.body ?? machineRelay, markersAfterMachineRelay, wakesBeforeMachine, wakesAfterMachineRelay, relayClaimed })
+      // MEASURED (run 2026-11-09): a stopped latch accepts the machine relay
+      // into the native Inbox (status 200) and does NOT claim it — `relayClaimed`
+      // is recorded, not required: the Stop holds at the claim boundary before
+      // the arbour is even reached. The arbour below is the fail-closed guard for
+      // the paths where a claim DOES happen.
+      check('A6-26', 'A56: a machine relay to a stopped reviewer does not clear the human Sticky Stop and does not re-deliver the wake',
+        markersAfterMachineRelay.length === 1 && wakesAfterMachineRelay === wakesBeforeMachine,
+        `relayStatus=${String(machineRelay.status)} relayClaimed=${String(relayClaimed)} markers=${markersAfterMachineRelay.join(',')} wakes=${String(wakesBeforeMachine)}->${String(wakesAfterMachineRelay)}`)
+      const machineFollowup = await remoteCall(booted.origin, booted.cookie, 'member.followup', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'instance', instanceId: 'instance-c1-a6-leader' },
+        targetInstanceId: officer.instanceId,
+        requestToken: `c1-a6-machine-work-${String(Date.now())}`,
+        payload: { prompt: 'C1_A6_MACHINE_WORK' },
+      }, 'c1a6mwork', 4)
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      const markersAfterMachineWork = stoppedMarkersNow()
+      const wakesAfterMachineWork = wakesNow()
+      const workClaimed = sawText('C1_A6_MACHINE_WORK')
+      writeEvidence('a56-machine-work.json', { followup: machineFollowup.body ?? machineFollowup, markersAfterMachineWork, wakesAfterMachineWork, workClaimed, wakesBeforeMachine })
+      // The WORK delivery is the one Team input that still carries the human
+      // `kind: 'user'` attribution (A5 goal authority). If the arbour keyed on
+      // the kind alone this leg would fail: the marker would be gone.
+      check('A6-27', 'A56: a machine WORK delivery (human-attributed for A5 goal authority) does not clear the Stop either',
+        markersAfterMachineWork.length === 1 && wakesAfterMachineWork === wakesBeforeMachine,
+        `followupStatus=${String(machineFollowup.status)} workClaimed=${String(workClaimed)} markers=${markersAfterMachineWork.join(',')} wakes=${String(wakesBeforeMachine)}->${String(wakesAfterMachineWork)}`)
+    // Cross-restart: the marker is a FILE, not process memory. Kill the Host,
+    // boot it again, and prove the Stop survives and no wake is re-delivered.
+    let restartError = null
+    let markersAfterRestart = []
+    let markersAfterResume = []
+    let wakesAfterRestart = wakesAfter
+    let wakesAfterResume = wakesAfter
+    let executedAfterResume = false
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      const rows2 = existsSync(markerDir) ? readdirSync(markerDir) : []
+      markersAfterRestart = rows2.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      wakesAfterRestart = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      // Explicit resume: a real user prompt on the stopped Officer Session.
+      // The host maps `inbox/claimed` user source to resume, clears the marker
+      // and re-plans the still-pending work through the normal dispatch path.
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no restart boot URL for resume')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for resume')
+
+      const resumed = await remoteCall(origin2, cookie2, 'member.send', {
+        teamSessionId: CREATE_ROOT_A6,
+        caller: { kind: 'human', humanId: CREATE_ROOT_A6 },
+        recipientInstanceId: officer.instanceId,
+        body: 'C1_A6_RESUME',
+        requestToken: `c1-a6-resume-${String(Date.now())}`,
+      }, 'c1a6resume', 4)
+      writeEvidence('a6-sticky-resume-prompt.json', resumed.body ?? resumed)
+      const execDeadline = Date.now() + 60_000
+      while (Date.now() < execDeadline) {
+        if (existsSync(FILE_A6_ALLOW)) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      const rows3 = existsSync(markerDir) ? readdirSync(markerDir) : []
+      markersAfterResume = rows3.filter((name) => name.startsWith('stopped-') && name.endsWith('.json'))
+      wakesAfterResume = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      executedAfterResume = existsSync(FILE_A6_ALLOW)
+        && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const restartOk = restartError === null && markersAfterRestart.length === 1 && wakesAfterRestart === wakesAfter
+    check('A6-23', 'the Sticky Stop survives a real Host restart and does not re-deliver the withdrawn wake', restartOk,
+      `restart=${restartError ?? 'ok'} markers=${markersAfterRestart.join(',')} wakes=${wakeSeen}->${wakesAfterRestart}`)
+    // Scheme A: the original approval call lost its context across the
+    // restart, so the resumed wake may still be delivered and decided, but
+    // the historical call must NOT be revived/executed. Resume proves
+    // marker clearing + re-plan, not replay.
+    const resumeOk = restartError === null && markersAfterResume.length === 0
+      && wakesAfterResume > wakesAfterRestart && !executedAfterResume
+    check('A6-24', 'an explicit user interaction clears the durable Stop and re-plans the wake without reviving the historical call', resumeOk,
+      `markers=${markersAfterResume.join(',')} wakes=${wakesAfterRestart}->${wakesAfterResume} historicalExecuted=${String(executedAfterResume)}`)
+    writeEvidence('a6-sticky-stop.json', { cancel: cancel.body ?? cancel, rows, stoppedRows, wakeRows, wakeSeen, wakesAfter, markersAfterRestart, wakesAfterRestart, markersAfterResume, wakesAfterResume, executedAfterResume, restartError })
+    return ok && restartOk && resumeOk
+  }
+  if (A6_TIMEOUT_MS > 0) {
+    await new Promise((resolve) => setTimeout(resolve, A6_TIMEOUT_MS + 8000))
+    const ledger = readControlLedger(CREATE_ROOT_A6)
+    const pa = ledger.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+    const paDecision = pa === null ? null : ledger.decisions.find((d) => d.requestId === pa.requestId) ?? null
+    const paConsumption = pa === null ? null : ledger.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+    const executed = existsSync(FILE_A6_ALLOW)
+    check('A6-19', 'a bounded A6 approval wait expires without deciding, consuming or executing; the durable request remains as a non-actionable abandoned invocation',
+      pa !== null && paDecision === null && paConsumption === null && !executed,
+      `timeoutMs=${String(A6_TIMEOUT_MS)} pa=${String(pa?.requestId)} decision=${String(paDecision?.decision)} consumed=${String(paConsumption !== null)} executed=${String(executed)}`)
+    let late = null
+    if (pa !== null) {
+      late = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: pa.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: late allow after the bounded wait expired',
+      }, 'c1a6timeout', 4)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+    const after = readControlLedger(CREATE_ROOT_A6)
+    const lateDecision = pa === null ? null : after.decisions.find((d) => d.requestId === pa.requestId) ?? null
+    const lateConsumption = pa === null ? null : after.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+    const lateFile = existsSync(FILE_A6_ALLOW)
+    const lateAbandonment = pa === null ? null : after.abandonments.find((a) => a.requestId === pa.requestId) ?? null
+    check('A6-20', 'a late allow after the wait timed out is refused because the invocation was abandoned: the approval decision is never rewritten, with zero consumption and zero execution',
+      lateDecision === null && lateAbandonment !== null && lateConsumption === null && !lateFile,
+      `decision=${String(lateDecision?.decision)} abandonment=${String(lateAbandonment?.reason)} consumed=${String(lateConsumption !== null)} executed=${String(lateFile)}`)
+    writeEvidence('a6-timeout.json', { timeoutMs: A6_TIMEOUT_MS, pa, paDecision, paConsumption, executed, late: late?.body ?? late, lateDecision, lateAbandonment, lateConsumption, lateFile })
+    return pa !== null && paDecision === null && paConsumption === null && !executed && lateDecision === null && lateAbandonment !== null && lateConsumption === null && !lateFile
+  }
+  if (A6_CRASH) {
+    const crashMode = process.env['C1_A6_CRASH'] === 'allow' ? 'allow'
+      : process.env['C1_A6_CRASH'] === 'consume' ? 'consume'
+        : process.env['C1_A6_CRASH'] === 'body' ? 'body'
+          : process.env['C1_A6_CRASH'] === 'before' ? 'before' : 'request'
+    if (crashMode === 'before') {
+      const watchDeadline = Date.now() + 60_000
+      let sawAdmission = false
+      while (Date.now() < watchDeadline && host.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8')
+        if (text.includes('a5-admission: event=admission-requires-approval')) { sawAdmission = true; break }
+        await new Promise((resolve) => setTimeout(resolve, 20))
+      }
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const durable = readControlLedger(CREATE_ROOT_A6)
+      const afterRestart = { booted: null, error: null }
+      try {
+        const offset = statSync(booted.instanceLog).size
+        const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+        const patchText = readFileSync(patchPath, 'utf8')
+        if (!patchText.includes('bootPhase: "create-or-open"')) {
+          writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+        }
+        const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+        let parsed = null
+        const bootDeadline = Date.now() + 120_000
+        while (Date.now() < bootDeadline && h2.alive()) {
+          const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+          const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+          if (matches.length > 0) { parsed = matches.at(-1); break }
+          await new Promise((resolve) => setTimeout(resolve, 200))
+        }
+        if (parsed === null) throw new Error('no restart boot URL')
+        const origin2 = `http://127.0.0.1:${parsed[1]}`
+        let cookie2 = null
+        for (let attempt = 0; attempt < 60; attempt += 1) {
+          try { cookie2 = await authenticate(origin2, parsed[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+        }
+        if (cookie2 === null) throw new Error('restart auth failed')
+        afterRestart.booted = { origin: origin2, cookie: cookie2, host: h2 }
+      } catch (error) { afterRestart.error = String(error?.message ?? error) }
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const revived = existsSync(FILE_A6_ALLOW)
+      const pa = final.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+      const phantom = pa !== null && final.decisions.every((d) => d.requestId !== pa.requestId) && final.consumptions.every((c) => c.requestId !== pa.requestId)
+      check('A6-17', 'a Host crash at the first admission leaves no execution and no phantom PA request/consumption after restart',
+        sawAdmission && !revived && !phantom,
+        `admission=${String(sawAdmission)} restart=${afterRestart.error ?? 'ok'} pa=${String(pa?.requestId)} revoked=${String(revived)} phantom=${String(phantom)} requests=${String(final.requests.length)} decisions=${String(final.decisions.length)} consumptions=${String(final.consumptions.length)}`)
+      writeEvidence('a6-crash.json', { mode: crashMode, durable, restart: { error: afterRestart.error }, pa, final, revived, phantom })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+      return sawAdmission && !revived && !phantom && afterRestart.error === null
+    }
+    let pa = null
+    let decided = null
+    let consumed = null
+    const waitDeadline = Date.now() + (crashMode === 'body' ? 180_000 : 60_000)
+    while (Date.now() < waitDeadline) {
+      const current = readControlLedger(CREATE_ROOT_A6)
+      pa = current.requests.find((r) => r.actionName === 'team-tool-execute') ?? null
+      decided = pa === null ? null : current.decisions.find((d) => d.requestId === pa.requestId) ?? null
+      consumed = pa === null ? null : current.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+      if (crashMode === 'body') {
+        // A delaying command is classified into the A5 parameter-permission
+        // lane in this fixture; approve any open row through the same remote
+        // human entry so the Plane PA leg can be created and the body can
+        // start. This is a crash-window probe, not an approval-path claim.
+        for (const request of current.requests) {
+          if (current.decisions.some((d) => d.requestId === request.requestId)) continue
+          if (current.abandonments.some((a) => a.requestId === request.requestId)) continue
+          await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: request.requestId,
+            decision: 'allow',
+            note: 'c1 smoke A6 body-start probe: approve the parameter lane',
+          }, 'c1a6body', 4)
+        }
+      }
+      const ready = crashMode === 'request'
+        || (crashMode === 'allow' && decided !== null && decided.decision === 'allow')
+        || (crashMode === 'consume' && consumed !== null)
+        || (crashMode === 'body' && consumed !== null && existsSync(FILE_A6_BODY_START))
+      if (pa !== null && ready) break
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    const beforeKill = pa === null ? null : readControlLedger(CREATE_ROOT_A6)
+    const beforeFileCount = existsSync(FILE_A6_ALLOW)
+      ? (readFileSync(FILE_A6_ALLOW, 'utf8').match(new RegExp(SUM_A6_ALLOW, 'g')) ?? []).length
+      : 0
+    host.child.kill('SIGKILL')
+    const exitDeadline = Date.now() + 20_000
+    while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+    const exited = !host.alive()
+    const durable = readControlLedger(CREATE_ROOT_A6)
+    const afterRestart = { booted: null, error: null }
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      let parsed = null
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+        if (matches.length > 0) { parsed = matches.at(-1); break }
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      if (parsed === null) throw new Error('no restart boot URL')
+      const origin2 = `http://127.0.0.1:${parsed[1]}`
+      let cookie2 = null
+      let authError = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, parsed[2]); break } catch (error) { authError = error; await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error(`restart auth failed: ${authError?.message ?? 'unknown'}`)
+      afterRestart.booted = { origin: origin2, cookie: cookie2, host: h2 }
+      afterRestart.error = null
+      // Recovery runs after readiness; give it a beat to finish the
+      // settlement write before the probe reads the final ledger.
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+    } catch (error) {
+      afterRestart.error = String(error?.message ?? error)
+    }
+    let revived = false
+    let late = null
+    let decisionAfter = null
+    if (crashMode === 'allow' || crashMode === 'consume' || crashMode === 'body') {
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const consBefore = beforeKill?.consumptions.filter((c) => c.requestId === pa?.requestId).length ?? 0
+      const consAfter = final.consumptions.filter((c) => c.requestId === pa?.requestId).length
+      const fileCount = existsSync(FILE_A6_ALLOW)
+        ? (readFileSync(FILE_A6_ALLOW, 'utf8').match(new RegExp(SUM_A6_ALLOW, 'g')) ?? []).length
+        : 0
+      const bodyStart = existsSync(FILE_A6_BODY_START)
+      const abandonment = pa === null ? null : final.abandonments.find((a) => a.requestId === pa.requestId) ?? null
+      revived = fileCount > 0
+      const expectReason = crashMode === 'allow' ? 'invocation-abandoned' : 'execution-outcome-unknown'
+      const noReplay = afterRestart.error === null && decided?.decision === 'allow'
+        && consAfter === consBefore && fileCount === beforeFileCount && fileCount <= 1
+        && abandonment?.reason === expectReason
+        && (crashMode === 'allow'
+          ? !bodyStart
+          : crashMode === 'consume' ? !bodyStart : bodyStart && fileCount === 0)
+      check(crashMode === 'consume' ? 'A6-16' : crashMode === 'body' ? 'A6-16b' : 'A6-15',
+        crashMode === 'allow'
+          ? 'a Host crash after the PA allow but before consumption leaves the allow intact, abandons the dead invocation and executes nothing'
+          : crashMode === 'consume'
+            ? 'a Host crash after consumption but BEFORE the body starts proves zero execution and records execution-outcome-unknown'
+            : 'a Host crash with the body STARTED but the result not durable records execution-outcome-unknown and never replays the body',
+        noReplay,
+        `mode=${crashMode} restart=${afterRestart.error ?? 'ok'} decision=${String(decided?.decision)} consBefore=${String(consBefore)} consAfter=${String(consAfter)} fileBefore=${String(beforeFileCount)} fileAfter=${String(fileCount)} bodyStart=${String(bodyStart)} abandon=${String(abandonment?.reason)} revived=${String(revived)}`)
+      writeEvidence('a6-crash.json', { mode: crashMode, pa, beforeKill, durable, restart: { error: afterRestart.error }, decisionAfter: decided, abandonment, revived, consBefore, consAfter, beforeFileCount, fileCount, bodyStart })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+      return noReplay
+    }
+    if (afterRestart.booted !== null && pa !== null) {
+      late = await remoteCall(afterRestart.booted.origin, afterRestart.booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: pa.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: resolve after a Host crash and restart',
+      }, 'c1a6crash', 4)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const final = readControlLedger(CREATE_ROOT_A6)
+      decisionAfter = final.decisions.filter((d) => d.requestId === pa.requestId).at(-1) ?? null
+      revived = existsSync(FILE_A6_ALLOW) && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
+      const consumed = final.consumptions.find((c) => c.requestId === pa.requestId) ?? null
+      check('A6-13', 'a Host crash after the PA request write leaves the durable request recoverable, with no execution before/after restart', exited && pa !== null && final.requests.some((r) => r.requestId === pa.requestId) && !revived,
+        `exited=${String(exited)} pa=${String(pa?.requestId)} restart=${afterRestart.error ?? 'ok'} decision=${JSON.stringify(decisionAfter)} consumed=${String(consumed !== null)} file=${String(revived)}`)
+      const crashAbandonment = final.abandonments.find((a) => a.requestId === pa.requestId) ?? null
+      // Scheme A: a late human allow may be recorded as an ALLOW (the human's
+      // decision is immutable) but it is never rewritten to deny and never
+      // revives the dead call. A boot settlement may instead close the
+      // invocation; both shapes are acceptable, a deny is not.
+      const settled = (decisionAfter === null && crashAbandonment !== null)
+        || (decisionAfter?.decision === 'allow' && consumed === null)
+      check('A6-14', 'after a Host crash the dead invocation is settled without a deny rewrite and a late human allow cannot execute it', settled && !revived,
+        `decision=${String(decisionAfter?.decision)} abandon=${String(crashAbandonment?.reason)} consumed=${String(consumed !== null)} file=${String(revived)}`)
+      writeEvidence('a6-crash.json', { pa, beforeKill, durable, restart: { error: afterRestart.error }, late: late.body ?? late, decisionAfter, revived })
+      if (afterRestart.booted !== null) stopHost(afterRestart.booted.host)
+    } else {
+      check('A6-13', 'a Host crash after the PA request write leaves the durable request recoverable', false,
+        `exited=${String(exited)} pa=${String(pa?.requestId)} restart=${afterRestart.error ?? 'ok'}`)
+      writeEvidence('a6-crash.json', { pa, beforeKill, durable, restart: { error: afterRestart.error }, revived })
+    }
+    return exited && pa !== null && afterRestart.error === null && !revived
+  }
+  let humanEscalation = null
+  let humanDiscovery = null
+  let humanLeg = null
+  let humanDecision = null
+  let humanConsumption = null
+  if (A6_HUMAN || A6_STOP) {
+    const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
+    while (Date.now() < deadline) {
+      const current = readControlLedger(CREATE_ROOT_A6)
+      humanLeg = current.requests.find((r) => r.reviewAuthority === 'human-user'
+        && !current.decisions.some((d) => d.requestId === r.requestId)) ?? null
+      humanEscalation = humanLeg === null ? null : current.escalations.find((e) => e.approvalCaseId === humanLeg.approvalCaseId) ?? null
+      if (humanLeg !== null) break
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    if (humanLeg !== null) {
+      // RULING 5: the human leg must be DISCOVERABLE through the remote
+      // surface alone, before any model turn names it. The durable ledger
+      // page is the read; the projection's pending counter is the summary.
+      const page = await remoteCall(booted.origin, booted.cookie, 'team.getLedgerPage', {
+        teamSessionId: CREATE_ROOT_A6,
+        afterSequence: 0,
+        limit: 500,
+      }, 'c1a6disc', 4)
+      const projection = await remoteCall(booted.origin, booted.cookie, 'team.getProjection', {
+        teamSessionId: CREATE_ROOT_A6,
+      }, 'c1a6disc', 4)
+      const entries = page.body?.result?.value?.data?.entries ?? []
+      const serialized = JSON.stringify(entries)
+      // Remote-only discovery: the human leg's request id is learned from the
+      // ledger page itself (NOT from the local control-ledger file).
+      const remoteHumanFact = entries.find((entry) => entry?.factType === 'control-request-recorded'
+        && entry?.payload?.reviewAuthority === 'human-user'
+        && entry?.payload?.requestId !== undefined) ?? null
+      const remoteHumanId = remoteHumanFact?.payload?.requestId ?? null
+      const projectionData = projection.body?.result?.value?.data?.projection ?? {}
+      humanDiscovery = {
+        localRequestId: humanLeg.requestId,
+        remoteOnlyRequestId: remoteHumanId,
+        remoteDiscoveryAgrees: remoteHumanId === humanLeg.requestId,
+        requestFactVisible: remoteHumanFact !== null,
+        requestIdOccurrences: remoteHumanId === null ? 0 : serialized.split(remoteHumanId).length - 1,
+        pendingControlCount: projectionData.ledger?.pendingControlCount ?? null,
+        page: page.body ?? page,
+        projection: projection.body ?? projection,
+      }
+      writeEvidence('a6-human-discovery.json', humanDiscovery)
+    }
+    if (humanLeg !== null) {
+      const response = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: humanDiscovery?.remoteOnlyRequestId ?? humanLeg.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6 human final approval',
+      }, 'c1a6h', 4)
+      writeEvidence('a6-human-response.json', response.body ?? response)
+    }
+    if (A6_STOP) {
+      const worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'worker' && row.label === 'w-a6')
+      const cancel = worker === undefined
+        ? { status: 0, body: { error: 'no member child session' } }
+        : await apiCancel(booted.origin, booted.cookie, worker.childSessionId, 'c1a6stop')
+      writeEvidence('a6-stop-cancel.json', cancel.body ?? cancel)
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      const afterCancel = readControlLedger(CREATE_ROOT_A6)
+      const late = humanLeg === null ? null : await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+        teamSessionId: CREATE_ROOT_A6,
+        requestId: humanLeg.requestId,
+        decision: 'allow',
+        note: 'c1 smoke A6: a late allow after Stop must not revive the call',
+      }, 'c1a6stop', 4)
+      writeEvidence('a6-stop-late-allow.json', late.body ?? late)
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      const final = readControlLedger(CREATE_ROOT_A6)
+      const lateDecision = humanLeg === null ? null : final.decisions.filter((d) => d.requestId === humanLeg.requestId).at(-1) ?? null
+      const lateConsumption = humanLeg === null ? null : final.consumptions.find((c) => c.requestId === humanLeg.requestId) ?? null
+      const fileAfter = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
+      const revived = fileAfter.includes(SUM_A6_ALLOW) || lateConsumption !== null
+      const cancelOk = (cancel.status === 200 && (cancel.body?.result?.ok === true || cancel.body?.result?.accepted === true))
+      check('A6-11', 'session/cancel is admitted after the human allow, before the allow is consumed/executed', cancelOk,
+        `status=${cancel.status} body=${JSON.stringify(cancel.body ?? cancel).slice(0, 500)} afterCancelPending=${afterCancel.requests.filter((r) => !afterCancel.decisions.some((d) => d.requestId === r.requestId)).length}`)
+      check('A6-12', 'Stop before consumption prevents execution; a second allow is rejected as already decided', !revived,
+        `lateStatus=${late?.status} lateDecision=${JSON.stringify(lateDecision)} consumed=${lateConsumption !== null} file=${JSON.stringify(fileAfter.slice(0, 200))}`)
+      writeEvidence('a6-stop.json', {
+        cancel: cancel.body ?? cancel,
+        lateAllow: late?.body ?? late,
+        humanLeg,
+        lateDecision,
+        lateConsumption,
+        fileAfter,
+        revived,
+      })
+      return cancelOk && !revived
+    }
+  }
+  if (A6_INBOX_UNCLAIMED) {
+    // The audit's missing window: ACCEPTED but never CLAIMED. The Officer is
+    // held in a long tool turn, so the wake lands in the durable next-step
+    // inbox and `markAccepted` records the acceptance — no `agent/inbox/
+    // claimed` has fired (zero wake turns). SIGKILL exactly there, restart the
+    // same DSH_HOME, and count how many claims the native Inbox produces.
+    // Drive the busy turn DIRECTLY on the Officer (the Leader's send can be
+    // queued behind the wake, which is the race this window must avoid).
+    const officerRow = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+    if (officerRow !== undefined) {
+      await apiPrompt(booted.origin, booted.cookie, officerRow.childSessionId, 'C1_A6_BUSY', 'c1a6busy')
+      await waitForMock(mock, (r) => lastUserTextOf(r).includes('C1_A6_BUSY') && replyToolNames(r).includes('bash'), 30_000, 'Officer busy turn started')
+    }
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const intentDeadline = Date.now() + 120_000
+    let acceptedRow = null
+    let wakeRows = []
+    let wakesBefore = 0
+    let busySeen = false
+    while (Date.now() < intentDeadline) {
+      wakeRows = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesBefore = wakeStartCount(mock.requests)
+      busySeen = mock.requests.some((r) => lastUserTextOf(r).includes('C1_A6_BUSY'))
+      if (wakeRows.length > 0) {
+        try {
+          const row = JSON.parse(readFileSync(join(markerDir, wakeRows[0]), 'utf8'))
+          if (row?.status === 'accepted' && wakesBefore === 0 && busySeen) { acceptedRow = row; break }
+        } catch { /* rewritten mid-read: retry */ }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    const ledgerBefore = readControlLedger(CREATE_ROOT_A6)
+    const pendingBefore = ledgerBefore.requests.filter(
+      (r) => !ledgerBefore.decisions.some((d) => d.requestId === r.requestId),
+    ).map((r) => r.requestId)
+    const requestsAtRestart = mock.requests.length
+    const wakeTraceBefore = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+    }).filter((row) => row !== null)
+    writeEvidence('a6-inbox-unclaimed-before.json', {
+      acceptedRow, wakeRows, wakesBefore, busySeen, pendingBefore, requestsAtRestart, wakeTraceBefore,
+    })
+    let restartError = null
+    let wakesAfterRestart = wakesBefore
+    let wakesAfterDrain = wakesBefore
+    let rowsAfterRestart = wakeRows
+    let rowsAfterDrain = wakeRows
+    let pendingAfter = pendingBefore
+    let discoveryAfter = null
+    let postRestartError = null
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      a6BusyDone = true
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      rowsAfterRestart = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesAfterRestart = wakeStartCount(mock.requests)
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no boot URL after unclaimed-inbox restart')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for unclaimed-inbox crash')
+      // The claim may arrive with the replayed (repaired) turn or as a fresh
+      // wake turn. Count wake TURN STARTS for 60 s and wait for the durable
+      // request to settle.
+      const drainDeadline = Date.now() + 90_000
+      while (Date.now() < drainDeadline) {
+        wakesAfterDrain = wakeStartCount(mock.requests)
+        const ledger = readControlLedger(CREATE_ROOT_A6)
+        const stillPending = pendingBefore.filter((id) => !ledger.decisions.some((d) => d.requestId === id))
+        pendingAfter = stillPending
+        if (wakesAfterDrain > wakesBefore && stillPending.length === 0) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      rowsAfterDrain = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      // Acceptance criterion (ii): a stranded wake is acceptable ONLY if the
+      // durable request is discoverable through the public remote surface and
+      // an operator can resolve it by id. Read the page + projection BEFORE
+      // tearing the restarted Host down.
+      const strandedPendingId = pendingAfter[0] ?? null
+      const pageAfter = await remoteCall(origin2, cookie2, 'team.getLedgerPage', {
+        teamSessionId: CREATE_ROOT_A6,
+        afterSequence: 0,
+      }, 'c1a6g2', 4)
+      const projectionAfter = await remoteCall(origin2, cookie2, 'team.getProjection', {
+        teamSessionId: CREATE_ROOT_A6,
+      }, 'c1a6g2p', 4)
+      const serializedAfter = JSON.stringify(pageAfter.body ?? pageAfter)
+      const projectionDataAfter = projectionAfter.body?.result?.value?.data?.projection ?? {}
+      discoveryAfter = {
+        pendingRequestId: strandedPendingId,
+        requestFactVisible: strandedPendingId !== null && serializedAfter.includes(strandedPendingId),
+        requestIdOccurrences: strandedPendingId === null ? 0 : serializedAfter.split(strandedPendingId).length - 1,
+        pendingControlCount: projectionDataAfter.ledger?.pendingControlCount ?? null,
+        page: pageAfter.body ?? pageAfter,
+        projection: projectionAfter.body ?? projectionAfter,
+      }
+      // Operator recovery EXERCISED, not just asserted: the public resolve
+      // channel must accept the stranded request by id after the restart.
+      let recovery = null
+      if (strandedPendingId !== null) {
+        const recoveryResponse = await remoteCall(origin2, cookie2, 'team.resolveControl', {
+          teamSessionId: CREATE_ROOT_A6,
+          requestId: strandedPendingId,
+          decision: 'allow',
+          note: 'C1 A6 gap-2 operator recovery after a stranded accepted wake',
+        }, 'c1a6g2r', 4)
+        const recoveredLedger = readControlLedger(CREATE_ROOT_A6)
+        recovery = {
+          status: recoveryResponse.status,
+          body: recoveryResponse.body ?? recoveryResponse,
+          decision: recoveredLedger.decisions.filter((d) => d.requestId === strandedPendingId).at(-1) ?? null,
+        }
+        discoveryAfter.recovery = recovery
+      }
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const delivered = wakesAfterDrain - wakesBefore
+    const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+    const acceptedRequestId = acceptedRow?.requestId ?? pendingBefore[0] ?? null
+    const abandonedAfter = acceptedRequestId === null ? [] : ledgerAfter.abandonments.filter((a) => a.requestId === acceptedRequestId)
+    pendingAfter = ledgerAfter.requests.filter(
+      (r) => !ledgerAfter.decisions.some((d) => d.requestId === r.requestId)
+        && !ledgerAfter.abandonments.some((a) => a.requestId === r.requestId),
+    )
+    const exactlyOnce = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 1 && pendingAfter.length === 0
+    // Acceptable (ii): no claim after restart, but the durable request is still
+    // pending AND discoverable through the public remote surface (page +
+    // projection), so an operator can resolve it by id.
+    const strandedAcceptable = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 0 && pendingAfter.length > 0
+      && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
+      && discoveryAfter.recovery?.decision?.decision === 'allow'
+    // The measured outcome on this base: the accepted wake is never claimed,
+    // and boot recovery terminally ABANDONS the durable PA request
+    // (`control-request-abandoned`, reason invocation-abandoned). That is
+    // at-most-once (no duplicate); resolution is refused forever, and the
+    // operator recovery is re-issuing the ask. Typed + discoverable by id.
+    const abandonedTerminal = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 0 && abandonedAfter.length > 0
+      && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
+      && ((discoveryAfter.recovery?.body?.result?.error?.code ?? discoveryAfter.recovery?.body?.error?.code) === 'CONTROL_REQUEST_ABANDONED')
+    const ok = exactlyOnce || strandedAcceptable
+    const verdict = exactlyOnce ? 'exactly-once'
+      : delivered > 1 ? 'duplicate-P1'
+        : abandonedTerminal ? 'abandoned-terminal'
+          : strandedAcceptable ? 'stranded-discoverable'
+            : 'stranded-undiscoverable'
+    if (!ok) postRestartError = restartError
+      ?? (acceptedRow === null ? 'no ACCEPTED row observed before the kill'
+        : busySeen !== true ? 'the Officer was never BUSY, so the window was not constructed'
+          : wakesBefore !== 0 ? `the wake was already claimed before the kill (wake turns=${wakesBefore})`
+            : delivered === 0 && abandonedAfter.length > 0 ? 'ABANDONED: no claim after restart; the accepted wake/request is terminally abandoned (no duplicate, but the review work is dropped and cannot be resolved)'
+            : delivered === 0 ? 'STRANDED: no claim after restart and the pending request is not discoverable'
+              : delivered > 1 ? `DUPLICATE: the accepted message was claimed ${delivered} times after restart`
+                : 'the durable request did not settle after the replayed claim')
+    check('A6-26', 'an ACCEPTED-but-never-CLAIMED wake after restart is claimed EXACTLY once, or stranded with a discoverable durable request (never duplicated)', ok,
+      `accepted=${acceptedRow === null ? 'none' : acceptedRow.wakeId} busy=${busySeen} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} pendingBefore=${pendingBefore.length} pendingAfter=${pendingAfter.length} discoverable=${String(discoveryAfter?.requestFactVisible)} pendingCount=${String(discoveryAfter?.pendingControlCount)} abandoned=${abandonedAfter.length} recoveryCode=${String(discoveryAfter?.recovery?.body?.result?.error?.code ?? discoveryAfter?.recovery?.body?.error?.code)} restart=${restartError ?? 'ok'} verdict=${verdict}`)
+    writeEvidence('a6-inbox-unclaimed.json', {
+      schema: 'a6-inbox-unclaimed/1',
+      window: 'ACCEPTED-not-CLAIMED',
+      acceptedRow,
+      busySeen,
+      wakesBefore,
+      wakesAfterRestart,
+      wakesAfterDrain,
+      deliveredAfterRestart: delivered,
+      rowsBefore: wakeRows,
+      rowsAfterRestart,
+      rowsAfterDrain,
+      pendingBefore,
+      pendingAfter,
+      abandonedAfter,
+      discoveryAfter,
+      restartError,
+      verdict,
+      acceptable: ok,
+      reason: exactlyOnce ? 'exactly-once-claim'
+        : abandonedTerminal ? 'terminal-abandonment: no duplicate execution; the accepted wake/request is durably abandoned and must be re-issued'
+          : strandedAcceptable ? 'stranded-but-discoverable-and-operator-recovery-exercised' : postRestartError,
+      wakeTraceAfter: mock.requests.map((r, index) => {
+        const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+        return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+      }).filter((row) => row !== null),
+      mockRequests: mock.requests.length,
+    })
+    return ok
+  }
+
+  const memberDone = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6MEM)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_MEMBER_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'A6 member done after Officer allow + plane execute',
+  )
+  const wakes = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake'))
+  const leaderWakes = wakes.filter((r) => {
+    const bodyText = JSON.stringify(r.body ?? '')
+    return bodyText.includes('You are the A6 leader')
+  })
+  const notifications = mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-control')
+    && lastUserTextOf(r).includes(CREATE_ROOT_A6))
+  const resolveCalls = [...wakes, ...notifications].flatMap((r) => replyToolNames(r)).filter((n) => n === 'team_resolve_control')
+  const memberReq = mock.requests.find((r) =>
+    lastUserTextOf(r).includes(MK_A6MEM)
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_MEMBER_DONE')
+  const memberToolResults = memberReq === undefined
+    ? []
+    : toolMsgsOf(memberReq).map((m) => contentText(m?.content).slice(0, 1200))
+  const execText = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_ALLOW)
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  if (A6_HUMAN && humanLeg !== null) {
+    humanDecision = ledger.decisions.filter((d) => d.requestId === humanLeg.requestId).at(-1) ?? null
+    humanConsumption = ledger.consumptions.find((c) => c.requestId === humanLeg.requestId) ?? null
+  }
+  const pending = ledger.requests.filter((r) => !ledger.decisions.some((d) => d.requestId === r.requestId))
+  const toolRequests = ledger.requests.filter((r) => r.toolName !== undefined)
+  log(`A6: wakes=${wakes.length} leaderWakes=${leaderWakes.length} resolves=${resolveCalls.length} executed=${String(executed)} requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.length}`)
+
+  check('A6-2', A6_EXCEPTION
+    ? 'the declared Leader exception produced a model-visible Leader notification, not an Officer wake'
+    : 'the Member ask produced a model-visible Officer review wake',
+  A6_EXCEPTION ? notifications.length > 0 && wakes.length === 0 : wakes.length > 0,
+  `wakes=${wakes.length} notifications=${notifications.length} requests=${mock.requests.length}`)
+  check('A6-3', A6_EXCEPTION
+    ? 'the Leader resolved the exception leg through team_resolve_control'
+    : 'the Officer resolved through team_resolve_control', resolveCalls.length > 0,
+    `resolveCalls=${resolveCalls.length} wakeTools=${wakes.map((r) => replyToolNames(r).join(',')).join(' | ').slice(0, 500)}`)
+  check('A6-4', A6_EXCEPTION
+    ? 'the original Member command executed after the Leader exception allow'
+    : 'the original Member command executed after the Officer allow', executed,
+    `file=${FILE_A6_ALLOW} text=${JSON.stringify(execText.slice(0, 300))}`)
+  check('A6-5', A6_EXCEPTION
+    ? 'the Leader exception reached the Leader and no Officer review wake was created'
+    : 'the Leader was not woken for a leg routed to the Officer',
+  A6_EXCEPTION ? notifications.length > 0 && wakes.length === 0 : wakes.length > 0 && leaderWakes.length === 0,
+  `wakes=${wakes.length} leaderWakes=${leaderWakes.length} notifications=${notifications.length}`)
+  let exceptionOk = true
+  if (A6_EXCEPTION) {
+    const paRequest = ledger.requests.find((r) => r.actionName === 'team-tool-execute')
+    const paDecision = paRequest === undefined ? undefined : ledger.decisions.filter((d) => d.requestId === paRequest.requestId).at(-1)
+    exceptionOk = paRequest !== undefined && paDecision?.decision === 'allow' && paDecision?.decider?.role === 'leader'
+    check('A6-10', 'the PA leg of a declared Leader exception was decided by the Leader, never the Officer', exceptionOk,
+      `pa=${JSON.stringify(paRequest)} decision=${JSON.stringify(paDecision)} executed=${String(executed)}`)
+    writeEvidence('a6-leader-exception.json', { paRequest, paDecision, notifications: notifications.length, wakes: wakes.length, executed, execText })
+  }
+  if (A6_HUMAN) {
+    const humanOk = humanEscalation !== null && humanLeg !== null && executed
+      && humanDecision?.decision === 'allow'
+      && (humanDecision?.decider?.kind === 'human' || humanDecision?.decider?.role === 'human')
+      && humanConsumption !== undefined
+    const discoveryOk = humanDiscovery !== null && humanDiscovery.requestFactVisible === true
+      && Number(humanDiscovery.pendingControlCount ?? 0) >= 1
+    check('A6-21', 'the pending human leg is discoverable over the remote-only ledger/projection surface before any resolve', discoveryOk,
+      `requestFact=${String(humanDiscovery?.requestFactVisible)} count=${String(humanDiscovery?.pendingControlCount)} occurrences=${String(humanDiscovery?.requestIdOccurrences)}`)
+    check('A6-9', 'Officer escalated to the human leg; human allow executed the call once', humanOk,
+      `escalation=${JSON.stringify(humanEscalation)} humanLeg=${JSON.stringify(humanLeg)} decision=${JSON.stringify(humanDecision)} consumed=${humanConsumption !== undefined} executed=${String(executed)}`)
+    writeEvidence('a6-human.json', { escalation: humanEscalation, humanLeg, decision: humanDecision, consumption: humanConsumption, executed, execText })
+  }
+  check('A6-6', 'every durable request at the end is settled (no lost pending leg)', pending.length === 0,
+    `requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.map((r) => r.requestId).join(',')}`)
+
+  // GAP-1 measurement: the NORMAL path's durable execution-result fact, read
+  // from the same store row (`control-execution-result`) rather than from the
+  // tool transcript. The original audit's reader omitted the factType, so a
+  // written fact was invisible to it; this check reads it back explicitly.
+  const paRequest = ledger.requests.filter((r) => r.actionName === 'team-tool-execute').at(-1)
+  const paExecution = paRequest === undefined
+    ? undefined
+    : ledger.executionResults.find((e) => e.requestId === paRequest.requestId)
+  const execResultOk = executed && paExecution?.outcome === 'succeeded'
+  check('A6-27', 'the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request', execResultOk,
+    `executed=${String(executed)} pa=${paRequest?.requestId ?? 'none'} callId=${paExecution?.callId ?? 'none'} outcome=${paExecution?.outcome ?? 'none'} facts=${ledger.executionResults.length}`)
+  writeEvidence('a6-execution-result.json', {
+    schema: 'a6-execution-result/1',
+    pathRead: 'team_domain.json#tables.ledger[factType=control-execution-result]',
+    paRequest: paRequest ?? null,
+    paExecution: paExecution ?? null,
+    allExecutionResults: ledger.executionResults,
+    executed,
+    execResultOk,
+  })
+
+  let execNegOk = true
+  if (A6_EXEC_NEG) {
+    // The Officer is the LIVE member instance (the worker's session may be
+    // disposed after its delegated turn); its bash ask is still a Member ask
+    // that routes through the plane PA and produces the same durable facts.
+    const negMember = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+    if (negMember === undefined) {
+      execNegOk = false
+      check('A6-28', 'a DENIED call writes NO execution-result and executes nothing', false, 'no Officer child session')
+    } else {
+      const beforeNeg = readControlLedger(CREATE_ROOT_A6)
+      const known = new Set(beforeNeg.requests.map((r) => r.requestId))
+      // ── DENY control ──
+      a6DenyOnce = true
+      const denyPrompt = await apiPrompt(booted.origin, booted.cookie, negMember.childSessionId, `${MK_A6DENY} ${RUN_STAMP}`, 'c1a6deny')
+      log(`A6-DENY prompt status=${denyPrompt.status} body=${JSON.stringify(denyPrompt.body ?? denyPrompt).slice(0, 400)}`)
+      const denyDeadline = Date.now() + 45_000
+      let denyRequest = null
+      const denyResponses = []
+      const settledByNegative = new Set()
+      while (Date.now() < denyDeadline) {
+        const live = readControlLedger(CREATE_ROOT_A6)
+        const fresh = live.requests.filter((r) => !known.has(r.requestId)
+          && !settledByNegative.has(r.requestId)
+          && !live.decisions.some((d) => d.requestId === r.requestId))
+        for (const freshRow of fresh) {
+          // The guard principal leg precedes the plane leg; let it through so
+          // the PA request under test actually exists, then DENY that one.
+          const decision = freshRow.actionName === 'team-tool-execute' ? 'deny' : 'allow'
+          const res = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: freshRow.requestId,
+            decision,
+            note: decision === 'deny'
+              ? 'C1 A6 exec-result DENY negative control'
+              : 'C1 A6 exec-result negative control: admit the guard leg so the PA leg exists',
+          }, 'c1a6deny', 4)
+          settledByNegative.add(freshRow.requestId)
+          denyResponses.push({ requestId: freshRow.requestId, actionName: freshRow.actionName, decision, status: res.status, body: res.body ?? res })
+          if (decision === 'deny') denyRequest = freshRow
+        }
+        if (denyRequest !== null) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      a6DenyOnce = false
+      const denyDone = await waitForMock(
+        mock,
+        (r) => lastUserTextOf(r).includes(MK_A6DENY)
+          && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_DENY_DONE',
+        120_000,
+        'A6 deny control turn completed',
+      )
+      const afterDeny = readControlLedger(CREATE_ROOT_A6)
+      const denyDecision = denyRequest === null ? null
+        : afterDeny.decisions.filter((d) => d.requestId === denyRequest.requestId).at(-1) ?? null
+      const denyConsumption = denyRequest === null ? null
+        : afterDeny.consumptions.find((c) => c.requestId === denyRequest.requestId) ?? null
+      const denyExecFacts = denyRequest === null ? []
+        : afterDeny.executionResults.filter((e) => e.requestId === denyRequest.requestId)
+      const denyFile = join(HOME, 'workspace', `c1-a6-deny-${RUN_STAMP}.txt`)
+      const denyOk = denyRequest !== null && denyDone !== null
+        && denyDecision?.decision === 'deny'
+        && denyConsumption === null
+        && denyExecFacts.length === 0
+        && !existsSync(denyFile)
+      execNegOk = execNegOk && denyOk
+      check('A6-28', 'a DENIED call is refused after its durable decision: zero consumption, zero side effect, and NO execution-result fact', denyOk,
+        `request=${denyRequest?.requestId ?? 'none'} decision=${denyDecision?.decision ?? 'none'} consumed=${denyConsumption !== null} execFacts=${denyExecFacts.length} file=${String(existsSync(denyFile))} done=${denyDone !== null}`)
+      // ── THROW control ──
+      const beforeThrow = readControlLedger(CREATE_ROOT_A6)
+      const throwKnown = new Set(beforeThrow.requests.map((r) => r.requestId))
+      const throwPrompt = await apiPrompt(booted.origin, booted.cookie, negMember.childSessionId, `${MK_A6THROW} ${RUN_STAMP}`, 'c1a6throw')
+      log(`A6-THROW prompt status=${throwPrompt.status} body=${JSON.stringify(throwPrompt.body ?? throwPrompt).slice(0, 400)}`)
+      // Resolve this leg deterministically over the remote channel (guard
+      // allow, plane allow) so the throw is measured without a wake race.
+      const throwResolveDeadline = Date.now() + 60_000
+      let throwPlaneResolved = false
+      const throwResponses = []
+      while (Date.now() < throwResolveDeadline) {
+        const live = readControlLedger(CREATE_ROOT_A6)
+        const fresh = live.requests.filter((r) => !throwKnown.has(r.requestId)
+          && !live.decisions.some((d) => d.requestId === r.requestId))
+        for (const freshRow of fresh) {
+          const res = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: freshRow.requestId,
+            decision: 'allow',
+            note: 'C1 A6 exec-result THROW control: admit then let the backend throw',
+          }, 'c1a6throw', 4)
+          throwResponses.push({ requestId: freshRow.requestId, actionName: freshRow.actionName, status: res.status, body: res.body ?? res })
+          if (freshRow.actionName === 'team-tool-execute') throwPlaneResolved = true
+        }
+        if (throwPlaneResolved) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      const throwDone = await waitForMock(
+        mock,
+        (r) => lastUserTextOf(r).includes(MK_A6THROW)
+          && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_THROW_DONE',
+        90_000,
+        'A6 throw control turn completed',
+      )
+      const afterThrow = readControlLedger(CREATE_ROOT_A6)
+      const throwRequest = afterThrow.requests
+        .filter((r) => r.actionName === 'team-tool-execute' && !throwKnown.has(r.requestId))
+        .at(-1) ?? null
+      const throwConsumption = throwRequest === null ? null
+        : afterThrow.consumptions.find((c) => c.requestId === throwRequest.requestId) ?? null
+      const throwFacts = throwRequest === null ? []
+        : afterThrow.executionResults.filter((e) => e.requestId === throwRequest.requestId)
+      const throwFact = throwFacts.at(-1) ?? null
+      const throwOk = throwRequest !== null && throwDone !== null
+        && throwConsumption !== null
+        && throwFact?.outcome === 'failed'
+        && !throwFacts.some((e) => e.outcome === 'succeeded')
+        && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
+      execNegOk = execNegOk && throwOk
+      check('A6-29', 'a call whose backend THROWS/aborts after consumption records ONE terminal `failed` execution-result (never `succeeded`)', throwOk,
+        `request=${throwRequest?.requestId ?? 'none'} consumed=${throwConsumption !== null} execFacts=${throwFacts.map((e) => e.outcome).join(',') || 'none'} callId=${throwFact?.callId ?? 'none'} done=${throwDone !== null}`)
+      writeEvidence('a6-exec-negatives.json', {
+        schema: 'a6-exec-negatives/1',
+        deny: { request: denyRequest, decision: denyDecision, consumption: denyConsumption, executionResults: denyExecFacts, responses: denyResponses, fileExisted: existsSync(denyFile), done: denyDone !== null, ok: denyOk },
+        throw: { request: throwRequest, consumption: throwConsumption, executionResults: throwFacts, responses: throwResponses, consumedBeforeDone: throwConsumption !== null, memberToolResults: throwDone === null ? [] : toolMsgsOf(throwDone).map((m) => contentText(m?.content).slice(0, 800)), ok: throwOk },
+      })
+    }
+  }
+
+  let selfReview = null
+  let handoff = null
+  if (A6_RECIPIENTS) {
+    log('── A6-SELF: Officer self-ask -> Leader wake -> allow -> execute ──')
+    selfReview = await runAlpha6SelfReview({ booted, mock })
+    check('A6-7', 'Officer self-ask is routed to the Leader, not back to the Officer', selfReview.ok,
+      `prompt=${String(selfReview.promptStatus)} notif=${String(selfReview.leaderNotifications)} selfReq=${String(selfReview.selfRequestId)} leaderDecided=${String(selfReview.leaderDecided)} executed=${String(selfReview.executed)}`)
+    writeEvidence('a6-self-review.json', { ...selfReview, ledger: undefined })
+  }
+  if (A6_HANDOFF) {
+    log('── A6-HANDOFF: Officer hands the PA leg to the Leader -> allow -> execute ──')
+    handoff = await runAlpha6Handoff({ booted, mock })
+    check('A6-8', 'Officer handoff made the Leader the successor recipient and the call executed once', handoff.ok,
+      `requestId=${String(handoff.requestId)} transfer=${JSON.stringify(handoff.transfer)} decision=${JSON.stringify(handoff.decision)} executed=${String(handoff.executed)}`)
+    writeEvidence('a6-handoff.json', { ...handoff, ledger: undefined })
+  }
+
+  writeEvidence('a6-officer.json', {
+    schemaVersion: 5,
+    runtime: 'real Host 0.2.0-rc.2',
+    create: { rootSessionId: CREATE_ROOT_A6, status: create.status, result: create.body?.result ?? create.body },
+    wakes: wakes.map((r) => ({
+      seq: r.seq,
+      userHead: lastUserTextOf(r).slice(0, 300),
+      replyTools: replyToolNames(r),
+      replyCalls: (r.reply?.toolCalls ?? []).map((t) => ({ name: t?.name, arguments: t?.arguments })),
+      toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+    })),
+    leaderWakeCount: leaderWakes.length,
+    memberToolResults,
+    memberDoneSeen: memberDone !== null,
+    executed,
+    execText,
+    filePath: FILE_A6_ALLOW,
+    ledger,
+    selfReview: selfReview === null ? null : { ...selfReview, ledger: undefined },
+    handoff: handoff === null ? null : { ...handoff, ledger: undefined },
+  })
+  return exceptionOk && (A6_EXCEPTION || wakes.length > 0) && resolveCalls.length > 0 && executed && pending.length === 0
+    && execResultOk && execNegOk
+    && (selfReview === null || selfReview.ok)
+    && (handoff === null || handoff.ok)
+}
+
+let mockWakeSeq = 0
+let a6HandoffPhase = false
+let a6HumanPhase = A6_HUMAN || A6_STOP
+let a6ResumePhase = false
+let a6BusyDone = false
+// The deny control defers the Officer's wake resolution: the kit resolves the
+// durable request with `deny` over the remote channel instead, so the refusal
+// is a real decision (not a mock shortcut).
+let a6DenyOnce = false
 function makeDecide() {
-  return function decide({ req }) {
+  return async function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
-    if (typeof firstMsg?.content === 'string' && firstMsg.content.startsWith('Create a concise title')) {
+    if (typeof firstMsg?.content === 'string'
+      && (firstMsg.content.startsWith('Create a concise title') || firstMsg.content.startsWith('Generate the session title'))) {
       return { kind: 'text', content: 'C1 smoke session' }
     }
     const lastUser = lastUserTextOf(req)
+    if (lastUser.startsWith('Generate the session title') || lastUser.startsWith('Create a concise title')) {
+      return { kind: 'text', content: 'C1 smoke session' }
+    }
+    if (lastUser.includes(MK_A6_HANDOFF) && !lastUser.startsWith('[team-review-wake')) {
+      a6HandoffPhase = true
+    }
+    if (lastUser.includes('C1_A6_RESUME')) {
+      a6ResumePhase = true
+      return { kind: 'text', content: 'C1_A6_RESUMED' }
+    }
     const tools = toolMsgsOf(req).length
+    // GAP-1 negative controls (worker turns; never wake turns).
+    if (lastUser.includes(MK_A6DENY) && !lastUser.startsWith('[team-review-wake')) {
+      return tools === 0
+        ? toolCall('bash', bashArgs(`printf '%s' '${SUM_A6_DENY}' > c1-a6-deny-${RUN_STAMP}.txt`))
+        : { kind: 'text', content: 'C1_A6_DENY_DONE' }
+    }
+    if (lastUser.includes(MK_A6THROW) && !lastUser.startsWith('[team-review-wake')) {
+      // A cwd that does not exist: the anchored shape admits it, then the
+      // confined spawn refuses at the cwd after admission + consumption (a
+      // terminal backend outcome, never `succeeded`). The command is inert.
+      return tools === 0
+        ? toolCall('bash', { ...bashArgs('true'), cwd: `c1-a6-no-such-dir-${RUN_STAMP}` })
+        : { kind: 'text', content: 'C1_A6_THROW_DONE' }
+    }
+    if (a6DenyOnce && lastUser.startsWith('[team-review-wake')) {
+      // List (proves the leg is model-visible) but never resolve: the kit
+      // denies the durable row over the remote channel.
+      return tools === 0
+        ? toolCall('team_list_pending_control', { root: CREATE_ROOT_A6 })
+        : { kind: 'text', content: 'C1_A6_WAKE_DEFERRED' }
+    }
+    if (lastUser.includes(MK_A6_OFFICER_READY)) {
+      return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
+    }
+    // (2c) keep the Officer BUSY on a long tool turn so the review wake is
+    // ACCEPTED into the native Inbox but cannot be claimed yet.
+    if (lastUser.includes('C1_A6_BUSY')) {
+      // After the crash/restart this marker must retire fast: the queued
+      // next-step wake cannot be claimed while a fresh 45 s turn runs.
+      if (a6BusyDone) return { kind: 'text', content: 'C1_A6_BUSY_DONE' }
+      return tools === 0
+        ? toolCall('bash', bashArgs('sleep 45 && echo c1-a6-busy-done'))
+        : { kind: 'text', content: 'C1_A6_BUSY_DONE' }
+    }
 
-    // (2) the C1 notification turns (token-leading, no dedupe).
+    // (2a) the Alpha.6 Officer wake. Both the guard ask and the plane PA ask
+    // arrive here; each turn lists and resolves exactly the id its text names
+    // (or the first pending id for a merged wake).
+    if (lastUser.startsWith('[team-review-wake')) {
+      // A6-INBOX: hold the wake turn open long enough to SIGKILL the Host
+      // AFTER the native Inbox claimed the message.
+      if (A6_INBOX) await new Promise((resolve) => setTimeout(resolve, 30_000))
+      if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
+      if (A6_STICKY_STOP && !a6ResumePhase) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
+      const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
+        ?? /requestId=([^\]\s]+)/.exec(lastUser)?.[1]
+        ?? ''
+      if (tools === 0) {
+        return toolCall('team_list_pending_control', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-list-${String(mockWakeSeq++)}`,
+        })
+      }
+      if (tools === 1) {
+        const listText = contentText(toolMsgsOf(req).slice(-1)[0]?.content ?? '')
+        const first = /"requestId"\s*:\s*"([^"]+)"/.exec(listText)?.[1]
+          ?? /requestId[=:]\s*([A-Za-z0-9_.:-]+)/.exec(listText)?.[1]
+          ?? ''
+        return toolCall('team_resolve_control', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-res-${String(mockWakeSeq++)}`,
+          requestId: named !== '' ? named : first,
+          decision: a6HumanPhase ? 'escalate' : a6HandoffPhase ? 'handoff' : 'allow',
+        })
+      }
+      return { kind: 'text', content: 'C1_A6_OFFICER_DONE' }
+    }
+
+    // (2b) the C1 notification turns (token-leading, no dedupe).
     if (lastUser.startsWith(NOTIF_PREFIX)) {
+      if (a6DenyOnce) {
+        // GAP-1 DENY control: the kit owns the decision for this window (the
+        // durable row is denied over the remote channel). Ending the
+        // notification turn without resolving keeps the race deterministic.
+        return { kind: 'text', content: 'C1_NOTIF_DEFERRED' }
+      }
       // S4 injection: the Z member-ask notification (summary carries the
       // side-effect file marker) is REFUSED at the model layer — the
       // durable request + the pending list are what make this recoverable.
@@ -928,7 +2400,13 @@ function makeDecide() {
       // summary line carries the command/summary text).
       let root = CREATE_ROOT_Y
       let decision = 'allow'
-      if (lastUser.includes(SUM_X_ALLOW) || lastUser.includes(SUM_X_DENY)) {
+      if (lastUser.includes(CREATE_ROOT_A6)) {
+        root = CREATE_ROOT_A6
+        decision = 'allow'
+      } else if (lastUser.includes(SUM_A6_ALLOW) || lastUser.includes(SUM_A6_SELF) || lastUser.includes(SUM_A6_HANDOFF)) {
+        root = CREATE_ROOT_A6
+        decision = 'allow'
+      } else if (lastUser.includes(SUM_X_ALLOW) || lastUser.includes(SUM_X_DENY)) {
         root = CREATE_ROOT_X
         decision = lastUser.includes(SUM_X_DENY) ? 'deny' : 'allow'
       } else if (lastUser.includes(SUM_Z_S5)) {
@@ -952,10 +2430,131 @@ function makeDecide() {
     }
 
     // (3) member chains.
+    if (lastUser.includes(MK_A6_HANDOFF)) {
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(CMD_A6_HANDOFF))
+        case 1: return { kind: 'text', content: 'C1_A6_HANDOFF_DONE' }
+        default: return { kind: 'text', content: `C1_A6_HANDOFF_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6SELF)) {
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(CMD_A6_SELF))
+        case 1: return { kind: 'text', content: 'C1_A6_SELF_DONE' }
+        default: return { kind: 'text', content: `C1_A6_SELF_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6MEM)) {
+      // The busy marker must win the race: the Leader sends C1_A6_BUSY before
+      // it delegates, but the Member's first model request can arrive before
+      // that turn starts. Hold this request briefly so the Officer is already
+      // in its long tool turn when the PA ask is steered into the Inbox.
+      if (A6_INBOX_ACTIVE && !a6BusyDone) await new Promise((resolve) => setTimeout(resolve, 6000))
+      switch (tools) {
+        case 0: return toolCall('bash', bashArgs(process.env['C1_A6_CRASH'] === 'body' ? CMD_A6_BODY : CMD_A6_ALLOW))
+        case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
+        default: return { kind: 'text', content: `C1_A6_MEMBER_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6_NEWWORKER)) {
+      switch (tools) {
+        case 0: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-ho-worker-${RUN_STAMP}`,
+          delegationTemplateId: 'worker',
+          label: 'w-a6-ho',
+        })
+        case 1: {
+          const wid = extractInstanceId(toolMsgsOf(req)[0]?.content)
+          if (wid === null) return { kind: 'text', content: `C1_A6_HO_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          return toolCall('team_delegate', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-ho-delegate-${RUN_STAMP}`,
+            delegationInstanceId: wid,
+            label: 'w-a6-ho',
+            prompt: MK_A6_HANDOFF,
+            async: true,
+          })
+        }
+        case 2: return { kind: 'text', content: 'C1_A6_HO_DONE' }
+        default: return { kind: 'text', content: `C1_A6_HO_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
+    if (lastUser.includes(MK_A6)) {
+      if (A6_INBOX_ACTIVE) {
+        switch (tools) {
+          case 0: return toolCall('team_create_member', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-officer-${RUN_STAMP}`,
+            delegationTemplateId: 'officer',
+            label: 'officer',
+          })
+          case 1: return toolCall('team_create_member', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-worker-${RUN_STAMP}`,
+            delegationTemplateId: 'worker',
+            label: 'w-a6',
+          })
+          case 2: {
+            const officerId = extractInstanceId(toolMsgsOf(req)[0]?.content)
+            if (officerId === null) return { kind: 'text', content: `C1_A6_OFFICER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+            return toolCall('team_send_message', {
+              rootSessionId: CREATE_ROOT_A6,
+              requestToken: `c1-a6-busy-${RUN_STAMP}`,
+              recipientInstanceId: officerId,
+              body: 'C1_A6_BUSY',
+            })
+          }
+          case 3: {
+            const workerId = extractInstanceId(toolMsgsOf(req)[1]?.content)
+            if (workerId === null) return { kind: 'text', content: `C1_A6_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[1]?.content).slice(0, 300)}` }
+            return toolCall('team_delegate', {
+              rootSessionId: CREATE_ROOT_A6,
+              requestToken: `c1-a6-delegate-${RUN_STAMP}`,
+              delegationInstanceId: workerId,
+              label: 'w-a6',
+              prompt: MK_A6MEM,
+              async: true,
+            })
+          }
+          case 4: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+          default: return { kind: 'text', content: `C1_A6_LEADER_FALLTHROUGH tools=${String(tools)}` }
+        }
+      }
+      switch (tools) {
+        case 0: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-officer-${RUN_STAMP}`,
+          delegationTemplateId: 'officer',
+          label: 'officer',
+        })
+        case 1: return toolCall('team_create_member', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `c1-a6-worker-${RUN_STAMP}`,
+          delegationTemplateId: 'worker',
+          label: 'w-a6',
+        })
+        case 2: {
+          const workerId = extractInstanceId(toolMsgsOf(req)[1]?.content)
+          if (workerId === null) return { kind: 'text', content: `C1_A6_WORKER_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[1]?.content).slice(0, 300)}` }
+          return toolCall('team_delegate', {
+            rootSessionId: CREATE_ROOT_A6,
+            requestToken: `c1-a6-delegate-${RUN_STAMP}`,
+            delegationInstanceId: workerId,
+            label: 'w-a6',
+            prompt: MK_A6MEM,
+            async: true,
+          })
+        }
+        case 3: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+        case 4: return { kind: 'text', content: 'C1_A6_LEADER_DONE' }
+        default: return { kind: 'text', content: `C1_A6_LEADER_FALLTHROUGH tools=${String(tools)}` }
+      }
+    }
     if (lastUser.includes(MK_XMEM)) {
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_X_ALLOW, timeoutMs: 30000 })
-        case 1: return toolCall('bash', { command: CMD_X_DENY, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_X_ALLOW))
+        case 1: return toolCall('bash', bashArgs(CMD_X_DENY))
         case 2: return { kind: 'text', content: 'C1_XMEM_DONE' }
         default: return { kind: 'text', content: `C1_XMEM_FALLTHROUGH tools=${tools}` }
       }
@@ -964,14 +2563,14 @@ function makeDecide() {
       // ONE bash: it is blocked at the control wait until the recovered
       // allow arrives (S4); then it executes and the turn ends.
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_Z, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_Z))
         case 1: return { kind: 'text', content: 'C1_ZMEM_DONE' }
         default: return { kind: 'text', content: `C1_ZMEM_FALLTHROUGH tools=${tools}` }
       }
     }
     if (lastUser.includes(MK_YMEM)) {
       switch (tools) {
-        case 0: return toolCall('bash', { command: CMD_Y, timeoutMs: 30000 })
+        case 0: return toolCall('bash', bashArgs(CMD_Y))
         case 1: return { kind: 'text', content: 'C1_YMEM_DONE' }
         default: return { kind: 'text', content: `C1_YMEM_FALLTHROUGH tools=${tools}` }
       }
@@ -991,7 +2590,7 @@ function makeDecide() {
         })
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `C1_${isX ? 'X' : 'Z'}_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (id === null) return { kind: 'text', content: `C1_${isX ? 'X' : 'Z'}_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           return toolCall('team_delegate', {
             rootSessionId: root,
             requestToken: `c1-${isX ? 'x' : 'z'}-delegate-${RUN_STAMP}`,
@@ -1015,7 +2614,7 @@ function makeDecide() {
         })
         case 1: {
           const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `C1_Y_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (id === null) return { kind: 'text', content: `C1_Y_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           // SYNC delegation (EXPLICIT async: false — the 2026-09-27
           // ruling made the sync path opt-in; no arg = async default) —
           // the S6 blocked Leader turn: this call does not return to the
@@ -1041,8 +2640,8 @@ function makeDecide() {
       // (S5a: same requestId, one row, no re-notify) → done.
       // The member instance id: the session history carries the
       // create_member result (a tool message from the Z leader chain).
-      const allToolMsgs = messagesOf(req).filter((m) => m.role === 'tool')
-      const memberId = allToolMsgs.map((m) => extractInstanceId(String(m.content ?? ''))).find((v) => v !== null) ?? null
+      const allToolMsgs = messagesOf(req).filter(isToolResultMessage)
+      const memberId = allToolMsgs.map((m) => extractInstanceId(m.content)).find((v) => v !== null) ?? null
       switch (tools) {
         case 0: return toolCall('team_list_pending_control', {
           rootSessionId: CREATE_ROOT_Z,
@@ -1050,7 +2649,7 @@ function makeDecide() {
         })
         case 1: {
           const requestId = extractListedRequestId(toolMsgsOf(req)[0]?.content)
-          if (requestId === null) return { kind: 'text', content: `C1_ZCHECK_EXTRACT_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          if (requestId === null) return { kind: 'text', content: `C1_ZCHECK_EXTRACT_FAIL :: ${contentText(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
           return toolCall('team_resolve_control', {
             rootSessionId: CREATE_ROOT_Z,
             requestToken: `c1-z-check-res-${RUN_STAMP}`,
@@ -1143,7 +2742,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
  * {factType, rootSessionId, payload, ...}. Read-only.
  */
 function readControlLedger(root) {
-  const out = { requests: [], decisions: [], consumptions: [], error: null }
+  const out = { requests: [], decisions: [], consumptions: [], abandonments: [], transfers: [], escalations: [], executionResults: [], error: null }
   try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const ledger = parsed?.tables?.ledger
@@ -1155,17 +2754,156 @@ function readControlLedger(root) {
       if (String(entry?.rootSessionId) !== root) continue
       const payload = entry?.payload ?? {}
       if (entry.factType === 'control-request-recorded') {
-        out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, createdAt: entry.createdAt })
+        out.requests.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, actionName: payload.actionName, targetInstanceId: payload.targetInstanceId, status: payload.status, correlation: payload.correlation, approvalCaseId: payload.approvalCaseId, legOrdinal: payload.legOrdinal, reviewAuthority: payload.reviewAuthority, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-decision-recorded') {
-        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, resolver: payload.resolver ?? payload.resolvedBy, createdAt: entry.createdAt })
+        out.decisions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, decision: payload.decision, decider: payload.decider, resolver: payload.resolver ?? payload.resolvedBy, reason: payload.reason, createdAt: entry.createdAt })
       } else if (entry.factType === 'control-allow-consumed') {
         out.consumptions.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, createdAt: entry.createdAt })
+      } else if (entry.factType === 'control-request-abandoned') {
+        out.abandonments.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, reason: payload.reason, createdAt: entry.createdAt })
+      } else if (entry.factType === 'control-current-leg-transferred') {
+        out.transfers.push({ sequence: Number(k), factType: entry.factType, ...payload })
+      } else if (entry.factType === 'control-escalation-recorded') {
+        out.escalations.push({ sequence: Number(k), factType: entry.factType, ...payload })
+      } else if (entry.factType === 'control-execution-result') {
+        // A6 closing-round fact, additive: the post-backend outcome observed
+        // for one durable PA request. The ORIGINAL audit reader omitted this
+        // branch, which is why a written fact was invisible to it.
+        out.executionResults.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, callId: payload.callId, outcome: payload.outcome, recordedAt: payload.recordedAt, createdAt: entry.createdAt })
       }
     }
   } catch (error) {
     out.error = String(error?.message ?? error)
   }
   return out
+}
+
+/** The durable member rows for one root (the real child sessions). */
+function readMemberRows(root) {
+  try {
+    const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
+    const rows = parsed?.tables?.member_instances
+    if (rows === null || typeof rows !== 'object') return []
+    const out = []
+    for (const v of Object.values(rows)) {
+      if (typeof v !== 'string') continue
+      let row
+      try { row = JSON.parse(v) } catch { continue }
+      if (String(row?.rootSessionId) === root) out.push(row)
+    }
+    return out
+  } catch { return [] }
+}
+
+/** Drive the Officer's OWN bash ask and prove the self-ask reached the Leader. */
+async function runAlpha6SelfReview({ booted, mock }) {
+  const officer = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+  if (officer === undefined) return { ok: false, reason: 'no Officer child session', leaderWakes: 0, officerWakes: 0, executed: false }
+  const before = mock.requests.length
+  const prompt = await apiPrompt(booted.origin, booted.cookie, officer.childSessionId, MK_A6SELF, 'c1a6self')
+  const done = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6SELF)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_SELF_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'Officer self-ask done after Leader allow + plane execute',
+  )
+  const after = mock.requests.slice(before)
+  writeEvidence('a6-self-mock.json', after.map((r) => ({
+    seq: r.seq,
+    lastUser: lastUserTextOf(r).slice(0, 900),
+    reply: r.reply,
+    toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+  })))
+  const wakes = after.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake'))
+  const leaderWakes = wakes.filter((r) => JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const officerWakes = wakes.filter((r) => JSON.stringify(r.body ?? '').includes('C1 smoke Officer'))
+  const execText = existsSync(FILE_A6_SELF) ? readFileSync(FILE_A6_SELF, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_SELF)
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  const selfAsk = ledger.requests.filter((r) => r.targetInstanceId === officer.instanceId && r.actionName === 'team-tool-execute').at(-1)
+  const selfDecision = selfAsk === undefined ? undefined : ledger.decisions.find((d) => d.requestId === selfAsk.requestId)
+  // The Leader recipient is the LEGACY notification seam for a legal
+  // Leader route (not the Officer review wake); count those turns too.
+  const leaderNotifications = after.filter((r) =>
+    lastUserTextOf(r).startsWith('[team-control') && JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const leaderDecided = selfDecision?.decider?.role === 'leader'
+  return {
+    ok: prompt.status === 200 && done !== null && executed && selfAsk !== undefined
+      && leaderDecided && leaderNotifications.length > 0,
+    promptStatus: prompt.status,
+    doneSeen: done !== null,
+    wakes: wakes.length,
+    leaderWakes: leaderWakes.length,
+    officerWakes: officerWakes.length,
+    leaderNotifications: leaderNotifications.length,
+    selfRequestId: selfAsk?.requestId ?? null,
+    selfActionName: selfAsk?.actionName ?? null,
+    selfDecision: selfDecision ?? null,
+    leaderDecided,
+    executed,
+    execText,
+    filePath: FILE_A6_SELF,
+    requestId: selfAsk?.requestId ?? null,
+    ledger,
+  }
+}
+
+/** The Officer hands the PA leg to the Leader; the Leader must be the
+ *  successor recipient and the original call executes once after its allow. */
+async function runAlpha6Handoff({ booted, mock }) {
+  const before = mock.requests.length
+  // A settled worker cannot resume its suspended tool call after approval, so
+  // the Leader creates a FRESH worker for the handoff leg.
+  const kick = await apiPrompt(booted.origin, booted.cookie, CREATE_ROOT_A6, MK_A6_NEWWORKER, 'c1a6ho-kick')
+  let worker = null
+  const workerDeadline = Date.now() + 60_000
+  while (Date.now() < workerDeadline && worker === null) {
+    worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.label === 'w-a6-ho' && typeof row.childSessionId === 'string') ?? null
+    if (worker === null) await new Promise((resolve) => setTimeout(resolve, 200))
+  }
+  if (worker === null) return { ok: false, reason: 'no fresh handoff worker session', kickStatus: kick.status, executed: false, leaderNotifications: 0 }
+  const prompt = kick
+  const done = await waitForMock(
+    mock,
+    (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6_HANDOFF)
+      && replyToolNames(r).length === 0
+      && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_HANDOFF_DONE',
+    Number(process.env['C1_A6_WAIT_MS'] ?? 300_000),
+    'handoff call done after Leader allow + plane execute',
+  )
+  const after = mock.requests.slice(before)
+  writeEvidence('a6-handoff-mock.json', after.map((r) => ({
+    seq: r.seq,
+    lastUser: lastUserTextOf(r).slice(0, 900),
+    reply: r.reply,
+    toolResults: toolMsgsOf(r).map((m) => contentText(m?.content).slice(0, 1200)),
+  })))
+  const leaderNotifications = after.filter((r) =>
+    lastUserTextOf(r).startsWith('[team-control') && JSON.stringify(r.body ?? '').includes('You are the A6 leader'))
+  const ledger = readControlLedger(CREATE_ROOT_A6)
+  const ask = ledger.requests.filter((r) => r.targetInstanceId === worker.instanceId && r.actionName === 'team-tool-execute').at(-1)
+  const transfer = ask === undefined ? undefined : ledger.transfers.find((t) => t.currentLegRequestId === ask.requestId)
+  const decision = ask === undefined ? undefined : ledger.decisions.find((d) => d.requestId === ask.requestId)
+  const execText = existsSync(FILE_A6_HANDOFF) ? readFileSync(FILE_A6_HANDOFF, 'utf8') : ''
+  const executed = execText.includes(SUM_A6_HANDOFF)
+  const ok = prompt.status === 200 && done !== null && executed
+    && transfer !== undefined && transfer.target === 'leader' && transfer.cause === 'officer-handoff'
+    && decision?.decider?.role === 'leader' && leaderNotifications.length > 0
+  return {
+    ok,
+    promptStatus: prompt.status,
+    doneSeen: done !== null,
+    requestId: ask?.requestId ?? null,
+    transfer: transfer ?? null,
+    decision: decision ?? null,
+    leaderNotifications: leaderNotifications.length,
+    executed,
+    execText,
+    filePath: FILE_A6_HANDOFF,
+    ledger,
+  }
 }
 
 /** The scripted human resolution (the boot root is the host-known operator
@@ -1254,11 +2992,44 @@ async function main() {
         writeEvidence('l0-diagnostic-mock.json', mock.requests.slice(-4).map((r) => ({ seq: r.seq, reply: r.reply })))
         throw new Error(`L0 diagnostic abort: the DISC request (seq ${discReq.seq}) got reply ${JSON.stringify(discReq.reply).slice(0, 200)}`)
       }
+      if (ALPHA6_BOOT_ONLY) {
+        const wakeDir = join(HOME, 'alpha6-wake-intents')
+        writeEvidence('a6-boot.json', {
+          schemaVersion: 5,
+          runtime: 'real Host 0.2.0-rc.2',
+          config: { alpha6ReviewRouting: true, alpha6WakeIntentPath: wakeDir },
+          toolCount: booted.health.body?.toolCount ?? null,
+          surface,
+          wakeSeamPresent: true,
+          note: 'The Host booted the opted-in v5 Team: the durable intent path was configured and the live wake seam existed, otherwise the plugin refuses the boot.',
+        })
+        check('A6-BOOT', 'the real Host boots the opted-in v5 Alpha.6 row (durable wake-intent path + live wake seam)', true,
+          `toolCount=${String(booted.health.body?.toolCount)}`)
+        log('── A6-BOOT complete: stopping before the legacy Leader-approval arc ──')
+        stopHost(host)
+        await mock.close()
+        if (!FLAG_KEEP) {
+          rmSync(HOME, { recursive: true, force: true })
+          rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
+        }
+        process.exit(0)
+      }
       // The saved blueprints (the deny list needs the live surface).
       writeFileSync(join(BLUEPRINT_DIR, 'c1-x.yaml'), savedBlueprintYaml(BP_X_ID, `You are the leader of the C1 smoke X team. ${MK_X}`, `You are worker-x of the C1 smoke X team. ${MK_XMEM}`, denyList))
       writeFileSync(join(BLUEPRINT_DIR, 'c1-y.yaml'), savedBlueprintYaml(BP_Y_ID, `You are the leader of the C1 smoke Y team. ${MK_Y}`, `You are worker-y of the C1 smoke Y team. ${MK_YMEM}`, denyList))
       writeFileSync(join(BLUEPRINT_DIR, 'c1-z.yaml'), savedBlueprintYaml(BP_Z_ID, `You are the leader of the C1 smoke Z team. ${MK_Z}`, `You are worker-z of the C1 smoke Z team. ${MK_ZMEM}`, denyList))
       log(`saved blueprints X + Y + Z written (deny list = ${denyList.length} names)`)
+
+      if (ALPHA6_OFFICER) {
+        const ok = await runAlpha6OfficerScenario({ booted, mock, denyList, host })
+        stopHost(host)
+        await mock.close()
+        if (!FLAG_KEEP) {
+          rmSync(HOME, { recursive: true, force: true })
+          rmSync(BLUEPRINT_DIR, { recursive: true, force: true })
+        }
+        process.exit(ok ? 0 : 2)
+      }
     }
 
     if (FAILS.includes('L0')) throw new Error('L0 failed — aborting before team.create')
@@ -1320,7 +3091,7 @@ async function main() {
         fail('S1')
         check('S1d', 'S1: the Leader called team_list_pending_control (tool result observed)', false, `requests=${mock.requests.length}`)
       } else {
-        const listResult = String(xNotifList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const listResult = contentText(toolMsgsOf(xNotifList).pop()?.content ?? '')
         writeEvidence('s1-x-list-result.json', { seq: xNotifList.seq, result: listResult.slice(0, 2000) })
         check('S1d', 'S1: team_list_pending_control returned the EXACT pending requestId',
           listResult.includes(xAllowRequestId ?? '\u0000'),
@@ -1341,7 +3112,7 @@ async function main() {
       fail('S2')
       check('S2b', 'S2: the member bash executed after the allow (tool result returned)', false, `requests=${mock.requests.length}`)
     } else {
-      const execResult = String(xExec.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const execResult = contentText(toolMsgsOf(xExec).pop()?.content ?? '')
       writeEvidence('s2-x-bash-result.json', { seq: xExec.seq, result: execResult.slice(0, 800) })
       check('S2b', 'S2: the member bash EXECUTED after the Leader allow (guard passed, output returned)',
         execResult.includes('x-allow-executed') && !/blocked|denied|pending/i.test(execResult.slice(0, 400)),
@@ -1369,7 +3140,7 @@ async function main() {
         fail('S3')
         check('S3b', 'S3: the Leader resolved deny and the member received the verdict', false, `requests=${mock.requests.length}`)
       } else {
-        const denyResult = String(xDenyResult.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const denyResult = contentText(toolMsgsOf(xDenyResult).pop()?.content ?? '')
         writeEvidence('s3-x-deny-result.json', { seq: xDenyResult.seq, result: denyResult.slice(0, 800) })
         check('S3b', 'S3: the denied member bash was BLOCKED (verdict returned, no output)',
           /blocked|denied|deny|pending/i.test(denyResult.slice(0, 400)) && !denyResult.includes('x-deny-executed'),
@@ -1464,7 +3235,7 @@ async function main() {
         `${MK_XCROSS} cross-root probe: ROOTZ=${CREATE_ROOT_Z} ZREQ=${zReq.requestId} — call team_list_pending_control for ROOTZ, then team_resolve_control for ROOTZ with ZREQ (decision allow).`)
       if (xcPrompt.status !== 200) fail('XC1')
       const xcList = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && toolMsgsOf(r).length === 1, 120_000, 'XCROSS list result')
-      const xcListResult = xcList === null ? '' : String(toolMsgsOf(xcList).pop()?.content ?? '')
+      const xcListResult = xcList === null ? '' : contentText(toolMsgsOf(xcList).pop()?.content ?? '')
       writeEvidence('xcross-list-result.json', { seq: xcList?.seq ?? null, result: xcListResult.slice(0, 2000) })
       const xcListRejected = xcListResult.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
       check('XC1', 'RH2: Leader X team_list_pending_control(root=Z) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no pending data leaked)',
@@ -1472,7 +3243,7 @@ async function main() {
         `result=${xcListResult.slice(0, 300)}`)
       if (!xcListRejected || xcListResult.includes(zReq.requestId)) fail('XC1')
       const xcDone = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_XCROSS) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_XCROSS_DONE', 120_000, 'XCROSS chain done')
-      const xcRes = xcDone === null ? '' : String(toolMsgsOf(xcDone).slice(-1)[0]?.content ?? '')
+      const xcRes = xcDone === null ? '' : contentText(toolMsgsOf(xcDone).slice(-1)[0]?.content ?? '')
       writeEvidence('xcross-resolve-result.json', { seq: xcDone?.seq ?? null, result: xcRes.slice(0, 2000) })
       const xcResRejected = xcRes.includes('TEAM_TOOL_CALLER_ROOT_MISMATCH')
       check('XC2', 'RH3: Leader X team_resolve_control(root=Z, requestId=Z-pending) rejected with TEAM_TOOL_CALLER_ROOT_MISMATCH (no decision recorded)',
@@ -1545,7 +3316,7 @@ async function main() {
       fail('S4c')
       check('S4c', 'S4: the explicit Leader input reached the Leader turn (recovery chain running)', false, `requests=${mock.requests.length}`)
     } else {
-      const zListResult = String(zCheckList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+      const zListResult = contentText(toolMsgsOf(zCheckList).pop()?.content ?? '')
       writeEvidence('s4-z-list-result.json', { seq: zCheckList.seq, result: zListResult.slice(0, 2000) })
       check('S4c', 'S4: team_list_pending_control (explicit read, NO notification) discovered the exact pending requestId',
         zListResult.includes(zReq.requestId ?? '\u0000'), `result=${zListResult.slice(0, 300)}`)
@@ -1563,7 +3334,7 @@ async function main() {
         fail('S4e')
         check('S4e', 'S4: the recovered member bash EXECUTED (the operation proceeded after the pending-list recovery)', false, `requests=${mock.requests.length}`)
       } else {
-        const zResult = String(zExec.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const zResult = contentText(toolMsgsOf(zExec).pop()?.content ?? '')
         writeEvidence('s4-z-bash-result.json', { seq: zExec.seq, result: zResult.slice(0, 800) })
         check('S4e', 'S4: the recovered member bash EXECUTED (the operation proceeded after the pending-list recovery)',
           zResult.includes('z-executed') && !/blocked|denied|pending/i.test(zResult.slice(0, 400)),
@@ -1743,7 +3514,7 @@ async function main() {
         const yNotifList = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).startsWith(NOTIF_PREFIX) && lastUserTextOf(r).includes(SUM_Y) && toolMsgsOf(r).length === 1, 60_000, 'Y post-turn notification list result')
         const yDoneAt = yDone?.receivedAt
         const yNotifAt = yNotifAfter.receivedAt
-        const yListResult = yNotifList === undefined ? '' : String(yNotifList.body.messages.filter((m) => m.role === 'tool').pop()?.content ?? '')
+        const yListResult = yNotifList === undefined ? '' : contentText(toolMsgsOf(yNotifList).pop()?.content ?? '')
         writeEvidence('s6-y-post-turn-notification.json', {
           yDoneAt,
           yNotifAt,

@@ -1,0 +1,36 @@
+mock: listening on 127.0.0.1:3627
+mock: 1 [messages] text reply (16 chars): "C1 smoke session"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] text reply (16 chars): "C1 smoke session"
+mock: 5 [messages] tool-call reply: team_create_member
+mock: 6 [messages] tool-call reply: team_delegate
+mock: 7 [messages] text reply (17 chars): "C1_A6_LEADER_DONE"
+mock: 8 [messages] tool-call reply: bash
+mock: 9 [messages] text reply (16 chars): "C1 smoke session"
+mock: 10 [messages] tool-call reply: team_list_pending_control
+mock: 11 [messages] tool-call reply: team_resolve_control
+mock: 12 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 13 [messages] tool-call reply: team_list_pending_control
+mock: 14 [messages] tool-call reply: team_resolve_control
+mock: 15 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 16 [messages] text reply (17 chars): "C1_A6_MEMBER_DONE"
+mock: 17 [messages] tool-call reply: bash
+mock: 18 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 19 [messages] tool-call reply: team_list_pending_control
+mock: 20 [messages] tool-call reply: team_resolve_control
+mock: 21 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 22 [messages] tool-call reply: team_list_pending_control
+mock: 23 [messages] tool-call reply: team_resolve_control
+mock: 24 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 25 [messages] text reply (15 chars): "C1_A6_SELF_DONE"
+mock: 26 [messages] text reply (16 chars): "C1 smoke session"
+mock: 27 [messages] tool-call reply: team_create_member
+mock: 28 [messages] tool-call reply: team_delegate
+mock: 29 [messages] text reply (13 chars): "C1_A6_HO_DONE"
+mock: 30 [messages] tool-call reply: bash
+mock: 31 [messages] text reply (16 chars): "C1 smoke session"
+mock: 32 [messages] tool-call reply: team_list_pending_control
+mock: 33 [messages] tool-call reply: team_resolve_control
+mock: 34 [messages] text reply (13 chars): "C1_NOTIF_DONE"
+mock: 35 [messages] text reply (15 chars): "C1_A6_SELF_DONE"

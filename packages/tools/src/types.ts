@@ -22,6 +22,7 @@ import type {
 import type {
   ControlDecisionRecord,
   ControlEscalationOutcome,
+  CurrentLegTransferRecord,
   ControlGuardBlockReason,
   ControlRequestRecord,
   ControlService,
@@ -163,6 +164,13 @@ export type TeamToolsResult =
   | {
       readonly status: 'control-escalated'
       readonly outcome: ControlEscalationOutcome
+    }
+  // A6-PR5: the Officer handed its current leader leg to the Leader. This is
+  // a routing fact, never an approval; the union keeps it distinct from both
+  // `control-resolved` and `control-escalated`.
+  | {
+      readonly status: 'control-transferred'
+      readonly transfer: CurrentLegTransferRecord
     }
   | {
       readonly status: 'pending-control-listed'

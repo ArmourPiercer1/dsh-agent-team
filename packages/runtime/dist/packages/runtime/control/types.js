@@ -847,4 +847,11 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);
+// ── Alpha.6 PR2c — current-leg transfer (Officer handoff / trusted takeover) ──
+/** The closed transfer causes. Runtime takeover is added with its trusted
+ *  evidence path; a Busy officer never transfers. */
+export const CURRENT_LEG_TRANSFER_CAUSES = {
+    OFFICER_HANDOFF: 'officer-handoff',
+    OFFICER_UNAVAILABLE: 'officer-unavailable',
+};
 //# sourceMappingURL=types.js.map

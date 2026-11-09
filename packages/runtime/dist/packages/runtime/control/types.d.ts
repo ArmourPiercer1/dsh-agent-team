@@ -116,6 +116,7 @@ import type { PermissionOverlayEffect } from '../../storage/schema/permission-ov
 import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js';
 import type { RequestedEffectSet, ToolBinding, ToolPolicyDocument } from '../../domain/tool-governance/src/index.js';
 import type { PolicyDenySource } from '../tool-admission/approval-case.js';
+import type { DecisionCapabilityEvidence, ReviewCapabilityCandidate } from '../review-authority/index.js';
 /**
  * The closed control request kinds (Architecture 25.1: a member may meet
  * an operation beyond its autonomy boundary that a higher authority may
@@ -463,6 +464,8 @@ export interface ApprovalCaseState {
     readonly status: 'open' | 'decided' | 'abandoned';
     /** The terminal decision of the current leg, when it has one. */
     readonly terminalDecision?: ControlDecisionRecord;
+    /** A6-PR2c: the current leg's routing transfer, when one was recorded. */
+    readonly transfer?: CurrentLegTransferRecord;
     /**
      * The principals that have ALREADY acted on an earlier leg of this case
      * (ADR A1-10 / 24.5: a set of principals, not of legs). A principal in
@@ -902,10 +905,11 @@ export declare function parsePaControlManifest(value: unknown): PaControlManifes
 /** The strict read-back class of one durable request row against the PA
  *  operation-manifest effect-set (PR358 f5). `not-effect-set` keeps today's
  *  legacy behaviour at BOTH gates (skip); `valid` rides the verifier flow;
- *  `corrupt` is a THIS-CLASS damaged row and NEVER skips: resolve commits a
- *  durable DENY (`authority-undetermined`), guard blocks with ZERO
- *  consumption (`authority-undetermined`) — fail closed, with or without an
- *  injected verifier. */
+ *  `corrupt` is a THIS-CLASS damaged row and NEVER skips: non-A6 resolve
+ *  commits a durable DENY (`authority-undetermined`); the A6 composition
+ *  instead records `control-request-abandoned` (lifecycle) and refuses. The
+ *  guard blocks with ZERO consumption (`authority-undetermined`) in both.
+ *  Fail closed, with or without an injected verifier. */
 export type PaManifestReadBack = {
     readonly state: 'not-effect-set';
 } | {
@@ -1043,6 +1047,13 @@ export interface PaEffectsVerifierInput {
     /** The REAL decider: the resolving caller (stage 'resolve') or the
      *  durable allow's decider (stage 'guard'). Never a presented stand-in. */
     readonly decider: ControlCallerRef;
+    /**
+     * The rung the decider EXERCISED for this leg, when the durable decision
+     * carries normalized capability evidence. An assigned Officer reviews at
+     * the leg's frozen rung (leader), not at its principal's native member
+     * rung; absent evidence leaves the verifier on the principal-derived rung.
+     */
+    readonly reviewerAuthority?: ProposalAuthorityPosition;
     /** PR358-B: the call-level facts, when the caller already holds them.
      *  Honoured ONLY under the bridge's `allowFactsInjection: true` test seam
      *  (default false ⇒ ignored, the adapter is always consulted). */
@@ -1167,6 +1178,11 @@ export interface ControlRequestRecord {
     readonly requestId: string;
     /** The TeamSession (root session id) the request belongs to. */
     readonly rootSessionId: string;
+    /** A6 closing round: the mount RootSessionId that created this row.
+     *  ABSENT on pre-A6/legacy rows. Boot settlement only ever touches rows
+     *  whose owner is exactly this boot root; an absent owner is unowned and is
+     *  NEVER settled (fail closed). */
+    readonly ownerRootSessionId?: string;
     /** The closed request kind. */
     readonly kind: ControlRequestKind;
     /** The requesting principal (the member, or the leader where the
@@ -1249,6 +1265,21 @@ export interface ControlRequestRecord {
     /** The mutation proposal fingerprint, for `envelope-mutation` cases only
      *  (exactly-one-fingerprint rule, spec 11.1). */
     readonly mutationProposalFingerprint?: string;
+    /** The PA logical case id (`tadm:...`) this Control leg was opened for. */
+    readonly paApprovalCaseId?: string;
+    /** The actual OperationOwner template (trusted call identity, not requester). */
+    readonly operationOwnerTemplateId?: string;
+    /** The trusted tool definition/owner/name used by the delegation predicate. */
+    readonly operationToolDefinitionIdentity?: string;
+    readonly operationToolOwner?: string;
+    readonly operationToolName?: string;
+    /** The authority generation the case was opened under. */
+    readonly authorityGeneration?: number;
+    /** The Blueprint identity the case was opened under. */
+    readonly blueprintContentHash?: string;
+    readonly blueprintRevision?: string;
+    /** Every per-effect required authority, frozen at case creation. */
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[];
     /** The request's durable state, DERIVED at read time from the durable
      *  facts: `pending` while no decision fact and no abandon fact exists
      *  for the requestId, `decided` once a decision fact does (and no
@@ -1293,6 +1324,10 @@ export interface ControlDecisionRecord {
      * terminal mark lives on the row that terminates it.
      */
     readonly terminalReason?: ControlLegTerminalReason;
+    /** A6-PR2b: the normalized capability evidence, on the SAME decision row as
+     *  the real decider. Absent on native/legacy rows; malformed evidence is
+     *  omitted by the reader (the decision row itself is never dropped). */
+    readonly reviewCapability?: DecisionCapabilityEvidence;
     /** The exact scope snapshot the decision authorizes (allow) or refuses
      *  (deny/stale-denied) — frozen at decision time. */
     readonly scope: ControlOperationScope;
@@ -1615,6 +1650,105 @@ export interface ControlServiceOptions {
      * recheck port above; the lock law, point 6, included).
      */
     readonly paEffectsVerifier?: PaEffectsVerifier;
+    /**
+     * A6 closing round: when the PA manifest's authority is UNDETERMINED or the
+     * row is THIS-CLASS corrupt, an ALLOW attempt is a lifecycle failure, not an
+     * approval decision. With this flag the service writes the durable
+     * `control-request-abandoned` terminal mark (reason `invocation-abandoned`)
+     * and refuses, instead of recording a DENY with reason
+     * `authority-undetermined`. The human's requested Allow is therefore never
+     * rewritten into a persisted Deny. ABSENT/false keeps the historical
+     * durable-DENY behaviour for every non-A6 composition.
+     */
+    readonly a6AbandonUndeterminedAllow?: boolean;
+    /** A6 closing round: the mount RootSessionId stamped on every Control row
+     *  this service creates (`ownerRootSessionId`). Boot settlement only settles
+     *  rows owned by exactly this root; absent = rows are unowned and never
+     *  settled. Passed only by the A6 composition, so non-A6 row bytes and
+     *  behaviour are unchanged. */
+    readonly mountRootSessionId?: string;
+    /**
+     * A6-PR2c: the trusted CURRENT reviewer of a leg, used only to authorize an
+     * Officer handoff. ABSENT = no transfer authority exists in this composition
+     * (fail closed, never "any member may transfer"). The port must be a trusted
+     * runtime fact, not model input.
+     */
+    readonly currentReviewerForTransfer?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly instanceId: string;
+    } | null>;
+    /**
+     * A6-PR5 (review P0 fix, PoC): the TRUSTED world facts an assigned-Officer
+     * capability evaluation needs and whose only trusted source is the
+     * composition — the Blueprint `reviewRouting` policy currently in force and
+     * the leg's frozen category classification. The service supplies everything
+     * else (principal, case, leg, scope, operation owner/tool, durable
+     * generation/Blueprint identity, manifest effect set), so this port can
+     * never forge a case, a leg, a principal or a scope.
+     *
+     * It MUST be derived from the durable leg + the bound Blueprint, never from
+     * model/tool arguments. ABSENT = the delegated Officer entry is refused
+     * (fail closed; the assigned-Officer path never falls back to a locally
+     * minted candidate).
+     */
+    readonly reviewCallFactsForAssignedOfficer?: (input: AssignedOfficerReviewFactsQuery) => Promise<AssignedOfficerReviewFacts | null>;
+    /**
+     * A6-PR2c: non-authority review events for the wake/notification plane
+     * (Human successor visibility; current-leg transfer). A throwing sink must
+     * not roll back the durable fact — the caller decides delivery.
+     */
+    readonly reviewEvents?: (event: ControlReviewEvent) => void;
+    /**
+     * A6-PR2c — the TRUSTED runtime unavailable-takeover evidence port. It is the
+     * only entrance for `cause: 'officer-unavailable'`: the composition must have
+     * proven the Blueprint's explicit `whenOfficerUnavailable: leader` policy and
+     * the Officer's durable ARCHIVED/DISPOSED/missing-with-history state. ABSENT
+     * = the takeover does not exist in this composition (fail closed). The port
+     * grants only the routing transfer; it never approves a leg.
+     */
+    readonly trustedRuntimeTakeover?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly ok: true;
+    } | {
+        readonly ok: false;
+        readonly detail: string;
+    }>;
+}
+/**
+ * A6-PR5 (review P0 fix, PoC) — the query an assigned-Officer facts port
+ * receives. It names the durable leg only; it carries no authority claim.
+ */
+export interface AssignedOfficerReviewFactsQuery {
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    /** The durable carrier kind and rung (for the composition's own lookup). */
+    readonly kind: ControlRequestKind;
+    readonly reviewAuthority: ProposalAuthorityPosition;
+}
+/**
+ * A6-PR5 (review P0 fix, PoC) — the trusted WORLD facts for one assigned-Officer
+ * capability evaluation. Deliberately narrow: case identity, principal, scope,
+ * operation owner/tool, generation, Blueprint hash/revision and the manifest
+ * effect set are all derived by the service from the durable leg, so returning
+ * this overlay cannot widen authority beyond what the row already froze.
+ */
+export interface AssignedOfficerReviewFacts {
+    /** The Blueprint `reviewRouting` policy in force for this leg's Blueprint. */
+    readonly reviewRouting: import('../../domain/blueprint/src/index.js').ReviewRouting;
+    /** A fixed Leader management/governance or Human-only category (never delegable). */
+    readonly fixedLeaderOrHumanCategory: boolean;
+    /** The leg's legal authority path requires Human (never delegable). */
+    readonly requiresHuman: boolean;
 }
 /**
  * C1 (leader-approval reachability) — the non-authority notification port
@@ -1630,11 +1764,50 @@ export interface ControlRequestNotificationPort {
     notifyLeaderRequest(request: ControlRequestRecord): Promise<void>;
 }
 /**
+ * A6-PR5 (integration: A6 non-locking control reader) — the record
+ * projections of ONE team's durable control state. Both read routes
+ * (`listControlState` and `readControlState`) return EXACTLY this shape from
+ * the same internal projection helper, so the locking and non-locking reads
+ * cannot drift apart.
+ *
+ * This is a REPORT of what the append-only ledger holds. It grants nothing:
+ * no consumer may derive authority, consumability, or a gate verdict from a
+ * snapshot — the guarded mutations remain the only authority paths.
+ */
+/** A6 closing round — one durable, minimal execution-result fact. It records
+ *  only what the execution lifecycle observed (`succeeded` | `failed`), or
+ *  `unknown` when a consumed invocation died before any result was durable.
+ *  It NEVER authorizes, consumes, or replays anything; settlement only uses it
+ *  to avoid mislabelling a completed execution as abandoned. */
+export interface ControlExecutionResultRecord {
+    readonly requestId: string;
+    readonly callId: string;
+    readonly outcome: 'succeeded' | 'failed' | 'unknown';
+    readonly recordedAt: string;
+    readonly sequence: number;
+}
+export interface ControlStateSnapshot {
+    readonly requests: readonly ControlRequestRecord[];
+    readonly decisions: readonly ControlDecisionRecord[];
+    readonly consumptions: readonly ControlConsumptionRecord[];
+    /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
+     *  `control-request-abandoned` facts). */
+    readonly abandonments: readonly ControlAbandonmentRecord[];
+    /** A6 closing round: the durable minimal execution-result facts. */
+    readonly executionResults: readonly ControlExecutionResultRecord[];
+    /** The rows the strict request reader refused, in durable sequence order
+     *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
+     *  defaulted (ADR A2-9), and never a gate. */
+    readonly corruptLegs: readonly ControlCorruptLegRecord[];
+    /** A6-PR2c: durable current-leg transfer facts (routing only). */
+    readonly transfers: readonly CurrentLegTransferRecord[];
+}
+/**
  * The durable control plane service (P6-T4 acceptance object):
  * requestControl / resolveControl / abandonControlRequest (the pre-alpha3
- * PR-D inline abort path) / listControlState / guardOperation /
- * checkExternalOperation (the A2C-4 shared read-only external recheck) /
- * awaitControlDecision.
+ * PR-D inline abort path) / listControlState / readControlState /
+ * guardOperation / checkExternalOperation (the A2C-4 shared read-only
+ * external recheck) / awaitControlDecision.
  *
  * Invariant: the service NEVER executes tool operations — the decision
  * only authorizes; execution stays in the DSH tool pipeline (the guard is
@@ -1713,6 +1886,9 @@ export interface ControlService {
         readonly requestId: string;
         readonly decision: 'allow' | 'deny';
         readonly note?: string;
+        readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: the caller is a Member acting as the trusted CURRENT reviewer. The service verifies the reviewer port and builds the capability from the durable leg; never a caller-supplied widening. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlDecisionRecord>;
     /**
      * Durably ABANDON one control request (pre-alpha3 PR-D, D.4 — the
@@ -1755,6 +1931,22 @@ export interface ControlService {
         readonly reason?: string;
     }): Promise<ControlAbandonmentRecord>;
     /**
+     * A6 closing round — record ONE minimal execution result for a PA request,
+     * matched by its durable `callId` (and target instance when supplied).
+     * Writes `control-execution-result` exactly once per request; an unknown
+     * callId records nothing. The fact is lifecycle observation, never an
+     * approval, a consumption, or a replay authorization.
+     */
+    recordExecutionResult(args: {
+        readonly rootSessionId: string;
+        readonly callId: string;
+        readonly instanceId?: string;
+        readonly outcome: 'succeeded' | 'failed' | 'unknown';
+    }): Promise<{
+        readonly recorded: boolean;
+        readonly requestId?: string;
+    }>;
+    /**
      * Read the team's durable control state (fresh ledger read; the
      * in-process holds NO cached authority — invariant 45).
      *
@@ -1765,18 +1957,29 @@ export interface ControlService {
      * from an absent one.
      * @param rootSessionId - the team (root) session id.
      */
-    listControlState(rootSessionId: string): Promise<{
-        readonly requests: readonly ControlRequestRecord[];
-        readonly decisions: readonly ControlDecisionRecord[];
-        readonly consumptions: readonly ControlConsumptionRecord[];
-        /** The durable abandonments (pre-alpha3 PR-D, D.4; the additive
-         *  `control-request-abandoned` facts). */
-        readonly abandonments: readonly ControlAbandonmentRecord[];
-        /** The rows the strict request reader refused, in durable sequence order
-         *  (RULING 5-A; see {@link ControlCorruptLegRecord}). Reported, never
-         *  defaulted (ADR A2-9), and never a gate. */
-        readonly corruptLegs: readonly ControlCorruptLegRecord[];
-    }>;
+    listControlState(rootSessionId: string): Promise<ControlStateSnapshot>;
+    /**
+     * A6-PR5 (integration: A6 non-locking control reader) — read the team's
+     * durable control state WITHOUT taking the per-team lock, so a caller that
+     * already runs inside a control operation (a port evaluated while
+     * `withTeamLock` is held) can read the durable rows without deadlocking on
+     * the non-re-entrant chain.
+     *
+     * Semantics are deliberately identical to {@link listControlState} MINUS the
+     * lock: the same root/TeamSession validation, the same fresh append-only
+     * ledger read, and the same record projections (one shared internal
+     * projection helper — the two routes cannot drift).
+     *
+     * This is a READ-ONLY SNAPSHOT WITH NO AUTHORITY. It is a point-in-time
+     * report that does not serialize against concurrent writers: a row may be
+     * absent at read time and appear a moment later, or a just-appended row may
+     * or may not be visible. Consumers may use it for routing/liveness facts
+     * (e.g. "which leg is this, is it transferred"), NEVER to decide that an
+     * operation is authorized or that an allow is consumable — those decisions
+     * stay in the guarded mutation paths that hold the lock and re-verify.
+     * @param rootSessionId - the team (root) session id.
+     */
+    readControlState(rootSessionId: string): Promise<ControlStateSnapshot>;
     /**
      * The TOOL PIPELINE LAST-MILE GUARD (the public seam P6-T6 wires into
      * the tool registration BEFORE the DSH tool pipeline executes the
@@ -1847,6 +2050,16 @@ export interface ControlService {
     awaitControlDecision(input: {
         readonly rootSessionId: string;
         readonly requestId: string;
+        readonly signal?: ControlWaitSignal;
+    }): Promise<ControlDecisionRecord>;
+    /**
+     * A6-PR2b — wait for the FINAL decision of one approval case, following
+     * its escalation chain. Intermediate `deny`/`escalated` legs are not the
+     * original operation's final answer. Reuses the existing wait bridge.
+     */
+    awaitApprovalCaseDecision(input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
         readonly signal?: ControlWaitSignal;
     }): Promise<ControlDecisionRecord>;
     /**
@@ -1991,6 +2204,17 @@ export interface ControlService {
         readonly capabilityDomain?: CapabilityName;
         readonly summary?: string;
         readonly executionCoupling?: ControlExecutionCoupling;
+        readonly reviewPayload?: RemoteSafeJsonValue;
+        readonly reviewPayloadDigest?: string;
+        readonly paApprovalCaseId?: string;
+        readonly operationOwnerTemplateId?: string;
+        readonly operationToolDefinitionIdentity?: string;
+        readonly operationToolOwner?: string;
+        readonly operationToolName?: string;
+        readonly authorityGeneration?: number;
+        readonly blueprintContentHash?: string;
+        readonly blueprintRevision?: string;
+        readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[];
     }): Promise<ControlRequestLegOutcome>;
     /**
      * Alpha.4 A4-PR3 — escalate one leg (spec 11.4, ADR A1-10, A3-3, A3-12,
@@ -2028,7 +2252,28 @@ export interface ControlService {
         readonly caller: ActionCaller;
         readonly requestId: string;
         readonly reason?: string;
+        readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: same trusted-current-reviewer check as resolveControl. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlEscalationOutcome>;
+    /**
+     * A6-PR2c — transfer the CURRENT leg of a case to the Leader (Officer
+     * handoff). This is a durable routing fact only: it grants no approval
+     * capability, never mints/consumes a Grant, and never rewrites an already
+     * signed decision. The caller must be the trusted current reviewer supplied
+     * by the configured reviewer port; when no port is configured the transfer
+     * is refused. Repeating the same transfer is idempotent.
+     */
+    transferCurrentLeg(input: TransferCurrentLegInput): Promise<CurrentLegTransferRecord>;
+    /**
+     * A6-PR5 — the Officer's restricted view: only the open cases whose CURRENT
+     * leg the trusted reviewer port assigns to this instance. No full-team list,
+     * no legacy rows, no management surface. Read-only.
+     */
+    listMyReviewTasks(input: {
+        readonly rootSessionId: string;
+        readonly caller: ActionCaller;
+    }): Promise<readonly ReviewTaskSummary[]>;
     /**
      * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
      * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
@@ -2176,4 +2421,70 @@ export interface ControlService {
         readonly kind?: ControlRequestKind;
     }): Promise<ApprovalCaseIdentityLookup>;
 }
+/** The closed transfer causes. Runtime takeover is added with its trusted
+ *  evidence path; a Busy officer never transfers. */
+export declare const CURRENT_LEG_TRANSFER_CAUSES: {
+    readonly OFFICER_HANDOFF: "officer-handoff";
+    readonly OFFICER_UNAVAILABLE: "officer-unavailable";
+};
+export type CurrentLegTransferCause = (typeof CURRENT_LEG_TRANSFER_CAUSES)[keyof typeof CURRENT_LEG_TRANSFER_CAUSES];
+/** The actor of a transfer. Never a reviewer/decider and never a capability. */
+export type CurrentLegTransferActor = {
+    readonly kind: 'officer';
+    readonly instanceId: string;
+} | {
+    readonly kind: 'trusted-team-runtime';
+};
+/** The two legal entrances to the SAME minimal transfer fact. */
+export type TransferCurrentLegInput = {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF;
+    readonly caller: ActionCaller;
+    readonly reason?: string;
+} | {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE;
+    readonly actor: 'trusted-team-runtime';
+    readonly reason?: string;
+};
+/** The durable current-leg transfer fact (one minimal fact, not an Assignment ledger). */
+export interface CurrentLegTransferRecord {
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly target: 'leader';
+    readonly cause: CurrentLegTransferCause;
+    readonly actor: CurrentLegTransferActor;
+    readonly blueprintContentHash?: string;
+    readonly blueprintRevision?: string;
+    readonly transferredAt: string;
+}
+/** Non-authority projection event for the wake/notification plane. */
+export interface ReviewTaskSummary {
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly reviewAuthority: ProposalAuthorityPosition;
+    readonly kind: ControlRequestKind;
+    readonly subject: ControlSubject;
+    readonly actionName: string;
+    readonly toolName?: string;
+    readonly requestSequence: number;
+}
+export type ControlReviewEvent = {
+    readonly kind: 'current-leg-transferred';
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+    readonly transfer: CurrentLegTransferRecord;
+} | {
+    readonly kind: 'human-current-leg';
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    readonly legOrdinal: number;
+};
 //# sourceMappingURL=types.d.ts.map

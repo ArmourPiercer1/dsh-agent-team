@@ -1,0 +1,85 @@
+{
+  "timeoutMs": 5000,
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0spa2y11wf5niq0dtyrzz1lv",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-1lrzm631eyy3",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-06T06-27-35:inst-1lrzm631eyy3:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1lrzm631eyy3-bash:hexec:5b6cbbb8-f062-4fd3-a13d-62885e4c44e0-1",
+    "approvalCaseId": "case-00alutb1ow6zt81pr37uh0qw",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-06T06:27:49.815Z"
+  },
+  "paDecision": null,
+  "paConsumption": null,
+  "executed": false,
+  "late": {
+    "type": "server-response",
+    "rpcId": "c1a6timeout-382p61ffnw",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "decision": {
+            "requestId": "ctrl-0spa2y11wf5niq0dtyrzz1lv",
+            "decision": "deny",
+            "decider": {
+              "kind": "human",
+              "humanId": "session-c1-smoke-a6-2026-11-06T06-27-35"
+            },
+            "scope": {
+              "rootSessionId": "session-c1-smoke-a6-2026-11-06T06-27-35",
+              "subject": {
+                "kind": "instance",
+                "instanceId": "inst-1lrzm631eyy3"
+              },
+              "targetInstanceId": "inst-1lrzm631eyy3",
+              "actionName": "team-tool-execute",
+              "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-06T06-27-35:inst-1lrzm631eyy3:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1lrzm631eyy3-bash:hexec:5b6cbbb8-f062-4fd3-a13d-62885e4c44e0-1",
+              "toolName": "bash",
+              "operationFingerprint": "sha256:264f8ecc12e64b46416f0683b604c11a7e22fac3f3793303878b7a439041c80b",
+              "authorityScope": {
+                "operationClass": "tool-invoke",
+                "matcher": {
+                  "kind": "exact",
+                  "resource": "c1-plane-realm-2026-11-06T06-27-35|tool:bash"
+                }
+              }
+            },
+            "requestSequence": 10,
+            "decisionSequence": 13,
+            "createdAt": "2026-11-06T06:28:01.135Z",
+            "reason": "authority-undetermined"
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "lateDecision": {
+    "sequence": 13,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-0spa2y11wf5niq0dtyrzz1lv",
+    "decision": "deny",
+    "decider": {
+      "humanId": "session-c1-smoke-a6-2026-11-06T06-27-35",
+      "kind": "human"
+    },
+    "reason": "authority-undetermined",
+    "createdAt": "2026-11-06T06:28:01.126Z"
+  },
+  "lateConsumption": null,
+  "lateFile": false
+}

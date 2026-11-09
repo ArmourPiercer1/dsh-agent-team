@@ -1,0 +1,26 @@
+[2026-11-05T14:57:47.721Z] c1 real-host smoke — stamp 2026-11-05T14-57-47
+[2026-11-05T14:57:47.722Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-05T14:57:47.722Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-05T14:57:47.722Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-recipients-r12
+[2026-11-05T14:57:49.258Z] ports: host=3626 mock=3627
+[2026-11-05T14:57:54.520Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-05T14:57:54.521Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-05T14:57:54.527Z] mock model listening on 3627
+[2026-11-05T15:01:54.682Z] host booted at http://127.0.0.1:3626; row ready — toolCount=15
+[2026-11-05T15:01:54.682Z] ── L0: discovery ──
+[2026-11-05T15:01:55.107Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-05T15:01:55.107Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-05T15:01:55.108Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-05T15:01:55.108Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-05T15:01:58.359Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-60hn00cp4r","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-05T14-57-47","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:89425e6ed3651c6ec864002c8c0482f4a35334899028204589983c57c537439d"},"createdAt":"2026-11-05T15:01:55.170Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-05T15:02:01.967Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-05T15:02:01.968Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 requests=16
+[2026-11-05T15:02:01.968Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-05T15:02:01.968Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-05T14-57-47/workspace/c1-a6-allow-2026-11-05T14-57-47.txt text="c1-a6-allow-2026-11-05T14-57-47\n"
+[2026-11-05T15:02:01.968Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0
+[2026-11-05T15:02:01.968Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=
+[2026-11-05T15:02:01.968Z] ── A6-SELF: Officer self-ask -> Leader wake -> allow -> execute ──
+[2026-11-05T15:02:09.188Z] PASS A6-7: Officer self-ask is routed to the Leader, not back to the Officer — prompt=200 notif=7 selfReq=ctrl-0bbjrfh1020blq121xzoz1uh leaderDecided=true executed=true
+[2026-11-05T15:02:09.189Z] ── A6-HANDOFF: Officer hands the PA leg to the Leader -> allow -> execute ──
+[2026-11-05T15:07:11.306Z] mock wait timed out: handoff call done after Leader allow + plane execute (requests=35)
+[2026-11-05T15:07:11.308Z] FAIL A6-8: Officer handoff made the Leader the successor recipient and the call executed once — requestId=ctrl-1ww7pw714asytc0ouvpbt1az transfer=null decision=null executed=false

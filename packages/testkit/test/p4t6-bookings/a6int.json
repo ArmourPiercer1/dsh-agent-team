@@ -1,0 +1,25 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6INT",
+  "paths": [
+    "packages/domain/blueprint/src/blueprint-v5.ts",
+    "packages/domain/test/a6-pr1-review-routing-grammar.test.ts",
+    "packages/runtime/review-authority/evaluator.ts",
+    "packages/runtime/review-authority/index.ts",
+    "packages/runtime/review-authority/types.ts",
+    "packages/runtime/review-router/index.ts",
+    "packages/runtime/review-router/policy.ts",
+    "packages/runtime/review-router/router.ts",
+    "packages/runtime/review-router/types.ts",
+    "packages/runtime/test/a6-pr1-lane-hygiene.test.ts",
+    "packages/runtime/test/a6-pr1-review-router.test.ts",
+    "packages/runtime/test/a6-pr2a-lane-hygiene.test.ts",
+    "packages/runtime/test/a6-pr2a-review-capability.test.ts",
+    "packages/runtime/test/a6-pr2b-review-chain.test.ts",
+    "packages/runtime/test/a6-pr2c-transfer.test.ts",
+    "packages/runtime/test/a6-pr5-officer-access.test.ts"
+  ],
+  "expectedDelta": { "from": 1409, "to": 1425 },
+  "reason": "Alpha.6 integration branch: PR1 v5 grammar + router, PR2a capability evaluator, PR2b/c/5 chain tests. Dist mirrors are outside the scan; every other edit rides an already-counted file.",
+  "tieNote": "MEASURED on this merged tree: the unbooked coverage leg read `expected 1409 to be 1425`; exactly these sixteen source/test paths."
+}

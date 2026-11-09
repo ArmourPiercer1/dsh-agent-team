@@ -184,6 +184,11 @@ function createRowExecutionState(assembly) {
                 decide: assembly.decide,
                 ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
                 backend,
+                // A6 exec-result observation rides the DEPS, never the request: the
+                // pipeline reads `deps.onExecutionResult` (pipeline.ts:186). Placing
+                // it in the request literal (the pre-fix shape) was dead data that a
+                // spread kept invisible to TypeScript.
+                ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
                 ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
             });
         }

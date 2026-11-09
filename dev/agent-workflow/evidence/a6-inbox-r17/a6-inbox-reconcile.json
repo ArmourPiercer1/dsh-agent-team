@@ -1,0 +1,60 @@
+{
+  "busySeen": false,
+  "requestsAtRestart": 12,
+  "wakeTraceBefore": [
+    {
+      "index": 11,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+      "messageCount": 1
+    }
+  ],
+  "wakeTraceAfter": [
+    {
+      "index": 11,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+      "messageCount": 1,
+      "lastRole": "user"
+    },
+    {
+      "index": 12,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+      "messageCount": 1,
+      "lastRole": "user"
+    },
+    {
+      "index": 13,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+      "messageCount": 3,
+      "lastRole": "user"
+    },
+    {
+      "index": 14,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+      "messageCount": 5,
+      "lastRole": "user"
+    }
+  ],
+  "wakesBefore": 1,
+  "wakesAfterRestart": 2,
+  "wakesAfterDrain": 2,
+  "intentBefore": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-07T11-14-15",
+      "reviewerInstanceId": "inst-0p5jl69165lb",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-07T11-14-15:inst-0p5jl69165lb:1:a6wake%3Av1%3A1%3A484ff9ac",
+    "workFingerprint": "a6wake:v1:1:484ff9ac",
+    "ownerRootSessionId": "session-c1-smoke-root-2026-11-07T11-14-15",
+    "status": "accepted"
+  },
+  "rowsAfterRestart": [
+    "wake-638960b7.json"
+  ],
+  "rowsAfterDrain": [],
+  "pendingBefore": [
+    "ctrl-0hsqyna0bhagi911eq8q81ry"
+  ],
+  "restartError": null,
+  "mockRequests": 15
+}

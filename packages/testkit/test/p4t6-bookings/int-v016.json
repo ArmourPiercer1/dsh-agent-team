@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "INT_V016",
+  "paths": [
+    "packages/runtime/src/plugin/live/input-provenance.mjs",
+    "packages/runtime/src/plugin/live/input-provenance.d.mts",
+    "packages/runtime/test/a56-input-provenance.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1499,
+    "to": 1502
+  },
+  "reason": "The joint Alpha.5+Alpha.6 close-out (PR #692, merged as 0f1106ae0) introduced the Team-owned input-provenance law that the Sticky Stop resume arbour consults: the arbiter module, its adjacent tsc type surface (the plane-effect-backends.d.mts / persona-probe.d.mts pattern), and its law suite. It reached master without a p4t6 booking because the semantics lane measured on a branch whose base predated the booking directory's current total, so the coverage leg read `expected 1499 to be 1502` on every candidate head until this row. Zero denylist vocabulary; the three paths are the whole delta.",
+  "tieNote": "MEASURED on the candidate head before this booking: `AssertionError: expected 1499 to be 1502` from packages/testkit/test/p4t6-session-event-scan.test.ts:1853, reproduced identically on c66fa8b03 and on the head carrying the review fixes, so the gap is the A6 merge, not a later edit. After booking: scanner counts 1502, ledger derives 983 + 519 = 1502."
+}

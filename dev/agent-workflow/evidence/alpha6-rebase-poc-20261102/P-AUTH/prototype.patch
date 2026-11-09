@@ -1,0 +1,22 @@
+diff --git a/packages/runtime/control/service.ts b/packages/runtime/control/service.ts
+index 03e99b3ca..ec17d1ffb 100644
+--- a/packages/runtime/control/service.ts
++++ b/packages/runtime/control/service.ts
+@@ -2620,7 +2620,16 @@ export function createControlService(options: ControlServiceOptions): ControlSer
+       // never a resolver, even with the resolve-control op; the
+       // user-approval kind admits only the human).
+       const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]
+-      if (!allowedRoles.includes(caller.role)) {
++      // A6 P-AUTH THROWAWAY PROTOTYPE (not a proposal, never merged): one
++      // case-scoped predicate at the SAME role-closure gate. The designated
++      // principal is hardcoded so the probe can run without inventing a
++      // configuration seam; the production seam would resolve it from the
++      // frozen Blueprint + current leg.
++      const caseScopedOfficer =
++        request.payload.kind === 'leader-approval' &&
++        caller.role === 'member' &&
++        caller.callerMember?.instanceId === 'inst-p6t4seedw02'
++      if (!allowedRoles.includes(caller.role) && !caseScopedOfficer) {
+         throw new ControlError(
+           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+           `ControlService: role '${caller.role}' is not a resolver for kind '${request.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,

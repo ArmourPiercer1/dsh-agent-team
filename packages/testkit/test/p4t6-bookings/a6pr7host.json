@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6PR7HOST",
+  "paths": ["packages/runtime/test/a6-pr7-merged-wake-host.test.ts"],
+  "expectedDelta": { "from": 1431, "to": 1432 },
+  "reason": "A6-PR7 real-Host merged-wake acceptance leg: plan -> dispatcher -> delivery seam -> inbox. No denylist vocabulary.",
+  "tieNote": "MEASURED on this tree; exactly this one path."
+}

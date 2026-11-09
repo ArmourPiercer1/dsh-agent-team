@@ -1,0 +1,21 @@
+[2026-11-07T10:34:29.192Z] c1 real-host smoke — stamp 2026-11-07T10-34-29
+[2026-11-07T10:34:29.193Z] worktree=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int
+[2026-11-07T10:34:29.193Z] testuse=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-07T10:34:29.193Z] evidence=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a6-normal-r9
+[2026-11-07T10:34:30.725Z] ports: host=3844 mock=3845
+[2026-11-07T10:34:35.735Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-07T10:34:35.736Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-07T10:34:35.743Z] mock model listening on 3845
+[2026-11-07T10:34:38.329Z] host booted at http://127.0.0.1:3844; row ready — toolCount=15
+[2026-11-07T10:34:38.329Z] ── L0: discovery ──
+[2026-11-07T10:34:38.751Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-07T10:34:38.752Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-07T10:34:38.752Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-07T10:34:38.753Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-07T10:34:42.007Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-d9bondsyad","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-07T10-34-29","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:12df5e31b7fc084ab6179c33f32e33a4cd36912bc7148e3a71af95e42f1de42e"},"createdAt":"2026-11-07T10:34:38.789Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team-lan
+[2026-11-07T10:34:46.017Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-07T10:34:46.017Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 notifications=0 requests=14
+[2026-11-07T10:34:46.017Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-07T10:34:46.017Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/c1-smoke-2026-11-07T10-34-29/workspace/c1-a6-allow-2026-11-07T10-34-29.txt text="c1-a6-allow-2026-11-07T10-34-29\n"
+[2026-11-07T10:34:46.017Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0 notifications=0
+[2026-11-07T10:34:46.017Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=

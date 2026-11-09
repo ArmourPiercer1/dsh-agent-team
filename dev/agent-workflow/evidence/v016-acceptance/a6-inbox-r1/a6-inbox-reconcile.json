@@ -1,0 +1,60 @@
+{
+  "busySeen": false,
+  "requestsAtRestart": 14,
+  "wakeTraceBefore": [
+    {
+      "index": 13,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+      "messageCount": 1
+    }
+  ],
+  "wakeTraceAfter": [
+    {
+      "index": 13,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+      "messageCount": 1,
+      "lastRole": "user"
+    },
+    {
+      "index": 14,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+      "messageCount": 1,
+      "lastRole": "user"
+    },
+    {
+      "index": 15,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+      "messageCount": 3,
+      "lastRole": "user"
+    },
+    {
+      "index": 16,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+      "messageCount": 5,
+      "lastRole": "user"
+    }
+  ],
+  "wakesBefore": 1,
+  "wakesAfterRestart": 2,
+  "wakesAfterDrain": 2,
+  "intentBefore": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-09T19-39-30",
+      "reviewerInstanceId": "inst-04x4zvx0myda",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec",
+    "workFingerprint": "a6wake:v1:1:204222ec",
+    "ownerRootSessionId": "session-c1-smoke-root-2026-11-09T19-39-30",
+    "status": "accepted"
+  },
+  "rowsAfterRestart": [
+    "wake-733167de.json"
+  ],
+  "rowsAfterDrain": [],
+  "pendingBefore": [
+    "ctrl-1kijseg1lij8mz0ycex9i1pc"
+  ],
+  "restartError": null,
+  "mockRequests": 17
+}

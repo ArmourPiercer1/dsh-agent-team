@@ -218,6 +218,18 @@ import {
   CONTROL_ERROR_CODES,
   ControlError,
 } from './errors.js'
+import {
+  REVIEW_CAPABILITY_ENTRIES,
+  ReviewCapabilityCandidate,
+  decisionCapabilityEvidenceFrom,
+  evaluateReviewCapability,
+} from '../review-authority/index.js'
+import type {
+  DecisionCapabilityEvidence,
+  ReviewCallFacts,
+  ReviewCapabilityEntry,
+  ReviewerMember,
+} from '../review-authority/index.js'
 import type { ControlErrorCode } from './errors.js'
 import {
   PERMISSION_OVERLAY_EFFECT_VALUES,
@@ -241,6 +253,7 @@ import {
   CONTROL_GUARD_BLOCK_REASONS,
   CONTROL_REQUEST_KINDS,
   CONTROL_REQUEST_KIND_VALUES,
+  CURRENT_LEG_TRANSFER_CAUSES,
   CONTROL_RESOLVER_ROLES,
   CONTROL_SUBJECT_KINDS,
   controlEscalationSuccessor,
@@ -268,6 +281,11 @@ import type {
   ControlConsumptionRecord,
   ControlCorruptLegRecord,
   ControlDecisionRecord,
+  ControlReviewEvent,
+  CurrentLegTransferCause,
+  CurrentLegTransferRecord,
+  ReviewTaskSummary,
+  TransferCurrentLegInput,
   ControlDecisionReason,
   ControlEscalationOutcome,
   ControlEscalationRecord,
@@ -283,6 +301,7 @@ import type {
   ControlRequestRecord,
   ControlService,
   ControlServiceOptions,
+  ControlStateSnapshot,
   ControlSubject,
   ControlWaitSignal,
   PaControlManifest,
@@ -301,10 +320,14 @@ const FACT_CONSUMPTION = 'control-allow-consumed'
 /** The durable abandon fact family (pre-alpha3 PR-D, D.4 — the additive
  *  close of an inline-coupling request on abort; the terminal mark). */
 const FACT_ABANDONMENT = 'control-request-abandoned'
+const FACT_EXECUTION_RESULT = 'control-execution-result'
 /** The Alpha.4 approval-case leg fact (ADR A3-12(ii): a LEG fact, not a
  *  decision — `escalate` never enters the decision vocabulary, and the row
  *  says who moved WHICH leg of WHICH case where). */
 const FACT_ESCALATION = 'control-escalation-recorded'
+/** A6-PR2c: the durable current-leg transfer fact (routing only; never an
+ *  approval capability and never a second Assignment ledger). */
+const FACT_TRANSFER = 'control-current-leg-transferred'
 
 /** The reused closed specs of the facade action registry (module
  *  invariant: the closed registry always carries both). */
@@ -338,6 +361,10 @@ const DEFAULT_WAIT_POLL_INTERVAL_MS = 250
  *  `abort → durable abandon/close → zero effect`). */
 const WAIT_ABORT_ABANDON_REASON = 'wait-aborted'
 
+/** A6 closing constraint 1: the lifecycle reason an undetermined late ALLOW
+ *  records instead of a durable DENY (see `a6AbandonUndeterminedAllow`). */
+const A6_UNDETERMINED_ABANDON_REASON = 'invocation-abandoned'
+
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -353,6 +380,7 @@ const platformTimers = globalThis as unknown as {
 /** The `control-request-recorded` payload. */
 interface RequestPayload {
   readonly requestId: string
+  readonly ownerRootSessionId?: string
   readonly kind: ControlRequestKind
   readonly requester: ControlCallerRef
   /** The CANONICAL subject (pre-alpha3 PR-D, D.2): the parser ALWAYS
@@ -404,6 +432,15 @@ interface RequestPayload {
    * the human actually approved.
    */
   readonly authorityScope?: ControlAuthorityScope
+  readonly paApprovalCaseId?: string
+  readonly operationOwnerTemplateId?: string
+  readonly operationToolDefinitionIdentity?: string
+  readonly operationToolOwner?: string
+  readonly operationToolName?: string
+  readonly authorityGeneration?: number
+  readonly blueprintContentHash?: string
+  readonly blueprintRevision?: string
+  readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
 }
 
 /** The `control-decision-recorded` payload. */
@@ -417,6 +454,7 @@ interface DecisionPayload {
    *  choose (a drift close, or a close because no resolver exists). It never
    *  changes the VALUE — a terminal close is a `deny` — it says why. */
   readonly terminalReason?: ControlLegTerminalReason
+  readonly reviewCapability?: DecisionCapabilityEvidence
   readonly scope: ControlOperationScope
   readonly requestSequence: number
 }
@@ -438,6 +476,13 @@ interface AbandonmentPayload {
   readonly reason?: string
 }
 
+interface ExecutionResultPayload {
+  readonly requestId: string
+  readonly callId: string
+  readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  readonly recordedAt: string
+}
+
 /** One ledger entry plus its (validated) payload. */
 /**
  * The `control-escalation-recorded` payload: the FROZEN five members of ADR
@@ -451,6 +496,20 @@ interface EscalationPayload {
   readonly previousRequestId: string
   readonly escalatedBy: ControlCallerRef
   readonly reason?: string
+}
+
+interface CurrentLegTransferPayload {
+  readonly approvalCaseId: string
+  readonly currentLegRequestId: string
+  readonly legOrdinal: number
+  readonly target: 'leader'
+  readonly cause: CurrentLegTransferCause
+  readonly actor:
+    | { readonly kind: 'officer'; readonly instanceId: string }
+    | { readonly kind: 'trusted-team-runtime' }
+  readonly blueprintContentHash?: string
+  readonly blueprintRevision?: string
+  readonly transferredAt: string
 }
 
 interface StoredFact<Payload> {
@@ -505,6 +564,8 @@ interface ControlState {
   readonly consumptions: readonly StoredFact<ConsumptionPayload>[]
   readonly abandonments: readonly StoredFact<AbandonmentPayload>[]
   readonly escalations: readonly StoredFact<EscalationPayload>[]
+  readonly transfers: readonly StoredFact<CurrentLegTransferPayload>[]
+  readonly executionResults: readonly StoredFact<ExecutionResultPayload>[]
 }
 
 // --- pure helpers ---------------------------------------------------------------------
@@ -712,6 +773,8 @@ function parseScope(value: unknown): ControlOperationScope | undefined {
 function parseRequestPayload(value: unknown): RequestPayload | undefined {
   if (!isPlainObject(value)) return undefined
   const requestId = value['requestId']
+  const ownerRootSessionId = value['ownerRootSessionId']
+  if (ownerRootSessionId !== undefined && (typeof ownerRootSessionId !== 'string' || ownerRootSessionId.length === 0)) return undefined
   const kind = value['kind']
   const targetInstanceId = value['targetInstanceId']
   const actionName = value['actionName']
@@ -829,6 +892,46 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   ) {
     return undefined
   }
+  const paApprovalCaseId = value['paApprovalCaseId']
+  if (paApprovalCaseId !== undefined && (typeof paApprovalCaseId !== 'string' || paApprovalCaseId.length === 0)) {
+    return undefined
+  }
+  const operationOwnerTemplateId = value['operationOwnerTemplateId']
+  if (operationOwnerTemplateId !== undefined && (typeof operationOwnerTemplateId !== 'string' || operationOwnerTemplateId.length === 0)) {
+    return undefined
+  }
+  const operationToolDefinitionIdentity = value['operationToolDefinitionIdentity']
+  if (operationToolDefinitionIdentity !== undefined && (typeof operationToolDefinitionIdentity !== 'string' || operationToolDefinitionIdentity.length === 0)) {
+    return undefined
+  }
+  const operationToolOwner = value['operationToolOwner']
+  if (operationToolOwner !== undefined && (typeof operationToolOwner !== 'string' || operationToolOwner.length === 0)) {
+    return undefined
+  }
+  const operationToolName = value['operationToolName']
+  if (operationToolName !== undefined && (typeof operationToolName !== 'string' || operationToolName.length === 0)) {
+    return undefined
+  }
+  const authorityGeneration = value['authorityGeneration']
+  if (authorityGeneration !== undefined && (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0)) {
+    return undefined
+  }
+  const blueprintContentHash = value['blueprintContentHash']
+  if (blueprintContentHash !== undefined && (typeof blueprintContentHash !== 'string' || blueprintContentHash.length === 0)) {
+    return undefined
+  }
+  const blueprintRevision = value['blueprintRevision']
+  if (blueprintRevision !== undefined && (typeof blueprintRevision !== 'string' || blueprintRevision.length === 0)) {
+    return undefined
+  }
+  const perEffectRequiredAuthorities = value['perEffectRequiredAuthorities']
+  if (
+    perEffectRequiredAuthorities !== undefined &&
+    (!Array.isArray(perEffectRequiredAuthorities) ||
+      !perEffectRequiredAuthorities.every((authority) => isProposalAuthorityPosition(authority)))
+  ) {
+    return undefined
+  }
   // A4-PR7 Task 7.0 (ADR A1-14): the persisted authority point. A
   // present-but-malformed one fails the row (it is an authority-bearing field;
   // half-reading it would let the ceiling be re-run over a point the row did
@@ -854,6 +957,7 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   }
   return {
     requestId,
+    ...(ownerRootSessionId !== undefined ? { ownerRootSessionId } : {}),
     kind: kind as ControlRequestKind,
     requester,
     subject,
@@ -892,6 +996,17 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
     ...(previousRequestId !== undefined ? { previousRequestId } : {}),
     ...(mutationProposalFingerprint !== undefined ? { mutationProposalFingerprint } : {}),
     ...(authorityScope !== undefined ? { authorityScope } : {}),
+    ...(paApprovalCaseId !== undefined ? { paApprovalCaseId } : {}),
+    ...(operationOwnerTemplateId !== undefined ? { operationOwnerTemplateId } : {}),
+    ...(operationToolDefinitionIdentity !== undefined ? { operationToolDefinitionIdentity } : {}),
+    ...(operationToolOwner !== undefined ? { operationToolOwner } : {}),
+    ...(operationToolName !== undefined ? { operationToolName } : {}),
+    ...(authorityGeneration !== undefined ? { authorityGeneration } : {}),
+    ...(blueprintContentHash !== undefined ? { blueprintContentHash } : {}),
+    ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
+    ...(perEffectRequiredAuthorities !== undefined
+      ? { perEffectRequiredAuthorities: perEffectRequiredAuthorities as readonly ProposalAuthorityPosition[] }
+      : {}),
   }
 }
 
@@ -937,6 +1052,63 @@ function parseAbandonmentPayload(value: unknown): AbandonmentPayload | undefined
   }
 }
 
+function parseExecutionResultPayload(value: unknown): ExecutionResultPayload | undefined {
+  if (!isPlainObject(value)) return undefined
+  const requestId = value['requestId']
+  const callId = value['callId']
+  const outcome = value['outcome']
+  const recordedAt = value['recordedAt']
+  if (typeof requestId !== 'string' || requestId.length === 0) return undefined
+  if (typeof callId !== 'string' || callId.length === 0) return undefined
+  if (outcome !== 'succeeded' && outcome !== 'failed' && outcome !== 'unknown') return undefined
+  if (typeof recordedAt !== 'string' || recordedAt.length === 0) return undefined
+  return { requestId, callId, outcome, recordedAt }
+}
+
+/** Parse A6 capability evidence; malformed / unknown values are OMITTED. */
+function parseReviewCapabilityEvidence(value: unknown): DecisionCapabilityEvidence | undefined {
+  if (!isPlainObject(value)) return undefined
+  const source = value['source']
+  const entry = value['entry']
+  const effective = value['effectiveReviewAuthority']
+  const approvalCaseId = value['approvalCaseId']
+  const currentLegRequestId = value['currentLegRequestId']
+  const legOrdinal = value['legOrdinal']
+  const scopeFingerprint = value['scopeFingerprint']
+  const blueprintContentHash = value['blueprintContentHash']
+  const blueprintRevision = value['blueprintRevision']
+  const authorityGeneration = value['authorityGeneration']
+  const operationOwnerInstanceId = value['operationOwnerInstanceId']
+  const operationOwnerTemplateId = value['operationOwnerTemplateId']
+  const operationToolDefinitionIdentity = value['operationToolDefinitionIdentity']
+  if (source !== 'native' && source !== 'blueprint-officer') return undefined
+  if (!REVIEW_CAPABILITY_ENTRIES.includes(entry as never)) return undefined
+  if (!isProposalAuthorityPosition(effective)) return undefined
+  for (const candidate of [approvalCaseId, currentLegRequestId, scopeFingerprint, blueprintContentHash, blueprintRevision, operationOwnerInstanceId, operationOwnerTemplateId, operationToolDefinitionIdentity]) {
+    if (typeof candidate !== 'string' || candidate.length === 0) return undefined
+  }
+  if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) return undefined
+  if (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0) return undefined
+  const effectSetFingerprint = value['effectSetFingerprint']
+  if (effectSetFingerprint !== undefined && (typeof effectSetFingerprint !== 'string' || effectSetFingerprint.length === 0)) return undefined
+  return {
+    source,
+    entry: entry as never,
+    effectiveReviewAuthority: effective,
+    approvalCaseId,
+    currentLegRequestId,
+    legOrdinal,
+    scopeFingerprint,
+    ...(effectSetFingerprint === undefined ? {} : { effectSetFingerprint }),
+    blueprintContentHash,
+    blueprintRevision,
+    authorityGeneration,
+    operationOwnerInstanceId,
+    operationOwnerTemplateId,
+    operationToolDefinitionIdentity,
+  } as DecisionCapabilityEvidence
+}
+
 /** Parse a decision payload (malformed rows are treated as ABSENT). */
 function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   if (!isPlainObject(value)) return undefined
@@ -971,6 +1143,10 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   ) {
     return undefined
   }
+  // A6-PR2b: evidence is OPTIONAL and non-authoritative on its own. A malformed
+  // evidence blob is OMITTED — the decision row (the durable authority) stays;
+  // PA/Grant/Guard later fail closed with authority-undetermined if they need it.
+  const reviewCapability = parseReviewCapabilityEvidence(value['reviewCapability'])
   return {
     requestId,
     decision: decision as ControlDecisionValue,
@@ -982,6 +1158,7 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
     ...(terminalReason !== undefined
       ? { terminalReason: terminalReason as ControlLegTerminalReason }
       : {}),
+    ...(reviewCapability !== undefined ? { reviewCapability } : {}),
   }
 }
 
@@ -1027,6 +1204,48 @@ function parseEscalationPayload(value: unknown): EscalationPayload | undefined {
     previousRequestId,
     escalatedBy,
     ...(reason !== undefined ? { reason } : {}),
+  }
+}
+
+function parseCurrentLegTransferPayload(value: unknown): CurrentLegTransferPayload | undefined {
+  if (!isPlainObject(value)) return undefined
+  const approvalCaseId = value['approvalCaseId']
+  const currentLegRequestId = value['currentLegRequestId']
+  const legOrdinal = value['legOrdinal']
+  const target = value['target']
+  const cause = value['cause']
+  const actor = value['actor']
+  const transferredAt = value['transferredAt']
+  const blueprintContentHash = value['blueprintContentHash']
+  const blueprintRevision = value['blueprintRevision']
+  if (typeof approvalCaseId !== 'string' || approvalCaseId.length === 0) return undefined
+  if (typeof currentLegRequestId !== 'string' || currentLegRequestId.length === 0) return undefined
+  if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) return undefined
+  if (target !== 'leader') return undefined
+  if (cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF
+    && cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE) return undefined
+  let normalizedActor: CurrentLegTransferPayload['actor']
+  if (cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+    if (!isPlainObject(actor) || actor['kind'] !== 'officer') return undefined
+    if (typeof actor['instanceId'] !== 'string' || (actor['instanceId'] as string).length === 0) return undefined
+    normalizedActor = { kind: 'officer', instanceId: actor['instanceId'] as string }
+  } else {
+    if (!isPlainObject(actor) || actor['kind'] !== 'trusted-team-runtime') return undefined
+    normalizedActor = { kind: 'trusted-team-runtime' }
+  }
+  if (typeof transferredAt !== 'string' || transferredAt.length === 0) return undefined
+  if (blueprintContentHash !== undefined && (typeof blueprintContentHash !== 'string' || blueprintContentHash.length === 0)) return undefined
+  if (blueprintRevision !== undefined && (typeof blueprintRevision !== 'string' || blueprintRevision.length === 0)) return undefined
+  return {
+    approvalCaseId,
+    currentLegRequestId,
+    legOrdinal,
+    target,
+    cause,
+    actor: normalizedActor,
+    ...(blueprintContentHash === undefined ? {} : { blueprintContentHash: blueprintContentHash as string }),
+    ...(blueprintRevision === undefined ? {} : { blueprintRevision: blueprintRevision as string }),
+    transferredAt,
   }
 }
 
@@ -1668,9 +1887,11 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       | 'escalateApprovalLeg'
       | 'readApprovalCaseState'
       | 'listOpenApprovalCases'
+      | 'transferCurrentLeg'
       | 'appendTerminalOutcome'
       | 'closeApprovalCaseWithoutLeg'
-      | 'findApprovalCaseByIdentity',
+      | 'findApprovalCaseByIdentity'
+      | 'executionResult',
     field: string,
     message: string,
   ): ControlError {
@@ -1770,6 +1991,8 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     const abandonments: StoredFact<AbandonmentPayload>[] = []
     const corruptLegs: StoredFact<Record<string, unknown>>[] = []
     const escalations: StoredFact<EscalationPayload>[] = []
+    const transfers: StoredFact<CurrentLegTransferPayload>[] = []
+    const executionResults: StoredFact<ExecutionResultPayload>[] = []
     for (const entry of repositories.ledger.list()) {
       if (String(entry.rootSessionId) !== root) continue
       if (entry.factType === FACT_REQUEST) {
@@ -1809,6 +2032,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       } else if (entry.factType === FACT_ESCALATION) {
         const payload = parseEscalationPayload(entry.payload)
         if (payload !== undefined) escalations.push({ entry, payload })
+      } else if (entry.factType === FACT_TRANSFER) {
+        const payload = parseCurrentLegTransferPayload(entry.payload)
+        if (payload !== undefined) transfers.push({ entry, payload })
+      } else if (entry.factType === FACT_EXECUTION_RESULT) {
+        const payload = parseExecutionResultPayload(entry.payload)
+        if (payload !== undefined) executionResults.push({ entry, payload })
       }
     }
     const bySequence = (a: { entry: LedgerEntry }, b: { entry: LedgerEntry }): number =>
@@ -1818,8 +2047,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     consumptions.sort(bySequence)
     abandonments.sort(bySequence)
     escalations.sort(bySequence)
+    transfers.sort(bySequence)
     corruptLegs.sort(bySequence)
-    return { requests, corruptLegs, decisions, consumptions, abandonments, escalations }
+    return { requests, corruptLegs, decisions, consumptions, abandonments, escalations, transfers, executionResults }
   }
 
   function scopeOf(entry: LedgerEntry, payload: RequestPayload): ControlOperationScope {
@@ -1862,6 +2092,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return {
       requestId: payload.requestId,
       rootSessionId: String(entry.rootSessionId),
+      ...(payload.ownerRootSessionId !== undefined ? { ownerRootSessionId: payload.ownerRootSessionId } : {}),
       kind: payload.kind,
       requester: payload.requester,
       subject: payload.subject,
@@ -1908,6 +2139,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.mutationProposalFingerprint !== undefined
         ? { mutationProposalFingerprint: payload.mutationProposalFingerprint }
         : {}),
+      ...(payload.paApprovalCaseId !== undefined ? { paApprovalCaseId: payload.paApprovalCaseId } : {}),
+      ...(payload.operationOwnerTemplateId !== undefined
+        ? { operationOwnerTemplateId: payload.operationOwnerTemplateId }
+        : {}),
+      ...(payload.operationToolDefinitionIdentity !== undefined
+        ? { operationToolDefinitionIdentity: payload.operationToolDefinitionIdentity }
+        : {}),
+      ...(payload.operationToolOwner !== undefined ? { operationToolOwner: payload.operationToolOwner } : {}),
+      ...(payload.operationToolName !== undefined ? { operationToolName: payload.operationToolName } : {}),
+      ...(payload.authorityGeneration !== undefined
+        ? { authorityGeneration: payload.authorityGeneration }
+        : {}),
+      ...(payload.blueprintContentHash !== undefined
+        ? { blueprintContentHash: payload.blueprintContentHash }
+        : {}),
+      ...(payload.blueprintRevision !== undefined
+        ? { blueprintRevision: payload.blueprintRevision }
+        : {}),
+      ...(payload.perEffectRequiredAuthorities !== undefined
+        ? { perEffectRequiredAuthorities: payload.perEffectRequiredAuthorities }
+        : {}),
     }
   }
 
@@ -1924,6 +2176,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     }
   }
 
+  function toTransferRecord(
+    entry: LedgerEntry,
+    payload: CurrentLegTransferPayload,
+  ): CurrentLegTransferRecord {
+    return {
+      approvalCaseId: payload.approvalCaseId,
+      currentLegRequestId: payload.currentLegRequestId,
+      legOrdinal: payload.legOrdinal,
+      target: payload.target,
+      cause: payload.cause,
+      actor: payload.actor,
+      ...(payload.blueprintContentHash !== undefined
+        ? { blueprintContentHash: payload.blueprintContentHash }
+        : {}),
+      ...(payload.blueprintRevision !== undefined
+        ? { blueprintRevision: payload.blueprintRevision }
+        : {}),
+      transferredAt: payload.transferredAt,
+    }
+  }
+
   function toDecisionRecord(entry: LedgerEntry, payload: DecisionPayload): ControlDecisionRecord {
     return {
       requestId: payload.requestId,
@@ -1937,6 +2210,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.note !== undefined ? { note: payload.note } : {}),
       ...(payload.terminalReason !== undefined
         ? { terminalReason: payload.terminalReason }
+        : {}),
+      ...(payload.reviewCapability !== undefined
+        ? { reviewCapability: payload.reviewCapability }
         : {}),
     }
   }
@@ -1987,6 +2263,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return { kind: 'instance', instanceId: String(member.instanceId), role: caller.role }
   }
 
+  /**
+   * A6-PR5 (review P0 fix, PoC): the reviewer's durable Member binding, in the
+   * shape the pure evaluator consumes. ABSENT when the resolved caller carries
+   * no Member record (never for a live instance caller).
+   */
+  function reviewerMemberOf(caller: ResolvedCaller, root: string): ReviewerMember | undefined {
+    const member = caller.callerMember
+    if (member === undefined) return undefined
+    return {
+      instanceId: String(member.instanceId),
+      templateId: String(member.templateId),
+      rootSessionId: root,
+    }
+  }
+
   /** Record one durable decision row (BEFORE any effect; the row IS the
    *  durable decision). */
   async function commitDecision(args: {
@@ -2001,6 +2292,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
      *  happened. Additive: the VALUE of a terminal close is a `deny` either
      *  way, so an absent field is a reviewer-chosen close. */
     readonly terminalReason?: ControlLegTerminalReason
+    readonly reviewCapability?: ReviewCapabilityCandidate
   }): Promise<ControlDecisionRecord> {
     const decisionScopeSubject = resolveSubject(args.scope)
     if (decisionScopeSubject === undefined) {
@@ -2047,6 +2339,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     const sequence = await putEntry({
       schemaVersion: 2,
@@ -2067,6 +2362,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     return record
   }
@@ -2095,6 +2393,15 @@ export function createControlService(options: ControlServiceOptions): ControlSer
      * an approval-case field must not leak into an older wire.
      */
     readonly authorityScope?: ControlAuthorityScope
+    readonly paApprovalCaseId?: string
+    readonly operationOwnerTemplateId?: string
+    readonly operationToolDefinitionIdentity?: string
+    readonly operationToolOwner?: string
+    readonly operationToolName?: string
+    readonly authorityGeneration?: number
+    readonly blueprintContentHash?: string
+    readonly blueprintRevision?: string
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
   }
 
   /**
@@ -2132,6 +2439,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       requestedEffect: leg.requestedEffect,
       ...(leg.mutationProposalFingerprint !== undefined
         ? { mutationProposalFingerprint: leg.mutationProposalFingerprint }
+        : {}),
+      ...(leg.paApprovalCaseId !== undefined ? { paApprovalCaseId: leg.paApprovalCaseId } : {}),
+      ...(leg.operationOwnerTemplateId !== undefined
+        ? { operationOwnerTemplateId: leg.operationOwnerTemplateId }
+        : {}),
+      ...(leg.operationToolDefinitionIdentity !== undefined
+        ? { operationToolDefinitionIdentity: leg.operationToolDefinitionIdentity }
+        : {}),
+      ...(leg.operationToolOwner !== undefined ? { operationToolOwner: leg.operationToolOwner } : {}),
+      ...(leg.operationToolName !== undefined ? { operationToolName: leg.operationToolName } : {}),
+      ...(leg.authorityGeneration !== undefined ? { authorityGeneration: leg.authorityGeneration } : {}),
+      ...(leg.blueprintContentHash !== undefined ? { blueprintContentHash: leg.blueprintContentHash } : {}),
+      ...(leg.blueprintRevision !== undefined ? { blueprintRevision: leg.blueprintRevision } : {}),
+      ...(leg.perEffectRequiredAuthorities !== undefined
+        ? { perEffectRequiredAuthorities: leg.perEffectRequiredAuthorities }
         : {}),
     }
   }
@@ -2429,6 +2751,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       const requester = callerRefOf(caller)
       const payload: Record<string, unknown> = {
         requestId,
+        ...(options.mountRootSessionId !== undefined ? { ownerRootSessionId: options.mountRootSessionId } : {}),
         kind: args.kind,
         requester,
         subject,
@@ -2472,6 +2795,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         record: {
           requestId,
           rootSessionId: root,
+          ...(options.mountRootSessionId !== undefined ? { ownerRootSessionId: options.mountRootSessionId } : {}),
           kind: args.kind,
           requester,
           subject,
@@ -2550,6 +2874,283 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return outcome.record
   }
 
+  // --- Alpha.6 PR2b: member capability gate (never a global role widening) -------
+
+  /**
+   * Validate an Officer's PR2a candidate against the DURABLE leg row and the
+   * real caller. This is deliberately a binding check, not a second policy
+   * evaluation: the candidate was minted by the single PR2a evaluator from
+   * trusted facts, and the service re-checks that it names THIS case, THIS
+   * leg, THIS principal, THIS operation owner/tool/scope/generation and the
+   * requested entry. `CONTROL_RESOLVER_ROLES` remains untouched: a member is
+   * admitted only through this explicit, case-scoped candidate.
+   */
+  function memberCapabilityProblem(input: {
+    readonly root: string
+    readonly row: RequestPayload
+    readonly caller: ControlCallerRef
+    readonly entry: ReviewCapabilityEntry
+    readonly candidate: ReviewCapabilityCandidate | undefined
+  }): string | undefined {
+    const candidate = input.candidate
+    if (candidate === undefined) return 'a Member reviewer requires an explicit ReviewCapability candidate'
+    if (!(candidate instanceof ReviewCapabilityCandidate)) return 'the ReviewCapability candidate is not the nominal PR2a type'
+    const capability = candidate.capability
+    if (capability.source !== 'blueprint-officer') return `the candidate source '${capability.source}' is not a delegated Officer capability`
+    if (capability.entry !== input.entry) return `the candidate entry '${capability.entry}' is not '${input.entry}'`
+    if (capability.effectiveReviewAuthority !== 'leader') return 'the delegated candidate did not resolve to the leader rung'
+    if (input.row.kind !== 'leader-approval') return `kind '${input.row.kind}' is never delegated to a Member`
+    if (capability.principal.kind !== input.caller.kind) return 'the candidate principal kind does not match the real caller'
+    if (capability.principal.kind === 'instance'
+      && (input.caller.kind !== 'instance' || capability.principal.instanceId !== input.caller.instanceId)) {
+      return 'the candidate principal is not the real caller'
+    }
+    if (capability.principal.kind === 'human'
+      && (input.caller.kind !== 'human' || capability.principal.humanId !== input.caller.humanId)) {
+      return 'the candidate principal is not the real caller'
+    }
+    if (input.row.approvalCaseId === undefined || capability.approvalCaseId !== input.row.approvalCaseId) {
+      return 'the candidate names a different approval case'
+    }
+    if (capability.currentLegRequestId !== input.row.requestId) return 'the candidate names a different current leg'
+    if (input.row.legOrdinal === undefined || capability.legOrdinal !== input.row.legOrdinal) {
+      return 'the candidate names a different leg ordinal'
+    }
+    if (input.row.operationOwnerTemplateId === undefined
+      || capability.operationOwner.templateId !== input.row.operationOwnerTemplateId) {
+      return 'the candidate operation owner does not match the durable leg'
+    }
+    if (input.row.operationToolDefinitionIdentity === undefined
+      || capability.operationTool.definitionIdentity !== input.row.operationToolDefinitionIdentity) {
+      return 'the candidate tool identity does not match the durable leg'
+    }
+    if (input.row.operationToolOwner !== undefined && capability.operationTool.owner !== input.row.operationToolOwner) {
+      return 'the candidate tool owner does not match the durable leg'
+    }
+    if (input.row.operationToolName !== undefined && capability.operationTool.name !== input.row.operationToolName) {
+      return 'the candidate tool name does not match the durable leg'
+    }
+    if (input.row.authorityGeneration !== undefined
+      && capability.authorityGeneration !== input.row.authorityGeneration) {
+      return 'the candidate authority generation does not match the durable leg'
+    }
+    if (input.row.blueprintContentHash !== undefined
+      && capability.blueprintContentHash !== input.row.blueprintContentHash) {
+      return 'the candidate Blueprint content hash does not match the durable leg'
+    }
+    if (input.row.blueprintRevision !== undefined
+      && capability.blueprintRevision !== input.row.blueprintRevision) {
+      return 'the candidate Blueprint revision does not match the durable leg'
+    }
+    const rowScope = {
+      rootSessionId: input.root,
+      subject: input.row.subject,
+      ...(input.row.targetInstanceId !== undefined ? { targetInstanceId: input.row.targetInstanceId } : {}),
+      actionName: input.row.actionName,
+      correlation: input.row.correlation,
+      ...(input.row.toolName !== undefined ? { toolName: input.row.toolName } : {}),
+      ...(input.row.operationFingerprint !== undefined ? { operationFingerprint: input.row.operationFingerprint } : {}),
+    }
+    const capScope = capability.scope
+    if (scopeKey(
+      rowScope.rootSessionId,
+      subjectIdentityOf(rowScope.subject),
+      rowScope.actionName,
+      rowScope.toolName,
+      rowScope.correlation,
+      rowScope.operationFingerprint,
+    ) !== scopeKey(
+      capScope.rootSessionId,
+      subjectIdentityOf(capScope.subject ?? { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: capScope.targetInstanceId ?? '' }),
+      capScope.actionName,
+      capScope.toolName,
+      capScope.correlation,
+      capScope.operationFingerprint,
+    )) {
+      return 'the candidate scope does not match the durable leg scope'
+    }
+    return undefined
+  }
+
+  /**
+   * A6-PR5 (review P0 fix, PoC): build the delegated Officer's capability by
+   * calling the SINGLE pure `evaluateReviewCapability` — this helper no longer
+   * mints a candidate. Two trusted facts are required first:
+   *
+   *  1. `currentReviewerForTransfer` names this instance as the leg's current
+   *     reviewer (assignment remains a runtime fact, never a model claim);
+   *  2. `reviewCallFactsForAssignedOfficer` supplies the world facts the
+   *     durable row cannot carry (the Blueprint `reviewRouting` in force and
+   *     the leg's frozen category classification).
+   *
+   * Everything else — principal, case, leg, scope, operation owner/tool,
+   * generation, Blueprint hash/revision, the PA manifest effect set — is
+   * derived HERE from the durable row, so the facts port can never widen
+   * authority by naming a different case/leg/scope. A refusal is returned as a
+   * problem for the existing member gate to report; a returned candidate still
+   * passes through `memberCapabilityProblem`.
+   */
+  async function assignedOfficerCapability(input: {
+    readonly root: string
+    readonly row: RequestPayload
+    readonly caller: ControlCallerRef
+    readonly entry: ReviewCapabilityEntry
+    readonly reviewerMember: ReviewerMember | undefined
+    readonly officerActedOnEarlierLeg: boolean
+  }): Promise<{ readonly candidate?: ReviewCapabilityCandidate; readonly problem?: string }> {
+    const prefix = `caller is not a resolver for kind '${input.row.kind}'`
+    const port = options.currentReviewerForTransfer
+    if (port === undefined) {
+      return { problem: `${prefix} — no trusted reviewer port is configured` }
+    }
+    const factsPort = options.reviewCallFactsForAssignedOfficer
+    if (factsPort === undefined) {
+      return { problem: `${prefix} — no trusted assigned-Officer review-facts port is configured` }
+    }
+    if (input.caller.kind !== 'instance') {
+      return { problem: `${prefix} — the assigned reviewer must be an instance` }
+    }
+    if (input.row.approvalCaseId === undefined || input.row.legOrdinal === undefined) {
+      return { problem: `${prefix} — the row is not an approval-case leg` }
+    }
+    if (input.row.reviewAuthority === undefined || input.row.requestedEffect === undefined) {
+      return { problem: `${prefix} — the leg carries no frozen reviewAuthority/requestedEffect` }
+    }
+    if (input.reviewerMember === undefined) {
+      return { problem: `${prefix} — the reviewer Member binding is unknown` }
+    }
+    let reviewer: { readonly instanceId: string } | null
+    try {
+      reviewer = await port({
+        rootSessionId: input.root,
+        approvalCaseId: input.row.approvalCaseId,
+        currentLegRequestId: input.row.requestId,
+        legOrdinal: input.row.legOrdinal,
+      })
+    } catch {
+      reviewer = null
+    }
+    if (reviewer === null || reviewer.instanceId !== input.caller.instanceId) {
+      return { problem: `${prefix} — the caller is not the trusted current reviewer` }
+    }
+    let worldFacts: Awaited<ReturnType<NonNullable<typeof factsPort>>>
+    try {
+      worldFacts = await factsPort({
+        rootSessionId: input.root,
+        approvalCaseId: input.row.approvalCaseId,
+        currentLegRequestId: input.row.requestId,
+        legOrdinal: input.row.legOrdinal,
+        kind: input.row.kind,
+        reviewAuthority: input.row.reviewAuthority,
+      })
+    } catch {
+      worldFacts = null
+    }
+    if (worldFacts === null) {
+      return { problem: `${prefix} — the trusted review-facts port produced no facts for this leg` }
+    }
+
+    // The canonical scope identity (the same key the durable request id is
+    // derived from) — never the request id, which says nothing about scope.
+    const operationScope: ControlOperationScope = {
+      rootSessionId: input.root,
+      subject: input.row.subject,
+      ...(input.row.targetInstanceId !== undefined ? { targetInstanceId: input.row.targetInstanceId } : {}),
+      actionName: input.row.actionName,
+      ...(input.row.toolName !== undefined ? { toolName: input.row.toolName } : {}),
+      correlation: input.row.correlation,
+      ...(input.row.operationFingerprint !== undefined
+        ? { operationFingerprint: input.row.operationFingerprint }
+        : {}),
+    }
+    const scopeFingerprint = scopeKey(
+      input.root,
+      subjectIdentityOf(input.row.subject),
+      input.row.actionName,
+      input.row.toolName,
+      input.row.correlation,
+      input.row.operationFingerprint,
+    )
+    // The PA manifest is the durable, verified effect-set source when present;
+    // otherwise the leg's frozen per-effect rungs are the only trusted source.
+    const manifest = parsePaControlManifest(input.row.reviewPayload)
+    const perEffectRequiredAuthorities: readonly ProposalAuthorityPosition[] = manifest !== undefined
+      ? (manifest.perEffectRequired as readonly ProposalAuthorityPosition[])
+      : (input.row.perEffectRequiredAuthorities ?? [])
+    const authorityGeneration = input.row.authorityGeneration ?? manifest?.authorityGeneration ?? 0
+    // The trusted operation identity is the leg SUBJECT written by the PA
+    // bridge (the executing Member), or the legacy target projection. The
+    // Requester may be a Leader proxy and MUST NOT be used to infer ownership.
+    const operationOwnerInstanceId = input.row.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+      ? input.row.subject.instanceId
+      : (input.row.targetInstanceId ?? '')
+
+    const facts: ReviewCallFacts = {
+      reviewer: input.caller,
+      reviewerMember: input.reviewerMember,
+      requester: input.row.requester,
+      // The trusted assignment port already proved THIS instance is the
+      // current reviewer; the template/root come from the durable Member
+      // record, and the evaluator still checks the template against the
+      // Blueprint's Officer template.
+      currentOfficer: {
+        instanceId: input.reviewerMember.instanceId,
+        templateId: input.reviewerMember.templateId,
+        rootSessionId: input.root,
+      },
+      operationOwner: {
+        rootSessionId: input.root,
+        instanceId: operationOwnerInstanceId,
+        templateId: input.row.operationOwnerTemplateId ?? '',
+      },
+      operationTool: {
+        definitionIdentity: input.row.operationToolDefinitionIdentity ?? '',
+        owner: input.row.operationToolOwner ?? '',
+        name: input.row.operationToolName ?? '',
+      },
+      currentCase: {
+        approvalCaseId: input.row.approvalCaseId,
+        currentLegRequestId: input.row.requestId,
+        legOrdinal: input.row.legOrdinal,
+        kind: input.row.kind,
+        reviewAuthority: input.row.reviewAuthority,
+        // The service already refused a decided/abandoned leg before this
+        // helper; the leg is pending by construction.
+        status: 'pending',
+        requestedEffect: input.row.requestedEffect,
+        operationFingerprint: input.row.operationFingerprint ?? null,
+        mutationProposalFingerprint: input.row.mutationProposalFingerprint ?? null,
+        scopeFingerprint,
+        authorityGeneration,
+      },
+      operationScope,
+      scopeFingerprint,
+      ...(manifest !== undefined ? { effectSetFingerprint: manifest.effects.fingerprint } : {}),
+      paManifestPresent: manifest !== undefined,
+      blueprint: {
+        revision: input.row.blueprintRevision ?? '',
+        contentHash: input.row.blueprintContentHash ?? '',
+        reviewRouting: worldFacts.reviewRouting,
+      },
+      // A transferred leg was refused above by the caller; there is no
+      // current-leg transfer to honor on this path.
+      currentLegTransfer: null,
+      authorityGeneration,
+      fixedLeaderOrHumanCategory: worldFacts.fixedLeaderOrHumanCategory,
+      requiresHuman: worldFacts.requiresHuman,
+      escalationSuccessor: controlEscalationSuccessor(input.row.reviewAuthority),
+      officerActedOnEarlierLeg: input.officerActedOnEarlierLeg,
+      perEffectRequiredAuthorities,
+    }
+    const evaluation = evaluateReviewCapability(facts, input.entry)
+    if (!evaluation.ok) {
+      return {
+        problem: `the ReviewCapability evaluator refused the delegated entry (${evaluation.code}: ${evaluation.reason})`,
+      }
+    }
+    return { candidate: evaluation.candidate }
+  }
+
   // --- resolveControl ------------------------------------------------------------------
 
   async function resolveControl(args: {
@@ -2558,7 +3159,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly requestId: string
     readonly decision: 'allow' | 'deny'
     readonly note?: string
+    readonly reviewCapability?: ReviewCapabilityCandidate
+    readonly assignedOfficer?: boolean
   }): Promise<ControlDecisionRecord> {
+    let resolvedCapability = args.reviewCapability
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'resolve')
     if (!isActionCaller(args.caller)) {
       throw malformed('resolve', 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}')
@@ -2620,7 +3224,47 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // never a resolver, even with the resolve-control op; the
       // user-approval kind admits only the human).
       const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]
-      if (!allowedRoles.includes(caller.role)) {
+      if (caller.role === 'member') {
+        if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: the current leg '${args.requestId}' has been transferred to the Leader — the former Officer has no future signing authority`,
+            { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role },
+          )
+        }
+        let candidate = args.reviewCapability
+        let assignedProblem: string | undefined
+        if (args.assignedOfficer === true) {
+          const caseId = request.payload.approvalCaseId
+          const legOrdinal = request.payload.legOrdinal
+          const assigned = await assignedOfficerCapability({
+            root,
+            row: request.payload,
+            caller: callerRefOf(caller),
+            entry: args.decision,
+            reviewerMember: reviewerMemberOf(caller, root),
+            officerActedOnEarlierLeg: caseId !== undefined && legOrdinal !== undefined
+              && earlierActBy(state, caseId, legOrdinal, callerRefOf(caller)) !== undefined,
+          })
+          candidate = assigned.candidate
+          assignedProblem = assigned.problem
+          resolvedCapability = candidate
+        }
+        const problem = assignedProblem ?? memberCapabilityProblem({
+          root,
+          row: request.payload,
+          caller: callerRefOf(caller),
+          entry: args.decision,
+          candidate,
+        })
+        if (problem !== undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Member review is not authorized for this leg (${problem}); the global resolver table is unchanged and a delegated candidate must bind this exact case/leg/scope`,
+            { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role, allowedRoles: [...allowedRoles], problem },
+          )
+        }
+      } else if (!allowedRoles.includes(caller.role)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
           `ControlService: role '${caller.role}' is not a resolver for kind '${request.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,
@@ -2735,12 +3379,24 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // the closed reason (the external-policy pattern): never a silent
       // skip, never an allow, never a fourth decision value (A2-1). The
       // f5 fix: a THIS-CLASS corrupt row (see `paManifestClassOf` in
-      // types.ts) lands on the SAME durable-DENY pattern unconditionally —
-      // it is never skipped as an ordinary old row, and no verifier is
+      // types.ts) is never skipped as an ordinary old row, and no verifier is
       // consulted for it (undetermined is already the answer).
+      // A6 closing constraint 1: in the A6 composition ONLY, an undetermined
+      // answer is a lifecycle failure, not an approval decision. It records
+      // `control-request-abandoned` (reason invocation-abandoned) and refuses;
+      // it never persists a DENY, so a requested Allow is not rewritten. Every
+      // other composition keeps the durable-DENY path (flag defaults off).
       if (args.decision === 'allow') {
         const paRead = paManifestClassOf(request.payload)
         if (paRead.state === 'corrupt') {
+          if (options.a6AbandonUndeterminedAllow === true) {
+            await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON)
+            throw new ControlError(
+              CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+              `ControlService: allow impossible — the PA operation manifest is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+              { rootSessionId: root, requestId: request.payload.requestId },
+            )
+          }
           return await commitDecision({
             requestId: request.payload.requestId,
             value: CONTROL_DECISION_VALUES.DENY,
@@ -2757,8 +3413,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             callerRefOf(caller),
+            resolvedCapability?.capability.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
+            if (denyReason === CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED && options.a6AbandonUndeterminedAllow === true) {
+              await commitAbandonmentFact(root, request.payload.requestId, A6_UNDETERMINED_ABANDON_REASON)
+              throw new ControlError(
+                CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+                `ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request '${request.payload.requestId}')`,
+                { rootSessionId: root, requestId: request.payload.requestId },
+              )
+            }
             return await commitDecision({
               requestId: request.payload.requestId,
               value: CONTROL_DECISION_VALUES.DENY,
@@ -2777,6 +3442,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         scope: scopeOf(request.entry, request.payload),
         requestSequence: request.entry.sequence,
         ...(args.note !== undefined ? { note: args.note } : {}),
+        ...(resolvedCapability !== undefined ? { reviewCapability: resolvedCapability } : {}),
       })
     })
   }
@@ -2876,6 +3542,58 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * (the frozen contract the recovery dispatch consuming this call
    * relies on, review F2).
    */
+  /**
+   * A6 closing round — ONE minimal execution-result fact per PA request,
+   * matched by durable `callId` (and target instance). The row is found from
+   * the request ledger; an unknown callId records nothing. Idempotent: a
+   * second observation of the same request returns the existing fact without
+   * a second write. This never authorizes, consumes, or replays anything.
+   */
+  async function recordExecutionResult(args: {
+    readonly rootSessionId: string
+    readonly callId: string
+    readonly instanceId?: string
+    readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  }): Promise<{ readonly recorded: boolean; readonly requestId?: string }> {
+    const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'execution-result')
+    if (typeof args.callId !== 'string' || args.callId.length === 0) {
+      throw malformed('executionResult', 'callId', 'callId must be a non-empty string')
+    }
+    if (args.outcome !== 'succeeded' && args.outcome !== 'failed' && args.outcome !== 'unknown') {
+      throw malformed('executionResult', 'outcome', 'outcome must be succeeded|failed|unknown')
+    }
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      let matched: RequestPayload | undefined
+      for (const entry of state.requests) {
+        const payload = entry.payload
+        const review = payload.reviewPayload
+        if (review === null || typeof review !== 'object' || Array.isArray(review)) continue
+        const callId = (review as Record<string, unknown>)['callId']
+        if (callId !== args.callId) continue
+        if (args.instanceId !== undefined && payload.targetInstanceId !== args.instanceId) continue
+        matched = payload
+      }
+      if (matched === undefined) return { recorded: false }
+      const existing = state.executionResults.find((r) => r.payload.requestId === matched.requestId)
+      if (existing !== undefined) return { recorded: false, requestId: matched.requestId }
+      await putEntry({
+        schemaVersion: 2,
+        sequence: await allocateSequence(),
+        rootSessionId: root,
+        factType: FACT_EXECUTION_RESULT,
+        payload: {
+          requestId: matched.requestId,
+          callId: args.callId,
+          outcome: args.outcome,
+          recordedAt: options.now(),
+        },
+        createdAt: options.now(),
+      })
+      return { recorded: true, requestId: matched.requestId }
+    })
+  }
+
   async function abandonControlRequest(args: {
     readonly rootSessionId: string
     readonly caller: ActionCaller
@@ -2962,36 +3680,74 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     })
   }
 
+  // --- control-state read routes (one shared projection) -------------------------------
+
+  /**
+   * A6-PR5 (integration: A6 non-locking control reader) — the ONE projection
+   * behind BOTH read routes. It performs the two steps both routes owe the
+   * caller (validate the root's TeamSession, read the append-only ledger
+   * fresh) and maps every row family to its public record. `listControlState`
+   * calls it INSIDE the lock; `readControlState` calls it WITHOUT the lock.
+   * Keeping the whole read here is what makes the locking and non-locking
+   * answers incapable of drift: there is no second validation, no second
+   * projection, and no second row order.
+   *
+   * Nothing here writes, and nothing here is authority (invariant 45).
+   */
+  function projectControlState(root: string): ControlStateSnapshot {
+    if (repositories.teamSessions.get(root) === undefined) {
+      throw new TeamRuntimeError(
+        TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
+        `ControlService: no TeamSession record for root session '${root}'`,
+        { rootSessionId: root },
+      )
+    }
+    const state = loadControlState(root)
+    return {
+      requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
+      decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
+      consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
+      abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
+      executionResults: state.executionResults.map((r) => ({
+        requestId: r.payload.requestId,
+        callId: r.payload.callId,
+        outcome: r.payload.outcome,
+        recordedAt: r.payload.recordedAt,
+        sequence: r.entry.sequence,
+      })),
+      // RULING 5-A: the refused rows are part of what the durable control
+      // state IS, so the route that reads that state reports them. Ordered by
+      // durable sequence like every other list here; a report, never a gate.
+      corruptLegs: state.corruptLegs.map((c) => toCorruptLegRecord(c.entry, c.payload)),
+      transfers: state.transfers.map((t) => toTransferRecord(t.entry, t.payload)),
+    }
+  }
+
   // --- listControlState ----------------------------------------------------------------
 
-  async function listControlState(rootSessionId: string): Promise<{
-    readonly requests: readonly ControlRequestRecord[]
-    readonly decisions: readonly ControlDecisionRecord[]
-    readonly consumptions: readonly ControlConsumptionRecord[]
-    readonly abandonments: readonly ControlAbandonmentRecord[]
-    readonly corruptLegs: readonly ControlCorruptLegRecord[]
-  }> {
+  async function listControlState(rootSessionId: string): Promise<ControlStateSnapshot> {
     const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list')
-    return withTeamLock(teamLocks, root, async () => {
-      if (repositories.teamSessions.get(root) === undefined) {
-        throw new TeamRuntimeError(
-          TEAM_RUNTIME_ERROR_CODES.TEAM_SESSION_NOT_FOUND,
-          `ControlService: no TeamSession record for root session '${root}'`,
-          { rootSessionId: root },
-        )
-      }
-      const state = loadControlState(root)
-      return {
-        requests: state.requests.map((r) => toRequestRecord(r.entry, r.payload, state)),
-        decisions: state.decisions.map((d) => toDecisionRecord(d.entry, d.payload)),
-        consumptions: state.consumptions.map((c) => toConsumptionRecord(c.entry, c.payload)),
-        abandonments: state.abandonments.map((a) => toAbandonmentRecord(a.entry, a.payload)),
-        // RULING 5-A: the refused rows are part of what the durable control
-        // state IS, so the route that reads that state reports them. Ordered by
-        // durable sequence like every other list here; a report, never a gate.
-        corruptLegs: state.corruptLegs.map((c) => toCorruptLegRecord(c.entry, c.payload)),
-      }
-    })
+    return withTeamLock(teamLocks, root, async () => projectControlState(root))
+  }
+
+  // --- readControlState (A6 non-locking, read-only snapshot) ----------------------------
+
+  /**
+   * A6-PR5 (integration: A6 non-locking control reader) — the NON-LOCKING
+   * twin of `listControlState`, for a caller that is ALREADY inside a control
+   * operation (the per-team chain is not re-entrant, so the locking route
+   * deadlocks there).
+   *
+   * Same root/TeamSession validation and the same projections via the shared
+   * `projectControlState`. It deliberately takes NO lock: it is a read-only
+   * point-in-time snapshot with NO authority, it does not serialize against
+   * concurrent writers, and no decision (authorize / deny / consume / block)
+   * may be derived from it. Authority stays in the guarded mutations, which
+   * hold the lock and re-verify the durable rows.
+   */
+  async function readControlState(rootSessionId: string): Promise<ControlStateSnapshot> {
+    const root = parseRoot(rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list')
+    return projectControlState(root)
   }
 
   // --- checkExternalOperation (the A2C-4 shared read-only external check) --------------
@@ -3150,12 +3906,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requestId: string,
     manifest: PaControlManifest,
     decider: ControlCallerRef,
+    reviewerAuthority?: ProposalAuthorityPosition,
   ): Promise<ControlDecisionReason | undefined> {
     const port = options.paEffectsVerifier
     if (port === undefined) return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     let verdict: PaEffectsVerifierVerdict
     try {
-      verdict = await port({ stage, rootSessionId: root, requestId, manifest, decider })
+      verdict = await port({
+        stage,
+        rootSessionId: root,
+        requestId,
+        manifest,
+        decider,
+        ...(reviewerAuthority === undefined ? {} : { reviewerAuthority }),
+      })
     } catch {
       return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     }
@@ -3608,6 +4372,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             request.payload.requestId,
             paRead.manifest,
             decision.payload.decider,
+            decision.payload.reviewCapability?.effectiveReviewAuthority,
           )
           if (denyReason !== undefined) {
             return {
@@ -3655,6 +4420,117 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       }
       return fallback
     })
+  }
+
+  // --- awaitApprovalCaseDecision (A6-PR2b, case-aware wait) ---------------------------
+
+  /**
+   * Wait for the FINAL decision of one approval case, following a legal
+   * escalation chain. An intermediate leg closed with reason `escalated` is
+   * not the tool operation's final deny: the durable case still has a current
+   * pending leg. This method re-reads the case (the durable authority), waits
+   * on its current request, and continues until an allow/deny/terminal close
+   * on the current leg is final or no successor leg exists.
+   *
+   * No new timer, scheduler or execution engine: it reuses the existing
+   * `awaitControlDecision` polling/AbortSignal implementation and the case
+   * read. A cancelled original invocation aborts this wait; it never revives.
+   */
+  async function awaitApprovalCaseDecision(input: {
+    readonly rootSessionId: string
+    readonly approvalCaseId: string
+    readonly signal?: ControlWaitSignal
+  }): Promise<ControlDecisionRecord> {
+    const root = parseRoot(
+      input.rootSessionId,
+      CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+      'wait',
+    )
+    if (typeof input.approvalCaseId !== 'string' || input.approvalCaseId.length === 0) {
+      throw malformed('wait', 'approvalCaseId', 'approvalCaseId must be a non-empty string')
+    }
+    let waitedRequestId: string | undefined
+    for (;;) {
+      const read = await readApprovalCaseState({
+        rootSessionId: root,
+        approvalCaseId: input.approvalCaseId,
+      })
+      if (read.kind === 'problem') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: cannot await approval case '${input.approvalCaseId}' — the case chain is corrupt (${read.problem})`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, problem: read.problem },
+        )
+      }
+      const state = read.state
+      const leg = state.currentLeg
+      if (leg === undefined) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND,
+          `ControlService: approval case '${input.approvalCaseId}' has no current leg to await`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+        )
+      }
+      if (state.status === 'decided') {
+        if (state.terminalDecision === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+            `ControlService: approval case '${input.approvalCaseId}' is decided but carries no terminal decision`,
+            { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+          )
+        }
+        return state.terminalDecision
+      }
+      if (state.status === 'abandoned') {
+        // The existing wait bridge raises the typed abandoned error; do the
+        // same here rather than inventing a decision.
+        if (input.signal?.aborted === true) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+            `ControlService: awaitApprovalCaseDecision for case '${input.approvalCaseId}' was aborted while the current leg was abandoned`,
+            { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+          )
+        }
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is abandoned`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (leg.status === 'decided') {
+        // Defensive: a decided current leg with status open means the fold is
+        // inconsistent; refuse rather than spin.
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is decided but the case is still open`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (leg.status === 'abandoned') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is abandoned`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (waitedRequestId === leg.requestId) {
+        // No progress after a completed wait: the durable state did not move;
+        // fail closed instead of a silent spin.
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: approval case '${input.approvalCaseId}' did not advance after waiting for '${leg.requestId}'`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      waitedRequestId = leg.requestId
+      await awaitControlDecision({
+        rootSessionId: root,
+        requestId: leg.requestId,
+        ...(input.signal === undefined ? {} : { signal: input.signal }),
+      })
+      // Loop: the case read above now either carries the final decision or
+      // exposes the risen current leg.
+    }
   }
 
   // --- awaitControlDecision (the alpha.2 synchronous wait bridge) ----------------------
@@ -4150,6 +5026,38 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    *
    * Precondition: the caller holds the per-team lock.
    */
+  /**
+   * A6-PR5 (review P0 fix, PoC): the shared "already acted on an earlier leg"
+   * predicate — ONE home, read by `assertNoActOnEarlierLeg` (which throws) and
+   * by the assigned-Officer facts builder (which records it as a fact for
+   * `entry='escalate'`). Returns the earlier leg's ordinal and how it was acted
+   * on, or undefined when the principal has no earlier act on this case.
+   */
+  function earlierActBy(
+    state: ControlState,
+    approvalCaseId: string,
+    legOrdinal: number,
+    decider: ControlCallerRef,
+  ): { readonly kind: 'decided' | 'escalated'; readonly legOrdinal: number } | undefined {
+    for (const earlier of state.requests) {
+      if (earlier.payload.approvalCaseId !== approvalCaseId) continue
+      if ((earlier.payload.legOrdinal ?? 0) >= legOrdinal) continue
+      const decided = state.decisions.find(
+        (row) => row.payload.requestId === earlier.payload.requestId,
+      )
+      if (decided !== undefined && sameCallerRef(decided.payload.decider, decider)) {
+        return { kind: 'decided', legOrdinal: earlier.payload.legOrdinal ?? 0 }
+      }
+      const escalated = state.escalations.find(
+        (row) => row.payload.previousRequestId === earlier.payload.requestId,
+      )
+      if (escalated !== undefined && sameCallerRef(escalated.payload.escalatedBy, decider)) {
+        return { kind: 'escalated', legOrdinal: earlier.payload.legOrdinal ?? 0 }
+      }
+    }
+    return undefined
+  }
+
   function assertNoActOnEarlierLeg(
     state: ControlState,
     input: {
@@ -4161,40 +5069,18 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       readonly decider: ControlCallerRef
     },
   ): void {
-    for (const earlier of state.requests) {
-      if (earlier.payload.approvalCaseId !== input.approvalCaseId) continue
-      if ((earlier.payload.legOrdinal ?? 0) >= input.legOrdinal) continue
-      const decided = state.decisions.find(
-        (row) => row.payload.requestId === earlier.payload.requestId,
-      )
-      if (decided !== undefined && sameCallerRef(decided.payload.decider, input.decider)) {
-        throw new ControlError(
-          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-          `ControlService: ${input.stage} refused — this principal already decided leg ${earlier.payload.legOrdinal} of case '${input.approvalCaseId}', and an escalated-away reviewer cannot act on the case again (zero durable side effects)`,
-          {
-            rootSessionId: input.root,
-            requestId: input.requestId,
-            approvalCaseId: input.approvalCaseId,
-            alreadyActedOnLegOrdinal: earlier.payload.legOrdinal,
-          },
-        )
-      }
-      const escalated = state.escalations.find(
-        (row) => row.payload.previousRequestId === earlier.payload.requestId,
-      )
-      if (escalated !== undefined && sameCallerRef(escalated.payload.escalatedBy, input.decider)) {
-        throw new ControlError(
-          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-          `ControlService: ${input.stage} refused — this principal already escalated leg ${earlier.payload.legOrdinal} of case '${input.approvalCaseId}', and an escalated-away reviewer cannot act on the case again (zero durable side effects)`,
-          {
-            rootSessionId: input.root,
-            requestId: input.requestId,
-            approvalCaseId: input.approvalCaseId,
-            alreadyActedOnLegOrdinal: earlier.payload.legOrdinal,
-          },
-        )
-      }
-    }
+    const earlier = earlierActBy(state, input.approvalCaseId, input.legOrdinal, input.decider)
+    if (earlier === undefined) return
+    throw new ControlError(
+      CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+      `ControlService: ${input.stage} refused — this principal already ${earlier.kind} leg ${earlier.legOrdinal} of case '${input.approvalCaseId}', and an escalated-away reviewer cannot act on the case again (zero durable side effects)`,
+      {
+        rootSessionId: input.root,
+        requestId: input.requestId,
+        approvalCaseId: input.approvalCaseId,
+        alreadyActedOnLegOrdinal: earlier.legOrdinal,
+      },
+    )
   }
 
   /**
@@ -4513,6 +5399,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     }
     const status: ApprovalCaseState['status'] =
       currentStatus === 'abandoned' ? 'abandoned' : currentStatus === 'decided' ? 'decided' : 'open'
+    const transfer = state.transfers.find(
+      (t) => t.payload.currentLegRequestId === currentRecord.requestId,
+    )
     return {
       kind: 'case',
       state: {
@@ -4523,6 +5412,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         status,
         ...(terminalDecision !== undefined
           ? { terminalDecision: toDecisionRecord(terminalDecision.entry, terminalDecision.payload) }
+          : {}),
+        ...(transfer !== undefined
+          ? { transfer: toTransferRecord(transfer.entry, transfer.payload) }
           : {}),
         reviewedBy,
       },
@@ -4555,6 +5447,8 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly operationFingerprint?: string
     readonly summary?: string
     readonly executionCoupling?: ControlExecutionCoupling
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
     readonly leg: LegFields
   }): Promise<ControlRequestRecord> {
     const key = scopeKey(
@@ -4600,6 +5494,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(input.summary !== undefined ? { summary: input.summary } : {}),
       ...(input.executionCoupling !== undefined
         ? { executionCoupling: input.executionCoupling }
+        : {}),
+      ...(input.reviewPayload !== undefined ? { reviewPayload: input.reviewPayload } : {}),
+      ...(input.reviewPayloadDigest !== undefined
+        ? { reviewPayloadDigest: input.reviewPayloadDigest }
         : {}),
       ...legFieldsOf(input.leg),
       // A4-PR7 Task 7.0 (ADR A1-14): the authority point on the LEG-FACT route
@@ -4655,6 +5553,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly capabilityDomain?: CapabilityName
     readonly summary?: string
     readonly executionCoupling?: ControlExecutionCoupling
+    /** Alpha.6 PR2b: the strict PA manifest travels VERBATIM on the first leg. */
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
+    /** The PA logical case id; metadata, never part of Control case derivation. */
+    readonly paApprovalCaseId?: string
+    /** Trusted delegation facts, frozen on the leg for later capability checks. */
+    readonly operationOwnerTemplateId?: string
+    readonly operationToolDefinitionIdentity?: string
+    readonly operationToolOwner?: string
+    readonly operationToolName?: string
+    readonly authorityGeneration?: number
+    readonly blueprintContentHash?: string
+    readonly blueprintRevision?: string
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
   }): Promise<ControlRequestLegOutcome> {
     const root = parseRoot(
       args.rootSessionId,
@@ -4742,6 +5654,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.executionCoupling !== undefined
         ? { executionCoupling: args.executionCoupling }
         : {}),
+      ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+      ...(args.reviewPayloadDigest !== undefined
+        ? { reviewPayloadDigest: args.reviewPayloadDigest }
+        : {}),
       leg: {
         approvalCaseId,
         legOrdinal: 1,
@@ -4754,6 +5670,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           : {}),
         ...(args.identity.authorityScope !== undefined
           ? { authorityScope: args.identity.authorityScope }
+          : {}),
+        ...(args.paApprovalCaseId !== undefined ? { paApprovalCaseId: args.paApprovalCaseId } : {}),
+        ...(args.operationOwnerTemplateId !== undefined
+          ? { operationOwnerTemplateId: args.operationOwnerTemplateId }
+          : {}),
+        ...(args.operationToolDefinitionIdentity !== undefined
+          ? { operationToolDefinitionIdentity: args.operationToolDefinitionIdentity }
+          : {}),
+        ...(args.operationToolOwner !== undefined ? { operationToolOwner: args.operationToolOwner } : {}),
+        ...(args.operationToolName !== undefined ? { operationToolName: args.operationToolName } : {}),
+        ...(args.authorityGeneration !== undefined
+          ? { authorityGeneration: args.authorityGeneration }
+          : {}),
+        ...(args.blueprintContentHash !== undefined
+          ? { blueprintContentHash: args.blueprintContentHash }
+          : {}),
+        ...(args.blueprintRevision !== undefined
+          ? { blueprintRevision: args.blueprintRevision }
+          : {}),
+        ...(args.perEffectRequiredAuthorities !== undefined
+          ? { perEffectRequiredAuthorities: args.perEffectRequiredAuthorities }
           : {}),
       },
     })
@@ -4788,7 +5725,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly caller: ActionCaller
     readonly requestId: string
     readonly reason?: string
+    readonly reviewCapability?: ReviewCapabilityCandidate
+    readonly assignedOfficer?: boolean
   }): Promise<ControlEscalationOutcome> {
+    let resolvedCapability = args.reviewCapability
     const root = parseRoot(
       args.rootSessionId,
       CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
@@ -4815,7 +5755,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       },
       RESOLVE_CONTROL_SPEC,
     )
-    return withTeamLock(teamLocks, root, async () => {
+    const outcome = await withTeamLock(teamLocks, root, async () => {
       const state = loadControlState(root)
       const leg = state.requests.find((row) => row.payload.requestId === args.requestId)
       if (leg === undefined) {
@@ -4850,7 +5790,51 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         )
       }
       const allowedRoles = CONTROL_RESOLVER_ROLES[leg.payload.kind]
-      if (!allowedRoles.includes(caller.role)) {
+      if (caller.role === 'member') {
+        if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: the current leg '${args.requestId}' has been transferred to the Leader — the former Officer cannot escalate it`,
+            { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role },
+          )
+        }
+        let candidate = args.reviewCapability
+        let assignedProblem: string | undefined
+        if (args.assignedOfficer === true) {
+          const assigned = await assignedOfficerCapability({
+            root,
+            row: leg.payload,
+            caller: callerRefOf(caller),
+            entry: 'escalate',
+            reviewerMember: reviewerMemberOf(caller, root),
+            officerActedOnEarlierLeg: earlierActBy(state, approvalCaseId, legOrdinal, callerRefOf(caller)) !== undefined,
+          })
+          candidate = assigned.candidate
+          assignedProblem = assigned.problem
+          resolvedCapability = candidate
+        }
+        const problem = assignedProblem ?? memberCapabilityProblem({
+          root,
+          row: leg.payload,
+          caller: callerRefOf(caller),
+          entry: 'escalate',
+          candidate,
+        })
+        if (problem !== undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`,
+            { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, allowedRoles: [...allowedRoles], problem },
+          )
+        }
+        if (leg.payload.reviewAuthority !== 'leader' || controlEscalationSuccessor(leg.payload.reviewAuthority) !== 'human-user') {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Member escalation is only legal from a leader-rung ordinary ask whose successor is human-user (this leg is '${String(leg.payload.reviewAuthority)}')`,
+            { rootSessionId: root, requestId: args.requestId, reviewAuthority: leg.payload.reviewAuthority },
+          )
+        }
+      } else if (!allowedRoles.includes(caller.role)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
           `ControlService: role '${caller.role}' is not a resolver for kind '${leg.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,
@@ -4934,6 +5918,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reason: CONTROL_DECISION_REASONS.ESCALATED,
         ...(mintsRisenLeg ? {} : { terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE }),
         ...(args.reason !== undefined ? { note: args.reason } : {}),
+        ...(resolvedCapability !== undefined ? { reviewCapability: resolvedCapability } : {}),
       })
       // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)
       // five fields (`note` deliberately does NOT join the payload — the
@@ -4997,6 +5982,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(leg.payload.executionCoupling !== undefined
           ? { executionCoupling: leg.payload.executionCoupling }
           : {}),
+        ...(leg.payload.reviewPayload !== undefined
+          ? { reviewPayload: leg.payload.reviewPayload }
+          : {}),
+        ...(leg.payload.reviewPayloadDigest !== undefined
+          ? { reviewPayloadDigest: leg.payload.reviewPayloadDigest }
+          : {}),
         leg: {
           approvalCaseId,
           legOrdinal: legOrdinal + 1,
@@ -5015,6 +6006,33 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           ...(leg.payload.authorityScope !== undefined
             ? { authorityScope: leg.payload.authorityScope }
             : {}),
+          ...(leg.payload.paApprovalCaseId !== undefined
+            ? { paApprovalCaseId: leg.payload.paApprovalCaseId }
+            : {}),
+          ...(leg.payload.operationOwnerTemplateId !== undefined
+            ? { operationOwnerTemplateId: leg.payload.operationOwnerTemplateId }
+            : {}),
+          ...(leg.payload.operationToolDefinitionIdentity !== undefined
+            ? { operationToolDefinitionIdentity: leg.payload.operationToolDefinitionIdentity }
+            : {}),
+          ...(leg.payload.operationToolOwner !== undefined
+            ? { operationToolOwner: leg.payload.operationToolOwner }
+            : {}),
+          ...(leg.payload.operationToolName !== undefined
+            ? { operationToolName: leg.payload.operationToolName }
+            : {}),
+          ...(leg.payload.authorityGeneration !== undefined
+            ? { authorityGeneration: leg.payload.authorityGeneration }
+            : {}),
+          ...(leg.payload.blueprintContentHash !== undefined
+            ? { blueprintContentHash: leg.payload.blueprintContentHash }
+            : {}),
+          ...(leg.payload.blueprintRevision !== undefined
+            ? { blueprintRevision: leg.payload.blueprintRevision }
+            : {}),
+          ...(leg.payload.perEffectRequiredAuthorities !== undefined
+            ? { perEffectRequiredAuthorities: leg.payload.perEffectRequiredAuthorities }
+            : {}),
         },
       })
       return {
@@ -5023,6 +6041,280 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         nextLeg,
         caseOutcome: CONTROL_CASE_OUTCOMES.ESCALATED,
       }
+    })
+    if (outcome.nextLeg?.reviewAuthority === 'human-user') {
+      try {
+        options.reviewEvents?.({
+          kind: 'human-current-leg',
+          rootSessionId: root,
+          approvalCaseId: outcome.nextLeg.approvalCaseId ?? '',
+          currentLegRequestId: outcome.nextLeg.requestId,
+          legOrdinal: outcome.nextLeg.legOrdinal ?? 1,
+        })
+      } catch {
+        // A visibility event is not authority; the durable leg is already written.
+      }
+    }
+    return outcome
+  }
+
+  // --- transferCurrentLeg (A6-PR2c) ----------------------------------------------------
+
+  async function transferCurrentLeg(args: TransferCurrentLegInput): Promise<CurrentLegTransferRecord> {
+    const stage = 'transferCurrentLeg'
+    const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, stage)
+    if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
+      throw malformed(stage, 'requestId', 'requestId must be a non-empty string')
+    }
+    if (args.reason !== undefined && typeof args.reason !== 'string') {
+      throw malformed(stage, 'reason', 'reason must be a string when present')
+    }
+    if (args.cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF
+      && args.cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE) {
+      throw malformed(stage, 'cause', 'cause outside the closed set')
+    }
+    let handoffCaller: Extract<TransferCurrentLegInput, { cause: 'officer-handoff' }>['caller'] | undefined
+    if (args.cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+      handoffCaller = args.caller
+      const caller = resolveCaller(repositories, root, args.caller)
+      const resolved = resolveTeamAndTarget(
+        repositories,
+        options.blueprintCatalog,
+        {
+          rootSessionId: root,
+          action: ACTION_NAMES.RESOLVE_CONTROL,
+          caller: args.caller,
+          requestToken: args.requestId,
+        },
+        RESOLVE_CONTROL_SPEC,
+      )
+      enforceEnvelope(
+        RESOLVE_CONTROL_SPEC,
+        callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
+      )
+    }
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      const existing = state.transfers.find(
+        (row) => row.payload.currentLegRequestId === args.requestId,
+      )
+      if (existing !== undefined) return toTransferRecord(existing.entry, existing.payload)
+      const leg = state.requests.find((row) => row.payload.requestId === args.requestId)
+      if (leg === undefined) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND,
+          `ControlService: no durable control request '${args.requestId}' in team '${root}' (a transfer without a leg)`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      const approvalCaseId = leg.payload.approvalCaseId
+      if (approvalCaseId === undefined) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: leg '${args.requestId}' is a pre-Alpha.4 row without an approval case — there is no current leg to transfer`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      const caseRead = buildApprovalCaseState(state, approvalCaseId)
+      if (caseRead.kind !== 'case') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: approval case '${approvalCaseId}' cannot be read for a transfer (${String(caseRead.problem)})`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      const current = caseRead.state.currentLeg
+      if (current === undefined || current.requestId !== args.requestId) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
+          `ControlService: request '${args.requestId}' is not the current leg of case '${approvalCaseId}' — an earlier leg cannot be transferred`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      if (current.status !== 'pending') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
+          `ControlService: current leg '${args.requestId}' is '${current.status}', not pending — a transfer cannot rewrite a terminal leg`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      if (current.reviewAuthority !== 'leader') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: current leg '${args.requestId}' is reviewed at '${current.reviewAuthority}', not an ordinary leader leg; transfer is not available`,
+          { rootSessionId: root, requestId: args.requestId },
+        )
+      }
+      let actor: CurrentLegTransferRecord['actor']
+      if (args.cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+        if (handoffCaller === undefined || handoffCaller.kind !== 'instance') {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Officer handoff requires an instance caller`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        const reviewerPort = options.currentReviewerForTransfer
+        if (reviewerPort === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: no trusted current reviewer can be established for leg '${args.requestId}' — Officer handoff is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        let reviewer: { readonly instanceId: string } | null
+        try {
+          reviewer = await reviewerPort({
+            rootSessionId: root,
+            approvalCaseId,
+            currentLegRequestId: args.requestId,
+            legOrdinal: current.legOrdinal ?? 1,
+          })
+        } catch {
+          reviewer = null
+        }
+        if (reviewer === null || reviewer.instanceId !== handoffCaller.instanceId) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: caller '${handoffCaller.instanceId}' is not the trusted current reviewer of leg '${args.requestId}' — Officer handoff is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        actor = { kind: 'officer', instanceId: handoffCaller.instanceId }
+      } else {
+        const takeoverPort = options.trustedRuntimeTakeover
+        if (takeoverPort === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: no trusted runtime takeover authority is configured — unavailable takeover is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        let verdict: { readonly ok: true } | { readonly ok: false; readonly detail: string }
+        try {
+          verdict = await takeoverPort({
+            rootSessionId: root,
+            approvalCaseId,
+            currentLegRequestId: args.requestId,
+            legOrdinal: current.legOrdinal ?? 1,
+          })
+        } catch {
+          verdict = { ok: false, detail: 'the takeover evidence port threw' }
+        }
+        if (!verdict.ok) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: trusted runtime takeover was refused (${verdict.detail})`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        actor = { kind: 'trusted-team-runtime' }
+      }
+      const payload: CurrentLegTransferPayload = {
+        approvalCaseId,
+        currentLegRequestId: args.requestId,
+        legOrdinal: current.legOrdinal ?? 1,
+        target: 'leader',
+        cause: args.cause,
+        actor,
+        ...(current.blueprintContentHash !== undefined
+          ? { blueprintContentHash: current.blueprintContentHash }
+          : {}),
+        ...(current.blueprintRevision !== undefined
+          ? { blueprintRevision: current.blueprintRevision }
+          : {}),
+        transferredAt: options.now(),
+      }
+      await putEntry({
+        schemaVersion: 2,
+        sequence: await allocateSequence(),
+        rootSessionId: root,
+        factType: FACT_TRANSFER,
+        payload: {
+          approvalCaseId,
+          currentLegRequestId: args.requestId,
+          legOrdinal: payload.legOrdinal,
+          target: 'leader',
+          cause: args.cause,
+          actor,
+          ...(payload.blueprintContentHash !== undefined
+            ? { blueprintContentHash: payload.blueprintContentHash }
+            : {}),
+          ...(payload.blueprintRevision !== undefined
+            ? { blueprintRevision: payload.blueprintRevision }
+            : {}),
+          transferredAt: payload.transferredAt,
+          ...(args.reason !== undefined ? { reason: args.reason } : {}),
+        },
+        createdAt: options.now(),
+      })
+      const record: CurrentLegTransferRecord = payload
+      try {
+        options.reviewEvents?.({
+          kind: 'current-leg-transferred',
+          rootSessionId: root,
+          approvalCaseId,
+          currentLegRequestId: args.requestId,
+          legOrdinal: payload.legOrdinal,
+          transfer: record,
+        })
+      } catch {
+        // Delivery is the caller's concern; the durable fact is already written.
+      }
+      return record
+    })
+  }
+
+  // --- listMyReviewTasks (A6-PR5) ------------------------------------------------------
+
+  async function listMyReviewTasks(args: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+  }): Promise<readonly ReviewTaskSummary[]> {
+    const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list')
+    if (args.caller.kind !== 'instance') return []
+    const reviewerPort = options.currentReviewerForTransfer
+    if (reviewerPort === undefined) return []
+    const callerInstance = args.caller.instanceId
+    return withTeamLock(teamLocks, root, async () => {
+      const state = loadControlState(root)
+      const caseIds: string[] = []
+      for (const row of state.requests) {
+        const caseId = row.payload.approvalCaseId
+        if (caseId !== undefined && !caseIds.includes(caseId)) caseIds.push(caseId)
+      }
+      const tasks: ReviewTaskSummary[] = []
+      for (const approvalCaseId of caseIds) {
+        const read = buildApprovalCaseState(state, approvalCaseId)
+        if (read.kind !== 'case') continue
+        const current = read.state.currentLeg
+        if (current === undefined || current.status !== 'pending') continue
+        if (read.state.transfer !== undefined) continue
+        let reviewer: { readonly instanceId: string } | null
+        try {
+          reviewer = await reviewerPort({
+            rootSessionId: root,
+            approvalCaseId,
+            currentLegRequestId: current.requestId,
+            legOrdinal: current.legOrdinal ?? 1,
+          })
+        } catch {
+          reviewer = null
+        }
+        if (reviewer === null || reviewer.instanceId !== callerInstance) continue
+        tasks.push({
+          approvalCaseId,
+          currentLegRequestId: current.requestId,
+          legOrdinal: current.legOrdinal ?? 1,
+          reviewAuthority: current.reviewAuthority ?? 'leader',
+          kind: current.kind,
+          subject: current.subject,
+          actionName: current.actionName,
+          ...(current.toolName !== undefined ? { toolName: current.toolName } : {}),
+          requestSequence: current.requestSequence,
+        })
+      }
+      return tasks.sort((a, b) => a.requestSequence - b.requestSequence)
     })
   }
 
@@ -5583,10 +6875,15 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     requestControl,
     resolveControl,
     abandonControlRequest,
+    recordExecutionResult,
     listControlState,
+    readControlState,
+    transferCurrentLeg,
+    listMyReviewTasks,
     guardOperation,
     checkExternalOperation,
     awaitControlDecision,
+    awaitApprovalCaseDecision,
     commitEffectIfAuthorized,
     persistAbandonCloseLocked,
     requestApprovalLeg,

@@ -36,6 +36,7 @@ import type { BackendFailure, ScenarioFixture } from '../src/backend-contract.js
 import { createDirectBackend } from '../src/backend-direct.js'
 import { createContractStubBackend } from '../src/backend-stub.js'
 import { runToolCall, type AdmissionVerdict, type ToolCallResult } from '../src/pipeline.js'
+import { createGovernedToolDefinitions } from '../src/register.js'
 import { openSpillStore, type SpillStore } from '../src/spill.js'
 import type { ParsedToolArgs, SearchOutcome, ShellOutcome } from '../src/types.js'
 import { createNodeFsPort } from './helpers/a5p5-fs-port.js'
@@ -340,5 +341,95 @@ describe('a5p5-parity: direct implementation vs contract-stub backend', () => {
       expect(structural, `unanchored structure line leaked: ${JSON.stringify(line)}`).toBe(true)
     }
     expect(text).toContain('> a5p5-meta {"kind":"shell"') // the forged footer exists ONLY as an inert quote
+  })
+})
+
+/**
+ * A6 GAP-1 writer regression: the assembly hook must reach `runToolCall` as a
+ * DEP, not as a member of the `request` literal. The pre-fix production shape
+ * put it in the request through a spread, which legalized the wrong location
+ * for TypeScript and left `deps.onExecutionResult` permanently undefined; the
+ * fact was therefore never written on any path. These cases drive the SAME
+ * registered shell row the plane mounts (no pipeline-only shortcut).
+ */
+describe('A6 execution-result observation at the REGISTERED row', () => {
+  const exercised: Array<{ callId: string; outcome: 'succeeded' | 'failed' }> = []
+  const subscription = (input: { callId: string; outcome: 'succeeded' | 'failed' }): void => {
+    exercised.push({ callId: input.callId, outcome: input.outcome })
+  }
+  const backend = (run: () => Promise<unknown>): Record<string, unknown> => ({
+    backendId: 'a6-exec-result-hook',
+    run,
+    execCount: () => 0,
+    lastStageTrace: [],
+  })
+  const shellOutcome = {
+    exitCode: 0, stdout: 'hooked', stderr: '', timedOut: false, cancelled: false, truncated: false,
+  }
+  const row = (shellBackend: Record<string, unknown>): { execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> } => {
+    const definitions = createGovernedToolDefinitions({
+      realmId: 'realm-a6-exec-result',
+      decide: () => ({ kind: 'allow' }),
+      searchBackend: backend(async () => ({ ok: true, settlement: { kind: 'completed' }, outcome: shellOutcome })),
+      shellBackend,
+      onExecutionResult: subscription,
+    } as unknown as Parameters<typeof createGovernedToolDefinitions>[0])
+    const bash = (definitions as readonly { name: string; execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> }[])
+      .find((definition) => definition.name === 'bash')
+    if (bash === undefined) throw new Error('the registered lane exposes no bash row')
+    return bash
+  }
+
+  it('a successful backend writes exactly ONE `succeeded` observation', async () => {
+    exercised.length = 0
+    const bash = row(backend(async () => ({ ok: true, settlement: { kind: 'completed' }, outcome: shellOutcome })))
+    const result = await bash.execute({ command: 'true' }, {})
+    expect(result.text).toContain('hooked')
+    expect(exercised).toHaveLength(1)
+    expect(exercised[0]?.outcome).toBe('succeeded')
+    expect(exercised[0]?.callId).toMatch(/^a5p5-bash:mount:/)
+  })
+
+  it('an answered FAILURE writes exactly ONE `failed` observation', async () => {
+    exercised.length = 0
+    const bash = row(backend(async () => ({
+      ok: false,
+      failure: { code: 'A6_HOOK_FAILURE', detail: 'scripted backend failure' } satisfies BackendFailure,
+      settlement: { kind: 'completed' },
+    })))
+    const result = await bash.execute({ command: 'true' }, {})
+    expect(result.text).toContain('A6_HOOK_FAILURE')
+    expect(exercised).toHaveLength(1)
+    expect(exercised[0]?.outcome).toBe('failed')
+  })
+
+  it('a THROWING backend writes exactly ONE `failed` observation and still rejects', async () => {
+    exercised.length = 0
+    const bash = row(backend(async () => { throw new Error('A6_HOOK_THROW') }))
+    await expect(bash.execute({ command: 'true' }, {})).rejects.toThrow('A6_HOOK_THROW')
+    expect(exercised).toHaveLength(1)
+    expect(exercised[0]?.outcome).toBe('failed')
+  })
+
+  it('a policy DENY never reaches the backend and writes NO observation', async () => {
+    exercised.length = 0
+    let ran = 0
+    const bash = row(backend(async () => { ran += 1; return { ok: true, settlement: { kind: 'completed' }, outcome: shellOutcome } }))
+    // rebuild with a denying decision (the same registered row shape)
+    const denying = createGovernedToolDefinitions({
+      realmId: 'realm-a6-exec-result',
+      decide: () => ({ kind: 'deny', code: 'A6_HOOK_DENY' }),
+      searchBackend: backend(async () => ({ ok: true, settlement: { kind: 'completed' }, outcome: shellOutcome })),
+      shellBackend: backend(async () => { ran += 1; return { ok: true, settlement: { kind: 'completed' }, outcome: shellOutcome } }),
+      onExecutionResult: subscription,
+    } as unknown as Parameters<typeof createGovernedToolDefinitions>[0])
+    const bashDenied = (denying as readonly { name: string; execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> }[])
+      .find((definition) => definition.name === 'bash')
+    if (bashDenied === undefined) throw new Error('no bash row')
+    const result = await bashDenied.execute({ command: 'true' }, {})
+    expect(result.text).toContain('refused-admission')
+    expect(ran).toBe(0)
+    expect(exercised).toHaveLength(0)
+    expect(bash).toBeDefined()
   })
 })

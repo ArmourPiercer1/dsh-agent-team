@@ -1,0 +1,8 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6ROUTER",
+  "paths": ["packages/runtime/alpha6/root-router.ts"],
+  "expectedDelta": { "from": 1443, "to": 1444 },
+  "reason": "Alpha.6 root router input: the ONE shared routeReview decision built from the durable Control row + live member rows, so the notification layer cannot treat the unique Officer as the universal recipient. Production edits and tests ride already-counted files; zero denylist vocabulary.",
+  "tieNote": "MEASURED on this candidate tree: the unbooked p4t6 run reads one path above the 1443 ledger total; this booking adds exactly that path."
+}

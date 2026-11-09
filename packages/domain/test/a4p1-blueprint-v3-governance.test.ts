@@ -269,7 +269,7 @@ const v3HardVariant = attempt([
 // ---------------------------------------------------------------------------
 
 describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched)', () => {
-  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3, 4]: the v3-only bridge closed at §7.3; the v4 flip widened the run set (v4-flip round)', () => {
+  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3, 4, 5]: the v3-only bridge closed at §7.3; the v4 and v5 flips widened the run set', () => {
     // ADR A2-11 widened the set to 1|2|3 FOR the PR1-PR6 bridge and named PR7's
     // collapse to `[3]` as its own end condition. This is that collapse, so the
     // leg is inverted rather than deleted: the widening was always temporary and
@@ -282,7 +282,13 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
     // `a5fl1-blueprint-v4-flip.test.ts`. This pin moves WITH the constant, as
     // its own comment below demanded. RETIRED did NOT move: adding a version
     // demits nothing (翻档 ≠ 退役); `[1, 2]` is pinned on both sides of it.
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
+    //
+    // THE SECOND WIDENING ARRIVED (alpha6 v5-activation drill): `5` joins the
+    // run set and, together with it, DEFINED. Same law again — this pin moves
+    // WITH the constant, RETIRED still reads `[1, 2]`, and no version is
+    // demoted. The never-defined witness below is DERIVED one past DEFINED, so
+    // it moved from 5 to 6 on its own.
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4, 5])
     expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
     // The REFUSAL carries the set, DERIVED from this constant — which is what
     // `testdata/fixtures.ts` means when it derives its never-defined witness
@@ -455,7 +461,7 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
       if (outcome.ok) throw new Error('a retired stamp must not parse')
       const err = outcome.error as { code?: string; message?: string }
       expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
-      expect(String(err.message)).toContain('[3, 4]')
+      expect(String(err.message)).toContain('[3, 4, 5]')
     }
     expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(1)
     expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(2)

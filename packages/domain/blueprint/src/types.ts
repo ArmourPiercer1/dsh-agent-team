@@ -423,8 +423,14 @@ export interface TeamBlueprint {
    * This is a type-plane fact only: no v3 document ever stamps `4`, no v3
    * parse path reads it, and v3 behavior is byte-identical across the flip
    * (the zero-deformation legs of the flip suite pin it).
+   *
+   * The v5-activation DRILL round WIDENS the annotation to `3 | 4 | 5` — the
+   * typed face of the `{3, 4, 5}` run set. Same type-plane-only fact: the v5
+   * document's core face IS the frozen v4 output restamped 5 (plus
+   * `reviewRouting`), no v3/v4 parse path reads `5`, and their behavior is
+   * byte-identical across the activation.
    */
-  readonly schemaVersion: 3 | 4
+  readonly schemaVersion: 3 | 4 | 5
   /** Stable logical identity (not a path, not a display name). */
   readonly blueprintId: BlueprintId
   /** Human-readable revision. */

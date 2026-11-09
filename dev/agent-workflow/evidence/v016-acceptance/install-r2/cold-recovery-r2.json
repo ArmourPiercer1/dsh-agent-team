@@ -1,0 +1,63 @@
+{
+  "schema": "v016-install-cold-recovery/1",
+  "run": "2",
+  "ok": true,
+  "bootLine": "http://127.0.0.1:3198/?token=<redacted>",
+  "members": [
+    {
+      "instanceId": "inst-0j2zztq0vc7e",
+      "templateId": "worker",
+      "label": "w1",
+      "lifecycle": "SETTLED",
+      "childSessionId": "session-team-child-ffb2a752d6d48b0f2a75d322e527f3a1",
+      "result": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "lifecycle": "RUNNING",
+      "childSessionId": null,
+      "result": null
+    }
+  ],
+  "memberPresent": true,
+  "goalBefore": {
+    "id": "goal-664bb1b2-0bd4-45b0-a493-210a08207526",
+    "revision": 2,
+    "objective": "v016 install-flow goal INSTALL_FLOW_r2",
+    "phase": "paused",
+    "maxGoalRounds": 3,
+    "roundsStarted": 1,
+    "createdAt": 1794253580986,
+    "updatedAt": 1794253582270,
+    "activation": "disarmed"
+  },
+  "goalAfterRestart": {
+    "id": "goal-664bb1b2-0bd4-45b0-a493-210a08207526",
+    "revision": 2,
+    "objective": "v016 install-flow goal INSTALL_FLOW_r2",
+    "phase": "paused",
+    "maxGoalRounds": 3,
+    "roundsStarted": 1,
+    "createdAt": 1794253580986,
+    "updatedAt": 1794253582270,
+    "activation": "disarmed"
+  },
+  "goalAfterQuiet": {
+    "id": "goal-664bb1b2-0bd4-45b0-a493-210a08207526",
+    "revision": 2,
+    "objective": "v016 install-flow goal INSTALL_FLOW_r2",
+    "phase": "paused",
+    "maxGoalRounds": 3,
+    "roundsStarted": 1,
+    "createdAt": 1794253580986,
+    "updatedAt": 1794253582270,
+    "activation": "disarmed"
+  },
+  "roundsBefore": 1,
+  "roundsAfterQuiet": 1,
+  "recordsBefore": 51,
+  "recordsAfter": 51,
+  "resultStillOnDisk": true
+}

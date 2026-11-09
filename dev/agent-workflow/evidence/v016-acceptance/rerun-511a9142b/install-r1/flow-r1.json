@@ -1,0 +1,120 @@
+{
+  "schema": "v016-install-flow/1",
+  "run": "1",
+  "steps": {
+    "mount": {
+      "ok": true,
+      "at": "2026-11-09T20:14:56.650Z"
+    },
+    "teamCreate": {
+      "status": 200,
+      "ok": true,
+      "error": null
+    },
+    "memberCreated": {
+      "member": {
+        "instanceId": "inst-0dm6jyb1eqqq",
+        "templateId": "worker",
+        "label": "w1",
+        "lifecycle": "CREATED",
+        "childSessionId": "session-team-child-a81e5d1f324321f6d17ab683179c3d29",
+        "result": null
+      },
+      "members": [
+        {
+          "instanceId": "inst-0dm6jyb1eqqq",
+          "templateId": "worker",
+          "label": "w1",
+          "lifecycle": "CREATED",
+          "childSessionId": "session-team-child-a81e5d1f324321f6d17ab683179c3d29",
+          "result": null
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader",
+          "lifecycle": "RUNNING",
+          "childSessionId": null,
+          "result": null
+        }
+      ]
+    },
+    "pendingControl": {
+      "request": null,
+      "finding": "no durable approval was surfaced for the member bash in the shipped configuration"
+    },
+    "humanApprove": {
+      "ok": false,
+      "skipped": true,
+      "finding": "member bash executed without an approval prompt; approval required the opt-in A6 plane (measured in part B)"
+    },
+    "memberExecuted": {
+      "ok": true,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r1/ws/install-flow-r1.txt",
+      "body": "INSTALL_FLOW_r1"
+    },
+    "executionFacts": {
+      "consumption": null,
+      "execution": null
+    },
+    "goal": {
+      "ok": true,
+      "goal": {
+        "id": "goal-9a5919b6-0233-4c37-9b0b-4582af621b56",
+        "revision": 1,
+        "objective": "v016 install-flow goal INSTALL_FLOW_r1",
+        "phase": "active",
+        "maxGoalRounds": 3,
+        "roundsStarted": 1,
+        "createdAt": 1794255314152,
+        "updatedAt": 1794255314152,
+        "activation": "armed"
+      }
+    },
+    "stop": {
+      "before": {
+        "phase": "active",
+        "revision": 1,
+        "roundsStarted": 1
+      },
+      "pause": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "id": "goal-9a5919b6-0233-4c37-9b0b-4582af621b56",
+          "revision": 2,
+          "objective": "v016 install-flow goal INSTALL_FLOW_r1",
+          "phase": "paused",
+          "maxGoalRounds": 3,
+          "roundsStarted": 1,
+          "createdAt": 1794255314152,
+          "updatedAt": 1794255315193,
+          "activation": "disarmed"
+        },
+        "error": null
+      },
+      "cancel": {
+        "status": 200,
+        "ok": true
+      },
+      "after": {
+        "phase": "paused",
+        "revision": 2,
+        "roundsStarted": 1
+      },
+      "note": "goals/get -> goals/pause -> session/cancel -> goals/get are the RPCs the Stop button issues; no DOM click occurred (no headless browser in this environment).",
+      "silentWindowMs": 15000,
+      "recordsBefore": 50,
+      "recordsAfter": 50,
+      "recordsDelta": 0,
+      "roundsAfter": 1,
+      "ok": true
+    },
+    "collect": {
+      "ok": true,
+      "body": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-v016-install-root-r1\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"r1-delegate-install-flow-001\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0dm6jyb1eqqq\\\",\\\"admittedSequence\\\":2,\\\"settledSequence\\\":5,\\\"memberResult\\\":{\\\"body\\\":\\\"INSTALL_FLOW_r1 — task complete.\\\\n\\\\n**Report**\\\\n- Ran exactly: `mkdir -p . && printf INSTALL_FLOW_r1 > install-flow-r1.txt && cat install-flow-r1.txt`\\\\n- Exit code: 0\\\\n- `stderr`: empty\\\\n- Command output (`stdout`):\\\\n\\\\n```\\\\nINSTALL_FLOW_r1\\\\n```\\\\n\\\\nThe file `install-flow-r1.txt` now exists in the workspace (`/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept2/tests/homes/v016-install-r1/ws`) containing `INSTALL_FLOW_r1` with no trailing newline.\\\",\\\"requestToken\\\":\\\"r1-delegate-install-flow-001\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"r1-collect-002\\\"}\"}]"
+    }
+  },
+  "ok": true,
+  "origin": "http://127.0.0.1:3197"
+}

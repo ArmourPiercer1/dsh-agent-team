@@ -16,6 +16,19 @@
  *                        empty-`childSessionId` column is why the first two
  *                        boots silently did nothing), and the durable pause is
  *                        attempted before the process-local disarm.
+ *                        The CANCEL CAUSE is the Alpha.6 seam (A56-SEMANTICS):
+ *                        the Team's own stop must be a MACHINE stop
+ *                        (`{ kind: 'hook', reason: 'team-member-interrupt' }`),
+ *                        never `{ kind: 'user' }` — a `user` cause is exactly
+ *                        the producer of the durable human Sticky Stop marker
+ *                        (`turn/end` aborted/user), so a Leader's archive or a
+ *                        roster stop would fabricate a HUMAN stop and suspend
+ *                        the member's wake routing until a human intervened.
+ *                        The goal consequence is unchanged and measured live:
+ *                        the goal-round driver reads `turn/end reason.kind`
+ *                        (`aborted`), not the inner cause, so the durable pause
+ *                        + 0 rounds still hold (`pd29:leader-archive-stops-goal`
+ *                        green on this branch).
  *   PD29-PIN             the same read against the base commit fails: this is
  *                        a pin over `git show`, so a revert of the lane turns
  *                        the arm red instead of passing quietly.
@@ -82,8 +95,12 @@ function stopFacts(source) {
   const disarm = /function disarmStoppedGoal\(agent, target\)\s*\{([\s\S]*?)\n  \}/.exec(source)
   assert.ok(disarm !== null, 'the PD-29 disarm seam must exist')
   const disarmBody = disarm[1]
+  const cause = /handle\.agent\.cancel\(\{ kind: '([a-z-]+)'/.exec(body)
   return {
-    cancels: body.includes("handle.agent.cancel({ kind: 'user' })"),
+    cancelCause: cause === null ? null : cause[1],
+    // A machine stop must never wear the human cause (that would write the
+    // Alpha.6 human-Sticky-Stop marker for a Team action).
+    neverHumanCause: body.includes("handle.agent.cancel({ kind: 'user' })") === false,
     callsDisarm: body.split('\n').some((line) => line.trim() === 'disarmStoppedGoal(handle.agent, target)'),
     derivesChildSid: body.includes('childSessionIdFor('),
     pushesNoLiveObservation: body.includes('found NO live agent'),
@@ -96,7 +113,8 @@ function stopFacts(source) {
 test('PD29-STOP-SEQUENCE: cancel, then disarm, then the durable CAS pause', () => {
   const facts = stopFacts(read(BINDINGS))
   assert.deepEqual(facts, {
-    cancels: true,
+    cancelCause: 'hook',
+    neverHumanCause: true,
     callsDisarm: true,
     derivesChildSid: true,
     pushesNoLiveObservation: true,

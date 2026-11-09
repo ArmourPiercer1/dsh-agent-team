@@ -112,6 +112,7 @@ import { createRuntimeRequirementFactsProvider } from '../../requirement-facts/i
 import { SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, shippedStatePersonaObserver, } from '../../requirements/observed-persona.js';
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
 import { createTeamProductionRoot } from './root.js';
+import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js';
 import { createTeamSessionActivationFence } from './team-session-activation.js';
 import { resolveOwningTeamRoot } from './team-session-ownership.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError, } from './types.js';
@@ -2234,6 +2235,84 @@ export async function apply(ctx, config) {
         // armed, and the boot preload below runs after this point).
         policyReaderRef.current = builtRoot.policyReader;
         paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current;
+        // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
+        // `agent/inbox/claimed` is the message's owning turn start; `agent/status`
+        // idle is the turn end. The marker filter keeps ordinary user turns from
+        // claiming a wake latch.
+        const alpha6TurnLatchStart = builtRoot.alpha6TurnLatchStart;
+        const alpha6TurnLatchEnd = builtRoot.alpha6TurnLatchEnd;
+        if ((alpha6TurnLatchStart !== undefined || alpha6TurnLatchEnd !== undefined) &&
+            typeof ctx.on === 'function') {
+            const onHostEvent = ctx.on.bind(ctx);
+            if (alpha6TurnLatchStart !== undefined) {
+                onHostEvent('agent/inbox/claimed', (payload) => {
+                    const parts = payload.message?.content ?? [];
+                    const isLatchWake = parts.some((part) => part.type === 'text' && part.text?.includes(ALPHA6_WAKE_MARKER) === true);
+                    if (!isLatchWake)
+                        return;
+                    alpha6TurnLatchStart(String(payload.agent.id));
+                }, { global: true });
+            }
+            if (alpha6TurnLatchEnd !== undefined) {
+                onHostEvent('agent/status', (payload) => {
+                    if (payload.status !== 'idle')
+                        return;
+                    void alpha6TurnLatchEnd(String(payload.agent.id)).catch(() => undefined);
+                }, { global: true });
+            }
+        }
+        // Alpha.6 (opt-in only): the production producer for Sticky Stop. ONLY the
+        // user's own cancellation request reaches `turn/end` with
+        // `reason.kind==='aborted' && reason.reason.kind==='user'`; an ordinary tool
+        // Abort, a timeout or an internal cancel never maps to a global Stop. An
+        // explicit user message to the stopped reviewer is the only resume.
+        const alpha6WakeUserStop = builtRoot.alpha6WakeUserStop;
+        const alpha6WakeUserResume = builtRoot.alpha6WakeUserResume;
+        if ((alpha6WakeUserStop !== undefined || alpha6WakeUserResume !== undefined) &&
+            typeof ctx.on === 'function') {
+            const onSessionEvent = ctx.on.bind(ctx);
+            if (alpha6WakeUserStop !== undefined) {
+                onSessionEvent('session/event', (session, payload) => {
+                    if (payload.type !== 'turn/end')
+                        return;
+                    const reason = payload.data?.reason;
+                    if (reason?.kind !== 'aborted' || reason.reason?.kind !== 'user')
+                        return;
+                    void alpha6WakeUserStop(String(session.id)).catch(() => undefined);
+                }, { global: true });
+            }
+            if (alpha6WakeUserResume !== undefined) {
+                const onClaimed = ctx.on.bind(ctx);
+                // A56-SEMANTICS — the Sticky Stop resume arbour. A durable Sticky Stop
+                // may only be cleared by an EXPLICIT HUMAN interaction with the session,
+                // and `source.kind === 'user'` is necessary but NOT sufficient: a Team
+                // WORK delivery must carry the human attribution (upstream `create_goal`
+                // authority reads exactly it, authority.ts `hasDirectHumanInput`), so the
+                // producer's own provenance arbiter answers whether this claim was a Team
+                // delivery. Machine relays/wakes/notifications already carry the
+                // `plugin:` producer kind and are refused here by the same predicate.
+                const isMachine = (sessionId, message) => {
+                    const arbiter = builtRoot.live?.isTeamMachineInput;
+                    if (typeof arbiter === 'function') {
+                        try {
+                            return arbiter(sessionId, message ?? {}) === true;
+                        }
+                        catch {
+                            // A failing arbiter must never widen the Stop: treat the claim as
+                            // machine (the marker stays) rather than clearing a human Stop.
+                            return true;
+                        }
+                    }
+                    return message?.source?.kind !== 'user';
+                };
+                onClaimed('agent/inbox/claimed', (payload) => {
+                    const sessionId = String(payload.agent.id);
+                    if (isMachine(sessionId, payload.message))
+                        return;
+                    void alpha6WakeUserResume(sessionId).catch(() => undefined);
+                }, { global: true });
+            }
+        }
         // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
         // --- one artifact-read authority per production root, built over the
         // --- OPEN domain's durable repositories (session identity + the
@@ -2438,6 +2517,16 @@ export async function apply(ctx, config) {
                     `Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: ${String(permissionFacts.healthy())})`);
             }
             teamRuntimeReadiness = 'ready';
+            // Alpha.6 (opt-in only): crash recovery is a LIVENESS step, not a boot
+            // precondition. It runs after readiness (its re-plan may start a
+            // recipient turn) and a fault is logged loud but never bricks the world;
+            // the durable pending list / GUI remain the recovery path.
+            try {
+                await builtRoot.alpha6RecoverWakeLatches?.();
+            }
+            catch (error) {
+                console.error(`[dsh-agent-team] Alpha.6 wake recovery failed after readiness (${error instanceof Error ? error.message : String(error)}) — the Team stays booted; pending control rows and the GUI remain the recovery path`);
+            }
         }
         catch (error) {
             teamRuntimeReadiness = 'failed';
