@@ -1005,7 +1005,7 @@ environment, a recorded value, which provider a child reaches) and therefore nee
 - **proof**: [a5sf-pd35-stop-outcome/README.md](../../../../dev/agent-workflow/evidence/a5sf-pd35-stop-outcome/README.md) — the third table (`stopped` / `pause-contradicted` / `pause-unverified` and their exact copy), the old-test quote, and the client suites above. No RUN record is added: this lane performs **0 boots** by design (no Host behaviour change), and the live measurement of the four RPCs stays PD-34's `a5sf-pd34-member-stop/` pair plus the PD-33 S1c arm.
 - **blocked by**: **nothing.** The external review supplied the reproduction; the fix is client-local and host-free.
 - **anchors**: `packages/client/src/model/member-stop.ts#L2-L2` contains `MEMBER-STOP` ; `packages/client/src/model/member-stop.ts#L144-L144` contains `readonly kind: 'pause-contradicted'` ; `packages/client/src/ui/TeamMembers.tsx#L219-L219` contains `case 'pause-contradicted'` ; `packages/client/src/ui/locales.ts#L523-L523` contains `member.stop.contradicted` ; `packages/client/test/member-stop-model.test.ts#L196-L196` contains `expect(outcome.kind).toBe('pause-contradicted')` ; `docs/PREVIEW-STOP-SEMANTICS.md#L57-L57` contains `PD-35`
-- **status**: **DRAFT — not merged.** 2026-11-09 (real UTC), branch `task/pd35-stop-classify-20261116`, base `87484ded1`. No merge, no settlement, no `V@B`. The register row is PD-35 and is contiguous.
+- **status**: **DRAFT — not merged.** 2026-11-09 (real UTC), branch `task/pd35-stop-classify-20261116`, draft PR **#687** (first line `PD35-STOP-OUTCOME`), base `87484ded1`. No merge, no settlement, no `V@B`. The register row is PD-35 and is contiguous.
 
 ## 3. Ranking rationale
 

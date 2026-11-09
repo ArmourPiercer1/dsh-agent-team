@@ -81,4 +81,4 @@ adds no RUN record and claims no `V@B`.
 `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md` §4.1/§4.4 now
 describe the three results. The readiness report keeps its verdict and dates; an
 append-only dated correction records that §4.1 previously disagreed with the
-implementation and was fixed by this PR.
+implementation and was fixed by PR **#687**.
