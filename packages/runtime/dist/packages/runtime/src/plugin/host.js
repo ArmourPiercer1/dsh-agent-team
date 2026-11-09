@@ -2283,10 +2283,33 @@ export async function apply(ctx, config) {
             }
             if (alpha6WakeUserResume !== undefined) {
                 const onClaimed = ctx.on.bind(ctx);
+                // A56-SEMANTICS — the Sticky Stop resume arbour. A durable Sticky Stop
+                // may only be cleared by an EXPLICIT HUMAN interaction with the session,
+                // and `source.kind === 'user'` is necessary but NOT sufficient: a Team
+                // WORK delivery must carry the human attribution (upstream `create_goal`
+                // authority reads exactly it, authority.ts `hasDirectHumanInput`), so the
+                // producer's own provenance arbiter answers whether this claim was a Team
+                // delivery. Machine relays/wakes/notifications already carry the
+                // `plugin:` producer kind and are refused here by the same predicate.
+                const isMachine = (sessionId, message) => {
+                    const arbiter = builtRoot.live?.isTeamMachineInput;
+                    if (typeof arbiter === 'function') {
+                        try {
+                            return arbiter(sessionId, message ?? {}) === true;
+                        }
+                        catch {
+                            // A failing arbiter must never widen the Stop: treat the claim as
+                            // machine (the marker stays) rather than clearing a human Stop.
+                            return true;
+                        }
+                    }
+                    return message?.source?.kind !== 'user';
+                };
                 onClaimed('agent/inbox/claimed', (payload) => {
-                    if (payload.message?.source?.kind !== 'user')
+                    const sessionId = String(payload.agent.id);
+                    if (isMachine(sessionId, payload.message))
                         return;
-                    void alpha6WakeUserResume(String(payload.agent.id)).catch(() => undefined);
+                    void alpha6WakeUserResume(sessionId).catch(() => undefined);
                 }, { global: true });
             }
         }

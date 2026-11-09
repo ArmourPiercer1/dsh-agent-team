@@ -1,0 +1,30 @@
+{
+  "relay": {
+    "type": "server-response",
+    "rpcId": "c1a6mrelay-fgnt2lipuw",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_PRINCIPAL_INVALID",
+        "message": "remote method 'member.send' claims instance principal 'instance-c1-a6-leader' that does not resolve to a durable member of this host's owned roots (bound root 'session-c1-smoke-root-2026-11-09T17-22-34')",
+        "details": {
+          "method": "member.send",
+          "endpoint": "member.send",
+          "contractVersion": 4,
+          "requestToken": "c1-a6-machine-relay-1794244967305",
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_PRINCIPAL_INVALID",
+            "message": "remote method 'member.send' claims instance principal 'instance-c1-a6-leader' that does not resolve to a durable member of this host's owned roots (bound root 'session-c1-smoke-root-2026-11-09T17-22-34')"
+          }
+        }
+      }
+    }
+  },
+  "markersAfterMachineRelay": [
+    "stopped-f0f56deb.json"
+  ],
+  "wakesBeforeMachine": 1,
+  "wakesAfterMachineRelay": 1,
+  "relayClaimed": false
+}

@@ -1091,6 +1091,7 @@ export interface TeamProductionRoot {
   readonly alpha6WakeUserStop?: (targetSessionId: string) => Promise<boolean>
   /** Alpha.6 — an explicit new user interaction clears the Stop. */
   readonly alpha6WakeUserResume?: (targetSessionId: string) => Promise<boolean>
+
   /** A26 — the activity ledger (guarded progress writes + durable reads). */
   readonly activity: ActivityLedger
   /** A27 — the fork reconciliation (sidecar recognition + child team). */
@@ -1413,6 +1414,25 @@ export interface TeamAgentBindings {
     readonly wakeId: string
     readonly text: string
   }) => Promise<void>
+  /**
+   * A56-SEMANTICS — the input-provenance arbiter. `true` when the claimed
+   * message was delivered by the Team as MACHINE origin. Alpha.6's Sticky Stop
+   * may only be cleared by an explicit HUMAN interaction, and `source.kind`
+   * alone cannot decide that: a work delivery must carry the human
+   * `kind: 'user'` attribution to keep upstream `create_goal` authority
+   * (authority.ts `hasDirectHumanInput`), yet it is still a machine input. The
+   * production glue answers from its delivery ledger plus the frozen
+   * `[team-...]` provenance envelopes. OPTIONAL: a host without the live glue
+   * has no Team deliveries, so the source-kind law is then the whole law.
+   */
+  readonly isTeamMachineInput?: (
+    sessionId: string,
+    message: {
+      readonly id?: unknown
+      readonly source?: { readonly kind?: unknown }
+      readonly content?: readonly { readonly type?: string; readonly text?: unknown }[]
+    },
+  ) => boolean
   /**
    * Alpha.6 — the native-Inbox probe for one recipient session (live pending
    * messages only). Recovery uses it to adopt a queued intent ONLY when the

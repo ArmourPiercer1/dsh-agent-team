@@ -1,0 +1,10 @@
+{
+  "schema": "dist-placements/1",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/input-provenance.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/input-provenance.mjs",
+      "note": "A56-SEMANTICS (gateway 2 of the joint Alpha.5+Alpha.6 close-out): the ONE input-provenance law. `agent-bindings.mjs` imports it as a sibling module, so the dist copy must travel with the glue (the placement list is the only way a plain .mjs reaches dist). It answers the two questions the A5 Goal authority and the A6 Sticky Stop pull apart — which source kind a Team delivery carries, and whether a claimed inbox message was an explicit HUMAN interaction — so neither side can be silently re-decided by a merge resolution."
+    }
+  ]
+}
