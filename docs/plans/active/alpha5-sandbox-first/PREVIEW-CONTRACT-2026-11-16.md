@@ -15,15 +15,21 @@
 | 项 | 值 |
 | --- | --- |
 | 产品包 | `dsh-agent-team@0.1.1-alpha.2`（workspace 版本；`package.json` 与 `packages/runtime` 同源） |
-| 测量基线 | `origin/master` @ **`87484ded13db97ea688484e85c67a85107a72d1f`**（本文件所在的 lane 从该提交切出；`git log -1` 可复核） |
+| 测量基线 | `origin/master` @ **`87484ded13db97ea688484e85c67a85107a72d1f`**（本文件所在的 lane 从该提交切出；`git log -1` 可复核）；本 lane 之后 rebase 到 `41a272c6d`（PD-35 STOP-OUTCOME 合并），产品文件零差异 |
 | 交付形态 | **一个 bundle 包**：`pnpm pack` 产出的 tarball `dsh-agent-team-0.1.1-alpha.2.tgz`，**4 208 998 字节**，`sha256 = bea32690ba57661f4a940b3f2f3efa71e9789818c64bbad7520db4df290ce366` |
 | 安装命令 | `dsh plugin --profile web add <tarball>`（`docs/INSTALL.md` §2 的普通安装路径；CLI 自动把 `dsh-agent-team` 追加进 `dsh.profile.bundles`） |
 | 组成的行 | host 行 `dsh-agent-team/host`、client 行 `dsh-agent-team/client`、预设行 `a5sf-governed-member`（bundle 自带，**默认不启用**） |
 | 启用方式 | profile 层**整行覆盖** `dsh-agent-team` host 行，且同时给 `memberPresetId: a5sf-governed-member` **与** `a5sfGovernedRealm: true`；`blueprintSource` 必须是 `schemaVersion: 4` 且带 `memberIoCeilings` 的蓝图 |
 | 不包含 | 没有 `release`。`release` 仍 **BLOCKED**；本 Preview 的 `PREVIEW-GO`（2026-11-15）只覆盖上面这个 opt-in 预设 |
+| **本版本是否"装完即可用"** | **否。** 2026-11-16 的六臂实测：打包、安装、启动、`team.create`、真实模型回合全部成立，但**第一个工具调用就结束回合**（`Cannot read properties of undefined (reading 'prepare')`）。理由与全部读数 = §2.3 与 `dev/agent-workflow/evidence/a5sf-pd35-install-smoke/control-matrix.txt`（A–F 六臂）；登记 = **PD-36 (INSTALL-SMOKE)** |
 
 **范围边界的一句话**：这是**内部、opt-in 的 governed team runtime 预览**，不是默认团队形态，也不是发布候选。
 `CORE PATCH BUDGET = 0` 在本版本上仍然成立：宿主 `@deepseek-ai/dsh@0.2.0-rc.2` 未被修改。
+
+**本版本的可信度边界（一句话）**：上表的 sha 与预设是**能装、能起、能建队、能跑真实模型**的证明；
+它**不是**"能跑主流程"的证明——那条证明在**普通安装**里失败，理由不是推断而是六臂控制矩阵：A（不装插件）绿、
+B/C（装插件，tarball 与 World 链接两种形态）同错、D/E（本机 npm 宿主，无插件）同错但属环境隔离项、F（受治行）
+同样在第一个工具调用处失败。**因此本契约既不声称"装完可用"，也不把 D/E 当成上游缺陷的证据。**
 
 ---
 
@@ -60,9 +66,9 @@
 **因此**：本契约的**全部 live 证据仍然只在 WorldFactory harness 形态下成立**。harness 与普通安装的差别
 （见 `dev/agent-workflow/evidence/a5sf-pd35-install-smoke/control-matrix.txt` 与
 `tests/world-factory/lib/profile-module-graph.mjs` 的注释）**尚未被消除**，这正是外部审查点名的
-"测试替身"缺口：**在普通用户安装里跑主流程这件事，本 Preview 尚未证明**。登记为 **PD-35**。
+"测试替身"缺口：**在普通用户安装里跑主流程这件事，本 Preview 尚未证明**。登记为 **PD-36 (INSTALL-SMOKE)**（原 PD-35；PD-35 已被 STOP-OUTCOME `41a272c6d` 占用）。
 
-对外表述只能是：**"在 WorldFactory harness 下可跑；普通安装的主流程待修复（PD-35）"**。
+对外表述只能是：**"在 WorldFactory harness 下可跑；普通安装的主流程待修复（PD-36）"**。
 不得表述为"装完即可用"。
 
 ---
@@ -106,7 +112,7 @@
 3. **不是 team-wide Stop**：Stop 只停目标 Member；停 Leader 的当前回合不停已委派的异步工作（§3.2）。
 4. **不是对恶意 Member 的安全边界**：它是"治理可归因"，不是"隔离不可逃逸"。`bash` 的越界写由 OS profile 兜
    （BL-17），网络只有单一布尔，shell 体不由服务轴归属。**"防住恶意 Member"是正式 Alpha.5 的题目，不是 Preview 的承诺。**
-5. **不是"普通安装即可用"**：见 §2.3 / PD-35。当前只在 WorldFactory harness 形态下有 live 证据。
+5. **不是"普通安装即可用"**：见 §2.3 / PD-36。当前只在 WorldFactory harness 形态下有 live 证据。
 
 ---
 
@@ -151,4 +157,4 @@
 2. 说 Stop 时必须带 §3.1 的"durable `pause` 被 ACK 之后"限定语。
 3. 说工具数时必须用 §5.1 的 **34（产品）/ 36（含仪器）** 双数，不得只写一个。
 4. 说归因时必须用 §5.2 的整句，不得截断成"每次调用都可归因"。
-5. 说"能跑"时必须带 §2.3 的限定：**WorldFactory harness 形态**；普通安装见 PD-35。
+5. 说"能跑"时必须带 §2.3 的限定：**WorldFactory harness 形态**；普通安装见 PD-36。

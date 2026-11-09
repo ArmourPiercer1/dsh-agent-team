@@ -1,8 +1,8 @@
-# PD-35 / PD36-INSTALL-SMOKE — 普通安装冒烟：机制成立，主流程不成立
+# PD-36 / PD36-INSTALL-SMOKE — 普通安装冒烟：机制成立，主流程不成立
 
 > 日期 2026-11-16 ｜ lane `PD36-INSTALL-SMOKE` ｜ branch `task/pd36-install-smoke-20261116`
 > ｜ base `origin/master` @ `87484ded13db97ea688484e85c67a85107a72d1f`
-> ｜ 登记册行 = **PD-35**（连续律；见 README 末「编号」） ｜ 0 个 `packages/**` 变更
+> ｜ 登记册行 = **PD-36**（连续律；见 README 末「编号」） ｜ 0 个 `packages/**` 变更
 > ｜ `CORE PATCH BUDGET = 0` ｜ 无 `V@B`、无等级移动、不改 Q7/Authority/Required-CI
 
 本文回答外部审查留给本 lane 的唯一问题——**"一个普通用户按文档安装、启动之后，到底能不能跑主流程？"**
@@ -16,7 +16,7 @@
 `team.create`、真实模型回合全部成立，但**每一次工具调用**都以
 `Cannot read properties of undefined (reading 'prepare')` 结束，因此 `web_fetch` / 文件读写 / goal / Stop /
 结果收集**一条都没跑通**；同一事实在 WorldFactory 的链接形态下**同样**出现，所以它不是打包差异，而是
-"插件装载进真实 profile"这一形态下的缺陷。登记为 **PD-35**。
+"插件装载进真实 profile"这一形态下的缺陷。登记为 **PD-36**。
 
 ---
 
@@ -84,18 +84,28 @@ turn/end    {"turn":1,"reason":{"kind":"error","error":{"message":"Cannot read p
 
 1. **A vs B/C**：在同一宿主上，**装插件**是差异所在。B 与 C 同错，所以**不是**"tarball 与链接"的差异，
    即**不是打包形态**的差异。
-2. **B/C 与 World 的关系**：World 也是链接形态（C 就是它的形状）。World 的记录是绿的，而 C 在这里是红的
-   → **World 的绿依赖 WorldFactory 额外提供的东西**（harness 行 / 组合 / 图），这正是外部审查点名的
-   "测试替身"缺口；`tests/world-factory/lib/profile-module-graph.mjs` 的注释自述它提供"每个 World 都有的
-   install graph"。
-3. **D/E 是环境事实，不是归因**：本机从 npm 装的宿主**即使不装插件**也复现同一错误；本环境的 native 包
-   install script 被挡（`@deepseek-ai/dsh-subprocess-local`、`koffi`、`node-pty`、`protobufjs`、
-   `@google/genai`）。因此 **D/E 不能用来指控上游发布缺陷**，只能说明"本环境的 npm 宿主不可作证据"。
-4. **未能进一步归因的地方，明说**：本 lane 没有把失败定位到单行代码。已知的候选是
-   `@deepseek-ai/dsh-agent-loop` 的 `ctx.tools[TOOL_RUNTIME_SCHEDULER].prepare(...)`
+2. **C 就是 World 自己的形态，而 C 是红的。** 这不是一条附注，它是对本窗口全部 live 结论的限定，所以说白：
+
+   - C 用的就是 WorldFactory 装插件的方式（`node_modules/dsh-agent-team -> 仓库根`），**World 也是这个形状**；
+     World 的记录是绿的，而这里的 C 是红的。两者之间只剩 WorldFactory 额外提供的东西（harness 行、组合行、
+     profile 图；`tests/world-factory/lib/profile-module-graph.mjs` 的注释自述它提供"每个 World 都有的
+     install graph"）。
+   - 因此：**World 的绿依赖 WorldFactory 在"install graph"之外还给了什么，而那件东西我们还没有识别出来。**
+     harness 因此**仍然是一个测试替身**，而且是我们此前**没有命名过**的那一类——PD-32 修的是"行无法解析"，
+     这一条是"行能解析、工具跑不了"，两者不是同一个缺口。
+   - 推论，必须一起说：**本窗口里每一条"live"结论都继承这个 caveat**，直到有人把 C 与 World 的差异解释清楚。
+     这不否定那些结论（它们在自己的形态里可复现），但它否定了"这些结论可以直接迁移到用户安装"。
+     在 PD-36 关闭之前，任何"装完能用"的表述都不成立。
+3. **D/E 必须隔离为环境事实（quarantine）**：本机从 npm/pnpm 装的宿主**即使一个插件都不装**也复现同一错误；
+   本环境的 native 包 install script 被挡（`@deepseek-ai/dsh-subprocess-local`、`koffi`、`node-pty`、
+   `protobufjs`、`@google/genai`）。所以 **D/E 不能被用来指控上游发布缺陷**——它们只能说明"本环境的 npm 宿主
+   不可作为证据"。**这条保持原样，逐字保留**：归咎宿主的诱惑很强，而它是错的。
+4. **未能进一步归因的地方，明说**：本 lane 只把失败**定位**到工具执行 seam——`@deepseek-ai/dsh-agent-loop`
+   读 `ctx.tools[TOOL_RUNTIME_SCHEDULER]` 再调 `.prepare(...)`
    （pinned 树 `packages/core/agent-loop/src/tool-calls.ts:170`；符号由 `@deepseek-ai/dsh-tools` 定义），
    即"取到的 `tools` 服务上没有调度器"。本 lane **没有**证实是重复模块实例、服务被 router/isolate 覆盖、
-   还是别的路径。**结论只到"下一次调用必失败"这一层，不越过。**
+   还是缺少 harness 提供的某一行——**这三条是假设，不是诊断**，按 H1/H2/H3 交给接手的人（见登记册 PD-36）。
+   **结论只到"下一次调用必失败"这一层，不越过。**
 
 ---
 
@@ -136,10 +146,13 @@ node .scratch/install-smoke/read-session.mjs <home> <sessionId> --types=tool/cal
 
 ---
 
-## 7. 编号
+## 7. 编号（两次改号，都写明）
 
-外部审查给本 lane 的编号是 **PD-36**，但本 base（`87484ded1`）上登记册的最后一行是 **PD-34**，**PD-35 空缺**；
-`tests/world-factory/a5sf-debt-register.test.mjs` 强制 `PD-1…PD-n` 连续，故本行只能取 **PD-35**。
-lane / 分支 / PR 首行 / 证据目录仍用 **PD36**（审查给出的轮次标识），登记册里以 `sourceId = INSTALL-SMOKE`
-标识、并在 `source` 里写明这次改号。兄弟 lane（Stop 结果分类）若先合并，本行按同一规则重编号
-（先例：`PD-25-from-PD-24`、`PD-28-from-PD-30`）。
+外部审查给本 lane 的编号是 **PD-36**。本 lane 起始时 base（`87484ded1`）上登记册最后一行是 **PD-34**，
+**PD-35 空缺**，`tests/world-factory/a5sf-debt-register.test.mjs` 强制 `PD-1…PD-n` 连续，故当时只能写 **PD-35**。
+随后兄弟 lane（Stop 结果分类）**先合并**为 **PD-35 (STOP-OUTCOME)**（`41a272c6d` / #687）；本 lane
+**rebase 到该 master**，行号回到窗口号 **PD-36**，现在紧接 PD-35、连续。
+
+链条：**PD-36（窗口号）→ PD-35（空 base）→ PD-36（#687 之后）**。lane / 分支 / PR 首行 / 证据目录名
+仍用 **PD36**；登记册里以 `sourceId = INSTALL-SMOKE` 标识。同一规则先例：`PD-25-from-PD-24`、
+`PD-28-from-PD-30`、`PD-30→PD-32` 的窗口链。

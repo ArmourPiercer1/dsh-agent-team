@@ -76,10 +76,10 @@ EffectiveIo(member, tool, call) ⊆ MemberCeiling(member) ∩ ToolRestriction(me
 > **Preview 提供的是可归因的 guard fact / typed deny，覆盖受治的 I/O 调用；`team_*` 控制工具沿用既有的
 > TeamDomain / envelope 审计；Goal 三件套走上游 Goal 状态服务。这是三种不同的机制，不是一种。**
 >
-> **安装形态更正（2026-11-16，追加；PD-35）**：本报告全部 live 证据都在 WorldFactory harness 形态下取得。
+> **安装形态更正（2026-11-16，追加；PD-36 / 原 PD-35）**：本报告全部 live 证据都在 WorldFactory harness 形态下取得。
 > 2026-11-16 的普通安装冒烟显示：打包与安装机制成立、`team.create` 成立、真实模型回合成立，但**任何工具调用**
 > 都以 `Cannot read properties of undefined (reading 'prepare')` 结束；同一插件以链接形态装载时同样失败、
-> 不装插件的同一宿主则成功。因此"装完能跑主流程"**尚未成立**，见 PD-35 与
+> 不装插件的同一宿主则成功。因此"装完能跑主流程"**尚未成立**，见 PD-36（原 PD-35，rebase 后按连续律回到窗口号）与
 > `dev/agent-workflow/evidence/a5sf-pd35-install-smoke/`。
 
 ---
