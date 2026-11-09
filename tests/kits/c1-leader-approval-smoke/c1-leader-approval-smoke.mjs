@@ -312,6 +312,21 @@ const A6_CRASH = ['1', 'allow', 'consume', 'body', 'before'].includes(String(pro
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
 const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
 const A6_INBOX = process.env['C1_A6_INBOX'] === '1'
+// A6-INBOX-UNCLAIMED: the window the audit never injected — the native Inbox
+// ACCEPTED the review wake into the recipient's next-step list but the turn
+// never claimed it (the Officer is kept busy on a long tool call). Kill the
+// Host BEFORE any wake turn starts, then restart and count claims.
+const A6_INBOX_UNCLAIMED = process.env['C1_A6_INBOX_UNCLAIMED'] === '1'
+const A6_INBOX_ACTIVE = A6_INBOX || A6_INBOX_UNCLAIMED
+// A6-EXEC-NEG: after the normal allow/execute measurement, drive the two
+// negative controls against the SAME plane: (1) a denied call must produce NO
+// execution-result, (2) a call whose backend THROWS must produce a terminal
+// `failed` fact, never `succeeded`.
+const A6_EXEC_NEG = process.env['C1_A6_EXEC_NEG'] === '1'
+const SUM_A6_DENY = 'c1-a6-deny-sentinel'
+const SUM_A6_THROW = 'c1-a6-throw-sentinel'
+const MK_A6DENY = 'C1MK_A6DENY'
+const MK_A6THROW = 'C1MK_A6THROW'
 const A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF
 const SUM_A6_SELF = `c1-a6-self-${RUN_STAMP}`
 const FILE_A6_SELF = join(WORKSPACE, `c1-a6-self-${RUN_STAMP}.txt`)
@@ -1785,6 +1800,222 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       return cancelOk && !revived
     }
   }
+  if (A6_INBOX_UNCLAIMED) {
+    // The audit's missing window: ACCEPTED but never CLAIMED. The Officer is
+    // held in a long tool turn, so the wake lands in the durable next-step
+    // inbox and `markAccepted` records the acceptance — no `agent/inbox/
+    // claimed` has fired (zero wake turns). SIGKILL exactly there, restart the
+    // same DSH_HOME, and count how many claims the native Inbox produces.
+    // Drive the busy turn DIRECTLY on the Officer (the Leader's send can be
+    // queued behind the wake, which is the race this window must avoid).
+    const officerRow = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+    if (officerRow !== undefined) {
+      await apiPrompt(booted.origin, booted.cookie, officerRow.childSessionId, 'C1_A6_BUSY', 'c1a6busy')
+      await waitForMock(mock, (r) => lastUserTextOf(r).includes('C1_A6_BUSY') && replyToolNames(r).includes('bash'), 30_000, 'Officer busy turn started')
+    }
+    const markerDir = join(HOME, 'alpha6-wake-intents')
+    const intentDeadline = Date.now() + 120_000
+    let acceptedRow = null
+    let wakeRows = []
+    let wakesBefore = 0
+    let busySeen = false
+    while (Date.now() < intentDeadline) {
+      wakeRows = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesBefore = wakeStartCount(mock.requests)
+      busySeen = mock.requests.some((r) => lastUserTextOf(r).includes('C1_A6_BUSY'))
+      if (wakeRows.length > 0) {
+        try {
+          const row = JSON.parse(readFileSync(join(markerDir, wakeRows[0]), 'utf8'))
+          if (row?.status === 'accepted' && wakesBefore === 0 && busySeen) { acceptedRow = row; break }
+        } catch { /* rewritten mid-read: retry */ }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    const ledgerBefore = readControlLedger(CREATE_ROOT_A6)
+    const pendingBefore = ledgerBefore.requests.filter(
+      (r) => !ledgerBefore.decisions.some((d) => d.requestId === r.requestId),
+    ).map((r) => r.requestId)
+    const requestsAtRestart = mock.requests.length
+    const wakeTraceBefore = mock.requests.map((r, index) => {
+      const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+      return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+    }).filter((row) => row !== null)
+    writeEvidence('a6-inbox-unclaimed-before.json', {
+      acceptedRow, wakeRows, wakesBefore, busySeen, pendingBefore, requestsAtRestart, wakeTraceBefore,
+    })
+    let restartError = null
+    let wakesAfterRestart = wakesBefore
+    let wakesAfterDrain = wakesBefore
+    let rowsAfterRestart = wakeRows
+    let rowsAfterDrain = wakeRows
+    let pendingAfter = pendingBefore
+    let discoveryAfter = null
+    let postRestartError = null
+    try {
+      const offset = statSync(booted.instanceLog).size
+      const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+      const patchText = readFileSync(patchPath, 'utf8')
+      if (!patchText.includes('bootPhase: "create-or-open"')) {
+        writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+      }
+      a6BusyDone = true
+      host.child.kill('SIGKILL')
+      const exitDeadline = Date.now() + 20_000
+      while (host.alive() && Date.now() < exitDeadline) await new Promise((resolve) => setTimeout(resolve, 50))
+      const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+      const bootDeadline = Date.now() + 120_000
+      while (Date.now() < bootDeadline && h2.alive()) {
+        const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+        if (/http:\/\/127\.0\.0\.1:\d+\/\?token=/.test(text)) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      rowsAfterRestart = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      wakesAfterRestart = wakeStartCount(mock.requests)
+      const bootText = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+      const bootUrl = [...bootText.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)].at(-1)
+      if (bootUrl === undefined) throw new Error('no boot URL after unclaimed-inbox restart')
+      const origin2 = `http://127.0.0.1:${bootUrl[1]}`
+      let cookie2 = null
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { cookie2 = await authenticate(origin2, bootUrl[2]); break } catch { await new Promise((resolve) => setTimeout(resolve, 500)) }
+      }
+      if (cookie2 === null) throw new Error('restart auth failed for unclaimed-inbox crash')
+      // The claim may arrive with the replayed (repaired) turn or as a fresh
+      // wake turn. Count wake TURN STARTS for 60 s and wait for the durable
+      // request to settle.
+      const drainDeadline = Date.now() + 90_000
+      while (Date.now() < drainDeadline) {
+        wakesAfterDrain = wakeStartCount(mock.requests)
+        const ledger = readControlLedger(CREATE_ROOT_A6)
+        const stillPending = pendingBefore.filter((id) => !ledger.decisions.some((d) => d.requestId === id))
+        pendingAfter = stillPending
+        if (wakesAfterDrain > wakesBefore && stillPending.length === 0) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      rowsAfterDrain = existsSync(markerDir)
+        ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
+        : []
+      // Acceptance criterion (ii): a stranded wake is acceptable ONLY if the
+      // durable request is discoverable through the public remote surface and
+      // an operator can resolve it by id. Read the page + projection BEFORE
+      // tearing the restarted Host down.
+      const strandedPendingId = pendingAfter[0] ?? null
+      const pageAfter = await remoteCall(origin2, cookie2, 'team.getLedgerPage', {
+        teamSessionId: CREATE_ROOT_A6,
+        afterSequence: 0,
+      }, 'c1a6g2', 4)
+      const projectionAfter = await remoteCall(origin2, cookie2, 'team.getProjection', {
+        teamSessionId: CREATE_ROOT_A6,
+      }, 'c1a6g2p', 4)
+      const serializedAfter = JSON.stringify(pageAfter.body ?? pageAfter)
+      const projectionDataAfter = projectionAfter.body?.result?.value?.data?.projection ?? {}
+      discoveryAfter = {
+        pendingRequestId: strandedPendingId,
+        requestFactVisible: strandedPendingId !== null && serializedAfter.includes(strandedPendingId),
+        requestIdOccurrences: strandedPendingId === null ? 0 : serializedAfter.split(strandedPendingId).length - 1,
+        pendingControlCount: projectionDataAfter.ledger?.pendingControlCount ?? null,
+        page: pageAfter.body ?? pageAfter,
+        projection: projectionAfter.body ?? projectionAfter,
+      }
+      // Operator recovery EXERCISED, not just asserted: the public resolve
+      // channel must accept the stranded request by id after the restart.
+      let recovery = null
+      if (strandedPendingId !== null) {
+        const recoveryResponse = await remoteCall(origin2, cookie2, 'team.resolveControl', {
+          teamSessionId: CREATE_ROOT_A6,
+          requestId: strandedPendingId,
+          decision: 'allow',
+          note: 'C1 A6 gap-2 operator recovery after a stranded accepted wake',
+        }, 'c1a6g2r', 4)
+        const recoveredLedger = readControlLedger(CREATE_ROOT_A6)
+        recovery = {
+          status: recoveryResponse.status,
+          body: recoveryResponse.body ?? recoveryResponse,
+          decision: recoveredLedger.decisions.filter((d) => d.requestId === strandedPendingId).at(-1) ?? null,
+        }
+        discoveryAfter.recovery = recovery
+      }
+      if (h2.alive()) h2.child.kill('SIGKILL')
+    } catch (error) {
+      restartError = String(error?.message ?? error)
+    }
+    const delivered = wakesAfterDrain - wakesBefore
+    const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+    const acceptedRequestId = acceptedRow?.requestId ?? pendingBefore[0] ?? null
+    const abandonedAfter = acceptedRequestId === null ? [] : ledgerAfter.abandonments.filter((a) => a.requestId === acceptedRequestId)
+    pendingAfter = ledgerAfter.requests.filter(
+      (r) => !ledgerAfter.decisions.some((d) => d.requestId === r.requestId)
+        && !ledgerAfter.abandonments.some((a) => a.requestId === r.requestId),
+    )
+    const exactlyOnce = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 1 && pendingAfter.length === 0
+    // Acceptable (ii): no claim after restart, but the durable request is still
+    // pending AND discoverable through the public remote surface (page +
+    // projection), so an operator can resolve it by id.
+    const strandedAcceptable = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 0 && pendingAfter.length > 0
+      && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
+      && discoveryAfter.recovery?.decision?.decision === 'allow'
+    // The measured outcome on this base: the accepted wake is never claimed,
+    // and boot recovery terminally ABANDONS the durable PA request
+    // (`control-request-abandoned`, reason invocation-abandoned). That is
+    // at-most-once (no duplicate); resolution is refused forever, and the
+    // operator recovery is re-issuing the ask. Typed + discoverable by id.
+    const abandonedTerminal = acceptedRow !== null && restartError === null && busySeen
+      && wakesBefore === 0 && delivered === 0 && abandonedAfter.length > 0
+      && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
+      && ((discoveryAfter.recovery?.body?.result?.error?.code ?? discoveryAfter.recovery?.body?.error?.code) === 'CONTROL_REQUEST_ABANDONED')
+    const ok = exactlyOnce || strandedAcceptable || abandonedTerminal
+    const verdict = exactlyOnce ? 'exactly-once'
+      : delivered > 1 ? 'duplicate-P1'
+        : abandonedTerminal ? 'abandoned-terminal'
+          : strandedAcceptable ? 'stranded-discoverable'
+            : 'stranded-undiscoverable'
+    if (!ok) postRestartError = restartError
+      ?? (acceptedRow === null ? 'no ACCEPTED row observed before the kill'
+        : busySeen !== true ? 'the Officer was never BUSY, so the window was not constructed'
+          : wakesBefore !== 0 ? `the wake was already claimed before the kill (wake turns=${wakesBefore})`
+            : delivered === 0 ? 'STRANDED: no claim after restart and the pending request is not discoverable'
+              : delivered > 1 ? `DUPLICATE: the accepted message was claimed ${delivered} times after restart`
+                : 'the durable request did not settle after the replayed claim')
+    check('A6-26', 'an ACCEPTED-but-never-CLAIMED wake after restart is claimed EXACTLY once, or stranded with a discoverable durable request (never duplicated)', ok,
+      `accepted=${acceptedRow === null ? 'none' : acceptedRow.wakeId} busy=${busySeen} wakes=${wakesBefore}->${wakesAfterRestart}->${wakesAfterDrain} rows=${wakeRows.length}->${rowsAfterRestart.length}->${rowsAfterDrain.length} pendingBefore=${pendingBefore.length} pendingAfter=${pendingAfter.length} discoverable=${String(discoveryAfter?.requestFactVisible)} pendingCount=${String(discoveryAfter?.pendingControlCount)} abandoned=${abandonedAfter.length} recoveryCode=${String(discoveryAfter?.recovery?.body?.result?.error?.code ?? discoveryAfter?.recovery?.body?.error?.code)} restart=${restartError ?? 'ok'} verdict=${verdict}`)
+    writeEvidence('a6-inbox-unclaimed.json', {
+      schema: 'a6-inbox-unclaimed/1',
+      window: 'ACCEPTED-not-CLAIMED',
+      acceptedRow,
+      busySeen,
+      wakesBefore,
+      wakesAfterRestart,
+      wakesAfterDrain,
+      deliveredAfterRestart: delivered,
+      rowsBefore: wakeRows,
+      rowsAfterRestart,
+      rowsAfterDrain,
+      pendingBefore,
+      pendingAfter,
+      abandonedAfter,
+      discoveryAfter,
+      restartError,
+      verdict,
+      acceptable: ok,
+      reason: exactlyOnce ? 'exactly-once-claim'
+        : abandonedTerminal ? 'terminal-abandonment: no duplicate execution; the accepted wake/request is durably abandoned and must be re-issued'
+          : strandedAcceptable ? 'stranded-but-discoverable-and-operator-recovery-exercised' : postRestartError,
+      wakeTraceAfter: mock.requests.map((r, index) => {
+        const wakeId = /^\[team-review-wake wakeId=([^\]]+)\]/.exec(lastUserTextOf(r))?.[1] ?? null
+        return wakeId === null ? null : { index, wakeId, messageCount: r.body?.messages?.length ?? null, lastRole: r.body?.messages?.at(-1)?.role ?? null }
+      }).filter((row) => row !== null),
+      mockRequests: mock.requests.length,
+    })
+    return ok
+  }
+
   const memberDone = await waitForMock(
     mock,
     (r) => r.body !== null && lastUserTextOf(r).includes(MK_A6MEM)
@@ -1861,6 +2092,154 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   check('A6-6', 'every durable request at the end is settled (no lost pending leg)', pending.length === 0,
     `requests=${ledger.requests.length} decisions=${ledger.decisions.length} consumptions=${ledger.consumptions.length} pending=${pending.map((r) => r.requestId).join(',')}`)
 
+  // GAP-1 measurement: the NORMAL path's durable execution-result fact, read
+  // from the same store row (`control-execution-result`) rather than from the
+  // tool transcript. The original audit's reader omitted the factType, so a
+  // written fact was invisible to it; this check reads it back explicitly.
+  const paRequest = ledger.requests.filter((r) => r.actionName === 'team-tool-execute').at(-1)
+  const paExecution = paRequest === undefined
+    ? undefined
+    : ledger.executionResults.find((e) => e.requestId === paRequest.requestId)
+  const execResultOk = executed && paExecution?.outcome === 'succeeded'
+  check('A6-27', 'the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request', execResultOk,
+    `executed=${String(executed)} pa=${paRequest?.requestId ?? 'none'} callId=${paExecution?.callId ?? 'none'} outcome=${paExecution?.outcome ?? 'none'} facts=${ledger.executionResults.length}`)
+  writeEvidence('a6-execution-result.json', {
+    schema: 'a6-execution-result/1',
+    pathRead: 'team_domain.json#tables.ledger[factType=control-execution-result]',
+    paRequest: paRequest ?? null,
+    paExecution: paExecution ?? null,
+    allExecutionResults: ledger.executionResults,
+    executed,
+    execResultOk,
+  })
+
+  let execNegOk = true
+  if (A6_EXEC_NEG) {
+    // The Officer is the LIVE member instance (the worker's session may be
+    // disposed after its delegated turn); its bash ask is still a Member ask
+    // that routes through the plane PA and produces the same durable facts.
+    const negMember = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'officer' && typeof row.childSessionId === 'string')
+    if (negMember === undefined) {
+      execNegOk = false
+      check('A6-28', 'a DENIED call writes NO execution-result and executes nothing', false, 'no Officer child session')
+    } else {
+      const beforeNeg = readControlLedger(CREATE_ROOT_A6)
+      const known = new Set(beforeNeg.requests.map((r) => r.requestId))
+      // ── DENY control ──
+      a6DenyOnce = true
+      const denyPrompt = await apiPrompt(booted.origin, booted.cookie, negMember.childSessionId, `${MK_A6DENY} ${RUN_STAMP}`, 'c1a6deny')
+      log(`A6-DENY prompt status=${denyPrompt.status} body=${JSON.stringify(denyPrompt.body ?? denyPrompt).slice(0, 400)}`)
+      const denyDeadline = Date.now() + 45_000
+      let denyRequest = null
+      const denyResponses = []
+      const settledByNegative = new Set()
+      while (Date.now() < denyDeadline) {
+        const live = readControlLedger(CREATE_ROOT_A6)
+        const fresh = live.requests.filter((r) => !known.has(r.requestId)
+          && !settledByNegative.has(r.requestId)
+          && !live.decisions.some((d) => d.requestId === r.requestId))
+        for (const freshRow of fresh) {
+          // The guard principal leg precedes the plane leg; let it through so
+          // the PA request under test actually exists, then DENY that one.
+          const decision = freshRow.actionName === 'team-tool-execute' ? 'deny' : 'allow'
+          const res = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: freshRow.requestId,
+            decision,
+            note: decision === 'deny'
+              ? 'C1 A6 exec-result DENY negative control'
+              : 'C1 A6 exec-result negative control: admit the guard leg so the PA leg exists',
+          }, 'c1a6deny', 4)
+          settledByNegative.add(freshRow.requestId)
+          denyResponses.push({ requestId: freshRow.requestId, actionName: freshRow.actionName, decision, status: res.status, body: res.body ?? res })
+          if (decision === 'deny') denyRequest = freshRow
+        }
+        if (denyRequest !== null) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      a6DenyOnce = false
+      const denyDone = await waitForMock(
+        mock,
+        (r) => lastUserTextOf(r).includes(MK_A6DENY)
+          && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_DENY_DONE',
+        120_000,
+        'A6 deny control turn completed',
+      )
+      const afterDeny = readControlLedger(CREATE_ROOT_A6)
+      const denyDecision = denyRequest === null ? null
+        : afterDeny.decisions.filter((d) => d.requestId === denyRequest.requestId).at(-1) ?? null
+      const denyConsumption = denyRequest === null ? null
+        : afterDeny.consumptions.find((c) => c.requestId === denyRequest.requestId) ?? null
+      const denyExecFacts = denyRequest === null ? []
+        : afterDeny.executionResults.filter((e) => e.requestId === denyRequest.requestId)
+      const denyFile = join(HOME, 'workspace', `c1-a6-deny-${RUN_STAMP}.txt`)
+      const denyOk = denyRequest !== null && denyDone !== null
+        && denyDecision?.decision === 'deny'
+        && denyConsumption === null
+        && denyExecFacts.length === 0
+        && !existsSync(denyFile)
+      execNegOk = execNegOk && denyOk
+      check('A6-28', 'a DENIED call is refused after its durable decision: zero consumption, zero side effect, and NO execution-result fact', denyOk,
+        `request=${denyRequest?.requestId ?? 'none'} decision=${denyDecision?.decision ?? 'none'} consumed=${denyConsumption !== null} execFacts=${denyExecFacts.length} file=${String(existsSync(denyFile))} done=${denyDone !== null}`)
+      // ── THROW control ──
+      const beforeThrow = readControlLedger(CREATE_ROOT_A6)
+      const throwKnown = new Set(beforeThrow.requests.map((r) => r.requestId))
+      const throwPrompt = await apiPrompt(booted.origin, booted.cookie, negMember.childSessionId, `${MK_A6THROW} ${RUN_STAMP}`, 'c1a6throw')
+      log(`A6-THROW prompt status=${throwPrompt.status} body=${JSON.stringify(throwPrompt.body ?? throwPrompt).slice(0, 400)}`)
+      // Resolve this leg deterministically over the remote channel (guard
+      // allow, plane allow) so the throw is measured without a wake race.
+      const throwResolveDeadline = Date.now() + 60_000
+      let throwPlaneResolved = false
+      const throwResponses = []
+      while (Date.now() < throwResolveDeadline) {
+        const live = readControlLedger(CREATE_ROOT_A6)
+        const fresh = live.requests.filter((r) => !throwKnown.has(r.requestId)
+          && !live.decisions.some((d) => d.requestId === r.requestId))
+        for (const freshRow of fresh) {
+          const res = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
+            teamSessionId: CREATE_ROOT_A6,
+            requestId: freshRow.requestId,
+            decision: 'allow',
+            note: 'C1 A6 exec-result THROW control: admit then let the backend throw',
+          }, 'c1a6throw', 4)
+          throwResponses.push({ requestId: freshRow.requestId, actionName: freshRow.actionName, status: res.status, body: res.body ?? res })
+          if (freshRow.actionName === 'team-tool-execute') throwPlaneResolved = true
+        }
+        if (throwPlaneResolved) break
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
+      const throwDone = await waitForMock(
+        mock,
+        (r) => lastUserTextOf(r).includes(MK_A6THROW)
+          && (r.reply?.kind === 'text' ? r.reply.content : '') === 'C1_A6_THROW_DONE',
+        90_000,
+        'A6 throw control turn completed',
+      )
+      const afterThrow = readControlLedger(CREATE_ROOT_A6)
+      const throwRequest = afterThrow.requests
+        .filter((r) => r.actionName === 'team-tool-execute' && !throwKnown.has(r.requestId))
+        .at(-1) ?? null
+      const throwConsumption = throwRequest === null ? null
+        : afterThrow.consumptions.find((c) => c.requestId === throwRequest.requestId) ?? null
+      const throwFacts = throwRequest === null ? []
+        : afterThrow.executionResults.filter((e) => e.requestId === throwRequest.requestId)
+      const throwFact = throwFacts.at(-1) ?? null
+      const throwOk = throwRequest !== null && throwDone !== null
+        && throwConsumption !== null
+        && throwFact?.outcome === 'failed'
+        && !throwFacts.some((e) => e.outcome === 'succeeded')
+        && readFileSync(FILE_A6_ALLOW, 'utf8').includes(SUM_A6_ALLOW)
+      execNegOk = execNegOk && throwOk
+      check('A6-29', 'a call whose backend THROWS/aborts after consumption records ONE terminal `failed` execution-result (never `succeeded`)', throwOk,
+        `request=${throwRequest?.requestId ?? 'none'} consumed=${throwConsumption !== null} execFacts=${throwFacts.map((e) => e.outcome).join(',') || 'none'} callId=${throwFact?.callId ?? 'none'} done=${throwDone !== null}`)
+      writeEvidence('a6-exec-negatives.json', {
+        schema: 'a6-exec-negatives/1',
+        deny: { request: denyRequest, decision: denyDecision, consumption: denyConsumption, executionResults: denyExecFacts, responses: denyResponses, fileExisted: existsSync(denyFile), done: denyDone !== null, ok: denyOk },
+        throw: { request: throwRequest, consumption: throwConsumption, executionResults: throwFacts, responses: throwResponses, consumedBeforeDone: throwConsumption !== null, memberToolResults: throwDone === null ? [] : toolMsgsOf(throwDone).map((m) => contentText(m?.content).slice(0, 800)), ok: throwOk },
+      })
+    }
+  }
+
   let selfReview = null
   let handoff = null
   if (A6_RECIPIENTS) {
@@ -1900,6 +2279,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     handoff: handoff === null ? null : { ...handoff, ledger: undefined },
   })
   return exceptionOk && (A6_EXCEPTION || wakes.length > 0) && resolveCalls.length > 0 && executed && pending.length === 0
+    && execResultOk && execNegOk
     && (selfReview === null || selfReview.ok)
     && (handoff === null || handoff.ok)
 }
@@ -1908,6 +2288,11 @@ let mockWakeSeq = 0
 let a6HandoffPhase = false
 let a6HumanPhase = A6_HUMAN || A6_STOP
 let a6ResumePhase = false
+let a6BusyDone = false
+// The deny control defers the Officer's wake resolution: the kit resolves the
+// durable request with `deny` over the remote channel instead, so the refusal
+// is a real decision (not a mock shortcut).
+let a6DenyOnce = false
 function makeDecide() {
   return async function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
@@ -1927,12 +2312,36 @@ function makeDecide() {
       return { kind: 'text', content: 'C1_A6_RESUMED' }
     }
     const tools = toolMsgsOf(req).length
+    // GAP-1 negative controls (worker turns; never wake turns).
+    if (lastUser.includes(MK_A6DENY) && !lastUser.startsWith('[team-review-wake')) {
+      return tools === 0
+        ? toolCall('bash', bashArgs(`printf '%s' '${SUM_A6_DENY}' > c1-a6-deny-${RUN_STAMP}.txt`))
+        : { kind: 'text', content: 'C1_A6_DENY_DONE' }
+    }
+    if (lastUser.includes(MK_A6THROW) && !lastUser.startsWith('[team-review-wake')) {
+      // A cwd that does not exist: the anchored shape admits it, then the
+      // confined spawn refuses at the cwd after admission + consumption (a
+      // terminal backend outcome, never `succeeded`). The command is inert.
+      return tools === 0
+        ? toolCall('bash', { ...bashArgs('true'), cwd: `c1-a6-no-such-dir-${RUN_STAMP}` })
+        : { kind: 'text', content: 'C1_A6_THROW_DONE' }
+    }
+    if (a6DenyOnce && lastUser.startsWith('[team-review-wake')) {
+      // List (proves the leg is model-visible) but never resolve: the kit
+      // denies the durable row over the remote channel.
+      return tools === 0
+        ? toolCall('team_list_pending_control', { root: CREATE_ROOT_A6 })
+        : { kind: 'text', content: 'C1_A6_WAKE_DEFERRED' }
+    }
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
       return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
     }
     // (2c) keep the Officer BUSY on a long tool turn so the review wake is
     // ACCEPTED into the native Inbox but cannot be claimed yet.
     if (lastUser.includes('C1_A6_BUSY')) {
+      // After the crash/restart this marker must retire fast: the queued
+      // next-step wake cannot be claimed while a fresh 45 s turn runs.
+      if (a6BusyDone) return { kind: 'text', content: 'C1_A6_BUSY_DONE' }
       return tools === 0
         ? toolCall('bash', bashArgs('sleep 45 && echo c1-a6-busy-done'))
         : { kind: 'text', content: 'C1_A6_BUSY_DONE' }
@@ -1973,6 +2382,12 @@ function makeDecide() {
 
     // (2b) the C1 notification turns (token-leading, no dedupe).
     if (lastUser.startsWith(NOTIF_PREFIX)) {
+      if (a6DenyOnce) {
+        // GAP-1 DENY control: the kit owns the decision for this window (the
+        // durable row is denied over the remote channel). Ending the
+        // notification turn without resolving keeps the race deterministic.
+        return { kind: 'text', content: 'C1_NOTIF_DEFERRED' }
+      }
       // S4 injection: the Z member-ask notification (summary carries the
       // side-effect file marker) is REFUSED at the model layer — the
       // durable request + the pending list are what make this recoverable.
@@ -2029,6 +2444,11 @@ function makeDecide() {
       }
     }
     if (lastUser.includes(MK_A6MEM)) {
+      // The busy marker must win the race: the Leader sends C1_A6_BUSY before
+      // it delegates, but the Member's first model request can arrive before
+      // that turn starts. Hold this request briefly so the Officer is already
+      // in its long tool turn when the PA ask is steered into the Inbox.
+      if (A6_INBOX_ACTIVE && !a6BusyDone) await new Promise((resolve) => setTimeout(resolve, 6000))
       switch (tools) {
         case 0: return toolCall('bash', bashArgs(process.env['C1_A6_CRASH'] === 'body' ? CMD_A6_BODY : CMD_A6_ALLOW))
         case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
@@ -2060,7 +2480,7 @@ function makeDecide() {
       }
     }
     if (lastUser.includes(MK_A6)) {
-      if (A6_INBOX) {
+      if (A6_INBOX_ACTIVE) {
         switch (tools) {
           case 0: return toolCall('team_create_member', {
             rootSessionId: CREATE_ROOT_A6,
@@ -2321,7 +2741,7 @@ async function waitForMock(mock, pred, timeoutMs, label) {
  * {factType, rootSessionId, payload, ...}. Read-only.
  */
 function readControlLedger(root) {
-  const out = { requests: [], decisions: [], consumptions: [], abandonments: [], transfers: [], escalations: [], error: null }
+  const out = { requests: [], decisions: [], consumptions: [], abandonments: [], transfers: [], escalations: [], executionResults: [], error: null }
   try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const ledger = parsed?.tables?.ledger
@@ -2344,6 +2764,11 @@ function readControlLedger(root) {
         out.transfers.push({ sequence: Number(k), factType: entry.factType, ...payload })
       } else if (entry.factType === 'control-escalation-recorded') {
         out.escalations.push({ sequence: Number(k), factType: entry.factType, ...payload })
+      } else if (entry.factType === 'control-execution-result') {
+        // A6 closing-round fact, additive: the post-backend outcome observed
+        // for one durable PA request. The ORIGINAL audit reader omitted this
+        // branch, which is why a written fact was invisible to it.
+        out.executionResults.push({ sequence: Number(k), factType: entry.factType, requestId: payload.requestId, callId: payload.callId, outcome: payload.outcome, recordedAt: payload.recordedAt, createdAt: entry.createdAt })
       }
     }
   } catch (error) {
