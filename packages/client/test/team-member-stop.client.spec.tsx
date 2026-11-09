@@ -113,6 +113,26 @@ const STOPPED: MemberStopOutcome = {
   cancel: { kind: 'accepted' },
 }
 
+/** PD-35: the pause was written, but the last read still says `active`. */
+const CONTRADICTED: MemberStopOutcome = {
+  kind: 'pause-contradicted',
+  goalId: 'goal-1',
+  revision: 3,
+  phase: 'paused',
+  observedPhase: 'active',
+  cancel: { kind: 'accepted' },
+}
+
+/** PD-35: the pause was written, but the last read failed / had no value. */
+const UNVERIFIED: MemberStopOutcome = {
+  kind: 'pause-unverified',
+  goalId: 'goal-1',
+  revision: 3,
+  phase: 'paused',
+  observedPhase: undefined,
+  cancel: { kind: 'accepted' },
+}
+
 function makeFace(overrides: Partial<TeamMembersCommandFace> = {}): TeamMembersCommandFace {
   return {
     memberCreate: vi.fn(() => Promise.resolve(okResponse('member.create'))),
@@ -186,6 +206,41 @@ describe('PD-34 team view — stop a specific Member', () => {
     // NO optimistic lifecycle patch: the row stays RUNNING until the
     // projection says otherwise (the stop changes the goal, not the lifecycle).
     expect(view.container.querySelector('[data-member-instance]')?.getAttribute('data-status')).toBe('running')
+  })
+
+  it('never renders "已停止" when the re-read contradicts the pause (PD-35)', async () => {
+    const face = makeFace({ memberStop: vi.fn(() => Promise.resolve(CONTRADICTED)) })
+    const view = render(<TeamMembers {...props(snapshot([memberRow()]), face)} />)
+    fireEvent.click(view.container.querySelector('[data-member-stop]')!)
+    await vi.waitFor(() => {
+      const note = view.container.querySelector('[data-member-stop-note]')?.textContent ?? ''
+      expect(note).toBeTruthy()
+    })
+    const note = view.container.querySelector('[data-member-stop-note]')?.textContent ?? ''
+    // The exact user-facing sentence: the pause is written, the latest read is
+    // still active, and the stop is NOT confirmed.
+    expect(note).toContain('暂停已写入')
+    expect(note).toContain('rev 3')
+    expect(note).toContain('最新读取仍是 active')
+    expect(note).toContain('未确认停止')
+    expect(note).toContain('请重试或核对')
+    expect(note).not.toContain('已停止')
+  })
+
+  it('says the final state could not be confirmed when the re-read failed (PD-35)', async () => {
+    const face = makeFace({ memberStop: vi.fn(() => Promise.resolve(UNVERIFIED)) })
+    const view = render(<TeamMembers {...props(snapshot([memberRow()]), face)} />)
+    fireEvent.click(view.container.querySelector('[data-member-stop]')!)
+    await vi.waitFor(() => {
+      const note = view.container.querySelector('[data-member-stop-note]')?.textContent ?? ''
+      expect(note).toBeTruthy()
+    })
+    const note = view.container.querySelector('[data-member-stop-note]')?.textContent ?? ''
+    expect(note).toContain('暂停已写入')
+    expect(note).toContain('rev 3')
+    expect(note).toContain('未能确认最终状态')
+    expect(note).toContain('重读失败')
+    expect(note).not.toContain('已停止')
   })
 
   it('renders a typed stop failure verbatim (never a green note)', async () => {

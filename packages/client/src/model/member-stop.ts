@@ -35,6 +35,13 @@
  * service (or the typed refusal). A front end may render that observation but
  * must not invent one.
  *
+ * PD-35 (STOP-OUTCOME): the SECOND read is the ONLY oracle for "stopped".
+ * Before PD-35 the model collected `observedPhase` and then returned
+ * `kind:'stopped'` whatever it read, so a re-read of `active` rendered
+ * "已停止：目标 phase=active" (self-contradictory) and a failed re-read
+ * rendered "已停止" from the pause's own phase. The three cases are now
+ * separate values, and only a re-read of `paused` means `stopped`.
+ *
  * Pure module: no React, no I/O, no node: builtins, no DSH internal API.
  * @module @dsh-agent-team/client/model/member-stop
  */
@@ -103,9 +110,19 @@ export type MemberStopCancelOutcome =
 /**
  * The settled outcome of "stop this Member".
  *
- * `stopped` carries the phase RE-READ after the pause — that value is the
- * authority the UI reports. `unavailable` / `read-refused` / `pause-refused`
- * are typed failures (rendered verbatim; never smoothed into a success).
+ * The DURABLE re-read (step 4) decides which of three "pause was written"
+ * outcomes is reported — the pause's own 200 is never the oracle:
+ *
+ *   - `stopped`             the last read confirmed `paused` (the ONLY success);
+ *   - `pause-contradicted`  the pause was written, but the last read still
+ *                           reports a non-`paused` phase (e.g. `active`);
+ *   - `pause-unverified`    the pause was written, but the last read failed or
+ *                           returned no goal, so the final state is unknown.
+ *
+ * `unavailable` / `read-refused` / `pause-refused` are typed failures
+ * (rendered verbatim; never smoothed into a success). The `cancel` outcome is
+ * a FIELD on each pause-written result, not a failure: a detached Agent is not
+ * a failed stop.
  */
 export type MemberStopOutcome =
   | {
@@ -113,10 +130,38 @@ export type MemberStopOutcome =
       readonly goalId: string
       /** The revision the CAS wrote (the paused view's revision). */
       readonly revision: number
-      /** The phase reported by the pause itself (expected `paused`). */
+      /** The phase the pause itself reported (contract: `paused`). */
       readonly phase: MemberGoalPhase
-      /** The phase re-read from the goal service AFTER the cancel (durable observation). */
-      readonly observedPhase: MemberGoalPhase | undefined
+      /** The phase re-read from the goal service AFTER the cancel: the oracle. */
+      readonly observedPhase: 'paused'
+      readonly cancel: MemberStopCancelOutcome
+    }
+  | {
+      /**
+       * The pause is durable, but the latest read still says something other
+       * than `paused`. Rendered as "not confirmed", NEVER as "stopped".
+       */
+      readonly kind: 'pause-contradicted'
+      readonly goalId: string
+      readonly revision: number
+      /** The phase the pause itself reported (contract: `paused`). */
+      readonly phase: MemberGoalPhase
+      /** The non-`paused` phase the last read observed (the contradiction). */
+      readonly observedPhase: Exclude<MemberGoalPhase, 'paused'>
+      readonly cancel: MemberStopCancelOutcome
+    }
+  | {
+      /**
+       * The pause is durable, but the final state could not be read: the
+       * re-read was refused, threw, or returned no goal. Missing observation is
+       * `undefined`, never `active` and never `paused`.
+       */
+      readonly kind: 'pause-unverified'
+      readonly goalId: string
+      readonly revision: number
+      /** The phase the pause itself reported (contract: `paused`). */
+      readonly phase: MemberGoalPhase
+      readonly observedPhase: undefined
       readonly cancel: MemberStopCancelOutcome
     }
   | {
@@ -181,6 +226,11 @@ async function cancelTurn(
  * `session.cancel` → `goals.get`. A Member with no current goal still gets
  * its turn aborted (the button means "stop this Member", not "pause a
  * record"); the outcome says `no-goal` so the UI does not claim a pause.
+ *
+ * After the pause the outcome is classified by the LAST read alone: `stopped`
+ * only when it says `paused`; `pause-contradicted` when it says anything else;
+ * `pause-unverified` when it fails or returns no goal. The cancel outcome is a
+ * field on all three, never a reason to downgrade the stop result.
  *
  * @param seams - the injected public seams (`ctx.remote.goals` / `ctx.remote.session`).
  * @param memberSessionId - the Member's child session id (the durable projection row's `childSessionId`).
@@ -247,8 +297,10 @@ export async function stopMember(
   // explicit turn abort, and its refusal must not be reported as a failed stop.
   const cancel = await cancelTurn(seams, memberSessionId)
 
-  // The DURABLE observation (step 4). A failed re-read is disclosed as
-  // `undefined`; the paused CAS above is still the written authority.
+  // The DURABLE observation (step 4) is the ONLY oracle for "stopped".
+  // `ok:false` and `value:undefined` both mean "the final state is unknown":
+  // a missing observation is `pause-unverified`, never smoothed into either a
+  // success or the pause's own phase (PD-35).
   let observedPhase: MemberGoalPhase | undefined
   try {
     const reread = await goals.get(memberSessionId)
@@ -257,14 +309,25 @@ export async function stopMember(
     observedPhase = undefined
   }
 
-  return {
-    kind: 'stopped',
+  const base = {
     goalId: paused.id,
     revision: paused.revision,
     phase: paused.phase,
-    observedPhase,
     cancel,
+  } as const
+
+  if (observedPhase === undefined) {
+    // The re-read was refused/threw or returned no goal: the pause is written,
+    // but its final state could not be confirmed.
+    return { kind: 'pause-unverified', ...base, observedPhase: undefined }
   }
+  if (observedPhase !== 'paused') {
+    // The pause was acknowledged but the latest durable read says otherwise.
+    // Reporting `stopped` here is the PD-35 defect: the UI would print
+    // "已停止：目标 phase=active". Keep the contradiction explicit.
+    return { kind: 'pause-contradicted', ...base, observedPhase }
+  }
+  return { kind: 'stopped', ...base, observedPhase }
 }
 
 /**
