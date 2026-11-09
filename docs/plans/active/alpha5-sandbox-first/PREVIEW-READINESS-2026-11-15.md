@@ -86,6 +86,12 @@ governed Member** 起不来，下游症状是"0 个 Member / 没有 goal"——*
 
 **披露 1**：`u5_canary` / `u6fs_probe` 由 WorldFactory 的 harness 行注册，出现在**每个** agent 的表面；
 名册单列，不从 preset 的 17 行推导（仪器泄漏；产品行为不受影响，但名册必须单列）。
+
+> **更正（2026-11-16，追加；本表与上面的 36 不变，只收窄读法）**：上表 36 个名字里，**产品工具是 34 个**，
+> 另外 **2 个是 World 注入的测试仪器**（`u5_canary` / `u6fs_probe`）。因此：
+> **受治面 = 36 个名字 = 34 个产品工具名 + 2 个测试仪器名**；**用户可见的产品工具数是 34**
+> （10 受管 I/O + 5 同族 + `read_image` + 3 Goal + 15 `team_*`）。旧句"19 + 15 + 2 = 36"本身成立，
+> 但**不得**被读成"产品有 36 个工具"。契约正本：`PREVIEW-CONTRACT-2026-11-16.md` §5.1。
 **披露 2**：**Goal 三件套明确不是 I/O 上界工具**——它们受 goal service 生命周期约束，不参与
 `EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction` 的交集证明。
 **披露 3**：`read_image` 的受管面是**模型路由**：路由不声明 `image` 时，工具在 provider I/O 之前拒绝（§5.3）；
@@ -320,6 +326,12 @@ boot02 在 `runs/boot02/`。
 
 **一句话**：Alpha.5 Preview 是一个**内部的、opt-in 的 governed team runtime 预览**——每一次工具调用都可归因
 （guard fact / typed deny），每一次停止都可测量（20 000 ms 静默窗口 + durable `paused`）。
+
+> **归因措辞更正（2026-11-16，追加；不改判定）**：上面"每一次工具调用都可归因"过宽，冻结后的表述是——
+> **Preview 提供的是可归因的 guard fact / typed deny，覆盖受治的 I/O 调用；`team_*` 控制工具沿用既有的
+> TeamDomain / envelope 审计；Goal 三件套走上游 Goal 状态服务。这是三种不同的机制，不是一种。**
+> 因此"所有调用都有 guard fact"不成立；`team_*` 与 Goal 的"可归因"来自另外两套机制，强度不同。
+> 契约正本：`PREVIEW-CONTRACT-2026-11-16.md` §5.2。
 
 **stop 的保证是「durable `pause` 被确认之后不再有 continuation」，不是「点下按钮之后不再有执行」**：
 两者之间有一个毫秒级窗口，本报告把它测出来了（§4.4），也没有假装它不存在。

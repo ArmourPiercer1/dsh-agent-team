@@ -1,0 +1,7 @@
+INSTALL SMOKE — CONTROL MATRIX (host / plugin install / profile row -> first bash tool call)
+A pinned-tree host (tests/deepseek-harness-test-use @ 0.2.0-rc.2), NO plugin in profile, plain session -> bash OK ("pinned-ok", turn/end completed)
+B pinned-tree host, dsh-agent-team installed from the packed TARBALL (docs/INSTALL.md path), shipped bundle row, plain session -> FAIL "Cannot read properties of undefined (reading 'prepare')"
+C pinned-tree host, dsh-agent-team LINKED into the profile (WorldFactory shape), shipped bundle row, plain session -> FAIL same
+D npm-installed host (@deepseek-ai/dsh@0.2.0-rc.2, node_modules flattened), NO plugin, plain session -> FAIL same
+E pnpm-installed host (isolated linker), NO plugin, plain session -> FAIL same
+F pinned-tree host, tarball install + governed profile row (a5sf-governed-member, a5sfGovernedRealm), team.create -> team created, Leader turn runs, first tool call (skill) -> FAIL same

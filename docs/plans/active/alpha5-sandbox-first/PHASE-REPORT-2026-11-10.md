@@ -66,6 +66,22 @@ EffectiveIo(member, tool, call) ⊆ MemberCeiling(member) ∩ ToolRestriction(me
   真实子进程被内核/传输拒绝、正控、带外传输观测、第二条消费路径）**一个都不具备**。
 - **传输是 recorder**：web 臂的传输没有 socket/DNS/proxy；PTY 的端口是注入的 double（PD-1 的修复因此是契约级验证）。
 
+> **名册更正（2026-11-16，追加；不改本报告任何判定）**：本报告及后续 Preview 文档里"受治面 36 个工具名"
+> 的读法必须收窄：**36 = 34 个产品工具名 + 2 个 World 注入的测试仪器**（`u5_canary` / `u6fs_probe`）。
+> **用户可见的产品工具数是 34**（10 受管 I/O + 5 同族 + `read_image` + 3 Goal + 15 `team_*`）。
+> 旧文本从未声称"产品有 36 个工具"，但该读法在对外沟通中已出现，故在此点名更正。
+> 契约正本：`PREVIEW-CONTRACT-2026-11-16.md` §5.1。
+>
+> **归因措辞更正（2026-11-16，追加；同一契约 §5.2）**：任何"每一次工具调用都可归因"的旧句都收窄为——
+> **Preview 提供的是可归因的 guard fact / typed deny，覆盖受治的 I/O 调用；`team_*` 控制工具沿用既有的
+> TeamDomain / envelope 审计；Goal 三件套走上游 Goal 状态服务。这是三种不同的机制，不是一种。**
+>
+> **安装形态更正（2026-11-16，追加；PD-35）**：本报告全部 live 证据都在 WorldFactory harness 形态下取得。
+> 2026-11-16 的普通安装冒烟显示：打包与安装机制成立、`team.create` 成立、真实模型回合成立，但**任何工具调用**
+> 都以 `Cannot read properties of undefined (reading 'prepare')` 结束；同一插件以链接形态装载时同样失败、
+> 不装插件的同一宿主则成功。因此"装完能跑主流程"**尚未成立**，见 PD-35 与
+> `dev/agent-workflow/evidence/a5sf-pd35-install-smoke/`。
+
 ---
 
 ## 3. 本阶段最重要的两个发现（它们把"机制成立"和"约束成立"分开了）
