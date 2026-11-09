@@ -71,6 +71,85 @@ B/C（装插件，tarball 与 World 链接两种形态）同错、D/E（本机 n
 对外表述只能是：**"在 WorldFactory harness 下可跑；普通安装的主流程待修复（PD-36）"**。
 不得表述为"装完即可用"。
 
+### 2.3.1 PD-37 修复后的实测：**普通安装的工具执行已成立**（2026-11-09 追加，不改 §2.3 行文）
+
+§2.3 是 2026-11-16 的读数，它成立并且**保留**；本节是它被修复后的**追加**读数。缺陷与修复都在**我们自己的
+清单**里，宿主未被修改（`CORE PATCH BUDGET = 0` 仍成立）。
+
+**根因（实测，不再是假设）**：`@deepseek-ai/dsh-tools` 的调度器键是**普通 `Symbol(...)`**
+（`packages/core/tools/src/index.ts:480`，不是 `Symbol.for`），因此**模块实例**决定符号身份。
+基础清单把 6 个 `@deepseek-ai/*` 写成**运行时 dependency**，`dsh plugin add` 于是把它们的闭包（含
+`dsh-tools`）装进 **profile**；app-boot 的 profile 层优先用 profile 里的拷贝回答 `tools` 行，而宿主进程里的
+`dsh-agent-loop` 只有自己那份 → `tools[symbol] === undefined` → 每次工具调用在 `prepare` 处死亡。
+PD-36 的 H1 命中；H2（我们的 router/isolate）与 H3（WorldFactory 多给了一行）**均被证伪**（不装插件、只放一份
+profile 内 `dsh-tools` 也能复现同一错误）。证据：`dev/agent-workflow/evidence/a5sf-pd37-installed-tools/`
+（`08-module-instances.json` 记录同一进程里**两个** `dsh-tools` 模块 URL、`sameSymbol=false`）。
+
+**修复**：5 个由宿主提供的包（`dsh-skill`/`dsh-tool-fs`/`dsh-tool-web`/`dsh-tools`/`dsh-web-fetch-http`，
+`09-host-provides-six.txt` 逐个证明宿主能解析）改为 **peer（exact `0.2.0-rc.2` + `optional: true`）**，
+因此**永远不会被装进 profile**；第 6 个 `@deepseek-ai/dsh-web-search-exa` 宿主不提供，保留为 dependency，
+且**不拖入 `dsh-tools`**（`01-install-fixed.txt`：profile 里 `@deepseek-ai/*` 只剩 3 个，`dsh-tools` 为零）。
+
+**安装形态实测（同一 tarball 连续两轮）**：`dsh-agent-team-0.1.1-alpha.2.tgz`，
+**4 210 077 字节**，`sha256 61fd2e48d4d78593d2d8cd16efe8c737f50d794d80d4a93b96dd8d695169efb4`，
+装进 CLI 自己写出的 pristine profile（`nodeLinker: hoisted`、`autoInstallPeers: false`）后：
+
+| 动作 | 结果（两轮一致） |
+| --- | --- |
+| `web_fetch`（本地端点） | 工具**执行到底**，返回宿主的 typed 拒绝 `WEB_BLOCKED_URL`（宿主对非公网地址**无条件**拒绝，无开关；这不是调度失败） |
+| `web_fetch`（公网） | **HTTP 200**，正文返回 |
+| fs `write` + `read` | 写入并读回 `PD37_FS_OK` |
+| `create_goal` + 续轮 | goal 建立，**续跑 5 轮 / 4 轮**（`roundsStarted=5` / `4`） |
+| Stop（`goals/pause` + `session/cancel`） | `active → paused`、`armed → disarmed`，在跑回合以 `turn/end {kind:'aborted', reason:{kind:'user'}}` 结束，**Stop 后 4 秒内零新模型请求** |
+
+**反向对照**：同一 profile 形态、同一驱动器，换回**修复前**的清单（基础 `package.json`）→ profile 里 **11** 个
+`@deepseek-ai` 包（`dsh-tools` 在、`dsh-agent-loop` 不在）→ 第一次 `bash` 就复现
+`Cannot read properties of undefined (reading 'prepare')`（`07-negative-control-session.jsonl`）。
+
+**因此本契约的对外表述改为（只此一句）**：**"普通安装（`dsh plugin add` + `dsh web`）的工具执行自本 lane 起可用：
+2026-11-09 两轮实测通过（fetch / fs / goal ≥2 轮 / Stop）。"** §2.3 的"待修复（PD-36）"由本句取代，PD-36 作为
+**历史读数**保留——它记录的是**已发布产物里真实存在过的阻塞**，不是措辞问题。
+
+### 2.3.2 真实模型 × 真实安装：**同一次运行里**四件事都发生（2026-11-09 追加）
+
+§2.3.1 的两轮用的是**脚本化模型**（工具调用由脚本决定），PD-36 用的是**真实模型**但只到"第一次工具调用"。
+外部审查要的那句话是两者**同时**成立。本节是一次把两者放在一起的运行：**同一个已安装 artifact**
+（`sha256 61fd2e48…`）、**真实 provider**（`qiyuan-self` / `deepseek-v4.1-flash-1017`，走 profile 的
+`llm-pi-ai` provider 行 + `agent-default-model`，凭据取本机 credential store）、**模型自己决定调什么工具**
+（没有任何 tool-call 脚本）。证据：`10-real-model-install.txt`、`11-real-model-session.jsonl`（91 个事件）、
+`12-real-model-summary.json`。
+
+| 回合 | 模型自己发出的调用 | 结果 |
+| --- | --- | --- |
+| 1 | `web_fetch` `https://registry.npmjs.org/-/ping` → `write` → `read` | **HTTP 200**（`meta.statusCode=200`）；写入并读回 `PD37_REAL_OK`；`turn/end completed` |
+| 2 | `create_goal`（`max_goal_rounds: 5`）→ `bash` 追加清单第 1 条 → `read` | goal `active`、`revision 1`；`turn/end completed`（goal 第 1 轮） |
+| 3 | `write` → `read`（改第 1 条措辞） | `turn/end completed`（goal 第 2 轮；`roundsStarted=2`） |
+| 4 | （Stop 打断） | `goal/change pause` → `phase=paused`、`armed → disarmed`；`turn/end {kind:'aborted', reason:{kind:'user'}}`；**abort 之后零事件**（`events_after_abort=0`，日志最后一条就是这次 `turn/end`） |
+
+**三个断言，一句一个，不合并**：
+1. **真实安装上工具会执行**——脚本化模型两轮（§2.3.1）+ 真实模型一轮（§2.3.2）都测到了。
+2. **真实模型会在真实安装上跑回合并发起工具调用**——PD-36 测到"发起"，§2.3.2 测到"发起并完成"。
+3. **四件事（fetch / fs 读写 / goal ≥2 轮 / Stop）在一次真实模型 × 真实安装的运行里全部发生**——§2.3.2，**n=1**
+   （一个 provider、一个模型、一次运行）。
+
+**这次运行没有证明的（同样一句一条）**：`team.create` → Leader 回合未在本 lane 重测；Stop 走的是按钮发出的同一组
+RPC（无 headless 浏览器，未点击 DOM）；重启后不续跑未测；`n=1` 不同于"稳定"，它是"存在性证明"。
+
+**因此对外表述（替换 §2.3.1 末句，仍然只此一句）**：**"普通安装（`dsh plugin add` + `dsh web`）的工具执行可用：
+真实模型在已安装 artifact 上完成了 fetch / 文件读写 / goal 两轮 / Stop（2026-11-09，一次运行）。"**
+PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——它记录的是**已发布产物里真实存在过的阻塞**。
+
+**这次修复没有证明的东西（逐条披露）**：
+1. **未重测** `team.create` → Leader 回合：PD-36 里该链路在"第一次工具调用"之前是绿的，本 lane 只跑了普通会话；
+   代码未变，但**没有**在本 lane 重新测量，`team_collect` 同理。
+2. **未点击** UI 的 Stop 按钮（本机无 headless 浏览器）：驱动的是该按钮发出的**同一组 RPC**，abort 在会话日志里可见。
+3. **未测**重启后不续跑。
+4. **CI 覆盖缺口**：真正的回归钉子是"**装好的 profile 里启动并让一次工具调用成功**"，它需要 `pnpm pack`、
+   真实 `pnpm add`、真实 `dsh web` 与脚本化模型（网络/注册表/writable `DSH_HOME`/分钟级墙钟），**主机侧无宿主
+   CI 跑不了**。所以 CI 里放的是**清单级替身**（`packages/testkit/test/plugin-dsh-compat.test.ts`：15 个 peer
+   逐个 exact + optional、peer 不得是 dependency、**任何 `@deepseek-ai/*` 不得是 dependency/optionalDependency**，
+   唯一例外是上面那个宿主不提供的名字）；**而那次 boot 是本 lane 明确点名的手工门**（README §4）。
+
 ---
 
 ## 3. 语义承诺（只承诺能辩护的部分）
@@ -148,6 +227,18 @@ B/C（装插件，tarball 与 World 链接两种形态）同错、D/E（本机 n
 - "可归因"的**强度不同**：受治 I/O 是"每条调用一条 fact 或一条 typed deny"；`team_*` 是**请求令牌 + envelope +
   生命周期**审计；Goal 是**上游状态机**（`paused` / `roundsStarted` 等），不是 guard fact。
 - **不得**把三者合并成"统一审计面"，也不得说"所有调用都有 guard fact"。
+
+### 5.3 安装可用性更正：§1 的"装完即可用 = 否"被 PD-37 取代（2026-11-09 追加）
+
+- 旧文本：§1 表"**本版本是否'装完即可用'**"= **否**；§2.3 标题 = "普通安装的主流程尚未被证明可跑"。
+- 新事实：**PD-37** 定位并修复了那条阻塞（我们清单里的重复核心拷贝），并在**安装形态**下连续两轮实测通过
+  （`web_fetch` / fs 读写 / goal ≥2 轮 / Stop）。全部读数 = §2.3.1 与
+  `dev/agent-workflow/evidence/a5sf-pd37-installed-tools/`。
+- 因此：**"装完即可用"这一句自本 lane 起成立**，条件与范围逐条固定为：§2.1/§2.2 的部署前置条件照旧；成立的是
+  **工具执行**（真实模型在已安装 artifact 上完成 fetch / fs / goal 两轮 / Stop，§2.3.2，n=1）；**不**覆盖本 lane
+  **未重测**的 `team.create` 之后链路、DOM 点击 Stop、重启不续跑。
+- 旧判定（`PREVIEW-GO`、`V@B`、等级、`release BLOCKED`）**一字不动**；本节只更正措辞，不移动任何裁决。
+- 落点：本文件 §2.3.1 与 §5.3（均为追加）；`PRODUCT-DEBT-REGISTER.md` 的 **PD-37** 行。
 
 ---
 

@@ -1,0 +1,125 @@
+{
+  "at": "2026-11-09T04:38:57.087Z",
+  "steps": [
+    {
+      "name": "tools.constructor",
+      "value": "ToolRuntime"
+    },
+    {
+      "name": "tools.ownSymbols",
+      "value": [
+        "Symbol(cordis.tracker)",
+        "Symbol(@deepseek-ai/dsh-tools.scheduler)"
+      ]
+    },
+    {
+      "name": "tools.chain",
+      "value": [
+        {
+          "proto": "ToolRuntime",
+          "symbols": [
+            "Symbol(cordis.tracker)",
+            "Symbol(@deepseek-ai/dsh-tools.scheduler)"
+          ]
+        },
+        {
+          "proto": "ToolRuntime",
+          "symbols": []
+        },
+        {
+          "proto": "Service",
+          "symbols": [
+            "Symbol(cordis.filter)",
+            "Symbol(cordis.extend)",
+            "Symbol(cordis.resolveConfig)"
+          ]
+        },
+        {
+          "proto": "Object",
+          "symbols": []
+        }
+      ]
+    },
+    {
+      "name": "unused",
+      "value": "function require(path) {\n    return mod.require(path);\n  }"
+    },
+    {
+      "name": "plugin.dsh-tools.cjs",
+      "value": "/home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.2.0-rc.2_52b5a8ab481be2b3d891c22a71641755/node_modules/@deepseek-ai/dsh-tools/lib/index.js"
+    },
+    {
+      "name": "plugin.dsh-agent-loop.cjs",
+      "value": "/home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-agent-loop@0.2.0-rc.2_0c5ce3d184ce320f0d23631770cc12ac/node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js"
+    },
+    {
+      "name": "diag.dsh-tools.cjs",
+      "value": "/home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/neg1/profiles/web/node_modules/@deepseek-ai/dsh-tools/lib/index.js"
+    },
+    {
+      "name": "cache.dsh-tools",
+      "value": [
+        "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js",
+        "file:///home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/neg1/profiles/web/node_modules/@deepseek-ai/dsh-tools/lib/index.js"
+      ]
+    },
+    {
+      "name": "cache.agent-loop",
+      "value": [
+        "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js",
+        "file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/client/ui-settings-agent-loop/lib/index.js"
+      ]
+    },
+    {
+      "name": "scheduler-probe-note",
+      "value": "see symbolDescriptions + scheduler.prepare below"
+    },
+    {
+      "name": "symbolDescriptions",
+      "value": [
+        {
+          "on": "ToolRuntime",
+          "desc": "cordis.tracker"
+        },
+        {
+          "on": "ToolRuntime",
+          "desc": "@deepseek-ai/dsh-tools.scheduler"
+        },
+        {
+          "on": "Service",
+          "desc": "cordis.filter"
+        },
+        {
+          "on": "Service",
+          "desc": "cordis.extend"
+        },
+        {
+          "on": "Service",
+          "desc": "cordis.resolveConfig"
+        }
+      ]
+    },
+    {
+      "name": "imported.dsh-tools.scheduler.prepare",
+      "value": "function"
+    },
+    {
+      "name": "imported.dsh-tools.url",
+      "value": "file:///home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/neg1/profiles/web/node_modules/@deepseek-ai/dsh-tools/lib/index.js"
+    },
+    {
+      "name": "schedulerShape",
+      "value": [
+        "s"
+      ]
+    },
+    {
+      "name": "pluginImport.scheduler.prepare",
+      "value": "undefined"
+    },
+    {
+      "name": "pluginImport.sameSymbol",
+      "value": false
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# install of the PRE-FIX tarball (pack-m1 = the shipped manifest at the merge base, six @deepseek-ai deps)
+# same profile shape as 01-install-fixed.txt
+
+$ dsh plugin --profile web add pack-m1/dsh-agent-team-0.1.1-alpha.2.tgz
+
+$ ls node_modules/@deepseek-ai
+cosmokit
+dsh-brand
+dsh-skill
+dsh-tool-fs
+dsh-tool-web
+dsh-tools
+dsh-util-code-language
+dsh-util-values
+dsh-web-fetch-http
+dsh-web-search-exa
+schemastery
+
+$ ls -d node_modules/.pnpm/@deepseek-ai+dsh-tools*
+(none)
+
+# note: dsh-tools is present, dsh-agent-loop is ABSENT -> partial core copy in the profile layer
+$ ls node_modules/@deepseek-ai | grep agent-loop
+(absent)
