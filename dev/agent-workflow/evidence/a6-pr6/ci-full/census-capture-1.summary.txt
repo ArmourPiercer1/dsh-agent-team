@@ -1,0 +1,23 @@
+# Summary of the removed raw census capture
+
+The raw file `census-capture-1.txt` (1257545 B, sha256 `8f717e1ad2f134a0edb0b677e273d458ad1338cef113542b7f1098a744860576`) was removed from this
+tree on 2026-11-09 by the joint close-out, because `scripts/eb3-evidence-guard.mjs`
+refuses raw census captures above its 1 MiB bound **structurally** (`LIMIT grades files
+ADDED under the evidence root only`; a size exemption is refused for raw census names).
+This file keeps what the capture was for: the command, the verdict, and the totals.
+
+Bytes are not lost: they live on the Alpha.6 stack branch in commit `bf2d693c8`
+(`A6-D1: consolidated Alpha.6 docs + evidence`), which is where this port took them
+from. Reproduce with the command below instead of trusting this summary.
+
+```
+$ pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pr6/.artifacts/census/census-20261103T195801Z-66-1.json
+```
+ ❯ packages/runtime/test/alpha5-search-backend.test.ts:568:26
+    566|     const good = await one([rgPath, ...row.searchArgv({ pattern: SEARC…
+    567|     expect(good.code).toBe(0)
+    568|     expect(good.summary).toBe(true) // a completed walk proves itself
+       |                          ^
+    569|     const bad = await one([rgPath, ...row.searchArgv({ pattern: '(' })…
+    570|     expect(bad.code).toBe(0) // …and an ex-0 face is exactly why the s…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯

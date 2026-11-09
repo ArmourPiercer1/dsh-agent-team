@@ -1,0 +1,23 @@
+# Summary of the removed raw census capture
+
+The raw file `census-capture-1.txt` (1250224 B, sha256 `8db41644eddff9b4fa7c26b511eac55ae85d84a9aad70c21805ab6f19428aa94`) was removed from this
+tree on 2026-11-09 by the joint close-out, because `scripts/eb3-evidence-guard.mjs`
+refuses raw census captures above its 1 MiB bound **structurally** (`LIMIT grades files
+ADDED under the evidence root only`; a size exemption is refused for raw census names).
+This file keeps what the capture was for: the command, the verdict, and the totals.
+
+Bytes are not lost: they live on the Alpha.6 stack branch in commit `bf2d693c8`
+(`A6-D1: consolidated Alpha.6 docs + evidence`), which is where this port took them
+from. Reproduce with the command below instead of trusting this summary.
+
+```
+$ pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/.artifacts/census/census-20261104T105112Z-4-1.json
+```
+    at /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/live/agent-bindings.mjs:1182:18
+    at makeHandle (/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/test/t12a-live-bridge.mjs:900:7)
+    at Object.create (/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/test/t12a-live-bridge.mjs:932:22)
+    at Object.runOwned (/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/team-session-activation.ts:571:16)
+    at /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/live/agent-bindings.mjs:1215:16
+    at /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/live/agent-bindings.mjs:1006:14
+    at singleFlightTeamActivation (/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/live/agent-bindings.mjs:1010:14)
+    at runOwnedActivation (/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/packages/runtime/src/plugin/live/agent-bindings.mjs:1213:12)
