@@ -183,6 +183,12 @@ sets, not a substitute for required CI. Its absence is a gap in the evidence, no
 - Two Hosts maximum at a time; all ports in the 3180 family or an ephemeral pair from the reserved
   ranges; `:3080` and the stable dev instance were never addressed (`pre-stable-probe: 3080=401` in
   every run; `3180` unreachable throughout).
-- Every run tears its Host down; A6 kit homes are removed unless `--keep`.
+- Every run tears its Host down; A6 kit homes are removed unless `--keep`. Scratch worlds were
+  deleted at the end (`tests/homes` is back to empty; each bash invocation runs in its own PID
+  namespace, so a child Host from a *killed* job cannot be signalled from a later invocation).
+- **Residue, disclosed rather than hidden:** one orphan host from a run killed at 19:10 still
+  listens on `127.0.0.1:3185` (HTTP 401, the normal auth wall); its `DSH_HOME` was deleted and it
+  holds no team state. It was not addressable from this session (separate PID namespace); the other
+  orphan (`:3189`) was reaped through the job handle. Neither is `:3080` or the stable instance.
 - The tracked `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/` directory is byte-restored; only
   this new `v016-acceptance/` directory is added by the commit.
