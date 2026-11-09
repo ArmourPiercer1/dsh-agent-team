@@ -4,6 +4,7 @@
 - **Worktree / branch:** `.worktrees/v016-accept` on `task/v016-acceptance-20261109`, created off exactly `c66fa8b03`.
 - **Host baseline:** `@deepseek-ai/dsh@0.2.0-rc.2` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (`tests/paths.mjs`).
 - **Record class:** DEV-LIVE. No `V@B`, no grade, no `CANDIDATE-C2` claim. A red measurement reported as red is worth more than a green one we cannot defend.
+- **Evidence commit:** `9daeebd33`; draft PR #698 (base `integration/v0.1.6`).
 - **Product changes:** none. `CORE PATCH BUDGET = 0`; every scenario below runs on the frozen tree with operator config only (blueprint + profile patch + kit flags).
 - **Head discipline:** every row in the table was measured on `c66fa8b03`. When the candidate moves, re-runs on the new head are appended in [Re-runs on a moved head](#re-runs-on-a-moved-head) and labelled with their head; rows above are not rewritten.
 
@@ -20,7 +21,7 @@
 | B6 | Alpha.6 CLAIMED inbox recovery | **PASS** (r1+r2 agree) | `PASS A6-25: a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided` |
 | B7 | Alpha.6 ACCEPTED-but-unclaimed (A6-26) | **FAIL** (r1+r2 agree; expected defect) | `FAIL A6-26: ... pendingBefore=1 pendingAfter=0 discoverable=true pendingCount=0 abandoned=1 recoveryCode=CONTROL_REQUEST_ABANDONED restart=ok verdict=abandoned-terminal` |
 | C | Ordinary-install joint flow, **0.1.6 tarball**, run twice | **PASS with 2 findings** (r1+r2 agree) | `cold recovery: member=true goal=paused rounds=1->1 records=51->51 ok=true` |
-| D | Required CI on the candidate | **see §CI** | filled from the pushed branch |
+| D | Required CI on the candidate | **NOT-RUN** (cannot run on this base) | `no checks reported on the 'task/v016-acceptance-20261109' branch` |
 
 Every A6 row was run twice back-to-back on the same ports in sequence and the two runs produced the **same check set with the same verdicts**; the only row that fails is B7, and it fails identically in both runs.
 
@@ -137,9 +138,45 @@ The scratch worlds (`tests/homes/v016-install-r1|r2`) are gitignored and deleted
 credential file is copied into any `DSH_HOME` (the driver never writes credentials; the model key is
 resolved by the host from the operator store).
 
-## D. Required CI
+## D. Required CI — NOT-RUN, and why
 
-_(filled after the acceptance branch is pushed and the draft PR is opened; see §CI below.)_
+The acceptance branch was pushed and the draft PR opened: **#698**, base `integration/v0.1.6`,
+head `task/v016-acceptance-20261109` @ `9daeebd33` (evidence commit on top of `c66fa8b03`).
+
+Measured on that PR:
+
+```
+$ gh pr checks 698
+no checks reported on the 'task/v016-acceptance-20261109' branch
+$ gh run list --branch task/v016-acceptance-20261109 --limit 5
+(no runs)
+```
+
+Two independent reasons, both measured:
+
+1. **The three required contexts are scoped to `master`.** `.github/workflows/ci-required.yml`,
+   `.github/workflows/pr-gate.yml` and `.github/workflows/candidate-protection.yml` all declare
+   `pull_request: branches: [master]` (only `pr-gate`/`candidate-protection` also have
+   `push: branches: [master]`). GitHub evaluates the workflow file from the PR head, so a PR whose
+   base is `integration/v0.1.6` does not start any of them. The earlier runs visible on
+   `integration/v0.1.6` (`ci-required` / `pr-gate` / `candidate-protection`, 2026-11-09 18:55) are
+   `pull_request` runs whose **head** was `integration/v0.1.6` and whose **base** was `master` —
+   different event, different base.
+2. **This base has no enforced required checks at all.** `GET branches/integration/v0.1.6/protection`
+   → `404 Branch not protected`; the only ruleset in the repository (`default`, id 22936015) has
+   `enforcement: "disabled"`. GitHub therefore reports no required contexts for this base.
+
+**What that means, stated without softening:** there is **no CI signal attached to `c66fa8b03` as a
+candidate**. Nothing in this row may be read as "CI passed on the candidate". The only CI that has
+touched this lineage ran on PRs into `master` against different merge trees, and its most recent
+result there was `ci-required: failure` / `pr-gate: failure` on `integration/v0.1.6` heads — not on
+the frozen `c66fa8b03` head and not on this branch. To obtain a required-CI verdict for a candidate,
+the candidate lineage has to be proposed against `master` (or the workflows' `branches:` lists and
+the ruleset have to be widened); both are release-policy decisions outside this acceptance task.
+
+The local gate entry point (`node scripts/ci-pr-gate.mjs`) was **not** run for this evidence commit:
+it exercises the full product gate on the merge tree, and this lane's scope was the four acceptance
+sets, not a substitute for required CI. Its absence is a gap in the evidence, not a pass.
 
 ## Teardown / hygiene
 
